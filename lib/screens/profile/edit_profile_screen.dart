@@ -64,12 +64,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _loadUserData() async {
     try {
+      debugPrint('🔧 EditProfile: Loading user data for userId: ${widget.userId}');
       setState(() {
         _isLoading = true;
       });
 
       // Fetch user data from Firestore
       final UserModel userModel = await _userService.getUserById(widget.userId);
+      debugPrint('🔧 EditProfile: User data loaded: ${userModel.fullName}, ${userModel.username}, ${userModel.bio}');
 
       if (mounted) {
         setState(() {
@@ -85,8 +87,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ? userModel.gender
               : 'Prefer not to say';
         });
+        debugPrint('✅ EditProfile: Form fields populated with user data');
       }
     } catch (e) {
+      debugPrint('❌ EditProfile: Error loading user data: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading user data: ${e.toString()}')),
@@ -227,47 +231,97 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       });
 
       try {
-        // Update Firebase Auth display name
+        debugPrint('🔧 Starting profile save...');
+        
+        // Update Firebase Auth display name first
         if (currentUser != null &&
             currentUser!.displayName != _nameController.text.trim()) {
+          debugPrint('🔧 Updating Firebase Auth display name...');
           await _userService.updateDisplayName(_nameController.text.trim());
+          debugPrint('✅ Firebase Auth display name updated');
         }
 
         // Update user profile data in Firestore
+        debugPrint('🔧 Updating Firestore profile data...');
+        final username = _usernameController.text.trim();
+        final bio = _bioController.text.trim();
+        final location = _locationController.text.trim();
+        final birthDate = _birthdayController.text.trim().isNotEmpty
+            ? _parseBirthDate(_birthdayController.text.trim())
+            : null;
+        final gender = _gender;
+        
+        debugPrint('🔧 Update data: {username: $username, bio: $bio, location: $location, birthDate: $birthDate, gender: $gender}');
+        
         await _userService.updateUserProfile(
           userId: widget.userId,
-          username: _usernameController.text.trim(),
-          bio: _bioController.text.trim(),
-          location: _locationController.text.trim(),
-          birthDate: _birthdayController.text.trim().isNotEmpty
-              ? _parseBirthDate(_birthdayController.text.trim())
-              : null,
-          gender: _gender,
+          username: username,
+          bio: bio,
+          location: location,
+          birthDate: birthDate,
+          gender: gender,
         );
+        debugPrint('✅ Firestore profile data updated');
 
         // Upload profile image if changed
         if (_profileImage != null) {
-          await _userService.uploadAndUpdateProfilePhoto(_profileImage!);
+          try {
+            debugPrint('🔧 Uploading profile image...');
+            await _userService.uploadAndUpdateProfilePhoto(_profileImage!);
+            debugPrint('✅ Profile image uploaded');
+          } catch (e) {
+            debugPrint('⚠️ Profile image upload failed: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Profile image upload failed: ${e.toString()}'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          }
         }
 
         // Upload cover image if changed
         if (_coverImage != null) {
-          await _userService.uploadAndUpdateCoverPhoto(_coverImage!);
+          try {
+            debugPrint('🔧 Uploading cover image...');
+            await _userService.uploadAndUpdateCoverPhoto(_coverImage!);
+            debugPrint('✅ Cover image uploaded');
+          } catch (e) {
+            debugPrint('⚠️ Cover image upload failed: $e');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Cover image upload failed: ${e.toString()}'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          }
         }
 
         // Check if user should be transitioned to artist profile creation
         await _checkForArtistProfileTransition();
 
         if (mounted) {
+          debugPrint('✅ Profile save completed successfully');
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile updated successfully')),
+            const SnackBar(
+              content: Text('Profile updated successfully'),
+              backgroundColor: Colors.green,
+            ),
           );
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true); // Pass true to indicate success
         }
       } catch (e) {
+        debugPrint('❌ Error saving profile: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error updating profile: ${e.toString()}')),
+            SnackBar(
+              content: Text('Error updating profile: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       } finally {

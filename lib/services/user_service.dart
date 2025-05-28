@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:artbeat/models/user_model.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 class UserService {
@@ -269,14 +270,20 @@ class UserService {
     final user = _auth.currentUser;
     if (user != null) {
       try {
+        debugPrint('🔧 UserService: Updating display name to: $displayName');
+        
         // Update Firebase Auth display name
         await user.updateDisplayName(displayName);
+        debugPrint('✅ UserService: Firebase Auth display name updated');
 
         // Update in Firestore
         await _usersCollection.doc(user.uid).set({
           'fullName': displayName,
+          'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
+        debugPrint('✅ UserService: Firestore fullName updated');
       } catch (e) {
+        debugPrint('❌ UserService: Error updating display name: $e');
         print('Error updating display name: $e');
         rethrow; // Re-throw to allow UI to handle
       }
@@ -293,6 +300,8 @@ class UserService {
     String? gender,
   }) async {
     try {
+      debugPrint('🔧 UserService: Starting updateUserProfile for userId: $userId');
+      
       Map<String, dynamic> updates = {};
 
       if (username != null) updates['username'] = username;
@@ -302,13 +311,23 @@ class UserService {
         updates['birthDate'] = Timestamp.fromDate(birthDate);
       }
       if (gender != null) updates['gender'] = gender;
+      
+      // Always update the updatedAt timestamp
+      updates['updatedAt'] = FieldValue.serverTimestamp();
+
+      debugPrint('🔧 UserService: Updates to apply: $updates');
 
       if (updates.isNotEmpty) {
+        debugPrint('🔧 UserService: Applying updates to Firestore...');
         await _usersCollection
             .doc(userId)
             .set(updates, SetOptions(merge: true));
+        debugPrint('✅ UserService: Profile updates successfully applied to Firestore');
+      } else {
+        debugPrint('⚠️ UserService: No updates to apply');
       }
     } catch (e) {
+      debugPrint('❌ UserService: Error updating user profile: $e');
       print('Error updating user profile: $e');
       rethrow;
     }
@@ -320,28 +339,35 @@ class UserService {
     if (user == null) throw Exception('User not authenticated');
 
     try {
+      debugPrint('🔧 UserService: Starting profile photo upload...');
       // Create a reference to the storage location
       String fileName =
-          'profile_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      Reference storageRef = _storage.ref().child('profile_images/$fileName');
+          'profile_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference storageRef = _storage.ref().child('profile_images/${user.uid}/$fileName');
 
       // Upload the file
+      debugPrint('🔧 UserService: Uploading profile image to Firebase Storage...');
       UploadTask uploadTask = storageRef.putFile(imageFile);
       TaskSnapshot taskSnapshot = await uploadTask;
 
       // Get download URL
+      debugPrint('🔧 UserService: Getting download URL...');
       String photoURL = await taskSnapshot.ref.getDownloadURL();
 
       // Update Firebase Auth photoURL
+      debugPrint('🔧 UserService: Updating Firebase Auth photoURL...');
       await user.updatePhotoURL(photoURL);
 
       // Update Firestore
+      debugPrint('🔧 UserService: Updating Firestore with profile image URL...');
       await _usersCollection.doc(user.uid).update({
         'profileImageUrl': photoURL,
       });
 
+      debugPrint('✅ UserService: Profile photo upload completed successfully');
       return photoURL;
     } catch (e) {
+      debugPrint('❌ UserService: Error uploading profile photo: $e');
       print('Error uploading profile photo: $e');
       rethrow;
     }
@@ -353,23 +379,29 @@ class UserService {
     if (user == null) throw Exception('User not authenticated');
 
     try {
-      // Create a reference to the storage location
+      debugPrint('🔧 UserService: Starting cover photo upload...');
+      // Create a reference to the storage location with proper path structure
       String fileName =
-          'cover_${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      Reference storageRef = _storage.ref().child('cover_images/$fileName');
+          'cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference storageRef = _storage.ref().child('cover_images/${user.uid}/$fileName');
 
       // Upload the file
+      debugPrint('🔧 UserService: Uploading cover image to Firebase Storage...');
       UploadTask uploadTask = storageRef.putFile(imageFile);
       TaskSnapshot taskSnapshot = await uploadTask;
 
       // Get download URL
+      debugPrint('🔧 UserService: Getting cover image download URL...');
       String coverURL = await taskSnapshot.ref.getDownloadURL();
 
       // Update Firestore
+      debugPrint('🔧 UserService: Updating Firestore with cover image URL...');
       await _usersCollection.doc(user.uid).update({'coverImageUrl': coverURL});
 
+      debugPrint('✅ UserService: Cover photo upload completed successfully');
       return coverURL;
     } catch (e) {
+      debugPrint('❌ UserService: Error uploading cover photo: $e');
       print('Error uploading cover photo: $e');
       rethrow;
     }
