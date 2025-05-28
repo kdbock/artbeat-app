@@ -1,0 +1,186 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUserOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTimestamp(timestampValue) {
+      return timestampValue is timestamp;
+    }
+
+    function isValidString(field) {
+      return field is string && field.size() > 0;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Allow users to read other user profiles
+      allow read: if isAuthenticated();
+      
+      // Allow users to create and update their OWN profile only
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isUserOwner(userId);
+      allow delete: if isUserOwner(userId);
+      
+      // User favorites subcollection
+      match /favorites/{favoriteId} {
+        allow read: if isAuthenticated();
+        allow create, update, delete: if isUserOwner(userId);
+      }
+    }
+    
+    // Artist profiles rules
+    match /artistProfiles/{artistId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && 
+        (request.resource.data.userId == request.auth.uid);
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Artwork collection
+    match /artwork/{artworkId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Art Walks collection
+    match /artWalks/{walkId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+        
+      // Comments on art walks
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && 
+          request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && 
+          resource.data.userId == request.auth.uid;
+      }
+    }
+    
+    // Public Art collection
+    match /publicArt/{artId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || 
+         resource.data.isAdmin == true);
+    }
+    
+    // Posts collection
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+        
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && 
+          request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && 
+          resource.data.userId == request.auth.uid;
+      }
+      
+      // Likes subcollection
+      match /likes/{likeId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && 
+          request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && 
+          resource.data.userId == request.auth.uid;
+      }
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Subscriptions collection
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        (request.resource.data.userId == request.auth.uid);
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid);
+    }
+    
+    // Gallery Invitations collection
+    match /galleryInvitations/{invitationId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.artistId == request.auth.uid || 
+         resource.data.galleryId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        request.resource.data.galleryId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        (resource.data.galleryId == request.auth.uid || 
+         resource.data.artistId == request.auth.uid);
+      allow delete: if isAuthenticated() && 
+        resource.data.galleryId == request.auth.uid;
+    }
+    
+    // Commissions collection
+    match /commissions/{commissionId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.artistId == request.auth.uid || 
+         resource.data.galleryId == request.auth.uid);
+      allow create: if isAuthenticated() && 
+        (request.resource.data.galleryId == request.auth.uid);
+      allow update: if isAuthenticated() && 
+        (resource.data.galleryId == request.auth.uid || 
+         resource.data.artistId == request.auth.uid);
+      allow delete: if isAuthenticated() && 
+        resource.data.galleryId == request.auth.uid;
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && 
+        resource.data.recipientId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.recipientId == request.auth.uid);
+      allow delete: if isAuthenticated() && 
+        resource.data.recipientId == request.auth.uid;
+    }
+    
+    // Payment Methods collection
+    match /paymentMethods/{paymentMethodId} {
+      allow read, write: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Achievements collection
+    match /achievements/{achievementId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if false; // Admin-only operations
+      
+      // User achievements collection
+      match /userAchievements/{userId} {
+        allow read: if isAuthenticated();
+        allow create, update: if isAuthenticated() && 
+          userId == request.auth.uid;
+      }
+    }
+  }
+}

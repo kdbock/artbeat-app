@@ -1,0 +1,606 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:artbeat/models/artist_profile_model.dart';
+import 'package:artbeat/models/subscription_model.dart';
+import 'package:artbeat/services/subscription_service.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+/// Screen for creating or editing an artist profile
+class ArtistProfileEditScreen extends StatefulWidget {
+  final String? artistProfileId;
+
+  const ArtistProfileEditScreen({
+    super.key,
+    this.artistProfileId,
+  });
+
+  @override
+  State<ArtistProfileEditScreen> createState() =>
+      _ArtistProfileEditScreenState();
+}
+
+class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _subscriptionService = SubscriptionService();
+  final _storage = FirebaseStorage.instance;
+  final _auth = FirebaseAuth.instance;
+
+  // Text controllers
+  final _displayNameController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _websiteController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _instagramController = TextEditingController();
+  final _facebookController = TextEditingController();
+  final _twitterController = TextEditingController();
+  final _etsyController = TextEditingController();
+
+  // State variables
+  bool _isLoading = false;
+  bool _isSaving = false;
+  ArtistProfileModel? _artistProfile;
+  UserType _userType = UserType.artist;
+  List<String> _selectedMediums = [];
+  List<String> _selectedStyles = [];
+  File? _profileImageFile;
+  File? _coverImageFile;
+  String? _profileImageUrl;
+  String? _coverImageUrl;
+
+  // Available options (would typically come from backend)
+  final List<String> _availableMediums = [
+    'Oil Paint',
+    'Acrylic',
+    'Watercolor',
+    'Charcoal',
+    'Pastel',
+    'Digital',
+    'Mixed Media',
+    'Sculpture',
+    'Photography',
+    'Textiles',
+    'Ceramics',
+    'Printmaking',
+    'Pen & Ink',
+    'Pencil'
+  ];
+
+  final List<String> _availableStyles = [
+    'Abstract',
+    'Realism',
+    'Impressionism',
+    'Expressionism',
+    'Minimalism',
+    'Pop Art',
+    'Surrealism',
+    'Cubism',
+    'Contemporary',
+    'Folk Art',
+    'Street Art',
+    'Illustration',
+    'Fantasy',
+    'Portrait'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArtistProfile();
+  }
+
+  @override
+  void dispose() {
+    _displayNameController.dispose();
+    _bioController.dispose();
+    _websiteController.dispose();
+    _locationController.dispose();
+    _instagramController.dispose();
+    _facebookController.dispose();
+    _twitterController.dispose();
+    _etsyController.dispose();
+    super.dispose();
+  }
+
+  // Load existing profile if editing
+  Future<void> _loadArtistProfile() async {
+    if (widget.artistProfileId == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // In a real app, you would fetch by ID instead of by user ID
+      final artistProfile =
+          await _subscriptionService.getCurrentArtistProfile();
+
+      if (artistProfile != null && mounted) {
+        setState(() {
+          _artistProfile = artistProfile;
+          _displayNameController.text = artistProfile.displayName;
+          _bioController.text = artistProfile.bio;
+          _websiteController.text = artistProfile.websiteUrl ?? '';
+          _locationController.text = artistProfile.location ?? '';
+          _instagramController.text = artistProfile.instagram ?? '';
+          _facebookController.text = artistProfile.facebook ?? '';
+          _twitterController.text = artistProfile.twitter ?? '';
+          _etsyController.text = artistProfile.etsy ?? '';
+          _selectedMediums = List.from(artistProfile.mediums);
+          _selectedStyles = List.from(artistProfile.styles);
+          _userType = artistProfile.userType;
+          _profileImageUrl = artistProfile.profileImageUrl;
+          _coverImageUrl = artistProfile.coverImageUrl;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading profile: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Save artist profile
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Upload images if changed
+      if (_profileImageFile != null) {
+        _profileImageUrl = await _uploadImage(_profileImageFile!, 'profile');
+      }
+
+      if (_coverImageFile != null) {
+        _coverImageUrl = await _uploadImage(_coverImageFile!, 'cover');
+      }
+
+      // Save profile
+      await _subscriptionService.saveArtistProfile(
+        profileId: _artistProfile?.id,
+        displayName: _displayNameController.text,
+        bio: _bioController.text,
+        mediums: _selectedMediums,
+        styles: _selectedStyles,
+        location:
+            _locationController.text.isEmpty ? null : _locationController.text,
+        websiteUrl:
+            _websiteController.text.isEmpty ? null : _websiteController.text,
+        instagram: _instagramController.text.isEmpty
+            ? null
+            : _instagramController.text,
+        facebook:
+            _facebookController.text.isEmpty ? null : _facebookController.text,
+        twitter:
+            _twitterController.text.isEmpty ? null : _twitterController.text,
+        etsy: _etsyController.text.isEmpty ? null : _etsyController.text,
+        userType: _userType,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Artist profile saved successfully')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving profile: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  // Upload image to Firebase Storage
+  Future<String> _uploadImage(File imageFile, String type) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('User not authenticated');
+
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId';
+    final ref = _storage.ref().child('artist_images/$userId/$type/$fileName');
+
+    final uploadTask = ref.putFile(imageFile);
+    final snapshot = await uploadTask;
+
+    return await snapshot.ref.getDownloadURL();
+  }
+
+  // Pick profile image
+  Future<void> _pickProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _profileImageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  // Pick cover image
+  Future<void> _pickCoverImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _coverImageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_artistProfile == null
+            ? 'Create Artist Profile'
+            : 'Edit Artist Profile'),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Account type selection
+                    const Text(
+                      'Account Type',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<UserType>(
+                      segments: const [
+                        ButtonSegment(
+                          value: UserType.artist,
+                          label: Text('Individual Artist'),
+                          icon: Icon(Icons.person),
+                        ),
+                        ButtonSegment(
+                          value: UserType.gallery,
+                          label: Text('Gallery'),
+                          icon: Icon(Icons.store),
+                        ),
+                      ],
+                      selected: {_userType},
+                      onSelectionChanged: (selection) {
+                        setState(() {
+                          _userType = selection.first;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Profile images
+                    const Text(
+                      'Profile Images',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            children: [
+                              const Text('Profile Image'),
+                              const SizedBox(height: 8),
+                              GestureDetector(
+                                onTap: _pickProfileImage,
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    shape: BoxShape.circle,
+                                    image: _profileImageFile != null
+                                        ? DecorationImage(
+                                            image:
+                                                FileImage(_profileImageFile!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : _profileImageUrl != null
+                                            ? DecorationImage(
+                                                image: NetworkImage(
+                                                    _profileImageUrl!),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                  ),
+                                  child: _profileImageFile == null &&
+                                          _profileImageUrl == null
+                                      ? const Icon(Icons.add_a_photo, size: 40)
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              const Text('Cover Image'),
+                              const SizedBox(height: 8),
+                              GestureDetector(
+                                onTap: _pickCoverImage,
+                                child: Container(
+                                  width: 160,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(8),
+                                    image: _coverImageFile != null
+                                        ? DecorationImage(
+                                            image: FileImage(_coverImageFile!),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : _coverImageUrl != null
+                                            ? DecorationImage(
+                                                image: NetworkImage(
+                                                    _coverImageUrl!),
+                                                fit: BoxFit.cover,
+                                              )
+                                            : null,
+                                  ),
+                                  child: _coverImageFile == null &&
+                                          _coverImageUrl == null
+                                      ? const Icon(Icons.add_photo_alternate,
+                                          size: 40)
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Basic info
+                    const Text(
+                      'Basic Information',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _displayNameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Display Name',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a display name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _bioController,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        labelText: 'Bio',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a bio';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _locationController,
+                      decoration: const InputDecoration(
+                        labelText: 'Location',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Art information
+                    const Text(
+                      'Art Information',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Mediums
+                    const Text('Mediums'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: _availableMediums.map((medium) {
+                        final isSelected = _selectedMediums.contains(medium);
+                        return FilterChip(
+                          label: Text(medium),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedMediums.add(medium);
+                              } else {
+                                _selectedMediums.remove(medium);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    if (_selectedMediums.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Please select at least one medium',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 16),
+
+                    // Styles
+                    const Text('Styles'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: _availableStyles.map((style) {
+                        final isSelected = _selectedStyles.contains(style);
+                        return FilterChip(
+                          label: Text(style),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedStyles.add(style);
+                              } else {
+                                _selectedStyles.remove(style);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    if (_selectedStyles.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          'Please select at least one style',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 24),
+
+                    // Online presence
+                    const Text(
+                      'Online Presence',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _websiteController,
+                      decoration: const InputDecoration(
+                        labelText: 'Website',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.language),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _instagramController,
+                      decoration: const InputDecoration(
+                        labelText: 'Instagram',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.camera_alt),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _facebookController,
+                      decoration: const InputDecoration(
+                        labelText: 'Facebook',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.facebook),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _twitterController,
+                      decoration: const InputDecoration(
+                        labelText: 'Twitter',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.message),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _etsyController,
+                      decoration: const InputDecoration(
+                        labelText: 'Etsy Shop',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.store),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Submit button
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isSaving ||
+                                  _selectedMediums.isEmpty ||
+                                  _selectedStyles.isEmpty
+                              ? null
+                              : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: _isSaving
+                              ? const CircularProgressIndicator()
+                              : Text(
+                                  _artistProfile == null
+                                      ? 'Create Artist Profile'
+                                      : 'Save Changes',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
