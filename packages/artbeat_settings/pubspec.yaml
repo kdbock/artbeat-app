@@ -1,0 +1,35 @@
+name: artbeat_settings
+description: Settings module for ARTbeat application
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+    
+  # Core dependencies
+  artbeat_core:
+    path: ../artbeat_core
+  artbeat_artist:
+    path: ../artbeat_artist
+
+  # Firebase dependencies - match main project versions
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+
+  # Utilities
+  provider: ^6.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/default_profile.png

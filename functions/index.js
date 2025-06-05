@@ -119,7 +119,7 @@ exports.createSubscription = functions.https.onRequest((request, response) => {
       response.status(200).send({
         subscriptionId: subscription.id,
         status: subscription.status,
-        clientSecret: subscription.latest_invoice.payment_intent?.client_secret,
+        clientSecret: subscription.latest_invoice.payment_intent?.client_secret ?? '',
       });
     } catch (error) {
       console.error('Error creating subscription:', error);
@@ -206,7 +206,7 @@ exports.stripeWebhook = functions.https.onRequest(async (request, response) => {
         const userRef = admin.firestore().collection('users').doc(userId);
         const userSnapshot = await userRef.get();
         const user = userSnapshot.exists ? userSnapshot.data() : null;
-        const userPrefs = (user?.notificationPreferences || {});
+        const userPrefs = user?.notificationPreferences ?? {};
         
         // Update user subscription in Firestore
         const subscriptionsRef = admin.firestore().collection('subscriptions');
@@ -854,7 +854,7 @@ exports.handlePaymentFailure = functions.firestore
         amount: paymentIntent.amount,
         currency: paymentIntent.currency,
         status: 'failed',
-        errorMessage: paymentIntent.last_payment_error?.message || 'Payment failed',
+        errorMessage: paymentIntent.last_payment_error?.message ?? 'Payment failed',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
       
@@ -874,7 +874,7 @@ exports.handlePaymentFailure = functions.firestore
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
             if (subscription) {
               // Try to determine subscription tier
-              const priceId = subscription.items.data[0]?.price.id;
+              const priceId = subscription.items.data[0]?.price.id ?? '';
               let tier = 'subscription';
               
               if (priceId === STRIPE_PRICES.ARTIST_PRO_MONTHLY) {
@@ -901,7 +901,7 @@ exports.handlePaymentFailure = functions.firestore
           additionalData: {
             amount: paymentIntent.amount,
             currency: paymentIntent.currency,
-            errorMessage: paymentIntent.last_payment_error?.message || 'Payment failed',
+            errorMessage: paymentIntent.last_payment_error?.message ?? 'Payment failed',
           }
         });
       }

@@ -4,7 +4,11 @@ ARTbeat is a comprehensive Flutter application that serves as a platform for cre
 
 ![ARTbeat Logo](assets/default_profile.png)
 
-> **Security Note:** This application requires API keys for Firebase and Google Maps services. Please refer to the [API Key Management Guide](API_KEY_MANAGEMENT.md) for instructions on securely managing API keys.
+> **⚠️ SECURITY NOTICE:** This application requires configuration of sensitive Firebase and Google Maps API keys. For security:
+> 1. Never commit `firebase_options.dart` to version control
+> 2. Use `firebase_options.template.dart` as a template
+> 3. Store sensitive keys in environment variables
+> 4. See [Firebase Configuration](#firebase-configuration) section below for secure setup instructions
 
 ## Table of Contents
 
@@ -255,3 +259,44 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+# Firebase Configuration
+
+For security reasons, Firebase configuration details should not be committed to version control. Follow these steps to set up Firebase securely:
+
+1. Copy the template file:
+   ```bash
+   cp lib/firebase_options.template.dart lib/firebase_options.dart
+   ```
+
+2. Get your Firebase configuration:
+   - Go to [Firebase Console](https://console.firebase.google.com)
+   - Select your project
+   - Go to Project Settings
+   - Add your app if not already added
+   - Get the configuration details
+
+3. Update `lib/firebase_options.dart` with your Firebase details:
+   ```dart
+   static const FirebaseOptions currentPlatform = FirebaseOptions(
+     apiKey: 'YOUR_API_KEY',             // ⚠️ From Firebase Console
+     appId: 'YOUR_APP_ID',               // ⚠️ From Firebase Console
+     messagingSenderId: 'YOUR_SENDER_ID', // ⚠️ From Firebase Console
+     projectId: 'YOUR_PROJECT_ID',        // ⚠️ From Firebase Console
+   );
+   ```
+
+4. Add `lib/firebase_options.dart` to `.gitignore`:
+   ```bash
+   echo "lib/firebase_options.dart" >> .gitignore
+   ```
+
+> **🔒 Security Best Practices:**
+> - Never commit `firebase_options.dart` to version control
+> - Consider using environment variables for production deployments
+> - Regularly rotate API keys
+> - Use Firebase Security Rules to protect your data
+> - Enable only the Firebase services you need
+> - Monitor Firebase Console for unusual activity
+
+For CI/CD environments, use environment variables or secure secret storage to manage these keys.

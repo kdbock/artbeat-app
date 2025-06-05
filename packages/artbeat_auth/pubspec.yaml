@@ -1,0 +1,32 @@
+name: artbeat_auth
+description: Authentication components for the ARTbeat application
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Firebase dependencies
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+  
+  # ARTbeat packages
+  artbeat_core:
+    path: ../artbeat_core
+  
+  # Utilities
+  provider: ^6.0.5
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true

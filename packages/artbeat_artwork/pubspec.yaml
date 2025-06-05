@@ -1,0 +1,38 @@
+name: artbeat_artwork
+description: Artwork management package for ARTbeat
+version: 0.0.1
+publish_to: none  # This package is not intended for publishing
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+  firebase_storage: ^11.7.7
+
+  # Local Packages
+  artbeat_core: 
+    path: ../artbeat_core
+  artbeat_artist:
+    path: ../artbeat_artist
+
+  # Required packages for artwork functionality
+  image_picker: ^1.0.4
+  share_plus: ^7.2.1
+  http: ^1.1.0
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

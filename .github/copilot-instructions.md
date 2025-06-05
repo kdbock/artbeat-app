@@ -1,16 +1,81 @@
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
+# ARTbeat Flutter App
+
+This is a Flutter application that implements a fully modular architecture, where each feature is encapsulated in its own module. The app has been structured into feature-based modules to improve maintainability, enable parallel development, and make the codebase more organized.
+Artist and gallery management features:
+- Artist profiles and dashboards
+- Gallery management tools
+- Subscription management (Basic, Pro, Gallery plans)
+- Commission tracking
+- Analytics dashboard
+
+### 5. Artwork Module (`artbeat_artwork`)
+Artwork-related features:
+- Artwork uploads and management
+- Artwork browsing with filters
+- Image moderation
+- Sales and commission tracking
+
+### 6. Art Walk Module (`artbeat_art_walk`)
+Public art discovery features:
+- Art walk creation and browsing
+- Google Maps integration
+- Location-based art discovery
+- Achievement badges system
+
+### 7. Community Module (`artbeat_community`)
+Social and interaction features:
+- Social feed with posts
+- Comments system
+- Community engagement tools
+- Content moderation
+
+### 8. Settings Module (`artbeat_settings`)
+User preferences and account management:
+- Account settings
+- Privacy controls
+- Notification preferences
+- Security settings
+
+### Core Dependencies
+Each module specifies its own dependencies in its `pubspec.yaml`. Common dependencies include:
+- Firebase suite (core, auth, firestore, storage)
+- Provider for state management
+- Image management (image_picker, cached_network_image)
+- UI/UX libraries (google_maps_flutter, share_plus)
+- HTTP and data handling (http, intl)-file -->
 
 # ARTbeat Flutter App
 
-This is a Flutter application called "ARTbeat" (formerly "WordNerd") that implements a complete authentication flow using Firebase Authentication. The app follows a specific screen sequence:
+This is a Flutter application called "ARTbeat" that follows a modular architecture pattern. Each feature is encapsulated in its own module for better maintainability, testability, and parallel development.
 
 ## Application Flow
 - Loading Screen → Splash Screen → Login/Registration → Dashboard
 
-## Project Structure
-- `lib/main.dart`: Entry point of the application, initializes Firebase
-- `lib/firebase_options.dart`: Generated Firebase configuration options
-- `lib/models/`: Contains data models
+## Module Structure
+
+The app is divided into the following feature modules, each as a standalone Flutter package:
+
+### 1. Core Module (`artbeat_core`)
+Contains shared functionality used across all modules:
+- Models: `user_model.dart`, `notification_model.dart`, `favorite_model.dart`, etc.
+- Services: `user_service.dart`, `notification_service.dart`, `payment_service.dart`
+- Utils: Common utility functions
+- Firebase configuration and initialization
+
+### 2. Authentication Module (`artbeat_auth`)
+Handles user authentication flows:
+- Login, Register, and Password Recovery screens
+- Authentication services
+- Firebase Auth integration
+- Secure token management
+
+### 3. Profile Module (`artbeat_profile`)
+Manages user profiles:
+- Profile viewing and editing
+- Followers/Following system
+- Photo management
+- Favorites collection
+- Achievements display
   - `user_model.dart`: Model for user profile data
   - `artist_profile_model.dart`: Model for artist profiles with subscription tier data
   - `artwork_model.dart`: Model for artist artwork metadata
@@ -131,33 +196,33 @@ The app uses Firebase services with the following features:
 - Secure payment method storage
 - Webhook integration for payment events
 
-## Profile Features
-The app includes a complete user profile system with:
-- Profile viewing with stats (posts, followers, following)
-- Profile editing capabilities (name, bio, location, etc.)
-- Profile and cover photo management using image_picker
-- Followers and following lists with follow/unfollow functionality
-- Photo viewing with zoom functionality
-- Favorites collection to save and manage items of interest
-- Profile actions for quick access to user-specific features
+## Module Development Guidelines
 
-## Settings Features
-The app includes comprehensive user settings with:
-- Account management (username, email, phone number, password)
-- Two-factor authentication options
-- Privacy controls (profile visibility, follower permissions)
-- Notification preferences for various interaction types
-- Security settings with login alerts and device management
-- Blocked users management with unblocking capability
+### Working with Modules
 
-## Social and Discovery Features
-The app includes user discovery and social features:
-- User search functionality by username and name
-- Suggested users to follow
-- Follow/unfollow mechanisms with real-time updates
-- Real-time follower and following counts
-- Favorites system for saving items of interest
-- Profile action buttons for quick access to key features
+1. Each module is a standalone Flutter package in the `packages/` directory
+2. All public components are exported through the module's main entry point
+3. Use relative imports within modules
+4. Update the module's exports when adding new components
+
+### Module Dependencies
+
+- All modules depend on `artbeat_core`
+- Some modules have cross-dependencies (e.g., `artbeat_artist` depends on `artbeat_artwork`)
+- Dependencies are explicitly declared in each module's `pubspec.yaml`
+
+### Adding New Features
+
+1. Identify the appropriate module for the feature
+2. Create files in the correct module directory structure
+3. Update the module's exports
+4. Update the app's route table if adding screens
+
+### Testing
+
+- Unit tests belong in each module
+- Integration tests go in the main app
+- Widget tests should be in their respective modules
 
 ## Technical Configurations
 - Android configuration: minSdkVersion 23, ndkVersion 27.0.12077973
@@ -380,32 +445,32 @@ The app now includes a subscription-based model for artists with the following f
   - Artist sorting by name
   - Feature content display with active status
 
+## Module Status
+
+Current status of module migration:
+
+| Module | Status | Next Steps |
+|--------|---------|------------|
+| artbeat_core | ✅ Complete | - Add more unit tests |
+| artbeat_auth | ✅ Complete | - Add biometric auth |
+| artbeat_profile | 🚧 In Progress | - Complete profile editing<br>- Add followers system |
+| artbeat_artist | ✅ Basic Setup | - Implement subscription features<br>- Add commission tracking |
+| artbeat_artwork | ✅ Basic Setup | - Add artwork management<br>- Implement filters |
+| artbeat_art_walk | ✅ Basic Setup | - Add maps integration<br>- Create achievement system |
+| artbeat_community | ✅ Basic Setup | - Build social features<br>- Add moderation tools |
+| artbeat_settings | ✅ Basic Setup | - Complete settings screens<br>- Add preferences system |
+
 ## Next Steps
 
-1. Enhance Art Walk feature:
-   - Improve route creation with real walking directions from Google Directions API
-   - Add social features like comments and ratings on art walks
-   - ✅ Create achievement badges for users who complete art walks
-   - Implement backend validation for uploaded public art
-   - Add caching for offline art walk viewing
-   - Replace placeholder Google Maps API keys with real ones for production
+1. Complete Profile Module:
+   - Implement profile viewing and editing
+   - Set up followers/following system
+   - Build favorites collection
+   - Add achievements display
 
-2. Finalize the artist and gallery subscription management:
-   - Optimize subscription upgrade/downgrade flows with proper UI feedback
-   - Enhance refund request management system with approval workflows
-   - Add subscription usage metrics to help users track their consumption
-   - Implement tiered pricing discounts for longer subscription commitments
-
-3. Expand gallery management capabilities:
-   - Add inventory management system for physical artwork tracking
-   - Implement sales target tracking and forecasting for galleries
-   - Create exhibition planning tools with timeline visualization
-   - Add artist royalty distribution tracking for ongoing sales
-   - Integrate art walk creation into gallery event promotion
-
-4. Establish user types as admin, basic user, artist, gallery, and investor:
-   - Implement role-based access control for different features
-   - Create admin dashboard for managing users and content
-   - Implement user reporting and moderation tools
-   - Add user feedback and rating system for artists and galleries
-   - Develop investor-specific features for art investment tracking
+2. Progress with remaining modules:
+   - Enable Artist and Gallery features
+   - Set up Artwork management
+   - Implement Art Walk functionality
+   - Build Community features
+   - Complete Settings module

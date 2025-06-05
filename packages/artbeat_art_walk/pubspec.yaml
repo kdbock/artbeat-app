@@ -1,0 +1,35 @@
+name: artbeat_art_walk
+description: Art Walk features for ARTbeat app
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  artbeat_core:
+    path: ../artbeat_core
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+  firebase_storage: ^11.7.7
+  google_maps_flutter: ^2.2.8
+  geolocator: ^11.1.0
+  geocoding: ^2.1.0
+  share_plus: ^7.2.1
+  image_picker: ^1.0.0
+  logger: ^2.0.1
+  shared_preferences: ^2.1.0
+  http: ^1.1.0
+  timeago: ^3.4.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  uses-material-design: true

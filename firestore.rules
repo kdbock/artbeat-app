@@ -19,168 +19,65 @@ service cloud.firestore {
     }
     
     // Users collection rules
+    // Users and nested collections rules
     match /users/{userId} {
-      // Allow users to read other user profiles
-      allow read: if isAuthenticated();
+      allow read, write: if isUserOwner(userId);
       
-      // Allow users to create and update their OWN profile only
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isUserOwner(userId);
-      allow delete: if isUserOwner(userId);
-      
-      // User favorites subcollection
+      // Allow access to subcollections
       match /favorites/{favoriteId} {
-        allow read: if isAuthenticated();
-        allow create, update, delete: if isUserOwner(userId);
+        allow read, write: if isAuthenticated() && (
+          isUserOwner(userId) || 
+          resource.data.isPublic == true
+        );
+      }
+      
+      match /achievements/{achievementId} {
+        allow read: if isAuthenticated() && (
+          isUserOwner(userId) || 
+          resource.data.isPublic == true
+        );
+        allow write: if isUserOwner(userId);
       }
     }
-    
-    // Artist profiles rules
-    match /artistProfiles/{artistId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated() && 
-        (request.resource.data.userId == request.auth.uid);
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-    
-    // Artwork collection
-    match /artwork/{artworkId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-    }
-    
-    // Art Walks collection
-    match /artWalks/{walkId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-        
-      // Comments on art walks
-      match /comments/{commentId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && 
-          request.resource.data.userId == request.auth.uid;
-        allow update, delete: if isAuthenticated() && 
-          resource.data.userId == request.auth.uid;
-      }
-    }
-    
-    // Public Art collection
-    match /publicArt/{artId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated();
-      allow delete: if isAuthenticated() && 
-        (resource.data.userId == request.auth.uid || 
-         resource.data.isAdmin == true);
-    }
-    
-    // Posts collection
+
+    // Posts collection rules
     match /posts/{postId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-        
-      // Comments subcollection
-      match /comments/{commentId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && 
-          request.resource.data.userId == request.auth.uid;
-        allow update, delete: if isAuthenticated() && 
-          resource.data.userId == request.auth.uid;
-      }
-      
-      // Likes subcollection
-      match /likes/{likeId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated() && 
-          request.resource.data.userId == request.auth.uid;
-        allow update, delete: if isAuthenticated() && 
-          resource.data.userId == request.auth.uid;
-      }
+      allow write: if isAuthenticated() && isValidString(request.resource.data.content);
     }
     
-    // Events collection
-    match /events/{eventId} {
+    // Applause collection rules
+    match /applause/{applauseId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidString(request.resource.data.postId);
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
     }
-    
-    // Subscriptions collection
-    match /subscriptions/{subscriptionId} {
-      allow read: if isAuthenticated() && 
-        (resource.data.userId == request.auth.uid);
-      allow create: if isAuthenticated() && 
-        (request.resource.data.userId == request.auth.uid);
-      allow update: if isAuthenticated() && 
-        (resource.data.userId == request.auth.uid);
-    }
-    
-    // Gallery Invitations collection
-    match /galleryInvitations/{invitationId} {
-      allow read: if isAuthenticated() && 
-        (resource.data.artistId == request.auth.uid || 
-         resource.data.galleryId == request.auth.uid);
-      allow create: if isAuthenticated() && 
-        request.resource.data.galleryId == request.auth.uid;
-      allow update: if isAuthenticated() && 
-        (resource.data.galleryId == request.auth.uid || 
-         resource.data.artistId == request.auth.uid);
-      allow delete: if isAuthenticated() && 
-        resource.data.galleryId == request.auth.uid;
-    }
-    
-    // Commissions collection
-    match /commissions/{commissionId} {
-      allow read: if isAuthenticated() && 
-        (resource.data.artistId == request.auth.uid || 
-         resource.data.galleryId == request.auth.uid);
-      allow create: if isAuthenticated() && 
-        (request.resource.data.galleryId == request.auth.uid);
-      allow update: if isAuthenticated() && 
-        (resource.data.galleryId == request.auth.uid || 
-         resource.data.artistId == request.auth.uid);
-      allow delete: if isAuthenticated() && 
-        resource.data.galleryId == request.auth.uid;
-    }
-    
-    // Notifications collection
-    match /notifications/{notificationId} {
-      allow read: if isAuthenticated() && 
-        resource.data.recipientId == request.auth.uid;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && 
-        (resource.data.recipientId == request.auth.uid);
-      allow delete: if isAuthenticated() && 
-        resource.data.recipientId == request.auth.uid;
-    }
-    
-    // Payment Methods collection
-    match /paymentMethods/{paymentMethodId} {
-      allow read, write: if isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-    }
-    
-    // Achievements collection
-    match /achievements/{achievementId} {
+
+    // Public Art collection rules
+    match /publicArt/{artId} {
       allow read: if isAuthenticated();
-      allow create, update, delete: if false; // Admin-only operations
+      allow write: if isAuthenticated() && isValidString(request.resource.data.title);
+    }
+
+    // ArtWalks collection rules
+    match /artWalks/{artWalkId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidTimestamp(request.resource.data.createdAt);
+    }
+
+    // Artworks collection rules
+    match /artwork/{artworkId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        resource.data.isPublic == true
+      );
+      allow write: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
       
-      // User achievements collection
-      match /userAchievements/{userId} {
-        allow read: if isAuthenticated();
-        allow create, update: if isAuthenticated() && 
-          userId == request.auth.uid;
-      }
+      // Allow reading featured artworks
+      allow read: if isAuthenticated() && (
+        resource.data.isFeatured == true && 
+        resource.data.isPublic == true
+      );
     }
   }
 }
