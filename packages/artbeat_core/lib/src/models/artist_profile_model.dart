@@ -3,9 +3,16 @@ import 'subscription_tier.dart';
 
 /// Types of users in the system
 enum UserType {
+  /// Regular user account
   regular,
+
+  /// Artist account with artwork management
   artist,
+
+  /// Gallery business account
   gallery,
+
+  /// System administrator
   admin,
 }
 

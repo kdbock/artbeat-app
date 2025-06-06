@@ -1,15 +1,8 @@
 // filepath: /Users/kristybock/artbeat/packages/artbeat_artist/lib/src/models/artist_profile_model.dart
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart' show UserType, SubscriptionTier;
 
-/// Types of user accounts
-enum UserType {
-  /// Regular artist account
-  artist,
-
-  /// Gallery business account
-  gallery,
-}
+// Using UserType from core module
 
 /// Model for artist profile data
 class ArtistProfileModel {
@@ -101,6 +94,10 @@ class ArtistProfileModel {
         return 'artist';
       case UserType.gallery:
         return 'gallery';
+      case UserType.regular:
+        return 'regular';
+      case UserType.admin:
+        return 'admin';
     }
   }
 
@@ -109,8 +106,13 @@ class ArtistProfileModel {
       case 'gallery':
         return UserType.gallery;
       case 'artist':
-      default:
         return UserType.artist;
+      case 'admin':
+        return UserType.admin;
+      case 'regular':
+        return UserType.regular;
+      case _:
+        return UserType.regular; // Default to regular user for unknown types
     }
   }
 
@@ -123,7 +125,6 @@ class ArtistProfileModel {
       case SubscriptionTier.premium:
         return 'gallery';
       case SubscriptionTier.none:
-      default:
         return 'none';
     }
   }
@@ -135,8 +136,11 @@ class ArtistProfileModel {
       case 'gallery':
         return SubscriptionTier.premium;
       case 'artistBasic':
-      default:
         return SubscriptionTier.basic;
+      case 'none':
+        return SubscriptionTier.none;
+      case _:
+        return SubscriptionTier.basic; // Default to basic for unknown tiers
     }
   }
 }

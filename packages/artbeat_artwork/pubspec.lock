@@ -23,6 +23,13 @@ packages:
       relative: true
     source: path
     version: "1.0.0"
+  artbeat_auth:
+    dependency: transitive
+    description:
+      path: "../artbeat_auth"
+      relative: true
+    source: path
+    version: "0.0.1"
   artbeat_community:
     dependency: transitive
     description:
@@ -34,6 +41,20 @@ packages:
     dependency: "direct main"
     description:
       path: "../artbeat_core"
+      relative: true
+    source: path
+    version: "0.0.1"
+  artbeat_profile:
+    dependency: transitive
+    description:
+      path: "../artbeat_profile"
+      relative: true
+    source: path
+    version: "0.0.1"
+  artbeat_settings:
+    dependency: transitive
+    description:
+      path: "../artbeat_settings"
       relative: true
     source: path
     version: "0.0.1"
@@ -213,6 +234,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+4"
+  firebase_app_check:
+    dependency: transitive
+    description:
+      name: firebase_app_check
+      sha256: aac3b42cdf804b10cb1085c9902e5d1ef2f30e7cfc0c504e6f47519713d86829
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.2+7"
+  firebase_app_check_platform_interface:
+    dependency: transitive
+    description:
+      name: firebase_app_check_platform_interface
+      sha256: d0b9e4676ee7a272160b989a9a899d6469e336fe3624b3935cdae77a476f00d1
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0+29"
+  firebase_app_check_web:
+    dependency: transitive
+    description:
+      name: firebase_app_check_web
+      sha256: f5359ba62111e4b28e5f1477b7c5c560dcfabe1ccc9e02e65ebdb428eda204ad
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2+7"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -389,7 +434,7 @@ packages:
     source: hosted
     version: "3.2.0"
   geolocator:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: geolocator
       sha256: "6cb9fb6e5928b58b9a84bdf85012d757fd07aab8215c5205337021c4999bad27"

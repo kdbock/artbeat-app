@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../models/artist_profile_model.dart';
 import '../models/subscription_tier.dart';
+import 'subscription_plan_validator.dart';
+import 'subscription_validation_service.dart';
 
 /// Service for managing subscriptions
 class SubscriptionService extends ChangeNotifier {
@@ -13,6 +15,9 @@ class SubscriptionService extends ChangeNotifier {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final SubscriptionPlanValidator _planValidator = SubscriptionPlanValidator();
+  final SubscriptionValidationService _validationService =
+      SubscriptionValidationService();
 
   /// Get the current user's subscription tier
   Future<SubscriptionTier> getCurrentSubscriptionTier() async {
@@ -154,6 +159,172 @@ class SubscriptionService extends ChangeNotifier {
           'priceId': '',
           'features': [],
         };
+    }
+  }
+
+  /// Validate and process subscription tier change
+  Future<bool> changeTier(SubscriptionTier newTier) async {
+    try {
+      final currentTier = await getCurrentSubscriptionTier();
+
+      // Check if transition is valid
+      if (!await _planValidator.canTransitionTo(currentTier, newTier)) {
+        debugPrint('Invalid tier transition from $currentTier to $newTier');
+        return false;
+      }
+
+      // Start a transaction to update subscription data
+      await _firestore.runTransaction((transaction) async {
+        final userId = _auth.currentUser?.uid;
+        if (userId == null) throw Exception('User not authenticated');
+
+        // Get artist profile reference
+        final artistQuery = await _firestore
+            .collection('artistProfiles')
+            .where('userId', isEqualTo: userId)
+            .limit(1)
+            .get();
+
+        if (artistQuery.docs.isEmpty) {
+          throw Exception('Artist profile not found');
+        }
+
+        final artistRef = artistQuery.docs.first.reference;
+
+        // Update subscription tier in artist profile
+        transaction.update(artistRef, {
+          'subscriptionTier': newTier.apiName,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Update subscriptions collection
+        final subscriptionQuery = await _firestore
+            .collection('subscriptions')
+            .where('userId', isEqualTo: userId)
+            .where('isActive', isEqualTo: true)
+            .limit(1)
+            .get();
+
+        if (subscriptionQuery.docs.isNotEmpty) {
+          transaction.update(subscriptionQuery.docs.first.reference, {
+            'tier': newTier.apiName,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          final newSubscriptionRef =
+              _firestore.collection('subscriptions').doc();
+          transaction.set(newSubscriptionRef, {
+            'userId': userId,
+            'tier': newTier.apiName,
+            'startDate': FieldValue.serverTimestamp(),
+            'isActive': true,
+            'autoRenew': true,
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+
+      return true;
+    } catch (e) {
+      debugPrint('Error changing subscription tier: $e');
+      return false;
+    }
+  }
+
+  /// Change subscription tier with validation
+  Future<Map<String, dynamic>> changeTierWithValidation(
+      SubscriptionTier newTier,
+      {bool validateOnly = false}) async {
+    try {
+      final validation = await _validationService.prepareTierChange(newTier);
+      if (!validation['isValid']) {
+        return validation;
+      }
+
+      if (validateOnly) {
+        return validation;
+      }
+
+      // Start a transaction to update subscription data
+      await _firestore.runTransaction((transaction) async {
+        final userId = _auth.currentUser?.uid;
+        if (userId == null) throw Exception('User not authenticated');
+
+        // Get artist profile reference
+        final artistQuery = await _firestore
+            .collection('artistProfiles')
+            .where('userId', isEqualTo: userId)
+            .limit(1)
+            .get();
+
+        if (artistQuery.docs.isEmpty) {
+          throw Exception('Artist profile not found');
+        }
+
+        final artistRef = artistQuery.docs.first.reference;
+
+        // Update subscription tier in artist profile
+        transaction.update(artistRef, {
+          'subscriptionTier': newTier.apiName,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Update subscriptions collection
+        final subscriptionQuery = await _firestore
+            .collection('subscriptions')
+            .where('userId', isEqualTo: userId)
+            .where('isActive', isEqualTo: true)
+            .limit(1)
+            .get();
+
+        if (subscriptionQuery.docs.isNotEmpty) {
+          transaction.update(subscriptionQuery.docs.first.reference, {
+            'tier': newTier.apiName,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          final newSubscriptionRef =
+              _firestore.collection('subscriptions').doc();
+          transaction.set(newSubscriptionRef, {
+            'userId': userId,
+            'tier': newTier.apiName,
+            'startDate': FieldValue.serverTimestamp(),
+            'isActive': true,
+            'autoRenew': true,
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+
+      return {
+        'isValid': true,
+        'message': 'Successfully changed subscription tier',
+        'newTier': newTier,
+      };
+    } catch (e) {
+      return {
+        'isValid': false,
+        'message': 'Error changing subscription tier: $e',
+      };
+    }
+  }
+
+  /// Get capabilities for current subscription tier
+  Future<Map<String, dynamic>> getCurrentTierCapabilities() async {
+    final tier = await getCurrentSubscriptionTier();
+    return _planValidator.getTierCapabilities(tier);
+  }
+
+  /// Check if current tier allows a specific capability
+  Future<bool> hasCapability(String capability) async {
+    try {
+      final capabilities = await getCurrentTierCapabilities();
+      return capabilities[capability] ?? false;
+    } catch (e) {
+      debugPrint('Error checking capability $capability: $e');
+      return false;
     }
   }
 }

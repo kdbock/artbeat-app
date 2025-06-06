@@ -1,93 +1,103 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:math' show pow;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show NavigationService, DashboardScreen, SplashScreen;
-import 'package:artbeat_auth/artbeat_auth.dart'
-    show LoginScreen, RegisterScreen;
-import 'package:artbeat_profile/artbeat_profile.dart' as profile;
-import 'package:artbeat_settings/artbeat_settings.dart' as settings;
-import 'package:artbeat_artist/artbeat_artist.dart' as artist;
-import 'package:artbeat_community/screens/feed/community_feed_screen.dart';
-import 'package:artbeat_community/screens/studios/studio_chat_screen.dart';
-import 'package:artbeat_community/screens/sponsorships/sponsorship_screen.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'firebase_options.dart';
+import 'app.dart';
+
+// Global key to update loading status
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const ARTbeatApp());
-}
+  try {
+    // Ensure Flutter is initialized
+    WidgetsFlutterBinding.ensureInitialized();
 
-class ARTbeatApp extends StatelessWidget {
-  const ARTbeatApp({super.key});
+    debugPrint('📱 Configuring system UI...');
+    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  @override
-  Widget build(BuildContext context) {
-    final navigationService = NavigationService();
+    debugPrint('🔥 Initializing Firebase Core...');
+    FirebaseApp app;
+    try {
+      app = Firebase.app();
+      debugPrint('✅ Firebase already initialized');
+    } catch (e) {
+      app = await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint('✅ Firebase initialized for the first time');
+    }
+    await app.setAutomaticDataCollectionEnabled(true);
 
-    return MaterialApp(
-      title: 'ARTbeat',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      navigatorKey: navigationService.navigatorKey,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
+    debugPrint('🔒 Initializing App Check...');
+    try {
+      if (kDebugMode) {
+        const debugToken = 'fae8ac60-fccf-486c-9844-3e3dbdb9ea3f';
+        debugPrint('🔑 Using App Check debug token: $debugToken');
 
-        // Auth routes
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
+        // Enable token auto-refresh before activation
+        await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
 
-        // Profile routes
-        '/profile/view': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return profile.ProfileViewScreen(userId: args?['userId'] ?? '');
-        },
-        '/profile/edit': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return profile.EditProfileScreen(userId: args?['userId'] ?? '');
-        },
-        '/profile/achievements': (context) =>
-            const profile.AchievementsScreen(),
-        '/profile/favorites': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return profile.FavoritesScreen(userId: args?['userId'] ?? '');
-        },
+        // Initialize App Check in debug mode with exponential backoff
+        int attempt = 0;
+        const maxAttempts = 3;
+        while (attempt < maxAttempts) {
+          try {
+            if (attempt > 0) {
+              // Exponential backoff: 2s, 4s, 8s
+              final backoffDuration =
+                  Duration(seconds: pow(2, attempt + 1).toInt());
+              debugPrint(
+                  '⏳ Waiting ${backoffDuration.inSeconds}s before retry...');
+              await Future.delayed(backoffDuration);
+            }
 
-        // Artist routes
-        '/artist/dashboard': (context) => const artist.ArtistDashboardScreen(),
-        '/artist/analytics': (context) =>
-            const artist.AnalyticsDashboardScreen(),
-        '/artist/subscription': (context) => const artist.SubscriptionScreen(),
+            await FirebaseAppCheck.instance.activate(
+              androidProvider: AndroidProvider.debug,
+              appleProvider: AppleProvider.debug,
+            );
+            debugPrint('✅ App Check initialized successfully');
+            break;
+          } catch (e) {
+            attempt++;
+            if (attempt >= maxAttempts) {
+              rethrow;
+            }
+            debugPrint('⚠️ App Check attempt $attempt failed: $e');
+          }
+        }
+      } else {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.playIntegrity,
+          appleProvider: AppleProvider.deviceCheck,
+        );
+      }
+    } catch (e) {
+      debugPrint('⚠️ App Check initialization failed: $e');
+      if (kDebugMode) {
+        debugPrint('''
+💡 Debug mode troubleshooting steps:
+1. Verify debug token in Firebase Console:
+   - Go to Firebase Console -> App Check -> Apps
+   - Register debug token: fae8ac60-fccf-486c-9844-3e3dbdb9ea3f
+2. Check app package name matches Firebase registration
+3. Ensure Firebase project is properly configured
 
-        // Settings routes
-        '/settings/account': (context) =>
-            const settings.AccountSettingsScreen(),
-        '/settings/notifications': (context) =>
-            const settings.NotificationSettingsScreen(),
-        '/settings/privacy': (context) =>
-            const settings.PrivacySettingsScreen(),
-        '/settings/security': (context) =>
-            const settings.SecuritySettingsScreen(),
+Continuing without App Check in debug mode...''');
+      } else {
+        rethrow;
+      }
+    }
 
-        // Community routes
-        '/community/feed': (context) => const CommunityFeedScreen(),
-        '/community/studio': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          final studioId = args?['studioId'] ?? '';
-          return StudioChatScreen(studioId: studioId);
-        },
-        '/community/sponsorship': (context) => const SponsorshipScreen(),
-      },
-    );
+    debugPrint('✅ All services initialized successfully');
+    runApp(const MyApp());
+  } catch (e, stack) {
+    debugPrint('❌ Fatal error during initialization: $e');
+    debugPrint('Stack trace: $stack');
+    runApp(const ErrorApp());
   }
 }

@@ -8,7 +8,7 @@ class CaptureModel {
   final String imageUrl;
   final String? thumbnailUrl;
   final DateTime createdAt;
-  final String? location;
+  final GeoPoint? location;
   final String? description;
   final bool isProcessed;
   final List<String>? tags;
@@ -38,7 +38,7 @@ class CaptureModel {
       imageUrl: map['imageUrl'] as String,
       thumbnailUrl: map['thumbnailUrl'] as String?,
       createdAt: (map['createdAt'] as Timestamp).toDate(),
-      location: map['location'] as String?,
+      location: map['location'] as GeoPoint?,
       description: map['description'] as String?,
       isProcessed: map['isProcessed'] as bool? ?? false,
       tags: map['tags'] != null
@@ -70,7 +70,7 @@ class CaptureModel {
     String? imageUrl,
     String? thumbnailUrl,
     DateTime? createdAt,
-    String? location,
+    GeoPoint? location,
     String? description,
     bool? isProcessed,
     List<String>? tags,

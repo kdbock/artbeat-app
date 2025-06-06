@@ -71,7 +71,7 @@ class _GalleryAnalyticsDashboardScreenState
       final galleryProfile =
           await _subscriptionService.getArtistProfileByUserId(userId);
       if (galleryProfile == null ||
-          galleryProfile.userType != UserType.gallery) {
+          galleryProfile.userType != core.UserType.gallery) {
         setState(() {
           _errorMessage = 'No gallery profile found. Please create one first.';
           _isLoading = false;

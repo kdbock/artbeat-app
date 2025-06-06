@@ -159,18 +159,13 @@ class CommissionModel {
 
   /// Helper to convert status enum to string
   static String _statusToString(CommissionStatus status) {
-    switch (status) {
-      case CommissionStatus.pending:
-        return 'pending';
-      case CommissionStatus.active:
-        return 'active';
-      case CommissionStatus.completed:
-        return 'completed';
-      case CommissionStatus.paid:
-        return 'paid';
-      case CommissionStatus.cancelled:
-        return 'cancelled';
-    }
+    return switch (status) {
+      CommissionStatus.pending => 'pending',
+      CommissionStatus.active => 'active',
+      CommissionStatus.completed => 'completed',
+      CommissionStatus.paid => 'paid',
+      CommissionStatus.cancelled => 'cancelled',
+    };
   }
 }
 

@@ -169,12 +169,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const Divider(height: 1),
-              Flexible(
+              const Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Effective Date: June 1, 2025\n',
                         style: TextStyle(fontStyle: FontStyle.italic),
@@ -233,7 +233,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _navigateToPrivacy() {
+  /// Show terms and privacy dialog
+  void _navigateToPrivacyPolicy() {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -268,12 +269,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const Divider(height: 1),
-              Flexible(
+              const Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Effective Date: June 1, 2025\n',
                         style: TextStyle(fontStyle: FontStyle.italic),
@@ -332,428 +333,272 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF8C52FF),
-                    Color(0xFF00BF63),
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Column(
-                      children: [
-                        // Back button and title row
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              ArtbeatColors.primaryPurple.withOpacity(0.1),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      'assets/images/artbeat_logo.png',
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Create Account',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Join our community of artists and art enthusiasts',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 32),
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        _errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: ArtbeatColors.error,
+                            ),
+                      ),
+                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ArtbeatInput(
+                          controller: _firstNameController,
+                          label: 'First Name',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ArtbeatInput(
+                          controller: _lastNameController,
+                          label: 'Last Name',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ArtbeatInput(
+                          controller: _zipCodeController,
+                          label: 'ZIP Code',
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Required';
+                            }
+                            if (value.length != 5) {
+                              return 'Invalid ZIP';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      TextButton.icon(
+                        onPressed: _isLoading ? null : _getZipCodeFromLocation,
+                        icon: const Icon(Icons.location_on),
+                        label: const Text('Auto'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ArtbeatInput(
+                    controller: _emailController,
+                    label: 'Email',
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ArtbeatInput(
+                    controller: _passwordController,
+                    label: 'Password',
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a password';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ArtbeatInput(
+                    controller: _confirmPasswordController,
+                    label: 'Confirm Password',
+                    obscureText: _obscureConfirmPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _agreedToTerms,
+                        onChanged: (value) {
+                          setState(() {
+                            _agreedToTerms = value ?? false;
+                          });
+                        },
+                        activeColor: ArtbeatColors.primaryPurple,
+                      ),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.arrow_back,
-                                    color: Colors.white),
-                                onPressed: () => Navigator.of(context).pop(),
-                              ),
-                              const Text(
-                                'Create Account',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              const TextSpan(text: 'I agree to the '),
+                              TextSpan(
+                                text: 'Terms of Service',
+                                style: const TextStyle(
+                                  color: ArtbeatColors.primaryPurple,
+                                  decoration: TextDecoration.underline,
                                 ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = _navigateToTerms,
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: const TextStyle(
+                                  color: ArtbeatColors.primaryPurple,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = _navigateToPrivacyPolicy,
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        // Logo
-                        Image.asset(
-                          'assets/images/artbeat_logo.png',
-                          height: 150,
-                        ),
-                        const SizedBox(height: 20),
-                        // Form
-                        Form(
-                          key: _formKey,
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 24.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                if (_errorMessage != null)
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    margin: const EdgeInsets.only(bottom: 16),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: Colors.red.shade300),
-                                    ),
-                                    child: Text(
-                                      _errorMessage!,
-                                      style:
-                                          TextStyle(color: Colors.red.shade900),
-                                    ),
-                                  ),
-                                // Name Fields Row
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Card(
-                                        elevation: 0,
-                                        color: Colors.white,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12.0),
-                                          child: TextFormField(
-                                            controller: _firstNameController,
-                                            decoration: const InputDecoration(
-                                              labelText: 'First Name',
-                                              border: InputBorder.none,
-                                            ),
-                                            validator: (value) =>
-                                                (value?.isEmpty ?? true)
-                                                    ? 'Required'
-                                                    : null,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Card(
-                                        elevation: 0,
-                                        color: Colors.white,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12.0),
-                                          child: TextFormField(
-                                            controller: _lastNameController,
-                                            decoration: const InputDecoration(
-                                              labelText: 'Last Name',
-                                              border: InputBorder.none,
-                                            ),
-                                            validator: (value) =>
-                                                (value?.isEmpty ?? true)
-                                                    ? 'Required'
-                                                    : null,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                // Email Field
-                                Card(
-                                  elevation: 0,
-                                  color: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0),
-                                    child: TextFormField(
-                                      controller: _emailController,
-                                      keyboardType: TextInputType.emailAddress,
-                                      autocorrect: false,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Email',
-                                        border: InputBorder.none,
-                                      ),
-                                      validator: (value) {
-                                        if (value?.isEmpty ?? true) {
-                                          return 'Email is required';
-                                        }
-                                        final emailRegex = RegExp(
-                                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                                        if (!emailRegex.hasMatch(value!)) {
-                                          return 'Enter a valid email';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                // ZIP Code with Location
-                                Card(
-                                  elevation: 0,
-                                  color: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: TextFormField(
-                                            controller: _zipCodeController,
-                                            keyboardType: TextInputType.number,
-                                            decoration: const InputDecoration(
-                                              labelText: 'ZIP Code',
-                                              border: InputBorder.none,
-                                            ),
-                                            validator: (value) {
-                                              if (value?.isEmpty ?? true) {
-                                                return 'ZIP code is required';
-                                              }
-                                              if (!RegExp(r'^\d{5}(-\d{4})?$')
-                                                  .hasMatch(value!)) {
-                                                return 'Enter a valid ZIP code';
-                                              }
-                                              return null;
-                                            },
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.my_location),
-                                          onPressed: _isLoading
-                                              ? null
-                                              : _getZipCodeFromLocation,
-                                          tooltip: 'Use my location',
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Password Fields
-                                Card(
-                                  elevation: 0,
-                                  color: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0),
-                                    child: TextFormField(
-                                      controller: _passwordController,
-                                      obscureText: _obscurePassword,
-                                      decoration: InputDecoration(
-                                        labelText: 'Password',
-                                        border: InputBorder.none,
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _obscurePassword
-                                                ? Icons.visibility
-                                                : Icons.visibility_off,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _obscurePassword =
-                                                  !_obscurePassword;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (value?.isEmpty ?? true) {
-                                          return 'Password is required';
-                                        }
-                                        if (value!.length < 8) {
-                                          return 'Password must be at least 8 characters';
-                                        }
-                                        if (!value.contains(RegExp(r'[A-Z]'))) {
-                                          return 'Include at least one uppercase letter';
-                                        }
-                                        if (!value.contains(RegExp(r'[0-9]'))) {
-                                          return 'Include at least one number';
-                                        }
-                                        if (!value.contains(RegExp(
-                                            r'[!@#$%^&*(),.?":{}|<>]'))) {
-                                          return 'Include at least one special character';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                Card(
-                                  elevation: 0,
-                                  color: Colors.white,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12.0),
-                                    child: TextFormField(
-                                      controller: _confirmPasswordController,
-                                      obscureText: _obscureConfirmPassword,
-                                      decoration: InputDecoration(
-                                        labelText: 'Confirm Password',
-                                        border: InputBorder.none,
-                                        suffixIcon: IconButton(
-                                          icon: Icon(
-                                            _obscureConfirmPassword
-                                                ? Icons.visibility
-                                                : Icons.visibility_off,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              _obscureConfirmPassword =
-                                                  !_obscureConfirmPassword;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (value?.isEmpty ?? true) {
-                                          return 'Please confirm your password';
-                                        }
-                                        if (value != _passwordController.text) {
-                                          return 'Passwords do not match';
-                                        }
-                                        return null;
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                // Terms and Privacy Policy
-                                Theme(
-                                  data: Theme.of(context).copyWith(
-                                    unselectedWidgetColor: Colors.white70,
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Checkbox(
-                                        value: _agreedToTerms,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _agreedToTerms = value ?? false;
-                                          });
-                                        },
-                                        checkColor: Colors.white,
-                                        fillColor:
-                                            WidgetStateProperty.resolveWith(
-                                                (states) {
-                                          if (states.contains(
-                                              WidgetState.selected)) {
-                                            return const Color(0xFF8C52FF);
-                                          }
-                                          return Colors.white70;
-                                        }),
-                                      ),
-                                      Expanded(
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 12),
-                                          child: RichText(
-                                            text: TextSpan(
-                                              text: 'I agree to the ',
-                                              style: const TextStyle(
-                                                  color: Colors.white70),
-                                              children: [
-                                                TextSpan(
-                                                  text: 'Terms of Service',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    decoration: TextDecoration
-                                                        .underline,
-                                                  ),
-                                                  recognizer:
-                                                      TapGestureRecognizer()
-                                                        ..onTap =
-                                                            _navigateToTerms,
-                                                ),
-                                                const TextSpan(text: ' and '),
-                                                TextSpan(
-                                                  text: 'Privacy Policy',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    decoration: TextDecoration
-                                                        .underline,
-                                                  ),
-                                                  recognizer:
-                                                      TapGestureRecognizer()
-                                                        ..onTap =
-                                                            _navigateToPrivacy,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                // Register Button
-                                ElevatedButton(
-                                  onPressed: (!_agreedToTerms || _isLoading)
-                                      ? null
-                                      : _handleRegister,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF8C52FF),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    elevation: 0,
-                                  ),
-                                  child: _isLoading
-                                      ? const SizedBox(
-                                          height: 20,
-                                          width: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                    Color(0xFF8C52FF)),
-                                          ),
-                                        )
-                                      : const Text(
-                                          'Create Account',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Login Link
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      'Already have an account? ',
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pushReplacementNamed(
-                                              context, '/login'),
-                                      child: const Text(
-                                        'Log in',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 24),
+                  ArtbeatButton(
+                    onPressed: _isLoading ? null : _handleRegister,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : const Text('Create Account'),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already have an account? ',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'Log In',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: ArtbeatColors.primaryPurple,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

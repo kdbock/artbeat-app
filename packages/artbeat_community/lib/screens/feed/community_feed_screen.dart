@@ -67,35 +67,35 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen>
         label: 'Canvas',
         screen: _buildFeedContent(),
       ),
-      CommunityTab(
+      const CommunityTab(
         icon: Icons.card_giftcard_outlined,
         selectedIcon: Icons.card_giftcard,
         label: 'Gifts',
-        screen: const GiftsScreen(),
+        screen: GiftsScreen(),
       ),
-      CommunityTab(
+      const CommunityTab(
         icon: Icons.palette_outlined,
         selectedIcon: Icons.palette,
         label: 'Portfolio',
-        screen: const PortfoliosScreen(),
+        screen: PortfoliosScreen(),
       ),
-      CommunityTab(
+      const CommunityTab(
         icon: Icons.forum_outlined,
         selectedIcon: Icons.forum,
         label: 'Studios',
-        screen: const StudiosScreen(),
+        screen: StudiosScreen(),
       ),
-      CommunityTab(
+      const CommunityTab(
         icon: Icons.work_outline,
         selectedIcon: Icons.work,
         label: 'Commissions',
-        screen: const CommissionsScreen(),
+        screen: CommissionsScreen(),
       ),
-      CommunityTab(
+      const CommunityTab(
         icon: Icons.volunteer_activism_outlined,
         selectedIcon: Icons.volunteer_activism,
         label: 'Sponsors',
-        screen: const SponsorshipScreen(),
+        screen: SponsorshipScreen(),
       ),
     ];
   }

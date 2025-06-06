@@ -147,7 +147,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
       if (mounted && artWalkId != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Art Walk created successfully!')),
+          const SnackBar(content: Text('Art Walk created successfully!')),
         );
         Navigator.of(context).pop();
       }

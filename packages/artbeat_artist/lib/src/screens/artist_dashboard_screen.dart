@@ -89,7 +89,8 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen>
 
   // Check if this is a gallery account
   bool get _isGallery =>
-      _artistProfile != null && _artistProfile!.userType == UserType.gallery;
+      _artistProfile != null &&
+      _artistProfile!.userType == core.UserType.gallery;
 
   @override
   Widget build(BuildContext context) {

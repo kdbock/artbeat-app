@@ -6,3 +6,4 @@ export 'art_walk_cache_service.dart';
 export 'art_walk_service.dart';
 export 'directions_service.dart';
 export 'secure_directions_service.dart';
+export 'google_maps_service.dart';

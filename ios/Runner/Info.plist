@@ -46,6 +46,10 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	
+	<!-- Google Maps Configuration -->
+	<key>GoogleMapsApiKey</key>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
+	
 	<!-- Privacy Permissions for ARTbeat App -->
 	<key>NSCameraUsageDescription</key>
 	<string>ARTbeat needs camera access to capture artwork and create art walks</string>

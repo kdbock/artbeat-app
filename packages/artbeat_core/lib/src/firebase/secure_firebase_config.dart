@@ -1,21 +1,54 @@
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/firebase_options.dart' as fb_opts;
 
-/// SecureFirebaseConfig provides secure initialization for Firebase
+/// Provides secure initialization for Firebase with platform-specific handling
 class SecureFirebaseConfig {
-  /// Initializes Firebase with proper options
-  static Future<void> initializeFirebase() async {
+  const SecureFirebaseConfig._();
+
+  static bool _initialized = false;
+
+  /// Initializes Firebase with proper options and platform-specific configuration
+  static Future<FirebaseApp> initializeFirebase() async {
+    if (_initialized && Firebase.apps.isNotEmpty) {
+      return Firebase.app();
+    }
+
     try {
-      await Firebase.initializeApp();
+      if (Firebase.apps.isNotEmpty) {
+        _initialized = true;
+        return Firebase.app();
+      }
 
-      // For detailed firebase initialization with options, import the generated options
-      // await Firebase.initializeApp(
-      //   options: DefaultFirebaseOptions.currentPlatform,
-      // );
+      // Initialize Firebase first
+      final app = await Firebase.initializeApp(
+        options: fb_opts.DefaultFirebaseOptions.currentPlatform,
+      );
 
-      print('Firebase initialized successfully');
+      // Then initialize App Check with platform-specific providers
+      await FirebaseAppCheck.instance.activate(
+        // Use DeviceCheck provider for iOS, Play Integrity for Android
+        androidProvider: AndroidProvider.playIntegrity,
+        appleProvider: AppleProvider.deviceCheck,
+      );
+
+      _initialized = true;
+      return app;
     } catch (e) {
-      print('Error initializing Firebase: $e');
+      debugPrint('Firebase initialization failed: $e');
       rethrow;
     }
+  }
+
+  /// Utility method to check if running in debug mode
+  static bool isDebugMode() {
+    bool isDebug = false;
+    assert(() {
+      isDebug = true;
+      return true;
+    }());
+    return isDebug;
   }
 }

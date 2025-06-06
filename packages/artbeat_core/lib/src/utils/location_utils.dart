@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'coordinate_validator.dart' show SimpleLatLng;
 
 class LocationUtils {
+  static const String _zipCodeKey = 'user_zip_code';
+
   static Future<Position> getCurrentPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -76,5 +79,37 @@ class LocationUtils {
   /// Log invalid coordinates for debugging
   static void logInvalidCoordinates(String source, double? lat, double? lng) {
     debugPrint('❌ Invalid coordinates from $source: lat=$lat, lng=$lng');
+  }
+
+  static Future<String?> getStoredZipCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_zipCodeKey);
+  }
+
+  static Future<void> storeZipCode(String zipCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_zipCodeKey, zipCode);
+  }
+
+  static Future<SimpleLatLng?> getCoordinatesFromZipCode(String zipCode) async {
+    try {
+      final locations = await locationFromAddress('$zipCode USA');
+      if (locations.isNotEmpty) {
+        return SimpleLatLng(
+          locations.first.latitude,
+          locations.first.longitude,
+        );
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting coordinates from ZIP code: $e');
+      return null;
+    }
+  }
+
+  // Use alias for backward compatibility
+  static Future<String> getZipCodeFromCoordinates(
+      double lat, double lng) async {
+    return getZipCodeFromGeoPoint(lat, lng);
   }
 }

@@ -282,16 +282,16 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
                     ),
                     const SizedBox(height: 8),
                     SegmentedButton<core.UserType>(
-                      segments: [
+                      segments: const [
                         ButtonSegment(
                           value: core.UserType.artist,
-                          label: const Text('Individual Artist'),
-                          icon: const Icon(Icons.person),
+                          label: Text('Individual Artist'),
+                          icon: Icon(Icons.person),
                         ),
                         ButtonSegment(
                           value: core.UserType.gallery,
-                          label: const Text('Gallery'),
-                          icon: const Icon(Icons.store),
+                          label: Text('Gallery'),
+                          icon: Icon(Icons.store),
                         ),
                       ],
                       selected: {_userType},

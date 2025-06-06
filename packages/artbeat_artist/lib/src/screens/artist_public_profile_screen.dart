@@ -287,7 +287,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              artist.userType == UserType.gallery
+                              artist.userType == core.UserType.gallery
                                   ? 'Gallery Business'
                                   : artist.subscriptionTier ==
                                           core.SubscriptionTier.premium

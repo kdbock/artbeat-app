@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   # Feature modules
   artbeat_art_walk:
     path: ../artbeat_art_walk
@@ -19,32 +19,45 @@ dependencies:
     path: ../artbeat_community
   artbeat_artwork:
     path: ../artbeat_artwork
-  artbeat_capture:
-    path: ../artbeat_capture
   artbeat_artist:
     path: ../artbeat_artist
+  artbeat_settings:
+    path: ../artbeat_settings
+  artbeat_profile:
+    path: ../artbeat_profile
+  artbeat_auth:
+    path: ../artbeat_auth
 
-  # Firebase dependencies (updated to compatible versions)
-  firebase_core: ^2.32.0  # Downgrade to be compatible with firebase_storage
-  firebase_auth: ^4.17.4  # Matching version for firebase_core 2.32.0
-  cloud_firestore: ^4.15.4  # Matching version for firebase_core 2.32.0
-  firebase_storage: ^11.7.7  # Latest version compatible with firebase_core 2.32.0
+  # Firebase dependencies - align with main project
+  firebase_core: ^2.24.2  # Base version
+  firebase_auth: ^4.15.3  # Compatible with firebase_core 2.24.2
+  cloud_firestore: ^4.13.6  # Compatible with firebase_core 2.24.2
+  firebase_storage: ^11.5.6  # Compatible with firebase_core 2.24.2
+  firebase_app_check: ^0.2.1+8  # Compatible with firebase_core 2.24.2
+  
+  # Math and utils
+  vector_math: ^2.1.4  # Required for Matrix4 operations
   
   # Utilities
-  provider: ^6.0.5
+  provider: ^6.1.1
   intl: ^0.19.0
-  http: ^1.2.0 # Added for API requests
+  http: ^1.2.0
+  flutter_cache_manager: ^3.3.1
+  
+  # File system and storage
+  path_provider: ^2.1.2
   
   # Location services
-  geolocator: ^11.0.0 # Added for location services
-  geocoding: ^2.2.0 # Added for converting coordinates to addresses
+  geolocator: ^11.0.0
+  geocoding: ^2.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
   assets:
     - assets/default_profile.png
+    - assets/images/artbeat_logo.png

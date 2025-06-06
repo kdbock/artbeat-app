@@ -10,11 +10,39 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _heartbeatController;
+  late Animation<double> _scaleAnimation;
+
   @override
   void initState() {
     super.initState();
+    _setupHeartbeatAnimation();
     _checkAuthAndNavigate();
+  }
+
+  void _setupHeartbeatAnimation() {
+    _heartbeatController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.2),
+        weight: 1,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.2, end: 1.0),
+        weight: 1,
+      ),
+    ]).animate(CurvedAnimation(
+      parent: _heartbeatController,
+      curve: Curves.easeInOut,
+    ));
+
+    _heartbeatController.repeat();
   }
 
   Future<void> _checkAuthAndNavigate() async {
@@ -39,25 +67,56 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  void dispose() {
+    _heartbeatController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF8C52FF), // Purple
-              Color(0xFF00BF63), // Green
+              const Color(0xFF8C52FF), // Primary purple
+              const Color(0xFF8C52FF).withOpacity(0.8),
+              const Color(0xFF00BF63), // Primary green
             ],
           ),
         ),
-        width: double.infinity,
-        height: double.infinity,
         child: Center(
-          child: Image.asset(
-            'assets/images/splash.png',
-            fit: BoxFit.fitWidth,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Animated ARTbeat logo
+              ScaleTransition(
+                scale: _scaleAnimation,
+                child: Image.asset(
+                  'assets/images/artbeat_logo.png',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'ARTbeat',
+                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Discover Local Art',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+              ),
+            ],
           ),
         ),
       ),

@@ -55,3 +55,4 @@ ios/Runner/GoogleService-Info.plist
 
 # Service account file
 assets/service_account.json
+ios/Runner/Config.xcconfig

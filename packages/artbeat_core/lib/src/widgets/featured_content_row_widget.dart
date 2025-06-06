@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../theme/index.dart';
 
 /// Widget for displaying featured artist content and articles in a row
 class FeaturedContentRowWidget extends StatelessWidget {
@@ -22,16 +23,18 @@ class FeaturedContentRowWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Featured Content',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
               TextButton(
                 onPressed: onSeeAllPressed,
-                child: const Text('See All'),
+                child: Text(
+                  'See All',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: ArtbeatColors.primaryPurple,
+                      ),
+                ),
               ),
             ],
           ),
@@ -47,18 +50,36 @@ class FeaturedContentRowWidget extends StatelessWidget {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      ArtbeatColors.primaryPurple,
+                    ),
+                  ),
+                );
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: ArtbeatColors.error,
+                        ),
+                  ),
+                );
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Center(
-                    child: Text('No featured content available'),
+                    child: Text(
+                      'No featured content available',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                    ),
                   ),
                 );
               }
@@ -75,11 +96,9 @@ class FeaturedContentRowWidget extends StatelessWidget {
 
                   return GestureDetector(
                     onTap: () {
-                      // Navigate to the content detail or launch URL
                       if (content['type'] == 'article') {
                         // Open article
                       } else if (content['type'] == 'artist') {
-                        // Open artist profile
                         Navigator.pushNamed(context, '/artist/public-profile',
                             arguments: {'artistId': content['artistId']});
                       }
@@ -88,8 +107,18 @@ class FeaturedContentRowWidget extends StatelessWidget {
                       width: 260,
                       margin: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 4.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ArtbeatColors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                       child: Card(
-                        elevation: 2,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),
                         ),
@@ -107,8 +136,12 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     height: 150,
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(Icons.article, size: 40),
+                                    color: ArtbeatColors.backgroundSecondary,
+                                    child: const Icon(
+                                      Icons.article,
+                                      size: 40,
+                                      color: ArtbeatColors.textSecondary,
+                                    ),
                                   );
                                 },
                               ),
@@ -123,20 +156,23 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                         horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
                                       color: content['type'] == 'article'
-                                          ? Colors.blue.withAlpha(51)
-                                          : Colors.purple.withAlpha(51),
+                                          ? ArtbeatColors.info.withOpacity(0.2)
+                                          : ArtbeatColors.primaryPurple
+                                              .withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(4.0),
                                     ),
                                     child: Text(
                                       content['type']?.toUpperCase() ??
                                           'FEATURED',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: content['type'] == 'article'
-                                            ? Colors.blue.shade800
-                                            : Colors.purple.shade800,
-                                      ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            fontSize: 10,
+                                            color: content['type'] == 'article'
+                                                ? ArtbeatColors.info
+                                                : ArtbeatColors.primaryPurple,
+                                          ),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -144,18 +180,18 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                     content['title'],
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     content['author'] ?? 'ARTbeat Staff',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey.shade700,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: ArtbeatColors.textSecondary,
+                                        ),
                                   ),
                                 ],
                               ),

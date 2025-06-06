@@ -90,7 +90,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             userId: a.userId,
             displayName: a.displayName,
             bio: a.bio ?? '',
-            userType: artist.UserType.artist,
+            userType: core.UserType.artist,
             mediums: const [],
             styles: const [],
             subscriptionTier: a.subscriptionTier,
@@ -492,12 +492,17 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         onPressed: () async {
                           try {
                             // Replace with your actual logic to check if following
-                            final isCurrentlyFollowing = await _artistSubscriptionService.isFollowingArtist(artistProfileId: artist.id);
+                            final isCurrentlyFollowing =
+                                await _artistSubscriptionService
+                                    .isFollowingArtist(
+                                        artistProfileId: artist.id);
 
                             if (isCurrentlyFollowing) {
-                              await _artistSubscriptionService.unfollowArtist(artistProfileId: artist.id);
+                              await _artistSubscriptionService.unfollowArtist(
+                                  artistProfileId: artist.id);
                             } else {
-                              await _artistSubscriptionService.followArtist(artistProfileId: artist.id);
+                              await _artistSubscriptionService.followArtist(
+                                  artistProfileId: artist.id);
                             }
 
                             if (!mounted) return;
@@ -505,8 +510,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                               SnackBar(
                                 content: Text(
                                   isCurrentlyFollowing
-                                    ? 'You have unfollowed ${artist.displayName}'
-                                    : 'You are now following ${artist.displayName}',
+                                      ? 'You have unfollowed ${artist.displayName}'
+                                      : 'You are now following ${artist.displayName}',
                                 ),
                               ),
                             );

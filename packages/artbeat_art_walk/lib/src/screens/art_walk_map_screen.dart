@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import '../widgets/zip_code_search_box.dart';
+import '../widgets/map_floating_menu.dart';
 
 class ArtWalkMapScreen extends StatefulWidget {
   const ArtWalkMapScreen({super.key});
@@ -18,79 +19,94 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   final ArtWalkService _artWalkService = ArtWalkService();
   Position? _currentPosition;
   bool _isLoading = true;
+  bool _isSearchingZip = false;
   List<PublicArtModel> _nearbyArt = [];
   bool _showInfoCard = true;
+  final String _currentZipCode = '';
 
-  // Default center on a common location if we can't get the user's location
+  // Default to North Carolina center
   static const CameraPosition _defaultLocation = CameraPosition(
-    target: LatLng(37.7749, -122.4194), // San Francisco
-    zoom: 12.0,
+    target: LatLng(35.7596, -79.0193), // Center of NC
+    zoom: 7.0,
   );
 
   @override
   void initState() {
     super.initState();
-    _getCurrentLocation();
+    _initializeLocation();
   }
 
-  Future<void> _getCurrentLocation() async {
+  Future<void> _initializeLocation() async {
     setState(() => _isLoading = true);
 
     try {
+      // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        debugPrint("📍 Location services are disabled");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Location services are disabled. Please enable them to see nearby art.'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
         setState(() => _isLoading = false);
-        // Instead of throwing, just return and use default location
         return;
       }
 
+      // Check and request location permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          debugPrint("📍 Location permission denied");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'Location permission denied. Some features may be limited.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
           setState(() => _isLoading = false);
           return;
         }
       }
 
-      if (permission == LocationPermission.deniedForever) {
-        debugPrint("📍 Location permission permanently denied");
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition();
-
-      // Use CoordinateValidator to validate position
-      if (CoordinateValidator.isValidLatitude(position.latitude) &&
-          CoordinateValidator.isValidLongitude(position.longitude)) {
-        setState(() => _currentPosition = position);
-
-        // Move camera to current position if controller is initialized
-        if (_mapController != null) {
-          _mapController!.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: LatLng(position.latitude, position.longitude),
-                zoom: 14.0,
-              ),
-            ),
-          );
-        }
-      } else {
-        debugPrint(
-            "📍 Warning: Received invalid coordinates from Geolocator: lat=${position.latitude}, lng=${position.longitude}");
-      }
+      // Get current position
+      _currentPosition = await Geolocator.getCurrentPosition();
 
       // Load nearby art
-      await _loadNearbyArt();
-    } catch (error) {
-      debugPrint("📍 Location error: $error");
+      _nearbyArt = await _artWalkService.getPublicArtNearLocation(
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        radiusKm: 10.0,
+      );
+
+      // Create markers for nearby art
+      _updateMarkers();
+
+      if (_mapController != null && mounted) {
+        await _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                  _currentPosition!.latitude, _currentPosition!.longitude),
+              zoom: 13.0,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error initializing location: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${error.toString()}')),
+          SnackBar(
+            content: Text('Error getting location: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     } finally {
@@ -100,235 +116,61 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     }
   }
 
-  Future<void> _loadNearbyArt() async {
-    if (_currentPosition == null) return;
-
+  Future<void> _searchByZipCode(String zipCode) async {
+    setState(() => _isSearchingZip = true);
     try {
-      // Use CoordinateValidator to validate position
-      if (!CoordinateValidator.isValidLatitude(_currentPosition!.latitude) ||
-          !CoordinateValidator.isValidLongitude(_currentPosition!.longitude)) {
-        debugPrint("📍 Invalid coordinates for loading nearby art");
-        return;
-      }
-
-      final nearbyArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        radiusKm: 10.0, // 10km radius
+      // Here you would typically:
+      // 1. Convert ZIP code to coordinates
+      // 2. Move map to those coordinates
+      // 3. Load nearby art for that location
+      // For now, just show an error
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+              Text('ZIP code search will be implemented in a future update'),
+          duration: Duration(seconds: 2),
+        ),
       );
-
+    } finally {
       if (mounted) {
-        setState(() {
-          _nearbyArt = nearbyArt;
-          _updateMarkers();
-        });
-      }
-    } catch (error) {
-      debugPrint("🎨 Error loading nearby art: $error");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Error loading nearby art: ${error.toString()}')),
-        );
+        setState(() => _isSearchingZip = false);
       }
     }
   }
 
   void _updateMarkers() {
-    final Set<Marker> markers = {};
-
-    // Add marker for current location
-    if (_currentPosition != null) {
-      // Use CoordinateValidator to validate position
-      if (CoordinateValidator.isValidLatitude(_currentPosition!.latitude) &&
-          CoordinateValidator.isValidLongitude(_currentPosition!.longitude)) {
-        markers.add(
+    setState(() {
+      _markers.clear();
+      for (final art in _nearbyArt) {
+        _markers.add(
           Marker(
-            markerId: const MarkerId('current_location'),
-            position:
-                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-            icon:
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: const InfoWindow(title: 'You are here'),
+            markerId: MarkerId(art.id),
+            position: LatLng(art.location.latitude, art.location.longitude),
+            infoWindow: InfoWindow(
+              title: art.title,
+              snippet: art.artistName != null ? 'by ${art.artistName}' : null,
+            ),
           ),
         );
       }
-    }
+    });
+  }
 
-    // Add markers for nearby art with validation
-    int validMarkers = 0;
-    int invalidMarkers = 0;
-
-    for (final art in _nearbyArt) {
-      // Use CoordinateValidator to validate art location
-      if (!CoordinateValidator.isValidGeoPoint(art.location)) {
-        CoordinateValidator.logInvalidCoordinates(
-            art.id, art.location.latitude, art.location.longitude);
-        invalidMarkers++;
-        continue;
-      }
-
-      validMarkers++;
-      markers.add(
-        Marker(
-          markerId: MarkerId(art.id),
-          position: LatLng(art.location.latitude, art.location.longitude),
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
-          infoWindow: InfoWindow(
-            title: art.title,
-            snippet: art.artistName != null ? 'by ${art.artistName}' : null,
-            onTap: () => _showArtDetails(art),
+  void _onMapCreated(GoogleMapController controller) {
+    setState(() {
+      _mapController = controller;
+    });
+    if (_currentPosition != null) {
+      controller.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target:
+                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            zoom: 13.0,
           ),
         ),
       );
     }
-
-    debugPrint(
-        '🎨 Created $validMarkers valid markers, skipped $invalidMarkers invalid markers');
-
-    if (mounted) {
-      setState(() {
-        _markers.clear();
-        _markers.addAll(markers);
-      });
-    }
-  }
-
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-
-    // Move camera to current location if available
-    if (_currentPosition != null) {
-      // Validate coordinates
-      if (_currentPosition!.latitude.isFinite &&
-          _currentPosition!.longitude.isFinite) {
-        controller.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(
-                  _currentPosition!.latitude, _currentPosition!.longitude),
-              zoom: 14.0,
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  void _showArtDetails(PublicArtModel art) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.4,
-        minChildSize: 0.3,
-        maxChildSize: 0.8,
-        expand: false,
-        builder: (context, scrollController) {
-          return SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Image.network(
-                  art.imageUrl,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Handle image loading errors
-                    return Container(
-                      height: 200,
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported,
-                            size: 50, color: Colors.grey),
-                      ),
-                    );
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        art.title,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (art.artistName != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Artist: ${art.artistName}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ],
-                      if (art.artType != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Type: ${art.artType}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      Text(
-                        art.description,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 16),
-                      if (art.address != null) ...[
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on,
-                                color: Colors.red, size: 18),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                art.address!,
-                                style: TextStyle(color: Colors.grey.shade700),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // Here you would add this art to the current art walk
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                    '${art.title} added to your art walk')),
-                          );
-                        },
-                        icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Add to My Art Walk'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _hideInfoCard() {
-    setState(() => _showInfoCard = false);
   }
 
   @override
@@ -338,51 +180,76 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         title: const Text('Art Walk Map'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _getCurrentLocation,
+            icon: const Icon(Icons.my_location),
+            onPressed: _initializeLocation,
           ),
         ],
       ),
       body: Stack(
         children: [
           GoogleMap(
-            initialCameraPosition: _defaultLocation,
             onMapCreated: _onMapCreated,
+            initialCameraPosition: _defaultLocation,
             myLocationEnabled: true,
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: false,
             markers: _markers,
-            onCameraIdle: () {
-              // This prevents certain map-related NaN errors
-              debugPrint("📍 Map camera idle");
-            },
+            mapToolbarEnabled: false,
+            zoomControlsEnabled: false,
           ),
-          if (_isLoading)
+          if (_isLoading || _isSearchingZip)
             const Center(
               child: CircularProgressIndicator(),
             ),
           if (_showInfoCard)
             Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
+              bottom: 16,
+              left: 16,
+              right: 16,
               child: ArtWalkInfoCard(
-                onDismiss: _hideInfoCard,
+                onDismiss: () => setState(() => _showInfoCard = false),
               ),
             ),
           Positioned(
-            bottom: 16,
+            top: 16,
+            left: 16,
             right: 16,
-            child: FloatingActionButton(
-              heroTag: 'createArtWalk',
-              tooltip: 'Create Art Walk',
-              child: const Icon(Icons.add),
-              onPressed: () {
-                Navigator.pushNamed(context, '/art-walk/create');
-              },
+            child: Stack(
+              children: [
+                ZipCodeSearchBox(
+                  initialValue: _currentZipCode,
+                  onZipCodeSubmitted: _searchByZipCode,
+                ),
+                if (_isSearchingZip)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
       ),
+      floatingActionButton: MapFloatingMenu(
+        onCreateArtWalk: () => Navigator.pushNamed(context, '/art_walk/create'),
+        onViewArtWalks: () => Navigator.pushNamed(context, '/art_walk/list'),
+        onViewAttractions: () {}, // Placeholder for future feature
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
   }
 }

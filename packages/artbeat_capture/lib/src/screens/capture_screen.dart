@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import '../services/camera_service.dart';
 
 class CaptureScreen extends StatefulWidget {
-  const CaptureScreen({super.key});
+  final Position? location;
+
+  const CaptureScreen({
+    super.key,
+    this.location,
+  });
 
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();

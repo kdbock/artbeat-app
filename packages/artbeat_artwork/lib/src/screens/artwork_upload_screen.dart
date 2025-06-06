@@ -4,14 +4,22 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
   final String? artworkId; // For editing existing artwork
+  final File? imageFile; // For new artwork from capture
+  final Position? location; // For location data from capture
 
-  const ArtworkUploadScreen({super.key, this.artworkId});
+  const ArtworkUploadScreen({
+    super.key,
+    this.artworkId,
+    this.imageFile,
+    this.location,
+  });
 
   @override
   State<ArtworkUploadScreen> createState() => _ArtworkUploadScreenState();

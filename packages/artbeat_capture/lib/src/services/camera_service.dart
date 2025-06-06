@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import '../models/capture_model.dart';
 
 class CameraService {
@@ -55,49 +57,109 @@ class CameraService {
       throw Exception('Camera not initialized');
     }
 
-    // Take picture
-    final XFile photo = await _controller!.takePicture();
-    final File imageFile = File(photo.path);
+    // Verify user authentication first
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (authUser == null || authUser.uid != userId) {
+      throw Exception('User must be logged in to capture images');
+    }
 
-    // Process image
-    final InputImage inputImage = InputImage.fromFile(imageFile);
-    final RecognizedText recognizedText =
-        await _textRecognizer.processImage(inputImage);
-    final List<String> textAnnotations = recognizedText.blocks
-        .map((block) => block.text)
-        .where((text) => text.isNotEmpty)
-        .toList();
+    try {
+      // Take picture
+      final XFile photo = await _controller!.takePicture();
+      final File imageFile = File(photo.path);
 
-    // Upload to Firebase Storage
-    final String fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId}';
-    final Reference ref =
-        _storage.ref().child('captures/$userId/$fileName.jpg');
+      // Process image
+      final InputImage inputImage = InputImage.fromFile(imageFile);
+      final RecognizedText recognizedText =
+          await _textRecognizer.processImage(inputImage);
+      final List<String> textAnnotations = recognizedText.blocks
+          .map((block) => block.text)
+          .where((text) => text.isNotEmpty)
+          .toList();
 
-    final UploadTask uploadTask = ref.putFile(
-      imageFile,
-      SettableMetadata(contentType: 'image/jpeg'),
-    );
+      // Ensure App Check token is valid
+      final appCheckToken = await FirebaseAppCheck.instance.getToken(true);
+      if (appCheckToken == null) {
+        throw Exception('Failed to get App Check token');
+      }
 
-    final TaskSnapshot snapshot = await uploadTask;
-    final String imageUrl = await snapshot.ref.getDownloadURL();
+      // Upload to Firebase Storage with retry
+      final String fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_$userId';
+      final Reference ref =
+          _storage.ref().child('capture_images/$userId/$fileName.jpg');
 
-    // Create thumbnail (you might want to implement thumbnail creation)
-    final String thumbnailUrl = imageUrl; // For now, using same URL
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: {
+          'userId': userId,
+          'createdAt': DateTime.now().toIso8601String(),
+          'appCheckToken': appCheckToken,
+        },
+      );
 
-    // Create capture model
-    final capture = CaptureModel(
-      id: '', // Will be set when saved to Firestore
-      userId: userId,
-      imageUrl: imageUrl,
-      thumbnailUrl: thumbnailUrl,
-      textAnnotations: textAnnotations,
-      createdAt: DateTime.now(),
-      isProcessed: true,
-    );
+      final UploadTask uploadTask = ref.putFile(imageFile, metadata);
+      final TaskSnapshot snapshot = await uploadTask;
+      final String imageUrl = await snapshot.ref.getDownloadURL();
 
-    // Save to Firestore
-    final docRef = await _firestore.collection('captures').add(capture.toMap());
-    return capture.copyWith(id: docRef.id);
+      // Get location data
+      Position? position = await _getLocation();
+
+      // Create capture model
+      final capture = CaptureModel(
+        id: '', // Will be set when saved to Firestore
+        userId: userId,
+        imageUrl: imageUrl,
+        thumbnailUrl: imageUrl, // For now, using same URL
+        textAnnotations: textAnnotations,
+        createdAt: DateTime.now(),
+        isProcessed: true,
+        location: position != null
+            ? GeoPoint(position.latitude, position.longitude)
+            : null,
+        tags: ['captured'],
+      );
+
+      // Save to Firestore with proper authentication
+      try {
+        final docRef = await _firestore.collection('captures').add({
+          ...capture.toMap(),
+          'userId': userId, // Ensure userId is set for Firestore rules
+          'createdAt': FieldValue.serverTimestamp(), // Use server timestamp
+        });
+        return capture.copyWith(id: docRef.id);
+      } catch (e) {
+        // Clean up the uploaded image if Firestore save fails
+        await ref.delete();
+        throw Exception('Failed to save capture metadata: $e');
+      }
+    } catch (e) {
+      throw Exception('Failed to process and save capture: $e');
+    }
+  }
+
+  // Get location using Geolocator
+  Future<Position?> _getLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return null;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission != LocationPermission.whileInUse &&
+            permission != LocationPermission.always) {
+          return null;
+        }
+      }
+
+      return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+    } catch (e) {
+      return null;
+    }
   }
 
   // Switch camera
