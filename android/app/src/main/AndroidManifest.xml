@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- OpenGL ES 2.0 -->
-    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+    <!-- OpenGL ES 3.0 -->
+    <uses-feature android:glEsVersion="0x00030000" android:required="true" />
     
     <!-- Allow installing on devices without GPU -->
     <uses-feature android:name="android.hardware.vulkan" android:required="false" />
@@ -17,7 +17,8 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="ARTbeat">
+        android:label="ARTbeat"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

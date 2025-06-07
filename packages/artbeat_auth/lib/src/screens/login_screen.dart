@@ -129,6 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 32),
                   ArtbeatInput(
+                    key: const Key('login_email_field'),
                     controller: _emailController,
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
@@ -144,6 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
+                    key: const Key('login_password_field'),
                     controller: _passwordController,
                     label: 'Password',
                     obscureText: _obscurePassword,
@@ -168,6 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
                   ArtbeatButton(
+                    key: const Key('login_submit_button'),
                     onPressed: _isLoading ? null : _handleLogin,
                     child: _isLoading
                         ? const SizedBox(
@@ -184,6 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextButton(
+                    key: const Key('forgot_password_button'),
                     onPressed: () {
                       Navigator.pushNamed(context, '/forgot-password');
                     },
@@ -203,6 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       TextButton(
+                        key: const Key('go_to_register_button'),
                         onPressed: () {
                           Navigator.pushNamed(context, '/register');
                         },

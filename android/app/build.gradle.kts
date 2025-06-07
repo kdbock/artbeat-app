@@ -34,10 +34,23 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
+        // Enable OnBackInvokedCallback for predictive back gesture
+        manifestPlaceholders["enableOnBackInvokedCallback"] = "true"
+
         // Add OpenGL ES version requirement
+        manifestPlaceholders["glEsVersion"] = "0x00020000" // OpenGL ES 2.0 for better compatibility
+        
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86_64"))
         }
+        
+        // Required for camera functionality
+        manifestPlaceholders["cameraPermission"] = "android.permission.CAMERA"
+        
+        // Firebase App Check Configuration
+        buildConfigField("String", "FIREBASE_APP_CHECK_DEBUG_TOKEN", "\"fae8ac60-fccf-486c-9844-3e3dbdb9ea3f\"")
+        buildConfigField("boolean", "FIREBASE_APP_CHECK_DEBUG_MODE", "true")
+        manifestPlaceholders["firebase_app_check_debug"] = "true"
     }
 
     buildTypes {
@@ -45,6 +58,12 @@ android {
             applicationIdSuffix = ".debug"
             manifestPlaceholders["appName"] = "@string/app_name"
             resValue("string", "app_name", "ARTbeat Debug")
+            
+            // Enable App Check debugging with proper configuration
+            isDebuggable = true
+            manifestPlaceholders["firebase_app_check_debug"] = "true"
+            resValue("string", "google_app_check_debug_token", "fae8ac60-fccf-486c-9844-3e3dbdb9ea3f")
+            resValue("bool", "firebase_app_check_debug_enabled", "true")
         }
         release {
             // TODO: Add your own signing config for the release build.
@@ -57,11 +76,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-        debug {
-            // Enable App Check debugging
-            resValue("string", "app_check_token", "fae8ac60-fccf-486c-9844-3e3dbdb9ea3f")
-            applicationIdSuffix = ".debug"
         }
     }
 
@@ -85,4 +99,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.2.0")
     implementation("com.google.android.gms:play-services-base:18.3.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
+    
+    // Camera and ML Kit dependencies
+    implementation("androidx.camera:camera-camera2:1.3.2")
+    implementation("androidx.camera:camera-lifecycle:1.3.2")
+    implementation("androidx.camera:camera-view:1.3.2")
+    implementation("com.google.mlkit:text-recognition:16.0.0")
 }

@@ -1,13 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'services.dart';
 import 'package:artbeat_auth/artbeat_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_settings/artbeat_settings.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -20,19 +22,55 @@ class MyApp extends StatelessWidget {
       home: const LoadingScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/dashboard': (context) => DashboardScreen(
               screens: [
-                // Use our core dashboard components in the correct order
-                const DiscoverScreen(), // Home/Discover feed from core
+                const DiscoverScreen(), // Home/Discover feed
                 const ArtWalkMapScreen(), // Art walks
                 const CommunityFeedScreen(), // Community
                 const ArtworkBrowseScreen(), // Artwork
                 ProfileViewScreen(
-                    userId: FirebaseAuth.instance.currentUser?.uid ??
-                        ''), // Profile
+                    userId: FirebaseAuth.instance.currentUser?.uid ?? ''),
               ],
               onCapturePressed: () => _onCapture(context),
             ),
+        '/capture': (context) => const CaptureScreen(),
+        '/artwork/upload': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments
+              as Map<String, dynamic>;
+          return ArtworkUploadScreen(imageFile: File(args['file'] as String));
+        },
+        '/profile/edit': (context) => EditProfileScreen(
+            userId: FirebaseAuth.instance.currentUser?.uid ?? ''),
+        '/art-walk/create': (context) => const CreateArtWalkScreen(),
+        '/settings': (context) => const SettingsScreen(),
+      },
+      onGenerateRoute: (settings) {
+        // Handle dynamic routes
+        final uri = Uri.parse(settings.name!);
+        final pathSegments = uri.pathSegments;
+
+        if (pathSegments.first == 'artwork' && pathSegments.length == 2) {
+          return MaterialPageRoute(
+            builder: (context) =>
+                ArtworkDetailScreen(artworkId: pathSegments[1]),
+          );
+        }
+
+        if (pathSegments.first == 'profile' && pathSegments.length == 2) {
+          return MaterialPageRoute(
+            builder: (context) => ProfileViewScreen(userId: pathSegments[1]),
+          );
+        }
+
+        if (pathSegments.first == 'art-walk' && pathSegments.length == 2) {
+          return MaterialPageRoute(
+            builder: (context) => ArtWalkDetailScreen(walkId: pathSegments[1]),
+          );
+        }
+
+        return null;
       },
     );
   }
@@ -54,7 +92,7 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  final _services = ServiceHandler();
+  final UserService _userService = UserService();
   String _status = 'Initializing...';
   bool _hasError = false;
 
@@ -66,7 +104,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   Future<void> _initialize() async {
     try {
-      // Initialize app services
       setState(() {
         _status = 'Initializing services...';
         _hasError = false;
@@ -74,12 +111,12 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
       // Add a small delay to ensure Firebase is fully initialized
       await Future.delayed(const Duration(milliseconds: 500));
-      await _services.initializeServices();
 
       if (!mounted) return;
 
       // Navigate to appropriate screen
-      if (_services.isLoggedIn) {
+      final user = _userService.currentUser;
+      if (user != null) {
         debugPrint('✅ User is logged in, navigating to dashboard...');
         Navigator.pushReplacementNamed(context, '/dashboard');
       } else {
@@ -88,7 +125,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() => _status = 'Error: $e');
+      setState(() {
+        _status = 'Error: $e';
+        _hasError = true;
+      });
     }
   }
 
@@ -100,21 +140,20 @@ class _LoadingScreenState extends State<LoadingScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'ARTbeat',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              if (_hasError)
+                Icon(Icons.error_outline,
+                    size: 48, color: ArtbeatColors.primaryPurple),
               const SizedBox(height: 16),
-              Text(
-                _status,
-                style: const TextStyle(color: Colors.grey),
-              ),
+              Text(_status,
+                  style: TextStyle(
+                      color: _hasError
+                          ? ArtbeatColors.primaryPurple
+                          : ArtbeatColors.textPrimary)),
+              if (_hasError)
+                TextButton(
+                  onPressed: _initialize,
+                  child: const Text('Retry'),
+                ),
             ],
           ),
         ),

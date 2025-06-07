@@ -18,6 +18,9 @@ dependencies:
   firebase_storage: ^11.7.7
   artbeat_core: 
     path: ../artbeat_core
+  connectivity_plus: ^6.1.4
+  package_info_plus: ^8.3.0
+  device_info_plus: ^10.1.2
 
 dev_dependencies:
   flutter_test:

@@ -1,182 +1,159 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import '../models/capture_model.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+import 'package:artbeat_capture/src/models/capture_model.dart';
+import 'package:artbeat_capture/src/screens/capture_upload_screen.dart';
+import 'storage_service.dart';
 
 class CameraService {
-  late List<CameraDescription> _cameras;
   CameraController? _controller;
   bool _isInitialized = false;
-  final TextRecognizer _textRecognizer = TextRecognizer();
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final StorageService _storage;
+
+  CameraService()
+      : _storage = kDebugMode ? DebugStorageService() : ReleaseStorageService();
 
   // Getters
   CameraController? get controller => _controller;
   bool get isInitialized => _isInitialized;
 
   // Initialize camera
-  Future<void> initializeCamera() async {
-    if (_isInitialized) return;
-
-    _cameras = await availableCameras();
-    if (_cameras.isEmpty) {
-      throw CameraException(
-          'No cameras found', 'No cameras are available on this device');
-    }
-
-    // Use first camera by default
-    await _initController(_cameras[0]);
-    _isInitialized = true;
-  }
-
-  // Initialize camera controller
-  Future<void> _initController(CameraDescription camera) async {
-    _controller = CameraController(
-      camera,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-
+  Future<void> initCamera() async {
     try {
-      await _controller!.initialize();
-    } on CameraException catch (e) {
+      // Get camera
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) throw Exception('No cameras available');
+
+      // Initialize with appropriate resolution
+      _controller = CameraController(
+        cameras[0],
+        ResolutionPreset.max,
+        enableAudio: false,
+      );
+
+      await _controller?.initialize();
+      _isInitialized = true;
+      debugPrint('✅ Camera initialized successfully');
+    } catch (e) {
+      debugPrint('❌ Camera initialization error: $e');
       _isInitialized = false;
-      throw CameraException(e.code, e.description);
+      throw CameraException(
+          'initialization_failed', 'Failed to initialize camera: $e');
     }
   }
 
   // Take picture and process it
-  Future<CaptureModel> takePicture(String userId) async {
+  Future<CaptureModel?> captureImage(
+      String userId, BuildContext context) async {
     if (!_isInitialized || _controller == null) {
-      throw Exception('Camera not initialized');
+      throw CameraException('not_initialized', 'Camera not initialized');
     }
 
-    // Verify user authentication first
-    final authUser = FirebaseAuth.instance.currentUser;
-    if (authUser == null || authUser.uid != userId) {
-      throw Exception('User must be logged in to capture images');
+    // Verify authentication first
+    if (!_isUserAuthenticated()) {
+      throw CameraException('unauthorized', 'User not authenticated');
     }
 
-    try {
-      // Take picture
-      final XFile photo = await _controller!.takePicture();
-      final File imageFile = File(photo.path);
+    XFile? image;
+    int retryCount = 0;
+    const maxRetries = 3;
 
-      // Process image
-      final InputImage inputImage = InputImage.fromFile(imageFile);
-      final RecognizedText recognizedText =
-          await _textRecognizer.processImage(inputImage);
-      final List<String> textAnnotations = recognizedText.blocks
-          .map((block) => block.text)
-          .where((text) => text.isNotEmpty)
-          .toList();
-
-      // Ensure App Check token is valid
-      final appCheckToken = await FirebaseAppCheck.instance.getToken(true);
-      if (appCheckToken == null) {
-        throw Exception('Failed to get App Check token');
-      }
-
-      // Upload to Firebase Storage with retry
-      final String fileName =
-          '${DateTime.now().millisecondsSinceEpoch}_$userId';
-      final Reference ref =
-          _storage.ref().child('capture_images/$userId/$fileName.jpg');
-
-      final metadata = SettableMetadata(
-        contentType: 'image/jpeg',
-        customMetadata: {
-          'userId': userId,
-          'createdAt': DateTime.now().toIso8601String(),
-          'appCheckToken': appCheckToken,
-        },
-      );
-
-      final UploadTask uploadTask = ref.putFile(imageFile, metadata);
-      final TaskSnapshot snapshot = await uploadTask;
-      final String imageUrl = await snapshot.ref.getDownloadURL();
-
-      // Get location data
-      Position? position = await _getLocation();
-
-      // Create capture model
-      final capture = CaptureModel(
-        id: '', // Will be set when saved to Firestore
-        userId: userId,
-        imageUrl: imageUrl,
-        thumbnailUrl: imageUrl, // For now, using same URL
-        textAnnotations: textAnnotations,
-        createdAt: DateTime.now(),
-        isProcessed: true,
-        location: position != null
-            ? GeoPoint(position.latitude, position.longitude)
-            : null,
-        tags: ['captured'],
-      );
-
-      // Save to Firestore with proper authentication
+    while (retryCount < maxRetries) {
       try {
-        final docRef = await _firestore.collection('captures').add({
-          ...capture.toMap(),
-          'userId': userId, // Ensure userId is set for Firestore rules
-          'createdAt': FieldValue.serverTimestamp(), // Use server timestamp
-        });
-        return capture.copyWith(id: docRef.id);
-      } catch (e) {
-        // Clean up the uploaded image if Firestore save fails
-        await ref.delete();
-        throw Exception('Failed to save capture metadata: $e');
-      }
-    } catch (e) {
-      throw Exception('Failed to process and save capture: $e');
-    }
-  }
-
-  // Get location using Geolocator
-  Future<Position?> _getLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return null;
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission != LocationPermission.whileInUse &&
-            permission != LocationPermission.always) {
-          return null;
+        // Check connectivity first
+        if (!await _checkConnectivity()) {
+          throw CameraException(
+              'no_network', 'No network connectivity available');
         }
-      }
 
-      return await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        // Take picture with timeout
+        image = await _controller!
+            .takePicture()
+            .timeout(const Duration(seconds: 10));
+
+        // Re-verify auth before upload
+        if (!_isUserAuthenticated()) {
+          throw CameraException('unauthorized', 'User authentication lost');
+        }
+
+        // Upload image using storage service
+        final fileName = 'capture_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final downloadUrl =
+            await _storage.uploadImage(userId, File(image.path));
+
+        debugPrint('✅ Image uploaded successfully');
+
+        // Create initial capture model
+        final capture = CaptureModel(
+          id: fileName,
+          userId: userId,
+          imageUrl: downloadUrl,
+          createdAt: DateTime.now(),
+        );
+
+        // Show upload screen and wait for user input
+        final NavigatorState navigator = Navigator.of(context);
+        final CaptureModel? updatedCapture = await navigator.push(
+          MaterialPageRoute<CaptureModel>(
+            builder: (context) => CaptureUploadScreen(
+              capture: capture,
+              onUploadComplete: (updatedCapture) {
+                navigator.pop(updatedCapture);
+              },
+            ),
+          ),
+        );
+
+        return updatedCapture;
+      } catch (e) {
+        retryCount++;
+        debugPrint('⚠️ Capture attempt $retryCount failed: $e');
+
+        if (retryCount >= maxRetries) {
+          debugPrint('❌ Max retries reached, failing');
+          rethrow;
+        }
+
+        // Wait before retrying
+        await Future.delayed(Duration(seconds: retryCount * 2));
+      }
+    }
+
+    throw CameraException('max_retries', 'Max retry attempts reached');
+  }
+
+  // Check network connectivity
+  Future<bool> _checkConnectivity() async {
+    try {
+      final connectivityResult = await Connectivity().checkConnectivity();
+      return connectivityResult != ConnectivityResult.none;
     } catch (e) {
-      return null;
+      debugPrint('❌ Error checking connectivity: $e');
+      return false;
     }
   }
 
-  // Switch camera
-  Future<void> switchCamera() async {
-    if (_cameras.length < 2) return;
-
-    final currentIndex = _cameras.indexOf(_controller!.description);
-    final nextIndex = (currentIndex + 1) % _cameras.length;
-
-    await _controller?.dispose();
-    await _initController(_cameras[nextIndex]);
+  // Check if user is authenticated
+  bool _isUserAuthenticated() {
+    final user = _auth.currentUser;
+    if (user == null) {
+      debugPrint('❌ User not authenticated');
+      return false;
+    }
+    debugPrint('✅ User authenticated: ${user.uid}');
+    return true;
   }
 
   // Clean up resources
-  Future<void> dispose() async {
-    await _controller?.dispose();
-    _textRecognizer.close();
+  void dispose() {
+    _controller?.dispose();
+    _controller = null;
     _isInitialized = false;
   }
 }

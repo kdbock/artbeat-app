@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:math' show pow;
+import 'dart:math' show min;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
@@ -21,73 +20,50 @@ void main() async {
     await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
     debugPrint('🔥 Initializing Firebase Core...');
-    FirebaseApp app;
-    try {
-      app = Firebase.app();
-      debugPrint('✅ Firebase already initialized');
-    } catch (e) {
-      app = await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-      debugPrint('✅ Firebase initialized for the first time');
-    }
-    await app.setAutomaticDataCollectionEnabled(true);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
     debugPrint('🔒 Initializing App Check...');
     try {
       if (kDebugMode) {
-        const debugToken = 'fae8ac60-fccf-486c-9844-3e3dbdb9ea3f';
-        debugPrint('🔑 Using App Check debug token: $debugToken');
+        debugPrint('🛠️ Debug mode detected, using debug providers');
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.debug,
+          appleProvider: AppleProvider.debug,
+        );
 
-        // Enable token auto-refresh before activation
-        await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-
-        // Initialize App Check in debug mode with exponential backoff
-        int attempt = 0;
-        const maxAttempts = 3;
-        while (attempt < maxAttempts) {
-          try {
-            if (attempt > 0) {
-              // Exponential backoff: 2s, 4s, 8s
-              final backoffDuration =
-                  Duration(seconds: pow(2, attempt + 1).toInt());
+        // Set up debug token monitoring
+        FirebaseAppCheck.instance.onTokenChange.listen(
+          (token) {
+            if (token != null) {
+              final previewLength = min(10, token.length);
               debugPrint(
-                  '⏳ Waiting ${backoffDuration.inSeconds}s before retry...');
-              await Future.delayed(backoffDuration);
+                  '🔑 Debug token received: ${token.substring(0, previewLength)}...');
             }
+          },
+          onError: (e) => debugPrint('⚠️ Debug token error: $e'),
+        );
 
-            await FirebaseAppCheck.instance.activate(
-              androidProvider: AndroidProvider.debug,
-              appleProvider: AppleProvider.debug,
-            );
-            debugPrint('✅ App Check initialized successfully');
-            break;
-          } catch (e) {
-            attempt++;
-            if (attempt >= maxAttempts) {
-              rethrow;
-            }
-            debugPrint('⚠️ App Check attempt $attempt failed: $e');
-          }
-        }
+        debugPrint('✅ App Check initialized in debug mode');
       } else {
         await FirebaseAppCheck.instance.activate(
           androidProvider: AndroidProvider.playIntegrity,
           appleProvider: AppleProvider.deviceCheck,
         );
+        debugPrint('✅ App Check initialized in production mode');
       }
     } catch (e) {
       debugPrint('⚠️ App Check initialization failed: $e');
       if (kDebugMode) {
-        debugPrint('''
-💡 Debug mode troubleshooting steps:
-1. Verify debug token in Firebase Console:
+        debugPrint('''💡 Debug mode troubleshooting steps:
+1. Verify debug token in Firebase Console and build.gradle.kts:
    - Go to Firebase Console -> App Check -> Apps
-   - Register debug token: fae8ac60-fccf-486c-9844-3e3dbdb9ea3f
+   - Debug token is set in build.gradle.kts
 2. Check app package name matches Firebase registration
 3. Ensure Firebase project is properly configured
-
-Continuing without App Check in debug mode...''');
+''');
+        debugPrint('Continuing without App Check in debug mode...');
       } else {
         rethrow;
       }

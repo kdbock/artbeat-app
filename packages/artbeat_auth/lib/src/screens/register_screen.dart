@@ -392,6 +392,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       Expanded(
                         child: ArtbeatInput(
+                          key: const Key('register_first_name_field'),
                           controller: _firstNameController,
                           label: 'First Name',
                           validator: (value) {
@@ -405,6 +406,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ArtbeatInput(
+                          key: const Key('register_last_name_field'),
                           controller: _lastNameController,
                           label: 'Last Name',
                           validator: (value) {
@@ -422,6 +424,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       Expanded(
                         child: ArtbeatInput(
+                          key: const Key('register_zip_code_field'),
                           controller: _zipCodeController,
                           label: 'ZIP Code',
                           keyboardType: TextInputType.number,
@@ -438,6 +441,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(width: 16),
                       TextButton.icon(
+                        key: const Key('register_auto_zip_button'),
                         onPressed: _isLoading ? null : _getZipCodeFromLocation,
                         icon: const Icon(Icons.location_on),
                         label: const Text('Auto'),
@@ -446,6 +450,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
+                    key: const Key('register_email_field'),
                     controller: _emailController,
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
@@ -461,6 +466,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
+                    key: const Key('register_password_field'),
                     controller: _passwordController,
                     label: 'Password',
                     obscureText: _obscurePassword,
@@ -488,6 +494,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
+                    key: const Key('register_confirm_password_field'),
                     controller: _confirmPasswordController,
                     label: 'Confirm Password',
                     obscureText: _obscureConfirmPassword,
@@ -558,6 +565,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 24),
                   ArtbeatButton(
+                    key: const Key('register_submit_button'),
                     onPressed: _isLoading ? null : _handleRegister,
                     child: _isLoading
                         ? const SizedBox(
@@ -581,6 +589,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       TextButton(
+                        key: const Key('go_to_login_button'),
                         onPressed: () {
                           Navigator.pop(context);
                         },
