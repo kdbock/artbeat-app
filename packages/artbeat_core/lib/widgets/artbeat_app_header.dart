@@ -8,6 +8,7 @@ class ArtbeatAppHeader extends StatefulWidget implements PreferredSizeWidget {
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final PreferredSizeWidget? bottom;
+  final List<Widget>? actions;
 
   const ArtbeatAppHeader({
     super.key,
@@ -15,6 +16,7 @@ class ArtbeatAppHeader extends StatefulWidget implements PreferredSizeWidget {
     this.showBackButton = false,
     this.onBackPressed,
     this.bottom,
+    this.actions,
   });
 
   @override
@@ -107,6 +109,7 @@ class _ArtbeatAppHeaderState extends State<ArtbeatAppHeader> {
         style: ArtbeatTypography.textTheme.headlineMedium,
       ),
       actions: [
+        if (widget.actions != null) ...widget.actions!,
         // Search button
         IconButton(
           icon: const Icon(Icons.search),

@@ -26,8 +26,8 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   bool _hasCompletedWalk = false;
   ArtWalkModel? _walk;
   List<PublicArtModel> _artPieces = [];
-  Set<Marker> _markers = {};
-  Set<Polyline> _polylines = {};
+  Set<Marker> _markers = <Marker>{};
+  Set<Polyline> _polylines = <Polyline>{};
 
   @override
   void initState() {

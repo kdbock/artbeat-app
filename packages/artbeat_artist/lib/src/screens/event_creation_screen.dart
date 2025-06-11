@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-
-// Using the services through the main package export
-import '../models/subscription_tier.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
+import '../services/event_service.dart';
 
 /// Screen for creating and editing events (for Pro and Gallery plans)
 class EventCreationScreen extends StatefulWidget {
@@ -23,7 +21,8 @@ class EventCreationScreen extends StatefulWidget {
 
 class _EventCreationScreenState extends State<EventCreationScreen> {
   final EventService _eventService = EventService();
-  final SubscriptionService _subscriptionService = SubscriptionService();
+  final core.SubscriptionService _subscriptionService =
+      core.SubscriptionService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -70,8 +69,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     try {
       final subscription = await _subscriptionService.getUserSubscription();
       final canCreateEvents = subscription != null &&
-          (subscription.tier == SubscriptionTier.standard ||
-              subscription.tier == SubscriptionTier.premium) &&
+          (subscription.tier == core.SubscriptionTier.standard ||
+              subscription.tier == core.SubscriptionTier.premium) &&
           subscription.isActive;
 
       setState(() {
@@ -90,44 +89,29 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Future<void> _loadExistingEvent() async {
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
     try {
       final eventModel = await _eventService.getEventById(widget.eventId!);
 
-      if (eventModel == null) {
-        setState(() {
-          _errorMessage = 'Event not found';
-          _isLoading = false;
-        });
-        return;
+      // Check if user has permission to edit
+      if (eventModel.artistId != _auth.currentUser?.uid) {
+        throw Exception('Permission denied');
       }
 
-      // Check if user is owner
-      if (eventModel.userId != _auth.currentUser?.uid) {
-        setState(() {
-          _errorMessage = 'You do not have permission to edit this event';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Populate form fields
       _titleController.text = eventModel.title;
       _descriptionController.text = eventModel.description;
       _locationController.text = eventModel.location;
-
-      // Set date
-      _startDate = eventModel.date;
-
-      // Set times
-      _startTime = eventModel.startTime;
-      if (eventModel.endTime != null) {
-        _endTime = eventModel.endTime!;
-      }
-
+      _startDate = eventModel.startDate;
+      _startTime = TimeOfDay.fromDateTime(eventModel.startDate);
       _isPublic = eventModel.isPublic;
       _existingImageUrl = eventModel.imageUrl;
+
+      if (eventModel.endDate != null) {
+        _endDate = eventModel.endDate!;
+        _endTime = TimeOfDay.fromDateTime(eventModel.endDate!);
+      }
 
       setState(() {
         _isLoading = false;
@@ -220,7 +204,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     }
   }
 
-  /// Save event
+  /// Save event changes
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -231,12 +215,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     });
 
     try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        throw Exception('User not authenticated');
-      }
-
-      // Format date and times to DateTime objects
+      // Convert TimeOfDay to DateTime
       final startDateTime = DateTime(
         _startDate.year,
         _startDate.month,
@@ -257,22 +236,30 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         throw Exception('End time cannot be before start time');
       }
 
-      // Create or update event
-      File? imageFile = _imageFile;
-      String? eventId = widget.eventId;
-
       // Update existing event
-      await _eventService.updateEvent(
-        eventId: eventId!,
-        title: _titleController.text,
-        description: _descriptionController.text,
-        date: _startDate,
-        startTime: _startTime,
-        endTime: _endTime,
-        location: _locationController.text,
-        isPublic: _isPublic,
-        imageFile: imageFile,
-      );
+      if (widget.eventId != null) {
+        await _eventService.updateEvent(
+          eventId: widget.eventId!,
+          title: _titleController.text,
+          description: _descriptionController.text,
+          startDate: startDateTime,
+          endDate: endDateTime,
+          location: _locationController.text,
+          isPublic: _isPublic,
+          imageFile: _imageFile,
+        );
+      } else {
+        // Create new event
+        await _eventService.createEvent(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          startDate: startDateTime,
+          endDate: endDateTime,
+          location: _locationController.text,
+          isPublic: _isPublic,
+          imageFile: _imageFile,
+        );
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

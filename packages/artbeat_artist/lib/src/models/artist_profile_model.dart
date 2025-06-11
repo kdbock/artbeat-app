@@ -88,14 +88,16 @@ class ArtistProfileModel {
     };
   }
 
-  static String _userTypeToString(UserType type) {
-    switch (type) {
+  static String _userTypeToString(UserType userType) {
+    switch (userType) {
       case UserType.artist:
         return 'artist';
       case UserType.gallery:
         return 'gallery';
       case UserType.regular:
         return 'regular';
+      case UserType.moderator:
+        return 'moderator';
       case UserType.admin:
         return 'admin';
     }
@@ -107,6 +109,8 @@ class ArtistProfileModel {
         return UserType.gallery;
       case 'artist':
         return UserType.artist;
+      case 'moderator':
+        return UserType.moderator;
       case 'admin':
         return UserType.admin;
       case 'regular':

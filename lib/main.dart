@@ -70,7 +70,7 @@ void main() async {
     }
 
     debugPrint('✅ All services initialized successfully');
-    runApp(const MyApp());
+    runApp(MyApp());
   } catch (e, stack) {
     debugPrint('❌ Fatal error during initialization: $e');
     debugPrint('Stack trace: $stack');

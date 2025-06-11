@@ -1,20 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'subscription_tier.dart';
-
-/// Types of users in the system
-enum UserType {
-  /// Regular user account
-  regular,
-
-  /// Artist account with artwork management
-  artist,
-
-  /// Gallery business account
-  gallery,
-
-  /// System administrator
-  admin,
-}
+import 'user_model.dart' show UserType;
 
 /// Model for artist profiles
 class ArtistProfileModel {
@@ -153,5 +139,38 @@ class ArtistProfileModel {
       return Map<String, String>.from(value);
     }
     return {};
+  }
+
+  /// Check if artist has a free subscription
+  bool get isBasicSubscription => subscriptionTier == SubscriptionTier.basic;
+
+  /// Check if artist has a pro subscription
+  bool get isProSubscription => subscriptionTier == SubscriptionTier.standard;
+
+  /// Check if artist has a gallery subscription
+  bool get isGallerySubscription =>
+      subscriptionTier == SubscriptionTier.premium;
+
+  /// Get maximum number of artworks allowed for this subscription
+  int get maxArtworkCount {
+    switch (subscriptionTier) {
+      case SubscriptionTier.basic:
+        return 5;
+      case SubscriptionTier.standard:
+        return 100;
+      case SubscriptionTier.premium:
+        return 1000;
+      case SubscriptionTier.none:
+        return 0;
+    }
+  }
+
+  /// Check if artist can upload more artwork
+  Future<bool> canUploadMoreArtwork() async {
+    final artworkRef = FirebaseFirestore.instance.collection('artwork');
+    final count =
+        await artworkRef.where('userId', isEqualTo: userId).count().get();
+
+    return (count.count ?? 0) < maxArtworkCount;
   }
 }

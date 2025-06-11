@@ -17,9 +17,11 @@ class UserModel {
   final List<String> posts;
   final List<String> followers;
   final List<String> following;
+  final List<String> captures;
   final int followersCount;
   final int followingCount;
   final int postsCount;
+  final int capturesCount;
   final DateTime createdAt;
   final DateTime? updatedAt;
   final bool isVerified;
@@ -40,9 +42,11 @@ class UserModel {
     this.posts = const [],
     this.followers = const [],
     this.following = const [],
+    this.captures = const [],
     this.followersCount = 0,
     this.followingCount = 0,
     this.postsCount = 0,
+    this.capturesCount = 0,
     required this.createdAt,
     this.updatedAt,
     this.isVerified = false,
@@ -89,9 +93,11 @@ class UserModel {
       posts: List<String>.from(data['posts'] ?? []),
       followers: List<String>.from(data['followers'] ?? []),
       following: List<String>.from(data['following'] ?? []),
+      captures: List<String>.from(data['captures'] ?? []),
       followersCount: data['followersCount'] ?? 0,
       followingCount: data['followingCount'] ?? 0,
       postsCount: data['postsCount'] ?? 0,
+      capturesCount: data['capturesCount'] ?? 0,
       createdAt: data['createdAt'] != null
           ? (data['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
@@ -119,13 +125,100 @@ class UserModel {
       'posts': posts,
       'followers': followers,
       'following': following,
+      'captures': captures,
       'followersCount': followersCount,
       'followingCount': followingCount,
       'postsCount': postsCount,
+      'capturesCount': capturesCount,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'isVerified': isVerified,
       'userType': userType,
     };
   }
+
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? username,
+    String? bio,
+    String? profileImageUrl,
+    String? coverImageUrl,
+    String? zipCode,
+    String? location,
+    DateTime? birthDate,
+    String? gender,
+    List<String>? posts,
+    List<String>? followers,
+    List<String>? following,
+    List<String>? captures,
+    int? followersCount,
+    int? followingCount,
+    int? postsCount,
+    int? capturesCount,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isVerified,
+    String? userType,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      username: username ?? this.username,
+      bio: bio ?? this.bio,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      zipCode: zipCode ?? this.zipCode,
+      location: location ?? this.location,
+      birthDate: birthDate ?? this.birthDate,
+      gender: gender ?? this.gender,
+      posts: posts ?? this.posts,
+      followers: followers ?? this.followers,
+      following: following ?? this.following,
+      captures: captures ?? this.captures,
+      followersCount: followersCount ?? this.followersCount,
+      followingCount: followingCount ?? this.followingCount,
+      postsCount: postsCount ?? this.postsCount,
+      capturesCount: capturesCount ?? this.capturesCount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isVerified: isVerified ?? this.isVerified,
+      userType: userType ?? this.userType,
+    );
+  }
+
+  /// Check if user is an artist
+  bool get isArtist => userType == 'artist';
+
+  /// Check if user is a gallery
+  bool get isGallery => userType == 'gallery';
+
+  /// Check if user is a moderator
+  bool get isModerator => userType == 'moderator';
+
+  /// Check if user is an admin
+  bool get isAdmin => userType == 'admin';
+
+  /// Check if user is a basic user
+  bool get isBasicUser => userType == 'regular';
+
+  /// Get the UserType enum value for this user
+  UserType get userTypeEnum {
+    switch (userType) {
+      case 'artist':
+        return UserType.artist;
+      case 'gallery':
+        return UserType.gallery;
+      case 'moderator':
+        return UserType.moderator;
+      case 'admin':
+        return UserType.admin;
+      default:
+        return UserType.regular;
+    }
+  }
 }
+
+enum UserType { artist, gallery, moderator, admin, regular }

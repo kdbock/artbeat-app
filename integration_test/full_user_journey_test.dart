@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import '../lib/app.dart';
+import 'package:artbeat/app.dart';
 import 'helpers/mock_image_helper.dart';
 import 'helpers/test_config.dart';
 
@@ -23,7 +23,7 @@ void main() {
       'Complete user journey: Register -> Login -> Capture -> Upload -> View',
       (WidgetTester tester) async {
         // Build our app and trigger a frame
-        await tester.pumpWidget(const MyApp());
+        await tester.pumpWidget(MyApp());
         await tester.pumpAndSettle();
 
         // We should start on the login screen

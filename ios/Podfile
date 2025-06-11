@@ -1,45 +1,24 @@
 # Podfile for ARTbeat Flutter App
-# Optimized for iOS 15+ and Xcode 16 (2025)
-
-# Set minimum iOS deployment target to 15.0
 platform :ios, '15.0'
 
-# Suppress warnings about master specs repo
+# Prevent warnings about the master specs repo
 install! 'cocoapods', :warn_for_unused_master_specs_repo => false
 
-# Disable CocoaPods analytics for faster builds
+# Disable CocoaPods analytics
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# Fix gRPC build issues
-ENV['GRPC_NO_OPENSSL'] = '1'
+# Force safe compiler flags and architecture settings
+$RNFirebaseAsStaticFramework = true
 
-# Configure project settings
+# Use build wrapper script to remove problematic flags
+ENV['CC'] = File.join(__dir__, 'scripts', 'build-wrapper.sh') + ' clang'
+ENV['CXX'] = File.join(__dir__, 'scripts', 'build-wrapper.sh') + ' clang++'
+
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
-
-# Enable modular headers globally for all pods
-use_modular_headers!
-
-# Configure Firebase dependencies
-pod 'Firebase/Core'
-pod 'Firebase/Auth'
-pod 'Firebase/Firestore'
-pod 'Firebase/Storage'
-pod 'Firebase/AppCheck'
-
-# Fix header search paths
-pod 'GoogleUtilities'
-pod 'FirebaseCoreInternal'
-pod 'FirebaseAppCheckInterop'
-pod 'FirebaseCoreExtension'
-pod 'GTMSessionFetcher'
-pod 'PromisesObjC'
-
-# Required for Firebase/Firestore
-pod 'leveldb-library'
 
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
@@ -56,139 +35,51 @@ end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
-flutter_ios_podfile_setup
-
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
-  # Order dependencies explicitly with module support
-  pod 'GoogleUtilities', :modular_headers => true
-  pod 'FirebaseCoreInternal', :modular_headers => true
-  pod 'PromisesObjC', :modular_headers => true
-  pod 'FirebaseCore', :modular_headers => true
-  pod 'FirebaseAuth', :modular_headers => true
-  pod 'FirebaseStorage', :modular_headers => true
-  pod 'FirebaseFirestore', :modular_headers => true
-  pod 'leveldb-library', :modular_headers => true, :inhibit_warnings => true
-  pod 'gRPC-Core', :modular_headers => true
-  pod 'abseil', :modular_headers => true
-  pod 'BoringSSL-GRPC', :modular_headers => true
-  pod 'GoogleDataTransport', :modular_headers => true
-  pod 'nanopb', :modular_headers => true
-  pod 'AppCheckCore', :modular_headers => true
-  pod 'FirebaseAppCheck', :modular_headers => true
-  
-  # Include all Flutter pods
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-
+  
   target 'RunnerTests' do
     inherit! :search_paths
   end
 end
 
-# Single consolidated post-install configuration
 post_install do |installer|
-  # Apply Flutter build settings
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
     target.build_configurations.each do |config|
-      # Ensure deployment target is set to iOS 15.0
-      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      end
-      
-      # Enable modules and build settings
-      config.build_settings.merge!({
-        'DEFINES_MODULE' => 'YES',
-        'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES',
-        'BUILD_LIBRARY_FOR_DISTRIBUTION' => 'YES',
-        'SWIFT_VERSION' => '5.0',
-        'ENABLE_BITCODE' => 'NO'
-      })
-      
-      # Configure header search paths
-      config.build_settings['HEADER_SEARCH_PATHS'] ||= []
-      config.build_settings['HEADER_SEARCH_PATHS'] << [
-        '"${PODS_ROOT}/GoogleUtilities"',
-        '"${PODS_ROOT}/GoogleUtilities/GoogleUtilities/Environment/Public"',
-        '"${PODS_ROOT}/FirebaseCore/FirebaseCore/Sources/Public"',
-        '"${PODS_ROOT}/PromisesObjC/Sources/FBLPromises/include"',
-        '"${PODS_ROOT}/leveldb-library"',
-        '"${PODS_ROOT}/leveldb-library/include"',
-        '"${PODS_ROOT}/GoogleDataTransport"',
-        '"${PODS_ROOT}/GoogleDataTransport/GoogleDataTransport/GDTCCTLibrary/Protogen/nanopb"',
-        '"${PODS_ROOT}/nanopb"',
-        '"${PODS_ROOT}/AppCheckCore/AppCheckCore/Sources/Public"',
-        '"${PODS_ROOT}/AppCheckCore/AppCheckCore/Sources"',
-        '"${PODS_ROOT}/AppCheckCore/AppCheckCore/Sources/Core"',
-        '"${PODS_ROOT}/AppCheckCore/AppCheckCore/Sources/DeviceCheckProvider"',
-        '"${PODS_ROOT}/AppCheckCore/AppCheckCore/Sources/DeviceCheckProvider/API"'
-      ]
-      
-      # Set up module search paths
-      config.build_settings['SWIFT_INCLUDE_PATHS'] ||= []
-      config.build_settings['SWIFT_INCLUDE_PATHS'] << [
-        '${PODS_CONFIGURATION_BUILD_DIR}/GoogleUtilities',
-        '${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCoreInternal',
-        '${PODS_CONFIGURATION_BUILD_DIR}/FirebaseCore',
-        '${PODS_CONFIGURATION_BUILD_DIR}/PromisesObjC',
-        '${PODS_CONFIGURATION_BUILD_DIR}/GoogleDataTransport',
-        '${PODS_CONFIGURATION_BUILD_DIR}/AppCheckCore'
-      ]
-      
-      # Add arm64 exclusion for simulators
-      if config.build_settings['PLATFORM_NAME'] == 'iphonesimulator'
-        config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
-      end
-    end
-  end
-
-  # Create module maps for key dependencies
-  installer.pods_project.targets.each do |target|
-    case target.name
-    when 'GoogleUtilities'
-      create_module_map(target, 'GoogleUtilities')
-    when 'FirebaseCore'
-      create_module_map(target, 'FirebaseCore')
-    when 'leveldb-library'
-      create_module_map(target, 'leveldb')
-    when 'GoogleDataTransport'
-      create_module_map(target, 'GoogleDataTransport')
-    when 'nanopb'
-      create_module_map(target, 'nanopb')
-    when 'AppCheckCore'
-      create_module_map(target, 'AppCheckCore')
-    end
-  end
-
-  # Enable Arm64 builds for simulators
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
+      # Basic settings for all targets
       config.build_settings['ENABLE_BITCODE'] = 'NO'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
-      config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'i386'
       
-      # Enable Apple Silicon builds
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
+      # Strip problematic flags from all build settings
+      ['OTHER_CFLAGS', 'OTHER_LDFLAGS', 'OTHER_CPLUSPLUSFLAGS'].each do |setting|
+        if config.build_settings[setting]
+          config.build_settings[setting] = config.build_settings[setting].gsub(/-G\s*/, '')
+        end
+      end
+      
+      # Special handling for gRPC and related targets
+      if target.name.include?('gRPC') || target.name.include?('BoringSSL') || target.name.include?('abseil')
+        config.build_settings['COMPILER_INDEX_STORE_ENABLE'] = 'NO'
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++14'
+        config.build_settings['GCC_OPTIMIZATION_LEVEL'] = 's'
+        config.build_settings['DEPLOYMENT_POSTPROCESSING'] = 'NO'
+        
+        # Architecture settings
+        if config.build_settings['SDKROOT'] == 'iphoneos'
+          config.build_settings['ARCHS'] = 'arm64'
+          config.build_settings.delete('VALID_ARCHS')
+        end
+        
+        # Remove problematic settings
+        config.build_settings.delete('SUPPORTS_MACCATALYST')
+        config.build_settings.delete('CODE_SIGN_IDENTITY')
+      end
     end
   end
-end
-
-# Helper method to create module maps
-def create_module_map(target, module_name)
-  module_map_dir = "Pods/#{module_name}/Module/#{module_name}"
-  `mkdir -p #{module_map_dir}`
-  
-  File.write("#{module_map_dir}/module.modulemap", <<~MODULE_MAP)
-    framework module #{module_name} {
-      umbrella header "#{module_name}.h"
-      
-      export *
-      module * { export * }
-    }
-  MODULE_MAP
 end

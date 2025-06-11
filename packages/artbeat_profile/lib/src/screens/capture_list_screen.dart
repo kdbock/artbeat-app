@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 import '../services/capture_service.dart';
-import '../models/capture_model.dart'; // Import the new CaptureModel
 
 class CaptureListScreen extends StatefulWidget {
   const CaptureListScreen({super.key});
@@ -15,6 +15,9 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
   String? _currentUserId;
   bool _isLoading = false;
   List<CaptureModel> _captures = [];
+  String? _errorMessage;
+  bool _isRefreshing = false;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -23,16 +26,29 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
     _fetchCaptures();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchCaptures() async {
+    if (_isRefreshing) return;
+
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
+
     try {
       final captures = await _captureService.getCapturesForUser(_currentUserId);
       setState(() {
         _captures = captures;
       });
     } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to load captures. Please try again.';
+      });
       debugPrint('Error fetching captures: $e');
     } finally {
       setState(() {
@@ -51,83 +67,167 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
         .then((_) => _fetchCaptures());
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_currentUserId == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('My Captures')),
-        body: const Center(
-          child: Text('Please log in to view your captures.'),
+  List<CaptureModel> _getFilteredCaptures() {
+    if (_searchController.text.isEmpty) {
+      return _captures;
+    }
+    final searchLower = _searchController.text.toLowerCase();
+    return _captures.where((capture) {
+      return (capture.title?.toLowerCase().contains(searchLower) ?? false) ||
+          (capture.description?.toLowerCase().contains(searchLower) ?? false) ||
+          (capture.tags
+                  ?.any((tag) => tag.toLowerCase().contains(searchLower)) ??
+              false);
+    }).toList();
+  }
+
+  Widget _buildCaptureGrid() {
+    final filteredCaptures = _getFilteredCaptures();
+
+    if (_isLoading && !_isRefreshing) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_errorMessage!),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchCaptures,
+              child: const Text('Retry'),
+            ),
+          ],
         ),
       );
     }
+
+    if (filteredCaptures.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('No captures found'),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _navigateToCameraScreen,
+              icon: const Icon(Icons.photo_camera),
+              label: const Text('Add First Capture'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemCount: filteredCaptures.length,
+      itemBuilder: (context, index) {
+        final capture = filteredCaptures[index];
+        return GestureDetector(
+          onTap: () => _navigateToCaptureDetail(capture.id),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(
+                  capture.thumbnailUrl ?? capture.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Icon(Icons.error_outline, color: Colors.red),
+                    );
+                  },
+                ),
+                if (capture.title != null)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Colors.black.withOpacity(0.7),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                      child: Text(
+                        capture.title!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Captures'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.camera_alt),
             onPressed: _navigateToCameraScreen,
+            icon: const Icon(Icons.photo_camera),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _captures.isEmpty
-              ? _buildEmptyState()
-              : _buildCaptureList(),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Column(
         children: [
-          const Icon(Icons.photo_library_outlined,
-              size: 100, color: Colors.grey),
-          const SizedBox(height: 20),
-          const Text(
-            'No captures yet',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search captures...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+              ),
+              onChanged: (value) => setState(() {}),
+            ),
           ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.camera_alt),
-            label: const Text('Capture Something'),
-            onPressed: _navigateToCameraScreen,
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                setState(() => _isRefreshing = true);
+                await _fetchCaptures();
+                setState(() => _isRefreshing = false);
+              },
+              child: _buildCaptureGrid(),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildCaptureList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _captures.length,
-      itemBuilder: (context, index) {
-        final capture = _captures[index];
-        return Card(
-          elevation: 2,
-          margin: const EdgeInsets.only(bottom: 16),
-          child: ListTile(
-            title: Text(capture.title ?? 'Capture ${index + 1}'),
-            subtitle: capture.userDisplayName != null
-                ? Text('By: ${capture.userDisplayName}')
-                : null,
-            leading:
-                capture.thumbnailUrl != null && capture.thumbnailUrl!.isNotEmpty
-                    ? Image.network(capture.thumbnailUrl!,
-                        width: 50, height: 50, fit: BoxFit.cover)
-                    : const Icon(Icons.image, size: 40),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              _navigateToCaptureDetail(capture.id);
-            },
-          ),
-        );
-      },
     );
   }
 }

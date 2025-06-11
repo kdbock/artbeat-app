@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 
 import '../models/artist_profile_model.dart';
 import '../models/subscription_tier.dart';
+import '../models/subscription_model.dart';
+import '../models/user_model.dart' show UserType;
 import 'subscription_plan_validator.dart';
 import 'subscription_validation_service.dart';
 
@@ -18,6 +20,28 @@ class SubscriptionService extends ChangeNotifier {
   final SubscriptionPlanValidator _planValidator = SubscriptionPlanValidator();
   final SubscriptionValidationService _validationService =
       SubscriptionValidationService();
+
+  /// Get the current user's subscription
+  Future<SubscriptionModel?> getUserSubscription() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return null;
+
+      final snapshot = await _firestore
+          .collection('subscriptions')
+          .where('userId', isEqualTo: user.uid)
+          .where('isActive', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) return null;
+
+      return SubscriptionModel.fromFirestore(snapshot.docs.first);
+    } catch (e) {
+      debugPrint('Error getting user subscription: $e');
+      return null;
+    }
+  }
 
   /// Get the current user's subscription tier
   Future<SubscriptionTier> getCurrentSubscriptionTier() async {

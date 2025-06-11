@@ -28,10 +28,13 @@ dependencies:
   artbeat_auth:
     path: ../artbeat_auth
 
-  # Firebase dependencies - align with main project
-  firebase_core: ^2.24.2  # Base version
-  firebase_auth: ^4.15.3  # Compatible with firebase_core 2.24.2
-  cloud_firestore: ^4.13.6  # Compatible with firebase_core 2.24.2
+  # Utils
+  logging: ^1.2.0
+  shared_preferences: ^2.2.2
+  firebase_core: ^2.24.2
+  firebase_analytics: ^10.8.0
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
   firebase_storage: ^11.5.6  # Compatible with firebase_core 2.24.2
   firebase_app_check: ^0.2.1+8  # Compatible with firebase_core 2.24.2
   

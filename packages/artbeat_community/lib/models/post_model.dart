@@ -13,12 +13,16 @@ class PostModel {
   final GeoPoint? geoPoint;
   final String? zipCode;
   final DateTime createdAt;
-  final int likeCount;
+  final int applauseCount;
   final int commentCount;
   final int shareCount;
   final bool isPublic;
   final List<String>? mentionedUsers;
   final Map<String, dynamic>? metadata;
+  final bool isUserVerified;
+
+  // Maximum applause per user is always 5
+  static const int maxApplausePerUser = 5;
 
   PostModel({
     required this.id,
@@ -32,15 +36,22 @@ class PostModel {
     this.geoPoint,
     this.zipCode,
     required this.createdAt,
-    required this.likeCount,
-    required this.commentCount,
-    required this.shareCount,
-    required this.isPublic,
+    this.applauseCount = 0,
+    this.commentCount = 0,
+    this.shareCount = 0,
+    this.isPublic = true,
     this.mentionedUsers,
     this.metadata,
+    this.isUserVerified = false,
   });
 
+  /// Create from Firestore document - newer convention
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
+    return PostModel.fromDocument(doc);
+  }
+
+  /// Create from document - older convention
+  factory PostModel.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
     return PostModel(
@@ -55,7 +66,7 @@ class PostModel {
       geoPoint: data['geoPoint'],
       zipCode: data['zipCode'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
-      likeCount: data['likeCount'] ?? 0,
+      applauseCount: data['applauseCount'] ?? 0,
       commentCount: data['commentCount'] ?? 0,
       shareCount: data['shareCount'] ?? 0,
       isPublic: data['isPublic'] ?? true,
@@ -63,6 +74,7 @@ class PostModel {
           ? List<String>.from(data['mentionedUsers'])
           : null,
       metadata: data['metadata'],
+      isUserVerified: data['isUserVerified'] ?? false,
     );
   }
 
@@ -78,7 +90,7 @@ class PostModel {
       'geoPoint': geoPoint,
       'zipCode': zipCode,
       'createdAt': Timestamp.fromDate(createdAt),
-      'likeCount': likeCount,
+      'applauseCount': applauseCount,
       'commentCount': commentCount,
       'shareCount': shareCount,
       'isPublic': isPublic,
@@ -99,7 +111,7 @@ class PostModel {
     GeoPoint? geoPoint,
     String? zipCode,
     DateTime? createdAt,
-    int? likeCount,
+    int? applauseCount,
     int? commentCount,
     int? shareCount,
     bool? isPublic,
@@ -118,7 +130,7 @@ class PostModel {
       geoPoint: geoPoint ?? this.geoPoint,
       zipCode: zipCode ?? this.zipCode,
       createdAt: createdAt ?? this.createdAt,
-      likeCount: likeCount ?? this.likeCount,
+      applauseCount: applauseCount ?? this.applauseCount,
       commentCount: commentCount ?? this.commentCount,
       shareCount: shareCount ?? this.shareCount,
       isPublic: isPublic ?? this.isPublic,

@@ -22,6 +22,7 @@ class _CaptureScreenState extends State<CaptureScreen>
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
   String? _errorMessage;
+  bool _isOpenGLError = false;
 
   @override
   void initState() {
@@ -56,6 +57,7 @@ class _CaptureScreenState extends State<CaptureScreen>
       setState(() {
         _errorMessage = null;
         _isCameraInitialized = false;
+        _isOpenGLError = false;
       });
 
       await _cameraService.initCamera();
@@ -68,7 +70,14 @@ class _CaptureScreenState extends State<CaptureScreen>
       debugPrint('Error initializing camera: $e');
       if (mounted) {
         setState(() {
-          _errorMessage = 'Failed to initialize camera: $e';
+          if (e.toString().contains('OpenGL') ||
+              e.toString().contains('unimplemented')) {
+            _isOpenGLError = true;
+            _errorMessage = 'Camera preview is not supported on this device. '
+                'If you are using an emulator, try using a physical device instead.';
+          } else {
+            _errorMessage = 'Failed to initialize camera: $e';
+          }
           _isCameraInitialized = false;
         });
       }
@@ -113,54 +122,64 @@ class _CaptureScreenState extends State<CaptureScreen>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_errorMessage != null) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline,
-                    size: 48, color: Theme.of(context).colorScheme.error),
-                const SizedBox(height: 16),
-                Text(
-                  'Camera Error',
+  Widget _buildErrorScreen() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                _isOpenGLError ? Icons.warning : Icons.error_outline,
+                size: 48,
+                color: _isOpenGLError
+                    ? Colors.orange
+                    : Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _isOpenGLError ? 'Camera Not Supported' : 'Camera Error',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  _errorMessage ?? 'Unknown camera error',
+                  textAlign: TextAlign.center,
                   style: Theme.of(context)
                       .textTheme
-                      .titleLarge
-                      ?.copyWith(color: Colors.white),
+                      .bodyMedium
+                      ?.copyWith(color: Colors.white70),
                 ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Text(
-                    _errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.white70),
-                  ),
-                ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
+              if (!_isOpenGLError)
                 ElevatedButton.icon(
                   icon: const Icon(Icons.refresh),
                   label: const Text('Try Again'),
                   onPressed: _initializeCamera,
                 ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Go Back'),
-                ),
-              ],
-            ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Go Back'),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_errorMessage != null) {
+      return _buildErrorScreen();
     }
 
     if (!_isCameraInitialized || _cameraService.controller == null) {
@@ -177,11 +196,30 @@ class _CaptureScreenState extends State<CaptureScreen>
       body: SafeArea(
         child: Stack(
           children: [
-            // Camera preview
+            // Camera preview with error handling
             Positioned.fill(
-              child: AspectRatio(
-                aspectRatio: _cameraService.controller!.value.aspectRatio,
-                child: CameraPreview(_cameraService.controller!),
+              child: Builder(
+                builder: (context) {
+                  try {
+                    return AspectRatio(
+                      aspectRatio: _cameraService.controller!.value.aspectRatio,
+                      child: CameraPreview(_cameraService.controller!),
+                    );
+                  } catch (e) {
+                    if (mounted) {
+                      // Handle OpenGL errors that occur during preview
+                      Future.microtask(() {
+                        setState(() {
+                          _isOpenGLError = true;
+                          _errorMessage =
+                              'Camera preview is not supported on this device. '
+                              'If you are using an emulator, try using a physical device instead.';
+                        });
+                      });
+                    }
+                    return Container(color: Colors.black);
+                  }
+                },
               ),
             ),
 

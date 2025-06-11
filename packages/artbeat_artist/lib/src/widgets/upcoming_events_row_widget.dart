@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:intl/intl.dart';
-import '../models/event_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Widget for displaying upcoming local events in a horizontal scrollable row
 class UpcomingEventsRowWidget extends StatelessWidget {
@@ -48,8 +47,9 @@ class UpcomingEventsRowWidget extends StatelessWidget {
             stream: FirebaseFirestore.instance
                 .collection('events')
                 .where('isPublic', isEqualTo: true)
-                .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
-                .orderBy('date')
+                .where('startDate',
+                    isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+                .orderBy('startDate')
                 .limit(10)
                 .snapshots(),
             builder: (context, snapshot) {
@@ -64,8 +64,9 @@ class UpcomingEventsRowWidget extends StatelessWidget {
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: Text('No upcoming events in your area'),
+                  child: Text(
+                    'No upcoming events in your area',
+                    textAlign: TextAlign.center,
                   ),
                 );
               }
@@ -80,8 +81,9 @@ class UpcomingEventsRowWidget extends StatelessWidget {
               if (events.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: Center(
-                    child: Text('No upcoming events in your area'),
+                  child: Text(
+                    'No upcoming events in your area',
+                    textAlign: TextAlign.center,
                   ),
                 );
               }
@@ -92,49 +94,42 @@ class UpcomingEventsRowWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 itemBuilder: (context, index) {
                   final event = events[index];
-                  final formattedDate = DateFormat.MMMd().format(event.date);
-                  final formattedTime = DateFormat.jm().format(
-                    DateTime(
-                      event.date.year,
-                      event.date.month,
-                      event.date.day,
-                      event.startTime.hour,
-                      event.startTime.minute,
-                    ),
-                  );
+                  final formattedDate =
+                      DateFormat.MMMd().format(event.startDate);
+                  final formattedTime = DateFormat.jm().format(event.startDate);
 
-                  return GestureDetector(
-                    onTap: () => Navigator.pushNamed(
-                        context, '/calendar/event-detail',
-                        arguments: {'eventId': event.id}),
-                    child: Container(
-                      width: 240,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 4.0),
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
+                  return Container(
+                    width: 280,
+                    margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Card(
+                      child: InkWell(
+                        onTap: () {
+                          // TODO: Navigate to event details
+                        },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12.0)),
-                              child: Image.network(
-                                event.imageUrl,
-                                height: 120,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    height: 120,
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(Icons.event, size: 40),
-                                  );
-                                },
+                                top: Radius.circular(4.0),
                               ),
+                              child: event.imageUrl != null
+                                  ? Image.network(
+                                      event.imageUrl!,
+                                      height: 120,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      height: 120,
+                                      width: double.infinity,
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.event,
+                                        size: 48,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(12.0),
@@ -151,38 +146,22 @@ class UpcomingEventsRowWidget extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.calendar_today,
-                                          size: 14, color: Colors.grey),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '$formattedDate at $formattedTime',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    '$formattedDate at $formattedTime',
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.location_on,
-                                          size: 14, color: Colors.grey),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          event.location,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    event.location,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ],
                               ),

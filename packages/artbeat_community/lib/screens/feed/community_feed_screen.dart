@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_artwork/artbeat_artwork.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../models/post_model.dart';
-import '../../widgets/avatar_widget.dart';
-import '../../widgets/applause_button.dart';
+import '../../models/comment_model.dart';
+import '../../widgets/post_card.dart';
 import '../gifts/gifts_screen.dart';
 import '../portfolios/portfolios_screen.dart';
 import '../studios/studios_screen.dart';
 import '../commissions/commissions_screen.dart';
 import '../sponsorships/sponsorship_screen.dart';
+import '../../theme/index.dart';
 
-/// Tab configuration for the community navigation
 class CommunityTab {
   final IconData icon;
   final IconData selectedIcon;
@@ -35,13 +36,18 @@ class CommunityFeedScreen extends StatefulWidget {
 class _CommunityFeedScreenState extends State<CommunityFeedScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  // Social feed specific state
-  final _posts = <PostModel>[];
-  final _artworkService = ArtworkService();
-  final _artworks = <ArtworkModel>[];
+  final ScrollController _scrollController = ScrollController();
+
+  final List<PostModel> _posts = [];
+  final Set<String> _expandedPosts = {};
+  final Map<String, List<CommentModel>> _postComments = {};
+
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
+  bool _isLoadingMore = false;
+  static const int _postsPerPage = 10;
+  DocumentSnapshot? _lastDocument;
 
   late final List<CommunityTab> _tabs;
 
@@ -50,13 +56,63 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen>
     super.initState();
     _initializeTabs();
     _tabController = TabController(length: _tabs.length, vsync: this);
-    _loadFeedData();
+    _scrollController.addListener(_onScroll);
+    _loadFeed();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore) {
+      _loadMorePosts();
+    }
+  }
+
+  Future<void> _loadMorePosts() async {
+    if (_isLoadingMore || _lastDocument == null) return;
+
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final postsQuery = FirebaseFirestore.instance
+          .collection('posts')
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .startAfterDocument(_lastDocument!)
+          .limit(_postsPerPage);
+
+      final postsSnapshot = await postsQuery.get();
+
+      if (postsSnapshot.docs.isNotEmpty) {
+        _lastDocument = postsSnapshot.docs.last;
+
+        final morePosts = postsSnapshot.docs
+            .map((doc) => PostModel.fromDocument(doc))
+            .toList();
+
+        setState(() {
+          _posts.addAll(morePosts);
+        });
+
+        // Pre-fetch comments for new posts
+        for (final post in morePosts) {
+          _fetchComments(post.id);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading more posts: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingMore = false);
+      }
+    }
   }
 
   void _initializeTabs() {
@@ -64,7 +120,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen>
       CommunityTab(
         icon: Icons.home_outlined,
         selectedIcon: Icons.home,
-        label: 'Canvas',
+        label: 'Feed',
         screen: _buildFeedContent(),
       ),
       const CommunityTab(
@@ -100,112 +156,270 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen>
     ];
   }
 
-  // Remove duplicate dispose and unused page controller
+  Future<void> _loadFeed() async {
+    if (!mounted) return;
 
-  Future<void> _loadFeedData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+      _errorMessage = null;
+      _posts.clear();
+    });
+
     try {
-      setState(() {
-        _isLoading = true;
-        _hasError = false;
-        _errorMessage = null;
-      });
+      final postsQuery = FirebaseFirestore.instance
+          .collection('posts')
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(_postsPerPage);
 
-      // Load posts and artworks in parallel
-      await Future.wait([
-        _loadPosts(),
-        _loadArtworks(),
-      ]);
-    } catch (e) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = 'Failed to load feed. Please try again.';
-      });
-    } finally {
+      final postsSnapshot = await postsQuery.get();
+      _lastDocument =
+          postsSnapshot.docs.isNotEmpty ? postsSnapshot.docs.last : null;
+
+      final loadedPosts = postsSnapshot.docs
+          .map((doc) => PostModel.fromFirestore(doc))
+          .toList();
+
+      // Load initial comments for each post
+      for (final post in loadedPosts) {
+        final commentsSnapshot = await FirebaseFirestore.instance
+            .collection('comments')
+            .where('postId', isEqualTo: post.id)
+            .where('parentCommentId', isEqualTo: '')
+            .orderBy('createdAt', descending: true)
+            .limit(3)
+            .get();
+
+        _postComments[post.id] = commentsSnapshot.docs
+            .map((doc) => CommentModel.fromFirestore(doc))
+            .toList();
+      }
+
       if (mounted) {
         setState(() {
+          _posts.clear();
+          _posts.addAll(loadedPosts);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading feed: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = 'Failed to load feed. Please try again.';
           _isLoading = false;
         });
       }
     }
   }
 
-  Future<void> _loadPosts() async {
+  Future<void> _handleApplause(PostModel post) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('posts')
-          .where('isPublic', isEqualTo: true)
+      final docRef =
+          FirebaseFirestore.instance.collection('posts').doc(post.id);
+      final applauseRef = docRef.collection('applause').doc(userId);
+
+      final applauseDoc = await applauseRef.get();
+      int currentApplause = 0;
+
+      if (applauseDoc.exists) {
+        currentApplause = (applauseDoc.data() ?? {})['count'] as int? ?? 0;
+      }
+
+      if (currentApplause < PostModel.maxApplausePerUser) {
+        await Future.wait([
+          applauseRef.set({
+            'count': currentApplause + 1,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }),
+          docRef.update({
+            'applauseCount': FieldValue.increment(1),
+          }),
+        ]);
+      }
+
+      _loadFeed();
+    } catch (e) {
+      debugPrint('Error handling applause: $e');
+    }
+  }
+
+  void _handleUserTap(String userId) {
+    Navigator.pushNamed(context, '/profile/view', arguments: userId);
+  }
+
+  Future<void> _handleComment(String postId) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final TextEditingController commentController = TextEditingController();
+    String selectedType = 'Appreciation';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButton<String>(
+                  value: selectedType,
+                  items: ['Appreciation', 'Critique', 'Question', 'Tip']
+                      .map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      selectedType = newValue;
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: commentController,
+                  decoration: const InputDecoration(
+                    hintText: 'Add a comment...',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (commentController.text.trim().isEmpty) return;
+
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) return;
+
+                    try {
+                      await FirebaseFirestore.instance
+                          .collection('comments')
+                          .add({
+                        'postId': postId,
+                        'userId': user.uid,
+                        'content': commentController.text.trim(),
+                        'parentCommentId': '',
+                        'type': selectedType,
+                        'createdAt': FieldValue.serverTimestamp(),
+                        'userName': user.displayName ?? 'Anonymous',
+                        'userAvatarUrl': user.photoURL ?? '',
+                      });
+
+                      await FirebaseFirestore.instance
+                          .collection('posts')
+                          .doc(postId)
+                          .update({
+                        'commentCount': FieldValue.increment(1),
+                      });
+
+                      if (mounted) {
+                        _loadFeed();
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    } catch (e) {
+                      debugPrint('Error adding comment: $e');
+                    }
+                  },
+                  child: const Text('Post Comment'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleShare(PostModel post) async {
+    // Convert post data into a shareable format
+    final shareText = '''
+Check out this ${post.tags.isNotEmpty ? '#${post.tags.first} ' : ''}artwork on ARTbeat!
+
+${post.content}
+
+By ${post.userName} in ${post.location}
+
+Download ARTbeat to see more: https://artbeat.app
+''';
+
+    try {
+      // Share using share_plus
+      await Share.share(shareText, subject: 'ARTbeat: Art by ${post.userName}');
+
+      // Update share count in Firestore
+      await FirebaseFirestore.instance.collection('posts').doc(post.id).update({
+        'shareCount': FieldValue.increment(1),
+      });
+
+      // We need to update the UI after incrementing the share count
+      if (mounted) {
+        _loadFeed();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Post shared successfully')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error handling share: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to share post')),
+        );
+      }
+    }
+  }
+
+  void _togglePostExpanded(String postId) {
+    setState(() {
+      if (_expandedPosts.contains(postId)) {
+        _expandedPosts.remove(postId);
+      } else {
+        _expandedPosts.add(postId);
+        // When expanding a post, make sure we have its comments
+        _fetchComments(postId);
+      }
+    });
+  }
+
+  Future<void> _fetchComments(String postId) async {
+    try {
+      final commentsSnapshot = await FirebaseFirestore.instance
+          .collection('comments')
+          .where('postId', isEqualTo: postId)
+          .where('parentCommentId', isEqualTo: '')
           .orderBy('createdAt', descending: true)
-          .limit(20)
+          .limit(3)
           .get();
 
-      final posts = snapshot.docs
-          .map((doc) {
-            try {
-              return PostModel.fromFirestore(doc);
-            } catch (e, stackTrace) {
-              debugPrint('Error parsing post ${doc.id}: $e\n$stackTrace');
-              return null;
-            }
-          })
-          .whereType<PostModel>()
-          .toList();
-
       if (mounted) {
         setState(() {
-          _posts.clear();
-          _posts.addAll(posts);
+          _postComments[postId] = commentsSnapshot.docs
+              .map((doc) => CommentModel.fromFirestore(doc))
+              .toList();
         });
       }
-    } catch (e, stackTrace) {
-      debugPrint('Error loading posts: $e\n$stackTrace');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = 'Failed to load posts. Please try again.';
-        });
-      }
+    } catch (e) {
+      debugPrint('Error fetching comments for post $postId: $e');
     }
-  }
-
-  Future<void> _loadArtworks() async {
-    try {
-      // Use ArtworkService to load featured public artworks
-      final artworks = await _artworkService.getFeaturedArtwork();
-
-      if (mounted) {
-        setState(() {
-          _artworks.clear();
-          _artworks.addAll(artworks);
-        });
-      }
-    } catch (e, stackTrace) {
-      debugPrint('Error loading artworks: $e\n$stackTrace');
-      if (mounted) {
-        setState(() {
-          _hasError = true;
-          _errorMessage = 'Failed to load artworks. Please try again.';
-        });
-      }
-    }
-  }
-
-  void _navigateToComments(String postId) async {
-    // TODO: Implement with proper navigation service
-    debugPrint('Navigate to comments for post: $postId');
-  }
-
-  Future<void> _sharePost(String postId) async {
-    // TODO: Implement with share_plus package
-    debugPrint('Share post: $postId');
   }
 
   Widget _buildFeedContent() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-        ),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
@@ -213,333 +427,136 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              _errorMessage ?? 'An error occurred',
-              style: const TextStyle(color: Colors.white),
-            ),
+            Text(_errorMessage ?? 'An error occurred'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loadFeedData,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color(0xFF8C52FF),
-              ),
-              child: const Text('Try Again'),
+              onPressed: _loadFeed,
+              child: const Text('Retry'),
             ),
           ],
         ),
       );
     }
 
-    if (_posts.isEmpty && _artworks.isEmpty) {
-      return const Center(
-        child: Text(
-          'No content to show yet',
-          style: TextStyle(color: Colors.white),
+    if (_posts.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('No posts yet'),
+            const SizedBox(height: 16),
+            if (FirebaseAuth.instance.currentUser != null) ...[
+              ElevatedButton(
+                onPressed: _createSamplePost,
+                child: const Text('Create Sample Post'),
+              ),
+              const SizedBox(height: 8),
+            ],
+            ElevatedButton(
+              onPressed: _loadFeed,
+              child: const Text('Refresh'),
+            ),
+          ],
         ),
       );
     }
 
     return RefreshIndicator(
-      onRefresh: _loadFeedData,
+      onRefresh: _loadFeed,
       child: ListView.builder(
-        padding: EdgeInsets.only(
-          top: 8,
-          bottom: MediaQuery.of(context).padding.bottom + 80,
-          left: 8,
-          right: 8,
-        ),
-        itemCount: _posts.length + _artworks.length,
+        itemCount: _posts.length,
         itemBuilder: (context, index) {
-          // Alternate between posts and artworks
-          if (index % 2 == 0 && index ~/ 2 < _posts.length) {
-            return _buildPostCard(_posts[index ~/ 2]);
-          } else if ((index - 1) ~/ 2 < _artworks.length) {
-            return _buildArtworkCard(_artworks[(index - 1) ~/ 2]);
-          }
-          return null;
+          final post = _posts[index];
+          final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+          return PostCard(
+            post: post,
+            currentUserId: currentUserId,
+            comments: _postComments[post.id] ?? [],
+            onUserTap: _handleUserTap,
+            onApplause: _handleApplause,
+            onComment: _handleComment,
+            onShare: _handleShare,
+            isExpanded: _expandedPosts.contains(post.id),
+            onToggleExpand: () => _togglePostExpanded(post.id),
+          );
         },
       ),
     );
   }
 
-  Widget _buildImageWidget(String? imageUrl) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return const SizedBox(
-        height: 200,
-        child: Center(
-          child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
-        ),
+  Future<void> _createSamplePost() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final now = DateTime.now();
+      await FirebaseFirestore.instance.collection('posts').add({
+        'userId': user.uid,
+        'userName': user.displayName ?? 'Anonymous',
+        'userPhotoUrl': user.photoURL ?? 'https://placekitten.com/200/200',
+        'content': 'Welcome to ARTbeat! This is my first post.',
+        'imageUrls': ['https://placekitten.com/800/600'],
+        'tags': ['welcome', 'first-post'],
+        'location': 'San Francisco',
+        'createdAt': now,
+        'applauseCount': 0,
+        'commentCount': 0,
+        'shareCount': 0,
+        'isPublic': true,
+        'geoPoint':
+            const GeoPoint(37.7749, -122.4194), // San Francisco coordinates
+        'zipCode': '94105',
+      });
+
+      _loadFeed();
+    } catch (e) {
+      debugPrint('Error creating sample post: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to create sample post')),
       );
     }
-
-    return Image.network(
-      imageUrl,
-      height: 200,
-      width: double.infinity,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return const SizedBox(
-          height: 200,
-          child: Center(
-            child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
-          ),
-        );
-      },
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return SizedBox(
-          height: 200,
-          child: Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                  : null,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPostCard(PostModel post) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: AvatarWidget(avatarUrl: post.userPhotoUrl),
-            title: Text(post.userName),
-            subtitle: Text(post.location),
-            trailing: Text(
-              _formatTimestamp(post.createdAt),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
-          if (post.content.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(post.content),
-            ),
-          if (post.imageUrls.isNotEmpty)
-            SizedBox(
-              height: 200,
-              child: PageView.builder(
-                itemCount: post.imageUrls.length,
-                itemBuilder: (context, index) =>
-                    _buildImageWidget(post.imageUrls[index]),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ApplauseButton(
-                  postId: post.id,
-                  userId: post.userId,
-                ),
-                TextButton.icon(
-                  icon: const Icon(Icons.comment),
-                  label: Text('${post.commentCount}'),
-                  onPressed: () => _navigateToComments(post.id),
-                ),
-                TextButton.icon(
-                  icon: const Icon(Icons.share),
-                  label: Text('${post.shareCount}'),
-                  onPressed: () => _sharePost(post.id),
-                ),
-              ],
-            ),
-          ),
-          if (post.tags.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Wrap(
-                spacing: 8,
-                children: post.tags
-                    .map((tag) => Chip(
-                          label: Text('#$tag'),
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                        ))
-                    .toList(),
-              ),
-            ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  // Helper method to format Timestamps
-  String _formatTimestamp(dynamic timestamp) {
-    DateTime date;
-    if (timestamp is Timestamp) {
-      date = timestamp.toDate();
-    } else if (timestamp is DateTime) {
-      date = timestamp;
-    } else {
-      return 'Invalid date';
-    }
-    return '${date.day}/${date.month}/${date.year}';
-  }
-
-  Widget _buildArtworkCard(ArtworkModel artwork) {
-    return Card(
-      margin: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildImageWidget(artwork.imageUrl),
-          ListTile(
-            title: Text(artwork.title),
-            subtitle: Text(artwork.medium),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    artwork.location ?? 'No location',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ),
-                Text(
-                  _formatTimestamp(artwork.createdAt),
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF8C52FF), // Purple
-            Color(0xFF00BF63), // Green
-          ],
-        ),
-      ),
-      child: Column(
-        children: [
-          _buildTopMenu(),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: _tabs.map((tab) => tab.screen).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTopMenu() {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Container(
-      padding: EdgeInsets.only(top: topPadding),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Community header with filter
-          SizedBox(
-            height: 56,
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 16),
-                    child: Text(
-                      'Community',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+    return CommunityThemeWrapper(
+      child: Scaffold(
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                title: const Text('Community'),
+                elevation: innerBoxIsScrolled ? 2 : 0,
+                bottom: TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabs: _tabs.map((tab) {
+                    return Tab(
+                      icon: Icon(
+                        _tabController.index == _tabs.indexOf(tab)
+                            ? tab.selectedIcon
+                            : tab.icon,
                       ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.filter_list, color: Colors.white),
-                  onPressed: () {
-                    // TODO: Implement filtering
-                  },
-                ),
-              ],
-            ),
-          ),
-          // Scrolling tabs bar
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                for (int i = 0; i < _tabs.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: _buildTab(i),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTab(int index) {
-    final isSelected = _tabController.index == index;
-    final tab = _tabs[index];
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => _tabController.animateTo(index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color:
-                isSelected ? Colors.white.withOpacity(0.2) : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSelected ? Colors.white : Colors.white.withOpacity(0.5),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isSelected ? tab.selectedIcon : tab.icon,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                tab.label,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      text: tab.label,
+                    );
+                  }).toList(),
                 ),
               ),
-            ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: _tabs.map((tab) => tab.screen).toList(),
           ),
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.pushNamed(context, '/community/post/create');
+          },
+          icon: const Icon(Icons.add),
+          label: const Text('Share'),
         ),
       ),
     );

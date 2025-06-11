@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class FollowersListScreen extends StatefulWidget {
   final String userId;
@@ -12,70 +13,102 @@ class FollowersListScreen extends StatefulWidget {
 
 class _FollowersListScreenState extends State<FollowersListScreen> {
   bool _isLoading = true;
-  List<Map<String, dynamic>> _followers = [];
-  final User? _currentUser = FirebaseAuth.instance.currentUser;
+  bool _isUpdating = false;
+  List<UserModel> _followers = [];
+  bool _isCurrentUser = false;
+  final UserService _userService = UserService();
 
   @override
   void initState() {
     super.initState();
+    _isCurrentUser = widget.userId == FirebaseAuth.instance.currentUser?.uid;
     _loadFollowers();
   }
 
   Future<void> _loadFollowers() async {
-    // In a real app, fetch followers from Firestore
-    // For now, use placeholder data
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate network delay
+    if (!mounted) return;
 
-    if (mounted) {
+    try {
       setState(() {
-        _followers = List.generate(
-          15,
-          (index) => {
-            'id': 'user_$index',
-            'username': 'follower_$index',
-            'name': 'Follower ${index + 1}',
-            'profileImageUrl': '', // This would come from Firebase Storage
-            'isFollowedByMe':
-                index % 3 == 0, // Some are followed by current user
-          },
-        );
-        _isLoading = false;
+        _isLoading = true;
       });
+
+      final followers = await _userService.getFollowers(widget.userId);
+
+      if (mounted) {
+        setState(() {
+          _followers = followers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading followers: $e')),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  Future<void> _toggleFollow(int index) async {
-    // In a real app, update follow status in Firestore
-    setState(() {
-      _followers[index]['isFollowedByMe'] =
-          !_followers[index]['isFollowedByMe'];
-    });
+  Future<void> _toggleFollow(UserModel follower) async {
+    if (_isUpdating) return; // Prevent multiple simultaneous updates
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 300));
+    try {
+      setState(() {
+        _isUpdating = true;
+      });
 
-    // Show confirmation
-    if (mounted) {
-      final isFollowing = _followers[index]['isFollowedByMe'];
-      final username = _followers[index]['username'];
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        throw Exception('Must be logged in to follow/unfollow users');
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isFollowing
-                ? 'You are now following $username'
-                : 'You unfollowed $username',
+      final isFollowing = await _userService.isFollowing(follower.id);
+
+      if (isFollowing) {
+        await _userService.unfollowUser(follower.id);
+      } else {
+        await _userService.followUser(follower.id);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isFollowing
+                  ? 'Unfollowed ${follower.fullName}'
+                  : 'Now following ${follower.fullName}',
+            ),
+            duration: const Duration(seconds: 2),
           ),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating follow status: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Followers ${_isLoading ? '' : '(${_followers.length})'}'),
@@ -91,54 +124,59 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
                   itemCount: _followers.length,
                   itemBuilder: (context, index) {
                     final follower = _followers[index];
-                    final isCurrentUser = follower['id'] == _currentUser?.uid;
+                    final isCurrentUser = follower.id == currentUserId;
 
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.grey.shade200,
-                        backgroundImage: follower['profileImageUrl'].isNotEmpty
-                            ? NetworkImage(follower['profileImageUrl'])
-                                as ImageProvider
-                            : const AssetImage('assets/default_profile.png'),
-                        child: follower['profileImageUrl'].isEmpty
-                            ? const Icon(Icons.person, color: Colors.grey)
+                        backgroundImage: follower.profileImageUrl != null
+                            ? NetworkImage(follower.profileImageUrl!)
+                            : null,
+                        child: follower.profileImageUrl == null
+                            ? Text(
+                                follower.fullName[0].toUpperCase(),
+                                style: const TextStyle(color: Colors.grey),
+                              )
                             : null,
                       ),
                       title: Text(
-                        follower['username'],
+                        follower.fullName,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      subtitle: Text(follower['name']),
-                      trailing: isCurrentUser
+                      subtitle: Text(follower.username ?? ''),
+                      trailing: !_isCurrentUser || isCurrentUser
                           ? null
-                          : TextButton(
-                              onPressed: () => _toggleFollow(index),
-                              style: TextButton.styleFrom(
-                                backgroundColor: follower['isFollowedByMe']
-                                    ? Colors.grey.shade200
-                                    : Theme.of(
-                                        context,
-                                      ).primaryColor.withAlpha(25),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                  side: follower['isFollowedByMe']
-                                      ? BorderSide.none
-                                      : BorderSide(
-                                          color: Theme.of(context).primaryColor,
-                                        ),
-                                ),
-                                minimumSize: const Size(80, 30),
-                              ),
-                              child: Text(
-                                follower['isFollowedByMe']
-                                    ? 'Following'
-                                    : 'Follow',
-                                style: TextStyle(
-                                  color: follower['isFollowedByMe']
-                                      ? Colors.black
-                                      : Theme.of(context).primaryColor,
-                                ),
-                              ),
+                          : FutureBuilder<bool>(
+                              future: _userService.isFollowing(follower.id),
+                              builder: (context, snapshot) {
+                                final isFollowing = snapshot.data ?? false;
+
+                                return TextButton(
+                                  onPressed: () => _toggleFollow(follower),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: isFollowing
+                                        ? Colors.grey.shade200
+                                        : theme.primaryColor.withAlpha(25),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5),
+                                      side: isFollowing
+                                          ? BorderSide.none
+                                          : BorderSide(
+                                              color: theme.primaryColor,
+                                            ),
+                                    ),
+                                    minimumSize: const Size(80, 30),
+                                  ),
+                                  child: Text(
+                                    isFollowing ? 'Following' : 'Follow',
+                                    style: TextStyle(
+                                      color: isFollowing
+                                          ? Colors.black
+                                          : theme.primaryColor,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                       onTap: () {
                         // Navigate to the follower's profile
@@ -146,7 +184,7 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
                           context,
                           '/profile/view',
                           arguments: {
-                            'userId': follower['id'],
+                            'userId': follower.id,
                             'isCurrentUser': isCurrentUser,
                           },
                         );

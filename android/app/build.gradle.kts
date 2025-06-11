@@ -11,8 +11,6 @@ plugins {
 android {
     namespace = "com.wordnerd.artbeat"
     compileSdk = flutter.compileSdkVersion
-    // Comment out NDK version if not using native code
-    // ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -51,6 +49,13 @@ android {
         buildConfigField("String", "FIREBASE_APP_CHECK_DEBUG_TOKEN", "\"fae8ac60-fccf-486c-9844-3e3dbdb9ea3f\"")
         buildConfigField("boolean", "FIREBASE_APP_CHECK_DEBUG_MODE", "true")
         manifestPlaceholders["firebase_app_check_debug"] = "true"
+        
+        // D8/R8 Configurations for handling larger classes
+        multiDexEnabled = true
+        dexOptions {
+            javaMaxHeapSize = "4g"
+            preDexLibraries = true
+        }
     }
 
     buildTypes {
@@ -85,24 +90,52 @@ android {
         prefab = false
     }
     
-    // No native build configuration needed
-}
-
-flutter {
-    source = "../.."
+    packaging {
+        // Fix for Bouncy Castle conflicts
+        resources {
+            excludes += listOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE",
+                "META-INF/LICENSE.txt",
+                "META-INF/license.txt",
+                "META-INF/NOTICE",
+                "META-INF/NOTICE.txt",
+                "META-INF/notice.txt",
+                "META-INF/*.kotlin_module",
+                "META-INF/BCKEY.DSA",
+                "META-INF/BCKEY.SF",
+                "META-INF/BC1024KE.DSA",
+                "META-INF/BC1024KE.SF",
+                "META-INF/BC2048KE.DSA",
+                "META-INF/BC2048KE.SF"
+            )
+            pickFirsts += listOf(
+                "META-INF/versions/9/previous-compilation-data.bin",
+                "lib/arm64-v8a/libcrypto.so",
+                "lib/arm64-v8a/libssl.so",
+                "lib/armeabi-v7a/libcrypto.so",
+                "lib/armeabi-v7a/libssl.so",
+                "lib/x86_64/libcrypto.so",
+                "lib/x86_64/libssl.so"
+            )
+        }
+    }
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-    implementation("com.google.android.material:material:1.11.0") // Required by Stripe
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-    implementation("com.google.android.gms:play-services-location:21.2.0")
-    implementation("com.google.android.gms:play-services-base:18.3.0")
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     
-    // Camera and ML Kit dependencies
-    implementation("androidx.camera:camera-camera2:1.3.2")
-    implementation("androidx.camera:camera-lifecycle:1.3.2")
-    implementation("androidx.camera:camera-view:1.3.2")
-    implementation("com.google.mlkit:text-recognition:16.0.0")
+    // Force Bouncy Castle version to 1.76 to avoid conflicts
+    constraints {
+        implementation("org.bouncycastle:bcprov-jdk15to18:1.76")
+        implementation("org.bouncycastle:bcpkix-jdk15to18:1.76")
+    }
+    
+    // D8/R8 Configuration
+    configurations.all {
+        resolutionStrategy {
+            force("org.bouncycastle:bcprov-jdk15to18:1.76")
+            force("org.bouncycastle:bcpkix-jdk15to18:1.76")
+        }
+    }
 }

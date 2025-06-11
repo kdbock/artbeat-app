@@ -273,42 +273,62 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Follow user
+  /// Follow another user
   Future<void> followUser(String targetUserId) async {
-    final user = currentUser;
-    if (user == null) throw Exception('No user logged in');
-    if (user.uid == targetUserId) throw Exception('Cannot follow yourself');
-
     try {
+      final user = currentUser;
+      if (user == null) throw Exception('Must be logged in to follow users');
+      if (user.uid == targetUserId) throw Exception('Cannot follow yourself');
+
+      // Get the target user to ensure they exist
+      final targetUserDoc = await _usersCollection.doc(targetUserId).get();
+      if (!targetUserDoc.exists) throw Exception('User not found');
+
+      // Start a batch write
       final batch = _firestore.batch();
 
       // Add to following collection
-      batch.set(_followingCollection.doc('${user.uid}_$targetUserId'), {
-        'followerId': user.uid,
-        'followingId': targetUserId,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      batch.set(
+        _followingCollection.doc('${user.uid}_$targetUserId'),
+        {
+          'followerId': user.uid,
+          'followingId': targetUserId,
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+      );
 
       // Add to followers collection
-      batch.set(_followersCollection.doc('${targetUserId}_${user.uid}'), {
-        'followerId': user.uid,
-        'followingId': targetUserId,
-        'createdAt': FieldValue.serverTimestamp(),
+      batch.set(
+        _followersCollection.doc('${targetUserId}_${user.uid}'),
+        {
+          'followerId': user.uid,
+          'followingId': targetUserId,
+          'createdAt': FieldValue.serverTimestamp(),
+        },
+      );
+
+      // Increment counts
+      batch.update(_usersCollection.doc(user.uid), {
+        'followingCount': FieldValue.increment(1),
+      });
+      batch.update(_usersCollection.doc(targetUserId), {
+        'followersCount': FieldValue.increment(1),
       });
 
       await batch.commit();
     } catch (e) {
-      print('Error following user: $e');
+      debugPrint('Error following user: $e');
       rethrow;
     }
   }
 
-  // Unfollow user
+  /// Unfollow a user
   Future<void> unfollowUser(String targetUserId) async {
-    final user = currentUser;
-    if (user == null) throw Exception('No user logged in');
-
     try {
+      final user = currentUser;
+      if (user == null) throw Exception('Must be logged in to unfollow users');
+
+      // Start a batch write
       final batch = _firestore.batch();
 
       // Remove from following collection
@@ -317,9 +337,21 @@ class UserService extends ChangeNotifier {
       // Remove from followers collection
       batch.delete(_followersCollection.doc('${targetUserId}_${user.uid}'));
 
+      // Decrement counts if the documents existed
+      final followingDoc =
+          await _followingCollection.doc('${user.uid}_$targetUserId').get();
+      if (followingDoc.exists) {
+        batch.update(_usersCollection.doc(user.uid), {
+          'followingCount': FieldValue.increment(-1),
+        });
+        batch.update(_usersCollection.doc(targetUserId), {
+          'followersCount': FieldValue.increment(-1),
+        });
+      }
+
       await batch.commit();
     } catch (e) {
-      print('Error unfollowing user: $e');
+      debugPrint('Error unfollowing user: $e');
       rethrow;
     }
   }
@@ -374,17 +406,17 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Check if user is following another user
+  /// Check if the current user is following another user
   Future<bool> isFollowing(String targetUserId) async {
-    final user = currentUser;
-    if (user == null) return false;
-
     try {
+      final user = currentUser;
+      if (user == null) return false;
+
       final doc =
           await _followingCollection.doc('${user.uid}_$targetUserId').get();
       return doc.exists;
     } catch (e) {
-      print('Error checking follow status: $e');
+      debugPrint('Error checking follow status: $e');
       return false;
     }
   }

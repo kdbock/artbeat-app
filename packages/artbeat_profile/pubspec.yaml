@@ -14,6 +14,8 @@ dependencies:
     path: ../artbeat_core
   artbeat_art_walk:
     path: ../artbeat_art_walk
+  artbeat_capture:
+    path: ../artbeat_capture
   firebase_auth: ^4.17.4 # Matching version for firebase_core 2.32.0
   cloud_firestore: ^4.15.4  # Matching version for firebase_core 2.32.0
   firebase_storage: ^11.7.7  # Matching version for firebase_core 2.32.0

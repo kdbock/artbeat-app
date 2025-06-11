@@ -32,6 +32,28 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   cupertino_icons: ^1.0.5
   
+  # Local package dependencies
+  artbeat_core:
+    path: packages/artbeat_core
+  artbeat_auth:
+    path: packages/artbeat_auth
+  artbeat_profile:
+    path: packages/artbeat_profile
+  artbeat_artwork:
+    path: packages/artbeat_artwork
+  artbeat_art_walk:
+    path: packages/artbeat_art_walk
+  artbeat_artist:
+    path: packages/artbeat_artist
+  artbeat_community:
+    path: packages/artbeat_community
+  artbeat_settings:
+    path: packages/artbeat_settings
+  artbeat_capture:
+    path: packages/artbeat_capture
+  artbeat_messaging:
+    path: packages/artbeat_messaging
+
   # Firebase dependencies - align with packages
   firebase_core: ^2.24.2  # Base version
   firebase_auth: ^4.15.3  # Compatible with firebase_core 2.24.2
@@ -71,26 +93,6 @@ dependencies:
   vector_math: ^2.1.4  # Required for Matrix4 operations
   provider: ^6.1.1
   intl: ^0.19.0  # Updated to latest version
-
-  # Local packages
-  artbeat_core:
-    path: packages/artbeat_core
-  artbeat_auth:
-    path: packages/artbeat_auth
-  artbeat_profile:
-    path: packages/artbeat_profile
-  artbeat_artist:
-    path: packages/artbeat_artist
-  artbeat_artwork:
-    path: packages/artbeat_artwork
-  artbeat_art_walk:
-    path: packages/artbeat_art_walk
-  artbeat_community:
-    path: packages/artbeat_community
-  artbeat_settings:
-    path: packages/artbeat_settings
-  artbeat_capture:
-    path: packages/artbeat_capture
 
 dev_dependencies:
   flutter_test:
