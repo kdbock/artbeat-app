@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'settings_module_test.dart' as settings_module_test;
-import 'services/settings_service_simple_test.dart' as settings_service_simple_test;
+import 'services/settings_service_simple_test.dart'
+    as settings_service_simple_test;
+import 'services/settings_service_for_testing_simplified_test.dart'
+    as settings_service_for_testing_simplified_test;
 
 /// Main test file for artbeat_settings module
 /// This file runs all settings module tests
@@ -8,7 +11,8 @@ void main() {
   // Run individual test suites
   settings_module_test.main();
   settings_service_simple_test.main();
-  
+  settings_service_for_testing_simplified_test.main();
+
   // Additional tests
   group('Settings Basic Tests', () {
     // Test settings service initialization
@@ -31,10 +35,10 @@ void main() {
         'pushNotifications': false,
         'inAppNotifications': true
       };
-      
+
       // Update a setting
       settings['pushNotifications'] = true;
-      
+
       expect(settings['pushNotifications'], isTrue);
       expect(settings['emailNotifications'], isTrue);
       expect(settings['inAppNotifications'], isTrue);
@@ -49,11 +53,12 @@ void main() {
           'showLocation': false
         }
       };
-      
+
       // Update a nested setting
-      final privacySettings = settings['privacySettings'] as Map<String, dynamic>;
+      final privacySettings =
+          settings['privacySettings'] as Map<String, dynamic>;
       privacySettings['profileVisibility'] = 'private';
-      
+
       expect(privacySettings['profileVisibility'], 'private');
       expect(privacySettings['allowMessages'], isTrue);
       expect(privacySettings['showLocation'], isFalse);

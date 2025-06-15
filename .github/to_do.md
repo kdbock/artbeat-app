@@ -26,24 +26,39 @@
 - [ ] Create reusable test helpers for common testing operations
 - [ ] Implement test fixture generation for consistent test data
 
+## Test File Cleanup Tasks (June 15-20, 2025)
+- [x] Review and identify old/nonworking test files across modules
+- [x] Clean up settings module test files (removed settings_service_for_testing_test.dart)
+- [x] Clean up art_walk module test files (removed duplicate achievement service test file)
+- [x] Update all_tests.dart files to include only working tests
+- [x] Create art_walk module all_tests.dart test runner
+- [ ] Fix Firestore interface compatibility issues in art_walk module tests
+- [ ] Fix enhanced_settings_service.dart interface compatibility issues
+- [ ] Run complete test suite to verify all tests are working
+- [ ] Document test file organization and structure for each module
+
 ## Future Module-Specific Test Improvements (July 2025)
 
 ### Art Walk Module
 - [ ] Add integration tests for map interactions
 - [ ] Create widget tests for map UI components
 - [ ] Implement more test scenarios for achievement service
+- [ ] Fix compatibility issues with Firestore query interfaces
 
 ### Community Module
 - [ ] Add tests for post filtering functionality
 - [ ] Create tests for content moderation features
 - [ ] Implement tests for community guidelines enforcement
+- [ ] Add more test cases for error handling scenarios
 
 ### Messaging Module
 - [ ] Add tests for message delivery status tracking
 - [ ] Create tests for chat archiving functionality
 - [ ] Implement tests for message search features
+- [ ] Add test coverage for offline message queuing
 
 ### Settings Module
 - [ ] Add widget tests for settings screens
 - [ ] Create integration tests for settings persistence
 - [ ] Implement tests for account deletion process
+- [ ] Fix enhanced_settings_service inheritance issues
