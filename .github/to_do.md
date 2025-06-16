@@ -1,5 +1,100 @@
 # ARTbeat To-Do List
 
+## Priority 1: Core UI/UX Improvements
+
+### Theme System Implementation
+1. Core Theme Foundation
+   - [] `artbeat_core`: Core Theme Migration
+     - [] Update theme definition system in `/packages/artbeat_core/lib/theme`
+     - [] Create base widget theme extensions
+     - [] Implement theme provider system
+     - [] Add dark mode support
+     - [] Create theme preview page for testing
+
+2. Module Theme Implementation
+   - [] Create module theme guidelines document
+   - [] Implement theme system in each module:
+     - [] `artbeat_auth`: Authentication screens and forms
+     - [] `artbeat_profile`: Profile components and layouts
+     - [] `artbeat_artwork`: Gallery and upload interfaces
+     - [] `artbeat_artist`: Artist-specific components
+     - [] `artbeat_art_walk`: Map and location interfaces
+     - [] `artbeat_community`: Social feed and interaction elements
+     - [] `artbeat_messaging`: Chat and notification interfaces
+     - [] `artbeat_settings`: Settings screens and controls
+
+3. Theme Integration Testing
+   - [] Create theme compliance tests
+   - [] Test theme inheritance across modules
+   - [] Verify dark mode in all modules
+   - [] Test theme responsiveness
+   - [] Validate accessibility standards
+
+### Critical UI Fixes
+1. Navigation and Authentication
+   - [] `artbeat_auth`: Fix authentication flow
+     - [] Repair non-functioning sign-out button
+     - [] Implement proper welcome screen
+     - [] Add loading states
+     - [] Improve error handling UI
+
+2. Core Features
+   - [] `artbeat_art_walk`: Fix map functionality
+     - [] Debug and fix Google Maps integration
+     - [] Implement proper zip code search
+     - [] Create intuitive art walk creation flow
+     - [] Add loading states for map data
+
+   - [] `artbeat_community`: Resolve feed issues
+     - [] Fix permission errors in feed screen
+     - [] Implement proper error handling
+     - [] Add content loading states
+     - [] Improve post interaction UI
+
+### Module-Specific UI Improvements
+1. Artist Experience
+   - [] `artbeat_artist`: New onboarding flow
+     - [] Design and implement artist "start" page
+     - [] Create step-by-step account setup wizard
+     - [] Add progress indicators
+     - [] Implement subscription tier UI
+
+2. Profile and Artwork Management
+   - [] `artbeat_profile`: Redesign profile suite
+     - [] Create unique profile layout
+     - [] Implement custom interaction patterns
+     - [] Add artist-specific features
+     - [] Improve gallery presentation
+
+   - [] `artbeat_artwork`: Modernize upload system
+     - [] Redesign upload interface
+     - [] Add support for new art mediums
+     - [] Improve image preview system
+     - [] Fix ML Kit integration errors:
+       ```
+       Note: Resolve unsafe operations in:
+       - google_mlkit_commons InputImageConverter.java
+       - google_mlkit_text_recognition TextRecognizer.java
+       ```
+
+3. Supporting Features
+   - [] `artbeat_messaging`: Implement messaging UI
+   - [] `artbeat_settings`: Create settings interface
+
+## Priority 2: Technical Maintenance
+1. ✅ Clean up test cache files and implement proper Git management
+   - ✅ Updated .gitignore to exclude test cache files and build artifacts
+   - ✅ Created cleanup scripts (cleanup_test_cache.sh, remove_large_files.sh)
+   - ✅ Removed test cache files from git history
+   - ✅ Added documentation for test cache management
+   - ✅ Set up proper .dill file handling
+
+2. [] Regular maintenance tasks
+   - [] Set up automated cleanup job for test cache files
+   - [] Implement size checks in CI pipeline for large files
+   - [] Create documentation for package-specific build artifacts
+   - [] Set up Git LFS for necessarily large files
+
 ## app security
 1. ✅ Check for API, Keys, and other security issues in the app. Resolve any issues found.
    - ✅ Removed hardcoded API keys from all module initialization files
@@ -49,26 +144,53 @@ Remaining Administrator Tasks:
 - [] Add ability to view user's refund policy from the admin dashboard
 - [] Add ability to view user's shipping and handling policy from the admin dashboard
 - []
-## Visual changes:
-1. Apply artbeat theme system (/Users/kristybock/artbeat/packages/artbeat_core/lib/theme) to all screens, widgets, navigations, headers and footers:
-- [] `artbeat_core` 
-- [] `artbeat_auth` 
-      - the auth module only shows welcome user name and sign out button that doesn't work. 
-- [] `artbeat_profile` 
-     - fix profile suite page styling. It looks entirely too much like Facebook and Instagram.
-- [] `artbeat_artwork` 
-     - rework upload screen, there are more mediums and types of art that will need to be represented. The format looks clunky and dated. 
-     - resolve errors: "Note: /Users/kristybock/.pub-cache/hosted/pub.dev/google_mlkit_commons-0.6.1/android/src/main/java/com/google_mlkit_commons/InputImageConverter.java uses unchecked or unsafe operations.
-     Note: /Users/kristybock/.pub-cache/hosted/pub.dev/google_mlkit_text_recognition-0.11.0/android/src/main/java/com/google_mlkit_text_recognition/TextRecognizer.java uses unchecked or unsafe operations.
-- [] `artbeat_artist` 
-     - add Artist "start" page that walks a user to the process of creating an artist account.
-- [] `artbeat_art_walk` 
-     - The map isn't working correctly
-     - the zip code feature isn't working
-     - create module entry screen that walks a user through creating an artwalk
-- [] `artbeat_community`
-     - Fix the feed home screen [There are multile permissions errors on the feed screen.] 
-     - resolve permissions errors for all screens
-- [] `artbeat_messaging` 
-- [] `artbeat_settings` 
+## Priority 3: Security and Administration
+
+### Security Improvements
+- [] Complete remaining security tasks
+- [] Implement security scanning tools
+- [] Set up continuous security monitoring
+
+### Administrator Features
+Remaining high-priority admin tasks:
+- [] Implement two-factor authentication
+- [] Set up comprehensive audit logging
+- [] Create backup procedures
+- [] Configure monitoring systems
+
+## Priority 4: Future Enhancements
+
+### User Management Features
+- [] Advanced user analytics
+- [] Enhanced notification system
+- [] Improved messaging features
+
+### Policy Management
+- [] Update and implement all policy documents
+- [] Create policy management interface
+- [] Set up automated policy updates
+
+## Development Guidelines
+
+### Coding Standards
+1. All new features must:
+   - Follow the artbeat theme system
+   - Include proper error handling
+   - Implement loading states
+   - Support offline functionality
+   - Include unit and integration tests
+
+### Testing Requirements
+1. Each module requires:
+   - Unit tests for all services
+   - Widget tests for UI components
+   - Integration tests for user flows
+   - Performance testing
+
+### Documentation
+1. Required documentation:
+   - API documentation
+   - User guides
+   - Testing guides
+   - Deployment procedures 
 
