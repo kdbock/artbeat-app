@@ -9,19 +9,9 @@ find . -type d -name "test_cache" -exec rm -rf {} +
 find . -type f -name "*.dill" -path "*/build/*" -exec rm -f {} +
 
 # Remove build directories in packages
-for dir in packages/*/build; do
-  if [ -d "$dir" ]; then
-    echo "Removing $dir"
-    rm -rf "$dir"
-  fi
-done
+find ./packages -type d -name "build" -exec rm -rf {} +
 
 # Remove .dart_tool directories in packages
-for dir in packages/*/.dart_tool; do
-  if [ -d "$dir" ]; then
-    echo "Removing $dir"
-    rm -rf "$dir"
-  fi
-done
+find ./packages -type d -name ".dart_tool" -exec rm -rf {} +
 
 echo "Cleanup complete!"

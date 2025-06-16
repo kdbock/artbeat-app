@@ -113,3 +113,17 @@ packages/*/.flutter-plugins
 packages/*/.flutter-plugins-dependencies
 packages/*/.packages
 packages/*/pubspec.lock
+**/build/test_cache/
+**/test_cache/
+*.dill
+*.dill.track.dill
+**/build/**/*.dill
+**/build/**/*.dill.track.dill
+
+# Package specific build directories
+packages/*/build/
+packages/*/.dart_tool/
+packages/*/.flutter-plugins
+packages/*/.flutter-plugins-dependencies
+packages/*/.packages
+packages/*/pubspec.lock
