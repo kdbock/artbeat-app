@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_settings/src/services/enhanced_settings_service.dart';
 import 'package:artbeat_settings/src/interfaces/i_auth_service.dart';
 import 'package:artbeat_settings/src/interfaces/i_firestore_service.dart';
+import '../mocks/mock_services.dart';
 
 // Simple mock implementation for document data
 class MockData {
