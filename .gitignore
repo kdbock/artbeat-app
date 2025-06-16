@@ -127,3 +127,8 @@ packages/*/.flutter-plugins
 packages/*/.flutter-plugins-dependencies
 packages/*/.packages
 packages/*/pubspec.lock
+
+# API Keys and Sensitive Configuration
+lib/src/config/maps_config.dart
+android/local.properties
+ios/Runner/maps_config.plist
