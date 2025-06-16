@@ -132,7 +132,7 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
           _locationController.text = artistProfile.location ?? '';
           _selectedMediums = List<String>.from(artistProfile.mediums);
           _selectedStyles = List<String>.from(artistProfile.styles);
-          _userType = artistProfile.userType;
+          _userType = artistProfile.userType as core.UserType;
           _profileImageUrl = artistProfile.profileImageUrl;
           _coverImageUrl = artistProfile.coverImageUrl;
         });

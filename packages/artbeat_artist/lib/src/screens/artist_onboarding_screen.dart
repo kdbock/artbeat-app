@@ -71,7 +71,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
       final artistProfileService = ArtistProfileService();
       final userService = UserService();
 
-      final artistProfile = await artistProfileService.createArtistProfile(
+      await artistProfileService.createArtistProfile(
         userId: widget.user.id,
         displayName: widget.user.fullName,
         bio: _bioController.text,
@@ -79,7 +79,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
         mediums: _selectedMediums,
         styles: _selectedStyles,
         userType: UserType.artist,
-        subscriptionTier: SubscriptionTier.basic,
+        subscriptionTier: SubscriptionTier.artistBasic,
       );
 
       // Update user type in core user model

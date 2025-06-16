@@ -6,17 +6,17 @@ import 'artbeat_components.dart';
 
 class ArtbeatTheme {
   static ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      primaryColor: ArtbeatColors.primaryPurple,
-      scaffoldBackgroundColor: ArtbeatColors.backgroundPrimary,
-      colorScheme: const ColorScheme.light(
-        primary: ArtbeatColors.primaryPurple,
-        secondary: ArtbeatColors.primaryGreen,
-        error: ArtbeatColors.error,
-        surface: ArtbeatColors.backgroundPrimary,
+    final baseTheme = ThemeData.light();
+    return baseTheme.copyWith(
+      colorScheme: ColorScheme.light(
+        primary: const Color(0xFF8C52FF),
+        secondary: const Color(0xFF6C63FF),
+        surface: const Color(0xFFF5F5F5),
+        onSurface: const Color(0xFF1D1D1D),
+        error: const Color(0xFFB00020),
       ),
+      scaffoldBackgroundColor: Colors.white,
+      shadowColor: const Color(0xFF000000).withOpacity(0.2),
       textTheme: ArtbeatTypography.textTheme,
       appBarTheme: ArtbeatComponents.appBarTheme,
       bottomNavigationBarTheme: ArtbeatComponents.bottomNavTheme,
@@ -60,9 +60,16 @@ class ArtbeatTheme {
       ),
       cardTheme: CardTheme(
         elevation: 4,
+        margin: const EdgeInsets.all(8),
+        shadowColor: const Color(0xFF000000).withOpacity(0.128),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: Colors.grey.shade200,
+        space: 1.0,
+        thickness: 1.0,
       ),
     );
   }

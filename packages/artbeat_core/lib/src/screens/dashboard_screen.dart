@@ -25,12 +25,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  String _getScreenTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return 'Home';
+      case 1:
+        return 'Art Walk';
+      case 2:
+        return 'Community';
+      case 3:
+        return 'Events';
+      default:
+        return 'ARTbeat';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      appBar: ArtbeatAppHeader(
-        title: _getScreenTitle(),
+      appBar: AppBar(
+        title: Text(_getScreenTitle()),
         actions: [
           Builder(
             builder: (context) => IconButton(
@@ -49,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF8C52FF).withOpacity(0.05),
+              const Color(0xFF8C52FF).withValues(alpha: 13), // 0.05 * 255 ≈ 13
               Colors.white,
             ],
           ),
@@ -172,21 +187,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         '/artwork/upload',
         arguments: {'file': result, 'location': location},
       );
-    }
-  }
-
-  String _getScreenTitle() {
-    switch (_selectedIndex) {
-      case 0:
-        return 'Home';
-      case 1:
-        return 'Art Walks';
-      case 2:
-        return 'Community';
-      case 3:
-        return 'Events';
-      default:
-        return 'ARTbeat';
     }
   }
 

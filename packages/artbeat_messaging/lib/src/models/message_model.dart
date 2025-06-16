@@ -39,6 +39,30 @@ class MessageModel {
     );
   }
 
+  factory MessageModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return MessageModel(
+      id: doc.id,
+      senderId: data['senderId'] ?? '',
+      content: data['text'] ?? '',
+      timestamp:
+          data['timestamp'] != null
+              ? (data['timestamp'] as Timestamp).toDate()
+              : DateTime.now(),
+      type:
+          data['imageUrl'] != null
+              ? MessageType.image
+              : data['fileUrl'] != null
+              ? MessageType.file
+              : MessageType.text,
+      isRead:
+          (data['read'] as Map<String, dynamic>?)?.values.contains(true) ??
+          false,
+      replyToId: data['replyToMessageId'],
+      metadata: data['metadata'],
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,

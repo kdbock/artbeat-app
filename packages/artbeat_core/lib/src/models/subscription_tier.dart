@@ -1,80 +1,89 @@
 // Core definition of subscription tier that should be used across all modules
 
-/// Subscription tiers for the application
+/// Represents the different subscription tiers available in the application
 enum SubscriptionTier {
-  basic('free', 'Artist Basic'),
-  standard('standard', 'Artist Pro'),
-  premium('premium', 'Gallery'),
-  none('none', 'None');
+  free('free', 'Free'),
+  artistBasic('artist_basic', 'Artist Basic'),
+  artistPro('artist_pro', 'Artist Pro'),
+  gallery('gallery', 'Gallery');
 
   final String apiName;
   final String displayName;
 
   const SubscriptionTier(this.apiName, this.displayName);
 
-  /// Get monthly price in dollars
+  /// Returns the monthly price in dollars
   double get monthlyPrice {
     switch (this) {
-      case SubscriptionTier.basic:
+      case SubscriptionTier.free:
+      case SubscriptionTier.artistBasic:
         return 0.0;
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return 9.99;
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return 49.99;
-      case SubscriptionTier.none:
-        return 0.0;
     }
   }
 
-  /// Get features for this tier
+  /// Returns a list of features included in this subscription tier
   List<String> get features {
     switch (this) {
-      case SubscriptionTier.basic:
+      case SubscriptionTier.free:
+        return [
+          'Artist profile page',
+          'Community features',
+          'Basic analytics',
+        ];
+      case SubscriptionTier.artistBasic:
         return [
           'Artist profile page',
           'Up to 5 artwork listings',
           'Basic analytics',
           'Community features',
         ];
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return [
           'Unlimited artwork listings',
           'Featured in discover section',
           'Advanced analytics',
           'Priority support',
-          'Event creation and promotion',
-          'Commission handling tools',
+          'Event creation',
+          'All Basic features',
         ];
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return [
           'Multiple artist management',
-          'Business profile for galleries',
+          'Business profile',
           'Advanced analytics dashboard',
+          'Commission tracking',
+          'Event creation',
           'Dedicated support',
-          'Event ticketing and sales',
-          'Commission management',
-          'Marketing tools',
-          'Bulk uploads',
+          'All Pro features',
         ];
-      case SubscriptionTier.none:
-        return [];
     }
   }
 
   /// Convert from legacy name
   static SubscriptionTier fromLegacyName(String name) {
-    switch (name) {
-      case 'artistBasic':
+    switch (name.toLowerCase()) {
       case 'free':
-        return SubscriptionTier.basic;
-      case 'artistPro':
+      case 'none':
+        return SubscriptionTier.free;
+      case 'artist_basic':
+      case 'artistbasic':
+      case 'basic':
+        return SubscriptionTier.artistBasic;
+      case 'artist_pro':
+      case 'artistpro':
+      case 'pro':
       case 'standard':
-        return SubscriptionTier.standard;
+        return SubscriptionTier.artistPro;
       case 'gallery':
+      case 'gallery_business':
       case 'premium':
-        return SubscriptionTier.premium;
+        return SubscriptionTier.gallery;
       default:
-        return SubscriptionTier.none;
+        return SubscriptionTier.free;
     }
   }
 

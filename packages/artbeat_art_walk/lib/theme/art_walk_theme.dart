@@ -23,7 +23,7 @@ class ArtWalkThemeWrapper extends StatelessWidget {
         // Art walk card styles
         cardTheme: CardTheme(
           elevation: 3,
-          shadowColor: theme.shadowColor.withOpacity(0.3),
+          shadowColor: theme.shadowColor.withAlpha((0.3 * 255).round()),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

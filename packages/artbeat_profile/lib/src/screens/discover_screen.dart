@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
+import 'package:artbeat_community/artbeat_community.dart' as community;
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 
 /// Screen for discovering users and artists on the platform
 class DiscoverScreen extends StatefulWidget {
@@ -23,9 +25,16 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
   List<core.UserModel> _searchResults = [];
   List<core.UserModel> _suggestedUsers = [];
-  List<artist.ArtistProfileModel> _featuredArtists = [];
+  List<artist.ArtistProfileModel> _featuredArtists = []; // restored
   bool _isLoading = false;
   bool _isSearching = false;
+
+  // Placeholder lists for nearby content
+  final List<community.PostModel> _feedItems = [];
+  final List<core.UserModel> _nearbyUsers = [];
+  final List<artist.ArtistProfileModel> _nearbyArtists = [];
+  final List<artwork.ArtworkModel> _nearbyArtworks = [];
+  final List<core.EventModel> _nearbyEvents = [];
 
   @override
   void initState() {
@@ -33,6 +42,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     _tabController = TabController(length: 2, vsync: this);
     _loadSuggestedUsers();
     _loadFeaturedArtists();
+    // TODO: Load nearby content lists (_feedItems, _nearbyUsers, etc.)
   }
 
   @override
@@ -254,62 +264,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             ),
           ),
 
-          // NC Regions Banner
-          GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/explore/nc-regions'),
-            child: Container(
-              margin: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.green.shade300, Colors.green.shade700],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha((255 * 0.2).round()),
-                    offset: const Offset(0, 3),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: const Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'NC Art Regions',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Explore art and artists from different North Carolina regions',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.explore_outlined,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           // Content area
           Expanded(
             child: TabBarView(
@@ -333,49 +287,158 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_isSearching && _searchResults.isEmpty) {
-      return const Center(child: Text('No users found'));
-    }
-
-    final usersToDisplay = _isSearching ? _searchResults : _suggestedUsers;
-
-    if (usersToDisplay.isEmpty) {
-      return const Center(child: Text('No suggested users available'));
-    }
-
-    return ListView.builder(
-      itemCount: usersToDisplay.length,
-      itemBuilder: (context, index) {
-        final user = usersToDisplay[index];
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: (user.profileImageUrl?.isNotEmpty ?? false)
-                ? NetworkImage(user.profileImageUrl!) as ImageProvider
-                : const AssetImage('assets/default_profile.png'),
+    // Display horizontal sliders for various nearby content
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Community feed slider placeholder
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Community Feed',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
-          title: Text(
-              user.fullName.isNotEmpty ? user.fullName : (user.username ?? '')),
-          subtitle: Text(user.username ?? ''),
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              '/profile/view',
-              arguments: {'userId': user.id, 'isCurrentUser': false},
-            );
-          },
-          trailing: IconButton(
-            icon: const Icon(Icons.person_add),
-            onPressed: () {
-              // Implement follow functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(
-                        'Follow ${user.username} functionality coming soon!')),
-              );
-            },
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 150,
+            child: _feedItems.isEmpty
+                ? const Center(child: Text('No feed items available'))
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _feedItems.length,
+                    itemBuilder: (context, index) {
+                      final item = _feedItems[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: SizedBox(
+                          width: 200,
+                          child: Center(child: Text(item.content)),
+                        ),
+                      );
+                    },
+                  ),
           ),
-        );
-      },
+
+          const SizedBox(height: 16),
+          // Users nearby slider placeholder
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Users Nearby',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 120,
+            child: _nearbyUsers.isEmpty
+                ? const Center(child: Text('No users nearby'))
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _nearbyUsers.length,
+                    itemBuilder: (context, index) {
+                      final user = _nearbyUsers[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          children: [
+                            const CircleAvatar(radius: 30),
+                            const SizedBox(height: 8),
+                            Text(user.fullName),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          const SizedBox(height: 16),
+          // Artists nearby slider placeholder
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Artists Nearby',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 120,
+            child: _nearbyArtists.isEmpty
+                ? const Center(child: Text('No artists nearby'))
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _nearbyArtists.length,
+                    itemBuilder: (context, index) {
+                      final artistProfile = _nearbyArtists[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          children: [
+                            const CircleAvatar(radius: 30),
+                            const SizedBox(height: 8),
+                            Text(artistProfile.displayName),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          const SizedBox(height: 16),
+          // Artwork nearby slider placeholder
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Artwork Nearby',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 160,
+            child: _nearbyArtworks.isEmpty
+                ? const Center(child: Text('No artwork nearby'))
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _nearbyArtworks.length,
+                    itemBuilder: (context, index) {
+                      final art = _nearbyArtworks[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: SizedBox(
+                          width: 140,
+                          child: Center(child: Text(art.title)),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          const SizedBox(height: 16),
+          // Events nearby slider placeholder
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Events Nearby',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 150,
+            child: _nearbyEvents.isEmpty
+                ? const Center(child: Text('No events nearby'))
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _nearbyEvents.length,
+                    itemBuilder: (context, index) {
+                      final event = _nearbyEvents[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: SizedBox(
+                          width: 180,
+                          child: Center(child: Text(event.title)),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

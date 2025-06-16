@@ -172,7 +172,8 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
 
   Widget _buildArtistCard(core.ArtistProfileModel artist) {
     final bool isPremium =
-        artist.subscriptionTier != core.SubscriptionTier.basic;
+        artist.subscriptionTier != core.SubscriptionTier.free &&
+            artist.subscriptionTier != core.SubscriptionTier.artistBasic;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -242,7 +243,9 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                 ),
 
                 // Premium badge
-                if (artist.subscriptionTier != core.SubscriptionTier.basic)
+                if (artist.subscriptionTier != core.SubscriptionTier.free &&
+                    artist.subscriptionTier !=
+                        core.SubscriptionTier.artistBasic)
                   Positioned(
                     top: 10,
                     right: 10,
@@ -251,7 +254,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: artist.subscriptionTier ==
-                                core.SubscriptionTier.premium
+                                core.SubscriptionTier.gallery
                             ? Colors.amber
                             : Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(12),
@@ -267,7 +270,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                           const SizedBox(width: 4),
                           Text(
                             artist.subscriptionTier ==
-                                    core.SubscriptionTier.premium
+                                    core.SubscriptionTier.gallery
                                 ? 'Gallery'
                                 : 'Pro',
                             style: const TextStyle(
@@ -324,7 +327,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (artist.userType == core.UserType.gallery)
+                      if (artist.userType.name == core.UserType.gallery.name)
                         Chip(
                           label: const Text('Gallery'),
                           backgroundColor: Theme.of(context)

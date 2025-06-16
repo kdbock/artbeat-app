@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 class OfflineMapFallback extends StatelessWidget {
   final VoidCallback onRetry;
   final bool hasData;
+  final String errorMessage;
+  final List<PublicArtModel> nearbyArt;
 
   const OfflineMapFallback({
     super.key,
     required this.onRetry,
     this.hasData = false,
+    this.errorMessage = 'Unable to load map',
+    this.nearbyArt = const [],
   });
 
   @override
@@ -52,18 +57,17 @@ class OfflineMapFallback extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              hasData
-                  ? 'Map unavailable while offline'
-                  : 'Unable to load map data',
+              hasData ? 'Map unavailable while offline' : errorMessage,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
-              hasData
-                  ? 'You have cached art data available.\nSome features may be limited in offline mode.'
+              hasData && nearbyArt.isNotEmpty
+                  ? 'You have ${nearbyArt.length} cached art pieces available.\nSome features may be limited in offline mode.'
                   : 'Please check your internet connection and try again.',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -72,7 +76,7 @@ class OfflineMapFallback extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            if (hasData) ...[
+            if (hasData && nearbyArt.isNotEmpty) ...[
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pushNamed(context, '/art-walk/list');

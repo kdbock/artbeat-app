@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' show ArtworkModel;
 import 'package:artbeat_artist/artbeat_artist.dart' show ArtistProfileModel;
-import 'package:artbeat_core/src/models/event_model.dart' show EventModel;
-import 'package:artbeat_core/src/models/user_model.dart' show UserType;
-import 'package:artbeat_core/src/models/subscription_tier.dart'
-    show SubscriptionTier;
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/filter_types.dart';
+import '../models/user_type.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 
 /// Service for handling all filtering operations
@@ -54,14 +52,15 @@ class FilterService {
 
       final snapshot = await query.get();
       List<ArtistProfileModel> artists = snapshot.docs.map((doc) {
+        final userType = UserType.fromString(
+            doc.get('userType') as String? ?? UserType.artist.name);
+
         return ArtistProfileModel(
           id: doc.id,
           userId: doc.get('userId'),
           displayName: doc.get('displayName'),
           bio: doc.get('bio'),
-          userType: UserType.values.firstWhere(
-              (t) => t.name == doc.get('userType'),
-              orElse: () => UserType.artist),
+          userType: userType,
           location: doc.get('location'),
           mediums: List<String>.from(doc.get('mediums') ?? []),
           styles: List<String>.from(doc.get('styles') ?? []),
@@ -71,8 +70,8 @@ class FilterService {
           isVerified: doc.get('isVerified') ?? false,
           isFeatured: doc.get('isFeatured') ?? false,
           subscriptionTier: SubscriptionTier.values.firstWhere(
-              (t) => t.name == (doc.get('subscriptionTier') ?? 'basic'),
-              orElse: () => SubscriptionTier.basic),
+              (t) => t.name == (doc.get('subscriptionTier') ?? 'artistBasic'),
+              orElse: () => SubscriptionTier.artistBasic),
           createdAt: (doc.get('createdAt') as Timestamp).toDate(),
           updatedAt: (doc.get('updatedAt') as Timestamp).toDate(),
         );
@@ -83,7 +82,7 @@ class FilterService {
         final searchLower = params.searchQuery!.toLowerCase();
         artists = artists.where((artist) {
           return artist.displayName.toLowerCase().contains(searchLower) ||
-              artist.bio.toLowerCase().contains(searchLower) ||
+              (artist.bio?.toLowerCase() ?? '').contains(searchLower) ||
               artist.mediums.any(
                   (medium) => medium.toLowerCase().contains(searchLower)) ||
               artist.styles

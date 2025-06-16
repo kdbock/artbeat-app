@@ -43,8 +43,24 @@ class ArtbeatComponents {
     ),
   );
 
+  static ButtonStyle elevatedButtonStyle = ButtonStyle(
+    backgroundColor:
+        WidgetStateProperty.all<Color>(ArtbeatColors.primaryPurple),
+    foregroundColor: WidgetStateProperty.all<Color>(ArtbeatColors.white),
+    padding: WidgetStateProperty.all<EdgeInsets>(
+      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    ),
+    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+  );
+
   static ButtonStyle outlinedButtonStyle = ButtonStyle(
-    backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
+    backgroundColor: WidgetStateProperty.all<Color>(
+      Colors.white.withAlpha((0.8 * 255).round()),
+    ),
     foregroundColor:
         WidgetStateProperty.all<Color>(ArtbeatColors.primaryPurple),
     padding: WidgetStateProperty.all<EdgeInsets>(
@@ -53,7 +69,10 @@ class ArtbeatComponents {
     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: const BorderSide(color: ArtbeatColors.primaryPurple),
+        side: BorderSide(
+          color: ArtbeatColors.primaryPurple,
+          width: 1.5,
+        ),
       ),
     ),
   );
@@ -70,22 +89,26 @@ class ArtbeatComponents {
       hintText: hintText,
       prefixIcon: prefixIcon,
       suffixIcon: suffixIcon,
-      border: const OutlineInputBorder(),
       filled: true,
-      fillColor: ArtbeatColors.white,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      enabledBorder: OutlineInputBorder(
+      fillColor: Colors.white.withAlpha((0.95 * 255).round()),
+      border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide:
-            BorderSide(color: ArtbeatColors.textSecondary.withOpacity(0.3)),
+        borderSide: BorderSide(
+          color: ArtbeatColors.primaryPurple.withAlpha((0.3 * 255).round()),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: ArtbeatColors.primaryPurple),
+        borderSide: const BorderSide(
+          color: ArtbeatColors.primaryPurple,
+          width: 2,
+        ),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: ArtbeatColors.error),
+        borderSide: BorderSide(
+          color: ArtbeatColors.error.withAlpha((0.7 * 255).round()),
+        ),
       ),
     );
   }

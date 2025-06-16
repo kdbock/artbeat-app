@@ -54,14 +54,14 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
 
     try {
       // Request refund via PaymentService
-      final success = await _paymentService.requestRefund(
+      final result = await _paymentService.requestRefund(
         paymentId: widget.paymentId,
+        subscriptionId: widget.subscriptionId,
         reason:
             '$_selectedReason\nAdditional Details: ${_reasonController.text}',
-        amount: widget.amount,
       );
 
-      if (!success) {
+      if (result['status'] != 'succeeded') {
         throw Exception('Refund request failed. Please try again.');
       }
 

@@ -70,6 +70,34 @@ class EventService {
     }
   }
 
+  /// Get upcoming events for the current user
+  Future<List<EventModel>> getUpcomingEvents() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final now = DateTime.now();
+
+      // Get events where the user is either the organizer or a participant
+      final snapshot = await _firestore
+          .collection('events')
+          .where(Filter.or(
+            Filter('organizerId', isEqualTo: userId),
+            Filter('participantIds', arrayContains: userId),
+          ))
+          .where('startDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+          .orderBy('startDate')
+          .limit(10)
+          .get();
+
+      return snapshot.docs.map((doc) => EventModel.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Error getting upcoming events: $e');
+    }
+  }
+
   /// Create a new event
   Future<String> createEvent({
     required String title,

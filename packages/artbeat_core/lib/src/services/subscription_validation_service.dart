@@ -17,22 +17,20 @@ class SubscriptionValidationService {
   /// Get the current user's subscription tier
   Future<SubscriptionTier> getCurrentSubscriptionTier() async {
     final userId = _auth.currentUser?.uid;
-    if (userId == null) return SubscriptionTier.basic;
+    if (userId == null) return SubscriptionTier.free;
 
     try {
       final doc =
           await _firestore.collection('subscriptions').doc(userId).get();
 
       if (!doc.exists || !doc.data()!.containsKey('tier')) {
-        return SubscriptionTier.basic;
+        return SubscriptionTier.free;
       }
 
-      return SubscriptionTier.values.firstWhere(
-        (tier) => tier.toString() == doc.data()!['tier'],
-        orElse: () => SubscriptionTier.basic,
-      );
+      final tierStr = doc.data()!['tier'] as String;
+      return SubscriptionTier.fromLegacyName(tierStr);
     } catch (e) {
-      return SubscriptionTier.basic;
+      return SubscriptionTier.free;
     }
   }
 
@@ -78,7 +76,7 @@ class SubscriptionValidationService {
     // Check for downgrade conflicts
     if (targetTier.index < currentTier.index) {
       // Gallery to Pro/Basic conflicts
-      if (currentTier == SubscriptionTier.premium) {
+      if (currentTier == SubscriptionTier.gallery) {
         final commissionSnapshot = await _firestore
             .collection('commissions')
             .where('galleryId', isEqualTo: userId)
@@ -104,8 +102,9 @@ class SubscriptionValidationService {
       }
 
       // Pro to Basic conflicts
-      if (currentTier == SubscriptionTier.standard &&
-          targetTier == SubscriptionTier.basic) {
+      if (currentTier == SubscriptionTier.artistPro &&
+          (targetTier == SubscriptionTier.artistBasic ||
+              targetTier == SubscriptionTier.free)) {
         final artworkCount = await _firestore
             .collection('artwork')
             .where('artistId', isEqualTo: userId)

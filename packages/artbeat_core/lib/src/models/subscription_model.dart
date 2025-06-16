@@ -75,7 +75,7 @@ class SubscriptionModel {
     if (value is String) {
       return SubscriptionTier.fromLegacyName(value);
     }
-    return SubscriptionTier.basic;
+    return SubscriptionTier.artistBasic;
   }
 
   /// Create a copy of this SubscriptionModel with given fields replaced

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'avatar_widget.dart';
 import '../models/comment_model.dart';
 
 class FeedbackThreadWidget extends StatelessWidget {
@@ -24,8 +25,8 @@ class FeedbackThreadWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(comment.userAvatarUrl),
+                  AvatarWidget(
+                    avatarUrl: comment.userAvatarUrl,
                     radius: 20,
                   ),
                   const SizedBox(width: 12),

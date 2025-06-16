@@ -1,6 +1,7 @@
 // packages/artbeat_core/lib/src/models/user_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'user_type.dart';
 
 class UserModel {
   final String id;
@@ -25,7 +26,7 @@ class UserModel {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final bool isVerified;
-  final String userType;
+  final UserType userType;
 
   UserModel({
     required this.id,
@@ -50,7 +51,7 @@ class UserModel {
     required this.createdAt,
     this.updatedAt,
     this.isVerified = false,
-    this.userType = 'regular',
+    this.userType = UserType.regular,
   });
 
   factory UserModel.placeholder(String id) {
@@ -105,7 +106,8 @@ class UserModel {
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,
       isVerified: data['isVerified'] ?? false,
-      userType: data['userType'] ?? 'regular',
+      userType: UserType.fromString(
+          data['userType'] as String? ?? UserType.regular.name),
     );
   }
 
@@ -133,7 +135,7 @@ class UserModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'isVerified': isVerified,
-      'userType': userType,
+      'userType': userType.name,
     };
   }
 
@@ -160,7 +162,7 @@ class UserModel {
     DateTime? createdAt,
     DateTime? updatedAt,
     bool? isVerified,
-    String? userType,
+    UserType? userType,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -190,35 +192,17 @@ class UserModel {
   }
 
   /// Check if user is an artist
-  bool get isArtist => userType == 'artist';
+  bool get isArtist => userType == UserType.artist;
 
   /// Check if user is a gallery
-  bool get isGallery => userType == 'gallery';
+  bool get isGallery => userType == UserType.gallery;
 
   /// Check if user is a moderator
-  bool get isModerator => userType == 'moderator';
+  bool get isModerator => userType == UserType.moderator;
 
   /// Check if user is an admin
-  bool get isAdmin => userType == 'admin';
+  bool get isAdmin => userType == UserType.admin;
 
   /// Check if user is a basic user
-  bool get isBasicUser => userType == 'regular';
-
-  /// Get the UserType enum value for this user
-  UserType get userTypeEnum {
-    switch (userType) {
-      case 'artist':
-        return UserType.artist;
-      case 'gallery':
-        return UserType.gallery;
-      case 'moderator':
-        return UserType.moderator;
-      case 'admin':
-        return UserType.admin;
-      default:
-        return UserType.regular;
-    }
-  }
+  bool get isRegularUser => userType == UserType.regular;
 }
-
-enum UserType { artist, gallery, moderator, admin, regular }

@@ -4,8 +4,15 @@ import 'package:flutter/material.dart';
 
 /// Authentication service for handling user authentication
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// For dependency injection in tests
+  void setDependenciesForTesting(
+      FirebaseAuth auth, FirebaseFirestore firestore) {
+    _auth = auth;
+    _firestore = firestore;
+  }
 
   /// Get the current authenticated user
   User? get currentUser => _auth.currentUser;

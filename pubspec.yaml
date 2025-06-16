@@ -28,6 +28,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  artbeat_admin:
+    path: packages/artbeat_admin
 
   # The following adds the Cupertino Icons font to your application.
   cupertino_icons: ^1.0.5
@@ -105,6 +107,7 @@ dev_dependencies:
   
   # Development helpers
   flutter_lints: ^3.0.1
+  fake_cloud_firestore: ^2.5.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

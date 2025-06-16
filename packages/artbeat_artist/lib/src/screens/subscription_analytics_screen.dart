@@ -51,8 +51,8 @@ class _SubscriptionAnalyticsScreenState
     try {
       final subscription = await _subscriptionService.getUserSubscription();
       final hasProAccess = subscription != null &&
-          (subscription.tier == core.SubscriptionTier.standard ||
-              subscription.tier == core.SubscriptionTier.premium) &&
+          (subscription.tier == core.SubscriptionTier.artistPro ||
+              subscription.tier == core.SubscriptionTier.gallery) &&
           (subscription.status == 'active' ||
               subscription.status == 'trialing');
 
@@ -828,9 +828,9 @@ class _SubscriptionAnalyticsScreenState
   /// Helper to get tier name string
   String _getTierName(core.SubscriptionTier tier) {
     switch (tier) {
-      case core.SubscriptionTier.standard:
+      case core.SubscriptionTier.artistPro:
         return 'Artist Pro Plan';
-      case core.SubscriptionTier.premium:
+      case core.SubscriptionTier.gallery:
         return 'Gallery Plan';
       default:
         return 'Artist Basic Plan';
@@ -840,9 +840,9 @@ class _SubscriptionAnalyticsScreenState
   /// Helper to get tier color
   Color _getTierColor(core.SubscriptionTier tier) {
     switch (tier) {
-      case core.SubscriptionTier.standard:
+      case core.SubscriptionTier.artistPro:
         return Colors.blue.shade700;
-      case core.SubscriptionTier.premium:
+      case core.SubscriptionTier.gallery:
         return Colors.purple.shade700;
       default:
         return Colors.grey.shade700;

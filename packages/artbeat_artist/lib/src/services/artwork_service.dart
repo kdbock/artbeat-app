@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/artwork_model.dart';
 
 /// Service for artwork management
@@ -25,7 +26,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      print('Error getting artwork: $e');
+      debugPrint('Error getting artwork: $e');
       return [];
     }
   }
@@ -42,7 +43,7 @@ class ArtworkService {
         ...doc.data()!,
       });
     } catch (e) {
-      print('Error getting artwork by ID: $e');
+      debugPrint('Error getting artwork by ID: $e');
       return null;
     }
   }
@@ -94,7 +95,7 @@ class ArtworkService {
 
       return docRef.id;
     } catch (e) {
-      print('Error creating artwork: $e');
+      debugPrint('Error creating artwork: $e');
       return null;
     }
   }
@@ -141,7 +142,7 @@ class ArtworkService {
 
       return true;
     } catch (e) {
-      print('Error updating artwork: $e');
+      debugPrint('Error updating artwork: $e');
       return false;
     }
   }
@@ -162,7 +163,7 @@ class ArtworkService {
 
       return true;
     } catch (e) {
-      print('Error deleting artwork: $e');
+      debugPrint('Error deleting artwork: $e');
       return false;
     }
   }
@@ -184,7 +185,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      print('Error getting featured artwork: $e');
+      debugPrint('Error getting featured artwork: $e');
       return [];
     }
   }
@@ -207,7 +208,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      print('Error getting artwork by location: $e');
+      debugPrint('Error getting artwork by location: $e');
       return [];
     }
   }

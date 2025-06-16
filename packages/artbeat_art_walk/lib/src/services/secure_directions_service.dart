@@ -23,10 +23,9 @@ class SecureDirectionsService {
       // Log warning in debug mode
       if (kDebugMode) {
         debugPrint('⚠️ Warning: Could not get Google Maps API key: $e');
-        debugPrint('Falling back to original key (safe in private repo)');
+        debugPrint('Please check your environment configuration');
       }
-      // Return original API key since we're in a private repository
-      return 'AIzaSyAclolfPruwSH4oQ-keOXkfTPQJT86-dPU';
+      return '';
     }
   }
 

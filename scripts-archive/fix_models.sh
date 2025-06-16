@@ -453,9 +453,9 @@ class SubscriptionModel {
       case 'artistBasic':
         return SubscriptionTier.free;
       case 'artistPro':
-        return SubscriptionTier.standard;
+        return SubscriptionTier.artistPro;
       case 'gallery':
-        return SubscriptionTier.premium;
+        return SubscriptionTier.artistPro;
       default:
         return SubscriptionTier.free;
     }
@@ -614,9 +614,9 @@ class ArtistProfileModel {
     switch (subscriptionTier) {
       case SubscriptionTier.free:
         return 'Artist Basic';
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return 'Artist Pro';
-      case SubscriptionTier.premium:
+      case SubscriptionTier.artistPro:
         return 'Gallery';
       default:
         return 'Unknown';
@@ -627,9 +627,9 @@ class ArtistProfileModel {
     switch (subscriptionTier) {
       case SubscriptionTier.free:
         return 0.0;
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return 9.99;
-      case SubscriptionTier.premium:
+      case SubscriptionTier.artistPro:
         return 49.99;
       default:
         return 0.0;
@@ -639,9 +639,9 @@ class ArtistProfileModel {
   UserType getUserType() {
     switch (subscriptionTier) {
       case SubscriptionTier.free:
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return UserType.artist;
-      case SubscriptionTier.premium:
+      case SubscriptionTier.artistPro:
         return UserType.gallery;
       default:
         return UserType.regular;

@@ -1,0 +1,398 @@
+// filepath: /Users/kristybock/artbeat/packages/artbeat_artist/test/services/testable_artist_profile_service_test.dart
+import 'dart:io';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart' show UserType, SubscriptionTier;
+import 'package:artbeat_artist/src/services/testable_artist_profile_service.dart';
+
+// Create mocks for dependencies
+@GenerateMocks([FirebaseAuth, User, FirebaseStorage, Reference, UploadTask, TaskSnapshot])
+@GenerateNiceMocks([MockSpec<File>()])
+import 'testable_artist_profile_service_test.mocks.dart';
+
+// Mock subscription service
+class MockSubscriptionService implements ISubscriptionServiceDependency {
+  final SubscriptionTier _tier;
+  
+  MockSubscriptionService(this._tier);
+  
+  @override
+  Future<SubscriptionTier> getCurrentTier() async {
+    return _tier;
+  }
+}
+
+void main() {
+  const testUserId = 'test-user-id';
+  
+  late FakeFirebaseFirestore fakeFirestore;
+  late MockFirebaseAuth mockAuth;
+  late MockUser mockUser;
+  late MockFirebaseStorage mockStorage;
+  late MockReference mockStorageRef;
+  late MockUploadTask mockUploadTask;
+  late MockTaskSnapshot mockTaskSnapshot;
+  late MockFile mockFile;
+  late MockSubscriptionService mockSubscriptionService;
+  late TestableArtistProfileService artistProfileService;
+
+  setUp(() {
+    fakeFirestore = FakeFirebaseFirestore();
+    mockAuth = MockFirebaseAuth();
+    mockUser = MockUser();
+    mockStorage = MockFirebaseStorage();
+    mockStorageRef = MockReference();
+    mockUploadTask = MockUploadTask();
+    mockTaskSnapshot = MockTaskSnapshot();
+    mockFile = MockFile();
+    mockSubscriptionService = MockSubscriptionService(SubscriptionTier.artistBasic);
+    
+    // Create service with mocked dependencies
+    artistProfileService = TestableArtistProfileService(
+      firestore: fakeFirestore,
+      auth: mockAuth,
+      storage: mockStorage,
+      subscriptionService: mockSubscriptionService,
+    );
+  });
+
+  group('TestableArtistProfileService Tests', () {
+    test('getCurrentUserId should return the current user ID', () {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Act
+      final userId = artistProfileService.getCurrentUserId();
+      
+      // Assert
+      expect(userId, testUserId);
+    });
+    
+    test('getArtistProfileById should return null if profile does not exist', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Act
+      final profile = await artistProfileService.getArtistProfileById('non-existent-id');
+      
+      // Assert
+      expect(profile, isNull);
+    });
+    
+    test('getArtistProfileById should return profile if it exists', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      final profileId = 'test-profile-id';
+      await fakeFirestore.collection('artistProfiles').doc(profileId).set({
+        'userId': testUserId,
+        'displayName': 'Test Artist',
+        'bio': 'Test bio',
+        'userType': 'artist',
+        'location': 'New York',
+        'mediums': ['Oil', 'Acrylic'],
+        'styles': ['Abstract', 'Modern'],
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act
+      final profile = await artistProfileService.getArtistProfileById(profileId);
+      
+      // Assert
+      expect(profile, isNotNull);
+      expect(profile!['displayName'], 'Test Artist');
+      expect(profile['bio'], 'Test bio');
+      expect(profile['userType'], 'artist');
+    });
+    
+    test('getArtistProfileByUserId should return profile if it exists', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      await fakeFirestore.collection('artistProfiles').doc().set({
+        'userId': testUserId,
+        'displayName': 'Test Artist By UserId',
+        'bio': 'Test bio',
+        'userType': 'artist',
+        'location': 'Chicago',
+        'mediums': ['Digital'],
+        'styles': ['Pop Art'],
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act
+      final profile = await artistProfileService.getArtistProfileByUserId(testUserId);
+      
+      // Assert
+      expect(profile, isNotNull);
+      expect(profile!['displayName'], 'Test Artist By UserId');
+      expect(profile['location'], 'Chicago');
+    });
+    
+    test('hasArtistProfile should return true if user has profile', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      await fakeFirestore.collection('artistProfiles').doc().set({
+        'userId': testUserId,
+        'displayName': 'Test Artist',
+        'bio': 'Artist bio',
+        'userType': 'artist',
+        'location': 'Portland',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act
+      final hasProfile = await artistProfileService.hasArtistProfile();
+      
+      // Assert
+      expect(hasProfile, isTrue);
+    });
+    
+    test('hasArtistProfile should return false if user has no profile', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Act
+      final hasProfile = await artistProfileService.hasArtistProfile();
+      
+      // Assert
+      expect(hasProfile, isFalse);
+    });
+    
+    test('createArtistProfile should create new profile if none exists', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Set up storage mocks for image upload
+      when(mockStorage.ref()).thenReturn(mockStorageRef);
+      when(mockStorageRef.child(any)).thenReturn(mockStorageRef);
+      when(mockStorageRef.putFile(any)).thenReturn(mockUploadTask);
+      when(mockUploadTask.snapshot).thenReturn(mockTaskSnapshot);
+      when(mockStorageRef.getDownloadURL())
+          .thenAnswer((_) async => 'https://example.com/profile_image.jpg');
+
+      // Act
+      final profileId = await artistProfileService.createArtistProfile(
+        displayName: 'New Artist',
+        bio: 'New artist bio',
+        userType: UserType.artist,
+        location: 'San Francisco',
+        mediums: ['Sculpture'],
+        styles: ['Contemporary'],
+        socialLinks: {},
+      );
+      
+      // Assert
+      expect(profileId, isNotNull);
+      
+      // Verify data was saved
+      final savedData = await fakeFirestore
+          .collection('artistProfiles')
+          .doc(profileId)
+          .get();
+      
+      expect(savedData.exists, isTrue);
+      expect(savedData.data()!['displayName'], 'New Artist');
+      expect(savedData.data()!['userId'], testUserId);
+    });
+
+    test('updateArtistProfile should update specified fields', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Create a test profile
+      final profileRef = await fakeFirestore.collection('artistProfiles').add({
+        'userId': testUserId,
+        'displayName': 'Original Name',
+        'bio': 'Original bio',
+        'userType': 'artist',
+        'location': 'Seattle',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act
+      await artistProfileService.updateArtistProfile(
+        profileId: profileRef.id,
+        displayName: 'Updated Name',
+        bio: 'Updated bio',
+      );
+      
+      // Assert
+      final updatedData = await fakeFirestore
+          .collection('artistProfiles')
+          .doc(profileRef.id)
+          .get();
+      
+      expect(updatedData.data()!['displayName'], 'Updated Name');
+      expect(updatedData.data()!['bio'], 'Updated bio');
+      expect(updatedData.data()!['location'], 'Seattle'); // Unchanged
+    });
+    
+    test('updateArtistProfile should throw exception if profile does not exist', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Act & Assert
+      expect(
+        () => artistProfileService.updateArtistProfile(
+          profileId: 'non-existent-id',
+          displayName: 'New Name',
+        ),
+        throwsA(isA<Exception>())
+      );
+    });
+    
+    test('updateArtistProfile should throw exception if user does not own profile', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Create a profile owned by another user
+      final profileRef = await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'another-user-id',
+        'displayName': 'Another User',
+        'bio': 'Another bio',
+        'userType': 'artist', 
+        'location': 'Boston',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act & Assert
+      expect(
+        () => artistProfileService.updateArtistProfile(
+          profileId: profileRef.id,
+          displayName: 'Hacked Name',
+        ),
+        throwsA(isA<Exception>())
+      );
+    });
+    
+    test('searchArtistsByLocation should return artists in specified location', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Add test data
+      await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'artist-1',
+        'displayName': 'NYC Artist',
+        'userType': 'artist',
+        'location': 'New York',
+        'bio': 'Artist bio',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'artist-2',
+        'displayName': 'LA Artist',
+        'userType': 'artist',
+        'location': 'Los Angeles',
+        'bio': 'Artist bio',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'artist-3',
+        'displayName': 'Another NYC Artist',
+        'userType': 'artist',
+        'location': 'New York',
+        'bio': 'Artist bio',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act
+      final nycArtists = await artistProfileService.searchArtistsByLocation('New York');
+      
+      // Assert
+      expect(nycArtists.length, 2);
+      expect(nycArtists.any((a) => a['displayName'] == 'NYC Artist'), isTrue);
+      expect(nycArtists.any((a) => a['displayName'] == 'Another NYC Artist'), isTrue);
+    });
+    
+    test('searchGalleriesByLocation should return galleries in specified location', () async {
+      // Arrange
+      when(mockAuth.currentUser).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUserId);
+      
+      // Add test data
+      await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'gallery-1',
+        'displayName': 'NYC Gallery',
+        'userType': 'gallery',
+        'location': 'New York',
+        'bio': 'Gallery bio',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'gallery-2',
+        'displayName': 'Boston Gallery',
+        'userType': 'gallery',
+        'location': 'Boston',
+        'bio': 'Gallery bio',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      await fakeFirestore.collection('artistProfiles').add({
+        'userId': 'artist-3',
+        'displayName': 'NYC Artist (not gallery)',
+        'userType': 'artist',
+        'location': 'New York',
+        'bio': 'Artist bio',
+        'mediums': ['Oil'],
+        'styles': ['Modern'],
+        'socialLinks': {},
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      
+      // Act
+      final nycGalleries = await artistProfileService.searchGalleriesByLocation('New York');
+      
+      // Assert
+      expect(nycGalleries.length, 1);
+      expect(nycGalleries[0]['displayName'], 'NYC Gallery');
+      expect(nycGalleries[0]['userType'], 'gallery');
+    });
+  });
+}

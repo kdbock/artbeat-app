@@ -48,7 +48,7 @@ class _GalleryAnalyticsDashboardScreenState
       // Check if user has premium subscription
       final subscription = await _subscriptionService.getUserSubscription();
       final hasPremium = subscription != null &&
-          subscription.tier == core.SubscriptionTier.premium &&
+          subscription.tier == core.SubscriptionTier.gallery &&
           (subscription.status == 'active' ||
               subscription.status == 'trialing');
 
@@ -71,7 +71,7 @@ class _GalleryAnalyticsDashboardScreenState
       final galleryProfile =
           await _subscriptionService.getArtistProfileByUserId(userId);
       if (galleryProfile == null ||
-          galleryProfile.userType != core.UserType.gallery) {
+          galleryProfile.userType.name != core.UserType.gallery.name) {
         setState(() {
           _errorMessage = 'No gallery profile found. Please create one first.';
           _isLoading = false;

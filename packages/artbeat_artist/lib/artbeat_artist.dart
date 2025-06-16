@@ -2,7 +2,8 @@
 library;
 
 // Models
-export 'src/models/artist_profile_model.dart';
+export 'src/models/artist_profile_model.dart'
+    hide ArtistProfileModel; // Hide to avoid conflict with core
 export 'src/models/commission_model.dart';
 export 'src/models/gallery_invitation_model.dart';
 export 'src/models/subscription_model.dart';

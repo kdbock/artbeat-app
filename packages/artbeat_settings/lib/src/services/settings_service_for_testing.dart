@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_settings/src/services/testable_settings_service.dart';
 
 /// Standalone version of a testable settings service
@@ -96,9 +95,7 @@ class SettingsServiceForTesting extends ChangeNotifier {
         throw Exception('User not authenticated');
       }
 
-      final updates = {
-        'notificationPreferences': settings
-      };
+      final updates = {'notificationPreferences': settings};
 
       await _firestoreService.updateDocument('users', userId, updates);
       notifyListeners();
@@ -142,9 +139,7 @@ class SettingsServiceForTesting extends ChangeNotifier {
         throw Exception('User not authenticated');
       }
 
-      final updates = {
-        'privacySettings': settings
-      };
+      final updates = {'privacySettings': settings};
 
       await _firestoreService.updateDocument('users', userId, updates);
       notifyListeners();
@@ -191,23 +186,23 @@ class SettingsServiceForTesting extends ChangeNotifier {
 
       // Get current device activity
       final currentDevices = await getDeviceActivity();
-      
+
       // Remove the specific device
       final updatedDevices = currentDevices
           .where((device) => device['deviceId'] != deviceId)
           .toList();
-      
+
       // Update the document
-      await _firestoreService.updateDocument(
-          'users', userId, {'deviceActivity': updatedDevices});
-      
+      await _firestoreService
+          .updateDocument('users', userId, {'deviceActivity': updatedDevices});
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error revoking device access: $e');
       rethrow;
     }
   }
-  
+
   /// Get a list of blocked user IDs
   Future<List<String>> getBlockedUsers() async {
     try {
@@ -249,8 +244,8 @@ class SettingsServiceForTesting extends ChangeNotifier {
         currentBlocked.add(targetUserId);
       }
 
-      await _firestoreService.updateDocument(
-          'users', userId, {'blockedUsers': currentBlocked});
+      await _firestoreService
+          .updateDocument('users', userId, {'blockedUsers': currentBlocked});
 
       notifyListeners();
     } catch (e) {
@@ -271,8 +266,8 @@ class SettingsServiceForTesting extends ChangeNotifier {
       final currentBlocked = await getBlockedUsers();
       currentBlocked.remove(targetUserId);
 
-      await _firestoreService.updateDocument(
-          'users', userId, {'blockedUsers': currentBlocked});
+      await _firestoreService
+          .updateDocument('users', userId, {'blockedUsers': currentBlocked});
 
       notifyListeners();
     } catch (e) {

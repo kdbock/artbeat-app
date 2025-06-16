@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../services/chat_service.dart';
 import '../models/user_model.dart';
 import 'chat_screen.dart';
-import '../models/chat_model.dart';
 
 class ContactSelectionScreen extends StatefulWidget {
   const ContactSelectionScreen({super.key});

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Core providers with proper types
+        // Core providers
         ChangeNotifierProvider<core.UserService>(
           create: (_) => core.UserService(),
           lazy: false,
@@ -72,24 +72,17 @@ class MyApp extends StatelessWidget {
             title: 'ARTbeat',
             theme: theme,
             navigatorKey: navigatorKey,
-            builder: (context, child) {
-              if (child == null) return const SizedBox.shrink();
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-                child: child,
-              );
-            },
             home: const LoadingScreen(),
             routes: {
               '/login': (context) => const LoginScreen(),
               '/register': (context) => const RegisterScreen(),
               '/forgot-password': (context) => const ForgotPasswordScreen(),
               '/dashboard': (context) => core.DashboardScreen(
-                    screens: [
-                      const DiscoverScreen(),
-                      const ArtWalkMapScreen(),
-                      const CommunityFeedScreen(),
-                      // TODO: Calendar screen temporarily disabled
+                    screens: const [
+                      DiscoverScreen(),
+                      ArtWalkMapScreen(),
+                      CommunityFeedScreen(),
+                      artist.EventsScreen(),
                     ],
                     onCapturePressed: () => _onCapture(context),
                   ),
@@ -100,8 +93,9 @@ class MyApp extends StatelessWidget {
                 final file = args['file'] as File;
                 return artwork.ArtworkUploadScreen(imageFile: file);
               },
-              '/artwork/browse': (context) =>
-                  const artist.ArtworkBrowseScreen(),
+              '/chat': (context) => const messaging.ChatListScreen(),
+              '/chat/new': (context) =>
+                  const messaging.ContactSelectionScreen(),
             },
           );
         },
@@ -109,8 +103,12 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Future<void> _onCapture(BuildContext context) async {
-    Navigator.pushNamed(context, '/capture');
+  void _onCapture(BuildContext context) async {
+    final result = await Navigator.pushNamed(context, '/capture');
+    if (result != null && context.mounted) {
+      await Navigator.pushNamed(context, '/artwork/upload',
+          arguments: {'file': result});
+    }
   }
 }
 

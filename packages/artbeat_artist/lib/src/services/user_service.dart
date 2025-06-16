@@ -1,5 +1,6 @@
 // Placeholder for artbeat_calendar specific User Service
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,7 +17,7 @@ class UserService {
           .get();
       return doc.data();
     } catch (e) {
-      print('Error fetching user calendar preferences: $e');
+      debugPrint('Error fetching user calendar preferences: $e');
       return null;
     }
   }
@@ -32,7 +33,7 @@ class UserService {
           .doc('preferences')
           .set(preferences, SetOptions(merge: true));
     } catch (e) {
-      print('Error updating user calendar preferences: $e');
+      debugPrint('Error updating user calendar preferences: $e');
       // Handle error appropriately
     }
   }

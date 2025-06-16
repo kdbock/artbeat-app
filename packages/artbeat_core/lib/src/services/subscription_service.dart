@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../models/artist_profile_model.dart';
 import '../models/subscription_tier.dart';
 import '../models/subscription_model.dart';
-import '../models/user_model.dart' show UserType;
+import '../models/user_type.dart';
 import 'subscription_plan_validator.dart';
 import 'subscription_validation_service.dart';
 
@@ -47,7 +47,7 @@ class SubscriptionService extends ChangeNotifier {
   Future<SubscriptionTier> getCurrentSubscriptionTier() async {
     try {
       final user = _auth.currentUser;
-      if (user == null) return SubscriptionTier.basic;
+      if (user == null) return SubscriptionTier.free;
 
       // Check if user has an artist profile
       final artistDoc = await _firestore
@@ -56,7 +56,7 @@ class SubscriptionService extends ChangeNotifier {
           .limit(1)
           .get();
 
-      if (artistDoc.docs.isEmpty) return SubscriptionTier.basic;
+      if (artistDoc.docs.isEmpty) return SubscriptionTier.free;
 
       // Get subscription tier from artist profile
       final artistProfile =
@@ -65,7 +65,7 @@ class SubscriptionService extends ChangeNotifier {
       return Future<SubscriptionTier>.value(tier);
     } catch (e) {
       debugPrint('Error getting current subscription tier: $e');
-      return SubscriptionTier.basic;
+      return SubscriptionTier.free;
     }
   }
 
@@ -73,8 +73,8 @@ class SubscriptionService extends ChangeNotifier {
   Future<bool> isSubscriber() async {
     try {
       final tier = await getCurrentSubscriptionTier();
-      return tier == SubscriptionTier.standard ||
-          tier == SubscriptionTier.premium;
+      return tier == SubscriptionTier.artistPro ||
+          tier == SubscriptionTier.gallery;
     } catch (e) {
       debugPrint('Error checking if user is subscriber: $e');
       return false;
@@ -138,7 +138,7 @@ class SubscriptionService extends ChangeNotifier {
   /// Get subscription details by tier
   Map<String, dynamic> getSubscriptionDetails(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return {
           'name': 'Artist Pro',
           'price': 9.99,
@@ -151,7 +151,7 @@ class SubscriptionService extends ChangeNotifier {
             'Event creation and promotion',
           ],
         };
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return {
           'name': 'Gallery',
           'price': 49.99,
@@ -164,7 +164,7 @@ class SubscriptionService extends ChangeNotifier {
             'All Pro features',
           ],
         };
-      case SubscriptionTier.basic:
+      case SubscriptionTier.artistBasic:
         return {
           'name': 'Artist Basic',
           'price': 0.00,
@@ -176,7 +176,7 @@ class SubscriptionService extends ChangeNotifier {
             'Community features',
           ],
         };
-      case SubscriptionTier.none:
+      case SubscriptionTier.free:
         return {
           'name': 'None',
           'price': 0.00,

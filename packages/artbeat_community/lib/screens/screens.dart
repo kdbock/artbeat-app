@@ -1,8 +1,15 @@
 // Screens barrel file for artbeat_community
-// Generated on Tue Jun 4 09:15:48 EDT 2025
+// Generated on Wed Jun 15 10:30:12 EDT 2025
 
 // Feed screens
 export 'feed/community_feed_screen.dart';
+export 'feed/social_feed_screen.dart';
+export 'feed/create_post_screen.dart';
+export 'feed/comments_screen.dart';
+export 'feed/trending_content_screen.dart';
+
+// Moderation screens
+export 'moderation/moderation_queue_screen.dart';
 
 // Gift screens
 export 'gifts/gifts_screen.dart';

@@ -1,64 +1,74 @@
 # ARTbeat To-Do List
 
-## Create testing environments for each package and run tests in them.
-- [x] `artbeat_core` - Created unit tests for models and services (UserModel, SubscriptionModel, ConnectivityService)
-- [x] `artbeat_auth` - Created comprehensive tests for AuthService with mocks and TestableAuthService
-- [x] `artbeat_profile` - Created tests for CaptureService with dependency injection pattern
-- [x] `artbeat_artwork` - Comprehensive tests for TestableImageModerationService and TestableArtworkService with dependency injection
-- [x] `artbeat_artist` - Fixed and implemented tests for TestableSubscriptionService and TestableArtistProfileService with proper mocking patterns
-- [x] `artbeat_art_walk` - Created testable GoogleMapsService with dependency injection and implemented 9 tests covering core functionality
-- [x] `artbeat_community` - Implemented TestableCommunityService with dependency injection and added 10 tests for posts, comments, and applause features
-- [x] `artbeat_messaging` - Created TestableChatService with dependency injection and implemented tests for chat creation and management
-- [x] `artbeat_settings` - Created SettingsServiceForTesting with dependency injection and comprehensive tests for account, privacy, notifications, security, and user blocking features
+## app security
+1. ✅ Check for API, Keys, and other security issues in the app. Resolve any issues found.
+   - ✅ Removed hardcoded API keys from all module initialization files
+   - ✅ Implemented secure ConfigService for managing sensitive configuration
+   - ✅ Added comprehensive security documentation (SECURITY.md)
+   - ✅ Updated .gitignore for sensitive files
+   - ✅ Fixed secure directions service implementation
+   - ✅ Secured test configurations
+   - ✅ Added proper environment variable handling
 
-## Improve Testing Infrastructure (June 2025)
-- [x] Create TESTING_IMPLEMENTATION_GUIDE.md with patterns and best practices
-- [x] Create TESTING_TROUBLESHOOTING.md with solutions for common testing issues
-- [x] Update tests to use current SubscriptionTier enum values (basic, standard, premium, none)
-- [x] Fix mock initialization sequence issues
-- [x] Create consistent dependency injection pattern across all modules
-- [x] Implement simplified testing approach to avoid complex Firebase mocking issues
-- [x] Set up test runners (all_tests.dart) for each module
-- [x] Create detailed testing documentation for each module
-- [ ] Implement widget tests for key UI components across modules
-- [ ] Set up test coverage reporting to identify gaps in coverage
-- [ ] Configure GitHub Actions for automated testing
-- [ ] Create reusable test helpers for common testing operations
-- [ ] Implement test fixture generation for consistent test data
+## administrator
+- [x] Create admin module structure with secure architecture
+- [x] Create admin login page with secure authentication
+- [x] Create admin logout functionality
+- [x] Implement role-based access control (RBAC)
+- [x] Create admin dashboard with access to all data (users, artists, artwork, etc.)
+- [x] Add ability to view and manage users in the admin dashboard
+- [x] Add ability to edit users' roles from the admin dashboard
+- [x] Add ability to delete users from the admin dashboard
+- [x] Add ability to view user's activity history from the admin dashboard
+- [x] Add ability to view user's payment history from the admin dashboard
 
-## Test File Cleanup Tasks (June 15-20, 2025)
-- [x] Review and identify old/nonworking test files across modules
-- [x] Clean up settings module test files (removed settings_service_for_testing_test.dart)
-- [x] Clean up art_walk module test files (removed duplicate achievement service test file)
-- [x] Update all_tests.dart files to include only working tests
-- [x] Create art_walk module all_tests.dart test runner
-- [ ] Fix Firestore interface compatibility issues in art_walk module tests
-- [ ] Fix enhanced_settings_service.dart interface compatibility issues
-- [ ] Run complete test suite to verify all tests are working
-- [ ] Document test file organization and structure for each module
+Remaining Administrator Tasks:
+- [] Implement two-factor authentication for admin accounts
+- [] Add comprehensive activity logging
+- [] Add admin audit trail functionality
+- [] Implement automated security scanning
+- [] Set up regular security audits and penetration testing
+- [] Create backup and recovery procedures
+- [] Set up monitoring and alerting for suspicious activities
+- [] Add ability to view user's messages from the admin dashboard
+- [] Add ability to view user's notifications from the admin dashboard
+- [] Add ability to view user's reviews from the admin dashboard
+- [] Add ability to view user's purchases from the admin dashboard
+- [] Add ability to view user's subscriptions from the admin dashboard
+- [] Add ability to view user's donations from the admin dashboard
+- [] Add ability to view user's feedback from the admin dashboard
+- [] Add ability to view user's support requests from the admin dashboard
+- [] Add ability to view user's reports from the admin dashboard
+- [] Add ability to view user's analytics from the admin dashboard
+- [] Add ability to view user's settings from the admin dashboard
+- [] Add ability to view user's privacy policy from the admin dashboard
+- [] Add ability to view user's terms of service from the admin dashboard
+- [] Add ability to view user's cookies policy from the admin dashboard
+- [] Add ability to view user's data protection policy from the admin dashboard
+- [] Add ability to view user's intellectual property rights policy from the admin dashboard
+- [] Add ability to view user's refund policy from the admin dashboard
+- [] Add ability to view user's shipping and handling policy from the admin dashboard
+- []
+## Visual changes:
+1. Apply artbeat theme system (/Users/kristybock/artbeat/packages/artbeat_core/lib/theme) to all screens, widgets, navigations, headers and footers:
+- [] `artbeat_core` 
+- [] `artbeat_auth` 
+      - the auth module only shows welcome user name and sign out button that doesn't work. 
+- [] `artbeat_profile` 
+     - fix profile suite page styling. It looks entirely too much like Facebook and Instagram.
+- [] `artbeat_artwork` 
+     - rework upload screen, there are more mediums and types of art that will need to be represented. The format looks clunky and dated. 
+     - resolve errors: "Note: /Users/kristybock/.pub-cache/hosted/pub.dev/google_mlkit_commons-0.6.1/android/src/main/java/com/google_mlkit_commons/InputImageConverter.java uses unchecked or unsafe operations.
+     Note: /Users/kristybock/.pub-cache/hosted/pub.dev/google_mlkit_text_recognition-0.11.0/android/src/main/java/com/google_mlkit_text_recognition/TextRecognizer.java uses unchecked or unsafe operations.
+- [] `artbeat_artist` 
+     - add Artist "start" page that walks a user to the process of creating an artist account.
+- [] `artbeat_art_walk` 
+     - The map isn't working correctly
+     - the zip code feature isn't working
+     - create module entry screen that walks a user through creating an artwalk
+- [] `artbeat_community`
+     - Fix the feed home screen [There are multile permissions errors on the feed screen.] 
+     - resolve permissions errors for all screens
+- [] `artbeat_messaging` 
+- [] `artbeat_settings` 
 
-## Future Module-Specific Test Improvements (July 2025)
-
-### Art Walk Module
-- [ ] Add integration tests for map interactions
-- [ ] Create widget tests for map UI components
-- [ ] Implement more test scenarios for achievement service
-- [ ] Fix compatibility issues with Firestore query interfaces
-
-### Community Module
-- [ ] Add tests for post filtering functionality
-- [ ] Create tests for content moderation features
-- [ ] Implement tests for community guidelines enforcement
-- [ ] Add more test cases for error handling scenarios
-
-### Messaging Module
-- [ ] Add tests for message delivery status tracking
-- [ ] Create tests for chat archiving functionality
-- [ ] Implement tests for message search features
-- [ ] Add test coverage for offline message queuing
-
-### Settings Module
-- [ ] Add widget tests for settings screens
-- [ ] Create integration tests for settings persistence
-- [ ] Implement tests for account deletion process
-- [ ] Fix enhanced_settings_service inheritance issues

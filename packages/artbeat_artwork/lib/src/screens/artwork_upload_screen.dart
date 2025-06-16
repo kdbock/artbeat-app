@@ -123,7 +123,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     try {
       // Get user's current subscription
       final subscription = await _subscriptionService.getUserSubscription();
-      _tierLevel = subscription?.tier ?? SubscriptionTier.basic;
+      _tierLevel = subscription?.tier ?? SubscriptionTier.artistBasic;
 
       // Get count of user's existing artwork
       final userId = _auth.currentUser?.uid;
@@ -136,7 +136,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
         _artworkCount = snapshot.docs.length;
 
         // Check if user can upload more artwork
-        if (_tierLevel == SubscriptionTier.basic && _artworkCount >= 5) {
+        if (_tierLevel == SubscriptionTier.artistBasic && _artworkCount >= 5) {
           _canUpload = false;
         }
       }

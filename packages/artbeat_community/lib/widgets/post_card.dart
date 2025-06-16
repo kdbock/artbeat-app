@@ -31,8 +31,14 @@ class PostCard extends StatelessWidget {
     required this.onToggleExpand,
   });
 
+  CommunityTypography _getTypography(BuildContext context) {
+    return CommunityTypography(Theme.of(context));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final typography = _getTypography(context);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
@@ -49,7 +55,7 @@ class PostCard extends StatelessWidget {
             ),
             title: Text(
               post.userName,
-              style: CommunityTypography.feedPostTitle,
+              style: typography.feedPostTitle,
             ),
             subtitle: Row(
               children: [
@@ -64,17 +70,17 @@ class PostCard extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   post.location,
-                  style: CommunityTypography.commentTimestamp,
+                  style: typography.commentTimestamp,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '•',
-                  style: CommunityTypography.commentTimestamp,
+                  style: typography.commentTimestamp,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   timeago.format(post.createdAt),
-                  style: CommunityTypography.commentTimestamp,
+                  style: typography.commentTimestamp,
                 ),
               ],
             ),
@@ -95,7 +101,7 @@ class PostCard extends StatelessWidget {
               ),
               child: Text(
                 post.content,
-                style: CommunityTypography.feedPostBody,
+                style: typography.feedPostBody,
               ),
             ),
 
@@ -182,7 +188,7 @@ class PostCard extends StatelessWidget {
                   return Chip(
                     label: Text(
                       '#$tag',
-                      style: CommunityTypography.hashtagText,
+                      style: typography.hashtagText,
                     ),
                     backgroundColor: CommunityColors.threadBackground,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -221,7 +227,7 @@ class PostCard extends StatelessWidget {
                   icon: const Icon(Icons.comment_outlined, size: 18),
                   label: Text(
                     '${post.commentCount}',
-                    style: CommunityTypography.commentCount,
+                    style: typography.commentCount,
                   ),
                 ),
                 const Spacer(),
@@ -255,7 +261,7 @@ class PostCard extends StatelessWidget {
                   children: [
                     Text(
                       'View ${comments.length} comments',
-                      style: CommunityTypography.commentCount.copyWith(
+                      style: typography.commentCount.copyWith(
                         color: Theme.of(context).colorScheme.tertiary,
                       ),
                     ),
@@ -307,7 +313,7 @@ class PostCard extends StatelessWidget {
                         children: [
                           Text(
                             comment.userName,
-                            style: CommunityTypography.commentAuthor,
+                            style: typography.commentAuthor,
                           ),
                           const SizedBox(width: 8),
                           Container(
@@ -324,7 +330,7 @@ class PostCard extends StatelessWidget {
                             ),
                             child: Text(
                               comment.type,
-                              style: CommunityTypography.commentCount.copyWith(
+                              style: typography.commentCount.copyWith(
                                 color: Theme.of(context).colorScheme.tertiary,
                               ),
                             ),
@@ -332,7 +338,7 @@ class PostCard extends StatelessWidget {
                           const Spacer(),
                           Text(
                             timeago.format(comment.createdAt.toDate()),
-                            style: CommunityTypography.commentTimestamp,
+                            style: typography.commentTimestamp,
                           ),
                         ],
                       ),
@@ -340,7 +346,7 @@ class PostCard extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           comment.content,
-                          style: CommunityTypography.commentText,
+                          style: typography.commentText,
                         ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(

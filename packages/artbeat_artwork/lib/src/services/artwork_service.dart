@@ -26,10 +26,10 @@ class ArtworkService {
   Future<SubscriptionTier> _getCurrentUserTier() async {
     try {
       final subscription = await _subscriptionService.getUserSubscription();
-      return subscription?.tier ?? SubscriptionTier.basic;
+      return subscription?.tier ?? SubscriptionTier.free;
     } catch (e) {
       debugPrint('Error getting user subscription: $e');
-      return SubscriptionTier.basic;
+      return SubscriptionTier.free;
     }
   }
 
@@ -45,7 +45,8 @@ class ArtworkService {
       final tier = await _getCurrentUserTier();
 
       // Users on free/basic tier can only upload 5 artworks
-      if (tier == SubscriptionTier.basic) {
+      if (tier == SubscriptionTier.free ||
+          tier == SubscriptionTier.artistBasic) {
         final snapshot = await _artworkCollection
             .where('userId', isEqualTo: userId)
             .count()

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/theme/index.dart';
 import 'community_colors.dart';
 import 'community_spacing.dart';
 import 'community_typography.dart';
 
 /// Collection of community-specific widget components
 class CommunityComponents {
+  CommunityComponents(this.theme) : typography = CommunityTypography(theme);
+
+  final ThemeData theme;
+  final CommunityTypography typography;
+
   /// Card theme for community content
-  static CardTheme get cardTheme => CardTheme(
+  CardTheme get cardTheme => CardTheme(
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius:
@@ -21,9 +25,9 @@ class CommunityComponents {
       );
 
   /// Chip theme for tags and categories
-  static ChipThemeData get chipTheme => ChipThemeData(
+  ChipThemeData get chipTheme => ChipThemeData(
         backgroundColor: CommunityColors.threadBackground,
-        labelStyle: CommunityTypography.commentText,
+        labelStyle: typography.commentText,
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -31,8 +35,7 @@ class CommunityComponents {
       );
 
   /// Button theme for applause actions
-  static ElevatedButtonThemeData get applauseButtonTheme =>
-      ElevatedButtonThemeData(
+  ElevatedButtonThemeData get applauseButtonTheme => ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: CommunityColors.applause,
           foregroundColor: Colors.white,
@@ -45,8 +48,7 @@ class CommunityComponents {
       );
 
   /// Button theme for feedback actions
-  static OutlinedButtonThemeData get feedbackButtonTheme =>
-      OutlinedButtonThemeData(
+  OutlinedButtonThemeData get feedbackButtonTheme => OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: CommunityColors.feedback,
           padding: CommunitySpacing.feedbackButtonPadding,
@@ -61,7 +63,7 @@ class CommunityComponents {
       );
 
   /// List tile theme for comments
-  static ListTileThemeData get listTileTheme => ListTileThemeData(
+  ListTileThemeData get listTileTheme => ListTileThemeData(
         contentPadding: const EdgeInsets.symmetric(
           horizontal: CommunitySpacing.commentHorizontalSpacing,
           vertical: CommunitySpacing.commentVerticalSpacing / 2,
@@ -75,7 +77,7 @@ class CommunityComponents {
       );
 
   /// Divider theme for comment threads
-  static DividerThemeData get dividerTheme => DividerThemeData(
+  DividerThemeData get dividerTheme => DividerThemeData(
         space: CommunitySpacing.commentVerticalSpacing,
         thickness: 1,
         color: CommunityColors.canvasBorder.withOpacity(0.2),
@@ -97,12 +99,12 @@ class CommunityThemeWrapper extends StatelessWidget {
 
     return Theme(
       data: theme.copyWith(
-        cardTheme: CommunityComponents.cardTheme,
-        chipTheme: CommunityComponents.chipTheme,
-        elevatedButtonTheme: CommunityComponents.applauseButtonTheme,
-        outlinedButtonTheme: CommunityComponents.feedbackButtonTheme,
-        dividerTheme: CommunityComponents.dividerTheme,
-        listTileTheme: CommunityComponents.listTileTheme,
+        cardTheme: CommunityComponents(theme).cardTheme,
+        chipTheme: CommunityComponents(theme).chipTheme,
+        elevatedButtonTheme: CommunityComponents(theme).applauseButtonTheme,
+        outlinedButtonTheme: CommunityComponents(theme).feedbackButtonTheme,
+        dividerTheme: CommunityComponents(theme).dividerTheme,
+        listTileTheme: CommunityComponents(theme).listTileTheme,
 
         // Community-specific colors
         colorScheme: theme.colorScheme.copyWith(
@@ -113,14 +115,7 @@ class CommunityThemeWrapper extends StatelessWidget {
         ),
 
         // Custom text styles for community content
-        textTheme: theme.textTheme.copyWith(
-          headlineMedium: CommunityTypography.studioTitle,
-          titleMedium: CommunityTypography.feedPostTitle,
-          bodyLarge: CommunityTypography.feedPostBody,
-          bodyMedium: CommunityTypography.commentText,
-          labelSmall: CommunityTypography.applauseCount,
-          labelMedium: CommunityTypography.commentAuthor,
-        ),
+        textTheme: CommunityTypography(theme).textTheme,
       ),
       child: child,
     );

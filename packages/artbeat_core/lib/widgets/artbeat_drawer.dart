@@ -9,14 +9,19 @@ class ArtbeatDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Drawer(
+      backgroundColor: theme.colorScheme.surface,
+      elevation: 2.0,
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              ArtbeatColors.primaryPurple.withOpacity(0.1),
+              theme.colorScheme.primary
+                  .withValues(alpha: 13), // 0.05 * 255 ≈ 13
               Colors.white,
             ],
           ),
@@ -25,15 +30,9 @@ class ArtbeatDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    ArtbeatColors.primaryPurple,
-                    ArtbeatColors.primaryGreen,
-                  ],
-                ),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary
+                    .withValues(alpha: 179), // 0.7 * 255 ≈ 179
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

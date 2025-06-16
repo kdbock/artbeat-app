@@ -68,6 +68,7 @@ class ArtistProfileModel {
     );
   }
 
+  /// Convert profile to map for Firestore
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
@@ -88,63 +89,31 @@ class ArtistProfileModel {
     };
   }
 
+  /// Helper methods for type conversion
   static String _userTypeToString(UserType userType) {
-    switch (userType) {
-      case UserType.artist:
-        return 'artist';
-      case UserType.gallery:
-        return 'gallery';
-      case UserType.regular:
-        return 'regular';
-      case UserType.moderator:
-        return 'moderator';
-      case UserType.admin:
-        return 'admin';
-    }
+    return userType.name;
   }
 
   static UserType _userTypeFromString(String typeString) {
-    switch (typeString) {
-      case 'gallery':
-        return UserType.gallery;
-      case 'artist':
-        return UserType.artist;
-      case 'moderator':
-        return UserType.moderator;
-      case 'admin':
-        return UserType.admin;
-      case 'regular':
-        return UserType.regular;
-      case _:
-        return UserType.regular; // Default to regular user for unknown types
-    }
+    return UserType.fromString(typeString);
   }
 
+  /// Map subscription tier to string for storage
   static String _tierToString(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.basic:
+      case SubscriptionTier.artistBasic:
         return 'artistBasic';
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return 'artistPro';
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return 'gallery';
-      case SubscriptionTier.none:
-        return 'none';
+      case SubscriptionTier.free:
+        return 'free';
     }
   }
 
+  /// Parse tier from string, using legacy conversion when needed
   static SubscriptionTier _tierFromString(String tierString) {
-    switch (tierString) {
-      case 'artistPro':
-        return SubscriptionTier.standard;
-      case 'gallery':
-        return SubscriptionTier.premium;
-      case 'artistBasic':
-        return SubscriptionTier.basic;
-      case 'none':
-        return SubscriptionTier.none;
-      case _:
-        return SubscriptionTier.basic; // Default to basic for unknown tiers
-    }
+    return SubscriptionTier.fromLegacyName(tierString);
   }
 }

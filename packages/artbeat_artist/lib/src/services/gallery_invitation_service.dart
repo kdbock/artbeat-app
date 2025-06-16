@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
-import 'package:artbeat_artist/artbeat_artist.dart' hide UserType;
-import 'package:artbeat_core/src/services/notification_service.dart'
-    show NotificationType;
 import 'package:artbeat_core/artbeat_core.dart'
-    show NotificationService, UserType;
+    show NotificationService, NotificationType, UserType;
+import 'package:artbeat_artist/artbeat_artist.dart';
 
 /// Service for managing gallery invitations to artists
 class GalleryInvitationService {
@@ -45,7 +43,7 @@ class GalleryInvitationService {
       }
 
       // Verify this is a gallery account
-      if (galleryProfile.userType != UserType.gallery) {
+      if (galleryProfile.userType.name != UserType.gallery.name) {
         throw Exception('Only gallery accounts can send invitations');
       }
 

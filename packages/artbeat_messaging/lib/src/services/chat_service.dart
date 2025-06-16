@@ -264,10 +264,8 @@ class ChatService extends ChangeNotifier {
       return participantIds.contains(otherUserId) && participantIds.length == 2;
     }, orElse: () => throw Exception('Chat not found'));
 
-    if (existingChat != null) {
-      return ChatModel.fromFirestore(existingChat);
-    }
-
+    return ChatModel.fromFirestore(existingChat);
+  
     // Create new chat
     try {
       final otherUser =

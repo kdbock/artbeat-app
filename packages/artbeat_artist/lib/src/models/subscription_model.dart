@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier;
 
 /// Model for artist and gallery subscriptions
 class SubscriptionModel {

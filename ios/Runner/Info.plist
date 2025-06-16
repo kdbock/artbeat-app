@@ -45,30 +45,5 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	
-	<!-- Google Maps Configuration -->
-	<key>GoogleMapsApiKey</key>
-	<string>$(GOOGLE_MAPS_API_KEY)</string>
-	
-	<!-- Privacy Permissions for ARTbeat App -->
-	<key>NSCameraUsageDescription</key>
-	<string>ARTbeat needs camera access to capture artwork and create art walks</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>ARTbeat needs photo library access to save and share your captured artwork</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>ARTbeat uses your location to discover local artists, galleries, and art walks near you</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>ARTbeat uses your location to discover local artists, galleries, and art walks near you</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>ARTbeat may use microphone for video content creation</string>
-	
-	<!-- App Transport Security -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSAllowsArbitraryLoadsInWebContent</key>
-		<true/>
-	</dict>
 </dict>
 </plist>

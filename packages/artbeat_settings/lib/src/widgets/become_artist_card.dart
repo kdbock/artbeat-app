@@ -13,8 +13,7 @@ class BecomeArtistCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Don't show for users who are already artists
-    if (user.userType == UserType.artist.name ||
-        user.userType == UserType.gallery.name) {
+    if (user.userType != UserType.regular) {
       return const SizedBox.shrink();
     }
 

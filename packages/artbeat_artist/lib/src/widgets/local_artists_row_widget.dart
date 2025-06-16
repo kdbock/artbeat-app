@@ -97,9 +97,13 @@ class LocalArtistsRowWidget extends StatelessWidget {
                           color: Colors.grey.shade600,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'No artists found in your area',
-                          style: TextStyle(color: Colors.grey),
+                        Text(
+                          'No local artists found in ${zipCode}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 15,
+                          ),
                         ),
                       ],
                     ),
@@ -108,86 +112,77 @@ class LocalArtistsRowWidget extends StatelessWidget {
               }
 
               final artists = snapshot.data!.docs.map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                data['id'] = doc.id; // Add the document ID to the data
-                return ArtistProfileModel.fromMap(data);
+                return ArtistProfileModel.fromFirestore(doc);
               }).toList();
 
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: artists.length,
-                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                 itemBuilder: (context, index) {
                   final artist = artists[index];
-                  return GestureDetector(
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      '/artist/public-profile',
-                      arguments: {'artistId': artist.id},
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      left: index == 0 ? 16.0 : 8.0,
+                      right: index == artists.length - 1 ? 16.0 : 8.0,
                     ),
-                    child: Container(
-                      width: 100,
-                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: SizedBox(
+                      width: 120,
                       child: Column(
                         children: [
                           Stack(
-                            alignment: Alignment.bottomRight,
+                            alignment: Alignment.topRight,
                             children: [
-                              // Profile image
                               Container(
+                                width: 120,
+                                height: 120,
                                 decoration: BoxDecoration(
                                   border: artist.isVerified
-                                      ? Border.all(color: Colors.blue, width: 2)
+                                      ? Border.all(
+                                          color: Colors.blue,
+                                          width: 2,
+                                        )
                                       : artist.isFeatured
                                           ? Border.all(
-                                              color: Colors.amber, width: 2)
+                                              color: Colors.amber,
+                                              width: 2,
+                                            )
                                           : null,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: CircleAvatar(
-                                  radius: 40,
-                                  backgroundColor: Colors.grey.shade200,
-                                  backgroundImage: artist.profileImageUrl !=
-                                              null &&
-                                          artist.profileImageUrl!.isNotEmpty
-                                      ? NetworkImage(artist.profileImageUrl!)
-                                      : null,
-                                  child: artist.profileImageUrl == null ||
-                                          artist.profileImageUrl!.isEmpty
-                                      ? const Icon(Icons.person, size: 40)
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: artist.profileImageUrl != null
+                                      ? DecorationImage(
+                                          image: NetworkImage(
+                                              artist.profileImageUrl!),
+                                          fit: BoxFit.cover,
+                                        )
                                       : null,
                                 ),
+                                child: artist.profileImageUrl == null
+                                    ? const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Colors.grey,
+                                      )
+                                    : null,
                               ),
-                              // Verified badge
-                              if (artist.isVerified)
-                                Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white, width: 2),
-                                  ),
-                                  child: const Icon(
-                                    Icons.verified,
-                                    color: Colors.blue,
-                                    size: 16,
-                                  ),
-                                ),
-                              // Featured badge (show only if not verified)
-                              if (!artist.isVerified && artist.isFeatured)
-                                Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                        color: Colors.white, width: 2),
-                                  ),
-                                  child: const Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                    size: 16,
+                              if (artist.isVerified || artist.isFeatured)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: artist.isVerified
+                                          ? Colors.blue
+                                          : Colors.amber,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      artist.isVerified
+                                          ? Icons.verified
+                                          : Icons.star,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   ),
                                 ),
                             ],
@@ -198,18 +193,10 @@ class LocalArtistsRowWidget extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            (artist.mediums.isNotEmpty)
-                                ? artist.mediums.first
-                                : 'Artist',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade700,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

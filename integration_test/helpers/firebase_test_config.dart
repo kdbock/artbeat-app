@@ -6,13 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirebaseTestConfig {
   static Future<void> setupFirebaseForTesting() async {
     await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: 'test-api-key',
-        appId: 'test-app-id',
-        messagingSenderId: 'test-sender-id',
-        projectId: 'demo-flutter',
-        authDomain: 'demo-flutter.firebaseapp.com',
-        storageBucket: 'demo-flutter.appspot.com',
+      options: FirebaseOptions(
+        apiKey: 'test-api-key', // Safe to use in tests
+        appId: 'test-app-id', // Safe to use in tests
+        messagingSenderId: 'test-sender-id', // Safe to use in tests
+        projectId: 'test-project', // Safe to use in tests
+        authDomain: 'test.firebaseapp.com', // Safe to use in tests
+        storageBucket: 'test.appspot.com', // Safe to use in tests
       ),
     );
   }

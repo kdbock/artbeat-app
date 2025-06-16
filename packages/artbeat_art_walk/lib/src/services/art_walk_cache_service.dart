@@ -330,4 +330,77 @@ class ArtWalkCacheService {
     // Since we can't directly create a Firestore GeoPoint, we'll create a compatible object
     return {'latitude': latitude, 'longitude': longitude};
   }
+
+  /// Get ZIP code from coordinates
+  /// Uses a cached lookup or geocoding service fallback
+  Future<String> getZipCodeFromCoordinates(
+      double latitude, double longitude) async {
+    try {
+      debugPrint(
+          '📍 [DEBUG] getZipCodeFromCoordinates called with: lat=$latitude, lng=$longitude');
+      // Try to get from shared preferences cache
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey =
+          'geo_zip_${latitude.toStringAsFixed(4)}_${longitude.toStringAsFixed(4)}';
+
+      // Check if we have this ZIP code already cached
+      final cachedZip = prefs.getString(cacheKey);
+      if (cachedZip != null) {
+        debugPrint('📍 [DEBUG] Using cached ZIP code: $cachedZip');
+        return cachedZip;
+      }
+
+      // If we're offline, return empty string to trigger fallback
+      if (!(await isOnline())) {
+        debugPrint('📍 [DEBUG] Offline, cannot fetch ZIP code');
+        return '';
+      }
+
+      // If online, attempt to use the geocoding plugin
+      try {
+        // TODO: Replace with real geocoding call
+        debugPrint('📍 [DEBUG] Would call geocoding API here');
+        // final placemarks = await geocoding.placemarkFromCoordinates(latitude, longitude);
+        // debugPrint('📍 [DEBUG] Geocoding result: \\${placemarks}');
+        // if (placemarks.isNotEmpty && placemarks.first.postalCode?.isNotEmpty == true) {
+        //   final zip = placemarks.first.postalCode!;
+        //   await prefs.setString(cacheKey, zip);
+        //   debugPrint('📍 [DEBUG] Got ZIP from geocoding: $zip');
+        //   return zip;
+        // }
+        debugPrint(
+            '📍 [DEBUG] Geocoding returned no ZIP, returning empty string');
+        return '';
+      } catch (e) {
+        debugPrint('❌ [DEBUG] Error with geocoding service: $e');
+        return '';
+      }
+    } catch (e) {
+      debugPrint('❌ [DEBUG] Error getting ZIP code from coordinates: $e');
+      return '';
+    }
+  }
+
+  /// Get all cached public art
+  Future<List<PublicArtModel>> getCachedPublicArt() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedArt = _getCachedPublicArt(prefs);
+      final isDeviceOnline = await isOnline();
+
+      _logCacheOperation('Retrieving all cached public art',
+          isOnline: isDeviceOnline);
+
+      return cachedArt.entries
+          .map((entry) {
+            return _deserializePublicArtModel(entry.value, entry.key);
+          })
+          .where((art) => art != null)
+          .cast<PublicArtModel>()
+          .toList();
+    } catch (e) {
+      debugPrint('❌ Error getting cached public art: $e');
+      return [];
+    }
+  }
 }

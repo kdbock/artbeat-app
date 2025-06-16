@@ -32,22 +32,31 @@ class _GiftModalState extends State<GiftModal> {
       }
 
       final gift = GiftModel(
-        id: '',
+        id: '', // ID will be set by Firestore
         senderId: senderId,
         recipientId: widget.recipientId,
         giftType: giftType,
         amount: amount,
         createdAt: Timestamp.now(),
       );
+
       await _paymentService.processGiftPayment(gift);
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gift sent successfully!')),
+        const SnackBar(
+          content: Text('Gift sent successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to send gift: $e')),
+        SnackBar(
+          content: Text('Failed to send gift: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

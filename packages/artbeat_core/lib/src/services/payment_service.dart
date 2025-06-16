@@ -1,13 +1,15 @@
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../models/subscription_tier.dart' show SubscriptionTier;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show ThemeMode;
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
+import '../models/subscription_tier.dart';
 import '../models/payment_method_model.dart';
+import '../models/gift_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/gift_model.dart';
 
-/// Service for handling payments and subscriptions
+/// Service for handling payments and subscriptions with Stripe integration
 class PaymentService {
   static final PaymentService _instance = PaymentService._internal();
 
@@ -16,85 +18,113 @@ class PaymentService {
   }
 
   PaymentService._internal() {
-    _auth = FirebaseAuth.instance;
-    _firestore = FirebaseFirestore.instance;
+    initializeDependencies();
   }
 
   late final FirebaseAuth _auth;
   late final FirebaseFirestore _firestore;
+  late final http.Client _httpClient;
 
-  static const String _baseUrl = 'https://your-payment-api.com';
+  static const String _baseUrl =
+      'https://us-central1-wordnerd-artbeat.cloudfunctions.net';
 
-  /// Change subscription tier
-  Future<void> changeSubscriptionTier({
-    required String customerId,
-    required String subscriptionId,
-    required SubscriptionTier newTier,
-    bool prorated = true,
-  }) async {
-    try {
-      await _post('/change-subscription-tier', {
-        'customerId': customerId,
-        'subscriptionId': subscriptionId,
-        'newTier': newTier.apiName,
-        'prorated': prorated,
-      });
-    } catch (e) {
-      debugPrint('Error changing subscription tier: $e');
-      rethrow;
-    }
+  void initializeDependencies({
+    FirebaseAuth? auth,
+    FirebaseFirestore? firestore,
+    http.Client? httpClient,
+  }) {
+    _auth = auth ?? FirebaseAuth.instance;
+    _firestore = firestore ?? FirebaseFirestore.instance;
+    _httpClient = httpClient ?? http.Client();
   }
 
-  /// Create a new Stripe customer
+  /// Create a new customer in Stripe
   Future<String> createCustomer({
     required String email,
     required String name,
   }) async {
     try {
-      final data = await _post('/create-customer', {
-        'email': email,
-        'name': name,
-      });
-      return data['customerId'];
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/create-customer'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'name': name,
+          'userId': userId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create customer');
+      }
+
+      final data = json.decode(response.body);
+      return data['customerId'] as String;
     } catch (e) {
-      print('Error creating customer: $e');
+      debugPrint('Error creating customer: $e');
       rethrow;
     }
   }
 
-  /// Set up the payment sheet
-  Future<void> setupPaymentSheet({
-    required String customerId,
-    required String setupIntentClientSecret,
-  }) async {
-    try {
-      await _post('/setup-payment-sheet', {
-        'customerId': customerId,
-        'setupIntentClientSecret': setupIntentClientSecret,
-      });
-    } catch (e) {
-      debugPrint('Error setting up payment sheet: $e');
-      rethrow;
-    }
-  }
-
-  /// Create a setup intent
+  /// Create a setup intent for adding payment methods
   Future<String> createSetupIntent(String customerId) async {
     try {
-      final data = await _post('/create-setup-intent', {
-        'customerId': customerId,
-      });
-      return data['clientSecret'];
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/create-setup-intent'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'customerId': customerId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create setup intent');
+      }
+
+      final data = json.decode(response.body);
+      return data['clientSecret'] as String;
     } catch (e) {
       debugPrint('Error creating setup intent: $e');
       rethrow;
     }
   }
 
-  /// Get customer's payment methods
+  /// Set up Stripe payment sheet for adding a payment method
+  Future<void> setupPaymentSheet({
+    required String customerId,
+    required String setupIntentClientSecret,
+  }) async {
+    try {
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          customerId: customerId,
+          style: ThemeMode.system,
+          merchantDisplayName: 'ARTbeat',
+          setupIntentClientSecret: setupIntentClientSecret,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error setting up payment sheet: $e');
+      rethrow;
+    }
+  }
+
+  /// Get customer's saved payment methods
   Future<List<PaymentMethodModel>> getPaymentMethods(String customerId) async {
     try {
-      final data = await _get('/payment-methods/$customerId');
+      final response = await _httpClient.get(
+        Uri.parse('$_baseUrl/payment-methods/$customerId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get payment methods');
+      }
+
+      final data = json.decode(response.body);
       return (data['paymentMethods'] as List)
           .map((pm) => PaymentMethodModel.fromJson(pm))
           .toList();
@@ -104,28 +134,47 @@ class PaymentService {
     }
   }
 
-  /// Set default payment method
-  Future<void> setDefaultPaymentMethod({
+  /// Set a payment method as default for a customer
+  Future<Map<String, dynamic>> setDefaultPaymentMethod({
     required String customerId,
     required String paymentMethodId,
   }) async {
     try {
-      await _post('/set-default-payment-method', {
-        'customerId': customerId,
-        'paymentMethodId': paymentMethodId,
-      });
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/update-customer'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'customerId': customerId,
+          'defaultPaymentMethod': paymentMethodId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to set default payment method');
+      }
+
+      return json.decode(response.body);
     } catch (e) {
       debugPrint('Error setting default payment method: $e');
       rethrow;
     }
   }
 
-  /// Detach a payment method
-  Future<void> detachPaymentMethod(String paymentMethodId) async {
+  /// Detach a payment method from a customer
+  Future<Map<String, dynamic>> detachPaymentMethod(
+      String paymentMethodId) async {
     try {
-      await _post('/detach-payment-method', {
-        'paymentMethodId': paymentMethodId,
-      });
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/detach-payment-method'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'paymentMethodId': paymentMethodId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to detach payment method');
+      }
+
+      return json.decode(response.body);
     } catch (e) {
       debugPrint('Error detaching payment method: $e');
       rethrow;
@@ -134,166 +183,296 @@ class PaymentService {
 
   /// Process a payment
   Future<bool> processPayment({
-    required String customerId,
     required String paymentMethodId,
-    required int amount,
-    required String currency,
-    required String description,
+    required double amount,
+    String? description,
   }) async {
     try {
-      await _post('/process-payment', {
-        'customerId': customerId,
-        'paymentMethodId': paymentMethodId,
-        'amount': amount,
-        'currency': currency,
-        'description': description,
-      });
-      return true;
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/process-payment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'paymentMethodId': paymentMethodId,
+          'amount': amount,
+          'userId': userId,
+          if (description != null) 'description': description,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process payment');
+      }
+
+      final data = json.decode(response.body);
+      return data['success'] as bool;
     } catch (e) {
       debugPrint('Error processing payment: $e');
-      return false;
+      rethrow;
+    }
+  }
+
+  /// Request a refund
+  Future<Map<String, dynamic>> requestRefund({
+    required String paymentId,
+    required String subscriptionId,
+    required String reason,
+    String? additionalDetails,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/request-refund'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'paymentId': paymentId,
+          'subscriptionId': subscriptionId,
+          'userId': userId,
+          'reason': reason,
+          if (additionalDetails != null) 'additionalDetails': additionalDetails,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to request refund');
+      }
+
+      final data = json.decode(response.body);
+
+      // Update subscription status in Firestore
+      await _updateSubscriptionInFirestore(subscriptionId, {
+        'refundRequested': true,
+        'refundReason': reason,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return data;
+    } catch (e) {
+      debugPrint('Error requesting refund: $e');
+      rethrow;
+    }
+  }
+
+  /// Change subscription tier
+  Future<Map<String, dynamic>> changeSubscriptionTier({
+    required String customerId,
+    required String subscriptionId,
+    required SubscriptionTier newTier,
+    bool prorated = true,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final priceId = _getPriceIdForTier(newTier);
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/change-subscription-tier'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'customerId': customerId,
+          'subscriptionId': subscriptionId,
+          'newPriceId': priceId,
+          'prorated': prorated,
+          'userId': userId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to change subscription tier');
+      }
+
+      final data = json.decode(response.body);
+
+      // Update subscription in Firestore
+      await _updateSubscriptionInFirestore(subscriptionId, {
+        'tier': newTier.apiName,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return data;
+    } catch (e) {
+      debugPrint('Error changing subscription tier: $e');
+      rethrow;
     }
   }
 
   /// Cancel subscription
-  Future<void> cancelSubscription(String subscriptionId) async {
+  Future<Map<String, dynamic>> cancelSubscription(String subscriptionId) async {
     try {
-      await _post('/cancel-subscription', {
-        'subscriptionId': subscriptionId,
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/cancel-subscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'subscriptionId': subscriptionId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to cancel subscription');
+      }
+
+      final data = json.decode(response.body);
+
+      // Update subscription in Firestore
+      await _updateSubscriptionInFirestore(subscriptionId, {
+        'isActive': false,
+        'autoRenew': false,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      return data;
     } catch (e) {
       debugPrint('Error cancelling subscription: $e');
       rethrow;
     }
   }
 
-  /// Request a refund
-  Future<bool> requestRefund({
-    required String paymentId,
-    required String reason,
-    double? amount,
-  }) async {
+  /// Process a gift payment and create gift record
+  Future<Map<String, dynamic>> processGiftPayment(GiftModel gift) async {
     try {
-      final user = _auth.currentUser;
-      if (user == null) return false;
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/requestRefund'),
-        headers: await _getAuthHeaders(),
-        body: jsonEncode({
-          'userId': user.uid,
-          'paymentId': paymentId,
-          'reason': reason,
-          if (amount != null)
-            'amount': (amount * 100).round(), // Stripe uses cents
+      // Get or create customer ID for sender
+      final customerId = await _getOrCreateCustomerId();
+
+      // Process payment through Firebase Function
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/process-gift-payment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'senderId': gift.senderId,
+          'recipientId': gift.recipientId,
+          'amount': gift.amount,
+          'customerId': customerId,
+          'giftType': gift.giftType,
         }),
       );
 
-      return response.statusCode == 200;
-    } catch (e) {
-      debugPrint('Error requesting refund: $e');
-      return false;
-    }
-  }
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process gift payment');
+      }
 
-  /// Process a gift payment
-  Future<void> processGiftPayment(GiftModel gift) async {
-    try {
-      await _firestore.collection('gifts').add(gift.toFirestore());
+      final data = json.decode(response.body);
 
-      // Using transaction to ensure atomicity
-      await _firestore.runTransaction((transaction) async {
-        // Update recipient's gifts received
-        transaction.set(
-          _firestore.collection('users').doc(gift.recipientId),
-          {'giftsReceived': FieldValue.increment(1)},
-          SetOptions(merge: true),
-        );
-
-        // Update sender's gifts sent
-        transaction.set(
-          _firestore.collection('users').doc(gift.senderId),
-          {'giftsSent': FieldValue.increment(1)},
-          SetOptions(merge: true),
-        );
+      // Create gift record in Firestore
+      await _firestore.collection('gifts').add({
+        'senderId': gift.senderId,
+        'recipientId': gift.recipientId,
+        'amount': gift.amount,
+        'giftType': gift.giftType,
+        'paymentIntentId': data['paymentIntentId'],
+        'status': 'completed',
+        'createdAt': FieldValue.serverTimestamp(),
       });
+
+      return data;
     } catch (e) {
       debugPrint('Error processing gift payment: $e');
       rethrow;
     }
   }
 
-  /// Get gifts sent by a user
-  Future<List<GiftModel>> getSentGifts(String userId) async {
+  /// Get list of gifts sent by the current user
+  Future<List<GiftModel>> getSentGifts() async {
     try {
-      final querySnapshot = await _firestore
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final QuerySnapshot giftsSnapshot = await _firestore
           .collection('gifts')
           .where('senderId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
 
-      return querySnapshot.docs
+      return giftsSnapshot.docs
           .map((doc) => GiftModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error fetching sent gifts: $e');
-      return [];
+      debugPrint('Error getting sent gifts: $e');
+      rethrow;
     }
   }
 
-  /// Get gifts received by a user
-  Future<List<GiftModel>> getReceivedGifts(String userId) async {
+  /// Get list of gifts received by the current user
+  Future<List<GiftModel>> getReceivedGifts() async {
     try {
-      final querySnapshot = await _firestore
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final QuerySnapshot giftsSnapshot = await _firestore
           .collection('gifts')
           .where('recipientId', isEqualTo: userId)
           .orderBy('createdAt', descending: true)
           .get();
 
-      return querySnapshot.docs
+      return giftsSnapshot.docs
           .map((doc) => GiftModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error fetching received gifts: $e');
-      return [];
+      debugPrint('Error getting received gifts: $e');
+      rethrow;
     }
   }
 
-  /// Get auth headers with ID token
-  Future<Map<String, String>> _getAuthHeaders() async {
-    final user = _auth.currentUser;
-    if (user != null) {
-      final token = await user.getIdToken();
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
+  /// Get price ID for subscription tier
+  String _getPriceIdForTier(SubscriptionTier tier) {
+    switch (tier) {
+      case SubscriptionTier.artistPro:
+        return 'price_artist_pro_monthly';
+      case SubscriptionTier.gallery:
+        return 'price_gallery_monthly';
+      case SubscriptionTier.free:
+      case SubscriptionTier.artistBasic:
+        throw Exception('Free tiers do not have price IDs');
     }
-    return {'Content-Type': 'application/json'};
   }
 
-  Future<dynamic> _post(String path, [dynamic body]) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl$path'),
-      headers: await _getAuthHeaders(),
-      body: jsonEncode(body),
-    );
-    _handleResponse(response);
-    return jsonDecode(response.body);
-  }
+  /// Update subscription document in Firestore
+  Future<void> _updateSubscriptionInFirestore(
+    String subscriptionId,
+    Map<String, dynamic> data,
+  ) async {
+    final subscriptionsRef = _firestore.collection('subscriptions');
+    final snapshot = await subscriptionsRef
+        .where('stripeSubscriptionId', isEqualTo: subscriptionId)
+        .get();
 
-  Future<dynamic> _get(String path) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl$path'),
-      headers: await _getAuthHeaders(),
-    );
-    _handleResponse(response);
-    return jsonDecode(response.body);
-  }
-
-  void _handleResponse(http.Response response) {
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('HTTP error: ${response.statusCode} - ${response.body}');
+    if (snapshot.docs.isNotEmpty) {
+      await snapshot.docs.first.reference.update(data);
     }
+  }
+
+  /// Get or create customer ID for the current user
+  Future<String> _getOrCreateCustomerId() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    // Check if customer ID already exists in Firestore
+    final userDoc = await _firestore.collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      return userDoc.data()?['customerId'] as String;
+    }
+
+    // If not, create a new customer in Stripe
+    final email = _auth.currentUser?.email ?? '';
+    final name = _auth.currentUser?.displayName ?? '';
+    return await createCustomer(email: email, name: name);
   }
 }

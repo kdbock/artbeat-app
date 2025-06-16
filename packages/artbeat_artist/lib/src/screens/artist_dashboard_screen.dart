@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
-/// Artist Dashboard Screen - Main screen for artist features
 class ArtistDashboardScreen extends StatefulWidget {
   const ArtistDashboardScreen({super.key});
 
@@ -10,898 +10,584 @@ class ArtistDashboardScreen extends StatefulWidget {
   State<ArtistDashboardScreen> createState() => _ArtistDashboardScreenState();
 }
 
-class _ArtistDashboardScreenState extends State<ArtistDashboardScreen>
-    with SingleTickerProviderStateMixin {
+class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   final SubscriptionService _subscriptionService = SubscriptionService();
+  final AnalyticsService _analyticsService = AnalyticsService();
+  final EventService _eventService = EventService();
 
-  // State variables
   bool _isLoading = true;
+  bool _isRefreshing = false;
   core.ArtistProfileModel? _artistProfile;
   SubscriptionModel? _subscription;
-  late TabController _tabController;
+  Map<String, dynamic> _quickStats = {};
+  List<Map<String, dynamic>> _recentActivities = [];
+  List<core.EventModel> _upcomingEvents = [];
+  Map<String, dynamic> _commissionSummary = {};
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     _loadArtistData();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
   Future<void> _loadArtistData() async {
+    if (_isRefreshing) return;
+
     setState(() {
       _isLoading = true;
+      _isRefreshing = true;
     });
 
     try {
-      // Load artist profile
-      final core.ArtistProfileModel? artistProfile =
-          await _subscriptionService.getCurrentArtistProfile();
+      final profileFuture = _subscriptionService.getCurrentArtistProfile();
+      final subscriptionFuture = _subscriptionService.getUserSubscription();
+      final results = await Future.wait([profileFuture, subscriptionFuture]);
 
-      // Load subscription
-      final subscription = await _subscriptionService.getUserSubscription();
+      final artistProfile = results[0] as core.ArtistProfileModel?;
+      final subscription = results[1] as SubscriptionModel?;
 
-      if (mounted) {
-        setState(() {
-          _artistProfile = artistProfile;
-          _subscription = subscription;
-          _isLoading = false;
-        });
+      if (artistProfile != null) {
+        final dataFutures = await Future.wait([
+          _analyticsService.getQuickStats(artistProfile.userId),
+          _analyticsService.getRecentActivities(artistProfile.userId),
+          _eventService.getUpcomingEvents(),
+          _analyticsService.getCommissionSummary(),
+        ]);
+
+        if (mounted) {
+          setState(() {
+            _artistProfile = artistProfile;
+            _subscription = subscription;
+            _quickStats = dataFutures[0] as Map<String, dynamic>;
+            _recentActivities = dataFutures[1] as List<Map<String, dynamic>>;
+            _upcomingEvents = dataFutures[2] as List<core.EventModel>;
+            _commissionSummary = dataFutures[3] as Map<String, dynamic>;
+            _isLoading = false;
+            _isRefreshing = false;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _artistProfile = artistProfile;
+            _subscription = subscription;
+            _isLoading = false;
+            _isRefreshing = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading artist data: $e')),
+          SnackBar(
+            content: Text('Error loading artist data: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
         setState(() {
           _isLoading = false;
+          _isRefreshing = false;
         });
       }
     }
   }
 
-  // Navigate to create artist profile if none exists
-  void _navigateToCreateProfile() {
-    Navigator.pushNamed(context, '/artist/create-profile')
-        .then((_) => _loadArtistData());
-  }
-
-  // Get subscription tier display name
   String get _tierName {
     if (_subscription == null) return 'Free Plan';
 
     switch (_subscription!.tier) {
-      case core.SubscriptionTier.basic:
+      case core.SubscriptionTier.artistBasic:
         return 'Artist Basic Plan (Free)';
-      case core.SubscriptionTier.standard:
+      case core.SubscriptionTier.artistPro:
         return 'Artist Pro Plan (\$9.99/month)';
-      case core.SubscriptionTier.premium:
+      case core.SubscriptionTier.gallery:
         return 'Gallery Plan (\$49.99/month)';
-      case core.SubscriptionTier.none:
+      default:
         return 'Free Plan';
     }
   }
 
-  // Check if this is a gallery account
-  bool get _isGallery =>
-      _artistProfile != null &&
-      _artistProfile!.userType == core.UserType.gallery;
+  Widget _buildStatCard(String title, String value, IconData icon) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Theme.of(context).primaryColor),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getTimeAgo(DateTime dateTime) {
+    final difference = DateTime.now().difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'artwork_view':
+        return Icons.visibility;
+      case 'profile_view':
+        return Icons.person;
+      case 'comment':
+        return Icons.comment;
+      default:
+        return Icons.info;
+    }
+  }
+
+  String _getActivityTitle(Map<String, dynamic> activity) {
+    switch (activity['type']) {
+      case 'artwork_view':
+        return 'Artwork viewed';
+      case 'profile_view':
+        return 'Profile viewed';
+      case 'comment':
+        return 'New comment';
+      default:
+        return 'Activity';
+    }
+  }
+
+  void _onActivityTap(Map<String, dynamic> activity) {
+    switch (activity['type']) {
+      case 'artwork_view':
+        Navigator.pushNamed(
+          context,
+          '/artwork/details',
+          arguments: {'id': activity['artworkId']},
+        );
+        break;
+      case 'comment':
+        Navigator.pushNamed(
+          context,
+          '/artwork/details',
+          arguments: {
+            'id': activity['artworkId'],
+            'showComments': true,
+          },
+        );
+        break;
+    }
+  }
+
+  String _formatEventDate(DateTime date) {
+    return '${date.month}/${date.day}/${date.year}';
+  }
+
+  Widget _buildCommissionSummary() {
+    if (_commissionSummary.isEmpty) return const SizedBox.shrink();
+
+    final activeCommissions = _commissionSummary['activeCommissions'] as int;
+    final pendingAmount = _commissionSummary['totalPendingAmount'] as double;
+    final paidAmount = _commissionSummary['totalPaidAmount'] as double;
+    final activeGalleries = _commissionSummary['activeGalleries'] as int;
+    final recentTransactions =
+        _commissionSummary['recentTransactions'] as List<Map<String, dynamic>>;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Commission Summary',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.info_outline,
+                  color: Theme.of(context).primaryColor),
+              onPressed: () => _showCommissionInfo(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Active Commissions',
+                            style: TextStyle(color: Colors.grey)),
+                        Text(activeCommissions.toString(),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text('Active Galleries',
+                            style: TextStyle(color: Colors.grey)),
+                        Text(activeGalleries.toString(),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
+                ),
+                const Divider(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Pending Amount',
+                            style: TextStyle(color: Colors.grey)),
+                        Text('\$${pendingAmount.toStringAsFixed(2)}',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).primaryColor)),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text('Paid Amount',
+                            style: TextStyle(color: Colors.grey)),
+                        Text('\$${paidAmount.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green)),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (recentTransactions.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          const Text(
+            'Recent Transactions',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...recentTransactions.take(3).map((transaction) => Card(
+                child: ListTile(
+                  leading: Icon(
+                    transaction['status'] == 'paid'
+                        ? Icons.check_circle
+                        : Icons.pending,
+                    color: transaction['status'] == 'paid'
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                  title: Text(
+                      '\$${(transaction['amount'] as num).toStringAsFixed(2)}'),
+                  subtitle:
+                      Text(_getTimeAgo((transaction['date'] as DateTime))),
+                  trailing: Text(
+                    transaction['status'] == 'paid' ? 'Paid' : 'Pending',
+                    style: TextStyle(
+                      color: transaction['status'] == 'paid'
+                          ? Colors.green
+                          : Colors.orange,
+                    ),
+                  ),
+                ),
+              )),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/artist/commissions');
+              },
+              child: const Text('View All Transactions'),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  void _showCommissionInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Commission Information'),
+        content: const SingleChildScrollView(
+          child: ListBody(
+            children: [
+              Text(
+                  'Active Commissions: Number of ongoing commission agreements with galleries.'),
+              SizedBox(height: 8),
+              Text(
+                  'Active Galleries: Number of galleries you currently work with.'),
+              SizedBox(height: 8),
+              Text('Pending Amount: Total commission fees yet to be paid.'),
+              SizedBox(height: 8),
+              Text(
+                  'Paid Amount: Total commission fees received in the current period.'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Artist Dashboard')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    // If profile doesn't exist yet, show setup screen
-    if (_artistProfile == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Artist Dashboard')),
+      return const Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.palette, size: 80, color: Colors.grey),
-              const SizedBox(height: 20),
-              const Text(
-                'Set up your artist profile',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Share your artwork with the WordNerd community by creating an artist profile.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text('Create Artist Profile'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 12,
-                  ),
-                ),
-                onPressed: _navigateToCreateProfile,
-              ),
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Loading...'),
             ],
           ),
         ),
       );
     }
 
-    // Artist dashboard with profile
+    if (_artistProfile == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Artist Dashboard')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.person_outline, size: 64),
+                const SizedBox(height: 16),
+                const Text(
+                  'Create Artist Profile',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Set up your profile to start sharing artwork and connecting with galleries.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/artist/create-profile')
+                        .then((_) => _loadArtistData());
+                  },
+                  child: const Text('Create Profile'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Artist Dashboard'),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.pushNamed(context, '/artist/settings')
-                  .then((_) => _loadArtistData());
-            },
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: [
-            Tab(text: _isGallery ? 'Gallery Overview' : 'Overview'),
-            const Tab(text: 'Artwork'),
-            const Tab(text: 'Analytics'),
-            const Tab(text: 'Events'),
-          ],
-        ),
-      ),
-      body: Column(
-        children: [
-          // Subscription banner
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: Theme.of(context)
-                .colorScheme
-                .primary
-                .withAlpha(25), // Changed from withOpacity(0.1)
-            child: Row(
-              children: [
-                Icon(
-                  _subscription?.tier == core.SubscriptionTier.basic
-                      ? Icons.star_border
-                      : Icons.star,
-                  color: _subscription?.tier == core.SubscriptionTier.premium
-                      ? Colors.amber
-                      : Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  _tierName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/artist/subscription')
-                        .then((_) => _loadArtistData());
-                  },
-                  child: Text(
-                    _subscription?.tier == core.SubscriptionTier.basic
-                        ? 'Upgrade'
-                        : 'Manage',
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Main content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOverviewTab(),
-                _buildArtworkTab(),
-                _buildAnalyticsTab(),
-                _buildEventsTab(),
-              ],
-            ),
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/artist/upload-artwork')
-              .then((_) => _loadArtistData());
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  // Dashboard overview tab
-  Widget _buildOverviewTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Artist profile summary
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile image
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: _artistProfile?.profileImageUrl != null
-                    ? NetworkImage(_artistProfile!.profileImageUrl!)
-                        as ImageProvider
-                    : const AssetImage('assets/default_profile.png'),
-              ),
-
-              const SizedBox(width: 16),
-
-              // Artist info
-              Expanded(
+      body: RefreshIndicator(
+        onRefresh: _loadArtistData,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Profile Card
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: _artistProfile?.profileImageUrl != null
+                          ? NetworkImage(_artistProfile!.profileImageUrl!)
+                          : null,
+                      child: _artistProfile?.profileImageUrl == null
+                          ? const Icon(Icons.person, size: 40)
+                          : null,
+                    ),
+                    const SizedBox(height: 16),
                     Text(
-                      _artistProfile?.displayName ?? 'Artist',
+                      _artistProfile?.displayName ?? '',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
                     Text(
-                      _artistProfile?.location ?? 'Location not specified',
+                      _tierName,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: Theme.of(context).primaryColor,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        ...(_artistProfile!.mediums).map((medium) => Chip(
-                              label: Text(medium),
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                              visualDensity: VisualDensity.compact,
-                            )),
-                      ],
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Profile completion tracker
-          _buildProfileCompletionTracker(),
-
-          const SizedBox(height: 24),
-
-          // Quick stats
-          _buildQuickStats(),
-
-          const SizedBox(height: 24),
-
-          // Recent activity
-          _buildRecentActivity(),
-
-          const SizedBox(height: 24),
-
-          // Upgrade promotion if on free plan
-          if (_subscription?.tier == core.SubscriptionTier.basic)
-            _buildUpgradePromotion(),
-        ],
-      ),
-    );
-  }
-
-  // Profile completion tracker
-  Widget _buildProfileCompletionTracker() {
-    // Calculate completion percentage
-    final profile = _artistProfile!;
-    int completed = 0;
-    int total = 6; // Basic fields plus 5 optional ones
-
-    // Check for completed fields
-    if (profile.displayName.isNotEmpty) completed++;
-    if (profile.bio != null && profile.bio!.isNotEmpty) completed++;
-    if (profile.mediums.isNotEmpty) completed++;
-    if (profile.styles.isNotEmpty) completed++;
-    if (profile.location != null && profile.location!.isNotEmpty) completed++;
-
-    // Access social links from the socialLinks map
-    final socialLinks = profile.socialLinks;
-    if (socialLinks['website']?.isNotEmpty ?? false) {
-      completed++;
-    }
-    if (profile.profileImageUrl != null &&
-        profile.profileImageUrl!.isNotEmpty) {
-      completed++;
-    }
-    if (profile.coverImageUrl != null && profile.coverImageUrl!.isNotEmpty) {
-      completed++;
-    }
-
-    // Social links
-    int totalSocial = 0;
-    if (socialLinks['instagram']?.isNotEmpty ?? false) {
-      totalSocial++;
-    }
-    if (socialLinks['facebook']?.isNotEmpty ?? false) totalSocial++;
-    if (socialLinks['twitter']?.isNotEmpty ?? false) totalSocial++;
-    if (socialLinks['etsy']?.isNotEmpty ?? false) totalSocial++;
-
-    // Add 0-2 points based on social links
-    if (totalSocial >= 2) {
-      completed += 2;
-    } else if (totalSocial == 1) {
-      completed += 1;
-    }
-
-    final double completionPercentage = (completed / total) * 100;
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Profile Completion',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text('${completionPercentage.round()}%'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: completionPercentage / 100,
-              backgroundColor: Colors.grey[300],
-              minHeight: 8,
-            ),
-            if (completionPercentage < 100)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: TextButton.icon(
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('Complete Profile'),
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/artist/edit-profile',
-                      arguments: {'artistProfileId': profile.id},
-                    ).then((_) => _loadArtistData());
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Quick stats
-  Widget _buildQuickStats() {
-    // These would be populated with real data from a separate analytics service
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Quick Stats',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            _buildStatCard(
-              icon: Icons.visibility,
-              value: '0',
-              label: 'Profile Views',
-            ),
-            const SizedBox(width: 12),
-            _buildStatCard(
-              icon: Icons.image,
-              value: '0',
-              label: 'Artworks',
-            ),
-            const SizedBox(width: 12),
-            _buildStatCard(
-              icon: Icons.favorite,
-              value: '0',
-              label: 'Favorites',
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Recent activity
-  Widget _buildRecentActivity() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Recent Activity',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // In a real app, this would be a ListView.builder with real data
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.history,
-                        size: 48,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No recent activity',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Add premium feature buttons
-        if (_subscription != null &&
-            (_subscription!.tier == core.SubscriptionTier.standard ||
-                _subscription!.tier == core.SubscriptionTier.premium))
-          _buildPremiumFeatures(),
-
-        // Add gallery management button for gallery accounts
-        if (_isGallery &&
-            _subscription != null &&
-            _subscription!.tier == core.SubscriptionTier.premium)
-          _buildGalleryFeatures(),
-      ],
-    );
-  }
-
-  // Premium features for Pro and Gallery plans
-  Widget _buildPremiumFeatures() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 24),
-        const Text(
-          'Premium Features',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildFeatureCard(
-                icon: Icons.analytics,
-                title: 'Analytics',
-                description: 'View detailed analytics',
-                onTap: () => Navigator.pushNamed(context, '/artist/analytics'),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildFeatureCard(
-                icon: Icons.bar_chart,
-                title: 'Subscription',
-                description: 'Track subscription stats',
-                onTap: () => Navigator.pushNamed(
-                    context, '/artist/subscription-analytics'),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildFeatureCard(
-                icon: Icons.event,
-                title: 'Events',
-                description: 'Create & manage events',
-                onTap: () =>
-                    Navigator.pushNamed(context, '/artist/create-event'),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildFeatureCard(
-                icon: Icons.star,
-                title: 'Featured',
-                description: 'Promote your artwork',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Feature coming soon!')),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Gallery-specific features
-  Widget _buildGalleryFeatures() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 24),
-        const Text(
-          'Gallery Management',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: InkWell(
-            onTap: () =>
-                Navigator.pushNamed(context, '/artist/gallery-management'),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.deepPurple.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.people,
-                      color: Colors.deepPurple.shade800,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Manage Artists',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Add, edit and manage artists in your gallery',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios, size: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper method to build feature cards
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: Theme.of(context).primaryColor,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Upgrade promotion
-  Widget _buildUpgradePromotion() {
-    return Card(
-      color: Theme.of(context)
-          .colorScheme
-          .primary
-          .withAlpha(25), // Changed from withOpacity(0.1)
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Upgrade to Artist Pro',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Unlock unlimited artwork listings, get featured in discover section, and access advanced analytics.',
             ),
             const SizedBox(height: 16),
-            Row(
+
+            // Stats Grid
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
               children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.star),
-                  label: const Text('Learn More'),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/artist/subscription');
-                  },
+                _buildStatCard(
+                  'Profile Views',
+                  _quickStats['profileViews']?.toString() ?? '0',
+                  Icons.visibility,
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.upgrade),
-                  label: const Text('Upgrade Now'),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/artist/subscription');
-                  },
+                _buildStatCard(
+                  'Artwork Views',
+                  _quickStats['artworkViews']?.toString() ?? '0',
+                  Icons.image,
+                ),
+                _buildStatCard(
+                  'Total Likes',
+                  _quickStats['totalLikes']?.toString() ?? '0',
+                  Icons.favorite,
+                ),
+                _buildStatCard(
+                  'Comments',
+                  _quickStats['totalComments']?.toString() ?? '0',
+                  Icons.comment,
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  // Artwork tab
-  Widget _buildArtworkTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.image,
-            size: 64,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No artwork yet',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Upload Artwork'),
-            onPressed: () {
-              Navigator.pushNamed(context, '/artist/upload-artwork')
-                  .then((_) => _loadArtistData());
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Analytics tab
-  Widget _buildAnalyticsTab() {
-    final bool isPremium = _subscription != null &&
-        (_subscription!.tier == core.SubscriptionTier.standard ||
-            _subscription!.tier == core.SubscriptionTier.premium);
-
-    if (!isPremium) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.lock,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Analytics are available with Artist Pro',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
+            // Recent Activity
+            if (_recentActivities.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              const Text(
+                'Recent Activity',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/artist/subscription');
-              },
-              child: const Text('Upgrade to Pro'),
-            ),
+              const SizedBox(height: 8),
+              ...(_recentActivities.take(5).map((activity) {
+                final timeAgo =
+                    _getTimeAgo((activity['timestamp'] as Timestamp).toDate());
+                return Card(
+                  child: ListTile(
+                    leading: Icon(
+                      _getActivityIcon(activity['type'] as String),
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    title: Text(_getActivityTitle(activity)),
+                    subtitle: Text(timeAgo),
+                    onTap: () => _onActivityTap(activity),
+                  ),
+                );
+              })),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/artist/activity');
+                  },
+                  child: const Text('View All Activity'),
+                ),
+              ),
+            ],
+
+            // Commission Summary
+            if (_subscription?.tier == core.SubscriptionTier.artistPro ||
+                _subscription?.tier == core.SubscriptionTier.gallery)
+              _buildCommissionSummary(),
+
+            // Upcoming Events
+            if (_upcomingEvents.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              const Text(
+                'Upcoming Events',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...(_upcomingEvents.take(3).map((event) => Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.event),
+                      title: Text(event.title),
+                      subtitle: Text(_formatEventDate(event.startDate)),
+                      onTap: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/event/details',
+                          arguments: {'id': event.id},
+                        );
+                      },
+                    ),
+                  ))),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/artist/events');
+                  },
+                  child: const Text('View All Events'),
+                ),
+              ),
+            ],
+
+            // Commission Summary
+            if (_subscription?.tier == core.SubscriptionTier.artistPro ||
+                _subscription?.tier == core.SubscriptionTier.gallery)
+              _buildCommissionSummary(),
           ],
         ),
-      );
-    }
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.bar_chart,
-            size: 64,
-            color: Colors.blueAccent,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'View detailed analytics for your artist profile',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/artist/analytics');
-            },
-            icon: const Icon(Icons.analytics),
-            label: const Text('Open Analytics Dashboard'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Track engagement, views, and follower growth',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Events tab
-  Widget _buildEventsTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.event,
-            size: 64,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No events yet',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Create Event'),
-            onPressed: () {
-              Navigator.pushNamed(context, '/artist/create-event')
-                  .then((_) => _loadArtistData());
-            },
-          ),
-        ],
       ),
     );
   }

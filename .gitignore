@@ -32,6 +32,12 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Test related
+coverage/
+**/test/**/*.mocks.dart
+.test_coverage.dart
+coverage_badge.svg
+
 # Symbolication related
 app.*.symbols
 
@@ -56,3 +62,38 @@ ios/Runner/GoogleService-Info.plist
 # Service account file
 assets/service_account.json
 ios/Runner/Config.xcconfig
+
+# Sensitive files
+.env
+*.env
+service_account.json
+**/google-services.json
+**/GoogleService-Info.plist
+**/key.properties
+**/keys.json
+**/secrets.json
+**/credentials.json
+
+# Backup files
+*.backup
+*.bak
+
+# Security and API related
+.env
+.env.*
+!.env.example
+!.env.production
+*.key
+*.pem
+*.p12
+**/service_account*.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Credential files
+**/*.keystore
+**/*.jks
+**/key.properties
+**/upload-keystore.jks
+**/firebase_credentials.json
+**/google_maps_api.xml

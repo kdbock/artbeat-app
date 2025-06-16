@@ -21,7 +21,7 @@ class SubscriptionPlanValidator {
       // Downgrade checks
       if (targetTier.index < currentTier.index) {
         // Check for active commissions for galleries downgrading from premium
-        if (currentTier == SubscriptionTier.premium) {
+        if (currentTier == SubscriptionTier.gallery) {
           final activeCommissions = await _hasActiveCommissions();
           if (activeCommissions) {
             return false;
@@ -29,8 +29,9 @@ class SubscriptionPlanValidator {
         }
 
         // Check artwork count for pro artists downgrading to basic
-        if (currentTier == SubscriptionTier.standard &&
-            targetTier == SubscriptionTier.basic) {
+        if (currentTier == SubscriptionTier.artistPro &&
+            (targetTier == SubscriptionTier.artistBasic ||
+                targetTier == SubscriptionTier.free)) {
           final artworkCount = await _getArtworkCount();
           if (artworkCount > 5) {
             return false;
@@ -87,7 +88,7 @@ class SubscriptionPlanValidator {
   /// Get capabilities for a subscription tier
   Map<String, dynamic> getTierCapabilities(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return {
           'maxArtists': -1, // Unlimited
           'maxArtworks': -1, // Unlimited
@@ -99,7 +100,7 @@ class SubscriptionPlanValidator {
           'bulkUpload': true,
           'commissionManagement': true,
         };
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return {
           'maxArtists': 1,
           'maxArtworks': -1, // Unlimited
@@ -111,7 +112,7 @@ class SubscriptionPlanValidator {
           'bulkUpload': false,
           'commissionManagement': true,
         };
-      case SubscriptionTier.basic:
+      case SubscriptionTier.artistBasic:
         return {
           'maxArtists': 1,
           'maxArtworks': 5,
@@ -123,7 +124,7 @@ class SubscriptionPlanValidator {
           'bulkUpload': false,
           'commissionManagement': false,
         };
-      case SubscriptionTier.none:
+      case SubscriptionTier.free:
         return {
           'maxArtists': 0,
           'maxArtworks': 0,

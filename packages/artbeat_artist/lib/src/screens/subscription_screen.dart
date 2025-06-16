@@ -23,7 +23,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   bool _isLoading = true;
   SubscriptionModel? _currentSubscription;
-  core.SubscriptionTier _selectedTier = core.SubscriptionTier.basic;
+  core.SubscriptionTier _selectedTier = core.SubscriptionTier.artistBasic;
   bool _autoRenew = true;
   bool _isProcessing = false;
   bool _prorateChanges = true; // New property for prorated billing
@@ -47,7 +47,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (mounted) {
         setState(() {
           _currentSubscription = subscription;
-          _selectedTier = subscription?.tier ?? core.SubscriptionTier.basic;
+          _selectedTier =
+              subscription?.tier ?? core.SubscriptionTier.artistBasic;
           _autoRenew = subscription?.autoRenew ?? true;
           _isLoading = false;
         });
@@ -82,7 +83,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Future<void> _subscribe() async {
-    if (_selectedTier == core.SubscriptionTier.basic) {
+    if (_selectedTier == core.SubscriptionTier.artistBasic ||
+        _selectedTier == core.SubscriptionTier.free) {
       if (_currentSubscription != null) {
         await _cancelSubscription();
       }
@@ -385,13 +387,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   String _getTierName(core.SubscriptionTier tier) {
     switch (tier) {
-      case core.SubscriptionTier.standard:
+      case core.SubscriptionTier.artistPro:
         return 'Artist Pro Plan';
-      case core.SubscriptionTier.premium:
+      case core.SubscriptionTier.gallery:
         return 'Gallery Plan';
-      case core.SubscriptionTier.basic:
+      case core.SubscriptionTier.artistBasic:
         return 'Artist Basic Plan';
-      case core.SubscriptionTier.none:
+      case core.SubscriptionTier.free:
         return 'No Plan';
     }
   }
@@ -468,20 +470,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                   // Basic plan
                   _buildPlanCard(
-                    title: core.SubscriptionTier.basic.displayName,
-                    price: core.SubscriptionTier.basic.priceString,
-                    features: core.SubscriptionTier.basic.features,
-                    tier: core.SubscriptionTier.basic,
+                    title: core.SubscriptionTier.artistBasic.displayName,
+                    price: core.SubscriptionTier.artistBasic.priceString,
+                    features: core.SubscriptionTier.artistBasic.features,
+                    tier: core.SubscriptionTier.artistBasic,
                   ),
 
                   const SizedBox(height: 16),
 
                   // Pro plan
                   _buildPlanCard(
-                    title: core.SubscriptionTier.standard.displayName,
-                    price: core.SubscriptionTier.standard.priceString,
-                    features: core.SubscriptionTier.standard.features,
-                    tier: core.SubscriptionTier.standard,
+                    title: core.SubscriptionTier.artistPro.displayName,
+                    price: core.SubscriptionTier.artistPro.priceString,
+                    features: core.SubscriptionTier.artistPro.features,
+                    tier: core.SubscriptionTier.artistPro,
                     isRecommended: true,
                   ),
 
@@ -489,10 +491,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                   // Gallery plan
                   _buildPlanCard(
-                    title: core.SubscriptionTier.premium.displayName,
-                    price: core.SubscriptionTier.premium.priceString,
-                    features: core.SubscriptionTier.premium.features,
-                    tier: core.SubscriptionTier.premium,
+                    title: core.SubscriptionTier.gallery.displayName,
+                    price: core.SubscriptionTier.gallery.priceString,
+                    features: core.SubscriptionTier.gallery.features,
+                    tier: core.SubscriptionTier.gallery,
                   ),
 
                   const SizedBox(height: 24),
@@ -553,7 +555,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   String _getButtonText() {
     if (_currentSubscription != null && _currentSubscription!.isActive) {
       if (_selectedTier != _currentSubscription!.tier) {
-        if (_selectedTier == core.SubscriptionTier.basic) {
+        if (_selectedTier == core.SubscriptionTier.artistBasic) {
           return 'Cancel Subscription';
         } else if (_selectedTier.index > _currentSubscription!.tier.index) {
           return 'Upgrade Plan';
@@ -644,13 +646,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   Text(renewalStatus),
                 ],
               ),
-              trailing:
-                  _currentSubscription!.tier != core.SubscriptionTier.basic
-                      ? TextButton(
-                          onPressed: () => _showPaymentHistory(),
-                          child: const Text('Payment History'),
-                        )
-                      : null,
+              trailing: _currentSubscription!.tier !=
+                      core.SubscriptionTier.artistBasic
+                  ? TextButton(
+                      onPressed: () => _showPaymentHistory(),
+                      child: const Text('Payment History'),
+                    )
+                  : null,
             ),
 
             const SizedBox(height: 16),
@@ -660,7 +662,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (_isSubscriptionActive(_currentSubscription) &&
-                    _currentSubscription!.tier != core.SubscriptionTier.basic)
+                    _currentSubscription!.tier !=
+                        core.SubscriptionTier.artistBasic)
                   TextButton(
                     onPressed: () => _cancelSubscription(),
                     child: const Text('Cancel Subscription'),

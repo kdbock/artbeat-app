@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
-import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Service for handling Google Maps initialization and configuration
 class GoogleMapsService {
@@ -9,82 +11,97 @@ class GoogleMapsService {
   GoogleMapsService._internal();
 
   bool _initialized = false;
-  final String _defaultMapId = '1';
+  bool _initializing = false;
+  int _initRetryCount = 0;
+  static const int _maxRetries = 3;
+  static const Duration _retryDelay = Duration(seconds: 2);
 
-  /// Initialize Google Maps with secure configuration
-  Future<void> initializeMaps() async {
-    if (_initialized) {
-      debugPrint('🗺️ Google Maps already initialized');
-      return;
+  String? get _mapsApiKey => ConfigService.instance.googleMapsApiKey;
+
+  static const String _defaultMapStyleJson = '''
+  [
+    {
+      "featureType": "all",
+      "elementType": "geometry",
+      "stylers": [{"color": "#242f3e"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.text.stroke",
+      "stylers": [{"lightness": -80}]
     }
+  ]
+  ''';
 
+  /// Get the default map style JSON
+  Future<String> get defaultMapStyle async {
     try {
-      // Initialize map configurations with newer platform-specific approach
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        try {
-          final mapsImplementation = GoogleMapsFlutterAndroid();
-          await GoogleMapsFlutterPlatform.instance
-              .init(int.parse(_defaultMapId));
-          await mapsImplementation
-              .initializeWithRenderer(AndroidMapRenderer.latest);
-        } catch (e) {
-          if (e.toString().contains('Renderer already initialized')) {
-            debugPrint('🗺️ Maps renderer already initialized, continuing...');
-          } else {
-            rethrow;
-          }
-        }
-      }
-
-      debugPrint(
-          '🗺️ Maps initialization completed for platform $defaultTargetPlatform');
-
-      // Default map style customizations will be applied per-map instance
-      await updateMapStyle(defaultMapStyle);
-
-      _initialized = true;
-      debugPrint('🗺️ Google Maps initialized successfully');
+      // Try to load from assets first
+      final style = await rootBundle.loadString('assets/map_style.json');
+      return style;
     } catch (e) {
-      debugPrint('❌ Error initializing Google Maps: $e');
-      rethrow;
+      debugPrint('⚠️ Using fallback map style: $e');
+      return _defaultMapStyleJson;
     }
   }
 
-  /// Update map style with custom JSON
-  Future<bool> updateMapStyle(String mapStyle) async {
-    try {
-      // The style will be applied per-map instance using setMapStyle
-      // Just validate the JSON here
-      if (mapStyle.isEmpty) {
-        return false;
-      }
-      return true;
-    } catch (e) {
-      debugPrint('❌ Error updating map style: $e');
+  /// Initialize Google Maps with secure configuration and retry logic
+  Future<bool> initializeMaps() async {
+    if (_mapsApiKey == null) {
+      debugPrint('❌ Google Maps API key not found in configuration');
       return false;
     }
-  }
 
-  /// Get current map style
-  String get defaultMapStyle {
-    // Light theme by default
-    return '''[
-      {
-        "featureType": "landscape",
-        "elementType": "all",
-        "stylers": [{"color": "#f2f2f2"}]
-      },
-      {
-        "featureType": "poi",
-        "elementType": "all",
-        "stylers": [{"visibility": "off"}]
-      },
-      {
-        "featureType": "transit",
-        "elementType": "all", 
-        "stylers": [{"visibility": "off"}]
+    if (_initialized) {
+      debugPrint('🗺️ Google Maps already initialized');
+      return true;
+    }
+
+    if (_initializing) {
+      debugPrint('🗺️ Google Maps initialization already in progress');
+      return false;
+    }
+
+    _initializing = true;
+
+    while (_initRetryCount < _maxRetries) {
+      try {
+        if (defaultTargetPlatform == TargetPlatform.android) {
+          debugPrint('🗺️ Initializing Google Maps for Android...');
+
+          final mapsImplementation = GoogleMapsFlutterAndroid();
+          await mapsImplementation
+              .initializeWithRenderer(AndroidMapRenderer.latest);
+
+          _initialized = true;
+          _initializing = false;
+          return true;
+        } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+          // iOS doesn't require runtime initialization
+          _initialized = true;
+          _initializing = false;
+          return true;
+        }
+
+        debugPrint('❌ Unsupported platform for Google Maps');
+        return false;
+      } catch (e) {
+        _initRetryCount++;
+        if (_initRetryCount < _maxRetries) {
+          debugPrint(
+              '⚠️ Maps initialization attempt $_initRetryCount failed: $e');
+          await Future.delayed(_retryDelay);
+          continue;
+        }
+        debugPrint(
+            '❌ Maps initialization failed after $_maxRetries attempts: $e');
+        _initializing = false;
+        return false;
       }
-    ]''';
+    }
+
+    _initializing = false;
+    return false;
   }
 
   /// Check if maps are initialized

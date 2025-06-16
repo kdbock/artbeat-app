@@ -26,25 +26,25 @@ class SubscriptionComparisonScreen extends StatelessWidget {
               children: [
                 _buildComparisonColumn(
                   context: context,
-                  tier: core.SubscriptionTier.basic,
+                  tier: core.SubscriptionTier.artistBasic,
                   title: 'Artist Basic',
                   price: 'Free',
-                  isCurrent: currentTier == core.SubscriptionTier.basic,
+                  isCurrent: currentTier == core.SubscriptionTier.artistBasic,
                 ),
                 _buildComparisonColumn(
                   context: context,
-                  tier: core.SubscriptionTier.standard,
+                  tier: core.SubscriptionTier.artistPro,
                   title: 'Artist Pro',
                   price: '\$9.99/month',
                   isRecommended: true,
-                  isCurrent: currentTier == core.SubscriptionTier.standard,
+                  isCurrent: currentTier == core.SubscriptionTier.artistPro,
                 ),
                 _buildComparisonColumn(
                   context: context,
-                  tier: core.SubscriptionTier.premium,
+                  tier: core.SubscriptionTier.gallery,
                   title: 'Gallery',
                   price: '\$49.99/month',
-                  isCurrent: currentTier == core.SubscriptionTier.premium,
+                  isCurrent: currentTier == core.SubscriptionTier.gallery,
                 ),
               ],
             ),
@@ -199,14 +199,14 @@ class SubscriptionComparisonScreen extends StatelessWidget {
 
   List<String> _getFeatures(core.SubscriptionTier tier) {
     switch (tier) {
-      case core.SubscriptionTier.basic:
+      case core.SubscriptionTier.artistBasic:
         return [
           'Artist profile page',
           'Up to 5 artwork listings',
           'Basic analytics',
           'Community features',
         ];
-      case core.SubscriptionTier.standard:
+      case core.SubscriptionTier.artistPro:
         return [
           'Unlimited artwork listings',
           'Featured in discover section',
@@ -215,7 +215,7 @@ class SubscriptionComparisonScreen extends StatelessWidget {
           'Event creation and promotion',
           'Commission handling tools',
         ];
-      case core.SubscriptionTier.premium:
+      case core.SubscriptionTier.gallery:
         return [
           'Multiple artist management',
           'Business profile for galleries',
@@ -226,7 +226,7 @@ class SubscriptionComparisonScreen extends StatelessWidget {
           'Marketing tools',
           'Bulk uploads',
         ];
-      case core.SubscriptionTier.none:
+      case core.SubscriptionTier.free:
         return [
           'Basic profile access',
           'Community features',
@@ -236,24 +236,24 @@ class SubscriptionComparisonScreen extends StatelessWidget {
 
   List<String> _getLimitations(core.SubscriptionTier tier) {
     switch (tier) {
-      case core.SubscriptionTier.basic:
+      case core.SubscriptionTier.artistBasic:
         return [
           'Limited to 5 artworks',
           '❌ No advanced analytics',
           '❌ No featured placement',
           '❌ No event creation',
         ];
-      case core.SubscriptionTier.standard:
+      case core.SubscriptionTier.artistPro:
         return [
           '❌ No gallery management tools',
           '❌ No bulk artwork uploads',
           'Standard support only',
         ];
-      case core.SubscriptionTier.premium:
+      case core.SubscriptionTier.gallery:
         return [
           'Higher monthly cost',
         ];
-      case core.SubscriptionTier.none:
+      case core.SubscriptionTier.free:
         return [
           '❌ No artwork uploads',
           '❌ No analytics',

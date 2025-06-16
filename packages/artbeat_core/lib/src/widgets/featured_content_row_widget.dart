@@ -15,6 +15,8 @@ class FeaturedContentRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -25,15 +27,15 @@ class FeaturedContentRowWidget extends StatelessWidget {
             children: [
               Text(
                 'Featured Content',
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: theme.textTheme.headlineMedium,
               ),
               TextButton(
                 onPressed: onSeeAllPressed,
                 child: Text(
                   'See All',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: ArtbeatColors.primaryPurple,
-                      ),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: ArtbeatColors.primaryPurple,
+                  ),
                 ),
               ),
             ],
@@ -63,9 +65,9 @@ class FeaturedContentRowWidget extends StatelessWidget {
                 return Center(
                   child: Text(
                     'Error: ${snapshot.error}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: ArtbeatColors.error,
-                        ),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: ArtbeatColors.error,
+                    ),
                   ),
                 );
               }
@@ -76,9 +78,9 @@ class FeaturedContentRowWidget extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'No featured content available',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: ArtbeatColors.textSecondary,
-                          ),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: ArtbeatColors.textSecondary,
+                      ),
                     ),
                   ),
                 );
@@ -164,15 +166,13 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                     child: Text(
                                       content['type']?.toUpperCase() ??
                                           'FEATURED',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelLarge
-                                          ?.copyWith(
-                                            fontSize: 10,
-                                            color: content['type'] == 'article'
-                                                ? ArtbeatColors.info
-                                                : ArtbeatColors.primaryPurple,
-                                          ),
+                                      style:
+                                          theme.textTheme.labelLarge?.copyWith(
+                                        fontSize: 10,
+                                        color: content['type'] == 'article'
+                                            ? ArtbeatColors.info
+                                            : ArtbeatColors.primaryPurple,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -180,18 +180,14 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                     content['title'],
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style:
-                                        Theme.of(context).textTheme.titleLarge,
+                                    style: theme.textTheme.titleLarge,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     content['author'] ?? 'ARTbeat Staff',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: ArtbeatColors.textSecondary,
-                                        ),
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: ArtbeatColors.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ),

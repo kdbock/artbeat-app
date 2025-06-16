@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/artbeat_core.dart'
+    show UserType, SubscriptionTier, ArtistProfileModel;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
 import '../services/analytics_service.dart';
-import '../models/artist_profile_model.dart';
 
 /// Screen for viewing an artist's public profile
 class ArtistPublicProfileScreen extends StatefulWidget {
@@ -156,7 +156,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
 
     final artist = _artistProfile!;
     final bool isPremium =
-        artist.subscriptionTier != core.SubscriptionTier.basic;
+        artist.subscriptionTier != SubscriptionTier.artistBasic;
     final socialLinks = artist.socialLinks;
 
     return Scaffold(
@@ -268,7 +268,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: artist.subscriptionTier ==
-                                  core.SubscriptionTier.premium
+                                  SubscriptionTier.artistPro
                               ? Colors.amber[100]
                               : Theme.of(context).colorScheme.primary.withAlpha(
                                   25), // Changed from withOpacity(0.1)
@@ -281,22 +281,22 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                               Icons.star,
                               size: 16,
                               color: artist.subscriptionTier ==
-                                      core.SubscriptionTier.premium
+                                      SubscriptionTier.artistPro
                                   ? Colors.amber[800]
                                   : Theme.of(context).colorScheme.primary,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              artist.userType == core.UserType.gallery
+                              artist.userType == UserType.gallery
                                   ? 'Gallery Business'
                                   : artist.subscriptionTier ==
-                                          core.SubscriptionTier.premium
+                                          SubscriptionTier.artistPro
                                       ? 'Gallery Plan'
                                       : 'Pro Artist',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: artist.subscriptionTier ==
-                                        core.SubscriptionTier.premium
+                                        SubscriptionTier.artistPro
                                     ? Colors.amber[800]
                                     : Theme.of(context).colorScheme.primary,
                               ),
@@ -310,7 +310,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 16.0),
                     child: Text(
-                      artist.bio,
+                      artist.bio ?? 'No bio provided',
                       style: const TextStyle(height: 1.5),
                     ),
                   ),

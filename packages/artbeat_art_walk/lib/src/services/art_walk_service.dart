@@ -36,6 +36,36 @@ class ArtWalkService {
     return _auth.currentUser?.uid;
   }
 
+  /// Get ZIP code from coordinates
+  Future<String> getZipCodeFromCoordinates(
+      double latitude, double longitude) async {
+    try {
+      // Try to get ZIP code using geocoding service
+      final geocodeResult =
+          await _cacheService.getZipCodeFromCoordinates(latitude, longitude);
+
+      if (geocodeResult.isNotEmpty) {
+        return geocodeResult;
+      } else {
+        // Fallback to default ZIP
+        return '00000';
+      }
+    } catch (e) {
+      _logger.e('Error getting ZIP code: $e');
+      return '00000'; // Default ZIP code on error
+    }
+  }
+
+  /// Get cached public art when network is unavailable
+  Future<List<PublicArtModel>> getCachedPublicArt() async {
+    try {
+      return await _cacheService.getCachedPublicArt();
+    } catch (e) {
+      _logger.e('Error getting cached public art: $e');
+      return []; // Empty list on error
+    }
+  }
+
   /// Create a new public art entry with validation
   Future<String> createPublicArt({
     required String title,
@@ -120,35 +150,32 @@ class ArtWalkService {
     double radiusKm = 5.0,
   }) async {
     try {
-      // This is a simplified approach - in a production app, you would use
-      // Firestore's GeoPoint queries or a specialized geo library
-
-      // Get all public art and filter in memory
-      // Note: For production, use pagination and server-side filtering
+      debugPrint(
+          '🎯 [DEBUG] getPublicArtNearLocation: lat=$latitude, lng=$longitude, radiusKm=$radiusKm');
       final snapshot = await _publicArtCollection.get();
-
+      debugPrint(
+          '🎯 [DEBUG] Firestore returned \\${snapshot.docs.length} public art docs');
       final List<PublicArtModel> nearbyArt = [];
-
       for (final doc in snapshot.docs) {
-        final art = PublicArtModel.fromFirestore(doc);
-
-        // Calculate distance between art location and provided location
-        final double distance = _calculateDistance(
-          art.location.latitude,
-          art.location.longitude,
-          latitude,
-          longitude,
-        );
-
-        // Only include art within the specified radius
-        if (distance <= radiusKm) {
-          nearbyArt.add(art);
+        final data = doc.data() as Map<String, dynamic>;
+        if (data['location'] is GeoPoint) {
+          final geo = data['location'] as GeoPoint;
+          final dist =
+              _distanceKm(latitude, longitude, geo.latitude, geo.longitude);
+          if (dist <= radiusKm) {
+            try {
+              final art = PublicArtModel.fromJson(data);
+              nearbyArt.add(art);
+            } catch (e) {
+              debugPrint('❌ [DEBUG] Error parsing PublicArtModel: $e');
+            }
+          }
         }
       }
-
+      debugPrint('🎯 [DEBUG] Found \\${nearbyArt.length} nearby art pieces');
       return nearbyArt;
     } catch (e) {
-      _logger.e('Error getting nearby public art: $e');
+      _logger.e('[DEBUG] Error in getPublicArtNearLocation: $e');
       return [];
     }
   }
@@ -755,6 +782,20 @@ class ArtWalkService {
 
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
+    return earthRadius * c;
+  }
+
+  /// Helper method to calculate distance between two lat/lng points in km (Haversine formula)
+  double _distanceKm(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371.0; // km
+    final dLat = (lat2 - lat1) * (pi / 180.0);
+    final dLon = (lon2 - lon1) * (pi / 180.0);
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * pi / 180.0) *
+            cos(lat2 * pi / 180.0) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return earthRadius * c;
   }
 

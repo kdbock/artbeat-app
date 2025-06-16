@@ -1,4 +1,5 @@
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show ArtistProfileModel, SubscriptionTier, UserType;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ArtistProfileService {
@@ -89,10 +90,7 @@ class ArtistProfileService {
         userId: data['userId'],
         displayName: data['displayName'],
         bio: data['bio'],
-        userType: UserType.values.firstWhere(
-          (type) => type.name == data['userType'],
-          orElse: () => UserType.artist,
-        ),
+        userType: UserType.fromString(data['userType'] ?? UserType.artist.name),
         location: data['location'],
         mediums: List<String>.from(data['mediums'] ?? []),
         styles: List<String>.from(data['styles'] ?? []),
@@ -103,7 +101,7 @@ class ArtistProfileService {
         isFeatured: data['isFeatured'] ?? false,
         subscriptionTier: SubscriptionTier.values.firstWhere(
           (tier) => tier.name == data['subscriptionTier'],
-          orElse: () => SubscriptionTier.basic,
+          orElse: () => SubscriptionTier.artistBasic,
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),
@@ -130,10 +128,7 @@ class ArtistProfileService {
         userId: data['userId'],
         displayName: data['displayName'],
         bio: data['bio'] ?? '',
-        userType: UserType.values.firstWhere(
-          (type) => type.name == data['userType'],
-          orElse: () => UserType.artist,
-        ),
+        userType: UserType.fromString(data['userType'] ?? UserType.artist.name),
         location: data['location'],
         mediums: List<String>.from(data['mediums'] ?? []),
         styles: List<String>.from(data['styles'] ?? []),
@@ -144,7 +139,7 @@ class ArtistProfileService {
         isFeatured: data['isFeatured'] ?? false,
         subscriptionTier: SubscriptionTier.values.firstWhere(
           (tier) => tier.apiName == data['subscriptionTier'],
-          orElse: () => SubscriptionTier.basic,
+          orElse: () => SubscriptionTier.artistBasic,
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),

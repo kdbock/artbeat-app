@@ -625,4 +625,216 @@ class AnalyticsService {
 
     return result;
   }
+
+  /// Get quick statistics for artist dashboard
+  Future<Map<String, dynamic>> getQuickStats(String userId) async {
+    try {
+      // Get last 30 days period
+      final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+
+      // Get artwork views
+      final viewsSnapshot = await _artworkViewsCollection
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(thirtyDaysAgo))
+          .get();
+
+      // Get profile views
+      final profileViewsSnapshot = await _artistProfileViewsCollection
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(thirtyDaysAgo))
+          .get();
+
+      // Get artwork stats (likes, comments, etc.)
+      final artworkSnapshot = await _firestore
+          .collection('artwork')
+          .where('artistId', isEqualTo: userId)
+          .get();
+
+      int totalLikes = 0;
+      int totalComments = 0;
+      for (var doc in artworkSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        totalLikes += (data['likes'] ?? 0) as int;
+        totalComments += (data['comments'] ?? 0) as int;
+      }
+
+      return {
+        'artworkViews': viewsSnapshot.docs.length,
+        'profileViews': profileViewsSnapshot.docs.length,
+        'totalLikes': totalLikes,
+        'totalComments': totalComments,
+      };
+    } catch (e) {
+      logger.e('Error getting quick stats: $e');
+      rethrow;
+    }
+  }
+
+  /// Get recent activities for the artist dashboard
+  Future<List<Map<String, dynamic>>> getRecentActivities(String userId) async {
+    try {
+      final now = DateTime.now();
+      final thirtyDaysAgo = now.subtract(const Duration(days: 30));
+
+      // Get recent artwork views
+      final viewsQuery = _artworkViewsCollection
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(thirtyDaysAgo))
+          .orderBy('viewedAt', descending: true)
+          .limit(10);
+
+      // Get recent profile views
+      final profileViewsQuery = _artistProfileViewsCollection
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(thirtyDaysAgo))
+          .orderBy('viewedAt', descending: true)
+          .limit(10);
+
+      // Get recent comments
+      final commentsQuery = _firestore
+          .collection('comments')
+          .where('artistId', isEqualTo: userId)
+          .where('createdAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(thirtyDaysAgo))
+          .orderBy('createdAt', descending: true)
+          .limit(10);
+
+      // Execute queries in parallel
+      final results = await Future.wait([
+        viewsQuery.get(),
+        profileViewsQuery.get(),
+        commentsQuery.get(),
+      ]);
+
+      final activities = <Map<String, dynamic>>[];
+
+      // Process artwork views
+      for (var doc in results[0].docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        activities.add({
+          'type': 'artwork_view',
+          'timestamp': data['viewedAt'],
+          'artworkId': data['artworkId'],
+          'viewerId': data['viewerId'],
+        });
+      }
+
+      // Process profile views
+      for (var doc in results[1].docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        activities.add({
+          'type': 'profile_view',
+          'timestamp': data['viewedAt'],
+          'viewerId': data['viewerId'],
+        });
+      }
+
+      // Process comments
+      for (var doc in results[2].docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        activities.add({
+          'type': 'comment',
+          'timestamp': data['createdAt'],
+          'artworkId': data['artworkId'],
+          'commenterId': data['userId'],
+          'comment': data['text'],
+        });
+      }
+
+      // Sort all activities by timestamp
+      activities.sort((a, b) =>
+          (b['timestamp'] as Timestamp).compareTo(a['timestamp'] as Timestamp));
+
+      // Return most recent 10 activities
+      return activities.take(10).toList();
+    } catch (e) {
+      logger.e('Error getting recent activities: $e');
+      rethrow;
+    }
+  }
+
+  /// Get commission summary data for an artist
+  Future<Map<String, dynamic>> getCommissionSummary() async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    final result = <String, dynamic>{};
+
+    try {
+      // Get all active commissions for the artist
+      final commissionsSnapshot = await _firestore
+          .collection('commissions')
+          .where('artistId', isEqualTo: userId)
+          .where('status', isEqualTo: 'active')
+          .get();
+
+      result['activeCommissions'] = commissionsSnapshot.docs.length;
+
+      double totalPendingAmount = 0;
+      double totalPaidAmount = 0;
+      final galleries = <String>{};
+
+      for (final doc in commissionsSnapshot.docs) {
+        final data = doc.data();
+        galleries.add(data['galleryId'] as String);
+
+        if (data['transactions'] != null) {
+          final transactions =
+              List<Map<String, dynamic>>.from(data['transactions']);
+          for (final transaction in transactions) {
+            final amount = (transaction['commissionAmount'] as num).toDouble();
+            if (transaction['status'] == 'pending') {
+              totalPendingAmount += amount;
+            } else if (transaction['status'] == 'paid') {
+              totalPaidAmount += amount;
+            }
+          }
+        }
+      }
+
+      result['totalPendingAmount'] = totalPendingAmount;
+      result['totalPaidAmount'] = totalPaidAmount;
+      result['activeGalleries'] = galleries.length;
+
+      // Get recent transactions (last 30 days)
+      final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+      final recentTransactions = <Map<String, dynamic>>[];
+
+      for (final doc in commissionsSnapshot.docs) {
+        final data = doc.data();
+        if (data['transactions'] != null) {
+          final transactions =
+              List<Map<String, dynamic>>.from(data['transactions']);
+          for (final transaction in transactions) {
+            final date = (transaction['date'] as Timestamp).toDate();
+            if (date.isAfter(thirtyDaysAgo)) {
+              recentTransactions.add({
+                'galleryId': data['galleryId'],
+                'amount': transaction['commissionAmount'],
+                'status': transaction['status'],
+                'date': date,
+              });
+            }
+          }
+        }
+      }
+
+      // Sort transactions by date
+      recentTransactions.sort(
+          (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
+
+      result['recentTransactions'] = recentTransactions;
+
+      return result;
+    } catch (e) {
+      logger.e('Error getting commission summary: $e');
+      throw Exception('Failed to load commission summary: $e');
+    }
+  }
 }

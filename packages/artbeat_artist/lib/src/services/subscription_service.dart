@@ -2,18 +2,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/subscription_model.dart';
-import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier;
-import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/artbeat_core.dart';
+
+// Re-export models we need
+export 'package:artbeat_core/artbeat_core.dart'
+    show ArtistProfileModel, UserType;
 
 /// Service for managing artist subscriptions
 class SubscriptionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Get the current authenticated user's ID
-  String? getCurrentUserId() {
-    return _auth.currentUser?.uid;
-  }
+  String? getCurrentUserId() => _auth.currentUser?.uid;
 
   /// Get the current user's subscription
   Future<SubscriptionModel?> getUserSubscription() async {
@@ -41,10 +41,10 @@ class SubscriptionService {
   Future<SubscriptionTier> getCurrentTier() async {
     try {
       final sub = await getUserSubscription();
-      return sub?.tier ?? SubscriptionTier.basic;
+      return sub?.tier ?? SubscriptionTier.free;
     } catch (e) {
       debugPrint('Error getting current tier: $e');
-      return SubscriptionTier.basic;
+      return SubscriptionTier.free;
     }
   }
 
@@ -53,7 +53,7 @@ class SubscriptionService {
     required String userId,
     required String displayName,
     required String bio,
-    required core.UserType userType,
+    required UserType userType,
     required String location,
     required List<String> mediums,
     required List<String> styles,
@@ -80,7 +80,7 @@ class SubscriptionService {
         await docRef.update({
           'displayName': displayName,
           'bio': bio,
-          'userType': userType == core.UserType.gallery ? 'gallery' : 'artist',
+          'userType': userType.value,
           'location': location,
           'mediums': mediums,
           'styles': styles,
@@ -93,22 +93,11 @@ class SubscriptionService {
         // Create new profile
         docRef = _firestore.collection('artistProfiles').doc();
 
-        // Get subscription tier (default to basic)
-        SubscriptionTier tier = SubscriptionTier.basic;
-        try {
-          final subscription = await getUserSubscription();
-          if (subscription != null) {
-            tier = subscription.tier;
-          }
-        } catch (e) {
-          debugPrint('Error getting subscription, defaulting to basic: $e');
-        }
-
         await docRef.set({
           'userId': userId,
           'displayName': displayName,
           'bio': bio,
-          'userType': userType == core.UserType.gallery ? 'gallery' : 'artist',
+          'userType': userType.value,
           'location': location,
           'mediums': mediums,
           'styles': styles,
@@ -116,7 +105,9 @@ class SubscriptionService {
           'profileImageUrl': profileImageUrl,
           'coverImageUrl': coverImageUrl,
           'isVerified': false,
-          'subscriptionTier': tier.apiName,
+          'isFeatured': false,
+          'followerCount': 0,
+          'subscriptionTier': SubscriptionTier.free.apiName,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
@@ -142,7 +133,7 @@ class SubscriptionService {
     String? facebook,
     String? twitter,
     String? etsy,
-    required core.UserType userType,
+    required UserType userType,
     String? profileImageUrl,
     String? coverImageUrl,
   }) async {
@@ -159,7 +150,7 @@ class SubscriptionService {
       };
 
       // Get current tier (default to basic)
-      SubscriptionTier tier = SubscriptionTier.basic;
+      SubscriptionTier tier = SubscriptionTier.artistBasic;
       try {
         final subscription = await getUserSubscription();
         if (subscription != null) {
@@ -174,7 +165,7 @@ class SubscriptionService {
         'userId': userId,
         'displayName': displayName,
         'bio': bio,
-        'userType': userType == core.UserType.gallery ? 'gallery' : 'artist',
+        'userType': userType.value,
         'mediums': mediums,
         'styles': styles,
         'socialLinks': socialLinks,
@@ -225,8 +216,7 @@ class SubscriptionService {
   }
 
   /// Get artist profile by user ID
-  Future<core.ArtistProfileModel?> getArtistProfileByUserId(
-      String userId) async {
+  Future<ArtistProfileModel?> getArtistProfileByUserId(String userId) async {
     try {
       final query = await _firestore
           .collection('artistProfiles')
@@ -235,7 +225,7 @@ class SubscriptionService {
           .get();
 
       if (query.docs.isEmpty) return null;
-      return core.ArtistProfileModel.fromFirestore(query.docs.first);
+      return ArtistProfileModel.fromFirestore(query.docs.first);
     } catch (e) {
       debugPrint('Error getting artist profile: $e');
       return null;
@@ -243,19 +233,12 @@ class SubscriptionService {
   }
 
   /// Get the current user's artist profile
-  Future<core.ArtistProfileModel?> getCurrentArtistProfile() async {
+  Future<ArtistProfileModel?> getCurrentArtistProfile() async {
     try {
-      final userId = _auth.currentUser?.uid;
+      final userId = getCurrentUserId();
       if (userId == null) return null;
 
-      final query = await _firestore
-          .collection('artistProfiles')
-          .where('userId', isEqualTo: userId)
-          .limit(1)
-          .get();
-
-      if (query.docs.isEmpty) return null;
-      return core.ArtistProfileModel.fromFirestore(query.docs.first);
+      return await getArtistProfileByUserId(userId);
     } catch (e) {
       debugPrint('Error getting current artist profile: $e');
       return null;
@@ -263,7 +246,7 @@ class SubscriptionService {
   }
 
   /// Get featured artists
-  Future<List<core.ArtistProfileModel>> getFeaturedArtists() async {
+  Future<List<ArtistProfileModel>> getFeaturedArtists() async {
     try {
       final snapshot = await _firestore
           .collection('artistProfiles')
@@ -272,7 +255,7 @@ class SubscriptionService {
           .get();
 
       return snapshot.docs
-          .map((doc) => core.ArtistProfileModel.fromFirestore(doc))
+          .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
       debugPrint('Error getting featured artists: $e');
@@ -281,13 +264,13 @@ class SubscriptionService {
   }
 
   /// Get artist profile by ID
-  Future<core.ArtistProfileModel?> getArtistProfileById(String id) async {
+  Future<ArtistProfileModel?> getArtistProfileById(String id) async {
     try {
       final docSnapshot =
           await _firestore.collection('artistProfiles').doc(id).get();
 
       if (!docSnapshot.exists) return null;
-      return core.ArtistProfileModel.fromFirestore(docSnapshot);
+      return ArtistProfileModel.fromFirestore(docSnapshot);
     } catch (e) {
       debugPrint('Error getting artist profile by id: $e');
       return null;
@@ -387,7 +370,7 @@ class SubscriptionService {
   }
 
   /// Get all artists with optional filters
-  Future<List<core.ArtistProfileModel>> getAllArtists({
+  Future<List<ArtistProfileModel>> getAllArtists({
     String? searchQuery,
     String? medium,
     String? style,
@@ -402,8 +385,8 @@ class SubscriptionService {
 
       // Get all artists
       final snapshot = await query.get();
-      List<core.ArtistProfileModel> artists = snapshot.docs
-          .map((doc) => core.ArtistProfileModel.fromFirestore(doc))
+      List<ArtistProfileModel> artists = snapshot.docs
+          .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
 
       // Apply style filter in memory (since Firestore doesn't support multiple array-contains queries)
@@ -421,16 +404,18 @@ class SubscriptionService {
         }).toList();
       }
 
-      // Sort by subscription tier and featured status
+      // Sort by subscription tier, featured status, and name
       artists.sort((a, b) {
         // First sort by subscription tier (premium > standard > basic)
-        if (a.subscriptionTier != b.subscriptionTier) {
-          return b.subscriptionTier.index.compareTo(a.subscriptionTier.index);
-        }
+        final tierCompare =
+            b.subscriptionTier.index.compareTo(a.subscriptionTier.index);
+        if (tierCompare != 0) return tierCompare;
+
         // Then by featured status
         if (a.isFeatured != b.isFeatured) {
           return a.isFeatured ? -1 : 1;
         }
+
         // Finally by name
         return a.displayName.compareTo(b.displayName);
       });

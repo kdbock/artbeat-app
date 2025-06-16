@@ -8,7 +8,7 @@ import 'package:artbeat_artist/src/services/analytics_service.dart';
 import 'package:artbeat_artist/src/services/subscription_service.dart'
     as artist_subscription;
 import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart' hide SubscriptionService;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 /// Analytics Dashboard Screen for Artists with Pro and Gallery plans
 class AnalyticsDashboardScreen extends StatefulWidget {
@@ -54,8 +54,8 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
       setState(() {
         // Added null check for subscription before accessing tier
         _hasProAccess = subscription != null &&
-            (subscription.tier == SubscriptionTier.standard ||
-                subscription.tier == SubscriptionTier.premium);
+            (subscription.tier == core.SubscriptionTier.artistPro ||
+                subscription.tier == core.SubscriptionTier.gallery);
       });
 
       if (!_hasProAccess) {

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'subscription_tier.dart';
-import 'user_model.dart' show UserType;
+import 'user_model.dart';
+import 'user_type.dart';
 
 /// Model for artist profiles
 class ArtistProfileModel {
@@ -32,7 +33,7 @@ class ArtistProfileModel {
     this.website,
     this.location,
     required this.userType,
-    this.subscriptionTier = SubscriptionTier.standard,
+    this.subscriptionTier = SubscriptionTier.artistBasic,
     this.isVerified = false,
     this.isFeatured = false,
     this.mediums = const [],
@@ -92,14 +93,7 @@ class ArtistProfileModel {
   /// Parse user type from string or int
   static UserType _parseUserType(dynamic value) {
     if (value is String) {
-      try {
-        return UserType.values.firstWhere(
-          (type) => type.name == value,
-          orElse: () => UserType.regular,
-        );
-      } catch (_) {
-        return UserType.regular;
-      }
+      return UserType.fromString(value);
     } else if (value is int && value >= 0 && value < UserType.values.length) {
       return UserType.values[value];
     }
@@ -109,20 +103,13 @@ class ArtistProfileModel {
   /// Parse subscription tier from string or int
   static SubscriptionTier _parseSubscriptionTier(dynamic value) {
     if (value is String) {
-      try {
-        return SubscriptionTier.values.firstWhere(
-          (tier) => tier.name == value,
-          orElse: () => SubscriptionTier.none,
-        );
-      } catch (_) {
-        return SubscriptionTier.none;
-      }
+      return SubscriptionTier.fromLegacyName(value);
     } else if (value is int &&
         value >= 0 &&
         value < SubscriptionTier.values.length) {
       return SubscriptionTier.values[value];
     }
-    return SubscriptionTier.none;
+    return SubscriptionTier.free;
   }
 
   /// Parse list of strings from dynamic value
@@ -142,26 +129,27 @@ class ArtistProfileModel {
   }
 
   /// Check if artist has a free subscription
-  bool get isBasicSubscription => subscriptionTier == SubscriptionTier.basic;
+  bool get isBasicSubscription =>
+      subscriptionTier == SubscriptionTier.free ||
+      subscriptionTier == SubscriptionTier.artistBasic;
 
   /// Check if artist has a pro subscription
-  bool get isProSubscription => subscriptionTier == SubscriptionTier.standard;
+  bool get isProSubscription => subscriptionTier == SubscriptionTier.artistPro;
 
   /// Check if artist has a gallery subscription
   bool get isGallerySubscription =>
-      subscriptionTier == SubscriptionTier.premium;
+      subscriptionTier == SubscriptionTier.gallery;
 
   /// Get maximum number of artworks allowed for this subscription
   int get maxArtworkCount {
     switch (subscriptionTier) {
-      case SubscriptionTier.basic:
+      case SubscriptionTier.free:
+      case SubscriptionTier.artistBasic:
         return 5;
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return 100;
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return 1000;
-      case SubscriptionTier.none:
-        return 0;
     }
   }
 

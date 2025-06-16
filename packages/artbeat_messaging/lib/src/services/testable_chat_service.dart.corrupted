@@ -1,0 +1,383 @@
+// filepath: /Users/kristybock/artbeat/packages/artbeat_messaging/lib/src/services/testable_chat_service.dart
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'pac      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final imageRef = _storage.ref().child('chat_images/$chatId/${currentUserId}_$timestamp');ge:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import '../models/chat_model.dart';
+import '../models/message_model.dart';
+import '../models/user_model.dart' as messaging;
+
+/// A testable implementation of the ChatService that allows dependency injection
+class TestableChatService extends ChangeNotifier {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+  final FirebaseStorage _storage;
+
+  TestableChatService({
+    required FirebaseFirestore firestore,
+    required FirebaseAuth auth,
+    required FirebaseStorage storage,
+  })  : _firestore = firestore,
+        _auth = auth,
+        _storage = storage;
+
+  String getCurrentUserId() {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('User not authenticated');
+    return userId;
+  }
+
+  Stream<List<ChatModel>> getChatStream() {
+    final userId = getCurrentUserId();
+
+    return _firestore
+        .collection('chats')
+        .where('participantIds', arrayContains: userId)
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList(),
+        );
+  }
+
+  Future<List<ChatModel>> getChats() async {
+    final userId = getCurrentUserId();
+
+    final snapshot = await _firestore
+        .collection('chats')
+        .where('participantIds', arrayContains: userId)
+        .orderBy('updatedAt', descending: true)
+        .get();
+
+    return snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList();
+  }
+
+  Future<ChatModel?> getChatById(String chatId) async {
+    final doc = await _firestore.collection('chats').doc(chatId).get();
+    if (!doc.exists) return null;
+    return ChatModel.fromFirestore(doc);
+  }
+
+  Stream<ChatModel?> getChatByIdStream(String chatId) {
+    return _firestore.collection('chats').doc(chatId).snapshots().map(
+        (doc) => doc.exists ? ChatModel.fromFirestore(doc) : null);
+  }
+
+  Stream<List<MessageModel>> getMessagesStream(String chatId, {int limit = 20}) {
+    return _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => MessageModel.fromFirestore(doc))
+            .toList());
+  }
+
+  Future<List<MessageModel>> getMessages(String chatId, {int limit = 20}) async {
+    final snapshot = await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => MessageModel.fromFirestore(doc))
+        .toList();
+  }
+
+  Future<String> createChat({
+    required List<String> participantIds,
+    String? groupName,
+    String? groupImage,
+    bool isGroupChat = false,
+  }) async {
+    final currentUserId = getCurrentUserId();
+    
+    // Ensure current user is included in participants
+    if (!participantIds.contains(currentUserId)) {
+      participantIds.add(currentUserId);
+    }
+
+    // For 1:1 chats, check if a chat already exists between users
+    if (!isGroupChat && participantIds.length == 2) {
+      final existingChatQuery = await _firestore
+          .collection('chats')
+          .where('participantIds', isEqualTo: participantIds)
+          .where('isGroupChat', isEqualTo: false)
+          .get();
+
+      if (existingChatQuery.docs.isNotEmpty) {
+        return existingChatQuery.docs.first.id;
+      }
+    }
+
+    // Create participants data with user information
+    final List<Map<String, dynamic>> participants = [];
+    for (final userId in participantIds) {
+      try {
+        final userDoc = await _firestore.collection('users').doc(userId).get();
+        if (userDoc.exists) {
+          final userData = userDoc.data() as Map<String, dynamic>;
+          participants.add({
+            'id': userId,
+            'name': userData['displayName'] ?? 'Unknown',
+            'photoUrl': userData['photoURL'] ?? '',
+          });
+        } else {
+          participants.add({
+            'id': userId,
+            'name': 'Unknown',
+            'photoUrl': '',
+          });
+        }
+      } catch (e) {
+        debugPrint('Error getting user data: $e');
+        participants.add({
+          'id': userId,
+          'name': 'Unknown',
+          'photoUrl': '',
+        });
+      }
+    }
+
+    // Create the chat
+    final chatRef = _firestore.collection('chats').doc();
+    await chatRef.set({
+      'participants': participants,
+      'participantIds': participantIds,
+      'creatorId': currentUserId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'lastMessage': null,
+      'lastMessageTimestamp': null,
+      'isGroupChat': isGroupChat,
+      'groupName': isGroupChat ? groupName : null,
+      'groupImage': isGroupChat ? groupImage : null,
+      'unreadCounts': participantIds.map((id) => {id: 0}).reduce((a, b) => {...a, ...b}),
+    });
+
+    return chatRef.id;
+  }
+
+  Future<String> sendMessage({
+    required String chatId,
+    required String text,
+    File? image,
+    File? file,
+    String? replyToMessageId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final currentUserId = getCurrentUserId();
+
+    // Get chat to check if user is participant
+    final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+    if (!chatDoc.exists) throw Exception('Chat not found');
+
+    final chatData = chatDoc.data() as Map<String, dynamic>;
+    final List<dynamic> participantIds = chatData['participantIds'] ?? [];
+    if (!participantIds.contains(currentUserId)) {
+      throw Exception('User is not a participant in this chat');
+    }
+
+    String? imageUrl;
+    String? fileName;
+    String? fileUrl;
+
+    // Upload image if any
+    if (image != null) {
+      final imageRef = _storage.ref().child(
+          'chat_images/$chatId/$currentUserId_${DateTime.now().millisecondsSinceEpoch}');
+      await imageRef.putFile(image);
+      imageUrl = await imageRef.getDownloadURL();
+    }
+
+    // Upload file if any
+    if (file != null) {
+      fileName = file.path.split('/').last;
+      final fileRef = _storage.ref().child(
+          'chat_files/$chatId/${currentUserId}_${DateTime.now().millisecondsSinceEpoch}_$fileName');
+      await fileRef.putFile(file);
+      fileUrl = await fileRef.getDownloadURL();
+    }
+
+    // Create message document
+    final timestamp = FieldValue.serverTimestamp();
+    final messageRef = _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc();
+
+    final message = {
+      'id': messageRef.id,
+      'senderId': currentUserId,
+      'text': text,
+      'timestamp': timestamp,
+      'read': {currentUserId: true},
+      'imageUrl': imageUrl,
+      'fileName': fileName,
+      'fileUrl': fileUrl,
+      'replyToMessageId': replyToMessageId,
+      'metadata': metadata ?? {},
+    };
+
+    // Update all fields in a transaction
+    await _firestore.runTransaction((transaction) async {
+      transaction.set(messageRef, message);
+
+      // Update chat with last message information
+      transaction.update(_firestore.collection('chats').doc(chatId), {
+        'lastMessage': text.isNotEmpty
+            ? text
+            : imageUrl != null
+                ? '📷 Image'
+                : fileUrl != null
+                    ? '📎 File: $fileName'
+                    : 'New message',
+        'lastMessageTimestamp': timestamp,
+        'lastMessageSenderId': currentUserId,
+        'updatedAt': timestamp,
+      });
+
+      // Update unread counts for all participants except sender
+      for (final participantId in participantIds) {
+        if (participantId != currentUserId) {
+          transaction.update(
+            _firestore.collection('chats').doc(chatId),
+            {'unreadCounts.$participantId': FieldValue.increment(1)},
+          );
+        }
+      }
+    });
+
+    return messageRef.id;
+  }
+
+  Future<void> markChatAsRead(String chatId) async {
+    final currentUserId = getCurrentUserId();
+
+    await _firestore.collection('chats').doc(chatId).update({
+      'unreadCounts.$currentUserId': 0,
+    });
+
+    // Mark all messages as read by this user
+    final unreadMessagesQuery = await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .where('read.$currentUserId', isEqualTo: false)
+        .get();
+
+    final batch = _firestore.batch();
+    for (final doc in unreadMessagesQuery.docs) {
+      batch.update(doc.reference, {
+        'read.$currentUserId': true,
+      });
+    }
+
+    await batch.commit();
+  }
+
+  Future<void> deleteMessage(String chatId, String messageId) async {
+    final currentUserId = getCurrentUserId();
+
+    // Get message to verify sender
+    final messageDoc = await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .get();
+
+    if (!messageDoc.exists) throw Exception('Message not found');
+
+    final messageData = messageDoc.data() as Map<String, dynamic>;
+    if (messageData['senderId'] != currentUserId) {
+      throw Exception('Only the sender can delete this message');
+    }
+
+    // Delete message with soft delete (mark as deleted)
+    await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .update({
+      'isDeleted': true,
+      'text': 'This message was deleted',
+      'imageUrl': null,
+      'fileUrl': null,
+      'fileName': null,
+    });
+  }
+
+  Future<List<messaging.UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+
+    final currentUserId = getCurrentUserId();
+
+    // Search by name or email containing the query term
+    final nameQuery = await _firestore
+        .collection('users')
+        .where('displayName', isGreaterThanOrEqualTo: query)
+        .where('displayName', isLessThanOrEqualTo: query + '\uf8ff')
+        .get();
+
+    final emailQuery = await _firestore
+        .collection('users')
+        .where('email', isGreaterThanOrEqualTo: query)
+        .where('email', isLessThanOrEqualTo: query + '\uf8ff')
+        .get();
+
+    // Combine results and remove duplicates
+    final userDocs = [...nameQuery.docs, ...emailQuery.docs]
+        .where((doc) => doc.id != currentUserId) // Exclude current user
+        .toSet() // Remove duplicates
+        .toList();
+
+    return userDocs
+        .map((doc) => messaging.UserModel.fromFirestore(doc))
+        .toList();
+  }
+  
+  Stream<Map<String, dynamic>> getTypingStatus(String chatId) {
+    return _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('typing')
+        .doc('status')
+        .snapshots()
+        .map((doc) => doc.exists ? (doc.data() as Map<String, dynamic>) : {});
+  }
+
+  Future<void> updateTypingStatus(String chatId, bool isTyping) async {
+    final currentUserId = getCurrentUserId();
+    
+    await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('typing')
+        .doc('status')
+        .set({currentUserId: isTyping}, SetOptions(merge: true));
+    
+    // Auto-reset typing status after 5 seconds if still typing
+    if (isTyping) {
+      Future.delayed(const Duration(seconds: 5), () async {
+        await _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('typing')
+            .doc('status')
+            .set({currentUserId: false}, SetOptions(merge: true));
+      });
+    }
+  }
+}

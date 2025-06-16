@@ -103,6 +103,26 @@ class UserService extends ChangeNotifier {
     }
   }
 
+  /// Refresh current user data from Firestore
+  Future<void> refreshUserData() async {
+    try {
+      if (!isLoggedIn) {
+        throw Exception('No user logged in');
+      }
+
+      final doc = await _usersCollection.doc(currentUserId).get();
+      if (!doc.exists) {
+        throw Exception('User document not found');
+      }
+
+      // Successfully refreshed data
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error refreshing user data: $e');
+      rethrow;
+    }
+  }
+
   /// Get user profile data
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {

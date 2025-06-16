@@ -24,6 +24,8 @@ ARTbeat is a comprehensive Flutter application that serves as a platform for cre
   - [Payment Integration](#payment-integration)
   - [Offline Support](#offline-support)
 - [Technical Architecture](#technical-architecture)
+  - [Modular Architecture](#modular-architecture)
+  - [Running Individual Modules](#running-individual-modules)
   - [Project Structure](#project-structure)
   - [Data Models](#data-models)
   - [Services](#services)
@@ -144,6 +146,51 @@ The Art Walk feature allows users to discover, document, and share public art th
 - Offline-friendly UI indicators
 
 ## Technical Architecture
+
+### Modular Architecture
+
+ARTbeat is built using a modular architecture where each feature is encapsulated in its own module. This architecture:
+
+- Improves maintainability by isolating features
+- Enables parallel development by different team members
+- Makes the codebase more organized and testable
+- Facilitates reuse of components across projects
+
+Each module is a standalone Flutter package in the `packages/` directory:
+
+```
+packages/
+├── artbeat_core/         # Shared functionality used across all modules
+├── artbeat_auth/         # User authentication flows
+├── artbeat_profile/      # User profiles management
+├── artbeat_artist/       # Artist and gallery management features
+├── artbeat_artwork/      # Artwork-related features
+├── artbeat_art_walk/     # Public art discovery features
+├── artbeat_community/    # Social and interaction features
+├── artbeat_capture/      # Image capture and processing features
+├── artbeat_messaging/    # User messaging system
+└── artbeat_settings/     # User preferences and account management
+```
+
+### Running Individual Modules
+
+Each module can be run independently for faster development and testing:
+
+```bash
+# Run a specific module using the provided script
+./scripts/run_module.sh artbeat_auth
+```
+
+Or manually:
+
+```bash
+cd packages/artbeat_auth
+flutter run -t lib/bin/main.dart
+```
+
+Each module has its own standalone entry point in `lib/bin/main.dart` that initializes only what's needed for that feature, making development faster and more focused.
+
+For more details, see [Running Individual Modules](docs/RUNNING_INDIVIDUAL_MODULES.md).
 
 ### Project Structure
 ```

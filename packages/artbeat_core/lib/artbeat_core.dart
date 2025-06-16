@@ -10,7 +10,13 @@ export 'src/firebase_options.dart';
 // Export models and types
 export 'src/models/models.dart';
 export 'src/models/artist_model.dart';
+export 'src/models/artist_profile_model.dart';
 export 'src/models/capture_model.dart';
+export 'src/models/event_model.dart';
+export 'src/models/subscription_tier.dart';
+export 'src/models/gift_model.dart';
+export 'src/models/user_type.dart'; // Add UserType export
+export 'src/models/user_model.dart'; // Add UserModel export
 
 // Export services
 export 'src/services/services.dart';
@@ -19,6 +25,8 @@ export 'src/services/subscription_plan_validator.dart';
 export 'src/services/subscription_validation_service.dart';
 export 'src/services/artist_service.dart';
 export 'src/services/capture_service.dart';
+export 'src/services/config_service.dart';
+export 'src/services/user_service.dart';
 
 // Export utils
 export 'src/utils/location_utils.dart';

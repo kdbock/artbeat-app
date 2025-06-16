@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
+// Re-export GiftModel from core
+import '../models/gift_model_export.dart';
+
 class GiftController extends ChangeNotifier {
   final PaymentService _paymentService;
 
@@ -19,9 +22,9 @@ class GiftController extends ChangeNotifier {
     }
   }
 
-  Future<List<GiftModel>> fetchSentGifts(String userId) async {
+  Future<List<GiftModel>> fetchSentGifts() async {
     try {
-      _sentGifts = await _paymentService.getSentGifts(userId);
+      _sentGifts = await _paymentService.getSentGifts();
       notifyListeners();
       return _sentGifts;
     } catch (e) {

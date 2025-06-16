@@ -196,15 +196,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
       }
 
       // Get the amount based on the subscription tier
-      final amount =
-          (widget.tier.monthlyPrice * 100).round(); // Convert to cents
+      final amount = widget.tier.monthlyPrice;
       final description = 'Subscription to ${widget.tier.displayName}';
 
       final success = await _paymentService.processPayment(
-        customerId: stripeCustomerId,
         paymentMethodId: defaultPaymentMethodId,
         amount: amount,
-        currency: 'usd',
         description: description,
       );
 
@@ -261,14 +258,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _getPlanDescription(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.basic:
+      case SubscriptionTier.free:
+      case SubscriptionTier.artistBasic:
         return 'Basic features for artists';
-      case SubscriptionTier.standard:
+      case SubscriptionTier.artistPro:
         return 'Pro features for artists';
-      case SubscriptionTier.premium:
+      case SubscriptionTier.gallery:
         return 'Premium features for galleries';
-      case SubscriptionTier.none:
-        return 'No subscription';
     }
   }
 
