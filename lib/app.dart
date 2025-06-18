@@ -63,20 +63,12 @@ class MyApp extends StatelessWidget {
             navigatorKey: navigatorKey,
             initialRoute: '/splash',
             routes: {
-              '/': (context) => const core.LoadingScreen(),
+              '/': (context) => const core.SplashScreen(),
               '/splash': (context) => const core.SplashScreen(),
               '/login': (context) => const LoginScreen(),
               '/register': (context) => const RegisterScreen(),
               '/forgot-password': (context) => const ForgotPasswordScreen(),
-              '/dashboard': (context) => core.DashboardScreen(
-                screens: const [
-                  DiscoverScreen(),
-                  ArtWalkMapScreen(),
-                  CommunityFeedScreen(),
-                  artist.EventsScreen(),
-                ],
-                onCapturePressed: () => _onCapture(context),
-              ),
+              '/dashboard': (context) => const core.DashboardScreen(),
               '/capture': (context) => const CaptureScreen(),
               '/artwork/upload': (context) {
                 final args =
@@ -133,85 +125,6 @@ class AppShell extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({super.key});
-
-  @override
-  State<LoadingScreen> createState() => _LoadingScreenState();
-}
-
-class _LoadingScreenState extends State<LoadingScreen> {
-  final core.UserService _userService = core.UserService();
-  String _status = 'Initializing...';
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    try {
-      setState(() {
-        _status = 'Initializing services...';
-        _hasError = false;
-      });
-
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
-
-      final user = _userService.currentUser;
-      if (user != null) {
-        debugPrint('✅ User is logged in, navigating to dashboard...');
-        Navigator.pushReplacementNamed(context, '/dashboard');
-      } else {
-        debugPrint('⚠️ User not logged in, navigating to login...');
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _status = 'Error: $e';
-        _hasError = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_hasError)
-                Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: theme.colorScheme.error,
-                ),
-              const SizedBox(height: 16),
-              Text(
-                _status,
-                style: TextStyle(
-                  color: _hasError
-                      ? theme.colorScheme.error
-                      : theme.colorScheme.onSurface,
-                ),
-              ),
-              if (_hasError)
-                TextButton(onPressed: _initialize, child: const Text('Retry')),
-            ],
-          ),
-        ),
       ),
     );
   }

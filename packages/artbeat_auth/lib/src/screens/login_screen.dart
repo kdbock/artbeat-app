@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput, ArtbeatButton;
+    show ArtbeatColors, ArtbeatInput;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Login screen with email/password authentication
@@ -71,6 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: Container(
+        constraints: const BoxConstraints.expand(),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -83,137 +84,138 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 24),
-                  // Animated logo
-                  TweenAnimationBuilder(
-                    duration: const Duration(seconds: 2),
-                    tween: Tween<double>(begin: 0.8, end: 1.0),
-                    builder: (context, double value, child) {
-                      return Transform.scale(scale: value, child: child);
-                    },
-                    child: Image.asset(
-                      'assets/images/artbeat_logo.png',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  Text(
-                    'Welcome Back!',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: ArtbeatColors.primaryPurple,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Sign in to continue your artistic journey',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: ArtbeatColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  ArtbeatInput(
-                    key: const Key('emailField'),
-                    controller: _emailController,
-                    label: 'Email',
-                    keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  ArtbeatInput(
-                    key: const Key('passwordField'),
-                    controller: _passwordController,
-                    label: 'Password',
-                    obscureText: _obscurePassword,
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  ArtbeatButton(
-                    key: const Key('loginButton'),
-                    onPressed: _isLoading ? null : _handleLogin,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Login'),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        key: const Key('registerButton'),
-                        onPressed: () {
-                          Navigator.of(
-                            context,
-                          ).pushReplacementNamed('/register');
-                        },
-                        child: Text(
-                          'Create Account',
-                          style: Theme.of(context).textTheme.bodyLarge
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 24),
+                        // Animated logo
+                        TweenAnimationBuilder(
+                          duration: const Duration(seconds: 2),
+                          tween: Tween<double>(begin: 0.8, end: 1.0),
+                          builder: (context, double value, child) {
+                            return Transform.scale(scale: value, child: child);
+                          },
+                          child: Image.asset(
+                            'assets/images/artbeat_logo.png',
+                            width: 320,
+                            height: 320,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.image_not_supported,
+                              size: 80,
+                              color: ArtbeatColors.primaryPurple.withAlpha(120),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        Text(
+                          'Welcome Back!',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.displaySmall
                               ?.copyWith(
                                 color: ArtbeatColors.primaryPurple,
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.bold,
                               ),
                         ),
-                      ),
-                      TextButton(
-                        key: const Key('forgotPasswordButton'),
-                        onPressed: () {
-                          Navigator.of(context).pushNamed('/forgot-password');
-                        },
-                        child: Text(
-                          'Forgot Password?',
+                        const SizedBox(height: 12),
+                        Text(
+                          'Sign in to continue your artistic journey',
+                          textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: ArtbeatColors.primaryPurple,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              ?.copyWith(color: ArtbeatColors.textSecondary),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 40),
+                        ArtbeatInput(
+                          key: const Key('emailField'),
+                          controller: _emailController,
+                          label: 'Email',
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: const Icon(Icons.email_outlined),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        ArtbeatInput(
+                          key: const Key('passwordField'),
+                          controller: _passwordController,
+                          label: 'Password',
+                          obscureText: _obscurePassword,
+                          prefixIcon: const Icon(Icons.lock_outlined),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: ArtbeatColors.textSecondary,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your password';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleLogin,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Login'),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 24.0,
+                  right: 24.0,
+                  bottom: 24.0,
+                  top: 12.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pushReplacementNamed('/register'),
+                      child: const Text('Create Account'),
+                    ),
+                    TextButton(
+                      onPressed: () =>
+                          Navigator.of(context).pushNamed('/forgot-password'),
+                      child: const Text('Forgot Password?'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

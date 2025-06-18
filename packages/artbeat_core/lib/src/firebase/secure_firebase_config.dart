@@ -35,6 +35,13 @@ class SecureFirebaseConfig {
 
       _initialized = true;
       return app;
+    } on FirebaseException catch (e) {
+      debugPrint('Firebase initialization failed: $e');
+      if (e.code == 'duplicate-app') {
+        _initialized = true;
+        return Firebase.app();
+      }
+      rethrow;
     } catch (e) {
       debugPrint('Firebase initialization failed: $e');
       rethrow;

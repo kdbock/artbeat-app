@@ -59,5 +59,10 @@ dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/artbeat_logo.png
+    - packages/artbeat_core/assets/images/artbeat_splash_bg.png
+
+
 dev_dependencies:
   flutter_lints: ^6.0.0

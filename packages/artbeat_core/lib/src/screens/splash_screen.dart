@@ -49,8 +49,8 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Delay to show splash screen for at least 2 seconds
-    await Future<void>.delayed(const Duration(seconds: 2));
+    // Delay to show splash screen for at least 15 seconds
+    await Future<void>.delayed(const Duration(seconds: 15));
 
     if (!mounted) return;
 
@@ -78,50 +78,21 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF8C52FF), // Primary purple
-              const Color(0xFF8C52FF).withAlpha(204), // 0.8 opacity
-              const Color(0xFF00BF63), // Primary green
-            ],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'packages/artbeat_core/assets/images/artbeat_splash_bg.png',
+            fit: BoxFit.cover,
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Animated ARTbeat logo
-              ScaleTransition(
-                scale: _scaleAnimation,
-                child: Image.asset(
-                  'assets/images/artbeat_logo.png',
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'ARTbeat',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Discover Local Art',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white.withAlpha(230), // 0.9 opacity
-                ),
-              ),
-            ],
+          Center(
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child:
+                  SizedBox.shrink(), // Remove logo for pure background, or add logo if desired
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
