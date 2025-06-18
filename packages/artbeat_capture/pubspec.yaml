@@ -1,0 +1,36 @@
+name: artbeat_capture
+description: Camera and capture module for ARTbeat
+version: 0.0.1
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.11.1
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  google_maps_flutter: ^2.5.3
+  # Temporarily commenting out to resolve pod install issues
+  # google_mlkit_text_recognition: ^0.15.0
+  geolocator: ^14.0.1
+  cloud_firestore: ^5.6.9
+  firebase_storage: ^12.4.7
+  artbeat_core: 
+    path: ../artbeat_core
+  connectivity_plus: ^6.1.4
+  package_info_plus: ^8.3.0
+  device_info_plus: ^11.5.0
+  firebase_auth: ^5.6.0
+  geocoding: ^4.0.0
+  path: ^1.9.0
+
+flutter:
+  uses-material-design: true
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

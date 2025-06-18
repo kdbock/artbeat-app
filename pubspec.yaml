@@ -1,0 +1,63 @@
+name: artbeat
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '^3.8.0'
+  flutter: '>=3.32.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Local modules
+  artbeat_admin:
+    path: packages/artbeat_admin
+  artbeat_art_walk:
+    path: packages/artbeat_art_walk
+  artbeat_artist:
+    path: packages/artbeat_artist
+  artbeat_artwork:
+    path: packages/artbeat_artwork
+  artbeat_auth:
+    path: packages/artbeat_auth
+  artbeat_community:
+    path: packages/artbeat_community
+  artbeat_core:
+    path: packages/artbeat_core
+  artbeat_messaging:
+    path: packages/artbeat_messaging
+  artbeat_profile:
+    path: packages/artbeat_profile
+  artbeat_settings:
+    path: packages/artbeat_settings
+
+  # Firebase
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.9
+  firebase_storage: ^12.4.7
+  firebase_analytics: ^11.5.0
+  firebase_app_check: ^0.3.2+7
+  firebase_messaging: ^15.2.7
+
+  # UI packages
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.1.0
+  # Temporarily removed due to dependency conflict
+  # cached_network_image: ^3.4.1
+  google_maps_flutter: ^2.5.3
+
+  # Utils
+  provider: ^6.1.5
+  shared_preferences: ^2.5.3
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  http: ^1.4.0
+
+flutter:
+  uses-material-design: true
+dev_dependencies:
+  flutter_lints: ^6.0.0

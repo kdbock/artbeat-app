@@ -1,0 +1,42 @@
+name: artbeat_profile
+description: User profile features for ARTbeat app
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  artbeat_core:
+    path: ../artbeat_core
+  artbeat_art_walk:
+    path: ../artbeat_art_walk
+  artbeat_capture:
+    path: ../artbeat_capture
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
+  firebase_storage: ^12.4.7
+  firebase_app_check: ^0.3.2+7
+  provider: ^6.1.1
+  image_picker: ^1.0.4
+  cached_network_image: ^3.2.3
+  artbeat_artwork:
+    path: ../artbeat_artwork
+  artbeat_artist:
+    path: ../artbeat_artist
+  artbeat_community:
+    path: ../artbeat_community
+  cloud_firestore: ^5.6.9
+  geolocator: ^14.0.1
+  intl: ^0.20.2
+
+flutter:
+  uses-material-design: true
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

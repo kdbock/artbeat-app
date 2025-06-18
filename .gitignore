@@ -1,0 +1,134 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VSCode related
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Test related
+coverage/
+**/test/**/*.mocks.dart
+.test_coverage.dart
+coverage_badge.svg
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Environment variables and sensitive information
+*.env
+# Firebase configuration files containing sensitive data
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Local development configurations
+/lib/env/
+
+# Service account file
+assets/service_account.json
+ios/Runner/Config.xcconfig
+
+# Sensitive files
+.env
+*.env
+service_account.json
+**/google-services.json
+**/GoogleService-Info.plist
+**/key.properties
+**/keys.json
+**/secrets.json
+**/credentials.json
+
+# Backup files
+*.backup
+*.bak
+
+# Security and API related
+.env
+.env.*
+!.env.example
+!.env.production
+*.key
+*.pem
+*.p12
+**/service_account*.json
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Credential files
+**/*.keystore
+**/*.jks
+**/key.properties
+**/upload-keystore.jks
+**/firebase_credentials.json
+**/google_maps_api.xml
+
+# Test cache files
+**/build/test_cache/
+**/test_cache/
+*.dill
+*.dill.track.dill
+**/build/**/*.dill
+**/build/**/*.dill.track.dill
+
+# Package specific build directories
+packages/*/build/
+packages/*/.dart_tool/
+packages/*/.flutter-plugins
+packages/*/.flutter-plugins-dependencies
+packages/*/.packages
+packages/*/pubspec.lock
+**/build/test_cache/
+**/test_cache/
+*.dill
+*.dill.track.dill
+**/build/**/*.dill
+**/build/**/*.dill.track.dill
+
+# Package specific build directories
+packages/*/build/
+packages/*/.dart_tool/
+packages/*/.flutter-plugins
+packages/*/.flutter-plugins-dependencies
+packages/*/.packages
+packages/*/pubspec.lock
+
+# API Keys and Sensitive Configuration
+lib/src/config/maps_config.dart
+android/local.properties
+ios/Runner/maps_config.plist

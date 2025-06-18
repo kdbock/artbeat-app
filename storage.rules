@@ -1,0 +1,57 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions for access control
+    function isDebugMode() {
+      return request.resource != null && (
+        request.resource.metadata.debug_mode == "true" ||
+        request.resource.metadata.build_mode == "debug" ||
+        request.auth.token.debug == true
+      );
+    }
+
+    function hasAppCheck() {
+      return request.app != null || isDebugMode();
+    }
+
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isAuthorized() {
+      return isAuthenticated() && hasAppCheck();
+    }
+    
+    function isUserPath(userId) {
+      return isAuthorized() && (
+        isDebugMode() || 
+        request.auth.uid == userId
+      );
+    }
+
+    // Base rules that apply to all paths
+    match /{allPaths=**} {
+      allow read: if isAuthorized();
+      allow write: if false; // Specific paths must explicitly allow write
+    }
+
+    // Capture images
+    match /capture_images/{userId}/{fileName} {
+      allow read: if isAuthorized();
+      allow write: if isUserPath(userId);
+      allow delete: if isUserPath(userId);
+    }
+    
+    // Profile images
+    match /profile_images/{userId}/{fileName} {
+      allow read: if isAuthorized();
+      allow write: if isUserPath(userId);
+      allow delete: if isUserPath(userId);
+    }
+
+    // Debug mode bypass for testing
+    match /{path=**}/{fileName} {
+      allow read, write: if isDebugMode();
+    }
+  }
+}

@@ -1,0 +1,24 @@
+library;
+
+export 'src/controllers/chat_controller.dart';
+export 'src/controllers/message_controller.dart';
+export 'src/controllers/typing_indicator_controller.dart';
+export 'src/models/chat_model.dart';
+export 'src/models/message_model.dart';
+export 'src/models/user_model.dart';
+export 'src/screens/chat_list_screen.dart';
+export 'src/screens/chat_screen.dart';
+export 'src/screens/contact_selection_screen.dart';
+export 'src/screens/group_creation_screen.dart';
+export 'src/screens/user_profile_screen.dart';
+export 'src/screens/media_viewer_screen.dart';
+export 'src/screens/chat_settings_screen.dart';
+export 'src/services/chat_service.dart';
+export 'src/services/notification_service.dart';
+export 'src/widgets/chat_bubble.dart';
+export 'src/widgets/message_input_field.dart';
+export 'src/widgets/typing_indicator.dart';
+export 'src/widgets/attachment_button.dart';
+export 'src/utils/date_formatter.dart';
+export 'src/utils/constants.dart';
+export 'src/theme/chat_theme.dart';

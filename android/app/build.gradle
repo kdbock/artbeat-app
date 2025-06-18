@@ -1,0 +1,18 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def mapsApiKey = localProperties.getProperty('MAPS_API_KEY')
+if (mapsApiKey == null) {
+    mapsApiKey = System.getenv('MAPS_API_KEY')
+}
+
+android {
+    defaultConfig {
+        manifestPlaceholders = [mapsApiKey: mapsApiKey]
+    }
+}
