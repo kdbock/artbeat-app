@@ -40,7 +40,7 @@ class ArtistAvatar extends StatelessWidget {
             radius: radius,
             backgroundColor: Theme.of(context).colorScheme.surface,
             child: ClipOval(
-              child: imageUrl != null
+              child: imageUrl != null && imageUrl!.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: imageUrl!,
                       width: radius * 2,
@@ -57,10 +57,9 @@ class ArtistAvatar extends StatelessWidget {
                       errorWidget: (context, url, error) => Container(
                         width: radius * 2,
                         height: radius * 2,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .error
-                            .withOpacity(0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.error.withValues(alpha: 25),
                         child: Center(
                           child: Text(
                             displayName[0].toUpperCase(),
@@ -91,10 +90,7 @@ class ArtistAvatar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: CommunityColors.verified,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
                 padding: const EdgeInsets.all(2),
                 child: Icon(

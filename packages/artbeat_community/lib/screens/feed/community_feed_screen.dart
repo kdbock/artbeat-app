@@ -769,7 +769,12 @@ Download ARTbeat to see more: https://artbeat.app
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,
           type: BottomNavigationBarType.fixed,
-          onTap: (index) => setState(() => _selectedIndex = index),
+          onTap: (index) {
+            if (index != _selectedIndex) {
+              setState(() => _selectedIndex = index);
+            }
+            // Optionally: handle navigation to dashboard if needed
+          },
           items: _tabs.map((tab) {
             final idx = _tabs.indexOf(tab);
             return BottomNavigationBarItem(

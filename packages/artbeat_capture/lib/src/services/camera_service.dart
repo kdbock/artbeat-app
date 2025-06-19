@@ -30,10 +30,10 @@ class CameraService {
       final cameras = await availableCameras();
       if (cameras.isEmpty) throw Exception('No cameras available');
 
-      // Initialize with appropriate resolution
+      // Initialize with lower resolution to reduce buffer usage
       _controller = CameraController(
         cameras[0],
-        ResolutionPreset.max,
+        ResolutionPreset.medium, // Lowered from max to medium
         enableAudio: false,
       );
 
@@ -82,6 +82,9 @@ class CameraService {
         image = await _controller!.takePicture().timeout(
           const Duration(seconds: 10),
         );
+
+        // Add a short delay to help release camera buffers
+        await Future<void>.delayed(const Duration(milliseconds: 350));
 
         // Re-verify auth before upload
         if (!_isUserAuthenticated()) {
@@ -158,10 +161,24 @@ class CameraService {
     return true;
   }
 
+  bool _isDisposing = false;
   // Clean up resources
   void dispose() {
-    _controller?.dispose();
-    _controller = null;
-    _isInitialized = false;
+    if (_isDisposing) {
+      debugPrint('CameraService: dispose called while already disposing');
+      return;
+    }
+    _isDisposing = true;
+    try {
+      debugPrint('CameraService: Disposing camera controller');
+      _controller?.dispose();
+      _controller = null;
+      _isInitialized = false;
+      debugPrint('CameraService: Disposed successfully');
+    } catch (e) {
+      debugPrint('CameraService: Error during dispose: $e');
+    } finally {
+      _isDisposing = false;
+    }
   }
 }

@@ -21,26 +21,32 @@ class AvatarWidget extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.surface,
         radius: radius,
         child: ClipOval(
-          child: CachedNetworkImage(
-            imageUrl: avatarUrl,
-            width: radius * 2,
-            height: radius * 2,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              width: radius * 2,
-              height: radius * 2,
-              color: Theme.of(context).colorScheme.surface,
-              child: const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2)),
-            ),
-            errorWidget: (context, url, error) => Container(
-              width: radius * 2,
-              height: radius * 2,
-              color: Theme.of(context).colorScheme.error.withOpacity(0.1),
-              child: const Center(
-                  child: Icon(Icons.person, size: 24, color: Colors.grey)),
-            ),
-          ),
+          child: (avatarUrl.isNotEmpty)
+              ? CachedNetworkImage(
+                  imageUrl: avatarUrl,
+                  width: radius * 2,
+                  height: radius * 2,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    width: radius * 2,
+                    height: radius * 2,
+                    color: Theme.of(context).colorScheme.surface,
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    width: radius * 2,
+                    height: radius * 2,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.error.withValues(alpha: 25),
+                    child: const Center(
+                      child: Icon(Icons.person, size: 24, color: Colors.grey),
+                    ),
+                  ),
+                )
+              : const Icon(Icons.person, size: 24, color: Colors.grey),
         ),
       ),
     );

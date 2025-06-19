@@ -6,6 +6,8 @@ import 'artist_avatar.dart';
 import '../theme/index.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
+import '../screens/gifts/gift_modal.dart';
+import '../screens/sponsorships/sponsor_modal.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
@@ -35,6 +37,9 @@ class PostCard extends StatelessWidget {
     return CommunityTypography(Theme.of(context));
   }
 
+  // Always show gift/sponsor/applause for all posts in the artist community feed
+  bool get canGift => true;
+
   @override
   Widget build(BuildContext context) {
     final typography = _getTypography(context);
@@ -44,6 +49,41 @@ class PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Gift and Sponsor buttons on top right
+          if (canGift)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, right: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      showDialog<GiftModal>(
+                        context: context,
+                        builder: (ctx) => GiftModal(recipientId: post.userId),
+                      );
+                    },
+                    icon: const Icon(Icons.card_giftcard, color: Colors.purple),
+                    label: const Text('Gift'),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      showDialog<SponsorModal>(
+                        context: context,
+                        builder: (ctx) => SponsorModal(artistId: post.userId),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.volunteer_activism,
+                      color: Colors.amber,
+                    ),
+                    label: const Text('Sponsor'),
+                  ),
+                ],
+              ),
+            ),
+
           // User info and post header
           ListTile(
             leading: ArtistAvatar(
@@ -114,11 +154,24 @@ class PostCard extends StatelessWidget {
                   child: PageView.builder(
                     itemCount: post.imageUrls.length,
                     itemBuilder: (context, index) {
+                      final imageUrl = post.imageUrls[index];
+                      if (imageUrl.isEmpty) {
+                        return Container(
+                          color: Theme.of(context).colorScheme.surface,
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        );
+                      }
                       return Stack(
                         fit: StackFit.expand,
                         children: [
                           CachedNetworkImage(
-                            imageUrl: post.imageUrls[index],
+                            imageUrl: imageUrl,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
                               color: Theme.of(context).colorScheme.surface,
@@ -129,7 +182,7 @@ class PostCard extends StatelessWidget {
                             errorWidget: (context, url, error) => Container(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.error.withOpacity(0.1),
+                              ).colorScheme.error.withValues(alpha: 25),
                               child: const Center(
                                 child: Icon(Icons.error_outline),
                               ),
@@ -147,7 +200,7 @@ class PostCard extends StatelessWidget {
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
                                   colors: [
-                                    Colors.black.withOpacity(0.6),
+                                    Colors.black.withValues(alpha: 153),
                                     Colors.transparent,
                                   ],
                                 ),
@@ -183,7 +236,7 @@ class PostCard extends StatelessWidget {
               ),
             ),
 
-          // Action buttons
+          // Action buttons (applause and comment) on bottom
           Container(
             decoration: BoxDecoration(
               border: Border(
@@ -195,25 +248,20 @@ class PostCard extends StatelessWidget {
             padding: const EdgeInsets.all(CommunitySpacing.feedItemSpacing),
             child: Row(
               children: [
+                // Yellow applause button
                 ApplauseButton(
                   postId: post.id,
                   userId: currentUserId,
                   count: post.applauseCount,
                   onTap: () => onApplause(post),
+                  maxApplause: PostModel.maxApplausePerUser,
+                  color: Colors.amber,
                 ),
                 const SizedBox(width: 16),
-                OutlinedButton.icon(
+                IconButton(
                   onPressed: () => onComment(post.id),
-                  style: ButtonStyle(
-                    padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                  ),
-                  icon: const Icon(Icons.comment_outlined, size: 18),
-                  label: Text(
-                    '${post.commentCount}',
-                    style: typography.commentCount,
-                  ),
+                  icon: const Icon(Icons.comment_outlined, color: Colors.blue),
+                  tooltip: 'Comment',
                 ),
                 const Spacer(),
                 IconButton(

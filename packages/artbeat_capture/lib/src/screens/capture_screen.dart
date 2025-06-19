@@ -7,10 +7,7 @@ import '../services/camera_service.dart';
 class CaptureScreen extends StatefulWidget {
   final Position? location;
 
-  const CaptureScreen({
-    super.key,
-    this.location,
-  });
+  const CaptureScreen({super.key, this.location});
 
   @override
   State<CaptureScreen> createState() => _CaptureScreenState();
@@ -23,49 +20,67 @@ class _CaptureScreenState extends State<CaptureScreen>
   bool _isProcessing = false;
   String? _errorMessage;
   bool _isOpenGLError = false;
+  bool _isDisposing = false;
+  bool _isInitializing = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    debugPrint('CaptureScreen: initState');
     _initializeCamera();
   }
 
   @override
   void dispose() {
+    debugPrint('CaptureScreen: dispose called');
     WidgetsBinding.instance.removeObserver(this);
+    _isDisposing = true;
     _cameraService.dispose();
     super.dispose();
+    debugPrint('CaptureScreen: dispose finished');
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    debugPrint('CaptureScreen: didChangeAppLifecycleState $state');
     if (_cameraService.controller == null ||
         !_cameraService.controller!.value.isInitialized) {
       return;
     }
-
     if (state == AppLifecycleState.inactive) {
+      debugPrint('CaptureScreen: AppLifecycleState.inactive, disposing camera');
       _cameraService.dispose();
     } else if (state == AppLifecycleState.resumed) {
+      debugPrint(
+        'CaptureScreen: AppLifecycleState.resumed, re-initializing camera',
+      );
       _initializeCamera();
     }
   }
 
   Future<void> _initializeCamera() async {
+    if (_isInitializing || _isDisposing) {
+      debugPrint(
+        'CaptureScreen: Skipping _initializeCamera (already initializing or disposing)',
+      );
+      return;
+    }
+    _isInitializing = true;
     try {
       setState(() {
         _errorMessage = null;
         _isCameraInitialized = false;
         _isOpenGLError = false;
       });
-
+      debugPrint('CaptureScreen: Initializing camera...');
       await _cameraService.initCamera();
       if (mounted) {
         setState(() {
           _isCameraInitialized = true;
         });
       }
+      debugPrint('CaptureScreen: Camera initialized');
     } catch (e) {
       debugPrint('Error initializing camera: $e');
       if (mounted) {
@@ -73,7 +88,8 @@ class _CaptureScreenState extends State<CaptureScreen>
           if (e.toString().contains('OpenGL') ||
               e.toString().contains('unimplemented')) {
             _isOpenGLError = true;
-            _errorMessage = 'Camera preview is not supported on this device. '
+            _errorMessage =
+                'Camera preview is not supported on this device. '
                 'If you are using an emulator, try using a physical device instead.';
           } else {
             _errorMessage = 'Failed to initialize camera: $e';
@@ -81,6 +97,8 @@ class _CaptureScreenState extends State<CaptureScreen>
           _isCameraInitialized = false;
         });
       }
+    } finally {
+      _isInitializing = false;
     }
   }
 
@@ -88,6 +106,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     if (!_isCameraInitialized || _isProcessing) return;
 
     final user = FirebaseAuth.instance.currentUser;
+    debugPrint('CaptureScreen: currentUser = ' + (user?.uid ?? 'null'));
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please log in to capture images')),
@@ -102,6 +121,8 @@ class _CaptureScreenState extends State<CaptureScreen>
 
     try {
       final capture = await _cameraService.captureImage(user.uid, context);
+      // Dispose camera immediately after capture to release buffers
+      _cameraService.dispose();
       if (capture != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Image captured and details saved!')),
@@ -109,9 +130,9 @@ class _CaptureScreenState extends State<CaptureScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to capture image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to capture image: $e')));
       }
     } finally {
       if (mounted) {
@@ -140,10 +161,9 @@ class _CaptureScreenState extends State<CaptureScreen>
               const SizedBox(height: 16),
               Text(
                 _isOpenGLError ? 'Camera Not Supported' : 'Camera Error',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: Colors.white),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 8),
               Padding(
@@ -151,10 +171,9 @@ class _CaptureScreenState extends State<CaptureScreen>
                 child: Text(
                   _errorMessage ?? 'Unknown camera error',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Colors.white70),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                 ),
               ),
               const SizedBox(height: 24),
@@ -185,9 +204,7 @@ class _CaptureScreenState extends State<CaptureScreen>
     if (!_isCameraInitialized || _cameraService.controller == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
 

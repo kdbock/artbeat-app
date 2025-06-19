@@ -1,269 +1,50 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isUserOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Validate post data
-    function validatePost(data) {
-      return data.userId == request.auth.uid &&
-             data.createdAt is timestamp &&
-             data.content is string &&
-             data.imageUrls is list &&
-             data.tags is list &&
-             data.isPublic is bool;
-    }
-
-    // Validate comment data
-    function validateComment(data) {
-      return data.userId == request.auth.uid &&
-             data.content is string &&
-             data.postId is string &&
-             data.createdAt is timestamp &&
-             data.type in ['Appreciation', 'Critique', 'Question', 'Tip'] &&
-             data.parentCommentId is string;
-    }
-
-    // Artist profiles collection rules
-    match /artistProfiles/{profileId} {
-      allow read: if true; // Allow public read for featured artists
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      
-      // Allow featured artist queries
-      allow list: if true && (
-        !('isFeatured' in request.query.filters) || 
-        request.query.filters.isFeatured == true
-      );
-    }
-
-    // Events collection rules
-    match /events/{eventId} {
-      allow read: if true; // Allow public read for events
-      allow create: if 
-        isAuthenticated() && 
-        request.resource.data.artistId == request.auth.uid &&
-        request.resource.data.createdAt is timestamp;
-      allow update: if 
-        isAuthenticated() && (
-          resource.data.artistId == request.auth.uid || 
-          (resource.data.isPublic == true && request.resource.data.attendeeIds.hasOnly([request.auth.uid]))
-        );
-      allow delete: if 
-        isAuthenticated() && 
-        resource.data.artistId == request.auth.uid;
-    }
-
-    // Captures collection rules
-    match /captures/{captureId} {
-      allow read: if isAuthenticated();
-      allow create: if 
-        isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid &&
-        validateCapture(request.resource.data);
-      allow update, delete: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-    }
-    
-    // Artwork collection rules
-    match /artwork/{artworkId} {
-      allow read: if true; // Allow public read for featured artwork
-      allow create: if 
-        isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid &&
-        validateArtwork(request.resource.data);
-      allow update: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid &&
-        validateArtwork(request.resource.data);
-      allow delete: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-        
-      // Allow featured artwork queries
-      allow list: if true && (
-        (!('isFeatured' in request.query.filters) || request.query.filters.isFeatured == true) &&
-        (!('isPublic' in request.query.filters) || request.query.filters.isPublic == true)
-      );
-    }
-    
-    // PublicArt collection rules
-    match /publicArt/{artId} {
-      allow read: if true;  // Allow public read access for map displays
-      allow create: if 
-        isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid &&
-        validatePublicArt(request.resource.data);
-      allow update: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid &&
-        validatePublicArt(request.resource.data);
-      allow delete: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-
-      // Allow location-based queries
-      allow list: if true;
-    }
-
-    // Validate data types and required fields
-    function validateCapture(data) {
-      return data.userId is string &&
-             data.createdAt is timestamp &&
-             data.imageUrl is string &&
-             (!('location' in data) || (
-               data.location.latitude is number &&
-               data.location.longitude is number
-             ));
-    }
-    
-    function validateArtwork(data) {
-      return data.userId is string &&
-             data.createdAt is timestamp &&
-             data.imageUrl is string &&
-             data.title is string &&
-             data.medium is string &&
-             (!('location' in data) || (
-               data.location.latitude is number &&
-               data.location.longitude is number
-             ));
-    }
-
-    function validatePublicArt(data) {
-      return data.userId is string &&
-             data.createdAt is timestamp &&
-             data.title is string &&
-             data.description is string &&
-             (!('location' in data) || (
-               data.location.latitude is number &&
-               data.location.longitude is number
-             ));
-    }
-    
-    // Users collection rules
-    match /users/{userId} {
-      allow read: if true; // Allow public read for user profiles
-      allow write: if isUserOwner(userId);
-      
-      // Allow user queries for suggestions
-      allow list: if true && (
-        !('id' in request.query.filters) || 
-        request.query.filters.id != request.auth.uid
-      );
-      
-      // Favorites subcollection
-      match /favorites/{favoriteId} {
-        allow read: if isAuthenticated();
-        allow write: if isUserOwner(userId);
-      }
-      
-      // Settings subcollection
-      match /settings/{settingId} {
-        allow read: if isUserOwner(userId);
-        allow write: if isUserOwner(userId);
-      }
-    }
-    
-    // ArtWalks collection rules
-    match /artWalks/{artWalkId} {
-      allow read: if isAuthenticated();
-      allow create: if 
-        isAuthenticated() && 
-        request.resource.data.userId == request.auth.uid &&
-        request.resource.data.createdAt is timestamp;
-      allow update: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-      allow delete: if 
-        isAuthenticated() && 
-        resource.data.userId == request.auth.uid;
-    }
-    
-    // Posts collection rules
+    // Public posts (feed)
     match /posts/{postId} {
-      allow read: if true;  // Allow public read access
-      allow create: if isAuthenticated() && validatePost(request.resource.data);
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-
-      // Applause subcollection rules
-      match /applause/{userId} {
-        allow read: if true;
-        allow create, update: if isAuthenticated() && userId == request.auth.uid;
-        allow delete: if isAuthenticated() && userId == request.auth.uid;
-      }
+      allow read: if resource.data.isPublic == true;
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // Comments collection rules
+    // Comments (publicly readable, only owner can write/delete)
     match /comments/{commentId} {
-      allow read: if true;  // Allow public read access
-      allow create: if isAuthenticated() && validateComment(request.resource.data);
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Artists collection rules
-    match /artists/{artistId} {
       allow read: if true;
-      allow create: if isAuthenticated();
-      allow update, delete: if isUserOwner(resource.data.userId);
-      
-      // Allow queries on searchTerms array
-      allow list: if true && (
-        !('searchTerms' in request.query.filters) || 
-        request.query.filters.searchTerms is list
-      );
+      allow write, update, delete: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // Chats collection rules
-    match /chats/{chatId} {
-      // Allow read/write if user is a participant
-      allow read: if 
-        isAuthenticated() && 
-        (request.auth.uid in resource.data.participantIds);
-      allow create: if 
-        isAuthenticated() && 
-        (request.auth.uid in request.resource.data.participantIds);
-      allow update: if 
-        isAuthenticated() && 
-        (request.auth.uid in resource.data.participantIds);
-      
-      // Messages subcollection rules
-      match /messages/{messageId} {
-        allow read: if 
-          isAuthenticated() && 
-          (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds);
-        allow create: if 
-          isAuthenticated() && 
-          (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds) &&
-          request.resource.data.senderId == request.auth.uid;
-        allow update: if 
-          isAuthenticated() && 
-          (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds) &&
-          request.resource.data.senderId == request.auth.uid;
-      }
-      
-      // Typing status subcollection rules
-      match /typing/{statusId} {
-        allow read: if 
-          isAuthenticated() && 
-          (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds);
-        allow write: if 
-          isAuthenticated() && 
-          (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds);
-      }
-      
-      // Allow queries to find user's chats
-      allow list: if 
-        isAuthenticated() && 
-        (request.auth.uid in resource.data.participantIds);
+    // Gifts (publicly readable)
+    match /gifts/{giftId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Studios (publicly readable)
+    match /studios/{studioId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.ownerId;
+    }
+
+    // Commissions (user can read their own, or as needed)
+    match /commissions/{commissionId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Sponsorships (publicly readable)
+    match /sponsorships/{sponsorshipId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Artist profiles (public portfolios)
+    match /artistProfiles/{artistId} {
+      allow read: if resource.data.isPortfolioPublic == true;
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Fallback: deny all other access
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

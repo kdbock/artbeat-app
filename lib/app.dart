@@ -12,6 +12,8 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'widgets/developer_menu.dart';
+import 'package:artbeat_art_walk/src/screens/art_walk_map_screen.dart';
+import 'package:artbeat_art_walk/src/screens/art_walk_dashboard_screen.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -80,6 +82,70 @@ class MyApp extends StatelessWidget {
               '/chat': (context) => const messaging.ChatListScreen(),
               '/chat/new': (context) =>
                   const messaging.ContactSelectionScreen(),
+              '/art_walk/map': (context) => const ArtWalkMapScreen(),
+              '/art_walk/dashboard': (context) =>
+                  const ArtWalkDashboardScreen(),
+              '/community': (context) => const CommunityFeedScreen(),
+              '/community/feed': (context) => const CommunityFeedScreen(),
+              '/community/social': (context) =>
+                  ChangeNotifierProvider<CommunityService>(
+                    create: (_) => CommunityService(),
+                    child: const SocialFeedScreen(),
+                  ),
+              '/capture/detail': (context) {
+                final args =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
+                final capture = args['capture'] as core.CaptureModel;
+                return CaptureDetailScreen(
+                  capture: capture,
+                  isCurrentUser: true,
+                );
+              },
+              '/profile/edit': (context) {
+                final user = core.UserService().currentUser;
+                if (user == null) {
+                  // If not logged in, redirect to login
+                  return const LoginScreen();
+                }
+                return EditProfileScreen(userId: user.uid);
+              },
+              '/profile/view': (context) {
+                final user = core.UserService().currentUser;
+                if (user == null) {
+                  return const LoginScreen();
+                }
+                return ProfileViewScreen(userId: user.uid, isCurrentUser: true);
+              },
+              '/profile/followers': (context) {
+                final user = core.UserService().currentUser;
+                if (user == null) {
+                  return const LoginScreen();
+                }
+                return FollowersListScreen(userId: user.uid);
+              },
+              '/profile/following': (context) {
+                final user = core.UserService().currentUser;
+                if (user == null) {
+                  return const LoginScreen();
+                }
+                return FollowingListScreen(userId: user.uid);
+              },
+              '/profile/favorites': (context) {
+                final user = core.UserService().currentUser;
+                if (user == null) {
+                  return const LoginScreen();
+                }
+                return FavoritesScreen(userId: user.uid);
+              },
+              '/profile/achievements': (context) => const AchievementsScreen(),
+              '/profile/picture': (context) {
+                final args =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>;
+                final imageUrl = args['imageUrl'] as String? ?? '';
+                return ProfilePictureViewerScreen(imageUrl: imageUrl);
+              },
             },
           );
         },

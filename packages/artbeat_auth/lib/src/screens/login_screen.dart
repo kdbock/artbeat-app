@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput;
+    show ArtbeatColors, ArtbeatInput, UserService;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Login screen with email/password authentication
@@ -40,17 +40,30 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       FirebaseAuth.instance.setLanguageCode('en');
 
-      await _authService.signInWithEmailAndPassword(
+      final userCredential = await _authService.signInWithEmailAndPassword(
         _emailController.text.trim(),
         _passwordController.text,
       );
+
+      // Ensure user profile exists in Firestore using UserService
+      final user = userCredential.user ?? FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userDoc = await UserService().getUserById(user.uid);
+        if (userDoc == null) {
+          await UserService().createNewUser(
+            uid: user.uid,
+            email: user.email ?? _emailController.text.trim(),
+            displayName: user.displayName ?? '',
+          );
+        }
+      }
 
       if (mounted) {
         debugPrint('Login successful. Navigating to /dashboard.');
         Navigator.of(context).pushReplacementNamed('/dashboard');
       }
     } on FirebaseAuthException catch (e) {
-      debugPrint('FirebaseAuthException: ${e.message}');
+      debugPrint('FirebaseAuthException: [33m${e.message}[0m');
       if (!mounted) return;
 
       ScaffoldMessenger.of(

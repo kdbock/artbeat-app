@@ -6,6 +6,7 @@ import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatInput, ArtbeatButton, ButtonVariant;
 import 'package:artbeat_core/src/utils/location_utils.dart' show LocationUtils;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
+import 'package:artbeat_core/artbeat_core.dart' show UserService;
 
 /// Registration screen with email/password account creation
 class RegisterScreen extends StatefulWidget {
@@ -94,12 +95,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final fullName =
           "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}";
-      await _authService.registerWithEmailAndPassword(
-        _emailController.text.trim(),
-        _passwordController.text,
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      final zipCode = _zipCodeController.text.trim();
+
+      final userCredential = await _authService.registerWithEmailAndPassword(
+        email,
+        password,
         fullName,
-        zipCode: _zipCodeController.text.trim(),
+        zipCode: zipCode,
       );
+
+      // Ensure user profile is created in Firestore using UserService
+      final user = userCredential.user;
+      if (user != null) {
+        await UserService().createNewUser(
+          uid: user.uid,
+          email: user.email ?? email,
+          displayName: fullName,
+        );
+      }
 
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/dashboard');

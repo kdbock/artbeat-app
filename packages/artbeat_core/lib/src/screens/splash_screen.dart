@@ -49,14 +49,15 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Delay to show splash screen for at least 15 seconds
-    await Future<void>.delayed(const Duration(seconds: 15));
+    // Delay to show splash screen for at least 2 seconds
+    await Future<void>.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
     try {
       // Check if user is logged in directly with Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
+      debugPrint('SplashScreen: currentUser = ' + (user?.uid ?? 'null'));
       final route = user != null ? '/dashboard' : '/login';
 
       debugPrint('🔗 SplashScreen navigating to: $route');

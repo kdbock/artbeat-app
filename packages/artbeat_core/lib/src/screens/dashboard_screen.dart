@@ -1,3 +1,5 @@
+import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
+import 'package:artbeat_core/widgets/artbeat_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 
 /// Main dashboard screen for the application.
@@ -17,6 +19,10 @@ class _DashboardScreenState extends State<DashboardScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    // Force keyboard to close on dashboard load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+    });
   }
 
   @override
@@ -27,14 +33,31 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   void _onNavTap(int index) {
     setState(() => _selectedIndex = index);
-    // Add navigation logic if needed
-    if (index == 4) {
+    if (index == 1) {
+      Navigator.pushNamed(context, '/art_walk/dashboard');
+    } else if (index == 2) {
+      Navigator.pushNamed(context, '/community/social');
+    } else if (index == 4) {
       Navigator.pushNamed(context, '/chat');
     }
   }
 
-  void _onCapture() {
-    // Add capture logic here
+  void _onCapture() async {
+    // Open the camera screen and wait for the result
+    final result = await Navigator.pushNamed(context, '/capture');
+    if (result != null && mounted) {
+      // result should be a CaptureModel or a map with image/location
+      final capture = result as CaptureModel;
+      final detailResult = await Navigator.pushNamed(
+        context,
+        '/capture/detail',
+        arguments: {'capture': capture},
+      );
+      if (detailResult == true && mounted) {
+        // After successful upload, go back to dashboard
+        Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
+      }
+    }
   }
 
   @override
@@ -132,58 +155,10 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 0 ? Icons.home : Icons.home_outlined,
-                ),
-                onPressed: () => _onNavTap(0),
-                tooltip: 'Home',
-              ),
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 1 ? Icons.map : Icons.map_outlined,
-                ),
-                onPressed: () => _onNavTap(1),
-                tooltip: 'Art Walk',
-              ),
-              // Capture camera button in the center
-              SizedBox(
-                width: 40,
-                child: Center(
-                  child: IconButton(
-                    icon: const Icon(Icons.add_a_photo, size: 28),
-                    onPressed: _onCapture,
-                    tooltip: 'Capture',
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 2 ? Icons.people : Icons.people_outline,
-                ),
-                onPressed: () => _onNavTap(2),
-                tooltip: 'Community',
-              ),
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 4
-                      ? Icons.chat_bubble
-                      : Icons.chat_bubble_outline,
-                ),
-                onPressed: () => _onNavTap(4),
-                tooltip: 'Chat',
-              ),
-            ],
-          ),
-        ),
+      bottomNavigationBar: ArtbeatBottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavTap,
+        onCapture: _onCapture,
       ),
     );
   }

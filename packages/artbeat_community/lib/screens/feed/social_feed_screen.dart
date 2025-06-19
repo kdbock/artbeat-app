@@ -6,6 +6,7 @@ import '../../services/community_service.dart';
 import '../../widgets/post_card.dart';
 import '../feed/create_post_screen.dart';
 import '../feed/trending_content_screen.dart';
+import '../feed/comments_screen.dart';
 
 class SocialFeedScreen extends StatefulWidget {
   const SocialFeedScreen({super.key});
@@ -20,6 +21,7 @@ class _SocialFeedScreenState extends State<SocialFeedScreen> {
   bool _isLoading = true;
   bool _isLoadingMore = false;
   String? _lastPostId;
+  int _selectedTabIndex = 0;
 
   @override
   void initState() {
@@ -105,6 +107,30 @@ class _SocialFeedScreenState extends State<SocialFeedScreen> {
     await _loadPosts();
   }
 
+  void _onNavTap(int index) {
+    if (index == _selectedTabIndex) return;
+    setState(() => _selectedTabIndex = index);
+    if (index == 0) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else if (index == 1) {
+      Navigator.pushReplacementNamed(context, '/art_walk/dashboard');
+    } else if (index == 2) {
+      // Already on community
+    } else if (index == 3) {
+      Navigator.pushReplacementNamed(context, '/chat');
+    }
+  }
+
+  void _handleComment(String postId) async {
+    final post = _posts.firstWhere((p) => p.id == postId);
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CommentsScreen(post: post)),
+    );
+    // Optionally reload posts/comments after returning
+    await _loadPosts();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,33 +213,41 @@ class _SocialFeedScreenState extends State<SocialFeedScreen> {
                           comments:
                               const [], // Empty list since we don't load comments here
                           onUserTap: (userId) {
-                            // Navigate to user profile
                             debugPrint('Navigate to user profile: $userId');
                           },
                           onApplause: (post) {
-                            // Handle applause action
                             debugPrint('User applauded post: ${post.id}');
-                            // In a real implementation, we would update the post applause count
-                            // using FirebaseFirestore to increment the applauseCount
                           },
-                          onComment: (postId) {
-                            // Navigate to comments screen
-                            debugPrint(
-                              'Navigate to comments for post: $postId',
-                            );
-                          },
+                          onComment: _handleComment,
                           onShare: (post) {
-                            // Handle share action
                             debugPrint('Share post: ${post.id}');
                           },
-                          onToggleExpand: () {
-                            // Toggle expanded view
-                            debugPrint('Toggle expand for post: ${post.id}');
-                          },
+                          isExpanded: false,
+                          onToggleExpand: () {},
                         );
                       },
                     ),
             ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedTabIndex,
+        onTap: _onNavTap,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
+            label: 'Art Walk',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat_bubble_outline),
+            label: 'Chat',
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

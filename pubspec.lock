@@ -135,7 +135,7 @@ packages:
     source: hosted
     version: "1.3.1"
   camera:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: camera
       sha256: "413d2b34fe28496c35c69ede5b232fb9dd5ca2c3a4cb606b14efc1c7546cc8cb"
@@ -638,7 +638,7 @@ packages:
     source: hosted
     version: "2.4.4"
   geocoding:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: geocoding
       sha256: "606be036287842d779d7ec4e2f6c9435fc29bbbd3c6da6589710f981d8852895"

@@ -430,6 +430,24 @@ class PaymentService {
     }
   }
 
+  /// Process a sponsorship payment (placeholder for Stripe integration)
+  Future<void> processSponsorshipPayment(
+    Map<String, dynamic> sponsorship,
+  ) async {
+    try {
+      // This is a placeholder for actual Stripe recurring payment logic
+      // You would call a cloud function to create a recurring subscription for the artist
+      await _firestore.collection('sponsorships').add({
+        ...sponsorship,
+        'status': 'pending',
+      });
+      // TODO: Integrate with Stripe for real recurring billing
+    } catch (e) {
+      debugPrint('Error processing sponsorship payment: $e');
+      rethrow;
+    }
+  }
+
   /// Get price ID for subscription tier
   String _getPriceIdForTier(SubscriptionTier tier) {
     switch (tier) {
