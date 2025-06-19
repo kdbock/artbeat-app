@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'; // or the correct import for UserService
 import 'package:geocoding/geocoding.dart';
+import 'package:artbeat_core/widgets/artbeat_bottom_nav_bar.dart';
 
 /// Art Walk Dashboard Screen
 /// Shows user's art walks, public walks, and map preview. Entry point for creating and exploring art walks.
@@ -17,7 +18,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _showOnboarding = true; // TODO: Replace with persistent check
-  int _selectedIndex = 0;
+  int _selectedIndex = 1; // Art Walk tab index
   GoogleMapController? _mapController;
   CameraPosition? _initialCameraPosition;
 
@@ -81,8 +82,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     } else if (index == 1) {
       // Already on Art Walk dashboard
     } else if (index == 2) {
-      // TODO: Implement Community navigation
-      // Navigator.pushNamed(context, '/community');
+      Navigator.pushNamed(context, '/community/social');
     } else if (index == 4) {
       Navigator.pushNamed(context, '/chat');
     }
@@ -92,8 +92,12 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     // TODO: Navigate to create art walk screen
   }
 
-  void _onCaptureArt() {
-    // TODO: Navigate to capture art screen
+  void _onCapture() async {
+    // Open the camera screen and wait for the result
+    final result = await Navigator.pushNamed(context, '/capture');
+    if (result != null && mounted) {
+      // Optionally handle result, e.g., show details or refresh
+    }
   }
 
   Set<Marker> _getMarkers() {
@@ -124,63 +128,15 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _onCaptureArt,
+        onPressed: _onCapture,
         icon: const Icon(Icons.add_a_photo),
         label: const Text('Capture Art'),
         tooltip: 'Capture new art with location',
       ),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 0 ? Icons.home : Icons.home_outlined,
-                ),
-                onPressed: () => _onNavTap(0),
-                tooltip: 'Home',
-              ),
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 1 ? Icons.map : Icons.map_outlined,
-                ),
-                onPressed: () => _onNavTap(1),
-                tooltip: 'Art Walk',
-              ),
-              // Capture camera button in the center
-              SizedBox(
-                width: 40,
-                child: Center(
-                  child: IconButton(
-                    icon: const Icon(Icons.add_a_photo, size: 28),
-                    onPressed: _onCaptureArt,
-                    tooltip: 'Capture',
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 2 ? Icons.people : Icons.people_outline,
-                ),
-                onPressed: () => _onNavTap(2),
-                tooltip: 'Community',
-              ),
-              IconButton(
-                icon: Icon(
-                  _selectedIndex == 4
-                      ? Icons.chat_bubble
-                      : Icons.chat_bubble_outline,
-                ),
-                onPressed: () => _onNavTap(4),
-                tooltip: 'Chat',
-              ),
-            ],
-          ),
-        ),
+      bottomNavigationBar: ArtbeatBottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavTap,
+        onCapture: _onCapture,
       ),
       body: Column(
         children: [

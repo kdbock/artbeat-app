@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:async' show unawaited;
+import 'package:artbeat_core/widgets/artbeat_bottom_nav_bar.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 import '../../widgets/post_card.dart';
@@ -757,6 +758,28 @@ Download ARTbeat to see more: https://artbeat.app
     }
   }
 
+  void _onNavTap(int index) {
+    setState(() => _selectedIndex = index);
+    if (index == 0) {
+      // Feed
+    } else if (index == 1) {
+      // Gifts
+    } else if (index == 2) {
+      // Portfolio
+    } else if (index == 3) {
+      // Studios
+    } else if (index == 4) {
+      // Commissions
+    }
+  }
+
+  void _onCapture() async {
+    final result = await Navigator.pushNamed(context, '/capture');
+    if (result != null && mounted) {
+      // Optionally handle result, e.g., refresh feed
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CommunityThemeWrapper(
@@ -766,22 +789,10 @@ Download ARTbeat to see more: https://artbeat.app
           index: _selectedIndex,
           children: _tabs.map((tab) => tab.screen).toList(),
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: ArtbeatBottomNavBar(
           currentIndex: _selectedIndex,
-          type: BottomNavigationBarType.fixed,
-          onTap: (index) {
-            if (index != _selectedIndex) {
-              setState(() => _selectedIndex = index);
-            }
-            // Optionally: handle navigation to dashboard if needed
-          },
-          items: _tabs.map((tab) {
-            final idx = _tabs.indexOf(tab);
-            return BottomNavigationBarItem(
-              icon: Icon(_selectedIndex == idx ? tab.selectedIcon : tab.icon),
-              label: tab.label,
-            );
-          }).toList(),
+          onTap: _onNavTap,
+          onCapture: _onCapture,
         ),
         floatingActionButton: _selectedIndex == 0
             ? FloatingActionButton.extended(

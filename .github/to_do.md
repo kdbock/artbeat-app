@@ -1,42 +1,9 @@
-GitHub Copilot’s review of your Xcode/Flutter run from top to bottom:
-
-Initialization and focus warnings
-• LLDB loaded normally.
-• “FlutterView implements focusItemsInRect…” warnings are informational for accessibility caching—harmless.
-
-Firebase hasn’t been configured
-• “[FirebaseCore] No app has been configured yet.”
-• You need to call Firebase.initializeApp(...) (via your generated firebase_options.dart) before using any Firebase APIs. Until you do, Auth/Firestore/Storage won’t work and you’ll see missing-app errors.
-
-Analytics and messaging notices
-• Analytics started but AdSupport.framework isn’t linked—some tracking features will be unavailable.
-• Messaging swizzles remote-notification delegate by default; you’ll get errors if you haven’t set FirebaseAppDelegateProxyEnabled in Info.plist.
-
-Push-notification entitlement missing
-• “no valid ‘aps-environment’ entitlement string found for application”
-• Your app can’t register for APNs nor FCM. Add the proper aps-environment entitlement in your iOS provisioning profile/entitlements.
-
-Local network permissions
-• “Could not register as server for FlutterDartVMServicePublisher, permission denied.”
-• On macOS/iOS you may need to grant “Local Network” access in System Settings to allow the VM service to bind.
-
-Network errors in analytics/remote-config
-• Repeated NSURLErrorDomain Code=-1017 “cannot parse response” against app-analytics-services.com endpoints.
-• Indicates malformed or unexpected responses—either the endpoint is down, requires HTTPS tweaks, or the payload doesn’t match expectations. Analytics/fetch will retry later but features depending on remote config will be stalled.
-
-Asset loading for splash/login images
-• No explicit “unable to load asset” errors appear in these logs.
-• If splash and login images aren’t showing:
-– Verify that the images are listed under flutter: → assets: in your root pubspec.yaml.
-– Confirm the paths in your SplashScreen and LoginScreen widgets match the asset folder structure.
-– Run flutter pub get and rebuild.
-– For iOS launches, ensure any native launch images or asset catalogs in Assets.xcassets are properly configured.
-
-What’s most important
-– Fix Firebase initialization early in your main.dart.
-– Add APNs entitlements for FCM if you need remote notifications.
-– Declare and bundle your splash/login assets in pubspec.yaml.
-
-What’s most noteworthy
-– The logs show no Flutter asset errors, so the missing images are likely a pubspec or path mismatch, not a runtime crash.
-– Repeated analytics network errors won’t block basic functionality but will prevent your app from fetching remote settings.
+With the understanding that firebase versions cannot be changed, I would like to create an in-app ad puchasing  package
+User ads - users can promote their favorite artist, artwork, events and artwalks. Ad display options square or rectangle, specific industry standard size, Artists will create the approved ads for the user to pick from. User then chooses location of ad, length of time for the ad to run, the cost of all user ads are $1 a day. For $1 a day, you can help an artist keep creating. (or something like that) *Later implement - this will be part of how artists are sponsored. 
+Artist ads - artists can promote their own events and artwork. The process is artist has a promote button, they select event or artwork, enter the details, ad duration, they also pay $1 a day. *future implementation. This will not count toward sponsored counts). Artists ads must be approved by admin, so they would get a screen that shows their pending ad and its status. 
+admin ads - this option is only available to admins. Square and rectangle types, image upload once type is selected, loctions selected, add duration, these do not need approved but the full add should show on the next screen for review, they are just executed. 
+Gallery ads - the same as artists ads, except gallaries / art instutitions/ places that qualify can promote their place of business with preapproved - presubmitted ads. Their ads also must be approved by admin. They cost $5 a day.
+I want you to 
+create a terminal command to create all the files needed to add artbeat_ads package and all the necessary folders and files needed to utilize all of the functions and features listed above.
+execute that terminal command to create the files and folders
+update the artbeat_ad pubspec.yaml with the same ones in the main app. 
