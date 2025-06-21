@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
-import '../services/capture_service.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
+// If CaptureService is not exported by artbeat_capture.dart, import its file directly:
+// import 'package:artbeat_capture/src/services/capture_service.dart';
 
 class CaptureListScreen extends StatefulWidget {
   const CaptureListScreen({super.key});

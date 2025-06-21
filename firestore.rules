@@ -42,6 +42,36 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
+    // Captures collection
+    match /captures/{captureId} {
+      allow read: if resource.data.isPublic == true || 
+                  (request.auth != null && request.auth.uid == resource.data.userId);
+      allow write: if request.auth != null && 
+                   request.auth.uid == request.resource.data.userId &&
+                   request.auth.uid == request.resource.data.artistId;
+    }
+
+    // Captures collection - allow users to save their own captures
+    match /captures/{captureId} {
+      allow read: if request.auth != null && 
+                 (request.auth.uid == resource.data.userId || 
+                  resource.data.isPublic == true);
+                  
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
+                    
+      allow update, delete: if request.auth != null && 
+                            request.auth.uid == resource.data.userId;
+    }
+
+    // Users collection - users can read/write their own profile
+    match /users/{userId} {
+      allow read: if true; // Allow reading user profiles (for public display)
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Fallback: deny all other access
     match /{document=**} {
       allow read, write: if false;

@@ -48,19 +48,49 @@ class _LoginScreenState extends State<LoginScreen> {
       // Ensure user profile exists in Firestore using UserService
       final user = userCredential.user ?? FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final userDoc = await UserService().getUserById(user.uid);
+        final userService = UserService();
+        final userDoc = await userService.getUserById(user.uid);
+
         if (userDoc == null) {
-          await UserService().createNewUser(
+          debugPrint(
+            '⚠️ User authenticated but document not found in Firestore. Creating it now...',
+          );
+
+          // Try to get additional user data from Firebase Auth
+          User? freshUser = FirebaseAuth.instance.currentUser;
+          await freshUser?.reload(); // Refresh user data
+
+          await userService.createNewUser(
             uid: user.uid,
             email: user.email ?? _emailController.text.trim(),
-            displayName: user.displayName ?? '',
+            displayName:
+                freshUser?.displayName ?? user.displayName ?? 'ARTbeat User',
           );
+
+          // Verify creation
+          final verifiedDoc = await userService.getUserById(user.uid);
+          if (verifiedDoc == null) {
+            debugPrint('❌ Failed to create user document after login');
+          } else {
+            debugPrint('✅ User document created successfully after login');
+          }
+        } else {
+          debugPrint('✅ User document found in Firestore');
         }
       }
 
       if (mounted) {
         debugPrint('Login successful. Navigating to /dashboard.');
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+
+        // Check if we were pushed from another route that expects a return value
+        final navigator = Navigator.of(context);
+        if (navigator.canPop()) {
+          // Return true to signal successful login
+          navigator.pop(true);
+        } else {
+          // Normal navigation flow
+          navigator.pushReplacementNamed('/dashboard');
+        }
       }
     } on FirebaseAuthException catch (e) {
       debugPrint('FirebaseAuthException: [33m${e.message}[0m');

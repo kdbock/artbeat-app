@@ -3,7 +3,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'; // or the correct import for UserService
 import 'package:geocoding/geocoding.dart';
-import 'package:artbeat_core/widgets/artbeat_bottom_nav_bar.dart';
 
 /// Art Walk Dashboard Screen
 /// Shows user's art walks, public walks, and map preview. Entry point for creating and exploring art walks.
@@ -114,69 +113,67 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Art Walks'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            tooltip: 'How Art Walks Work',
-            onPressed: () {
-              setState(() => _showOnboarding = true);
-            },
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _onCapture,
-        icon: const Icon(Icons.add_a_photo),
-        label: const Text('Capture Art'),
-        tooltip: 'Capture new art with location',
-      ),
-      bottomNavigationBar: ArtbeatBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTap,
-        onCapture: _onCapture,
-      ),
-      body: Column(
-        children: [
-          if (_showOnboarding) _onboardingCard(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _onCreateArtWalk,
-                icon: const Icon(Icons.add_road),
-                label: const Text('Create Art Walk'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+    return MainLayout(
+      currentIndex: 1, // Art Walk index
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Art Walks'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.help_outline),
+              tooltip: 'How Art Walks Work',
+              onPressed: () {
+                setState(() => _showOnboarding = true);
+              },
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: _onCapture,
+          icon: const Icon(Icons.add_a_photo),
+          label: const Text('Capture Art'),
+          tooltip: 'Capture new art with location',
+        ),
+        body: Column(
+          children: [
+            if (_showOnboarding) _onboardingCard(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _onCreateArtWalk,
+                  icon: const Icon(Icons.add_road),
+                  label: const Text('Create Art Walk'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    textStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          TabBar(
-            controller: _tabController,
-            labelColor: theme.primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: theme.primaryColor,
-            tabs: const [
-              Tab(text: 'My Walks'),
-              Tab(text: 'Discover'),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
+            TabBar(
               controller: _tabController,
-              children: [_myWalksTab(), _discoverTab()],
+              labelColor: theme.primaryColor,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: theme.primaryColor,
+              tabs: const [
+                Tab(text: 'My Walks'),
+                Tab(text: 'Discover'),
+              ],
             ),
-          ),
-          _mapPreviewSection(),
-        ],
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [_myWalksTab(), _discoverTab()],
+              ),
+            ),
+            _mapPreviewSection(),
+          ],
+        ),
       ),
     );
   }

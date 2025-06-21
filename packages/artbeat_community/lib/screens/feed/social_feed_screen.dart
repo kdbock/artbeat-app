@@ -228,26 +228,7 @@ class _SocialFeedScreenState extends State<SocialFeedScreen> {
                       },
                     ),
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedTabIndex,
-        onTap: _onNavTap,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined),
-            label: 'Art Walk',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Community'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble_outline),
-            label: 'Chat',
-          ),
-        ],
-      ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

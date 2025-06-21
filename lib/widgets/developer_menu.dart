@@ -1,32 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_artist/artbeat_artist.dart' as artist;
-import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
-import '../app.dart';
-import 'package:artbeat_auth/artbeat_auth.dart';
-import 'package:artbeat_capture/artbeat_capture.dart';
-import 'package:artbeat_community/artbeat_community.dart';
-import 'package:artbeat_profile/artbeat_profile.dart';
-import 'package:artbeat_settings/artbeat_settings.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class DeveloperMenu extends StatelessWidget {
   const DeveloperMenu({super.key});
-
-  void _navigateToScreen(BuildContext context, Widget screen) {
-    // Close the developer menu first
-    Navigator.pop(context);
-
-    // Then navigate to the new screen
-    if (context.mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AppShell(child: screen),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,109 +27,12 @@ class DeveloperMenu extends StatelessWidget {
                   Text(
                     'Screen Navigation',
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: Color.fromARGB(179, 27, 26, 26),
                       fontSize: 16,
                     ),
                   ),
                 ],
               ),
-            ),
-            _buildModuleSection(
-              context,
-              'Art Walk Screens',
-              {
-                'Art Walk Map': const ArtWalkMapScreen(),
-                'Create Art Walk': const CreateArtWalkScreen(),
-                'Art Walk Details': const ArtWalkDetailScreen(walkId: 'test-walk'),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Artist Screens',
-              {
-                'Artist Browse': const artist.ArtistBrowseScreen(),
-                'Artist Dashboard': const artist.ArtistDashboardScreen(),
-                'Artist Profile': const artist.ArtistPublicProfileScreen(
-                    artistProfileId: 'test-profile'),
-                'Artist Profile Edit': const artist.ArtistProfileEditScreen(),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Artwork Screens',
-              {
-                'Artwork Browse': const artwork.ArtworkBrowseScreen(),
-                'Artwork Detail':
-                    const artwork.ArtworkDetailScreen(artworkId: 'test-artwork'),
-                'Artwork Upload': const artwork.ArtworkUploadScreen(),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Auth Screens',
-              {
-                'Login': const LoginScreen(),
-                'Register': const RegisterScreen(),
-                'Forgot Password': const ForgotPasswordScreen(),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Capture Screens',
-              {
-                'Camera': const CaptureScreen(),
-                'Capture List': const CaptureListScreen(),
-                'Capture Detail': CaptureDetailScreen(
-                  capture: CaptureModel(
-                    id: 'test-capture',
-                    userId: 'test-user',
-                    imageUrl: 'https://placeholder.co/400',
-                    createdAt: DateTime.now(),
-                    isProcessed: false,
-                    isPublic: false,
-                  ),
-                ),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Community Screens',
-              {
-                'Feed': const CommunityFeedScreen(),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Profile Screens',
-              {
-                'Profile View': ProfileViewScreen(
-                    userId:
-                        FirebaseAuth.instance.currentUser?.uid ?? 'test-user'),
-                'Edit Profile': EditProfileScreen(
-                    userId:
-                        FirebaseAuth.instance.currentUser?.uid ?? 'test-user'),
-                'Followers': FollowersListScreen(
-                    userId:
-                        FirebaseAuth.instance.currentUser?.uid ?? 'test-user'),
-                'Following': FollowingListScreen(
-                    userId:
-                        FirebaseAuth.instance.currentUser?.uid ?? 'test-user'),
-                'Favorites': FavoritesScreen(
-                    userId:
-                        FirebaseAuth.instance.currentUser?.uid ?? 'test-user'),
-              },
-            ),
-            _buildModuleSection(
-              context,
-              'Settings Screens',
-              {
-                'Settings': const SettingsScreen(),
-                'Account Settings': const AccountSettingsScreen(),
-                'Privacy Settings': const PrivacySettingsScreen(),
-                'Notification Settings': const NotificationSettingsScreen(),
-                'Security Settings': const SecuritySettingsScreen(),
-                'Blocked Users': const BlockedUsersScreen(),
-              },
             ),
             const Divider(),
             _buildDatabaseSection(context),
@@ -162,22 +40,6 @@ class DeveloperMenu extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildModuleSection(
-    BuildContext context,
-    String title,
-    Map<String, Widget> screens,
-  ) {
-    return ExpansionTile(
-      title: Text(title),
-      children: screens.entries.map((entry) {
-        return ListTile(
-          title: Text(entry.key),
-          onTap: () => _navigateToScreen(context, entry.value),
-        );
-      }).toList(),
     );
   }
 

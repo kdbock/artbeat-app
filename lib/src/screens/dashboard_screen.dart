@@ -11,7 +11,8 @@ class DashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const ArtbeatAppHeader(),
+      appBar: const ArtbeatAppHeader(showDrawerIcon: true),
+      drawer: const ArtbeatDrawer(),
       body: RefreshIndicator(
         onRefresh: () => _refreshDashboard(context),
         child: SingleChildScrollView(

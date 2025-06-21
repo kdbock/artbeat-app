@@ -1,12 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="artbeat"
+        android:label="ARTbeat"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="zAIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA" />
+            android:value="${mapsApiKey}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

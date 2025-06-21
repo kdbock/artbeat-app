@@ -789,11 +789,7 @@ Download ARTbeat to see more: https://artbeat.app
           index: _selectedIndex,
           children: _tabs.map((tab) => tab.screen).toList(),
         ),
-        bottomNavigationBar: ArtbeatBottomNavBar(
-          currentIndex: _selectedIndex,
-          onTap: _onNavTap,
-          onCapture: _onCapture,
-        ),
+
         floatingActionButton: _selectedIndex == 0
             ? FloatingActionButton.extended(
                 onPressed: () =>

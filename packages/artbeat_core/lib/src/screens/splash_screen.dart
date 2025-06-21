@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../utils/user_sync_helper.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
@@ -51,13 +52,20 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAuthAndNavigate() async {
     // Delay to show splash screen for at least 2 seconds
     await Future<void>.delayed(const Duration(seconds: 2));
-
     if (!mounted) return;
-
     try {
       // Check if user is logged in directly with Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
       debugPrint('SplashScreen: currentUser = ' + (user?.uid ?? 'null'));
+
+      // If user is authenticated, ensure their Firestore document exists
+      if (user != null) {
+        debugPrint('🔄 SplashScreen: Ensuring user document sync...');
+        await UserSyncHelper.ensureUserDocumentExists();
+      }
+
+      // Dismiss keyboard before navigating
+      FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
 
       debugPrint('🔗 SplashScreen navigating to: $route');
@@ -66,6 +74,8 @@ class _SplashScreenState extends State<SplashScreen>
     } catch (e) {
       debugPrint('Error checking auth status: $e');
       if (!mounted) return;
+      // Dismiss keyboard before navigating
+      FocusScope.of(context).unfocus();
       Navigator.of(context).pushReplacementNamed('/login');
     }
   }

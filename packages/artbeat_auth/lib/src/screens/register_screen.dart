@@ -99,6 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final password = _passwordController.text;
       final zipCode = _zipCodeController.text.trim();
 
+      // Register user and create profile in Firestore
       final userCredential = await _authService.registerWithEmailAndPassword(
         email,
         password,
@@ -106,14 +107,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         zipCode: zipCode,
       );
 
-      // Ensure user profile is created in Firestore using UserService
+      // Double-check that user document exists in Firestore
       final user = userCredential.user;
       if (user != null) {
-        await UserService().createNewUser(
-          uid: user.uid,
-          email: user.email ?? email,
-          displayName: fullName,
-        );
+        final userService = UserService();
+        final userDoc = await userService.getUserById(user.uid);
+
+        if (userDoc == null) {
+          debugPrint(
+            '⚠️ User document not found in Firestore. Creating it now...',
+          );
+          await userService.createNewUser(
+            uid: user.uid,
+            email: user.email ?? email,
+            displayName: fullName,
+            zipCode: zipCode,
+          );
+        } else {
+          debugPrint('✅ User document confirmed in Firestore');
+        }
       }
 
       if (mounted) {

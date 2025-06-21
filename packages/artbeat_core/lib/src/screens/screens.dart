@@ -3,3 +3,4 @@
 
 export 'dashboard_screen.dart';
 export 'splash_screen.dart';
+export 'events_dashboard_screen.dart';

@@ -43,6 +43,8 @@ export 'src/widgets/loading_screen.dart';
 export 'src/widgets/profile_tab_interface.dart';
 export 'src/widgets/featured_content_row_widget.dart';
 export 'src/widgets/network_error_widget.dart';
+export 'src/widgets/main_layout.dart';
+export 'src/widgets/universal_bottom_nav.dart';
 
 // Export Core Widget Utils
 export 'src/widgets/filter/index.dart';
@@ -52,7 +54,9 @@ export 'src/utils/color_extensions.dart';
 export 'src/utils/connectivity_utils.dart';
 export 'src/utils/date_utils.dart';
 export 'src/utils/validators.dart';
+export 'src/utils/user_sync_helper.dart';
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
 export 'src/screens/dashboard_screen.dart' show DashboardScreen;
+export 'src/screens/events_dashboard_screen.dart' show EventsDashboardScreen;

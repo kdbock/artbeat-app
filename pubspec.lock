@@ -53,7 +53,7 @@ packages:
     source: path
     version: "0.0.1"
   artbeat_capture:
-    dependency: transitive
+    dependency: "direct main"
     description:
       path: "packages/artbeat_capture"
       relative: true
@@ -279,7 +279,7 @@ packages:
     source: hosted
     version: "0.7.11"
   device_info_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: device_info_plus
       sha256: "98f28b42168cc509abc92f88518882fd58061ea372d7999aecc424345c7bff6a"

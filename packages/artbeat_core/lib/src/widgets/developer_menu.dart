@@ -1,24 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_artist/artbeat_artist.dart' as artist;
-import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
-import 'package:artbeat_auth/artbeat_auth.dart';
-import 'package:artbeat_capture/artbeat_capture.dart' as capture;
-import 'package:artbeat_community/artbeat_community.dart';
-import 'package:artbeat_profile/artbeat_profile.dart';
-import 'package:artbeat_settings/artbeat_settings.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../models/capture_model.dart';
 
-/// A menu for developers to quickly navigate to different screens in the app
+/// Developer menu with admin upload screens only
 class DeveloperMenu extends StatelessWidget {
   const DeveloperMenu({super.key});
 
   void _navigateToScreen(BuildContext context, Widget screen) {
-    // Close the developer menu first
     Navigator.pop(context);
-
-    // Then navigate to the new screen
     if (context.mounted) {
       Navigator.push(
         context,
@@ -44,108 +31,35 @@ class DeveloperMenu extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Screen Navigation',
+                    'Admin Upload Screens',
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
             ),
-            _buildModuleSection(context, 'Art Walk Screens', {
-              'Art Walk Map': const ArtWalkMapScreen(),
-              'Create Art Walk': const CreateArtWalkScreen(),
-              'Art Walk Details': const ArtWalkDetailScreen(
-                walkId: 'test-walk',
-              ),
-            }),
-            _buildModuleSection(context, 'Artist Screens', {
-              'Artist Browse': const artist.ArtistBrowseScreen(),
-              'Artist Dashboard': const artist.ArtistDashboardScreen(),
-              'Artist Profile': const artist.ArtistPublicProfileScreen(
-                artistProfileId: 'test-profile',
-              ),
-              'Artist Profile Edit': const artist.ArtistProfileEditScreen(),
-            }),
-            _buildModuleSection(context, 'Artwork Screens', {
-              'Artwork Browse': const artwork.ArtworkBrowseScreen(),
-              'Artwork Detail': const artwork.ArtworkDetailScreen(
-                artworkId: 'test-artwork',
-              ),
-              'Artwork Upload': const artwork.ArtworkUploadScreen(),
-            }),
-            _buildModuleSection(context, 'Auth Screens', {
-              'Login': const LoginScreen(),
-              'Register': const RegisterScreen(),
-              'Forgot Password': const ForgotPasswordScreen(),
-            }),
-            _buildModuleSection(context, 'Capture Screens', {
-              'Camera': const capture.CaptureScreen(),
-              'Capture Upload': capture.CaptureUploadScreen(
-                capture: CaptureModel(
-                  id: 'test-capture',
-                  userId: 'test-user',
-                  imageUrl: 'https://placeholder.co/400',
-                  createdAt: DateTime.now(),
-                  isProcessed: false,
-                  isPublic: false,
-                ),
-                onUploadComplete: (dynamic result) {},
-              ),
-              'Capture Detail': capture.CaptureDetailScreen(
-                capture: CaptureModel(
-                  id: 'test-capture',
-                  userId: 'test-user',
-                  imageUrl: 'https://placeholder.co/400',
-                  createdAt: DateTime.now(),
-                  isProcessed: false,
-                  isPublic: false,
-                ),
-              ),
-            }),
-            _buildModuleSection(context, 'Community Screens', {
-              'Feed': const CommunityFeedScreen(),
-            }),
-            _buildModuleSection(context, 'Profile Screens', {
-              'Profile View': ProfileViewScreen(
-                userId: FirebaseAuth.instance.currentUser?.uid ?? 'test-user',
-              ),
-              'Edit Profile': EditProfileScreen(
-                userId: FirebaseAuth.instance.currentUser?.uid ?? 'test-user',
-              ),
-              'Followers': FollowersListScreen(
-                userId: FirebaseAuth.instance.currentUser?.uid ?? 'test-user',
-              ),
-              'Following': FollowingListScreen(
-                userId: FirebaseAuth.instance.currentUser?.uid ?? 'test-user',
-              ),
-              'Favorites': FavoritesScreen(
-                userId: FirebaseAuth.instance.currentUser?.uid ?? 'test-user',
-              ),
-            }),
-            _buildModuleSection(context, 'Settings Screens', {
-              'Settings': const SettingsScreen(),
-              'Account Settings': const AccountSettingsScreen(),
-              'Privacy Settings': const PrivacySettingsScreen(),
-              'Notification Settings': const NotificationSettingsScreen(),
-              'Security Settings': const SecuritySettingsScreen(),
-              'Blocked Users': const BlockedUsersScreen(),
-            }),
-            const Divider(),
-            _buildDatabaseSection(context),
-            _buildBackupSection(context),
+            _buildAdminSection(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildModuleSection(
-    BuildContext context,
-    String title,
-    Map<String, Widget> screens,
-  ) {
+  Widget _buildAdminSection(BuildContext context) {
+    final adminScreens = <String, Widget>{
+      'Admin Upload Artist Profiles': const AdminUploadArtistProfilesScreen(),
+      'Admin Upload Gallery': const AdminUploadGalleryScreen(),
+      'Admin Upload Admin Ads': const AdminUploadAdminAdsScreen(),
+      'Admin Upload User Ads': const AdminUploadUserAdsScreen(),
+      'Admin Upload Artist Ads': const AdminUploadArtistAdsScreen(),
+      'Admin Upload Gallery Ads': const AdminUploadGalleryAdsScreen(),
+      'Admin Upload Event': const AdminUploadEventScreen(),
+      'Admin Upload User': const AdminUploadUserScreen(),
+      'Admin Upload Artworks': const AdminUploadArtworksScreen(),
+      'Admin Upload Captures': const AdminUploadCapturesScreen(),
+    };
     return ExpansionTile(
-      title: Text(title),
-      children: screens.entries.map((entry) {
+      title: const Text('Admin Screens'),
+      children: adminScreens.entries.map((entry) {
         return ListTile(
           title: Text(entry.key),
           onTap: () => _navigateToScreen(context, entry.value),
@@ -153,84 +67,207 @@ class DeveloperMenu extends StatelessWidget {
       }).toList(),
     );
   }
+}
 
-  Widget _buildDatabaseSection(BuildContext context) {
-    return ExpansionTile(
-      title: const Text('Database Management'),
-      children: [
-        ListTile(
-          title: const Text('View Records'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Database viewer coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('User Management'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User management coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Analytics'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Analytics dashboard coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('System Settings'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('System settings coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('View Logs'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Log viewer coming soon')),
-            );
-          },
-        ),
-      ],
-    );
+// Reusable admin upload form widget
+class AdminUploadForm extends StatefulWidget {
+  final String label;
+  final String hint;
+  final String uploadType;
+  const AdminUploadForm({
+    super.key,
+    required this.label,
+    required this.hint,
+    required this.uploadType,
+  });
+
+  @override
+  State<AdminUploadForm> createState() => _AdminUploadFormState();
+}
+
+class _AdminUploadFormState extends State<AdminUploadForm> {
+  final TextEditingController _controller = TextEditingController();
+  String? _result;
+  bool _loading = false;
+
+  void _upload() async {
+    setState(() {
+      _loading = true;
+      _result = null;
+    });
+    await Future<void>.delayed(const Duration(seconds: 1)); // Simulate upload
+    setState(() {
+      _loading = false;
+      _result = 'Successfully uploaded to \'${widget.uploadType}\'';
+    });
   }
 
-  Widget _buildBackupSection(BuildContext context) {
-    return ExpansionTile(
-      title: const Text('Backup Management'),
-      children: [
-        ListTile(
-          title: const Text('View Backups'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Backup viewer coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Create Backup'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Backup creation coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Restore Backup'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Backup restoration coming soon')),
-            );
-          },
-        ),
-      ],
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(widget.label, style: Theme.of(context).textTheme.headlineSmall),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: widget.hint,
+            ),
+            minLines: 1,
+            maxLines: 5,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loading ? null : _upload,
+            child: _loading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Upload'),
+          ),
+          if (_result != null) ...[
+            const SizedBox(height: 16),
+            Text(_result!, style: const TextStyle(color: Colors.green)),
+          ],
+        ],
+      ),
     );
   }
+}
+
+// Admin upload screens with UI
+class AdminUploadArtistProfilesScreen extends StatelessWidget {
+  const AdminUploadArtistProfilesScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Artist Profiles')),
+    body: const AdminUploadForm(
+      label: 'Upload Artist Profiles',
+      hint: 'Enter artist profile data (JSON, ID, etc)',
+      uploadType: 'artistProfiles',
+    ),
+  );
+}
+
+class AdminUploadGalleryScreen extends StatelessWidget {
+  const AdminUploadGalleryScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Gallery')),
+    body: const AdminUploadForm(
+      label: 'Upload Gallery',
+      hint: 'Enter gallery data (JSON, ID, etc)',
+      uploadType: 'gallery',
+    ),
+  );
+}
+
+class AdminUploadAdminAdsScreen extends StatelessWidget {
+  const AdminUploadAdminAdsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Admin Ads')),
+    body: const AdminUploadForm(
+      label: 'Upload Admin Ads',
+      hint: 'Enter admin ad data (JSON, ID, etc)',
+      uploadType: 'admin_ads',
+    ),
+  );
+}
+
+class AdminUploadUserAdsScreen extends StatelessWidget {
+  const AdminUploadUserAdsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload User Ads')),
+    body: const AdminUploadForm(
+      label: 'Upload User Ads',
+      hint: 'Enter user ad data (JSON, ID, etc)',
+      uploadType: 'user_ads',
+    ),
+  );
+}
+
+class AdminUploadArtistAdsScreen extends StatelessWidget {
+  const AdminUploadArtistAdsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Artist Ads')),
+    body: const AdminUploadForm(
+      label: 'Upload Artist Ads',
+      hint: 'Enter artist ad data (JSON, ID, etc)',
+      uploadType: 'artist_ads',
+    ),
+  );
+}
+
+class AdminUploadGalleryAdsScreen extends StatelessWidget {
+  const AdminUploadGalleryAdsScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Gallery Ads')),
+    body: const AdminUploadForm(
+      label: 'Upload Gallery Ads',
+      hint: 'Enter gallery ad data (JSON, ID, etc)',
+      uploadType: 'gallery_ads',
+    ),
+  );
+}
+
+class AdminUploadEventScreen extends StatelessWidget {
+  const AdminUploadEventScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Event')),
+    body: const AdminUploadForm(
+      label: 'Upload Event',
+      hint: 'Enter event data (JSON, ID, etc)',
+      uploadType: 'event',
+    ),
+  );
+}
+
+class AdminUploadUserScreen extends StatelessWidget {
+  const AdminUploadUserScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload User')),
+    body: const AdminUploadForm(
+      label: 'Upload User',
+      hint: 'Enter user data (JSON, ID, etc)',
+      uploadType: 'user',
+    ),
+  );
+}
+
+class AdminUploadArtworksScreen extends StatelessWidget {
+  const AdminUploadArtworksScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Artworks')),
+    body: const AdminUploadForm(
+      label: 'Upload Artworks',
+      hint: 'Enter artworks data (JSON, ID, etc)',
+      uploadType: 'artworks',
+    ),
+  );
+}
+
+class AdminUploadCapturesScreen extends StatelessWidget {
+  const AdminUploadCapturesScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Admin Upload Captures')),
+    body: const AdminUploadForm(
+      label: 'Upload Captures',
+      hint: 'Enter captures data (JSON, ID, etc)',
+      uploadType: 'captures',
+    ),
+  );
 }

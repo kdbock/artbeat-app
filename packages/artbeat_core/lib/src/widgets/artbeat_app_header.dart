@@ -3,15 +3,38 @@ import 'package:provider/provider.dart';
 import '../services/user_service.dart';
 
 class ArtbeatAppHeader extends StatelessWidget implements PreferredSizeWidget {
-  const ArtbeatAppHeader({super.key});
+  final bool? showDrawerIcon;
+
+  const ArtbeatAppHeader({super.key, this.showDrawerIcon});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
+    // Determine if we should show the drawer icon
+    bool shouldShowDrawer = false;
+
+    if (showDrawerIcon == true) {
+      shouldShowDrawer = true;
+    } else if (showDrawerIcon == null) {
+      // Auto-detect if scaffold has drawer
+      final scaffold = Scaffold.maybeOf(context);
+      shouldShowDrawer = scaffold?.hasDrawer ?? false;
+    }
+
     return AppBar(
       title: const Text('ARTbeat'),
+      leading: shouldShowDrawer
+          ? IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                final scaffold = Scaffold.of(context);
+                scaffold.openDrawer();
+              },
+              tooltip: 'Open navigation menu',
+            )
+          : null,
       actions: [
         IconButton(
           icon: const Icon(Icons.refresh),
@@ -28,10 +51,7 @@ class ArtbeatAppHeader extends StatelessWidget implements PreferredSizeWidget {
               value: 'settings',
               child: Text('Settings'),
             ),
-            const PopupMenuItem<String>(
-              value: 'logout',
-              child: Text('Logout'),
-            ),
+            const PopupMenuItem<String>(value: 'logout', child: Text('Logout')),
           ],
           onSelected: (String value) {
             switch (value) {
@@ -63,9 +83,8 @@ class ArtbeatAppHeader extends StatelessWidget implements PreferredSizeWidget {
       await showDialog<void>(
         context: context,
         barrierDismissible: false,
-        builder: (BuildContext context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (BuildContext context) =>
+            const Center(child: CircularProgressIndicator()),
       );
 
       // Refresh data

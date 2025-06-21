@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart' hide CaptureModel;
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 
 class ProfileViewScreen extends StatefulWidget {
@@ -59,14 +59,68 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
     try {
       debugPrint(
-          '🔄 ProfileViewScreen: Loading profile for user ID: ${widget.userId}');
+        '🔄 ProfileViewScreen: Loading profile for user ID: ${widget.userId}',
+      );
+
+      // Check if userId is valid
+      if (widget.userId.isEmpty) {
+        debugPrint('❌ ProfileViewScreen: Empty userId provided');
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Invalid user profile')));
+          setState(() {
+            _isLoading = false;
+          });
+        }
+        return;
+      }
 
       // First, try to get user from Firestore
       UserModel? userModel = await _userService.getUserById(widget.userId);
 
       // If no user model found, and this is the current user, create a placeholder
       if (userModel == null && widget.isCurrentUser) {
+        debugPrint(
+          '⚠️ ProfileViewScreen: Creating placeholder for current user',
+        );
         userModel = UserModel.placeholder(widget.userId);
+
+        // Try to reload user data from authentication
+        try {
+          final authUser = FirebaseAuth.instance.currentUser;
+          if (authUser != null) {
+            debugPrint('🔄 Creating user document for: ${authUser.uid}');
+            debugPrint('📧 Email: ${authUser.email}');
+            debugPrint('👤 Display Name: ${authUser.displayName}');
+
+            await _userService.createNewUser(
+              uid: authUser.uid,
+              email: authUser.email ?? '',
+              displayName: authUser.displayName ?? 'ARTbeat User',
+            );
+
+            debugPrint('✅ User document creation completed');
+
+            // Try to get the user again
+            userModel = await _userService.getUserById(widget.userId);
+
+            if (userModel != null) {
+              debugPrint(
+                '✅ User document retrieved successfully after creation',
+              );
+            } else {
+              debugPrint(
+                '❌ User document still not found after creation attempt',
+              );
+            }
+          } else {
+            debugPrint('❌ No authenticated user found');
+          }
+        } catch (reloadError) {
+          debugPrint('❌ Failed to reload user data: $reloadError');
+          debugPrint('❌ Error details: ${reloadError.toString()}');
+        }
       }
 
       // If still no user model, we have a real problem
@@ -106,7 +160,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
   void _navigateToCaptureDetail(CaptureModel capture) {
     Navigator.of(context).push(
-      MaterialPageRoute<CaptureDetailScreen>(
+      MaterialPageRoute(
         builder: (context) => CaptureDetailScreen(
           capture: capture,
           isCurrentUser: widget.isCurrentUser,
@@ -118,8 +172,52 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    // Show error state if user model is null and this is the current user
+    if (_userModel == null && widget.isCurrentUser) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profile Error')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                const SizedBox(height: 16),
+                const Text(
+                  'Profile Not Found',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Your profile data is missing from the database.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    await _loadUserProfile();
+                  },
+                  child: const Text('Try to Create Profile'),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
@@ -216,14 +314,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   Widget _buildStat(String label, int value) {
     return Column(
       children: [
-        Text(
-          value.toString(),
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(value.toString(), style: Theme.of(context).textTheme.titleMedium),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

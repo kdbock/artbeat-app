@@ -1,9 +1,5 @@
 package com.wordnerd.artbeat
 
-import android.graphics.ImageFormat
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraManager
-import android.media.ImageReader
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -43,22 +39,40 @@ class CameraBufferManager : FlutterPlugin, MethodCallHandler, DefaultLifecycleOb
         channel.setMethodCallHandler(null)
     }
     
-    // Lifecycle methods
+    // Lifecycle methods - implement all required methods from DefaultLifecycleObserver interface
+    override fun onCreate(owner: LifecycleOwner) {
+        // No special handling needed at creation
+    }
+    
+    override fun onStart(owner: LifecycleOwner) {
+        // No special handling needed at start
+    }
+    
+    override fun onResume(owner: LifecycleOwner) {
+        // No special handling needed at resume
+    }
+    
+    override fun onPause(owner: LifecycleOwner) {
+        // No special handling needed at pause
+    }
+    
     override fun onStop(owner: LifecycleOwner) {
         // Release camera resources when the app goes to the background
         // This is a backup mechanism to help free resources
-        ImageReader.getGlobalImagingWorkerHandler()?.let { handler ->
-            try {
-                val looper = handler.looper
-                if (looper != Looper.getMainLooper()) {
-                    // Post a task to clear any pending operations
-                    handler.post {
-                        // Empty task to flush the queue
-                    }
-                }
-            } catch (e: Exception) {
-                // Ignore errors, just trying to help free resources
+        try {
+            // For newer versions of Android, the ImageReader handler may not be directly accessible
+            // Just using our own background handler instead
+            val handler = Handler(Looper.getMainLooper())
+            handler.post {
+                // Empty task just to flush any pending operations
+                // Additional cleanup can be added here if needed
             }
+        } catch (e: Exception) {
+            // Ignore errors, just trying to help free resources
         }
+    }
+    
+    override fun onDestroy(owner: LifecycleOwner) {
+        // Clean up any remaining resources
     }
 }

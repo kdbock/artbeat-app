@@ -83,38 +83,31 @@ class ArtbeatDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            ...ArtbeatDrawerItems.mainItems.map(
-              (item) => ListTile(
-                leading: Icon(item.icon, color: ArtbeatColors.primaryPurple),
-                title: Text(
-                  item.title,
-                  style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context); // Close drawer
-                  if (item.route != ModalRoute.of(context)?.settings.name) {
-                    Navigator.pushNamed(context, item.route);
-                  }
-                },
-              ),
+            // User Section
+            _buildSectionHeader('User'),
+            ...ArtbeatDrawerItems.userItems.map(
+              (item) => _buildDrawerItem(context, item),
             ),
             const Divider(),
+
+            // Artist Section
+            _buildSectionHeader('Artist'),
+            ...ArtbeatDrawerItems.artistItems.map(
+              (item) => _buildDrawerItem(context, item),
+            ),
+            const Divider(),
+
+            // Gallery Section
+            _buildSectionHeader('Gallery'),
+            ...ArtbeatDrawerItems.galleryItems.map(
+              (item) => _buildDrawerItem(context, item),
+            ),
+            const Divider(),
+
+            // Settings Section
+            _buildSectionHeader('Settings'),
             ...ArtbeatDrawerItems.settingsItems.map(
-              (item) => ListTile(
-                leading: Icon(item.icon, color: ArtbeatColors.primaryPurple),
-                title: Text(
-                  item.title,
-                  style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context); // Close drawer
-                  Navigator.pushNamed(context, item.route);
-                },
-              ),
+              (item) => _buildDrawerItem(context, item),
             ),
             const Divider(),
             ListTile(
@@ -143,6 +136,41 @@ class ArtbeatDrawer extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title,
+        style: ArtbeatTypography.textTheme.titleSmall?.copyWith(
+          color: ArtbeatColors.primaryPurple,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(BuildContext context, ArtbeatDrawerItem item) {
+    return ListTile(
+      leading: Icon(
+        item.icon,
+        color: item.color ?? ArtbeatColors.primaryPurple,
+      ),
+      title: Text(
+        item.title,
+        style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: item.color,
+        ),
+      ),
+      onTap: () {
+        Navigator.pop(context); // Close drawer
+        if (item.route != ModalRoute.of(context)?.settings.name) {
+          Navigator.pushNamed(context, item.route);
+        }
+      },
     );
   }
 }

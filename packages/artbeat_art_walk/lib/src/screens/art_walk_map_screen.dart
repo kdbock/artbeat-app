@@ -1,11 +1,13 @@
 import 'dart:async';
-import 'dart:io' show SocketException;
+import 'dart:io' show Platform, SocketException;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import '../widgets/art_detail_bottom_sheet.dart';
 import '../widgets/zip_code_search_box.dart';
+import '../widgets/art_walk_info_card.dart';
 
 /// Screen that displays a map with nearby public art and art walks
 class ArtWalkMapScreen extends StatefulWidget {
@@ -50,14 +52,23 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
     try {
       debugPrint('🗺️ Initializing Google Maps...');
+
+      // Check if we're running on an emulator to provide appropriate feedback
+      final isEmulator = await _checkIfEmulator();
+      if (isEmulator) {
+        debugPrint('⚠️ Running on emulator - map performance may be limited');
+      }
+
+      // Initialize Maps with retry logic
       final mapsInitialized = await _mapsService.initializeMaps();
 
       if (!mapsInitialized) {
         if (!mounted) return;
         setState(() {
           _hasMapError = true;
-          _mapErrorMessage =
-              'Failed to initialize Google Maps. Please check your connectivity and try again.';
+          _mapErrorMessage = isEmulator
+              ? 'Maps initialization failed. Emulators may have performance issues with Google Maps.'
+              : 'Failed to initialize Google Maps. Please check your connectivity and try again.';
           _isLoading = false;
         });
         return;
@@ -74,6 +85,20 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       // Now initialize location
       await _initializeLocation();
+
+      // If we're on an emulator, reduce map resource usage
+      if (isEmulator && _mapController != null) {
+        debugPrint('🗺️ Optimizing map settings for emulator');
+        try {
+          // Use a more modest zoom level to reduce tile loading
+          await _mapController!.moveCamera(CameraUpdate.zoomTo(10.0));
+
+          // Note: Traffic layer and map type are set in the GoogleMap widget
+          // We can't modify them directly through the controller
+        } catch (e) {
+          debugPrint('⚠️ Error optimizing map for emulator: $e');
+        }
+      }
     } catch (e) {
       debugPrint('❌ Error in map/location initialization: $e');
       if (mounted) {
@@ -85,6 +110,26 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         });
       }
     }
+  }
+
+  /// Check if running on an emulator
+  Future<bool> _checkIfEmulator() async {
+    try {
+      if (Platform.isAndroid) {
+        final deviceInfo = DeviceInfoPlugin();
+        final androidInfo = await deviceInfo.androidInfo;
+        return androidInfo.isPhysicalDevice == false ||
+            androidInfo.model.contains('sdk') ||
+            androidInfo.model.contains('emulator');
+      } else if (Platform.isIOS) {
+        final deviceInfo = DeviceInfoPlugin();
+        final iosInfo = await deviceInfo.iosInfo;
+        return !iosInfo.isPhysicalDevice;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error checking if device is emulator: $e');
+    }
+    return false;
   }
 
   Future<void> _initializeLocation() async {
@@ -132,14 +177,19 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       try {
         _currentPosition =
             await Geolocator.getCurrentPosition(
-              desiredAccuracy: LocationAccuracy.high,
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.high,
+                timeLimit: Duration(seconds: 10),
+              ),
             ).timeout(
               const Duration(seconds: 10),
               onTimeout: () {
                 // If getting high accuracy location times out, try lower accuracy
                 return Geolocator.getCurrentPosition(
-                  desiredAccuracy: LocationAccuracy.medium,
-                  timeLimit: const Duration(seconds: 5),
+                  locationSettings: const LocationSettings(
+                    accuracy: LocationAccuracy.medium,
+                    timeLimit: Duration(seconds: 5),
+                  ),
                 );
               },
             );
@@ -274,13 +324,12 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     _mapController = controller;
     _mapControllerCompleter.complete(controller);
 
-    try {
-      // Note: setMapStyle is still the recommended way until the new API reaches stable
-      final mapStyle = await _mapsService.defaultMapStyle;
-      await controller.setMapStyle(mapStyle);
-    } catch (e) {
-      debugPrint('Error setting map style: $e');
-    }
+    // Note: We cannot apply map style directly via controller anymore
+    // Map style is now set using the GoogleMap.styleString property
+    // We'll implement that in the GoogleMap widget in the build method
+
+    // Initialize location after map is ready
+    await _initializeLocation();
 
     // Initialize location after map is ready
     await _initializeLocation();
@@ -300,7 +349,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     if (!mounted) return;
     try {
       final newPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       if (!mounted) return;
@@ -405,15 +456,27 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: _defaultLocation,
-            onMapCreated: _onMapCreated,
-            markers: _markers,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            mapType: MapType.normal,
-            zoomControlsEnabled: false,
-            compassEnabled: true,
+          FutureBuilder<String>(
+            future: _mapsService.defaultMapStyle,
+            builder: (context, snapshot) {
+              // We'll get the map style from the GoogleMapsService
+              String? mapStyleString = snapshot.data;
+
+              return GoogleMap(
+                initialCameraPosition: _defaultLocation,
+                onMapCreated: _onMapCreated,
+                markers: _markers,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                mapType: MapType.normal,
+                zoomControlsEnabled: false,
+                compassEnabled: true,
+                // Apply the style if available
+                style: mapStyleString,
+                // Use optimized settings for emulators
+                trafficEnabled: false,
+              );
+            },
           ),
           Positioned(
             right: 16,

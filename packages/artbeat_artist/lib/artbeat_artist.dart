@@ -10,6 +10,7 @@ export 'src/models/subscription_model.dart';
 
 // Screens
 export 'src/screens/analytics_dashboard_screen.dart';
+export 'src/screens/artist_approved_ads_screen.dart';
 export 'src/screens/artist_browse_screen.dart';
 export 'src/screens/artist_dashboard_screen.dart';
 export 'src/screens/artist_onboarding_screen.dart';

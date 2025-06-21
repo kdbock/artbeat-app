@@ -9,7 +9,9 @@ class AuthService {
 
   /// For dependency injection in tests
   void setDependenciesForTesting(
-      FirebaseAuth auth, FirebaseFirestore firestore) {
+    FirebaseAuth auth,
+    FirebaseFirestore firestore,
+  ) {
     _auth = auth;
     _firestore = firestore;
   }
@@ -27,7 +29,9 @@ class AuthService {
 
   /// Sign in with email and password
   Future<UserCredential> signInWithEmailAndPassword(
-      String email, String password) async {
+    String email,
+    String password,
+  ) async {
     try {
       return await _auth.signInWithEmailAndPassword(
         email: email,
@@ -43,29 +47,57 @@ class AuthService {
     String email,
     String password,
     String fullName, {
-    required String zipCode, // Add this parameter
+    required String zipCode, // Required parameter
   }) async {
     try {
+      debugPrint('📝 Starting registration for email: $email');
+
       // Create user with email and password
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
+      final uid = userCredential.user?.uid;
+      debugPrint('✅ Authentication account created with UID: $uid');
+
       // Set display name
       await userCredential.user?.updateDisplayName(fullName);
+      debugPrint('✅ Display name set to: $fullName');
 
-      // Create user document in Firestore with zipCode
-      await _firestore.collection('users').doc(userCredential.user?.uid).set({
-        'fullName': fullName,
-        'email': email,
-        'zipCode': zipCode,
-        'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      try {
+        // Create user document in Firestore with zipCode
+        await _firestore.collection('users').doc(uid).set({
+          'id': uid,
+          'fullName': fullName,
+          'email': email,
+          'zipCode': zipCode,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+          'userType': 'regular',
+          'posts': <String>[],
+          'followers': <String>[],
+          'following': <String>[],
+          'captures': <String>[],
+          'followersCount': 0,
+          'followingCount': 0,
+          'postsCount': 0,
+          'capturesCount': 0,
+          'isVerified': false,
+        }, SetOptions(merge: true));
+
+        debugPrint('✅ User document created in Firestore');
+      } catch (firestoreError) {
+        debugPrint(
+          '❌ Failed to create user document in Firestore: $firestoreError',
+        );
+        // Continue to return the userCredential even if Firestore fails
+        // The RegisterScreen will attempt to create the document as a fallback
+      }
 
       return userCredential;
     } catch (e) {
-      debugPrint('Error in registerWithEmailAndPassword: $e');
+      debugPrint('❌ Error in registerWithEmailAndPassword: $e');
       rethrow;
     }
   }

@@ -50,15 +50,46 @@ class UserService extends ChangeNotifier {
     required String uid,
     required String email,
     String? displayName,
+    String? zipCode,
   }) async {
     try {
+      _log.info('Creating new user document for UID: $uid, email: $email');
+
+      // Check if user document already exists
+      final userDoc = await _usersCollection.doc(uid).get();
+      if (userDoc.exists) {
+        _log.info('User document already exists for UID: $uid. Updating...');
+        // Update any missing fields
+        await _usersCollection.doc(uid).set({
+          'email': email,
+          'fullName': displayName ?? '',
+          if (zipCode != null) 'zipCode': zipCode,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        return;
+      }
+
       final UserModel userData = UserModel(
         id: uid,
         email: email,
         fullName: displayName ?? '',
+        zipCode: zipCode,
         createdAt: DateTime.now(),
       );
+
+      _log.info('Creating new document with data: ${userData.toMap()}');
       await _usersCollection.doc(uid).set(userData.toMap());
+      _log.info('✅ User document successfully created.');
+
+      // Verify document creation
+      final verifyDoc = await _usersCollection.doc(uid).get();
+      if (verifyDoc.exists) {
+        _log.info('✅ Document verification successful');
+      } else {
+        _log.severe(
+          '❌ Document verification failed - document not found after creation',
+        );
+      }
     } catch (e, s) {
       _log.severe('Error creating new user', e, s);
     }

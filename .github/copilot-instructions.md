@@ -1,476 +1,111 @@
-# ARTbeat Flutter App
+# ARTbeat Flutter App — Copilot & Contributor Guide
 
-This is a Flutter application that implements a fully modular architecture, where each feature is encapsulated in its own module. The app has been structured into feature-based modules to improve maintainability, enable parallel development, and make the codebase more organized.
-Artist and gallery management features:
-- Artist profiles and dashboards
-- Gallery management tools
-- Subscription management (Basic, Pro, Gallery plans)
-- Commission tracking
-- Analytics dashboard
+## Overview
+ARTbeat is a modular Flutter application for artists, galleries, and art lovers. It provides artist and gallery management, artwork discovery, social community, public art walks, and more. The codebase is organized into feature-based packages for maintainability, scalability, and parallel development.
 
-### 5. Artwork Module (`artbeat_artwork`)
-Artwork-related features:
-- Artwork uploads and management
-- Artwork browsing with filters
-- Image moderation
-- Sales and commission tracking
+---
 
-### 6. Art Walk Module (`artbeat_art_walk`)
-Public art discovery features:
-- Art walk creation and browsing
-- Google Maps integration
-- Location-based art discovery
-- Achievement badges system
+## Modular Architecture
+Each feature is a standalone Flutter package in `packages/`. All modules depend on `artbeat_core` for shared models, services, and utilities. Cross-dependencies are explicit in each module's `pubspec.yaml`.
 
-### 7. Community Module (`artbeat_community`)
-Social and interaction features:
-- Social feed with posts
-- Comments system
-- Community engagement tools
-- Content moderation
+### Main Modules
+- **artbeat_core**: Shared models, services, and utilities
+- **artbeat_auth**: Authentication (login, registration, password recovery)
+- **artbeat_profile**: User profiles, followers, favorites, achievements
+- **artbeat_artist**: Artist & gallery dashboards, subscriptions, analytics, commissions
+- **artbeat_artwork**: Artwork upload, management, browsing, moderation, sales
+- **artbeat_art_walk**: Public art walks, Google Maps, location-based discovery, achievements
+- **artbeat_community**: Social feed, posts, comments, engagement, moderation
+- **artbeat_settings**: Account, privacy, notification, and security settings
 
-### 8. Settings Module (`artbeat_settings`)
-User preferences and account management:
-- Account settings
-- Privacy controls
-- Notification preferences
-- Security settings
+---
 
-### Core Dependencies
-Each module specifies its own dependencies in its `pubspec.yaml`. Common dependencies include:
-- Firebase suite (core, auth, firestore, storage)
-- Provider for state management
-- Image management (image_picker, cached_network_image)
-- UI/UX libraries (google_maps_flutter, share_plus)
-- HTTP and data handling (http, intl)-file -->
+## What Each Module Does
 
-# ARTbeat Flutter App
+### artbeat_core
+- Models: User, artist, artwork, event, commission, notification, etc.
+- Services: User, notification, payment, analytics, subscription, etc.
+- Utilities: Common helpers, Firebase config
 
-This is a Flutter application called "ARTbeat" that follows a modular architecture pattern. Each feature is encapsulated in its own module for better maintainability, testability, and parallel development.
-
-## Application Flow
-- Loading Screen → Splash Screen → Login/Registration → Dashboard
-
-## Module Structure
-
-The app is divided into the following feature modules, each as a standalone Flutter package:
-
-### 1. Core Module (`artbeat_core`)
-Contains shared functionality used across all modules:
-- Models: `user_model.dart`, `notification_model.dart`, `favorite_model.dart`, etc.
-- Services: `user_service.dart`, `notification_service.dart`, `payment_service.dart`
-- Utils: Common utility functions
-- Firebase configuration and initialization
-
-### 2. Authentication Module (`artbeat_auth`)
-Handles user authentication flows:
-- Login, Register, and Password Recovery screens
-- Authentication services
+### artbeat_auth
+- Login, registration, password reset screens
 - Firebase Auth integration
 - Secure token management
 
-### 3. Profile Module (`artbeat_profile`)
-Manages user profiles:
-- Profile viewing and editing
-- Followers/Following system
-- Photo management
-- Favorites collection
-- Achievements display
-  - `user_model.dart`: Model for user profile data
-  - `artist_profile_model.dart`: Model for artist profiles with subscription tier data
-  - `artwork_model.dart`: Model for artist artwork metadata
-  - `art_walk_model.dart`: Model for collections of public art organized as walks
-  - `public_art_model.dart`: Model for public art pieces with location data
-  - `comment_model.dart`: Model for comments on posts and artwork
-  - `commission_model.dart`: Model for commission agreements between galleries and artists
-  - `event_model.dart`: Model for artist events and gallery exhibitions
-  - `favorite_model.dart`: Model for user favorites
-  - `gallery_invitation_model.dart`: Model for gallery invitations to artists
-  - `notification_model.dart`: Model for user notifications
-  - `payment_method_model.dart`: Model for Stripe payment methods
-  - `post_model.dart`: Model for social posts
-  - `subscription_model.dart`: Model for artist and gallery subscriptions
-- `lib/services/`: Contains service classes
-  - `analytics_service.dart`: Service for tracking and retrieving analytics data
-  - `artwork_service.dart`: Service for artwork management
-  - `art_walk_service.dart`: Service for managing public art and art walks
-  - `commission_service.dart`: Service for managing gallery-artist commissions
-  - `community_service.dart`: Service for social features and interactions
-  - `event_service.dart`: Service for event management
-  - `gallery_invitation_service.dart`: Service for artist invitation management
-  - `notification_service.dart`: Service for notification management
-  - `payment_service.dart`: Service for Stripe payment integrations
-  - `subscription_service.dart`: Service for managing artist subscriptions
-  - `user_service.dart`: Service for user-related operations
-- `lib/widgets/`: Contains reusable widget components
-  - `art_walk_info_card.dart`: Onboarding card for first-time Art Walk users
-  - `local_artists_row_widget.dart`: Displays local artists in a horizontal scrollable row
-  - `local_artwork_row_widget.dart`: Shows artwork with images, titles, and prices
-  - `local_art_walk_preview_widget.dart`: Shows a Google Maps preview of art walks
-  - `artist_subscription_cta_widget.dart`: Displays a promotional card for artists
-  - `upcoming_events_row_widget.dart`: Displays upcoming events filtered by location
-  - `featured_content_row_widget.dart`: Shows featured articles and content
-  - `local_galleries_widget.dart`: Displays galleries and museums in a grid
-- `lib/screens/`: Contains all screen implementations
-  - `loading_screen.dart`: Initial loading screen with circular progress indicator
-  - `splash_screen.dart`: Branded splash screen that checks authentication status
-  - `authentication/`: Authentication-related screens
-    - `login_screen.dart`: Email/password login form with Firebase Auth
-    - `register_screen.dart`: User registration form with Firebase Auth
-    - `forgot_password_screen.dart`: Password recovery using Firebase Auth
-  - `dashboard_screen.dart`: Main app dashboard showing user info
-  - `discover_screen.dart`: User discovery and search functionality
-  - `artist/`: Artist and Gallery related screens
-    - `analytics_dashboard_screen.dart`: Analytics for artist performance
-    - `artist_browse_screen.dart`: Browse artists in the platform
-    - `artist_dashboard_screen.dart`: Dashboard for artist and gallery business accounts
-    - `artist_public_profile_screen.dart`: Public-facing artist profile
-    - `artist_profile_edit_screen.dart`: Edit artist profile details
-    - `artwork_detail_screen.dart`: Detailed view of artwork with metadata
-    - `artwork_upload_screen.dart`: Upload and manage artwork
-    - `artwork_browse_screen.dart`: Browse artwork with filtering options
-    - `event_creation_screen.dart`: Create and manage gallery events
-    - `gallery_analytics_dashboard_screen.dart`: Analytics dashboard for gallery performance metrics
-    - `gallery_artists_management_screen.dart`: Gallery owner tools for managing artists with bulk invitation
-    - `payment_methods_screen.dart`: Manage Stripe payment methods
-    - `payment_screen.dart`: Process payments for subscriptions
-    - `refund_request_screen.dart`: Submit and manage subscription refund requests
-    - `subscription_analytics_screen.dart`: Analytics for subscription performance
-    - `subscription_comparison_screen.dart`: Compare subscription tiers side by side
-    - `subscription_screen.dart`: Subscription plan selection and management
-  - `art_walk/`: Art Walk related screens
-    - `art_walk_map_screen.dart`: Shows public art on an interactive Google map
-    - `art_walk_list_screen.dart`: Browse created and popular art walks
-    - `art_walk_detail_screen.dart`: View details of a specific art walk
-    - `create_art_walk_screen.dart`: Create and edit custom art walks
-  - `capture/`: Content capture-related screens
-    - `camera_screen.dart`: Camera interface for capturing text from images
-    - `capture_list_screen.dart`: List of all user's captured content
-    - `capture_detail_screen.dart`: Detailed view of captured content with editing options
-    - `capture_edit_screen.dart`: Form for editing captured content
-  - `profile/`: Profile-related screens
-    - `profile_view_screen.dart`: User profile view with photo, bio, stats, and posts
-    - `edit_profile_screen.dart`: Form for editing profile information
-    - `profile_picture_viewer_screen.dart`: Full-screen profile picture viewer
-    - `followers_list_screen.dart`: List of users following the current user
-    - `following_list_screen.dart`: List of users followed by the current user
-    - `favorites_screen.dart`: Collection of items the user has favorited
-  - `settings/`: Settings-related screens
-    - `settings_screen.dart`: Main settings hub with navigation to all settings pages
-    - `account_settings_screen.dart`: Username, email, phone, and password management
-    - `privacy_settings_screen.dart`: Profile visibility and interaction permissions
-    - `notification_settings_screen.dart`: Email, push, and in-app notification preferences
-    - `security_settings_screen.dart`: Login alerts and device activity management
-    - `blocked_users_screen.dart`: Management of blocked users with unblock capability
+### artbeat_profile
+- Profile view/edit, followers/following, photo management
+- Favorites collection, achievements display
+- Widgets: Local artists/artwork rows, galleries grid, featured content
 
-## Firebase Implementation
-The app uses Firebase services with the following features:
-- Firebase Authentication
-  - Email/Password authentication
-  - Password reset functionality
-  - Persistent authentication across app restarts
-  - User profile management (display name)
-  - Error handling for various authentication scenarios
-- Cloud Firestore
-  - User profile data storage
-  - Follow/following relationships
-  - Favorites collection management
-  - Realtime data updates
-- Firebase Storage
-  - Profile and cover photo storage
-  - Image upload functionality integrated with the app
+### artbeat_artist
+- Artist/galleries dashboards, analytics, event management
+- Subscription tiers (Basic, Pro, Gallery)
+- Commission tracking, artist invitation, payment methods
 
-## Firebase Configuration Details
-- Project name: ARTbeat
-- Project ID: wordnerd-artbeat
-- Project number: 665020451634
-- Web API Key: AIzaSyAWORLK8SxG6IKkaA5CaY2s3J2OIJ_36TA
-- Android App ID: 1:665020451634:android:70aaba9b305fa17b78652b
-- App nickname: ARTbeat
-- Package name: com.wordnerd.artbeat
+### artbeat_artwork
+- Artwork upload, browse, filter (location, medium, title)
+- Image moderation, sales, commission tracking
+- Responsive grid UI, price display, sold status
 
-## Stripe Integration
-- Stripe Publishable Key: pk_live_51QpJ6iAO5ulTKoALLtQFut6aQIyhLvrcUWRgA8RINvB6xwa37NeKymcV5lM96Yg6oOXvMQuwjPzP5LbE6I5ktHWG00Xk24gmn2
-- Payment processing for subscriptions and artwork purchases
-- Customer management and recurring billing
-- Secure payment method storage
-- Webhook integration for payment events
+### artbeat_art_walk
+- Art walk creation, browsing, and detail
+- Google Maps integration, route generation
+- Achievement badges for walk completion
+- Location-aware onboarding and navigation
 
-## Module Development Guidelines
+### artbeat_community
+- Social feed, posts, inline comments, likes
+- Moderation tools, batch transactions for likes
+- Widgets: Post cards, comment input/list, applause button
 
-### Working with Modules
+### artbeat_settings
+- Account, privacy, notification, and security settings
+- Blocked users management
+- Preferences for artists/galleries
 
-1. Each module is a standalone Flutter package in the `packages/` directory
-2. All public components are exported through the module's main entry point
-3. Use relative imports within modules
-4. Update the module's exports when adding new components
+---
 
-### Module Dependencies
+## Key Features & Flows
+- **Authentication**: Email/password, persistent login, error handling
+- **Profile**: View/edit, followers, favorites, achievements, photo upload
+- **Artist/Gallery**: Dashboards, analytics, event & commission management, subscription plans
+- **Artwork**: Upload, browse, filter, sales, moderation
+- **Art Walk**: Map-based discovery, route planning, achievements
+- **Community**: Social feed, comments, likes, moderation
+- **Settings**: Account, privacy, notification, security
+- **Payments**: Stripe integration for subscriptions, purchases, payment methods
 
-- All modules depend on `artbeat_core`
-- Some modules have cross-dependencies (e.g., `artbeat_artist` depends on `artbeat_artwork`)
-- Dependencies are explicitly declared in each module's `pubspec.yaml`
+---
 
-### Adding New Features
+## How to Use & Extend
+- Each module exports its public API via its main Dart file
+- Add new features in the correct module, update exports, and route tables
+- Use relative imports within modules
+- Unit tests go in each module; integration tests in the main app
+- See `docs/` for detailed guides on modularization, API, and features
 
-1. Identify the appropriate module for the feature
-2. Create files in the correct module directory structure
-3. Update the module's exports
-4. Update the app's route table if adding screens
+---
 
-### Testing
+## Upcoming Features & Roadmap
+- Complete profile editing and followers system
+- Biometric authentication
+- Advanced analytics for artists/galleries
+- More artwork filters and search
+- Enhanced moderation and reporting tools
+- Community engagement features (badges, trending posts)
+- Gallery bulk artist invitation and commission management
+- More achievement badges and onboarding flows
+- Improved settings and notification preferences
 
-- Unit tests belong in each module
-- Integration tests go in the main app
-- Widget tests should be in their respective modules
+---
 
-## Technical Configurations
-- Android configuration: minSdkVersion 23, ndkVersion 27.0.12077973
-- iOS configuration: Minimum deployment target iOS 13.0
-- Firebase project ID: wordnerd-artbeat
-- Package name: com.wordnerd.artbeat
+## Contribution Guidelines
+- Follow modular structure and update exports
+- Write clear, maintainable code and tests
+- Document new features in the appropriate module and in `docs/`
+- Use Firestore and Storage paths as per security rules
+- Keep dependencies up to date in each module's `pubspec.yaml`
 
-## Dependencies
-- firebase_core: For Firebase initialization
-- firebase_auth: For authentication functionality
-- cloud_firestore: For database operations
-- firebase_storage: For image and file storage
-- image_picker: For selecting profile and cover images
-- flutter: For the UI framework
-- flutter_stripe: For payment processing integration
-- http: For API calls to cloud functions
-- intl: For date and number formatting
-- provider: For state management
-- shared_preferences: For local storage
-- google_maps_flutter: For displaying interactive maps in Art Walk feature
-- geolocator: For getting the user's current location
-- geocoding: For converting coordinates to human-readable addresses
-- share_plus: For sharing art walks with others
+---
 
-## Progress So Far
-
-- Added `FavoritesScreen` and `FavoriteDetailScreen` with navigation flow, favorites feature now working.
-- Implemented `getUserFavorites` and `getFavoriteById` in `UserService`, and fixed related compile errors.
-- Switched Firestore writes in `updateDisplayName` and `updateUserProfile` to use `set(..., SetOptions(merge: true))` to prevent not-found errors.
-- Added `assets/default_profile.png` to `pubspec.yaml` to fix image loading errors.
-- Suggested Firestore emulator setup for testing and updated security rules guidance.
-- Updated Firestore security rules to include support for user favorites and captures.
-- Fixed the issue with `UserModel` property names by standardizing to use `fullName` instead of `name`.
-- Created a new "capture" branch for implementing the content capture feature.
-
-## Progress Update (May 2025)
-- Added complete payment methods management with Stripe integration:
-  - Created PaymentMethodModel for simplified representation of Stripe payment methods
-  - Implemented PaymentMethodsScreen for listing, adding, and removing payment methods
-  - Added cloud functions for Stripe operations (createSetupIntent, getPaymentMethods, etc.)
-  - Updated Firestore security rules to support payment and subscription operations
-- Added artist and gallery subscription functionality:
-  - Implemented subscription tier management (Artist Basic, Artist Pro, Gallery)
-  - Created event management system for galleries to create and manage exhibitions
-  - Updated ArtistDashboardScreen with conditional premium features based on subscription tier
-  - Added analytics for subscription performance
-- Added comprehensive test files for gallery management functionality
-
-## Firestore & Storage Rules Update (May 2025)
-- Firestore rules now allow authenticated users to comment on posts (read, create, update, delete their own comments).
-- Ensure all post and capture documents include a `userId` field matching the authenticated user for successful writes.
-- Firebase Storage rules require proper path structures:
-  - Profile images: `/profile_images/{userId}/{fileName}`
-  - Capture images: `/capture_images/{userId}/{fileName}`
-  - Post images: `/post_images/{fileName}`
-  - Artwork images: `/artwork_images/{userId}/{artworkId}/{fileName}`
-- All image upload code must match these path structures to prevent permission errors.
-
-## Community Features (May 2025)
-- Added modern inline commenting system for posts with collapsible comment sections.
-- Fixed post likes functionality with proper error handling in `CommunityService`.
-- Added required indexes for comment queries (parentCommentId + createdAt).
-- Improved batch transaction handling for likes to ensure atomic updates.
-- All comment UI is handled through `CommentInputWidget` and `CommentListWidget` components.
-
-## Artist Subscription Features (May 2025)
-The app now includes a subscription-based model for artists with the following features:
-
-### User Types
-- Regular User (existing)
-- Artist (new)
-- Gallery Business (new)
-
-### Subscription Tiers
-- **Artist Basic Plan (Free)**:
-  - Artist profile page
-  - Up to 5 artwork listings
-  - Basic analytics
-  - Community features
-
-- **Artist Pro Plan ($9.99/month)**:
-  - Unlimited artwork listings
-  - Featured in discover section
-  - Advanced analytics
-  - Priority support
-  - Event creation and promotion
-
-- **Gallery Plan ($49.99/month)**:
-  - Multiple artist management
-  - Business profile for galleries
-  - Advanced analytics dashboard
-  - Dedicated support
-  - All Pro features
-
-### Artist Dashboard Screens
-- Internal profile management
-- External public profile
-- Edit profile functionality
-- Gallery for artwork uploads with metadata
-- Storefront with external links (Etsy, personal sites)
-- Social media feed integration
-- Personal calendar for exhibits and events
-- Subscription settings and analytics
-
-## Progress Update (May 18, 2025)
-- Completed user notification system for subscription events:
-  - Implemented comprehensive notification handling for subscription renewals and payment issues
-  - Added notification preferences specific to artist and gallery accounts in notification settings
-  - Enhanced notification settings UI to show subscription-related options based on user type
-  - Created scheduled cloud functions to check for subscription expiration and send timely reminders
-  - Added notification support for approaching artwork limits to improve user experience
-  - Updated Firebase webhook handlers to respect user notification preferences
-
-## Progress Update (May 19, 2025)
-- Enhanced gallery management features:
-  - Added bulk artist invitation system in gallery artists management screen:
-    - Added functionality to search and select multiple artists
-    - Implemented batch invitation sending with custom messages
-    - Created invitation tracking and cancellation capabilities
-  - Implemented commission tracking between galleries and artists:
-    - Created `CommissionModel` with support for variable commission rates
-    - Built `CommissionService` with CRUD operations for commissions
-    - Added UI for setting and managing commission rates for each artist
-    - Implemented commission status tracking (pending, active, cancelled)
-  - Created advanced analytics dashboard for gallery performance metrics:
-    - Developed `GalleryAnalyticsDashboardScreen` with multiple visualization components
-    - Implemented overview metrics showing KPIs (sales, revenue, commissions)
-    - Created time-based revenue trend charts with filtering options
-    - Added artist performance comparison table for identifying top performers
-    - Built commission summary section with pending/paid breakdowns
-  - Enhanced `AnalyticsService` with gallery-specific methods:
-    - Added support for gallery metrics aggregation
-    - Implemented artist performance comparison data
-    - Created time-series data generation for visualizations
-    - Added commission metrics calculations
-
-## Progress Update (May 19, 2025 - Afternoon)
-- Implemented complete Art Walk feature:
-  - Created `PublicArtModel` and `ArtWalkModel` to store art and walk data
-  - Implemented `ArtWalkService` with methods for creating, viewing, and managing art walks
-  - Developed UI screens for exploring public art on maps (`ArtWalkMapScreen`)
-  - Added screens for browsing, creating and viewing art walks
-  - Enhanced existing capture functionality to support public art with location data
-  - Added Google Maps integration for displaying art on interactive maps
-  - Added route generation between art pieces with distance and time estimation
-  - Created onboarding card (`ArtWalkInfoCard`) for first-time users
-  - Integrated Art Walk into main dashboard and discover screens
-  - Added proper navigation flows between capture and Art Walk features
-  - Updated permissions in AndroidManifest.xml and iOS Info.plist for location services
-  - Created comprehensive documentation (ART_WALK_README.md and ART_WALK_SUMMARY.md)
-
-## Progress Update (May 20, 2025)
-- Implemented Achievement Badges for Art Walk completion:
-  - Added "Complete Art Walk" button to Art Walk detail screen
-  - Created visual feedback to show walk completion status
-  - Implemented proper achievement awarding and tracking
-  - Added achievements navigation in the profile screen
-  - Created notification system to alert users of new achievements
-  - Enhanced achievement display with animations and proper feedback
-  - Connected achievements to the user profile system
-  - Added a direct navigation option from achievement notifications
-  - Implemented badge display with proper categorization by type
-  - Created visual distinction between bronze, silver, and gold tier achievements
-
-## Progress Update (May 24-26, 2025)
-- Enhanced Dashboard UI components:
-  - Created a complete redesigned dashboard with location-aware data
-  - Improved `LocalArtistsRowWidget` with better error handling and visual design:
-    - Added verified badges for certified artists with blue borders
-    - Added featured artist indicators with amber borders
-    - Improved empty states with helpful messaging
-    - Enhanced error handling with descriptive UI feedback
-    - Optimized image loading with fallback placeholder support
-  - Enhanced `LocalArtworkRowWidget` with proper cards and item details:
-    - Implemented card-based design with elevation and rounded corners
-    - Added price display for artwork with proper formatting
-    - Added "SOLD" badge for artwork that is no longer for sale
-    - Improved image error handling with placeholder support
-    - Added artist name fetching with proper error handling
-  - Implemented `LocalGalleriesWidget` with better UI for gallery display:
-    - Created responsive grid layout for galleries and museums
-    - Added featured and verified badges for trusted galleries
-    - Implemented location display with map icon
-    - Added truncation for long descriptions with ellipsis
-    - Enhanced empty state with browse all galleries option
-  - Created `ArtworkBrowseScreen` with filtering by location and medium:
-    - Implemented dual dropdown filters for location and medium
-    - Added location-aware filtering based on user's ZIP code
-    - Created searchable artwork title functionality
-    - Implemented responsive grid layout with consistent styling
-    - Added proper loading, error, and empty states
-  - Added proper route definitions for browse screens in main.dart
-  - Fixed permission issues and Firebase configuration
-  - Enhanced artist profile displays with verified and featured badges
-  - Added proper Firestore queries with error handling and empty states
-  - Updated widget designs across the app for more consistent UI
-  - Fixed navigation between dashboard sections and detail screens
-
-## Firestore Indexes Update (May 26, 2025)
-- Successfully implemented the following Firestore indexes:
-  - ✅ artWalks: userId + createdAt (for user art walks)
-  - ✅ artWalks: isPublic + viewCount (for popular art walks)
-  - ✅ artwork: location + createdAt (for local artwork by creation date)
-  - ✅ artwork: location + medium (for filtered artwork searches)
-  - ✅ artistProfiles: location + userType (for local galleries)
-  - ✅ events: location + startDate (for upcoming events in a location)
-  - ✅ posts: userId + createdAt (for user's posts in profile)
-  - ✅ posts: trending + createdAt (for trending content)
-  - ✅ comments: parentCommentId + createdAt (for comment threads)
-  - ✅ artwork: title + createdAt (for artwork title search)
-  - ✅ artwork: medium + createdAt (for artwork medium filtering)
-  - ✅ featuredContent: isActive + publishedAt (for featured content display)
-  - ✅ artistProfiles: userType + displayName (for gallery/artist sorting)
-  - ✅ commissions: galleryId + status + createdAt (for gallery commission tracking)
-  - ✅ commissions: artistId + status + createdAt (for artist commission tracking)
-
-- Added new indexes for performance optimization:
-  - Commission filtering by status
-  - Artwork filtering by title (for search functionality) 
-  - Artist sorting by name
-  - Feature content display with active status
-
-## Module Status
-
-Current status of module migration:
-
-| Module | Status | Next Steps |
-|--------|---------|------------|
-| artbeat_core | ✅ Complete | - Add more unit tests |
-| artbeat_auth | ✅ Complete | - Add biometric auth |
-| artbeat_profile | 🚧 In Progress | - Complete profile editing<br>- Add followers system |
-| artbeat_artist | ✅ Basic Setup | - Implement subscription features<br>- Add commission tracking |
-| artbeat_artwork | ✅ Basic Setup | - Add artwork management<br>- Implement filters |
-| artbeat_art_walk | ✅ Basic Setup | - Add maps integration<br>- Create achievement system |
-| artbeat_community | ✅ Basic Setup | - Build social features<br>- Add moderation tools |
-| artbeat_settings | ✅ Basic Setup | - Complete settings screens<br>- Add preferences system |
-
-## Next Steps
-
-1. Complete Profile Module:
-   - Implement profile viewing and editing
-   - Set up followers/following system
-   - Build favorites collection
-   - Add achievements display
-
-2. Progress with remaining modules:
-   - Enable Artist and Gallery features
-   - Set up Artwork management
-   - Implement Art Walk functionality
-   - Build Community features
-   - Complete Settings module
+For more, see the `docs/` folder and each module's README. This file is always up to date with the latest architecture and features.

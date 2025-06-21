@@ -1,9 +1,14 @@
 library artbeat_capture;
 
+// Re-export the model from core
 export 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
-export 'src/screens/capture_screen.dart' show CaptureScreen;
-export 'src/screens/capture_upload_screen.dart' show CaptureUploadScreen;
-export 'src/screens/capture_detail_screen.dart' show CaptureDetailScreen;
-export 'src/services/camera_service.dart' show CameraService;
-export 'src/services/storage_service.dart' show StorageService;
-export 'src/widgets/captures_grid.dart' show CapturesGrid;
+
+// Screens and services
+export 'src/screens/capture_screen.dart';
+export 'src/screens/capture_upload_screen.dart';
+export 'src/screens/capture_detail_screen.dart';
+export 'src/services/capture_service.dart';
+export 'src/services/storage_service.dart';
+
+// Widgets
+export 'src/widgets/captures_grid.dart';

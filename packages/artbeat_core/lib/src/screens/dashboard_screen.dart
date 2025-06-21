@@ -1,6 +1,10 @@
-import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
-import 'package:artbeat_core/widgets/artbeat_bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
+
+import '../widgets/developer_menu.dart';
+import '../widgets/main_layout.dart';
+import '../widgets/artbeat_drawer.dart';
+import '../theme/artbeat_colors.dart';
+import '../utils/color_extensions.dart';
 
 /// Main dashboard screen for the application.
 class DashboardScreen extends StatefulWidget {
@@ -13,7 +17,6 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -31,147 +34,348 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  void _onNavTap(int index) {
-    setState(() => _selectedIndex = index);
-    if (index == 1) {
-      Navigator.pushNamed(context, '/art_walk/dashboard');
-    } else if (index == 2) {
-      Navigator.pushNamed(context, '/community/social');
-    } else if (index == 4) {
-      Navigator.pushNamed(context, '/chat');
-    }
-  }
-
-  void _onCapture() async {
-    // Open the camera screen and wait for the result
-    final result = await Navigator.pushNamed(context, '/capture');
-    if (result != null && mounted) {
-      // result should be a CaptureModel or a map with image/location
-      final capture = result as CaptureModel;
-      final detailResult = await Navigator.pushNamed(
-        context,
-        '/capture/detail',
-        arguments: {'capture': capture},
-      );
-      if (detailResult == true && mounted) {
-        // After successful upload, go back to dashboard
-        Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.developer_mode),
-            onPressed: () {},
-            tooltip: 'Developer Menu',
-          ),
-          // Profile dropdown (generic icon, right of dev icon)
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.account_circle, size: 28),
-            onSelected: (value) {
-              switch (value) {
-                case 'public_profile':
-                  Navigator.pushNamed(context, '/profile/public');
-                  break;
-                case 'edit_profile':
-                  Navigator.pushNamed(context, '/profile/edit');
-                  break;
-                case 'favorites':
-                  Navigator.pushNamed(context, '/favorites');
-                  break;
-                case 'captures':
-                  Navigator.pushNamed(context, '/captures');
-                  break;
-                case 'achievements':
-                  Navigator.pushNamed(context, '/achievements');
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'public_profile',
-                child: Text('Public Profile'),
-              ),
-              const PopupMenuItem(
-                value: 'edit_profile',
-                child: Text('Edit Profile'),
-              ),
-              const PopupMenuItem(
-                value: 'favorites',
-                child: Text('Fan Of (Favorites)'),
-              ),
-              const PopupMenuItem(value: 'captures', child: Text('Captures')),
-              const PopupMenuItem(
-                value: 'achievements',
-                child: Text('Achievements'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search Art',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                filled: true,
-                fillColor:
-                    theme.inputDecorationTheme.fillColor ?? Colors.grey[100],
-              ),
-              enabled: false,
+    return MainLayout(
+      currentIndex: 0, // Home index
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          title: const Text('ARTbeat'),
+          centerTitle: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+              tooltip: 'Open navigation menu',
             ),
           ),
-          TabBar(
-            controller: _tabController,
-            labelColor: theme.primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: theme.primaryColor,
-            tabs: const [
-              Tab(text: 'Artists'),
-              Tab(text: 'Artwork'),
-              Tab(text: 'Events'),
-              Tab(text: 'Artwalks'),
-            ],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: () {
+                // Add refresh functionality here
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Refreshing...')));
+              },
+            ),
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.person),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'profile',
+                  child: Text('Profile'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'settings',
+                  child: Text('Settings'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: Text('Logout'),
+                ),
+              ],
+              onSelected: (String value) {
+                switch (value) {
+                  case 'profile':
+                    Navigator.pushNamed(context, '/profile');
+                    break;
+                  case 'settings':
+                    Navigator.pushNamed(context, '/settings/account');
+                    break;
+                  case 'logout':
+                    Navigator.pushReplacementNamed(context, '/login');
+                    break;
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.developer_mode),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => const DeveloperMenu(),
+                );
+              },
+            ),
+          ],
+        ),
+        drawer: const ArtbeatDrawer(),
+        body: Container(
+          constraints: const BoxConstraints.expand(),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                ArtbeatColors.primaryPurple.withAlphaValue(0.05),
+                Colors.white,
+                ArtbeatColors.primaryGreen.withAlphaValue(0.05),
+              ],
+            ),
           ),
-          Expanded(
+          child: SafeArea(
             child: TabBarView(
               controller: _tabController,
-              children: List.generate(4, (index) => _comingSoon()),
+              children: [
+                _buildHomeTab(),
+                _buildDiscoverTab(),
+                _buildTrendingTab(),
+                _buildProfileTab(),
+              ],
             ),
           ),
-        ],
-      ),
-      bottomNavigationBar: ArtbeatBottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onNavTap,
-        onCapture: _onCapture,
+        ),
       ),
     );
   }
 
-  Widget _comingSoon() {
-    return const Center(
-      child: Text(
-        'Coming Soon',
-        style: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
+  Widget _buildHomeTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Welcome Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.secondary,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome to ARTbeat',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Discover, capture, and share art in your community',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Quick Actions
+          Text(
+            'Quick Actions',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionCard(
+                  context: context,
+                  icon: Icons.camera_alt,
+                  title: 'Capture Art',
+                  subtitle: 'Take a photo',
+                  onTap: () => Navigator.pushNamed(context, '/capture/camera'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionCard(
+                  context: context,
+                  icon: Icons.map,
+                  title: 'Art Walks',
+                  subtitle: 'Explore routes',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/art-walk/dashboard'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildQuickActionCard(
+                  context: context,
+                  icon: Icons.people,
+                  title: 'Community',
+                  subtitle: 'Join discussions',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/community/dashboard'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildQuickActionCard(
+                  context: context,
+                  icon: Icons.event,
+                  title: 'Events',
+                  subtitle: 'Find events',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/events/dashboard'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Recent Activity
+          Text(
+            'Recent Activity',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.history,
+                  size: 48,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.5),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No recent activity',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Start exploring to see your activity here',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.5),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDiscoverTab() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.explore, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text('Discover', style: TextStyle(fontSize: 18, color: Colors.grey)),
+          SizedBox(height: 8),
+          Text('Coming Soon', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendingTab() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.trending_up, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text('Trending', style: TextStyle(fontSize: 18, color: Colors.grey)),
+          SizedBox(height: 8),
+          Text('Coming Soon', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileTab() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.person, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text('Profile', style: TextStyle(fontSize: 18, color: Colors.grey)),
+          SizedBox(height: 8),
+          Text('Coming Soon', style: TextStyle(color: Colors.grey)),
+        ],
       ),
     );
   }

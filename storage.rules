@@ -6,7 +6,8 @@ service firebase.storage {
       return request.resource != null && (
         request.resource.metadata.debug_mode == "true" ||
         request.resource.metadata.build_mode == "debug" ||
-        request.auth.token.debug == true
+        request.auth.token.debug == true || 
+        request.path.matches('.*debug_.*') // Allow paths containing "debug_"
       );
     }
 
@@ -31,22 +32,28 @@ service firebase.storage {
 
     // Base rules that apply to all paths
     match /{allPaths=**} {
-      allow read: if isAuthorized();
+      allow read: if isAuthenticated(); // Simplified for dev - just require auth
       allow write: if false; // Specific paths must explicitly allow write
     }
 
-    // Capture images
+    // Explicit debug_uploads path - very permissive for development
+    match /debug_uploads/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Capture images - more permissive for development
     match /capture_images/{userId}/{fileName} {
-      allow read: if isAuthorized();
-      allow write: if isUserPath(userId);
-      allow delete: if isUserPath(userId);
+      allow read: if isAuthenticated();
+      // More permissive during development - just check auth
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
     
     // Profile images
     match /profile_images/{userId}/{fileName} {
-      allow read: if isAuthorized();
-      allow write: if isUserPath(userId);
-      allow delete: if isUserPath(userId);
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
     // Debug mode bypass for testing
