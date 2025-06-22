@@ -10,7 +10,7 @@ const String studiosIcon = 'chat';
 const String goldenCanvasIcon = 'emoji_events';
 
 const String defaultAvatarUrl = 'assets/default_profile.png';
-const String firebaseStorageBasePath = 'gs://wordnerd-artbeat.appspot.com';
+const String firebaseStorageBasePath = 'gs://wordnerd-artbeat.firebasestorage.app';
 
 const List<String> giftOptions = [
   '🎨 Mini Palette',

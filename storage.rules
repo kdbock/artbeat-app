@@ -36,6 +36,13 @@ service firebase.storage {
       allow write: if false; // Specific paths must explicitly allow write
     }
 
+    // Root level files - for simple uploads during development
+    match /{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
     // Explicit debug_uploads path - very permissive for development
     match /debug_uploads/{fileName} {
       allow read, write: if isAuthenticated();
@@ -47,6 +54,13 @@ service firebase.storage {
       // More permissive during development - just check auth
       allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Legacy captures path - for backward compatibility
+    match /captures/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
     }
     
     // Profile images

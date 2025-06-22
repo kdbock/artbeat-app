@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
         appId: '1:665020451634:android:70aaba9b305fa17b78652b',
         messagingSenderId: '665020451634',
         projectId: 'wordnerd-artbeat',
-        storageBucket: 'wordnerd-artbeat.appspot.com',
+        storageBucket: 'wordnerd-artbeat.firebasestorage.app',
       );
 
   static FirebaseOptions get ios => FirebaseOptions(
@@ -63,7 +63,7 @@ class DefaultFirebaseOptions {
         appId: '1:665020451634:ios:2aa5cc17ac7d0dad78652b',
         messagingSenderId: '665020451634',
         projectId: 'wordnerd-artbeat',
-        storageBucket: 'wordnerd-artbeat.appspot.com',
+        storageBucket: 'wordnerd-artbeat.firebasestorage.app',
         iosBundleId: 'com.wordnerd.artbeat',
       );
 }

@@ -37,48 +37,61 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
   String? _selectedArtType;
   String? _selectedArtMedium;
 
-  final List<String> _artTypes = [
+  // Static lists to ensure they're properly initialized
+  static const List<String> _artTypes = [
     'Mural',
-    'Sculpture',
     'Street Art',
-    'Installation',
+    'Sculpture',
+    'Statue',
     'Graffiti',
     'Monument',
-    'Statue',
-    'Fountain',
-    'Architecture',
-    'Mosaic',
-    'Relief',
-    'Public Art',
     'Memorial',
-    'Playground Art',
-    'Bridge Art',
+    'Fountain',
+    'Installation',
+    'Mosaic',
+    'Public Art',
+    'Wall Art',
     'Building Art',
-    'Garden Art',
+    'Bridge Art',
     'Park Art',
+    'Garden Art',
+    'Plaza Art',
+    'Architecture',
+    'Relief',
     'Transit Art',
+    'Playground Art',
+    'Community Art',
+    'Cultural Art',
+    'Historical Marker',
+    'Signage Art',
+    'Other',
     'I don\'t know',
   ];
 
-  final List<String> _artMediums = [
+  static const List<String> _artMediums = [
     'Paint',
     'Spray Paint',
-    'Acrylic Paint',
-    'Metal',
+    'Acrylic',
+    'Oil Paint',
+    'Watercolor',
     'Bronze',
     'Steel',
     'Iron',
     'Aluminum',
+    'Copper',
     'Stone',
     'Marble',
     'Granite',
+    'Limestone',
     'Concrete',
+    'Brick',
     'Wood',
     'Glass',
+    'Stained Glass',
     'Ceramic',
     'Tile',
     'Mosaic Tile',
-    'Brick',
+    'Metal',
     'Plaster',
     'Fiberglass',
     'Resin',
@@ -87,12 +100,21 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     'Neon',
     'Chalk',
     'Charcoal',
-    'I don\'t know',
+    'Fabric',
+    'Plastic',
+    'Vinyl',
+    'Paper',
+    'Canvas',
+    'Other',
+    'Unknown',
   ];
 
   @override
   void initState() {
     super.initState();
+    debugPrint('CaptureUploadScreen: Art types count: ${_artTypes.length}');
+    debugPrint('CaptureUploadScreen: Art mediums count: ${_artMediums.length}');
+    debugPrint('CaptureUploadScreen: First few art types: ${_artTypes.take(5).toList()}');
     _initializeForm();
   }
 
@@ -180,7 +202,14 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
       }
 
       setState(() => _uploadStatus = 'Uploading image...');
-      // Upload image to storage
+      
+      // Debug: Print selected values
+      debugPrint('CaptureUpload: Selected art type: $_selectedArtType');
+      debugPrint('CaptureUpload: Selected art medium: $_selectedArtMedium');
+      debugPrint('CaptureUpload: Art types available: ${_artTypes.length}');
+      debugPrint('CaptureUpload: Art mediums available: ${_artMediums.length}');
+      
+      // Upload image to storage (should work now with correct bucket)
       final imageUrl = await _storageService.uploadImage(widget.imageFile);
 
       // Create capture model
@@ -381,12 +410,19 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       labelText: 'Art Type',
                       border: OutlineInputBorder(),
                     ),
-                    items: _artTypes.map((type) {
-                      return DropdownMenuItem(value: type, child: Text(type));
+                    isExpanded: true,
+                    items: _artTypes.map((String type) {
+                      return DropdownMenuItem<String>(
+                        value: type,
+                        child: Text(type),
+                      );
                     }).toList(),
-                    onChanged: (value) {
-                      setState(() => _selectedArtType = value);
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedArtType = value;
+                      });
                     },
+                    hint: const Text('Select art type'),
                   ),
                   const SizedBox(height: 16),
 
@@ -397,15 +433,19 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       labelText: 'Art Medium',
                       border: OutlineInputBorder(),
                     ),
-                    items: _artMediums.map((medium) {
-                      return DropdownMenuItem(
+                    isExpanded: true,
+                    items: _artMediums.map((String medium) {
+                      return DropdownMenuItem<String>(
                         value: medium,
                         child: Text(medium),
                       );
                     }).toList(),
-                    onChanged: (value) {
-                      setState(() => _selectedArtMedium = value);
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedArtMedium = value;
+                      });
                     },
+                    hint: const Text('Select art medium'),
                   ),
                   const SizedBox(height: 16),
 

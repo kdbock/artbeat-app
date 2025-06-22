@@ -12,7 +12,7 @@ class DefaultFirebaseOptions {
       appId: '1:665020451634:android:70aaba9b305fa17b78652b',
       messagingSenderId: '665020451634',
       projectId: 'wordnerd-artbeat',
-      storageBucket: 'wordnerd-artbeat.appspot.com',
+      storageBucket: 'wordnerd-artbeat.firebasestorage.app',
     );
   }
 }

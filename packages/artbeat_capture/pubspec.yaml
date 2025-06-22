@@ -18,12 +18,13 @@ dependencies:
   geolocator: ^14.0.1
   cloud_firestore: ^5.6.9
   firebase_storage: ^12.4.7
+  firebase_core: ^3.7.0
+  firebase_auth: ^5.6.0
   artbeat_core: 
     path: ../artbeat_core
   connectivity_plus: ^6.1.4
   package_info_plus: ^8.3.0
   device_info_plus: ^11.5.0
-  firebase_auth: ^5.6.0
   geocoding: ^4.0.0
   path: ^1.9.0
 

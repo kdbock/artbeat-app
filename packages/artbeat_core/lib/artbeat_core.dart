@@ -18,7 +18,6 @@ export 'src/services/user_service.dart' show UserService;
 export 'src/services/connectivity_service.dart' show ConnectivityService;
 export 'src/services/subscription_service.dart' show SubscriptionService;
 export 'src/services/artist_service.dart' show ArtistService;
-export 'src/services/capture_service.dart' show CaptureService;
 export 'src/services/payment_service.dart' show PaymentService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
