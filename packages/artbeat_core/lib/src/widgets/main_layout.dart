@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'universal_bottom_nav.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
@@ -37,10 +38,20 @@ class _MainLayoutState extends State<MainLayout> {
           Navigator.of(context).pushReplacementNamed('/events/dashboard');
           break;
         case 4:
-          Navigator.of(context).pushNamed('/capture/camera');
+          // Open capture as a modal instead of navigation
+          _openCaptureModal();
           break;
       }
     }
+  }
+
+  void _openCaptureModal() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => const CaptureScreen(),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   @override

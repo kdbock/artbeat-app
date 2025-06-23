@@ -1,16 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Public posts (feed)
+    // Public posts (feed) - Allow all authenticated users to post and comment
     match /posts/{postId} {
-      allow read: if resource.data.isPublic == true;
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read: if true; // Allow reading all posts
+      allow create: if request.auth != null; // Any authenticated user can create posts
+      allow update: if request.auth != null && (
+        // Post owner can update their own posts
+        request.auth.uid == resource.data.userId ||
+        // Any authenticated user can update applauseCount for applause functionality
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applauseCount']) &&
+         request.resource.data.applauseCount >= resource.data.applauseCount)
+      );
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Applause subcollection - users can manage their own applause
+      match /applause/{userId} {
+        allow read: if true; // Public reading for counts
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
-    // Comments (publicly readable, only owner can write/delete)
+    // Comments (publicly readable, authenticated users can create, only owner can update/delete)
     match /comments/{commentId} {
       allow read: if true;
-      allow write, update, delete: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow create: if request.auth != null; // Any authenticated user can create comments
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // Gifts (publicly readable)
@@ -70,6 +85,26 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == userId;
       allow update: if request.auth != null && request.auth.uid == userId;
       allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Events collection - public events are readable, users can manage their own events
+    match /events/{eventId} {
+      allow read: if resource.data.isPublic == true || 
+                  (request.auth != null && request.auth.uid == resource.data.artistId);
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.artistId;
+      allow update, delete: if request.auth != null && 
+                            request.auth.uid == resource.data.artistId;
+    }
+
+    // Art walks collection - similar to events
+    match /artWalks/{walkId} {
+      allow read: if resource.data.isPublic == true || 
+                  (request.auth != null && request.auth.uid == resource.data.createdBy);
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.createdBy;
+      allow update, delete: if request.auth != null && 
+                            request.auth.uid == resource.data.createdBy;
     }
 
     // Fallback: deny all other access

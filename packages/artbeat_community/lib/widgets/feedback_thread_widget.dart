@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'avatar_widget.dart';
 import '../models/comment_model.dart';
 
@@ -27,42 +28,64 @@ class FeedbackThreadWidget extends StatelessWidget {
                 children: [
                   AvatarWidget(avatarUrl: comment.userAvatarUrl, radius: 20),
                   const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        comment.userName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          comment.userName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        comment.createdAt.toString(),
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
+                        Text(
+                          timeago.format(comment.createdAt.toDate()),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              Text(comment.content, style: const TextStyle(fontSize: 16)),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 52,
+                ), // Align with content above
+                child: Text(
+                  comment.content,
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () => onReply(comment),
-                    child: const Text('Reply'),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    comment.type,
-                    style: const TextStyle(color: Colors.blue, fontSize: 14),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 52,
+                ), // Align with content above
+                child: Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => onReply(comment),
+                      child: const Text('Reply'),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        comment.type,
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

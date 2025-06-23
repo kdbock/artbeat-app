@@ -64,18 +64,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking images: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking images: $e')));
     }
   }
 
   Future<void> _submitPost() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedImages.isEmpty) {
+    if (_contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one image')),
+        const SnackBar(content: Text('Please add some content to your post')),
       );
       return;
     }
@@ -108,41 +108,68 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (userModel == null) {
         if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User profile not found')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('User profile not found')));
         setState(() {
           _isLoading = false;
         });
         return;
       }
 
-      // Upload images to Firebase Storage
+      // Upload images to Firebase Storage (if any)
       final StorageService storageService = StorageService();
       List<String> imageUrls = [];
 
-      for (File image in _selectedImages) {
-        final fileName =
-            'post_${DateTime.now().millisecondsSinceEpoch}_${imageUrls.length}.jpg';
-        final path = 'post_images/${user.uid}/$fileName';
+      if (_selectedImages.isNotEmpty) {
+        for (int i = 0; i < _selectedImages.length; i++) {
+          File image = _selectedImages[i];
+          final fileName =
+              'post_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+          final path = 'post_images/${user.uid}/$fileName';
 
-        final url = await storageService.uploadFile(image, path);
-        if (url != null) {
-          imageUrls.add(url);
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Uploading image ${i + 1} of ${_selectedImages.length}...',
+              ),
+            ),
+          );
+
+          final url = await storageService.uploadFile(image, path);
+          if (url != null) {
+            imageUrls.add(url);
+            if (!mounted) return;
+
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Uploaded ${imageUrls.length} of ${_selectedImages.length} images',
+                ),
+              ),
+            );
+          } else {
+            if (!mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Failed to upload image ${i + 1}. Please try again.',
+                ),
+              ),
+            );
+            setState(() {
+              _isLoading = false;
+            });
+            return;
+          }
         }
       }
 
       if (!mounted) return;
-
-      if (imageUrls.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to upload images')),
-        );
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
 
       // Parse tags from the input
       final tags = _tagsController.text
@@ -155,8 +182,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       const geoPoint = GeoPoint(37.7749, -122.4194); // Example: San Francisco
 
       // Create the post using community service
-      final communityService =
-          Provider.of<CommunityService>(context, listen: false);
+      final communityService = Provider.of<CommunityService>(
+        context,
+        listen: false,
+      );
 
       if (!mounted) return;
 
@@ -178,16 +207,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       if (postId != null) {
         Navigator.pop(context, true); // Return success to previous screen
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create post')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to create post')));
       }
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating post: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error creating post: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -214,10 +243,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                       color: Colors.white,
                     ),
                   )
-                : const Text(
-                    'Post',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                : const Text('Post', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -237,10 +263,23 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 ),
                 child: _selectedImages.isEmpty
                     ? Center(
-                        child: TextButton.icon(
-                          onPressed: _pickImages,
-                          icon: const Icon(Icons.add_photo_alternate),
-                          label: const Text('Add Photos'),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextButton.icon(
+                              onPressed: _pickImages,
+                              icon: const Icon(Icons.add_photo_alternate),
+                              label: const Text('Add Photos (Optional)'),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'You can create posts with or without images',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     : ListView.builder(

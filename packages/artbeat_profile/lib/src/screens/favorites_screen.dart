@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 class FavoritesScreen extends StatefulWidget {
   final String userId;
@@ -57,12 +58,71 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorites')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _favorites.isEmpty
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Fan of',
+          style: TextStyle(
+            color: core.ArtbeatColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: IconThemeData(color: core.ArtbeatColors.textPrimary),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              core.ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
+              Colors.white,
+              core.ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: core.ArtbeatColors.primaryPurple,
+                  ),
+                )
+              : _favorites.isEmpty
               ? _buildEmptyState()
               : _buildFavoritesList(),
+        ),
+      ),
+      bottomNavigationBar: core.UniversalBottomNav(
+        currentIndex: -1, // No specific index for this screen
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/art-walk/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/community/dashboard');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/events/dashboard');
+              break;
+            case 4:
+              // Open capture as modal instead of navigation
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const CaptureScreen(),
+                  fullscreenDialog: true,
+                ),
+              );
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -71,13 +131,21 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.favorite_border, size: 80, color: Colors.grey[400]),
+          Icon(
+            Icons.front_hand,
+            size: 80,
+            color: core.ArtbeatColors.accentYellow,
+          ),
           const SizedBox(height: 16),
           Text(
             _isCurrentUser
-                ? 'You haven\'t added any favorites yet'
-                : 'This user hasn\'t added any favorites yet',
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                ? 'You haven\'t become a fan of anyone yet'
+                : 'This user isn\'t a fan of anyone yet',
+            style: TextStyle(
+              fontSize: 16,
+              color: core.ArtbeatColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
           ),
           if (_isCurrentUser) ...[
             const SizedBox(height: 24),
@@ -87,7 +155,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 Navigator.pushNamed(context, '/discover');
               },
               icon: const Icon(Icons.search),
-              label: const Text('Discover Content'),
+              label: const Text('Discover Artists'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: core.ArtbeatColors.primaryPurple,
+                foregroundColor: Colors.white,
+              ),
             ),
           ],
         ],
@@ -167,19 +239,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   IconData _getIconForType(String type) {
     switch (type.toLowerCase()) {
-      case 'word':
-        return Icons.text_fields;
-      case 'quote':
-        return Icons.format_quote;
-      case 'article':
-        return Icons.article;
-      case 'book':
-        return Icons.book;
-      case 'author':
-        return Icons.person;
-      case 'content':
+      case 'artwork':
+        return Icons.palette_outlined;
+      case 'artist':
+        return Icons.person_outlined;
+      case 'gallery':
+        return Icons.museum_outlined;
+      case 'event':
+        return Icons.event_outlined;
+      case 'walk':
+        return Icons.directions_walk_outlined;
       default:
-        return Icons.favorite;
+        return Icons.front_hand; // Fan/applause icon
     }
   }
 

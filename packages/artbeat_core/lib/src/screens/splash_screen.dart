@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../utils/user_sync_helper.dart';
+import '../theme/artbeat_colors.dart';
+import '../utils/color_extensions.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
@@ -56,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       // Check if user is logged in directly with Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
-      debugPrint('SplashScreen: currentUser = ' + (user?.uid ?? 'null'));
+      debugPrint('SplashScreen: currentUser = ${user?.uid ?? 'null'}');
 
       // If user is authenticated, ensure their Firestore document exists
       if (user != null) {
@@ -89,21 +91,38 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'packages/artbeat_core/assets/images/artbeat_splash_bg.png',
-            fit: BoxFit.cover,
+      body: Container(
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ArtbeatColors.primaryPurple.withAlphaValue(0.05),
+              Colors.white,
+              ArtbeatColors.primaryGreen.withAlphaValue(0.05),
+            ],
           ),
-          Center(
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child:
-                  SizedBox.shrink(), // Remove logo for pure background, or add logo if desired
+        ),
+        child: Center(
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Image.asset(
+              'assets/images/splashTRANS_logo.png',
+              width: 300,
+              height: 300,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback if image not found
+                return Icon(
+                  Icons.image_not_supported,
+                  size: 100,
+                  color: ArtbeatColors.primaryPurple.withAlpha(120),
+                );
+              },
             ),
           ),
-        ],
+        ),
       ),
     );
   }

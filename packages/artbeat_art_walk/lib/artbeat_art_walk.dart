@@ -6,3 +6,6 @@ export 'src/services/services.dart';
 export 'src/screens/screens.dart';
 export 'src/widgets/widgets.dart';
 export 'src/utils/utils.dart';
+
+// Export the top-level dashboard screen
+export 'screens/art_walk_dashboard_screen.dart';

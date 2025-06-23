@@ -5,6 +5,10 @@ import 'app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize configuration service to load environment variables
+  await ConfigService.instance.initialize();
+  
   await SecureFirebaseConfig.initializeFirebase();
   runApp(MyApp());
 }

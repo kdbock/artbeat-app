@@ -115,6 +115,7 @@ class PostModel {
     int? commentCount,
     int? shareCount,
     bool? isPublic,
+    bool? isUserVerified,
     List<String>? mentionedUsers,
     Map<String, dynamic>? metadata,
   }) {
@@ -134,6 +135,7 @@ class PostModel {
       commentCount: commentCount ?? this.commentCount,
       shareCount: shareCount ?? this.shareCount,
       isPublic: isPublic ?? this.isPublic,
+      isUserVerified: isUserVerified ?? this.isUserVerified,
       mentionedUsers: mentionedUsers ?? this.mentionedUsers,
       metadata: metadata ?? this.metadata,
     );

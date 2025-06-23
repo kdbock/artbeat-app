@@ -84,8 +84,8 @@ class EventService {
       final snapshot = await _firestore
           .collection('events')
           .where(Filter.or(
-            Filter('organizerId', isEqualTo: userId),
-            Filter('participantIds', arrayContains: userId),
+            Filter('artistId', isEqualTo: userId),
+            Filter('attendeeIds', arrayContains: userId),
           ))
           .where('startDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
           .orderBy('startDate')

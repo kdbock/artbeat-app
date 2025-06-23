@@ -115,7 +115,7 @@ class MyApp extends StatelessWidget {
             // Community routes
             case '/community/feed':
               return MaterialPageRoute(
-                builder: (_) => const CommunityFeedScreen(),
+                builder: (_) => const UnifiedCommunityFeed(),
               );
             case '/community/dashboard':
               return MaterialPageRoute(

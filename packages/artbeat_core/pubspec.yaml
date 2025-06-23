@@ -48,6 +48,7 @@ dependencies:
   # Location services
   geolocator: ^14.0.1
   geocoding: ^4.0.0
+  google_maps_flutter: ^2.5.3
 
   # State management
   provider: ^6.1.1

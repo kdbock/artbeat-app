@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -151,10 +153,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               const SizedBox(height: 16),
               Text(
                 'Earned on ${_formatDate(achievement.earnedAt)}',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -238,11 +237,24 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Achievements'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Achievements',
+          style: TextStyle(
+            color: ArtbeatColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          labelColor: ArtbeatColors.primaryPurple,
+          unselectedLabelColor: ArtbeatColors.textSecondary,
+          indicatorColor: ArtbeatColors.primaryPurple,
           tabs: const [
             Tab(text: 'All'),
             Tab(text: 'Art Walks'),
@@ -251,32 +263,82 @@ class _AchievementsScreenState extends State<AchievementsScreen>
           ],
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadAchievements,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // All achievements
-                  _buildAchievementsTab(_achievements),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
+              Colors.white,
+              ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                )
+              : RefreshIndicator(
+                  color: ArtbeatColors.primaryPurple,
+                  onRefresh: _loadAchievements,
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // All achievements
+                      _buildAchievementsTab(_achievements),
 
-                  // Art Walks tab
-                  _buildAchievementsTab(
-                      _categorizedAchievements['Art Walks'] ?? []),
+                      // Art Walks tab
+                      _buildAchievementsTab(
+                        _categorizedAchievements['Art Walks'] ?? [],
+                      ),
 
-                  // Art Discovery tab
-                  _buildAchievementsTab(
-                      _categorizedAchievements['Art Discovery'] ?? []),
+                      // Art Discovery tab
+                      _buildAchievementsTab(
+                        _categorizedAchievements['Art Discovery'] ?? [],
+                      ),
 
-                  // Social tab
-                  _buildAchievementsTab([
-                    ...(_categorizedAchievements['Social'] ?? []),
-                    ...(_categorizedAchievements['Contributions'] ?? [])
-                  ]),
-                ],
-              ),
-            ),
+                      // Social tab
+                      _buildAchievementsTab([
+                        ...(_categorizedAchievements['Social'] ?? []),
+                        ...(_categorizedAchievements['Contributions'] ?? []),
+                      ]),
+                    ],
+                  ),
+                ),
+        ),
+      ),
+      bottomNavigationBar: UniversalBottomNav(
+        currentIndex: -1, // No specific index for this screen
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/art-walk/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/community/dashboard');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/events/dashboard');
+              break;
+            case 4:
+              // Open capture as modal instead of navigation
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const CaptureScreen(),
+                  fullscreenDialog: true,
+                ),
+              );
+              break;
+          }
+        },
+      ),
     );
   }
 
@@ -300,10 +362,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                 children: [
                   const Text(
                     'Achievement Progress',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -386,16 +445,15 @@ class _AchievementsScreenState extends State<AchievementsScreen>
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          name,
-          style: const TextStyle(fontSize: 12),
-        ),
+        Text(name, style: const TextStyle(fontSize: 12)),
       ],
     );
   }
 
   int _countAchievementsByTier(
-      List<AchievementModel> achievements, String tier) {
+    List<AchievementModel> achievements,
+    String tier,
+  ) {
     Set<AchievementType> tierAchievements;
 
     switch (tier) {

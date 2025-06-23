@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/event_model.dart';
 import '../widgets/main_layout.dart';
+import '../theme/artbeat_colors.dart';
 
 class EventsDashboardScreen extends StatefulWidget {
   const EventsDashboardScreen({super.key});
@@ -30,35 +31,61 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 3, // Events index
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Events'),
-          elevation: 0,
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Upcoming', icon: Icon(Icons.schedule)),
-              Tab(text: 'My Events', icon: Icon(Icons.person)),
-              Tab(text: 'Calendar', icon: Icon(Icons.calendar_month)),
-            ],
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [ArtbeatColors.primaryPurple, ArtbeatColors.primaryGreen],
           ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildUpcomingEvents(),
-            _buildMyEvents(),
-            _buildCalendarView(),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO: Navigate to create event screen
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Create Event - Coming Soon')),
-            );
-          },
-          child: const Icon(Icons.add),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: const Text(
+              'Events',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: ArtbeatColors.accentYellow,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              tabs: const [
+                Tab(text: 'Upcoming', icon: Icon(Icons.schedule)),
+                Tab(text: 'My Events', icon: Icon(Icons.person)),
+                Tab(text: 'Calendar', icon: Icon(Icons.calendar_month)),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildUpcomingEvents(),
+              _buildMyEvents(),
+              _buildCalendarView(),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              // TODO: Navigate to create event screen
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Create Event - Coming Soon'),
+                  backgroundColor: ArtbeatColors.primaryPurple,
+                ),
+              );
+            },
+            backgroundColor: ArtbeatColors.accentYellow,
+            child: const Icon(Icons.add, color: Colors.black),
+          ),
         ),
       ),
     );
@@ -69,7 +96,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen>
       stream: FirebaseFirestore.instance
           .collection('events')
           .where('isPublic', isEqualTo: true)
-          .where('startDate', isGreaterThan: DateTime.now())
+          .where('startDate', isGreaterThan: Timestamp.fromDate(DateTime.now()))
           .orderBy('startDate')
           .limit(20)
           .snapshots(),

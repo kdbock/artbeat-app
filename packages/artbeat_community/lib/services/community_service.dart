@@ -28,8 +28,10 @@ class CommunityService extends ChangeNotifier {
 
       if (lastPostId != null) {
         // Get the last document for pagination
-        DocumentSnapshot lastDocSnapshot =
-            await _firestore.collection('posts').doc(lastPostId).get();
+        DocumentSnapshot lastDocSnapshot = await _firestore
+            .collection('posts')
+            .doc(lastPostId)
+            .get();
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
@@ -45,8 +47,11 @@ class CommunityService extends ChangeNotifier {
   }
 
   // Get posts by user ID
-  Future<List<PostModel>> getPostsByUserId(String userId,
-      {int limit = 10, String? lastPostId}) async {
+  Future<List<PostModel>> getPostsByUserId(
+    String userId, {
+    int limit = 10,
+    String? lastPostId,
+  }) async {
     try {
       Query query = _firestore
           .collection('posts')
@@ -55,8 +60,10 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastPostId != null) {
-        DocumentSnapshot lastDocSnapshot =
-            await _firestore.collection('posts').doc(lastPostId).get();
+        DocumentSnapshot lastDocSnapshot = await _firestore
+            .collection('posts')
+            .doc(lastPostId)
+            .get();
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
@@ -98,7 +105,7 @@ class CommunityService extends ChangeNotifier {
         'geoPoint': geoPoint,
         'zipCode': zipCode,
         'createdAt': FieldValue.serverTimestamp(),
-        'likeCount': 0,
+        'applauseCount': 0,
         'commentCount': 0,
         'shareCount': 0,
         'isPublic': isPublic,
@@ -140,14 +147,13 @@ class CommunityService extends ChangeNotifier {
           .doc(postId)
           .collection('comments')
           .add({
-        'userId': userId,
-        'userName': userName,
-        'userPhotoUrl': userPhotoUrl,
-        'content': content,
-        'createdAt': FieldValue.serverTimestamp(),
-        'parentCommentId': parentCommentId,
-        'likeCount': 0,
-      });
+            'userId': userId,
+            'userName': userName,
+            'userPhotoUrl': userPhotoUrl,
+            'content': content,
+            'createdAt': FieldValue.serverTimestamp(),
+            'parentCommentId': parentCommentId,
+          });
 
       // Update the comment count on the post
       await _firestore.collection('posts').doc(postId).update({
@@ -162,8 +168,11 @@ class CommunityService extends ChangeNotifier {
   }
 
   // Get comments for a post
-  Future<List<CommentModel>> getComments(String postId,
-      {int limit = 50, String? lastCommentId}) async {
+  Future<List<CommentModel>> getComments(
+    String postId, {
+    int limit = 50,
+    String? lastCommentId,
+  }) async {
     try {
       Query query = _firestore
           .collection('posts')
@@ -195,8 +204,12 @@ class CommunityService extends ChangeNotifier {
   }
 
   // Get replies to a comment
-  Future<List<CommentModel>> getReplies(String postId, String commentId,
-      {int limit = 50, String? lastReplyId}) async {
+  Future<List<CommentModel>> getReplies(
+    String postId,
+    String commentId, {
+    int limit = 50,
+    String? lastReplyId,
+  }) async {
     try {
       Query query = _firestore
           .collection('posts')

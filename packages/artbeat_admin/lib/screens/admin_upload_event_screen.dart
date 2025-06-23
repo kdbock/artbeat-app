@@ -34,12 +34,24 @@ class _AdminUploadEventScreenState extends State<AdminUploadEventScreen> {
       _isLoading = true;
     });
     try {
-      await _firestore.collection('event').add({
+      // Parse and validate the date
+      DateTime startDate;
+      try {
+        startDate = DateTime.parse(_dateController.text.trim());
+      } catch (e) {
+        throw Exception('Invalid date format. Please use YYYY-MM-DD format.');
+      }
+
+      await _firestore.collection('events').add({
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.trim(),
         'location': _locationController.text.trim(),
-        'date': _dateController.text.trim(),
+        'startDate': Timestamp.fromDate(startDate),
+        'artistId': 'admin', // Admin-created event
+        'isPublic': true,
+        'attendeeIds': <String>[],
         'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
         'adminUpload': true,
       });
       if (mounted) {

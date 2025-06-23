@@ -127,15 +127,9 @@ class CommunityModuleHome extends StatelessWidget {
             _buildSectionCard(context, [
               _buildNavButton(
                 context,
-                'Community Feed',
-                const CommunityFeedScreen(),
+                'Unified Community Feed',
+                const UnifiedCommunityFeed(),
                 Icons.view_stream,
-              ),
-              _buildNavButton(
-                context,
-                'Social Feed',
-                const SocialFeedScreen(),
-                Icons.people,
               ),
               _buildNavButton(
                 context,

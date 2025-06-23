@@ -44,6 +44,7 @@ export 'src/widgets/featured_content_row_widget.dart';
 export 'src/widgets/network_error_widget.dart';
 export 'src/widgets/main_layout.dart';
 export 'src/widgets/universal_bottom_nav.dart';
+export 'src/widgets/universal_header.dart';
 
 // Export Core Widget Utils
 export 'src/widgets/filter/index.dart';
@@ -59,3 +60,6 @@ export 'src/utils/user_sync_helper.dart';
 export 'src/screens/splash_screen.dart' show SplashScreen;
 export 'src/screens/dashboard_screen.dart' show DashboardScreen;
 export 'src/screens/events_dashboard_screen.dart' show EventsDashboardScreen;
+
+// Export Widgets
+export 'src/widgets/universal_bottom_nav.dart' show UniversalBottomNav;

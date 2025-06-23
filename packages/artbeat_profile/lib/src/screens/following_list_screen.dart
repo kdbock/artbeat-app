@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 class FollowingListScreen extends StatefulWidget {
   final String userId;
@@ -90,73 +92,182 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('Following ${_isLoading ? '' : '(${_following.length})'}'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Following ${_isLoading ? '' : '(${_following.length})'}',
+          style: TextStyle(
+            color: ArtbeatColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _following.isEmpty
-          ? const Center(
-              child: Text(
-                'Not following anyone yet',
-                style: TextStyle(fontSize: 16),
-              ),
-            )
-          : ListView.builder(
-              itemCount: _following.length,
-              itemBuilder: (context, index) {
-                final followedUser = _following[index];
-                final isCurrentUser =
-                    (followedUser['id'] as String) == _currentUser?.uid;
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
+              Colors.white,
+              ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                )
+              : _following.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 80,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Not following anyone yet',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _following.length,
+                  itemBuilder: (context, index) {
+                    final followedUser = _following[index];
+                    final isCurrentUser =
+                        (followedUser['id'] as String) == _currentUser?.uid;
 
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage:
-                        (followedUser['profileImageUrl'] as String).isNotEmpty
-                        ? NetworkImage(
-                            followedUser['profileImageUrl'] as String,
-                          )
-                        : const AssetImage('assets/default_profile.png'),
-                    child: (followedUser['profileImageUrl'] as String).isEmpty
-                        ? const Icon(Icons.person, color: Colors.grey)
-                        : null,
-                  ),
-                  title: Text(
-                    followedUser['username'] as String,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(followedUser['name'] as String),
-                  trailing: isCurrentUser
-                      ? null
-                      : TextButton(
-                          onPressed: () => _unfollow(index),
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.grey.shade200,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            minimumSize: const Size(80, 30),
-                          ),
-                          child: const Text(
-                            'Following',
-                            style: TextStyle(color: Colors.black),
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      color: Colors.white.withAlpha(230),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: ArtbeatColors.border.withAlpha(128),
+                        ),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          radius: 25,
+                          backgroundColor: ArtbeatColors.primaryPurple,
+                          backgroundImage:
+                              (followedUser['profileImageUrl'] as String)
+                                  .isNotEmpty
+                              ? NetworkImage(
+                                  followedUser['profileImageUrl'] as String,
+                                )
+                              : null,
+                          child:
+                              (followedUser['profileImageUrl'] as String)
+                                  .isEmpty
+                              ? Text(
+                                  (followedUser['name'] as String).isNotEmpty
+                                      ? (followedUser['name'] as String)[0]
+                                            .toUpperCase()
+                                      : '?',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        title: Text(
+                          followedUser['username'] as String,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: ArtbeatColors.textPrimary,
                           ),
                         ),
-                  onTap: () {
-                    // Navigate to the followed user's profile
-                    Navigator.pushNamed(
-                      context,
-                      '/profile/view',
-                      arguments: {
-                        'userId': followedUser['id'],
-                        'isCurrentUser': isCurrentUser,
-                      },
+                        subtitle: Text(
+                          followedUser['name'] as String,
+                          style: TextStyle(color: ArtbeatColors.textSecondary),
+                        ),
+                        trailing: isCurrentUser
+                            ? null
+                            : TextButton(
+                                onPressed: () => _unfollow(index),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: ArtbeatColors.primaryPurple
+                                      .withAlpha(25),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: BorderSide(
+                                      color: ArtbeatColors.primaryPurple
+                                          .withAlpha(77),
+                                    ),
+                                  ),
+                                  minimumSize: const Size(80, 32),
+                                ),
+                                child: Text(
+                                  'Following',
+                                  style: TextStyle(
+                                    color: ArtbeatColors.primaryPurple,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                        onTap: () {
+                          // Navigate to the followed user's profile
+                          Navigator.pushNamed(
+                            context,
+                            '/profile/view',
+                            arguments: {
+                              'userId': followedUser['id'],
+                              'isCurrentUser': isCurrentUser,
+                            },
+                          );
+                        },
+                      ),
                     );
                   },
-                );
-              },
-            ),
+                ),
+        ),
+      ),
+      bottomNavigationBar: UniversalBottomNav(
+        currentIndex: -1, // No specific index for this screen
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/art-walk/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/community/dashboard');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/events/dashboard');
+              break;
+            case 4:
+              // Open capture as modal instead of navigation
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const CaptureScreen(),
+                  fullscreenDialog: true,
+                ),
+              );
+              break;
+          }
+        },
+      ),
     );
   }
 }

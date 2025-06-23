@@ -63,6 +63,13 @@ service firebase.storage {
       allow delete: if isAuthenticated();
     }
     
+    // Post images for community feed
+    match /post_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+    
     // Profile images
     match /profile_images/{userId}/{fileName} {
       allow read: if isAuthenticated();

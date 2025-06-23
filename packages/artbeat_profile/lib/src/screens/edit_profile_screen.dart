@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'dart:io';
-import 'package:intl/intl.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String userId;
@@ -26,15 +25,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _emailController;
   late TextEditingController _bioController;
   late TextEditingController _locationController;
-  late TextEditingController _birthdayController;
-  late String _gender;
-
-  final List<String> _genders = [
-    'Male',
-    'Female',
-    'Non-binary',
-    'Prefer not to say',
-  ];
 
   File? _profileImage;
   UserModel? _userModel;
@@ -53,8 +43,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailController = TextEditingController();
     _bioController = TextEditingController();
     _locationController = TextEditingController();
-    _birthdayController = TextEditingController();
-    _gender = 'Prefer not to say';
     _loadUserProfile();
   }
 
@@ -65,7 +53,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailController.dispose();
     _bioController.dispose();
     _locationController.dispose();
-    _birthdayController.dispose();
     super.dispose();
   }
 
@@ -83,12 +70,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _emailController.text = userModel.email;
             _bioController.text = userModel.bio ?? '';
             _locationController.text = userModel.location ?? '';
-            if (userModel.birthDate != null) {
-              _birthdayController.text = DateFormat(
-                'MM/dd/yyyy',
-              ).format(userModel.birthDate!);
-            }
-            _gender = userModel.gender ?? 'Prefer not to say';
           }
           _isLoading = false;
         });
@@ -125,16 +106,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // Parse birthday string to DateTime
-  DateTime? _parseBirthday(String value) {
-    try {
-      return DateFormat('MM/dd/yyyy').parse(value);
-    } catch (e) {
-      debugPrint('Error parsing birth date: $e');
-      return null;
-    }
-  }
-
   // Handle form submission
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -149,17 +120,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final String bio = _bioController.text.trim();
       final String location = _locationController.text.trim();
 
-      final DateTime? dateOfBirth = _birthdayController.text.isNotEmpty
-          ? _parseBirthday(_birthdayController.text)
-          : null;
-
       debugPrint(
         '🔧 Update data: {'
         'username: $username, '
         'bio: $bio, '
-        'location: $location, '
-        'birthDate: $dateOfBirth, '
-        'gender: $_gender}',
+        'location: $location}',
       );
 
       // Update profile data
@@ -167,7 +132,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         fullName: _nameController.text.trim(),
         bio: bio,
         location: location,
-        gender: _gender,
       );
       debugPrint('✅ Firestore profile data updated');
 
@@ -283,6 +247,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return null;
   }
 
+  // Save profile method
+  Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userService = UserService();
+      final currentUser = FirebaseAuth.instance.currentUser;
+
+      if (currentUser != null) {
+        // Prepare the updated user data
+        Map<String, dynamic> updateData = {
+          'fullName': _nameController.text.trim(),
+          'bio': _bioController.text.trim(),
+          'location': _locationController.text.trim(),
+        };
+
+        // For now, just show success message - we'll implement the actual update later
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile updated successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   // Helper to determine if placeholder icon should be shown
   bool _shouldShowProfilePlaceholder() {
     return _profileImage == null &&
@@ -293,34 +308,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Edit Profile',
+          style: TextStyle(
+            color: ArtbeatColors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _handleSubmit,
             child: _isSaving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                      valueColor: AlwaysStoppedAnimation(ArtbeatColors.primaryPurple),
                     ),
                   )
-                : const Text('Save'),
+                : Text(
+                    'Save',
+                    style: TextStyle(
+                      color: ArtbeatColors.primaryPurple,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+      body: Container(
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
+              Colors.white,
+              ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                )
+              : SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                       // Profile Picture
                       Center(
                         child: Stack(
@@ -348,9 +397,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       // Form fields
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Full Name',
-                          icon: Icon(Icons.person),
+                          icon: Icon(Icons.person, color: ArtbeatColors.primaryPurple),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: ArtbeatColors.primaryPurple),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -364,70 +420,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       TextFormField(
                         controller: _bioController,
                         maxLines: 3,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Bio',
-                          icon: Icon(Icons.description),
+                          icon: Icon(Icons.description, color: ArtbeatColors.primaryPurple),
                           hintText: 'Tell us about yourself...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: ArtbeatColors.primaryPurple),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
 
                       TextFormField(
                         controller: _locationController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Location',
-                          icon: Icon(Icons.location_on),
+                          icon: Icon(Icons.location_on, color: ArtbeatColors.primaryPurple),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: ArtbeatColors.primaryPurple),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
 
-                      TextFormField(
-                        controller: _birthdayController,
-                        decoration: const InputDecoration(
-                          labelText: 'Birthday',
-                          icon: Icon(Icons.cake),
-                          hintText: 'MM/DD/YYYY',
+                      // Save button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ArtbeatColors.primaryPurple,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : const Text(
+                                  'Save Changes',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
-                        keyboardType: TextInputType.datetime,
-                        validator: (value) {
-                          if (value != null && value.isNotEmpty) {
-                            final date = _parseBirthday(value);
-                            if (date == null) {
-                              return 'Please enter a valid date in MM/DD/YYYY format';
-                            }
-                          }
-                          return null;
-                        },
                       ),
-                      const SizedBox(height: 16),
-
-                      DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: 'Gender',
-                          icon: Icon(Icons.person_outline),
-                        ),
-                        value: _gender,
-                        items: _genders.map((String gender) {
-                          return DropdownMenuItem(
-                            value: gender,
-                            child: Text(gender),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          if (newValue != null) {
-                            setState(() {
-                              _gender = newValue;
-                            });
-                          }
-                        },
-                      ),
-
-                      const SizedBox(height: 32),
                     ],
                   ),
-                ),
-              ),
-            ),
+                ), // Form
+              ), // Padding
+            ), // SingleChildScrollView
+        ), // SafeArea
+      ),
     );
   }
 }

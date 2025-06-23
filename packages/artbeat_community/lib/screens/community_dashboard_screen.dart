@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
-import 'feed/community_feed_screen.dart';
+import 'feed/unified_community_feed.dart';
 import 'feed/trending_content_screen.dart';
 import 'portfolios/portfolios_screen.dart';
 import 'studios/studios_screen.dart';
@@ -49,7 +49,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
         body: TabBarView(
           controller: _tabController,
           children: [
-            const CommunityFeedScreen(),
+            const UnifiedCommunityFeed(),
             const TrendingContentScreen(),
             const PortfoliosScreen(),
             const StudiosScreen(),

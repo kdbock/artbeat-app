@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../theme/index.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// A circular avatar widget for displaying artist profile images
 class ArtistAvatar extends StatelessWidget {
@@ -23,63 +22,68 @@ class ArtistAvatar extends StatelessWidget {
     super.key,
     this.imageUrl,
     required this.displayName,
-    this.radius = CommunitySpacing.avatarSizeMedium / 2,
+    this.radius = 20.0,
     this.isVerified = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final typography = CommunityTypography(Theme.of(context));
+    final theme = Theme.of(context);
+    
+    debugPrint('ArtistAvatar build - displayName: "$displayName", imageUrl: "$imageUrl"');
 
     return GestureDetector(
       onTap: onTap,
       child: Stack(
         children: [
-          CircleAvatar(
-            radius: radius,
-            backgroundColor: Theme.of(context).colorScheme.surface,
+          Container(
+            width: radius * 2,
+            height: radius * 2,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: ArtbeatColors.backgroundSecondary,
+            ),
             child: ClipOval(
-              child: imageUrl != null && imageUrl!.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl!,
+              child: (imageUrl != null && imageUrl!.isNotEmpty)
+                  ? Image.network(
+                      imageUrl!,
                       width: radius * 2,
                       height: radius * 2,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: radius * 2,
-                        height: radius * 2,
-                        color: Theme.of(context).colorScheme.surface,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: radius * 2,
-                        height: radius * 2,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.error.withValues(alpha: 25),
-                        child: Center(
-                          child: Text(
-                            displayName[0].toUpperCase(),
-                            style: typography.commentAuthor.copyWith(
-                              fontSize: radius * 0.8,
-                              color: Colors.white,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          debugPrint('ArtistAvatar - Image loaded successfully: $imageUrl');
+                          return child;
+                        }
+                        debugPrint('ArtistAvatar - Loading image: $imageUrl');
+                        return Container(
+                          width: radius * 2,
+                          height: radius * 2,
+                          color: ArtbeatColors.backgroundSecondary,
+                          child: Center(
+                            child: SizedBox(
+                              width: radius * 0.5,
+                              height: radius * 0.5,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  ArtbeatColors.primaryPurple,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint('ArtistAvatar - Image load error for $imageUrl: $error');
+                        return _buildFallbackAvatar(theme);
+                      },
                     )
-                  : Center(
-                      child: Text(
-                        displayName[0].toUpperCase(),
-                        style: typography.commentAuthor.copyWith(
-                          fontSize: radius * 0.8,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                  : ((){
+                      debugPrint('ArtistAvatar - No imageUrl provided, showing fallback');
+                      return _buildFallbackAvatar(theme);
+                    })(),
             ),
           ),
           if (isVerified)
@@ -88,19 +92,40 @@ class ArtistAvatar extends StatelessWidget {
               bottom: 0,
               child: Container(
                 decoration: BoxDecoration(
-                  color: CommunityColors.verified,
+                  color: ArtbeatColors.success,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
                 ),
                 padding: const EdgeInsets.all(2),
                 child: Icon(
                   Icons.check,
-                  size: radius * 0.7,
+                  size: radius * 0.6,
                   color: Colors.white,
                 ),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFallbackAvatar(ThemeData theme) {
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        color: ArtbeatColors.primaryPurple,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontSize: radius * 0.8,
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
