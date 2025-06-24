@@ -2,7 +2,7 @@ name: artbeat
 description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
 publish_to: 'none'
 
-version: 1.0.2+4
+version: 1.0.3+5
 
 environment:
   sdk: '^3.8.0'
@@ -61,6 +61,8 @@ dependencies:
   geocoding: ^4.0.0
   camera: ^0.11.1
   device_info_plus: ^11.5.0
+  package_info_plus: ^8.2.0
+  image_picker: ^1.0.0
 
 flutter:
   uses-material-design: true

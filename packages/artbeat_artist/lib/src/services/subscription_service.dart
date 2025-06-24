@@ -15,7 +15,12 @@ class SubscriptionService {
   Future<SubscriptionModel?> getUserSubscription() async {
     try {
       final userId = _auth.currentUser?.uid;
-      if (userId == null) return null;
+      if (userId == null) {
+        debugPrint('❌ getUserSubscription: No authenticated user');
+        return null;
+      }
+
+      debugPrint('🔍 getUserSubscription: Querying for userId: $userId');
 
       final snapshot = await _firestore
           .collection('subscriptions')
@@ -24,9 +29,19 @@ class SubscriptionService {
           .limit(1)
           .get();
 
-      if (snapshot.docs.isEmpty) return null;
+      debugPrint(
+          '📊 getUserSubscription: Found ${snapshot.docs.length} subscriptions');
 
-      return SubscriptionModel.fromFirestore(snapshot.docs.first);
+      if (snapshot.docs.isEmpty) {
+        debugPrint(
+            'ℹ️ getUserSubscription: No active subscription found for user $userId');
+        return null;
+      }
+
+      final subscription = SubscriptionModel.fromFirestore(snapshot.docs.first);
+      debugPrint(
+          '✅ getUserSubscription: Found subscription: ${subscription.tier}');
+      return subscription;
     } catch (e) {
       debugPrint('Error getting user subscription: $e');
       return null;
@@ -233,16 +248,29 @@ class SubscriptionService {
   /// Get artist profile by user ID
   Future<ArtistProfileModel?> getArtistProfileByUserId(String userId) async {
     try {
+      debugPrint('🔍 getArtistProfileByUserId: Querying for userId: $userId');
+
       final query = await _firestore
           .collection('artistProfiles')
           .where('userId', isEqualTo: userId)
           .limit(1)
           .get();
 
-      if (query.docs.isEmpty) return null;
-      return ArtistProfileModel.fromFirestore(query.docs.first);
+      debugPrint(
+          '📊 getArtistProfileByUserId: Found ${query.docs.length} documents');
+
+      if (query.docs.isEmpty) {
+        debugPrint(
+            '❌ getArtistProfileByUserId: No artist profile found for user $userId');
+        return null;
+      }
+
+      final profile = ArtistProfileModel.fromFirestore(query.docs.first);
+      debugPrint(
+          '✅ getArtistProfileByUserId: Successfully loaded profile for ${profile.displayName}');
+      return profile;
     } catch (e) {
-      debugPrint('Error getting artist profile: $e');
+      debugPrint('❌ Error getting artist profile: $e');
       return null;
     }
   }

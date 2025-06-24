@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 import 'package:artbeat_core/artbeat_core.dart';
@@ -29,12 +30,15 @@ class ArtWalkCacheService {
   /// Log cache operation with connectivity status
   void _logCacheOperation(String operation, {bool isOnline = true}) {
     debugPrint(
-        '${isOnline ? '🌐' : '📱'} ArtWalkCache: $operation ${isOnline ? '(online)' : '(offline)'}');
+      '${isOnline ? '🌐' : '📱'} ArtWalkCache: $operation ${isOnline ? '(online)' : '(offline)'}',
+    );
   }
 
   /// Cache an art walk and its associated art pieces
   Future<bool> cacheArtWalk(
-      ArtWalkModel artWalk, List<PublicArtModel> artPieces) async {
+    ArtWalkModel artWalk,
+    List<PublicArtModel> artPieces,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
@@ -52,7 +56,9 @@ class ArtWalkCacheService {
 
       // Update last cache time
       await prefs.setString(
-          _lastCacheTimeKey, DateTime.now().toIso8601String());
+        _lastCacheTimeKey,
+        DateTime.now().toIso8601String(),
+      );
 
       return true;
     } catch (e) {
@@ -121,8 +127,10 @@ class ArtWalkCacheService {
       final cachedWalks = _getCachedArtWalks(prefs);
       final isDeviceOnline = await isOnline();
 
-      _logCacheOperation('Retrieving all cached art walks',
-          isOnline: isDeviceOnline);
+      _logCacheOperation(
+        'Retrieving all cached art walks',
+        isOnline: isDeviceOnline,
+      );
 
       return cachedWalks.entries
           .map((entry) {
@@ -231,12 +239,14 @@ class ArtWalkCacheService {
         title: data['title'] as String,
         description: data['description'] as String,
         publicArtIds: List<String>.from(
-            (data['publicArtIds'] as List<dynamic>?) ?? []), // Changed from artIds
+          (data['publicArtIds'] as List<dynamic>?) ?? [],
+        ), // Changed from artIds
         isPublic: (data['isPublic'] as bool?) ?? true,
         viewCount: (data['viewCount'] as int?) ?? 0,
         createdAt: createdAtFromMillis(data['createdAt'] as int?),
         imageUrls: List<String>.from(
-            (data['imageUrls'] as List<dynamic>?) ?? []), // Added from current model
+          (data['imageUrls'] as List<dynamic>?) ?? [],
+        ), // Added from current model
         zipCode: data['zipCode'] as String?, // Added from current model
         // Fields below are from an older model version and removed as they are not in the current ArtWalkModel
         // 'routePolyline': data['routePolyline'],
@@ -291,18 +301,22 @@ class ArtWalkCacheService {
         description: data['description'] as String,
         imageUrl: data['imageUrl'] as String,
         artistName: data['artistName'] as String?,
-        location: geoPointFromLatLng((data['latitude'] as num).toDouble(),
-            (data['longitude'] as num).toDouble()),
+        location: geoPointFromLatLng(
+          (data['latitude'] as num).toDouble(),
+          (data['longitude'] as num).toDouble(),
+        ),
         address: data['address'] as String?,
         tags: List<String>.from((data['tags'] as List<dynamic>?) ?? []),
         artType: data['artType'] as String?,
         isVerified: (data['isVerified'] as bool?) ?? false,
         viewCount: (data['viewCount'] as int?) ?? 0,
         likeCount: (data['likeCount'] as int?) ?? 0,
-        usersFavorited:
-            List<String>.from((data['usersFavorited'] as List<dynamic>?) ?? []),
-        createdAt:
-            Timestamp.fromMillisecondsSinceEpoch(data['createdAt'] as int),
+        usersFavorited: List<String>.from(
+          (data['usersFavorited'] as List<dynamic>?) ?? [],
+        ),
+        createdAt: Timestamp.fromMillisecondsSinceEpoch(
+          data['createdAt'] as int,
+        ),
         updatedAt: data['updatedAt'] != null
             ? Timestamp.fromMillisecondsSinceEpoch(data['updatedAt'] as int)
             : null,
@@ -338,10 +352,13 @@ class ArtWalkCacheService {
   /// Get ZIP code from coordinates
   /// Uses a cached lookup or geocoding service fallback
   Future<String> getZipCodeFromCoordinates(
-      double latitude, double longitude) async {
+    double latitude,
+    double longitude,
+  ) async {
     try {
       debugPrint(
-          '📍 [DEBUG] getZipCodeFromCoordinates called with: lat=$latitude, lng=$longitude');
+        '📍 [DEBUG] getZipCodeFromCoordinates called with: lat=$latitude, lng=$longitude',
+      );
       // Try to get from shared preferences cache
       final prefs = await SharedPreferences.getInstance();
       final cacheKey =
@@ -362,18 +379,19 @@ class ArtWalkCacheService {
 
       // If online, attempt to use the geocoding plugin
       try {
-        // TODO: Replace with real geocoding call
-        debugPrint('📍 [DEBUG] Would call geocoding API here');
-        // final placemarks = await geocoding.placemarkFromCoordinates(latitude, longitude);
-        // debugPrint('📍 [DEBUG] Geocoding result: \\${placemarks}');
-        // if (placemarks.isNotEmpty && placemarks.first.postalCode?.isNotEmpty == true) {
-        //   final zip = placemarks.first.postalCode!;
-        //   await prefs.setString(cacheKey, zip);
-        //   debugPrint('📍 [DEBUG] Got ZIP from geocoding: $zip');
-        //   return zip;
-        // }
+        // Import the geocoding plugin and implement real geocoding
+        final placemarks = await placemarkFromCoordinates(latitude, longitude);
+        debugPrint('📍 [DEBUG] Geocoding result: $placemarks');
+        if (placemarks.isNotEmpty &&
+            placemarks.first.postalCode?.isNotEmpty == true) {
+          final zip = placemarks.first.postalCode!;
+          await prefs.setString(cacheKey, zip);
+          debugPrint('📍 [DEBUG] Got ZIP from geocoding: $zip');
+          return zip;
+        }
         debugPrint(
-            '📍 [DEBUG] Geocoding returned no ZIP, returning empty string');
+          '📍 [DEBUG] Geocoding returned no ZIP, returning empty string',
+        );
         return '';
       } catch (e) {
         debugPrint('❌ [DEBUG] Error with geocoding service: $e');
@@ -392,8 +410,10 @@ class ArtWalkCacheService {
       final cachedArt = _getCachedPublicArt(prefs);
       final isDeviceOnline = await isOnline();
 
-      _logCacheOperation('Retrieving all cached public art',
-          isOnline: isDeviceOnline);
+      _logCacheOperation(
+        'Retrieving all cached public art',
+        isOnline: isDeviceOnline,
+      );
 
       return cachedArt.entries
           .map((entry) {

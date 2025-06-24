@@ -121,9 +121,18 @@ class _ProfilePictureViewerScreenState
                           );
                         },
                       )
-                      : Image.asset(
-                        'assets/default_profile.png',
-                        fit: BoxFit.contain,
+                      : Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 100,
+                          color: Colors.grey,
+                        ),
                       ),
             ),
           ),

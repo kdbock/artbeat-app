@@ -8,6 +8,7 @@ import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_artist/artbeat_artist.dart';
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_settings/artbeat_settings.dart';
 import 'widgets/developer_menu.dart';
 
@@ -37,6 +38,11 @@ class MyApp extends StatelessWidget {
         Provider<AuthService>(create: (_) => AuthService(), lazy: false),
         ChangeNotifierProvider<messaging.ChatService>(
           create: (_) => messaging.ChatService(),
+          lazy: false,
+        ),
+        // Community providers
+        ChangeNotifierProvider<CommunityService>(
+          create: (_) => CommunityService(),
           lazy: false,
         ),
       ],
@@ -131,6 +137,10 @@ class MyApp extends StatelessWidget {
               return MaterialPageRoute(
                 builder: (_) => const ArtWalkDashboardScreen(),
               );
+            case '/art-walk/create':
+              return MaterialPageRoute(
+                builder: (_) => const CreateArtWalkScreen(),
+              );
 
             // Artist routes
             case '/artist/dashboard':
@@ -144,7 +154,7 @@ class MyApp extends StatelessWidget {
             case '/artist/profile/public':
               return MaterialPageRoute(
                 builder: (_) => ArtistPublicProfileScreen(
-                  artistProfileId: core.UserService().currentUser?.uid ?? '',
+                  userId: core.UserService().currentUser?.uid ?? '',
                 ),
               );
             case '/artist/analytics':
@@ -154,6 +164,14 @@ class MyApp extends StatelessWidget {
             case '/artist/approved-ads':
               return MaterialPageRoute(
                 builder: (_) => const ArtistApprovedAdsScreen(),
+              );
+            case '/artist/artwork':
+              return MaterialPageRoute(
+                builder: (_) => const artwork.ArtworkBrowseScreen(),
+              );
+            case '/artist/artwork/upload':
+              return MaterialPageRoute(
+                builder: (_) => const artwork.ArtworkUploadScreen(),
               );
 
             // Gallery routes
@@ -182,6 +200,17 @@ class MyApp extends StatelessWidget {
             case '/settings/security':
               return MaterialPageRoute(
                 builder: (_) => const SecuritySettingsScreen(),
+              );
+            case '/support':
+              return MaterialPageRoute(
+                builder: (_) => Scaffold(
+                  appBar: AppBar(title: const Text('Help & Support')),
+                  body: const Center(child: Text('Support page coming soon')),
+                ),
+              );
+            case '/feedback':
+              return MaterialPageRoute(
+                builder: (_) => const core.FeedbackForm(),
               );
 
             // Dashboard route

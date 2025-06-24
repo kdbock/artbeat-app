@@ -21,6 +21,7 @@ export 'src/services/artist_service.dart' show ArtistService;
 export 'src/services/payment_service.dart' show PaymentService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
+export 'src/services/feedback_service.dart' show FeedbackService;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -30,6 +31,8 @@ export 'src/models/capture_model.dart' show CaptureModel;
 export 'src/models/user_type.dart' show UserType;
 export 'src/models/subscription_tier.dart' show SubscriptionTier;
 export 'src/models/payment_method_model.dart' show PaymentMethodModel;
+export 'src/models/feedback_model.dart'
+    show FeedbackModel, FeedbackType, FeedbackPriority, FeedbackStatus;
 
 // Export Core Widgets
 export 'src/widgets/artbeat_button.dart';
@@ -45,6 +48,10 @@ export 'src/widgets/network_error_widget.dart';
 export 'src/widgets/main_layout.dart';
 export 'src/widgets/universal_bottom_nav.dart';
 export 'src/widgets/universal_header.dart';
+export 'src/widgets/user_avatar.dart';
+export 'src/widgets/feedback_form.dart';
+export 'src/widgets/developer_feedback_admin_screen.dart';
+export 'src/widgets/feedback_system_info_screen.dart';
 
 // Export Core Widget Utils
 export 'src/widgets/filter/index.dart';
@@ -55,6 +62,7 @@ export 'src/utils/connectivity_utils.dart';
 export 'src/utils/date_utils.dart';
 export 'src/utils/validators.dart';
 export 'src/utils/user_sync_helper.dart';
+export 'src/utils/location_utils.dart' show LocationUtils;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;

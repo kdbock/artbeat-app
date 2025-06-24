@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UserType, SubscriptionTier, ArtistProfileModel;
+    show UserType, SubscriptionTier, ArtistProfileModel, UserAvatar;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
@@ -8,11 +8,11 @@ import '../services/analytics_service.dart';
 
 /// Screen for viewing an artist's public profile
 class ArtistPublicProfileScreen extends StatefulWidget {
-  final String artistProfileId;
+  final String userId;
 
   const ArtistPublicProfileScreen({
     super.key,
-    required this.artistProfileId,
+    required this.userId,
   });
 
   @override
@@ -29,6 +29,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   ArtistProfileModel? _artistProfile;
   List<artwork.ArtworkModel> _artwork = [];
   String? _currentUserId;
+  String? _artistProfileId; // Store the artist profile document ID
   bool _isFollowing = false;
 
   @override
@@ -38,6 +39,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   }
 
   Future<void> _loadArtistProfile() async {
+    print(
+        '🎨 ArtistPublicProfileScreen: Loading profile for userId: ${widget.userId}');
     setState(() {
       _isLoading = true;
     });
@@ -45,20 +48,18 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     try {
       // Get current user ID
       _currentUserId = _subscriptionService.getCurrentUserId();
+      print('👤 ArtistPublicProfileScreen: Current user ID: $_currentUserId');
 
-      // Get artist profile
-      final artistProfile = await _subscriptionService
-          .getArtistProfileById(widget.artistProfileId);
+      // Get artist profile by user ID
+      final artistProfile =
+          await _subscriptionService.getArtistProfileByUserId(widget.userId);
 
-      // Track profile view for analytics if profile exists
-      if (artistProfile != null) {
-        _analyticsService.trackArtistProfileView(
-          artistProfileId: widget.artistProfileId,
-          artistId: artistProfile.userId,
-        );
-      }
+      print(
+          '📄 ArtistPublicProfileScreen: Artist profile result: ${artistProfile != null ? 'Found ${artistProfile.displayName}' : 'Not found'}');
 
       if (artistProfile == null) {
+        print(
+            '❌ ArtistPublicProfileScreen: No artist profile found, showing error');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Artist profile not found')),
@@ -68,27 +69,39 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
         return;
       }
 
-      // Get artist's artwork
-      final artwork = await _artworkService
-          .getArtworkByArtistProfileId(widget.artistProfileId);
+      // Track profile view for analytics if profile exists
+      _analyticsService.trackArtistProfileView(
+        artistProfileId: artistProfile.id,
+        artistId: artistProfile.userId,
+      );
+
+      // Get artist's artwork using the artist profile document ID
+      final artwork =
+          await _artworkService.getArtworkByArtistProfileId(artistProfile.id);
+
+      print('🖼️ ArtistPublicProfileScreen: Found ${artwork.length} artworks');
 
       // Check if current user is following this artist
       bool isFollowing = false;
       if (_currentUserId != null) {
         isFollowing = await _subscriptionService.isFollowingArtist(
-          artistProfileId: widget.artistProfileId,
+          artistProfileId: artistProfile.id,
         );
+        print('👥 ArtistPublicProfileScreen: Following status: $isFollowing');
       }
 
       if (mounted) {
         setState(() {
-          _artistProfile = artistProfile as ArtistProfileModel?;
+          _artistProfile = artistProfile;
+          _artistProfileId = artistProfile.id; // Store the document ID
           _artwork = artwork;
           _isFollowing = isFollowing;
           _isLoading = false;
         });
+        print('✅ ArtistPublicProfileScreen: Successfully loaded profile UI');
       }
     } catch (e) {
+      print('❌ ArtistPublicProfileScreen: Error loading profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading artist profile: $e')),
@@ -113,7 +126,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
 
     try {
       final result = await _subscriptionService.toggleFollowArtist(
-        artistProfileId: widget.artistProfileId,
+        artistProfileId: _artistProfileId!,
       );
 
       if (mounted) {
@@ -174,9 +187,15 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                       artist.coverImageUrl!,
                       fit: BoxFit.cover,
                     )
-                  : Image.asset(
-                      'assets/default_profile.png',
-                      fit: BoxFit.cover,
+                  : Container(
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: Icon(
+                          Icons.image,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
+                      ),
                     ),
             ),
           ),
@@ -192,13 +211,10 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
+                      UserAvatar(
+                        imageUrl: artist.profileImageUrl,
+                        displayName: artist.displayName,
                         radius: 40,
-                        backgroundImage: artist.profileImageUrl != null &&
-                                artist.profileImageUrl!.isNotEmpty
-                            ? NetworkImage(artist.profileImageUrl!)
-                                as ImageProvider
-                            : const AssetImage('assets/default_profile.png'),
                       ),
                       const SizedBox(width: 16),
                       Expanded(

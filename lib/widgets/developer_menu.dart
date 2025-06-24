@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class DeveloperMenu extends StatelessWidget {
   const DeveloperMenu({super.key});
@@ -10,18 +11,13 @@ class DeveloperMenu extends StatelessWidget {
         child: ListView(
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Developer Menu',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 24),
                   ),
                   SizedBox(height: 8),
                   Text(
@@ -36,6 +32,7 @@ class DeveloperMenu extends StatelessWidget {
             ),
             const Divider(),
             _buildDatabaseSection(context),
+            _buildFeedbackSection(context),
             _buildBackupSection(context),
           ],
         ),
@@ -84,6 +81,56 @@ class DeveloperMenu extends StatelessWidget {
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Log viewer coming soon')),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeedbackSection(BuildContext context) {
+    return ExpansionTile(
+      title: const Text('Feedback System'),
+      children: [
+        ListTile(
+          leading: const Icon(Icons.feedback),
+          title: const Text('Submit Feedback'),
+          subtitle: const Text('Test the feedback form'),
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => const FeedbackForm(),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.admin_panel_settings),
+          title: const Text('Admin Panel'),
+          subtitle: const Text('View and manage feedback'),
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => const DeveloperFeedbackAdminScreen(),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.info),
+          title: const Text('System Info'),
+          subtitle: const Text('Learn about the feedback system'),
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (context) => const FeedbackSystemInfoScreen(),
+              ),
             );
           },
         ),

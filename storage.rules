@@ -48,6 +48,33 @@ service firebase.storage {
       allow read, write: if isAuthenticated();
     }
 
+    // Artwork images - artists can upload their own artwork
+    match /artwork_images/{userId}/{artworkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Temporary more permissive artwork upload path for debugging
+    match /artwork_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Very permissive artwork path for development
+    match /artwork_images/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+    }
+
+    // Artist images - for artist profiles (portfolio, banner, etc.)
+    match /artist_images/{userId}/{type}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
     // Capture images - more permissive for development
     match /capture_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
@@ -66,12 +93,19 @@ service firebase.storage {
     // Post images for community feed
     match /post_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated(); // More permissive for development
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
     
     // Profile images
     match /profile_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Feedback images - for developer feedback system
+    match /feedback_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);

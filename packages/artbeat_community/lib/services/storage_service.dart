@@ -19,6 +19,8 @@ class StorageService {
         customMetadata: {
           'uploaded_at': DateTime.now().toIso8601String(),
           'uploaded_by': 'mobile_app',
+          'debug_mode': kDebugMode.toString(),
+          'build_mode': kDebugMode ? 'debug' : 'release',
         },
       );
 

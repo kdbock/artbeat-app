@@ -195,4 +195,65 @@ class ArtistProfileService {
       throw Exception('Error updating artist profile: $e');
     }
   }
+
+  /// Get featured artists
+  Future<List<core.ArtistProfileModel>> getFeaturedArtists({int limit = 10}) async {
+    try {
+      final query = await _artistProfilesCollection
+          .where('isFeatured', isEqualTo: true)
+          .orderBy('updatedAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return query.docs.map((doc) {
+        return core.ArtistProfileModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting featured artists: $e');
+    }
+  }
+
+  /// Get artists by location
+  Future<List<core.ArtistProfileModel>> getArtistsByLocation(
+    String location, {
+    int limit = 10,
+  }) async {
+    try {
+      final query = await _artistProfilesCollection
+          .where('location', isEqualTo: location)
+          .orderBy('updatedAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return query.docs.map((doc) {
+        return core.ArtistProfileModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting artists by location: $e');
+    }
+  }
+
+  /// Get all artists (for discovery)
+  Future<List<core.ArtistProfileModel>> getAllArtists({
+    int limit = 20,
+    DocumentSnapshot? lastDocument,
+  }) async {
+    try {
+      Query query = _artistProfilesCollection
+          .orderBy('updatedAt', descending: true)
+          .limit(limit);
+
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
+
+      final querySnapshot = await query.get();
+
+      return querySnapshot.docs.map((doc) {
+        return core.ArtistProfileModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting all artists: $e');
+    }
+  }
 }

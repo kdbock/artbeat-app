@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' show ArtworkModel;
-import 'package:artbeat_artist/artbeat_artist.dart' show ArtistProfileModel;
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_core/src/models/event_model.dart';
 
 import '../models/filter_types.dart';
 import 'package:flutter/foundation.dart' show debugPrint;

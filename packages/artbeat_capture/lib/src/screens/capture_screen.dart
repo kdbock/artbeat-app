@@ -24,6 +24,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   @override
   void initState() {
     super.initState();
+    // Start camera check immediately but don't show loading state
     _checkCameraAvailability();
   }
 
@@ -35,6 +36,16 @@ class _CaptureScreenState extends State<CaptureScreen> {
           _isCameraAvailable = isAvailable;
           _isCheckingCamera = false;
         });
+
+        // If camera is not available and we're on an emulator, show the dialog immediately
+        if (!isAvailable) {
+          // Small delay to ensure the widget is fully built
+          Future<void>.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              _showEmulatorDialog();
+            }
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -42,20 +53,30 @@ class _CaptureScreenState extends State<CaptureScreen> {
           _isCameraAvailable = false;
           _isCheckingCamera = false;
         });
+
+        // Show emulator dialog for any camera errors
+        Future<void>.delayed(const Duration(milliseconds: 100), () {
+          if (mounted) {
+            _showEmulatorDialog();
+          }
+        });
       }
     }
   }
 
   Future<void> _takePhoto() async {
-    // Check camera availability first
-    if (!_isCameraAvailable) {
-      _showEmulatorDialog();
-      return;
-    }
-
     setState(() {
       _isProcessing = true;
     });
+
+    // Check camera availability during the actual photo taking
+    if (!_isCameraAvailable && !_isCheckingCamera) {
+      setState(() {
+        _isProcessing = false;
+      });
+      _showEmulatorDialog();
+      return;
+    }
 
     try {
       final XFile? photo = await _picker.pickImage(
@@ -327,9 +348,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                       width: 200,
                       height: 56,
                       child: ElevatedButton.icon(
-                        onPressed: (_isProcessing || _isCheckingCamera)
-                            ? null
-                            : _takePhoto,
+                        onPressed: _isProcessing ? null : _takePhoto,
                         icon: _isProcessing
                             ? const SizedBox(
                                 width: 20,
@@ -341,46 +360,18 @@ class _CaptureScreenState extends State<CaptureScreen> {
                                   ),
                                 ),
                               )
-                            : _isCheckingCamera
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : Icon(
-                                _isCameraAvailable
-                                    ? Icons.camera_alt
-                                    : Icons.camera_alt_outlined,
-                                size: 24,
-                              ),
+                            : const Icon(Icons.camera_alt, size: 24),
                         label: Text(
-                          _isProcessing
-                              ? 'Opening Camera...'
-                              : _isCheckingCamera
-                              ? 'Checking Camera...'
-                              : _isCameraAvailable
-                              ? 'Take Photo'
-                              : 'Camera Unavailable',
+                          _isProcessing ? 'Opening Camera...' : 'Take Photo',
                           style: const TextStyle(fontSize: 18),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              (_isCameraAvailable && !_isCheckingCamera)
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.3),
-                          foregroundColor:
-                              (_isCameraAvailable && !_isCheckingCamera)
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.6),
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(28),
                           ),

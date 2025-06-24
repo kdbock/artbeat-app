@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../theme/artbeat_colors.dart';
 import '../theme/artbeat_typography.dart';
+import '../services/user_service.dart';
+import '../models/user_model.dart';
 import 'artbeat_drawer_items.dart';
+import 'user_avatar.dart';
 
 class ArtbeatDrawer extends StatelessWidget {
   const ArtbeatDrawer({super.key});
@@ -28,53 +32,101 @@ class ArtbeatDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  StreamBuilder<User?>(
-                    stream: FirebaseAuth.instance.userChanges(),
-                    builder: (context, snapshot) {
-                      final user = snapshot.data;
-                      return CircleAvatar(
-                        radius: 30,
-                        backgroundImage: user?.photoURL != null
-                            ? NetworkImage(user!.photoURL!)
-                            : const AssetImage('assets/default_profile.png')
-                                  as ImageProvider,
+              child: StreamBuilder<User?>(
+                stream: FirebaseAuth.instance.userChanges(),
+                builder: (context, snapshot) {
+                  final user = snapshot.data;
+                  if (user == null) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        UserAvatar(displayName: 'Guest', radius: 30),
+                        const SizedBox(height: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Guest User',
+                              style: ArtbeatTypography.textTheme.titleMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Not signed in',
+                              style: ArtbeatTypography.textTheme.bodyMedium
+                                  ?.copyWith(color: const Color(0xE6FFFFFF)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+
+                  // Single FutureBuilder for both avatar and text to prevent state conflicts
+                  return FutureBuilder<UserModel?>(
+                    future: Provider.of<UserService>(
+                      context,
+                      listen: false,
+                    ).getUserById(user.uid),
+                    builder: (context, userModelSnapshot) {
+                      final userModel = userModelSnapshot.data;
+                      final isLoading =
+                          userModelSnapshot.connectionState ==
+                          ConnectionState.waiting;
+
+                      // Use cached data or fallback during loading
+                      final displayName =
+                          userModel?.fullName ?? user.displayName ?? 'User';
+                      final profileImageUrl = userModel?.profileImageUrl;
+
+                      // Debug logging for drawer avatar
+                      debugPrint('🗂️ Drawer UserAvatar data:');
+                      debugPrint(
+                        '  - userModel: ${userModel != null ? 'loaded' : (isLoading ? 'loading' : 'null')}',
                       );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  StreamBuilder<User?>(
-                    stream: FirebaseAuth.instance.userChanges(),
-                    builder: (context, snapshot) {
-                      final user = snapshot.data;
+                      debugPrint(
+                        '  - profileImageUrl: "${profileImageUrl ?? 'null'}"',
+                      );
+                      debugPrint(
+                        '  - fullName: "${userModel?.fullName ?? 'null'}"',
+                      );
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            user?.displayName ?? 'Guest User',
-                            style: ArtbeatTypography.textTheme.titleMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          UserAvatar(
+                            imageUrl: profileImageUrl,
+                            displayName: displayName,
+                            radius: 30,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            user?.email ?? '',
-                            style: ArtbeatTypography.textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: const Color(
-                                    0xE6FFFFFF,
-                                  ), // 0.9 * 255 = 229, so 0xE6
-                                ),
+                          const SizedBox(height: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                displayName,
+                                style: ArtbeatTypography.textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                user.email ?? '',
+                                style: ArtbeatTypography.textTheme.bodyMedium
+                                    ?.copyWith(color: const Color(0xE6FFFFFF)),
+                              ),
+                            ],
                           ),
                         ],
                       );
                     },
-                  ),
-                ],
+                  );
+                },
               ),
             ),
             // User Section

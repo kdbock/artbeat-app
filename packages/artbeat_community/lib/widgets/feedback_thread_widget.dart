@@ -26,7 +26,12 @@ class FeedbackThreadWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  AvatarWidget(avatarUrl: comment.userAvatarUrl, radius: 20),
+                  AvatarWidget(
+                    avatarUrl: comment.userAvatarUrl,
+                    userId: comment.userId,
+                    displayName: comment.userName,
+                    radius: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

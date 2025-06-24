@@ -20,7 +20,7 @@ Future<void> uploadSeedData() async {
       'avatarUrl': 'https://picsum.photos/200?2',
       'userType': 'gallery',
       'location': 'Durham, NC',
-    }
+    },
   ];
 
   for (var user in users) {
@@ -57,6 +57,63 @@ Future<void> uploadSeedData() async {
     'imageUrl': 'https://picsum.photos/400?post',
     'createdAt': Timestamp.now(),
   });
+
+  // PUBLIC ART
+  final publicArtData = [
+    {
+      'userId': 'artist_user_001',
+      'title': 'Rainbow Mural',
+      'description':
+          'A vibrant rainbow mural celebrating diversity and community',
+      'imageUrl': 'https://picsum.photos/400/300?art1',
+      'artistName': 'Maya Chen',
+      'location': const GeoPoint(35.2651, -77.5866), // Near Kinston, NC
+      'address': '123 Main St, Kinston, NC',
+      'tags': ['mural', 'rainbow', 'community'],
+      'artType': 'Mural',
+      'isVerified': true,
+      'viewCount': 15,
+      'likeCount': 8,
+      'usersFavorited': ['artist_user_001'],
+      'createdAt': Timestamp.now(),
+    },
+    {
+      'userId': 'artist_user_001',
+      'title': 'Bronze Statue',
+      'description': 'A bronze statue commemorating local history',
+      'imageUrl': 'https://picsum.photos/400/300?art2',
+      'artistName': 'David Martinez',
+      'location': const GeoPoint(35.2641, -77.5856), // Near Kinston, NC
+      'address': '456 Heritage Ave, Kinston, NC',
+      'tags': ['sculpture', 'bronze', 'history'],
+      'artType': 'Sculpture',
+      'isVerified': true,
+      'viewCount': 22,
+      'likeCount': 12,
+      'usersFavorited': ['artist_user_001'],
+      'createdAt': Timestamp.now(),
+    },
+    {
+      'userId': 'artist_user_001',
+      'title': 'Street Art Installation',
+      'description': 'Modern street art installation with interactive elements',
+      'imageUrl': 'https://picsum.photos/400/300?art3',
+      'artistName': 'Local Artist Collective',
+      'location': const GeoPoint(35.2661, -77.5876), // Near Kinston, NC
+      'address': '789 Art District, Kinston, NC',
+      'tags': ['street art', 'interactive', 'modern'],
+      'artType': 'Installation',
+      'isVerified': false,
+      'viewCount': 31,
+      'likeCount': 18,
+      'usersFavorited': ['artist_user_001'],
+      'createdAt': Timestamp.now(),
+    },
+  ];
+
+  for (var art in publicArtData) {
+    await firestore.collection('publicArt').add(art);
+  }
 
   // ART WALKS
   await firestore.collection('artWalks').add({

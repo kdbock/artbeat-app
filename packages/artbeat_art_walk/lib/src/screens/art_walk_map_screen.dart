@@ -5,9 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import '../widgets/art_detail_bottom_sheet.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../widgets/zip_code_search_box.dart';
-import '../widgets/art_walk_info_card.dart';
 
 /// Screen that displays a map with nearby public art and art walks
 class ArtWalkMapScreen extends StatefulWidget {
@@ -24,6 +23,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   final Set<Marker> _markers = {};
   final ArtWalkService _artWalkService = ArtWalkService();
   final GoogleMapsService _mapsService = GoogleMapsService();
+  final UserService _userService = UserService();
   Position? _currentPosition;
   bool _isLoading = true;
   bool _isSearchingZip = false;
@@ -32,6 +32,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   List<PublicArtModel> _nearbyArt = [];
   bool _showInfoCard = true;
   String _currentZipCode = '';
+  String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
 
   // Default to North Carolina center
   static const CameraPosition _defaultLocation = CameraPosition(
@@ -83,6 +84,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       debugPrint('✅ Maps initialized successfully');
 
+      // Load user's ZIP code first, then initialize location
+      await _loadUserZipCode();
+
       // Now initialize location
       await _initializeLocation();
 
@@ -130,6 +134,25 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       debugPrint('⚠️ Error checking if device is emulator: $e');
     }
     return false;
+  }
+
+  /// Load user's ZIP code from profile
+  Future<void> _loadUserZipCode() async {
+    try {
+      final user = await _userService.getCurrentUserModel();
+      if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
+        setState(() {
+          _currentZipCode = user.zipCode!;
+        });
+        debugPrint('📍 Loaded user ZIP code: ${user.zipCode}');
+      } else {
+        debugPrint(
+          '📍 No user ZIP code found, will use location-based detection',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading user ZIP code: $e');
+    }
   }
 
   Future<void> _initializeLocation() async {
@@ -196,12 +219,21 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
         debugPrint('🌍 Got current position: $_currentPosition');
 
-        // Get ZIP code from coordinates (simplified)
-        _currentZipCode = await _artWalkService.getZipCodeFromCoordinates(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-        );
-        debugPrint('📍 Location ZIP code: $_currentZipCode');
+        // Get ZIP code from coordinates if we don't have user's ZIP code
+        if (_currentZipCode.isEmpty) {
+          _currentZipCode = await _artWalkService.getZipCodeFromCoordinates(
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          );
+          debugPrint('📍 Location-derived ZIP code: $_currentZipCode');
+
+          // Save the detected ZIP code to user profile if valid
+          if (_currentZipCode.isNotEmpty && _currentZipCode != '00000') {
+            _updateUserZipCode(_currentZipCode);
+          }
+        } else {
+          debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
+        }
 
         // Load nearby art with a timeout
         _nearbyArt = await _artWalkService
@@ -286,6 +318,16 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     }
   }
 
+  /// Update user's ZIP code in profile
+  void _updateUserZipCode(String zipCode) async {
+    try {
+      await _userService.updateUserZipCode(zipCode);
+      debugPrint('✅ Successfully updated user ZIP code to: $zipCode');
+    } catch (e) {
+      debugPrint('❌ Error updating user ZIP code: $e');
+    }
+  }
+
   /// Update markers on the map based on nearby art
   void _updateMarkers() {
     if (!mounted) return;
@@ -367,11 +409,47 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     if (!mounted || _currentPosition == null) return;
 
     try {
-      final nearbyArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        radiusKm: 10.0,
-      );
+      List<PublicArtModel> nearbyArt = [];
+
+      switch (_artFilter) {
+        case 'all':
+          nearbyArt = await _artWalkService.getCombinedArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+            includeUserCaptures: true,
+          );
+          break;
+        case 'public':
+          nearbyArt = await _artWalkService.getPublicArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+          );
+          break;
+        case 'captures':
+          final captures = await _artWalkService.getCapturedArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+            includeUserOnly: false,
+          );
+          nearbyArt = captures
+              .map((c) => _artWalkService.captureToPublicArt(c))
+              .toList();
+          break;
+        case 'my_captures':
+          final captures = await _artWalkService.getCapturedArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+            includeUserOnly: true,
+          );
+          nearbyArt = captures
+              .map((c) => _artWalkService.captureToPublicArt(c))
+              .toList();
+          break;
+      }
 
       if (!mounted) return;
       setState(() {
@@ -397,6 +475,69 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     );
   }
 
+  /// Show filter dialog for art types
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Filter Art'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<String>(
+              title: const Text('All Art'),
+              subtitle: const Text('Public art + captured art'),
+              value: 'all',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('Public Art Only'),
+              subtitle: const Text('Curated public art pieces'),
+              value: 'public',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('Community Captures'),
+              subtitle: const Text('Art captured by community'),
+              value: 'captures',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('My Captures'),
+              subtitle: const Text('Art you\'ve captured'),
+              value: 'my_captures',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Change the art filter and refresh the map
+  void _changeFilter(String newFilter) {
+    setState(() {
+      _artFilter = newFilter;
+    });
+    _updateNearbyArt();
+  }
+
   /// Handle ZIP code search submission
   Future<void> _handleZipCodeSearch(String zipCode) async {
     if (!mounted) return;
@@ -409,10 +550,21 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     });
 
     try {
-      // Get nearby art from the service
+      // Convert ZIP code to coordinates
+      final coordinates = await LocationUtils.getCoordinatesFromZipCode(
+        zipCode,
+      );
+      if (coordinates == null) {
+        if (mounted) {
+          _showSnackBar('Invalid ZIP code or unable to find location');
+        }
+        return;
+      }
+
+      // Get nearby art from the service using the actual coordinates
       final nearbyArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: 35.7596, // This should be replaced with geocoding
-        longitude: -79.0193,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
         radiusKm: 10.0,
       );
 
@@ -422,6 +574,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         _nearbyArt = nearbyArt;
         _updateMarkers();
       });
+
+      // Update user's ZIP code if they searched for a valid one
+      if (zipCode.isNotEmpty && zipCode != '00000') {
+        _updateUserZipCode(zipCode);
+      }
 
       if (nearbyArt.isNotEmpty && mapController != null) {
         final firstArt = nearbyArt.first;
@@ -481,21 +638,31 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           Positioned(
             right: 16,
             top: MediaQuery.of(context).padding.top + 72,
-            child: FloatingActionButton.small(
-              heroTag: 'myLocation',
-              onPressed: () async {
-                if (_currentPosition != null && _mapController != null) {
-                  await _mapController!.animateCamera(
-                    CameraUpdate.newLatLng(
-                      LatLng(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                      ),
-                    ),
-                  );
-                }
-              },
-              child: const Icon(Icons.my_location),
+            child: Column(
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'artFilter',
+                  onPressed: _showFilterDialog,
+                  child: const Icon(Icons.filter_list),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton.small(
+                  heroTag: 'myLocation',
+                  onPressed: () async {
+                    if (_currentPosition != null && _mapController != null) {
+                      await _mapController!.animateCamera(
+                        CameraUpdate.newLatLng(
+                          LatLng(
+                            _currentPosition!.latitude,
+                            _currentPosition!.longitude,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Icon(Icons.my_location),
+                ),
+              ],
             ),
           ),
           if (_isLoading || _isSearchingZip)

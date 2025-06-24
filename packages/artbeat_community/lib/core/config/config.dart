@@ -9,8 +9,10 @@ const String sponsorshipsIcon = 'local_offer';
 const String studiosIcon = 'chat';
 const String goldenCanvasIcon = 'emoji_events';
 
-const String defaultAvatarUrl = 'assets/default_profile.png';
-const String firebaseStorageBasePath = 'gs://wordnerd-artbeat.firebasestorage.app';
+// Default avatar URL is no longer needed as UserAvatar widget handles fallbacks
+const String? defaultAvatarUrl = null;
+const String firebaseStorageBasePath =
+    'gs://wordnerd-artbeat.firebasestorage.app';
 
 const List<String> giftOptions = [
   '🎨 Mini Palette',

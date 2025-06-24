@@ -293,22 +293,28 @@ class PostCard extends StatelessWidget {
                   maxApplause: PostModel.maxApplausePerUser,
                   color: ArtbeatColors.accentYellow,
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 8),
                 // Art Discussion button (renamed from comment)
-                _buildActionButton(
-                  icon: Icons.palette_outlined,
-                  label: 'Art Discussion',
-                  count: comments.length,
-                  color: ArtbeatColors.primaryPurple,
-                  onTap: () => onComment(post.id),
+                Expanded(
+                  flex: 2,
+                  child: _buildActionButton(
+                    icon: Icons.palette_outlined,
+                    label: 'Art Discussion',
+                    count: comments.length,
+                    color: ArtbeatColors.primaryPurple,
+                    onTap: () => onComment(post.id),
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 // Share button
-                _buildActionButton(
-                  icon: Icons.share_outlined,
-                  label: 'Share',
-                  color: ArtbeatColors.primaryGreen,
-                  onTap: () => onShare(post),
+                Expanded(
+                  flex: 1,
+                  child: _buildActionButton(
+                    icon: Icons.share_outlined,
+                    label: 'Share',
+                    color: ArtbeatColors.primaryGreen,
+                    onTap: () => onShare(post),
+                  ),
                 ),
               ],
             ),
@@ -370,12 +376,16 @@ class PostCard extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: color),
           const SizedBox(width: 6),
-          Text(
-            count != null && count > 0 ? '$label ($count)' : label,
-            style: TextStyle(
-              color: color,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              count != null && count > 0 ? '$label ($count)' : label,
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],

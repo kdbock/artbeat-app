@@ -269,9 +269,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           color: const Color(0xFF8B4513), // Brown wood color
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: CustomPaint(
-                          painter: EaselPainter(),
-                        ),
+                        child: CustomPaint(painter: EaselPainter()),
                       ),
                     ),
                     // Canvas (user avatar as painting)
@@ -302,7 +300,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                               ? Image.network(
                                   profileImageUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => _buildFallbackAvatar(),
+                                  errorBuilder: (_, __, ___) =>
+                                      _buildFallbackAvatar(),
                                 )
                               : _buildFallbackAvatar(),
                         ),
@@ -313,7 +312,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       bottom: 20,
                       right: 50,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(230),
                           borderRadius: BorderRadius.circular(12),
@@ -332,7 +334,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                   ],
                 ),
               ),
-              
+
               // Profile Info Section
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -340,7 +342,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(230),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: ArtbeatColors.border.withAlpha(128)),
+                  border: Border.all(
+                    color: ArtbeatColors.border.withAlpha(128),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,17 +390,29 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildStat('Captures', capturesCount, ArtbeatColors.primaryPurple),
-                        _buildStat('Fan of', followersCount, ArtbeatColors.accentYellow),
-                        _buildStat('Following', followingCount, ArtbeatColors.primaryGreen),
+                        _buildStat(
+                          'Captures',
+                          capturesCount,
+                          ArtbeatColors.primaryPurple,
+                        ),
+                        _buildStat(
+                          'Fan of',
+                          followersCount,
+                          ArtbeatColors.accentYellow,
+                        ),
+                        _buildStat(
+                          'Following',
+                          followingCount,
+                          ArtbeatColors.primaryGreen,
+                        ),
                       ],
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Tab Section
               Expanded(
                 child: Container(
@@ -410,7 +426,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(128),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
                         ),
                         child: TabBar(
                           controller: _tabController,
@@ -441,7 +459,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
             ],
           ),
@@ -461,9 +479,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
             border: Border.all(color: color.withAlpha(77)),
           ),
           child: Icon(
-            label == 'Captures' ? Icons.camera_alt_outlined :
-            label == 'Fan of' ? Icons.front_hand :
-            Icons.people_outline,
+            label == 'Captures'
+                ? Icons.camera_alt_outlined
+                : label == 'Fan of'
+                ? Icons.front_hand
+                : Icons.people_outline,
             color: color,
             size: 20,
           ),
@@ -479,10 +499,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         ),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: ArtbeatColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12, color: ArtbeatColors.textSecondary),
         ),
       ],
     );
@@ -520,7 +537,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.camera_alt_outlined, color: ArtbeatColors.primaryPurple),
+              Icon(
+                Icons.camera_alt_outlined,
+                color: ArtbeatColors.primaryPurple,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Art Captures',
@@ -536,11 +556,12 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           Expanded(
             child: capturesCount > 0
                 ? GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
                     itemCount: capturesCount,
                     itemBuilder: (context, index) {
                       return Container(
@@ -576,13 +597,14 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                 : Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.camera_alt_outlined,
-                          size: 64,
+                          size: 48,
                           color: ArtbeatColors.textSecondary,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Text(
                           'No captures yet',
                           style: TextStyle(
@@ -590,7 +612,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                             color: ArtbeatColors.textSecondary,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Text(
                           'Start capturing art to see it here!',
                           style: TextStyle(
@@ -692,7 +714,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.emoji_events_outlined, color: ArtbeatColors.accentYellow),
+              Icon(
+                Icons.emoji_events_outlined,
+                color: ArtbeatColors.accentYellow,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Achievements',
@@ -757,7 +782,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isUnlocked ? color.withAlpha(25) : ArtbeatColors.backgroundSecondary,
+        color: isUnlocked
+            ? color.withAlpha(25)
+            : ArtbeatColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isUnlocked ? color.withAlpha(77) : ArtbeatColors.border,
@@ -777,17 +804,16 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: isUnlocked ? ArtbeatColors.textPrimary : ArtbeatColors.textSecondary,
+              color: isUnlocked
+                  ? ArtbeatColors.textPrimary
+                  : ArtbeatColors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             description,
-            style: TextStyle(
-              fontSize: 10,
-              color: ArtbeatColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 10, color: ArtbeatColors.textSecondary),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

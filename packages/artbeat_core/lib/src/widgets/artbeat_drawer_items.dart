@@ -84,6 +84,18 @@ class ArtbeatDrawerItems {
     route: '/artist/approved-ads',
   );
 
+  static const myArtwork = ArtbeatDrawerItem(
+    title: 'My Artwork',
+    icon: Icons.image_outlined,
+    route: '/artist/artwork',
+  );
+
+  static const uploadArtwork = ArtbeatDrawerItem(
+    title: 'Upload Artwork',
+    icon: Icons.add_photo_alternate_outlined,
+    route: '/artist/artwork/upload',
+  );
+
   // Gallery Section
   static const artistsManagement = ArtbeatDrawerItem(
     title: 'Artists Management',
@@ -128,6 +140,12 @@ class ArtbeatDrawerItems {
     route: '/support',
   );
 
+  static const feedback = ArtbeatDrawerItem(
+    title: 'Send Feedback',
+    icon: Icons.feedback_outlined,
+    route: '/feedback',
+  );
+
   // Logout
   static const signOut = ArtbeatDrawerItem(
     title: 'Sign Out',
@@ -150,6 +168,8 @@ class ArtbeatDrawerItems {
     artistDashboard,
     editArtistProfile,
     viewPublicProfile,
+    myArtwork,
+    uploadArtwork,
     artistAnalytics,
     artistApprovedAds,
   ];
@@ -165,5 +185,6 @@ class ArtbeatDrawerItems {
     privacySettings,
     securitySettings,
     help,
+    feedback,
   ];
 }

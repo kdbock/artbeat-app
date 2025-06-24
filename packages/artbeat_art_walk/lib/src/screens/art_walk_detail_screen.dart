@@ -196,12 +196,24 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   }
 
   void _startNavigation() {
-    // In a real app, this would launch the navigation mode
-    // For now, just show a snackbar
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigation would start here')),
-    );
+    if (_walk == null) return;
+
+    // Navigate to the art walk experience screen
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (context) =>
+                ArtWalkExperienceScreen(artWalkId: _walk!.id, artWalk: _walk!),
+          ),
+        )
+        .then((completed) {
+          // If the walk was completed, refresh the state
+          if (completed == true) {
+            setState(() {
+              _hasCompletedWalk = true;
+            });
+          }
+        });
   }
 
   Future<void> _completeArtWalk() async {
@@ -245,7 +257,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         for (final achievement in unviewedAchievements) {
           // Show one achievement at a time with a dialog
           if (!mounted) return;
-          await NewAchievementDialog.show(context, achievement);
+          await NewAchievementDialog.show(context, achievement.id);
           // Mark as viewed after showing
           await _achievementService.markAchievementAsViewed(achievement.id);
         }
@@ -389,13 +401,18 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Start navigation button
+                        // Start art walk experience button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: _startNavigation,
-                            icon: const Icon(Icons.navigation),
-                            label: const Text('Start Navigation'),
+                            icon: const Icon(Icons.explore),
+                            label: const Text('Start Art Walk Experience'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                           ),
                         ),
 

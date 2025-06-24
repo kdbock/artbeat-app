@@ -94,6 +94,12 @@ class CommunityService extends ChangeNotifier {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      debugPrint('🔄 Creating post for user: $userId');
+      debugPrint('📝 Post content: $content');
+      debugPrint('🖼️ Image URLs: $imageUrls');
+      debugPrint('🏷️ Tags: $tags');
+      debugPrint('📍 Location: $location');
+
       DocumentReference docRef = await _firestore.collection('posts').add({
         'userId': userId,
         'userName': userName,
@@ -113,9 +119,11 @@ class CommunityService extends ChangeNotifier {
         'metadata': metadata,
       });
 
+      debugPrint('✅ Post created successfully with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      debugPrint('Error creating post: $e');
+      debugPrint('❌ Error creating post: $e');
+      debugPrint('📍 Stack trace: ${StackTrace.current}');
       return null;
     }
   }

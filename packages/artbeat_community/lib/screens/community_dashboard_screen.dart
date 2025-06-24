@@ -9,7 +9,8 @@ class CommunityDashboardScreen extends StatefulWidget {
   const CommunityDashboardScreen({super.key});
 
   @override
-  State<CommunityDashboardScreen> createState() => _CommunityDashboardScreenState();
+  State<CommunityDashboardScreen> createState() =>
+      _CommunityDashboardScreenState();
 }
 
 class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
@@ -33,26 +34,34 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
     return core.MainLayout(
       currentIndex: 2, // Community index
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Community Critique'),
+        appBar: core.UniversalHeader(
+          title: 'Community Critique',
+          showLogo: false,
+          showDeveloperTools: true,
           elevation: 0,
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Feed', icon: Icon(Icons.feed)),
-              Tab(text: 'Trending', icon: Icon(Icons.trending_up)),
-              Tab(text: 'Portfolios', icon: Icon(Icons.folder_special)),
-              Tab(text: 'Studios', icon: Icon(Icons.business)),
-            ],
-          ),
         ),
-        body: TabBarView(
-          controller: _tabController,
+        body: Column(
           children: [
-            const UnifiedCommunityFeed(),
-            const TrendingContentScreen(),
-            const PortfoliosScreen(),
-            const StudiosScreen(),
+            TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'Feed', icon: Icon(Icons.feed)),
+                Tab(text: 'Trending', icon: Icon(Icons.trending_up)),
+                Tab(text: 'Portfolios', icon: Icon(Icons.folder_special)),
+                Tab(text: 'Studios', icon: Icon(Icons.business)),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  const UnifiedCommunityFeed(),
+                  const TrendingContentScreen(),
+                  const PortfoliosScreen(),
+                  const StudiosScreen(),
+                ],
+              ),
+            ),
           ],
         ),
       ),

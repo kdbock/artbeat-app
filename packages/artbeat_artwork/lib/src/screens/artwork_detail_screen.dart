@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
-import 'package:artbeat_core/artbeat_core.dart' show ArtistProfileModel;
+import 'package:artbeat_core/artbeat_core.dart'
+    show ArtistProfileModel, UserAvatar;
 import 'package:share_plus/share_plus.dart';
 
 /// Screen for viewing artwork details
@@ -236,15 +237,10 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: Row(
                           children: [
-                            CircleAvatar(
+                            UserAvatar(
+                              imageUrl: artistProfile.profileImageUrl,
+                              displayName: artistProfile.displayName,
                               radius: 20,
-                              backgroundImage: artistProfile.profileImageUrl !=
-                                          null &&
-                                      artistProfile.profileImageUrl!.isNotEmpty
-                                  ? NetworkImage(artistProfile.profileImageUrl!)
-                                      as ImageProvider
-                                  : const AssetImage(
-                                      'assets/default_profile.png'),
                             ),
                             const SizedBox(width: 12),
                             Expanded(

@@ -104,21 +104,26 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
 
   // Load existing profile if editing
   Future<void> _loadArtistProfile() async {
-    if (widget.artistProfileId == null) return;
-
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // In a real app, you would fetch by ID instead of by user ID
-      final artistProfile = await _subscriptionService
-          .getArtistProfileById(widget.artistProfileId!);
+      core.ArtistProfileModel? artistProfile;
+
+      if (widget.artistProfileId != null) {
+        // Load specific profile by ID (for admin editing)
+        artistProfile = await _subscriptionService
+            .getArtistProfileById(widget.artistProfileId!);
+      } else {
+        // Load current user's profile (most common case)
+        artistProfile = await _subscriptionService.getCurrentArtistProfile();
+      }
 
       if (artistProfile != null && mounted) {
         setState(() {
           _artistProfile = artistProfile;
-          _displayNameController.text = artistProfile.displayName;
+          _displayNameController.text = artistProfile!.displayName;
           _bioController.text = artistProfile.bio ?? '';
 
           // Get social links from the socialLinks map

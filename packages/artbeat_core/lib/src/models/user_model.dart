@@ -27,6 +27,9 @@ class UserModel {
   final DateTime? updatedAt;
   final bool isVerified;
   final UserType userType;
+  final int experiencePoints;
+  final int level;
+  final List<String> achievements;
 
   UserModel({
     required this.id,
@@ -52,6 +55,9 @@ class UserModel {
     this.updatedAt,
     this.isVerified = false,
     this.userType = UserType.regular,
+    this.experiencePoints = 0,
+    this.level = 1,
+    this.achievements = const [],
   });
 
   factory UserModel.placeholder(String id) {
@@ -103,6 +109,11 @@ class UserModel {
       userType: UserType.fromString(
         data['userType'] as String? ?? UserType.regular.name,
       ),
+      experiencePoints: data['experiencePoints'] as int? ?? 0,
+      level: data['level'] as int? ?? 1,
+      achievements: List<String>.from(
+        data['achievements'] as List<dynamic>? ?? [],
+      ),
     );
   }
 
@@ -131,6 +142,9 @@ class UserModel {
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'isVerified': isVerified,
       'userType': userType.name,
+      'experiencePoints': experiencePoints,
+      'level': level,
+      'achievements': achievements,
     };
   }
 
@@ -158,6 +172,9 @@ class UserModel {
     DateTime? updatedAt,
     bool? isVerified,
     UserType? userType,
+    int? experiencePoints,
+    int? level,
+    List<String>? achievements,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -183,6 +200,9 @@ class UserModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isVerified: isVerified ?? this.isVerified,
       userType: userType ?? this.userType,
+      experiencePoints: experiencePoints ?? this.experiencePoints,
+      level: level ?? this.level,
+      achievements: achievements ?? this.achievements,
     );
   }
 

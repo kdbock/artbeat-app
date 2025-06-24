@@ -65,27 +65,27 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       _isLoading = true;
     });
     try {
-      // TODO: Replace with a more appropriate method if available, e.g., getAllPublicArt()
-      // Using getPublicArtNearLocation with a very large radius to fetch as much art as possible.
-      // This is not ideal for performance with large datasets.
-      // Consider adding a dedicated method in ArtWalkService to get all public art
-      // or public art suitable for selection in an art walk.
-      final artWorks = await _artWalkService.getPublicArtNearLocation(
-        latitude:
-            35.7796, // Default to a central NC latitude or user's current if available
-        longitude:
-            -78.6382, // Default to a central NC longitude or user's current if available
-        radiusKm: 100000, // Large radius to capture more art
+      // Use current position if available, otherwise default to central NC
+      final latitude = _currentPosition?.latitude ?? 35.7796;
+      final longitude = _currentPosition?.longitude ?? -78.6382;
+
+      // Get combined art (public art + captured art) for art walk creation
+      final artWorks = await _artWalkService.getCombinedArtNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: 50.0, // Reasonable radius for art walk creation
+        includeUserCaptures: true, // Include captured art
       );
+
       setState(() {
         _availablePublicArt = artWorks;
       });
     } catch (e) {
-      // Error loading public art: $e
+      // Error loading art: $e
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error loading public art: $e')));
+        ).showSnackBar(SnackBar(content: Text('Error loading art: $e')));
       }
     } finally {
       if (mounted) {

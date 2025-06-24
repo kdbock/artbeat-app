@@ -40,9 +40,41 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == request.resource.data.ownerId;
     }
 
-    // Commissions (user can read their own, or as needed)
+    // Commissions (artist can read/write their own commissions)
     match /commissions/{commissionId} {
+      allow read, write: if request.auth != null && 
+                          (request.auth.uid == resource.data.userId || 
+                           request.auth.uid == resource.data.artistId);
+    }
+
+    // Subscriptions (users can read/write their own subscription)
+    match /subscriptions/{subscriptionId} {
       allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Analytics collections (artwork views and profile views)
+    match /artworkViews/{viewId} {
+      allow read: if request.auth != null && 
+                  (request.auth.uid == resource.data.artistId || 
+                   request.auth.uid == resource.data.viewerId);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.viewerId;
+    }
+
+    match /artistProfileViews/{viewId} {
+      allow read: if request.auth != null && 
+                  (request.auth.uid == resource.data.artistId || 
+                   request.auth.uid == resource.data.viewerId);
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.viewerId;
+    }
+
+    // Artwork collection (public reading, artists manage their own)
+    match /artwork/{artworkId} {
+      allow read: if resource.data.isPublic == true || 
+                  (request.auth != null && request.auth.uid == resource.data.artistId);
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.artistId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.artistId;
     }
 
     // Sponsorships (publicly readable)
@@ -53,8 +85,12 @@ service cloud.firestore {
 
     // Artist profiles (public portfolios)
     match /artistProfiles/{artistId} {
-      allow read: if resource.data.isPortfolioPublic == true;
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read: if resource.data.isPortfolioPublic == true || 
+                  (request.auth != null && request.auth.uid == resource.data.userId);
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && 
+                            request.auth.uid == resource.data.userId;
     }
 
     // Captures collection
@@ -90,7 +126,9 @@ service cloud.firestore {
     // Events collection - public events are readable, users can manage their own events
     match /events/{eventId} {
       allow read: if resource.data.isPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.artistId);
+                  (request.auth != null && request.auth.uid == resource.data.artistId) ||
+                  (request.auth != null && resource.data.attendeeIds != null && 
+                   request.auth.uid in resource.data.attendeeIds);
       allow create: if request.auth != null && 
                     request.auth.uid == request.resource.data.artistId;
       allow update, delete: if request.auth != null && 
@@ -100,11 +138,30 @@ service cloud.firestore {
     // Art walks collection - similar to events
     match /artWalks/{walkId} {
       allow read: if resource.data.isPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.createdBy);
+                  (request.auth != null && request.auth.uid == resource.data.userId);
       allow create: if request.auth != null && 
-                    request.auth.uid == request.resource.data.createdBy;
+                    request.auth.uid == request.resource.data.userId;
       allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.createdBy;
+                            request.auth.uid == resource.data.userId;
+    }
+
+    // Public Art collection - publicly readable, authenticated users can create
+    match /publicArt/{artId} {
+      allow read: if true; // Public art is publicly readable
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && 
+                            request.auth.uid == resource.data.userId;
+    }
+
+    // Developer feedback collection - authenticated users can submit feedback
+    match /developer_feedback/{feedbackId} {
+      allow read: if request.auth != null; // All authenticated users can read feedback for admin purposes
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
+      allow update: if request.auth != null && 
+                    request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null; // Allow any authenticated user to delete (for admin functionality)
     }
 
     // Fallback: deny all other access

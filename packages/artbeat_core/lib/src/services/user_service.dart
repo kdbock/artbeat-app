@@ -115,12 +115,28 @@ class UserService extends ChangeNotifier {
   // Get user by ID
   Future<UserModel?> getUserById(String userId) async {
     try {
+      debugPrint('🔍 getUserById: Fetching user $userId');
       final doc = await _usersCollection.doc(userId).get();
       if (doc.exists) {
-        return UserModel.fromDocumentSnapshot(doc);
+        final data = doc.data() as Map<String, dynamic>?;
+        debugPrint(
+          '📄 getUserById: User document data keys: ${data?.keys.toList()}',
+        );
+        debugPrint(
+          '🖼️ getUserById: profileImageUrl value: "${data?['profileImageUrl']}"',
+        );
+
+        final userModel = UserModel.fromDocumentSnapshot(doc);
+        debugPrint(
+          '✅ getUserById: UserModel created with profileImageUrl: "${userModel.profileImageUrl}"',
+        );
+        return userModel;
+      } else {
+        debugPrint('❌ getUserById: User document does not exist');
       }
       return null;
     } catch (e, s) {
+      debugPrint('❌ getUserById: Error occurred: $e');
       _log.severe('Error getting user by ID', e, s);
       return null;
     }
@@ -171,6 +187,7 @@ class UserService extends ChangeNotifier {
     String? bio,
     String? location,
     String? gender,
+    String? zipCode,
   }) async {
     final userId = currentUserId;
     if (userId == null) return;
@@ -181,6 +198,7 @@ class UserService extends ChangeNotifier {
       if (bio != null) updates['bio'] = bio;
       if (location != null) updates['location'] = location;
       if (gender != null) updates['gender'] = gender;
+      if (zipCode != null) updates['zipCode'] = zipCode;
 
       await _usersCollection.doc(userId).set(updates, SetOptions(merge: true));
       notifyListeners();
@@ -189,21 +207,61 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Upload and update profile photo
-  Future<void> uploadAndUpdateProfilePhoto(File imageFile) async {
+  // Update user ZIP code specifically
+  Future<void> updateUserZipCode(String zipCode) async {
     final userId = currentUserId;
     if (userId == null) return;
 
     try {
+      await _usersCollection.doc(userId).set({
+        'zipCode': zipCode,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      notifyListeners();
+      debugPrint('✅ Updated user ZIP code to: $zipCode');
+    } catch (e, s) {
+      _log.severe('Error updating user ZIP code', e, s);
+    }
+  }
+
+  // Upload and update profile photo
+  Future<void> uploadAndUpdateProfilePhoto(File imageFile) async {
+    final userId = currentUserId;
+    if (userId == null) {
+      debugPrint('❌ uploadAndUpdateProfilePhoto: No current user ID');
+      return;
+    }
+
+    try {
+      debugPrint(
+        '📤 uploadAndUpdateProfilePhoto: Starting upload for user $userId',
+      );
+
       final ref = _storage.ref().child('profile_images/$userId/profile.jpg');
+      debugPrint(
+        '📂 uploadAndUpdateProfilePhoto: Storage path: profile_images/$userId/profile.jpg',
+      );
+
       await ref.putFile(imageFile);
+      debugPrint('✅ uploadAndUpdateProfilePhoto: File uploaded to storage');
+
       final url = await ref.getDownloadURL();
+      debugPrint('🔗 uploadAndUpdateProfilePhoto: Download URL: $url');
+
       await _usersCollection.doc(userId).set({
         'profileImageUrl': url,
       }, SetOptions(merge: true));
+      debugPrint('✅ uploadAndUpdateProfilePhoto: Firestore document updated');
+
       await currentUser?.updatePhotoURL(url);
+      debugPrint(
+        '✅ uploadAndUpdateProfilePhoto: Firebase Auth profile updated',
+      );
+
       notifyListeners();
+      debugPrint('✅ uploadAndUpdateProfilePhoto: Listeners notified');
     } catch (e, s) {
+      debugPrint('❌ uploadAndUpdateProfilePhoto: Error occurred: $e');
       _log.severe('Error uploading profile photo', e, s);
     }
   }

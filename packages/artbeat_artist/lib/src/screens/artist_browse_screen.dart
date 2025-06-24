@@ -209,13 +209,17 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
-                    image: DecorationImage(
-                      image: artist.coverImageUrl != null &&
-                              artist.coverImageUrl!.isNotEmpty
-                          ? NetworkImage(artist.coverImageUrl!) as ImageProvider
-                          : const AssetImage('assets/default_profile.png'),
-                      fit: BoxFit.cover,
-                    ),
+                    image: artist.coverImageUrl != null &&
+                            artist.coverImageUrl!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(artist.coverImageUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    color: artist.coverImageUrl == null ||
+                            artist.coverImageUrl!.isEmpty
+                        ? Colors.grey[300]
+                        : null,
                   ),
                 ),
 
@@ -231,13 +235,10 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                         width: 3,
                       ),
                     ),
-                    child: CircleAvatar(
+                    child: core.UserAvatar(
+                      imageUrl: artist.profileImageUrl,
+                      displayName: artist.displayName,
                       radius: 40,
-                      backgroundImage: artist.profileImageUrl != null &&
-                              artist.profileImageUrl!.isNotEmpty
-                          ? NetworkImage(artist.profileImageUrl!)
-                              as ImageProvider
-                          : const AssetImage('assets/default_profile.png'),
                     ),
                   ),
                 ),

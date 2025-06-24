@@ -793,12 +793,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   itemBuilder: (context, index) {
                     final artist = _featuredArtists[index];
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage:
-                            (artist.profileImageUrl?.isNotEmpty ?? false)
-                            ? NetworkImage(artist.profileImageUrl!)
-                                  as ImageProvider
-                            : const AssetImage('assets/default_profile.png'),
+                      leading: UserAvatar(
+                        imageUrl: artist.profileImageUrl,
+                        displayName: artist.displayName,
+                        radius: 20,
                       ),
                       title: Text(artist.displayName),
                       subtitle: Text(

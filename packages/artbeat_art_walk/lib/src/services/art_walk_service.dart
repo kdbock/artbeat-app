@@ -8,7 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/comment_model.dart';
+import 'rewards_service.dart';
 
 /// Service for managing Art Walks and Public Art
 class ArtWalkService {
@@ -27,6 +29,13 @@ class ArtWalkService {
 
   /// Instance of ArtWalkCacheService for offline caching
   final ArtWalkCacheService _cacheService = ArtWalkCacheService();
+
+  /// Instance of RewardsService for XP and achievements
+  final RewardsService _rewardsService = RewardsService();
+
+  /// Collection reference for captured art
+  final CollectionReference _capturesCollection = FirebaseFirestore.instance
+      .collection('captures');
 
   /// Get current user ID
   String? getCurrentUserId() {
@@ -184,6 +193,174 @@ class ArtWalkService {
       return nearbyArt;
     } catch (e) {
       _logger.e('[DEBUG] Error in getPublicArtNearLocation: $e');
+      return [];
+    }
+  }
+
+  /// Get all captured art (public captures)
+  Future<List<CaptureModel>> getAllCapturedArt() async {
+    try {
+      final snapshot = await _capturesCollection
+          .where('isPublic', isEqualTo: true)
+          .where('isProcessed', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map(
+            (doc) => CaptureModel.fromFirestore(
+              doc as DocumentSnapshot<Map<String, dynamic>>,
+              null,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      _logger.e('Error getting all captured art: $e');
+      return [];
+    }
+  }
+
+  /// Get captured art by current user
+  Future<List<CaptureModel>> getUserCapturedArt() async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      return [];
+    }
+
+    try {
+      final snapshot = await _capturesCollection
+          .where('userId', isEqualTo: userId)
+          .where('isProcessed', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map(
+            (doc) => CaptureModel.fromFirestore(
+              doc as DocumentSnapshot<Map<String, dynamic>>,
+              null,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      _logger.e('Error getting user captured art: $e');
+      return [];
+    }
+  }
+
+  /// Get captured art near a location
+  Future<List<CaptureModel>> getCapturedArtNearLocation({
+    required double latitude,
+    required double longitude,
+    double radiusKm = 5.0,
+    bool includeUserOnly = false,
+  }) async {
+    try {
+      Query query = _capturesCollection.where('isProcessed', isEqualTo: true);
+
+      if (includeUserOnly) {
+        final userId = getCurrentUserId();
+        if (userId == null) return [];
+        query = query.where('userId', isEqualTo: userId);
+      } else {
+        query = query.where('isPublic', isEqualTo: true);
+      }
+
+      final snapshot = await query.get();
+      final List<CaptureModel> nearbyCaptures = [];
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        if (data['location'] is GeoPoint) {
+          final geo = data['location'] as GeoPoint;
+          final dist = _distanceKm(
+            latitude,
+            longitude,
+            geo.latitude,
+            geo.longitude,
+          );
+          if (dist <= radiusKm) {
+            try {
+              final capture = CaptureModel.fromFirestore(
+                doc as DocumentSnapshot<Map<String, dynamic>>,
+                null,
+              );
+              nearbyCaptures.add(capture);
+            } catch (e) {
+              debugPrint('❌ [DEBUG] Error parsing CaptureModel: $e');
+            }
+          }
+        }
+      }
+
+      return nearbyCaptures;
+    } catch (e) {
+      _logger.e('Error getting captured art near location: $e');
+      return [];
+    }
+  }
+
+  /// Convert CaptureModel to PublicArtModel for art walk integration
+  PublicArtModel captureToPublicArt(CaptureModel capture) {
+    return PublicArtModel(
+      id: capture.id,
+      userId: capture.userId,
+      title: capture.title ?? 'Captured Art',
+      description: capture.description ?? 'Art captured by community member',
+      imageUrl: capture.imageUrl,
+      artistName: capture.artistName,
+      location: capture.location ?? const GeoPoint(0, 0),
+      address: capture.locationName,
+      tags: capture.tags ?? [],
+      artType: capture.artType ?? 'Captured Art',
+      isVerified: false,
+      viewCount: 0,
+      likeCount: 0,
+      usersFavorited: [],
+      createdAt: Timestamp.fromDate(capture.createdAt),
+      updatedAt: capture.updatedAt != null
+          ? Timestamp.fromDate(capture.updatedAt!)
+          : null,
+    );
+  }
+
+  /// Get combined art (public art + captured art) for art walk creation
+  Future<List<PublicArtModel>> getCombinedArtNearLocation({
+    required double latitude,
+    required double longitude,
+    double radiusKm = 5.0,
+    bool includeUserCaptures = true,
+  }) async {
+    try {
+      // Get public art
+      final publicArt = await getPublicArtNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: radiusKm,
+      );
+
+      List<PublicArtModel> combinedArt = [...publicArt];
+
+      // Get captured art if requested
+      if (includeUserCaptures) {
+        final capturedArt = await getCapturedArtNearLocation(
+          latitude: latitude,
+          longitude: longitude,
+          radiusKm: radiusKm,
+        );
+
+        // Convert captured art to public art format
+        final convertedCaptures = capturedArt
+            .map((capture) => captureToPublicArt(capture))
+            .toList();
+
+        combinedArt.addAll(convertedCaptures);
+      }
+
+      // Sort by distance (you might want to implement this)
+      return combinedArt;
+    } catch (e) {
+      _logger.e('Error getting combined art near location: $e');
       return [];
     }
   }
@@ -729,13 +906,69 @@ class ArtWalkService {
           .doc(userId)
           .set({'userId': userId, 'completedAt': FieldValue.serverTimestamp()});
 
-      // Update user achievements
+      // Award XP for completion
+      await _rewardsService.awardXP('art_walk_completion');
+
+      // Achievements are automatically checked when XP is awarded
+
+      // Update user achievements (legacy method)
       await _updateUserAchievements(userId);
 
       return true;
     } catch (e) {
       _logger.e('Error recording art walk completion: $e');
       return false;
+    }
+  }
+
+  /// Record a visit to an art piece during a walk
+  Future<bool> recordArtVisit({
+    required String artWalkId,
+    required String artId,
+  }) async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      // Record the visit
+      await _artWalksCollection
+          .doc(artWalkId)
+          .collection('visits')
+          .doc('${userId}_$artId')
+          .set({
+            'userId': userId,
+            'artId': artId,
+            'visitedAt': FieldValue.serverTimestamp(),
+          });
+
+      // Award XP for visit
+      await _rewardsService.awardXP('art_visit');
+
+      return true;
+    } catch (e) {
+      _logger.e('Error recording art visit: $e');
+      return false;
+    }
+  }
+
+  /// Get user's visited art pieces for a walk
+  Future<List<String>> getUserVisitedArt(String artWalkId) async {
+    final userId = getCurrentUserId();
+    if (userId == null) return [];
+
+    try {
+      final snapshot = await _artWalksCollection
+          .doc(artWalkId)
+          .collection('visits')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      return snapshot.docs.map((doc) => doc.data()['artId'] as String).toList();
+    } catch (e) {
+      _logger.e('Error getting user visited art: $e');
+      return [];
     }
   }
 
