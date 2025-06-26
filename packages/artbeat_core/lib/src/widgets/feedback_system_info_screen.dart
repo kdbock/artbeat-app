@@ -77,7 +77,7 @@ class FeedbackSystemInfoScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.feedback,
                   size: 32,
                   color: ArtbeatColors.primaryPurple,
@@ -150,7 +150,7 @@ class FeedbackSystemInfoScreen extends StatelessWidget {
                       margin: const EdgeInsets.only(top: 6),
                       width: 4,
                       height: 4,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: ArtbeatColors.primaryGreen,
                         shape: BoxShape.circle,
                       ),
@@ -182,7 +182,7 @@ class FeedbackSystemInfoScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.code, color: ArtbeatColors.primaryPurple),
+                const Icon(Icons.code, color: ArtbeatColors.primaryPurple),
                 const SizedBox(width: 12),
                 Text(
                   'Technical Implementation',

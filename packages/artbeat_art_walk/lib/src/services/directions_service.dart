@@ -124,7 +124,7 @@ class DirectionsService {
     try {
       // Get the current cache data by leveraging the existing cache format
       final prefs = await SharedPreferences.getInstance();
-      String? jsonCache = prefs.getString(_cacheKey);
+      final String? jsonCache = prefs.getString(_cacheKey);
       Map<String, dynamic> cache = {};
       if (jsonCache != null) {
         cache = jsonDecode(jsonCache) as Map<String, dynamic>;
@@ -148,7 +148,7 @@ class DirectionsService {
     try {
       // Get the cache data using shared preferences directly
       final prefs = await SharedPreferences.getInstance();
-      String? jsonCache = prefs.getString(_cacheKey);
+      final String? jsonCache = prefs.getString(_cacheKey);
       if (jsonCache == null || jsonCache.isEmpty) {
         return null;
       }

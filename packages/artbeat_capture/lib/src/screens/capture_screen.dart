@@ -94,8 +94,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
         // Navigate to upload screen with the captured image
         if (mounted) {
-          final result = await Navigator.of(context).push(
-            MaterialPageRoute(
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(
               builder: (context) => CaptureUploadScreen(imageFile: imageFile),
             ),
           );
@@ -140,7 +140,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
       });
 
       if (mounted) {
-        String errorMessage = 'An unexpected error occurred: ${e.toString()}';
+        final errorMessage = 'An unexpected error occurred: ${e.toString()}';
         if (e.toString().toLowerCase().contains('not available') ||
             e.toString().toLowerCase().contains('no camera')) {
           setState(() {
@@ -155,7 +155,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   }
 
   void _showEmulatorDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -186,7 +186,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
   }
 
   void _showErrorDialog(String title, String message) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -223,8 +223,8 @@ class _CaptureScreenState extends State<CaptureScreen> {
 
         // Navigate to upload screen with the selected image
         if (mounted) {
-          final result = await Navigator.of(context).push(
-            MaterialPageRoute(
+          final result = await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(
               builder: (context) => CaptureUploadScreen(imageFile: imageFile),
             ),
           );
@@ -327,7 +327,7 @@ class _CaptureScreenState extends State<CaptureScreen> {
                       size: 120,
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.6),
+                      ).colorScheme.primary.withValues(alpha: 0.6),
                     ),
                     const SizedBox(height: 32),
                     Text(

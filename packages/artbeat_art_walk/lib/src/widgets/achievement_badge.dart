@@ -22,7 +22,7 @@ class AchievementBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    Widget badgeContent = InkWell(
+    final Widget badgeContent = InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(size / 2),
       child: Stack(

@@ -28,7 +28,7 @@ class AdPaymentWidget extends StatelessWidget {
             Text('Ad Duration: $days day${days == 1 ? '' : 's'}'),
             Text('Price per day: \$${pricePerDay.toStringAsFixed(2)}'),
             const SizedBox(height: 8),
-            Text('Total: ', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Total: ', style: TextStyle(fontWeight: FontWeight.bold)),
             Text(
               '\$${total.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.headlineSmall,

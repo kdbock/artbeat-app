@@ -34,7 +34,7 @@ class _AdminUploadArtworksScreenState extends State<AdminUploadArtworksScreen> {
   bool _isForSale = false;
   bool _isLoading = false;
   String _medium = '';
-  List<String> _styles = [];
+  final List<String> _styles = [];
   List<String> _tags = [];
 
   final List<String> _availableMediums = [

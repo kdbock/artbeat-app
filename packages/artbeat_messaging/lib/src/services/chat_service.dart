@@ -242,30 +242,31 @@ class ChatService extends ChangeNotifier {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    // Check if chat already exists
-    final existingChatQuery = await _firestore
-        .collection('chats')
-        .where('participantIds', arrayContainsAny: [userId])
-        .where('isGroup', isEqualTo: false)
-        .get();
-
-    final existingChat = existingChatQuery.docs.firstWhere((doc) {
-      final participantIds = (doc.data()['participantIds'] as List)
-          .cast<String>();
-      return participantIds.contains(otherUserId) && participantIds.length == 2;
-    }, orElse: () => throw Exception('Chat not found'));
-
-    return ChatModel.fromFirestore(existingChat);
-
-    // Create new chat
     try {
+      // Check if chat already exists
+      final existingChatQuery = await _firestore
+          .collection('chats')
+          .where('participantIds', arrayContainsAny: [userId])
+          .where('isGroup', isEqualTo: false)
+          .get();
+
+      for (final doc in existingChatQuery.docs) {
+        final participantIds = (doc.data()['participantIds'] as List)
+            .cast<String>();
+        if (participantIds.contains(otherUserId) &&
+            participantIds.length == 2) {
+          return ChatModel.fromFirestore(doc);
+        }
+      }
+
+      // No existing chat found, create new one
       final otherUser = await _firestore
           .collection('users')
           .doc(otherUserId)
           .get();
 
       if (!otherUser.exists) {
-        throw Exception('User not found');
+        throw Exception('Other user not found');
       }
 
       final currentUser = await _firestore
@@ -288,8 +289,8 @@ class ChatService extends ChangeNotifier {
       final newChat = await chatDoc.get();
       return ChatModel.fromFirestore(newChat);
     } catch (e) {
-      debugPrint('Error creating chat: $e');
-      throw Exception('Failed to create chat');
+      debugPrint('Error creating/getting chat: $e');
+      throw Exception('Failed to create or get chat');
     }
   }
 

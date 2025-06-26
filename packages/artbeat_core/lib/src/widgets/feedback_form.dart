@@ -22,10 +22,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
 
   FeedbackType _selectedType = FeedbackType.bug;
   FeedbackPriority _selectedPriority = FeedbackPriority.medium;
-  List<String> _selectedPackages = [
+  final List<String> _selectedPackages = [
     'general',
   ]; // Changed to support multiple packages
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   bool _isSubmitting = false;
 
   @override
@@ -82,7 +82,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
           children: [
             Row(
               children: [
-                Icon(Icons.feedback, color: ArtbeatColors.primaryPurple),
+                const Icon(Icons.feedback, color: ArtbeatColors.primaryPurple),
                 const SizedBox(width: 8),
                 Text(
                   'Help Improve ARTbeat',
@@ -108,11 +108,11 @@ class _FeedbackFormState extends State<FeedbackForm> {
   Widget _buildTitleField() {
     return TextFormField(
       controller: _titleController,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Title *',
         hintText: 'Brief summary of your feedback',
-        border: const OutlineInputBorder(),
-        prefixIcon: const Icon(Icons.title),
+        border: OutlineInputBorder(),
+        prefixIcon: Icon(Icons.title),
       ),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {

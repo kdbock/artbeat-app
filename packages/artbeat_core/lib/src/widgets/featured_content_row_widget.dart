@@ -113,11 +113,11 @@ class FeaturedContentRowWidget extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12.0),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Color(0x1A000000), // 0.1 opacity black
                             blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
@@ -163,10 +163,10 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                     ),
                                     decoration: BoxDecoration(
                                       color: content['type'] == 'article'
-                                          ? Color(
+                                          ? const Color(
                                               0x335BC6FF,
                                             ) // 0.2 opacity info color
-                                          : Color(
+                                          : const Color(
                                               0x338C52FF,
                                             ), // 0.2 opacity primaryPurple
                                       borderRadius: BorderRadius.circular(4.0),

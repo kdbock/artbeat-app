@@ -1,4 +1,3 @@
-import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/commission_model.dart';

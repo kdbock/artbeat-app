@@ -50,7 +50,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
 
   Future<void> _getCurrentLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) return;
 
       LocationPermission permission = await Geolocator.checkPermission();
@@ -162,7 +162,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   }
 
   void _showArtDetail(PublicArtModel art) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -227,19 +227,19 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   }
 
   void _showWalkCompletionDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('🎉 Walk Completed!'),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Congratulations! You\'ve completed this art walk.'),
-            const SizedBox(height: 16),
-            const Text('Rewards earned:'),
-            const Text('• +50 XP for completion'),
-            const Text('• Achievement progress updated'),
+            Text('Congratulations! You\'ve completed this art walk.'),
+            SizedBox(height: 16),
+            Text('Rewards earned:'),
+            Text('• +50 XP for completion'),
+            Text('• Achievement progress updated'),
           ],
         ),
         actions: [
@@ -312,7 +312,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('How to Use'),

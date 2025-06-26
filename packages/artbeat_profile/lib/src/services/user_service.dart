@@ -1,4 +1,5 @@
 // Placeholder for artbeat_capture specific User Service
+import 'package:flutter/foundation.dart';
 
 class UserService {
   // Add capture-specific user service methods here
@@ -7,7 +8,7 @@ class UserService {
 
   Future<Map<String, dynamic>?> getCaptureUserSettings(String userId) async {
     // Placeholder
-    print('Fetching capture user settings for $userId');
+    debugPrint('Fetching capture user settings for $userId');
     return null;
   }
 }

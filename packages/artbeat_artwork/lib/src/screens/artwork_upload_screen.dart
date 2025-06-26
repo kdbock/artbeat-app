@@ -335,7 +335,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     final uploadTask = ref.putFile(imageFile);
     final snapshot = await uploadTask;
 
-    return await snapshot.ref.getDownloadURL();
+    return snapshot.ref.getDownloadURL();
   }
 
   // Add tag to the list

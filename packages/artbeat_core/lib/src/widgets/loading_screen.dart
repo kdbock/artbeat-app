@@ -40,7 +40,7 @@ class _LoadingScreenState extends State<LoadingScreen>
   }
 
   Future<void> _navigateToSplash() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     if (mounted) {
       Navigator.pushReplacementNamed(context, '/splash');
     }
@@ -50,14 +50,14 @@ class _LoadingScreenState extends State<LoadingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topRight,
             end: Alignment.bottomLeft,
             colors: [
-              const Color(0x1A8C52FF), // 0.1 opacity for primaryPurple
+              Color(0x1A8C52FF), // 0.1 opacity for primaryPurple
               Colors.white,
-              const Color(0x1A00BFA5), // 0.1 opacity for accent2
+              Color(0x1A00BFA5), // 0.1 opacity for accent2
             ],
           ),
         ),

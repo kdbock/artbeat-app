@@ -26,7 +26,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
   Future<void> _loadFollowing() async {
     // In a real app, fetch following from Firestore
     // For now, use placeholder data
-    await Future.delayed(
+    await Future<void>.delayed(
       const Duration(milliseconds: 500),
     ); // Simulate network delay
 
@@ -98,12 +98,12 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
         elevation: 0,
         title: Text(
           'Following ${_isLoading ? '' : '(${_following.length})'}',
-          style: TextStyle(
+          style: const TextStyle(
             color: ArtbeatColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
+        iconTheme: const IconThemeData(color: ArtbeatColors.textPrimary),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -119,13 +119,13 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
         ),
         child: SafeArea(
           child: _isLoading
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(
                     color: ArtbeatColors.primaryPurple,
                   ),
                 )
               : _following.isEmpty
-              ? Center(
+              ? const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -134,7 +134,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                         size: 80,
                         color: ArtbeatColors.textSecondary,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       Text(
                         'Not following anyone yet',
                         style: TextStyle(
@@ -190,14 +190,14 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                         ),
                         title: Text(
                           followedUser['username'] as String,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: ArtbeatColors.textPrimary,
                           ),
                         ),
                         subtitle: Text(
                           followedUser['name'] as String,
-                          style: TextStyle(color: ArtbeatColors.textSecondary),
+                          style: const TextStyle(color: ArtbeatColors.textSecondary),
                         ),
                         trailing: isCurrentUser
                             ? null
@@ -215,7 +215,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                                   ),
                                   minimumSize: const Size(80, 32),
                                 ),
-                                child: Text(
+                                child: const Text(
                                   'Following',
                                   style: TextStyle(
                                     color: ArtbeatColors.primaryPurple,

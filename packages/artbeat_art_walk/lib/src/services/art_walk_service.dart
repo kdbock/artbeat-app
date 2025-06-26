@@ -10,7 +10,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/comment_model.dart';
-import 'rewards_service.dart';
 
 /// Service for managing Art Walks and Public Art
 class ArtWalkService {
@@ -154,7 +153,7 @@ class ArtWalkService {
     }
   }
 
-  /// Get public art near a location
+  /// Get public art near a location (searches public captures)
   Future<List<PublicArtModel>> getPublicArtNearLocation({
     required double latitude,
     required double longitude,
@@ -164,10 +163,16 @@ class ArtWalkService {
       debugPrint(
         '🎯 [DEBUG] getPublicArtNearLocation: lat=$latitude, lng=$longitude, radiusKm=$radiusKm',
       );
-      final snapshot = await _publicArtCollection.get();
+
+      // Search public captures instead of the empty publicArt collection
+      final snapshot = await _capturesCollection
+          .where('isPublic', isEqualTo: true)
+          .get();
+
       debugPrint(
-        '🎯 [DEBUG] Firestore returned \\${snapshot.docs.length} public art docs',
+        '🎯 [DEBUG] Firestore returned \\${snapshot.docs.length} public capture docs',
       );
+
       final List<PublicArtModel> nearbyArt = [];
       for (final doc in snapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
@@ -181,15 +186,37 @@ class ArtWalkService {
           );
           if (dist <= radiusKm) {
             try {
-              final art = PublicArtModel.fromJson(data);
+              // Convert CaptureModel to PublicArtModel format
+              final art = PublicArtModel(
+                id: doc.id,
+                userId: (data['userId'] as String?) ?? '',
+                title: (data['title'] as String?) ?? 'Untitled',
+                description: (data['description'] as String?) ?? '',
+                imageUrl: (data['imageUrl'] as String?) ?? '',
+                artistName: (data['artistName'] as String?),
+                location: geo,
+                address: (data['locationName'] as String?),
+                tags: ((data['tags'] as List<dynamic>?) ?? []).cast<String>(),
+                artType: (data['artType'] as String?),
+                isVerified: false,
+                viewCount: 0,
+                likeCount: 0,
+                usersFavorited: [],
+                createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
+                updatedAt: (data['updatedAt'] as Timestamp?),
+              );
               nearbyArt.add(art);
             } catch (e) {
-              debugPrint('❌ [DEBUG] Error parsing PublicArtModel: $e');
+              debugPrint(
+                '❌ [DEBUG] Error converting capture to PublicArtModel: $e',
+              );
             }
           }
         }
       }
-      debugPrint('🎯 [DEBUG] Found \\${nearbyArt.length} nearby art pieces');
+      debugPrint(
+        '🎯 [DEBUG] Found \\${nearbyArt.length} nearby art pieces from captures',
+      );
       return nearbyArt;
     } catch (e) {
       _logger.e('[DEBUG] Error in getPublicArtNearLocation: $e');
@@ -256,6 +283,7 @@ class ArtWalkService {
     bool includeUserOnly = false,
   }) async {
     try {
+      // Base query: processed captures
       Query query = _capturesCollection.where('isProcessed', isEqualTo: true);
 
       if (includeUserOnly) {
@@ -263,14 +291,22 @@ class ArtWalkService {
         if (userId == null) return [];
         query = query.where('userId', isEqualTo: userId);
       } else {
+        // For public captures, filter by isPublic to comply with Firestore rules
         query = query.where('isPublic', isEqualTo: true);
       }
 
       final snapshot = await query.get();
+      debugPrint(
+        '🔍 [ArtWalkService] getCapturedArtNearLocation raw docs count after filters: ${snapshot.docs.length}',
+      );
       final List<CaptureModel> nearbyCaptures = [];
 
       for (final doc in snapshot.docs) {
+        // Log raw document ID and location existence
         final data = doc.data() as Map<String, dynamic>;
+        debugPrint(
+          '🔍 [ArtWalkService] doc id=${doc.id}, location field exists=${data.containsKey('location')}',
+        );
         if (data['location'] is GeoPoint) {
           final geo = data['location'] as GeoPoint;
           final dist = _distanceKm(
@@ -278,6 +314,9 @@ class ArtWalkService {
             longitude,
             geo.latitude,
             geo.longitude,
+          );
+          debugPrint(
+            '🔍 [ArtWalkService] doc id=${doc.id}, distance=${dist.toStringAsFixed(2)} km',
           );
           if (dist <= radiusKm) {
             try {
@@ -287,11 +326,16 @@ class ArtWalkService {
               );
               nearbyCaptures.add(capture);
             } catch (e) {
-              debugPrint('❌ [DEBUG] Error parsing CaptureModel: $e');
+              debugPrint(
+                '❌ [ArtWalkService] Error parsing CaptureModel for doc ${doc.id}: $e',
+              );
             }
           }
         }
       }
+      debugPrint(
+        '🔍 [ArtWalkService] filtered nearbyCaptures count: ${nearbyCaptures.length}',
+      );
 
       return nearbyCaptures;
     } catch (e) {
@@ -339,7 +383,7 @@ class ArtWalkService {
         radiusKm: radiusKm,
       );
 
-      List<PublicArtModel> combinedArt = [...publicArt];
+      final List<PublicArtModel> combinedArt = [...publicArt];
 
       // Get captured art if requested
       if (includeUserCaptures) {
@@ -798,7 +842,7 @@ class ArtWalkService {
 
   /// Get if we have any cached art walks
   Future<bool> hasCachedArtWalks() async {
-    return await _cacheService.hasCachedArtWalks();
+    return _cacheService.hasCachedArtWalks();
   }
 
   /// Validate inputs for public art creation

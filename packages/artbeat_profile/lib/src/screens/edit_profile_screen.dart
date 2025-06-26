@@ -261,19 +261,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Edit Profile',
           style: TextStyle(
             color: ArtbeatColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
+        iconTheme: const IconThemeData(color: ArtbeatColors.textPrimary),
         actions: [
           TextButton(
             onPressed: _isSaving ? null : _handleSubmit,
             child: _isSaving
-                ? SizedBox(
+                ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
@@ -281,7 +281,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       valueColor: AlwaysStoppedAnimation(ArtbeatColors.primaryPurple),
                     ),
                   )
-                : Text(
+                : const Text(
                     'Save',
                     style: TextStyle(
                       color: ArtbeatColors.primaryPurple,
@@ -306,7 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         child: SafeArea(
           child: _isLoading
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(
                     color: ArtbeatColors.primaryPurple,
                   ),
@@ -348,13 +348,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _nameController,
                         decoration: InputDecoration(
                           labelText: 'Full Name',
-                          icon: Icon(Icons.person, color: ArtbeatColors.primaryPurple),
+                          icon: const Icon(Icons.person, color: ArtbeatColors.primaryPurple),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: ArtbeatColors.primaryPurple),
+                            borderSide: const BorderSide(color: ArtbeatColors.primaryPurple),
                           ),
                         ),
                         validator: (value) {
@@ -371,14 +371,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         maxLines: 3,
                         decoration: InputDecoration(
                           labelText: 'Bio',
-                          icon: Icon(Icons.description, color: ArtbeatColors.primaryPurple),
+                          icon: const Icon(Icons.description, color: ArtbeatColors.primaryPurple),
                           hintText: 'Tell us about yourself...',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: ArtbeatColors.primaryPurple),
+                            borderSide: const BorderSide(color: ArtbeatColors.primaryPurple),
                           ),
                         ),
                       ),
@@ -388,13 +388,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         controller: _locationController,
                         decoration: InputDecoration(
                           labelText: 'Location',
-                          icon: Icon(Icons.location_on, color: ArtbeatColors.primaryPurple),
+                          icon: const Icon(Icons.location_on, color: ArtbeatColors.primaryPurple),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: ArtbeatColors.primaryPurple),
+                            borderSide: const BorderSide(color: ArtbeatColors.primaryPurple),
                           ),
                         ),
                       ),

@@ -43,7 +43,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
       if (hasAdminAccess) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+          MaterialPageRoute<void>(
+              builder: (context) => const AdminDashboardScreen()),
         );
       } else {
         // Sign out if not an admin

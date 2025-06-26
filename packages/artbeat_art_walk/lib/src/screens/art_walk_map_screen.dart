@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 import '../widgets/zip_code_search_box.dart';
 
 /// Screen that displays a map with nearby public art and art walks
@@ -44,6 +45,38 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   void initState() {
     super.initState();
     _initializeMapsAndLocation();
+  }
+
+  void _onBottomNavTap(int index) {
+    switch (index) {
+      case 0: // Home - Dashboard
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (route) => false,
+        );
+        break;
+      case 1: // Art Walk - Stay here
+        break;
+      case 2: // Community
+        Navigator.pushNamed(context, '/community/dashboard');
+        break;
+      case 3: // Events
+        Navigator.pushNamed(context, '/events/dashboard');
+        break;
+      case 4: // Capture (Camera button) - Open as modal
+        _openCaptureModal();
+        break;
+    }
+  }
+
+  void _openCaptureModal() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => const CaptureScreen(),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   /// Initialize Google Maps and location services
@@ -141,9 +174,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     try {
       final user = await _userService.getCurrentUserModel();
       if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
-        setState(() {
-          _currentZipCode = user.zipCode!;
-        });
+        if (mounted) {
+          setState(() {
+            _currentZipCode = user.zipCode!;
+          });
+        }
         debugPrint('📍 Loaded user ZIP code: ${user.zipCode}');
       } else {
         debugPrint(
@@ -160,7 +195,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
     try {
       // Check if location services are enabled
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -428,23 +463,30 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           );
           break;
         case 'captures':
-          final captures = await _artWalkService.getCapturedArtNearLocation(
+          // Get all public captures (community + user's own)
+          final allCaptures = await _artWalkService.getCapturedArtNearLocation(
             latitude: _currentPosition!.latitude,
             longitude: _currentPosition!.longitude,
             radiusKm: 10.0,
-            includeUserOnly: false,
+            includeUserOnly: false, // Gets all public captures
           );
-          nearbyArt = captures
-              .map((c) => _artWalkService.captureToPublicArt(c))
+          debugPrint('🔍 [DEBUG] all captures length: ${allCaptures.length}');
+          nearbyArt = allCaptures
+              .map(
+                (captureModel) =>
+                    _artWalkService.captureToPublicArt(captureModel),
+              )
               .toList();
           break;
         case 'my_captures':
+          debugPrint('🔍 [DEBUG] Filter my_captures selected');
           final captures = await _artWalkService.getCapturedArtNearLocation(
             latitude: _currentPosition!.latitude,
             longitude: _currentPosition!.longitude,
             radiusKm: 10.0,
             includeUserOnly: true,
           );
+          debugPrint('🔍 [DEBUG] my_captures docs count: ${captures.length}');
           nearbyArt = captures
               .map((c) => _artWalkService.captureToPublicArt(c))
               .toList();
@@ -477,7 +519,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
   /// Show filter dialog for art types
   void _showFilterDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter Art'),
@@ -611,13 +653,28 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: UniversalHeader(
+        title: 'Art Walk Map',
+        showDeveloperTools: false,
+        onSearchPressed: () {
+          // Handle search action - could open a search overlay
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Search functionality coming soon!'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+      ),
+      drawer: const ArtbeatDrawer(),
       body: Stack(
         children: [
           FutureBuilder<String>(
             future: _mapsService.defaultMapStyle,
             builder: (context, snapshot) {
               // We'll get the map style from the GoogleMapsService
-              String? mapStyleString = snapshot.data;
+              final String? mapStyleString = snapshot.data;
 
               return GoogleMap(
                 initialCameraPosition: _defaultLocation,
@@ -637,7 +694,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           ),
           Positioned(
             right: 16,
-            top: MediaQuery.of(context).padding.top + 72,
+            top:
+                MediaQuery.of(context).padding.top +
+                120, // Increased to account for app bar
             child: Column(
               children: [
                 FloatingActionButton.small(
@@ -695,7 +754,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
               ),
             ),
           Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
+            top:
+                MediaQuery.of(context).padding.top +
+                80, // Increased to account for app bar
             left: 16,
             right: 16,
             child: ZipCodeSearchBox(
@@ -705,7 +766,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           ),
           if (_showInfoCard)
             Positioned(
-              bottom: 16,
+              bottom: 100, // Increased to account for bottom navigation
               left: 16,
               right: 16,
               child: ArtWalkInfoCard(
@@ -714,13 +775,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (!mounted) return;
-          Navigator.of(context).pushNamed('/art-walks');
-        },
-        label: const Text('View Art Walks'),
-        icon: const Icon(Icons.museum),
+      bottomNavigationBar: UniversalBottomNav(
+        currentIndex: 1, // Art Walk is index 1
+        onTap: _onBottomNavTap,
       ),
     );
   }

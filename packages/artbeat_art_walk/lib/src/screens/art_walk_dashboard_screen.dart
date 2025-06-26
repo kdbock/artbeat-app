@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 import '../services/art_walk_service.dart';
+import '../services/google_maps_service.dart';
 import '../models/art_walk_model.dart';
 import 'my_captures_screen.dart';
 
@@ -23,19 +25,41 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
   CameraPosition? _initialCameraPosition;
   final ArtWalkService _artWalkService = ArtWalkService();
   final UserService _userService = UserService();
+  final CaptureService _captureService = CaptureService();
   List<ArtWalkModel> _myWalks = [];
   List<ArtWalkModel> _publicWalks = [];
   List<CaptureModel> _myCaptures = [];
   bool _isLoadingWalks = true;
   bool _isLoadingCaptures = true;
   String _userZipCode = '';
+  bool _mapsInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this); // Changed to 3 tabs
+    _initializeMaps();
     _loadUserLocationAndSetMap();
     _loadData();
+  }
+
+  /// Initialize Google Maps
+  Future<void> _initializeMaps() async {
+    debugPrint('🗺️ Initializing Google Maps...');
+    final googleMapsService = GoogleMapsService();
+    final initialized = await googleMapsService.initializeMaps();
+
+    if (mounted) {
+      setState(() {
+        _mapsInitialized = initialized;
+      });
+
+      if (initialized) {
+        debugPrint('✅ Maps initialized successfully');
+      } else {
+        debugPrint('❌ Failed to initialize maps');
+      }
+    }
   }
 
   Future<void> _loadUserLocationAndSetMap() async {
@@ -43,9 +67,13 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       // First try to use user's ZIP code if available
       final user = await _userService.getCurrentUserModel();
       if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
-        final coordinates = await LocationUtils.getCoordinatesFromZipCode(user.zipCode!);
+        final coordinates = await LocationUtils.getCoordinatesFromZipCode(
+          user.zipCode!,
+        );
         if (coordinates != null) {
-          debugPrint('📍 Art Walk Dashboard: Using user ZIP code location: ${user.zipCode}');
+          debugPrint(
+            '📍 Art Walk Dashboard: Using user ZIP code location: ${user.zipCode}',
+          );
           if (mounted) {
             setState(() {
               _initialCameraPosition = CameraPosition(
@@ -64,7 +92,8 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         permission = await Geolocator.requestPermission();
       }
 
-      if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied) {
+      if (permission == LocationPermission.deniedForever ||
+          permission == LocationPermission.denied) {
         _setFallbackLocation();
         return;
       }
@@ -80,12 +109,14 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       // Update user's ZIP code if we don't have one
       if (user?.zipCode == null || user!.zipCode!.isEmpty) {
         final zipCode = await LocationUtils.getZipCodeFromCoordinates(
-          position.latitude, 
-          position.longitude
+          position.latitude,
+          position.longitude,
         );
         if (zipCode.isNotEmpty) {
           await _userService.updateUserZipCode(zipCode);
-          debugPrint('📍 Art Walk Dashboard: Updated user ZIP code to: $zipCode');
+          debugPrint(
+            '📍 Art Walk Dashboard: Updated user ZIP code to: $zipCode',
+          );
         }
       }
 
@@ -123,10 +154,14 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     try {
       final user = await _userService.getCurrentUserModel();
       if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
-        setState(() {
-          _userZipCode = user.zipCode!;
-        });
-        debugPrint('📍 Art Walk Dashboard: Loaded user ZIP code: ${user.zipCode}');
+        if (mounted) {
+          setState(() {
+            _userZipCode = user.zipCode!;
+          });
+        }
+        debugPrint(
+          '📍 Art Walk Dashboard: Loaded user ZIP code: ${user.zipCode}',
+        );
       } else {
         debugPrint('📍 Art Walk Dashboard: No user ZIP code found');
       }
@@ -171,9 +206,13 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       List<ArtWalkModel> walks;
       if (_userZipCode.isNotEmpty) {
         // Load walks near user's ZIP code first
-        walks = await _artWalkService.getArtWalksByZipCodes([_userZipCode], limit: 20);
-        debugPrint('📍 Loaded ${walks.length} walks for ZIP code: $_userZipCode');
-        
+        walks = await _artWalkService.getArtWalksByZipCodes([
+          _userZipCode,
+        ], limit: 20);
+        debugPrint(
+          '📍 Loaded ${walks.length} walks for ZIP code: $_userZipCode',
+        );
+
         // If no walks found for user's ZIP, fall back to popular walks
         if (walks.isEmpty) {
           walks = await _artWalkService.getPopularArtWalks(limit: 20);
@@ -184,7 +223,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         walks = await _artWalkService.getPopularArtWalks(limit: 20);
         debugPrint('📍 No user ZIP, loaded ${walks.length} popular walks');
       }
-      
+
       if (mounted) {
         setState(() {
           _publicWalks = walks;
@@ -202,7 +241,18 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
 
   Future<void> _loadMyCaptures() async {
     try {
-      final captures = await _artWalkService.getUserCapturedArt();
+      final userId = _artWalkService.getCurrentUserId();
+      if (userId == null) {
+        if (mounted) {
+          setState(() {
+            _myCaptures = [];
+            _isLoadingCaptures = false;
+          });
+        }
+        return;
+      }
+
+      final captures = await _captureService.getCapturesForUser(userId);
       if (mounted) {
         setState(() {
           _myCaptures = captures;
@@ -216,6 +266,20 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
           _myCaptures = [];
           _isLoadingCaptures = false;
         });
+        // Only show error if it's not a simple "no captures" case
+        if (e.toString().contains('permission-denied') ||
+            e.toString().contains('network') ||
+            e.toString().contains('timeout')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to load captures: Please check your connection',
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
       }
     }
   }
@@ -227,31 +291,11 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     super.dispose();
   }
 
-  void _onBottomNavTap(int index) {
-    switch (index) {
-      case 0: // Home - Dashboard
-        Navigator.pushNamed(context, '/dashboard');
-        break;
-      case 1: // Art Walk - Stay here
-        break;
-      case 2: // Community
-        Navigator.pushNamed(context, '/community/dashboard');
-        break;
-      case 3: // Events
-        Navigator.pushNamed(context, '/events/dashboard');
-        break;
-      case 4: // Capture (Camera button)
-        _onCapture();
-        break;
-    }
-  }
-
   void _onCreateArtWalk() {
     Navigator.pushNamed(context, '/art-walk/create');
   }
 
-  void _onCapture() async {
-    // Navigate to capture screen
+  void _onCapture() {
     Navigator.pushNamed(context, '/capture');
   }
 
@@ -265,134 +309,149 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       Marker(
         markerId: const MarkerId('user_location'),
         position: _initialCameraPosition!.target,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         infoWindow: const InfoWindow(title: 'Your Location'),
       ),
     );
 
-    // Add markers for nearby art walks (if any)
-    // Note: ArtWalkModel doesn't have startLocation, so we'll skip this for now
-    // This could be enhanced by getting the first art piece location from each walk
+    // Add markers for nearby captured art
+    for (final capture in _myCaptures) {
+      if (capture.location != null) {
+        final geoPoint = capture.location!;
+        final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
+        final markerId = capture.id.isNotEmpty
+            ? capture.id
+            : (capture.title ?? 'capture_marker');
+        markers.add(
+          Marker(
+            markerId: MarkerId(markerId),
+            position: latLng,
+            infoWindow: InfoWindow(title: capture.title ?? 'Captured Art'),
+          ),
+        );
+      }
+    }
 
     return markers;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: UniversalHeader(
-        title: 'Art Walks',
-        showLogo: false,
-        showDeveloperTools: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.help_outline, color: ArtbeatColors.primaryPurple),
-            tooltip: 'How Art Walks Work',
-            onPressed: () {
-              setState(() => _showOnboarding = true);
-            },
+    return MainLayout(
+      currentIndex: 1, // Art Walk is index 1
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: UniversalHeader(
+          title: 'Art Walks',
+          showLogo: false,
+          showDeveloperTools: true,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.help_outline,
+                color: ArtbeatColors.primaryPurple,
+              ),
+              tooltip: 'How Art Walks Work',
+              onPressed: () {
+                setState(() => _showOnboarding = true);
+              },
+            ),
+          ],
+        ),
+        drawer: const ArtbeatDrawer(),
+        body: Container(
+          constraints: const BoxConstraints.expand(),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                ArtbeatColors.primaryPurple.withAlpha(13),
+                Colors.white,
+                ArtbeatColors.primaryGreen.withAlpha(13),
+              ],
+            ),
           ),
-        ],
-      ),
-      drawer: const ArtbeatDrawer(),
-      body: Container(
-        constraints: const BoxConstraints.expand(),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ArtbeatColors.primaryPurple.withAlpha(13),
-              Colors.white,
-              ArtbeatColors.primaryGreen.withAlpha(13),
-            ],
+          child: SafeArea(
+            child: Column(
+              children: [
+                if (_showOnboarding) _onboardingCard(),
+
+                // Create Art Walk Button
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(230),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: ArtbeatColors.border.withAlpha(128),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: _onCreateArtWalk,
+                    icon: const Icon(Icons.add_road),
+                    label: const Text('Create Art Walk'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ArtbeatColors.primaryPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Tab Bar
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(230),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: ArtbeatColors.border.withAlpha(128),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: ArtbeatColors.primaryPurple,
+                    unselectedLabelColor: ArtbeatColors.textSecondary,
+                    indicatorColor: ArtbeatColors.primaryPurple,
+                    tabs: const [
+                      Tab(text: 'My Walks'),
+                      Tab(text: 'Discover'),
+                      Tab(text: 'My Captures'), // Added My Captures tab
+                    ],
+                  ),
+                ),
+
+                // Tab Content
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _myWalksTab(),
+                      _discoverTab(),
+                      _myCapturesTab(), // Added My Captures tab content
+                    ],
+                  ),
+                ),
+
+                // Map Preview
+                _mapPreviewSection(),
+              ],
+            ),
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              if (_showOnboarding) _onboardingCard(),
-
-              // Create Art Walk Button
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(230),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: ArtbeatColors.border.withAlpha(128),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: _onCreateArtWalk,
-                  icon: const Icon(Icons.add_road),
-                  label: const Text('Create Art Walk'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ArtbeatColors.primaryPurple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Tab Bar
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(230),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: ArtbeatColors.border.withAlpha(128),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: ArtbeatColors.primaryPurple,
-                  unselectedLabelColor: ArtbeatColors.textSecondary,
-                  indicatorColor: ArtbeatColors.primaryPurple,
-                  tabs: const [
-                    Tab(text: 'My Walks'),
-                    Tab(text: 'Discover'),
-                    Tab(text: 'My Captures'), // Added My Captures tab
-                  ],
-                ),
-              ),
-
-              // Tab Content
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _myWalksTab(),
-                    _discoverTab(),
-                    _myCapturesTab(), // Added My Captures tab content
-                  ],
-                ),
-              ),
-
-              // Map Preview
-              _mapPreviewSection(),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: UniversalBottomNav(
-        currentIndex: 1, // Art Walk is index 1
-        onTap: _onBottomNavTap,
       ),
     );
   }
@@ -409,7 +468,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
+          const Icon(
             Icons.directions_walk,
             size: 40,
             color: ArtbeatColors.primaryPurple,
@@ -419,7 +478,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'How Art Walks Work',
                   style: TextStyle(
                     fontSize: 18,
@@ -428,7 +487,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
+                const Text(
                   'Capture art with your camera. Each photo is pinned to its location. Create self-guided art walks by linking your art locations. Share your walks, explore others, and leave reviews!',
                   style: TextStyle(color: ArtbeatColors.textSecondary),
                 ),
@@ -758,14 +817,14 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         ),
         title: Text(
           walk.title,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: ArtbeatColors.textPrimary,
           ),
         ),
         subtitle: Text(
           walk.description,
-          style: TextStyle(color: ArtbeatColors.textSecondary),
+          style: const TextStyle(color: ArtbeatColors.textSecondary),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -775,7 +834,10 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: Icon(Icons.edit, color: ArtbeatColors.primaryPurple),
+                    icon: const Icon(
+                      Icons.edit,
+                      color: ArtbeatColors.primaryPurple,
+                    ),
                     onPressed: onEdit,
                     tooltip: 'Edit',
                   ),
@@ -831,7 +893,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
   }
 
   Widget _mapPreviewSection() {
-    if (_initialCameraPosition == null) {
+    if (_initialCameraPosition == null || !_mapsInitialized) {
       return Container(
         height: 180,
         margin: const EdgeInsets.all(16),
@@ -839,7 +901,19 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 8),
+              Text(
+                _mapsInitialized ? 'Loading map...' : 'Initializing maps...',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -854,7 +928,10 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         borderRadius: BorderRadius.circular(16),
         child: GoogleMap(
           initialCameraPosition: _initialCameraPosition!,
-          onMapCreated: (controller) => _mapController = controller,
+          onMapCreated: (controller) {
+            _mapController = controller;
+            debugPrint('🗺️ Art Walk Map created successfully');
+          },
           myLocationEnabled: true,
           myLocationButtonEnabled: false,
           zoomControlsEnabled: false,

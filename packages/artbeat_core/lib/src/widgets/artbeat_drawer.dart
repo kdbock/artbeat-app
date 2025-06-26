@@ -22,7 +22,7 @@ class ArtbeatDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -40,7 +40,7 @@ class ArtbeatDrawer extends StatelessWidget {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        UserAvatar(displayName: 'Guest', radius: 30),
+                        const UserAvatar(displayName: 'Guest', radius: 30),
                         const SizedBox(height: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,6 +139,13 @@ class ArtbeatDrawer extends StatelessWidget {
             // Artist Section
             _buildSectionHeader('Artist'),
             ...ArtbeatDrawerItems.artistItems.map(
+              (item) => _buildDrawerItem(context, item),
+            ),
+            const Divider(),
+
+            // Events Section
+            _buildSectionHeader('Events'),
+            ...ArtbeatDrawerItems.eventsItems.map(
               (item) => _buildDrawerItem(context, item),
             ),
             const Divider(),

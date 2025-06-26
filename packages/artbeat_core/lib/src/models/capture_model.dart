@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 
 class CaptureModel {
   final String id;
@@ -49,7 +48,8 @@ class CaptureModel {
       imageUrl: json['imageUrl'] as String,
       createdAt: (json['createdAt'] as Timestamp).toDate(),
       title: json['title'] as String?,
-      textAnnotations: (json['textAnnotations'] as List<dynamic>?)?.cast<String>(),
+      textAnnotations: (json['textAnnotations'] as List<dynamic>?)
+          ?.cast<String>(),
       thumbnailUrl: json['thumbnailUrl'] as String?,
       updatedAt: (json['updatedAt'] as Timestamp?)?.toDate(),
       location: json['location'] as GeoPoint?,
@@ -70,10 +70,7 @@ class CaptureModel {
     SnapshotOptions? options,
   ) {
     final data = snapshot.data()!;
-    return CaptureModel.fromJson({
-      ...data,
-      'id': snapshot.id,
-    });
+    return CaptureModel.fromJson({...data, 'id': snapshot.id});
   }
 
   Map<String, dynamic> toJson() {

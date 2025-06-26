@@ -12,19 +12,19 @@ class ExampleUserProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Example User Profile')),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('This is a placeholder for Core User Profile Screen'),
-            const SizedBox(height: 20),
+            Text('This is a placeholder for Core User Profile Screen'),
+            SizedBox(height: 20),
             // if (user != null) ...[
             //   Text('User ID: \${user.uid}'),
             //   Text('User Email: \${user.email}'),
             // ] else ...[
             //   const Text('No user data available (UserService not fully implemented in this demo)'),
             // ]
-            const Text('UserService would be used here.'),
+            Text('UserService would be used here.'),
           ],
         ),
       ),

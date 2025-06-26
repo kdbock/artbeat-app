@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 
 /// Service for managing art captures in the ARTbeat app.
@@ -35,7 +36,7 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      print('Error fetching captures: $e');
+      debugPrint('Error fetching captures: $e');
       return [];
     }
   }
@@ -64,7 +65,7 @@ class CaptureService {
       });
       return docRef.id;
     } catch (e) {
-      print('Error saving capture: $e');
+      debugPrint('Error saving capture: $e');
       return null;
     }
   }
@@ -75,7 +76,7 @@ class CaptureService {
       final docRef = await _capturesRef.add(capture.toFirestore());
       return capture.copyWith(id: docRef.id);
     } catch (e) {
-      print('Error creating capture: $e');
+      debugPrint('Error creating capture: $e');
       rethrow;
     }
   }
@@ -92,7 +93,7 @@ class CaptureService {
       });
       return true;
     } catch (e) {
-      print('Error updating capture: $e');
+      debugPrint('Error updating capture: $e');
       return false;
     }
   }
@@ -103,7 +104,7 @@ class CaptureService {
       await _capturesRef.doc(captureId).delete();
       return true;
     } catch (e) {
-      print('Error deleting capture: $e');
+      debugPrint('Error deleting capture: $e');
       return false;
     }
   }
@@ -119,7 +120,7 @@ class CaptureService {
         'id': docSnapshot.id,
       });
     } catch (e) {
-      print('Error fetching capture: $e');
+      debugPrint('Error fetching capture: $e');
       return null;
     }
   }
@@ -127,6 +128,7 @@ class CaptureService {
   /// Get public captures
   Future<List<CaptureModel>> getPublicCaptures({int limit = 20}) async {
     try {
+      // Try the indexed query first
       final querySnapshot = await _capturesRef
           .where('isPublic', isEqualTo: true)
           .orderBy('createdAt', descending: true)
@@ -142,8 +144,33 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      print('Error fetching public captures: $e');
-      return [];
+      debugPrint('Error fetching public captures with index: $e');
+
+      // Fallback: Try without orderBy to avoid index requirement
+      try {
+        debugPrint('🔄 Trying fallback query without orderBy...');
+        final fallbackQuery = await _capturesRef
+            .where('isPublic', isEqualTo: true)
+            .limit(limit)
+            .get();
+
+        final captures = fallbackQuery.docs
+            .map(
+              (doc) => CaptureModel.fromJson({
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              }),
+            )
+            .toList();
+
+        // Sort manually by createdAt
+        captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        debugPrint('✅ Fallback query found ${captures.length} public captures');
+        return captures;
+      } catch (fallbackError) {
+        debugPrint('❌ Fallback query also failed: $fallbackError');
+        return [];
+      }
     }
   }
 }

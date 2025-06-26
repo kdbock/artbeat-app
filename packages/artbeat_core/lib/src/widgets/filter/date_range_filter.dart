@@ -59,7 +59,7 @@ class DateRangeFilter extends StatelessWidget {
 class _DatePickerField extends StatelessWidget {
   final String label;
   final DateTime? date;
-  final Function(DateTime?) onDateSelected;
+  final void Function(DateTime?) onDateSelected;
   final DateFormat dateFormat;
   final DateTime? minimumDate;
 

@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'coordinate_validator.dart' show SimpleLatLng;
+import 'dart:math';
 
 class LocationUtils {
   static const String _zipCodeKey = 'user_zip_code';
@@ -31,16 +32,17 @@ class LocationUtils {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+    return Geolocator.getCurrentPosition();
   }
 
   static Future<String> getZipCodeFromGeoPoint(
-      double latitude, double longitude) async {
+    double latitude,
+    double longitude,
+  ) async {
     try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(latitude, longitude);
+      final placemarks = await placemarkFromCoordinates(latitude, longitude);
       if (placemarks.isNotEmpty) {
-        String postalCode = placemarks.first.postalCode ?? '';
+        final postalCode = placemarks.first.postalCode ?? '';
         if (postalCode.isNotEmpty) {
           return postalCode;
         }
@@ -54,7 +56,7 @@ class LocationUtils {
 
   static Future<String> getZipCodeFromCurrentPosition() async {
     try {
-      Position position = await getCurrentPosition();
+      final position = await getCurrentPosition();
       return getZipCodeFromGeoPoint(position.latitude, position.longitude);
     } catch (e) {
       debugPrint('Error getting current zip code: $e');
@@ -109,7 +111,34 @@ class LocationUtils {
 
   // Use alias for backward compatibility
   static Future<String> getZipCodeFromCoordinates(
-      double lat, double lng) async {
+    double lat,
+    double lng,
+  ) async {
     return getZipCodeFromGeoPoint(lat, lng);
+  }
+
+  /// Calculate distance between two points using Haversine formula
+  /// Returns distance in miles
+  static double calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const double earthRadius = 3959; // miles (use 6371 for kilometers)
+
+    // Convert to radians
+    final phi1 = lat1 * pi / 180;
+    final phi2 = lat2 * pi / 180;
+    final deltaPhi = (lat2 - lat1) * pi / 180;
+    final deltaLambda = (lon2 - lon1) * pi / 180;
+
+    final a =
+        sin(deltaPhi / 2) * sin(deltaPhi / 2) +
+        cos(phi1) * cos(phi2) * sin(deltaLambda / 2) * sin(deltaLambda / 2);
+
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+    return earthRadius * c;
   }
 }

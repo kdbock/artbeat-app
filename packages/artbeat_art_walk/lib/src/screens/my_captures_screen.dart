@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
-import '../services/art_walk_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 /// Screen to display user's captured art
 class MyCapturesScreen extends StatefulWidget {
@@ -13,7 +13,7 @@ class MyCapturesScreen extends StatefulWidget {
 }
 
 class _MyCapturesScreenState extends State<MyCapturesScreen> {
-  final ArtWalkService _artWalkService = ArtWalkService();
+  final CaptureService _captureService = CaptureService();
   List<CaptureModel> _captures = [];
   bool _isLoading = true;
 
@@ -25,21 +25,45 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
 
   Future<void> _loadCaptures() async {
     try {
-      final captures = await _artWalkService.getUserCapturedArt();
-      setState(() {
-        _captures = captures;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading captures: $e'),
-          backgroundColor: Colors.red,
-        ),
+      final user = FirebaseAuth.instance.currentUser;
+      if (user?.uid == null) {
+        setState(() {
+          _captures = [];
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final captures = await _captureService.getCapturesForUser(user!.uid);
+      debugPrint(
+        '📸 Loaded ${captures.length} captures for user in my_captures_screen',
       );
+      if (mounted) {
+        setState(() {
+          _captures = captures;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading captures: $e');
+      if (mounted) {
+        setState(() {
+          _captures = [];
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to load captures. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _loadCaptures,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -94,7 +118,10 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/capture');
+                Navigator.of(context).pushNamed('/capture/camera').then((_) {
+                  // Refresh captures when returning from camera
+                  _loadCaptures();
+                });
               },
               icon: const Icon(Icons.camera_alt),
               label: const Text('Capture Art'),
@@ -140,8 +167,23 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                 decoration: BoxDecoration(color: Colors.grey[200]),
                 child: capture.imageUrl.isNotEmpty
                     ? Image.network(
-                        capture.imageUrl,
+                        capture.thumbnailUrl ?? capture.imageUrl,
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: Colors.grey[300],
@@ -204,6 +246,22 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                             color: Colors.grey[600],
                           ),
                         ),
+                        if (!capture.isProcessed) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.hourglass_empty,
+                            size: 12,
+                            color: Colors.orange[600],
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Processing',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.orange[600],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -217,199 +275,12 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
   }
 
   void _showCaptureDetail(CaptureModel capture) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.9,
-        minChildSize: 0.5,
-        builder: (context, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Image
-                        Container(
-                          width: double.infinity,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.grey[200],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: capture.imageUrl.isNotEmpty
-                                ? Image.network(
-                                    capture.imageUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        color: Colors.grey[300],
-                                        child: const Icon(
-                                          Icons.broken_image,
-                                          color: Colors.grey,
-                                          size: 60,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                : Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(
-                                      Icons.image,
-                                      color: Colors.grey,
-                                      size: 60,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Title
-                        Text(
-                          capture.title ?? 'Untitled Capture',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        // Artist
-                        if (capture.artistName != null) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'by ${capture.artistName}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-
-                        // Description
-                        if (capture.description != null) ...[
-                          const SizedBox(height: 16),
-                          Text(
-                            capture.description!,
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-
-                        // Location
-                        if (capture.locationName != null) ...[
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on, size: 16),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  capture.locationName!,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-
-                        // Tags
-                        if (capture.tags != null &&
-                            capture.tags!.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            children: capture.tags!.map((tag) {
-                              return Chip(
-                                label: Text(tag),
-                                backgroundColor: Colors.blue[50],
-                                labelStyle: TextStyle(
-                                  color: Colors.blue[700],
-                                  fontSize: 12,
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ],
-
-                        // Metadata
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    capture.isPublic
-                                        ? Icons.public
-                                        : Icons.lock,
-                                    size: 16,
-                                    color: Colors.grey[600],
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    capture.isPublic ? 'Public' : 'Private',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Captured on ${_formatDate(capture.createdAt)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    // Navigate to capture detail screen instead of modal
+    Navigator.of(
+      context,
+    ).pushNamed('/capture/detail', arguments: capture.id).then((_) {
+      // Refresh captures when returning from detail
+      _loadCaptures();
+    });
   }
 }

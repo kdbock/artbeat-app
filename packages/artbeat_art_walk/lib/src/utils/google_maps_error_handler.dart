@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -34,6 +33,9 @@ class GoogleMapsErrorHandler {
   ) async {
     try {
       // Apply map style optimizations for emulators
+      // TODO: Update to newer API when available - setMapStyle is deprecated
+      // but no direct replacement for dynamic styling exists yet
+      // ignore: deprecated_member_use
       await controller.setMapStyle('''
       [
         {

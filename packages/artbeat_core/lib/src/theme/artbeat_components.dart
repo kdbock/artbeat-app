@@ -65,7 +65,7 @@ class ArtbeatComponents {
     shape: WidgetStateProperty.all<RoundedRectangleBorder>(
       RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: ArtbeatColors.primaryPurple, width: 1.5),
+        side: const BorderSide(color: ArtbeatColors.primaryPurple, width: 1.5),
       ),
     ),
   );

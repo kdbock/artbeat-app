@@ -75,7 +75,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       if (mounted) {
         setState(() {
           _artwork = artwork;
-          _artist = artistProfile as ArtistProfileModel?;
+          _artist = artistProfile;
           _hasLiked = hasLiked;
           _isLoading = false;
         });

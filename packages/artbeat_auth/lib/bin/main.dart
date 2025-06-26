@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../src/services/auth_service.dart'; // Use local AuthService
 import 'package:artbeat_auth/artbeat_auth.dart';
 
 // Get Firebase configuration from ConfigService

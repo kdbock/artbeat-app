@@ -37,7 +37,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
   Future<void> _getCurrentLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         // Handle location services disabled...
         return;

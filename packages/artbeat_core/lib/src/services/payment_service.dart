@@ -496,6 +496,6 @@ class PaymentService {
     // If not, create a new customer in Stripe
     final email = _auth.currentUser?.email ?? '';
     final name = _auth.currentUser?.displayName ?? '';
-    return await createCustomer(email: email, name: name);
+    return createCustomer(email: email, name: name);
   }
 }

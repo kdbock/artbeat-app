@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import '../utils/user_sync_helper.dart';
 import '../theme/artbeat_colors.dart';
 import '../utils/color_extensions.dart';
@@ -52,20 +53,34 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Delay to show splash screen for at least 2 seconds
-    await Future<void>.delayed(const Duration(seconds: 2));
+    // Short delay to show splash screen briefly (reduced from 2 seconds)
+    await Future<void>.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
+
     try {
+      // Ensure Firebase is fully initialized
+      debugPrint('🔥 SplashScreen: Verifying Firebase initialization...');
+      if (Firebase.apps.isEmpty) {
+        debugPrint(
+          '❌ SplashScreen: No Firebase apps found, redirecting to login',
+        );
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/login');
+        return;
+      }
+
       // Check if user is logged in directly with Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
       debugPrint('SplashScreen: currentUser = ${user?.uid ?? 'null'}');
 
-      // If user is authenticated, ensure their Firestore document exists
+      // If user is authenticated, sync user document in background
       if (user != null) {
-        debugPrint('🔄 SplashScreen: Ensuring user document sync...');
-        await UserSyncHelper.ensureUserDocumentExists();
+        debugPrint('🔄 SplashScreen: Starting background user sync...');
+        // Start user sync in background (non-blocking)
+        _syncUserInBackground();
       }
 
+      // Navigate immediately without waiting for sync
       // Dismiss keyboard before navigating
       FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
@@ -80,6 +95,22 @@ class _SplashScreenState extends State<SplashScreen>
       FocusScope.of(context).unfocus();
       Navigator.of(context).pushReplacementNamed('/login');
     }
+  }
+
+  // Sync user data in background without blocking navigation
+  void _syncUserInBackground() {
+    Future.delayed(Duration.zero, () async {
+      try {
+        await UserSyncHelper.ensureUserDocumentExists().timeout(
+          const Duration(seconds: 5), // Reduced timeout
+        );
+        debugPrint('✅ Background user sync completed');
+      } on TimeoutException {
+        debugPrint('⏱️ Background user sync timed out');
+      } catch (syncError) {
+        debugPrint('⚠️ Background user sync failed: $syncError');
+      }
+    });
   }
 
   @override

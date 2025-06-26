@@ -123,12 +123,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       }
 
       // Upload images to Firebase Storage (if any)
-      final StorageService storageService = StorageService();
-      List<String> imageUrls = [];
+      final storageService = StorageService();
+      final imageUrls = <String>[];
 
       if (_selectedImages.isNotEmpty) {
         for (int i = 0; i < _selectedImages.length; i++) {
-          File image = _selectedImages[i];
+          final image = _selectedImages[i];
           final fileName =
               'post_${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
           final path = 'post_images/${user.uid}/$fileName';

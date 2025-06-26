@@ -62,14 +62,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Fan of',
           style: TextStyle(
             color: core.ArtbeatColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: IconThemeData(color: core.ArtbeatColors.textPrimary),
+        iconTheme: const IconThemeData(color: core.ArtbeatColors.textPrimary),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -85,7 +85,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         ),
         child: SafeArea(
           child: _isLoading
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(
                     color: core.ArtbeatColors.primaryPurple,
                   ),
@@ -131,7 +131,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.front_hand,
             size: 80,
             color: core.ArtbeatColors.accentYellow,
@@ -141,7 +141,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             _isCurrentUser
                 ? 'You haven\'t become a fan of anyone yet'
                 : 'This user isn\'t a fan of anyone yet',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: core.ArtbeatColors.textSecondary,
             ),

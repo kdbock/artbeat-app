@@ -172,84 +172,166 @@ class _DeveloperFeedbackAdminScreenState
         color: Colors.grey[100],
         border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
       ),
-      child: Column(
-        children: [
-          // Use Column instead of Row for better mobile layout
-          Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<FeedbackStatus?>(
-                      value: _statusFilter,
-                      decoration: const InputDecoration(
-                        labelText: 'Status',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        isDense: true,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Use column layout for narrow screens
+          if (constraints.maxWidth < 500) {
+            return Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: DropdownButtonFormField<FeedbackStatus?>(
+                    value: _statusFilter,
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
-                      items: [
-                        const DropdownMenuItem<FeedbackStatus?>(
-                          value: null,
-                          child: Text('All'),
-                        ),
-                        ...FeedbackStatus.values.map(
-                          (status) => DropdownMenuItem(
-                            value: status,
-                            child: Text(status.displayName),
-                          ),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _statusFilter = value;
-                        });
-                      },
+                      isDense: true,
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<String?>(
-                      value: _packageFilter,
-                      decoration: const InputDecoration(
-                        labelText: 'Package',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        isDense: true,
+                    items: [
+                      const DropdownMenuItem<FeedbackStatus?>(
+                        value: null,
+                        child: Text('All'),
                       ),
-                      items: [
-                        const DropdownMenuItem<String?>(
-                          value: null,
-                          child: Text('All'),
+                      ...FeedbackStatus.values.map(
+                        (status) => DropdownMenuItem(
+                          value: status,
+                          child: Text(status.displayName),
                         ),
-                        ...FeedbackService.getAvailablePackages().map(
-                          (package) => DropdownMenuItem(
-                            value: package,
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _statusFilter = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: DropdownButtonFormField<String?>(
+                    value: _packageFilter,
+                    decoration: const InputDecoration(
+                      labelText: 'Package',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      isDense: true,
+                    ),
+                    isExpanded: true, // This helps prevent overflow
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        value: null,
+                        child: Text('All'),
+                      ),
+                      ...FeedbackService.getAvailablePackages().map(
+                        (package) => DropdownMenuItem(
+                          value: package,
+                          child: SizedBox(
+                            width: double.infinity,
                             child: Text(
                               _getPackageDisplayName(package),
                               overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _packageFilter = value;
-                        });
-                      },
-                    ),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _packageFilter = value;
+                      });
+                    },
                   ),
-                ],
+                ),
+              ],
+            );
+          }
+
+          // Use row layout for wider screens
+          return Row(
+            children: [
+              Expanded(
+                child: DropdownButtonFormField<FeedbackStatus?>(
+                  value: _statusFilter,
+                  decoration: const InputDecoration(
+                    labelText: 'Status',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    isDense: true,
+                  ),
+                  items: [
+                    const DropdownMenuItem<FeedbackStatus?>(
+                      value: null,
+                      child: Text('All'),
+                    ),
+                    ...FeedbackStatus.values.map(
+                      (status) => DropdownMenuItem(
+                        value: status,
+                        child: Text(status.displayName),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _statusFilter = value;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: DropdownButtonFormField<String?>(
+                  value: _packageFilter,
+                  decoration: const InputDecoration(
+                    labelText: 'Package',
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    isDense: true,
+                  ),
+                  isExpanded: true, // This helps prevent overflow
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('All'),
+                    ),
+                    ...FeedbackService.getAvailablePackages().map(
+                      (package) => DropdownMenuItem(
+                        value: package,
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            _getPackageDisplayName(package),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _packageFilter = value;
+                    });
+                  },
+                ),
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

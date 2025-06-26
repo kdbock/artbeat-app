@@ -363,7 +363,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
         shareText += '\n\nCheck out this artwork!';
       }
 
-      await Share.share(shareText);
+      await SharePlus.instance.share(ShareParams(text: shareText));
 
       // Update share count
       final postRef = FirebaseFirestore.instance
@@ -390,9 +390,9 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   }
 
   void _navigateToComments(PostModel post) {
-    Navigator.push(
+    Navigator.push<void>(
       context,
-      MaterialPageRoute(builder: (context) => CommentsScreen(post: post)),
+      MaterialPageRoute<void>(builder: (context) => CommentsScreen(post: post)),
     ).then((_) {
       // Refresh comments when returning from comments screen
       _fetchCommentsForPost(post.id);
@@ -400,9 +400,9 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   }
 
   void _navigateToCreatePost() {
-    Navigator.push(
+    Navigator.push<void>(
       context,
-      MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+      MaterialPageRoute<void>(builder: (context) => const CreatePostScreen()),
     ).then((_) {
       // Refresh feed when returning from create post
       _loadPosts();

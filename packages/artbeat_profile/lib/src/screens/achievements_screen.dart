@@ -241,14 +241,14 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
+        title: const Text(
           'Achievements',
           style: TextStyle(
             color: ArtbeatColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
         ),
-        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
+        iconTheme: const IconThemeData(color: ArtbeatColors.textPrimary),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -277,7 +277,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         ),
         child: SafeArea(
           child: _isLoading
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(
                     color: ArtbeatColors.primaryPurple,
                   ),

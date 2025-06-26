@@ -62,7 +62,7 @@ class SubscriptionService extends ChangeNotifier {
       final artistProfile = ArtistProfileModel.fromFirestore(
         artistDoc.docs.first,
       );
-      SubscriptionTier tier = artistProfile.subscriptionTier;
+      final tier = artistProfile.subscriptionTier;
       return tier;
     } catch (e) {
       debugPrint('Error getting current subscription tier: $e');

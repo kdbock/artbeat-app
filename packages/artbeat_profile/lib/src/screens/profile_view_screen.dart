@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_capture/artbeat_capture.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String userId;
@@ -158,17 +157,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
     }
   }
 
-  void _navigateToCaptureDetail(CaptureModel capture) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => CaptureDetailScreen(
-          capture: capture,
-          isCurrentUser: widget.isCurrentUser,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -226,11 +214,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
+        iconTheme: const IconThemeData(color: ArtbeatColors.textPrimary),
         actions: [
           if (widget.isCurrentUser)
             IconButton(
-              icon: Icon(Icons.edit, color: ArtbeatColors.primaryPurple),
+              icon: const Icon(Icons.edit, color: ArtbeatColors.primaryPurple),
               onPressed: () {
                 Navigator.pushNamed(context, '/profile/edit');
               },
@@ -322,7 +310,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                         ),
                         child: Text(
                           name,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: ArtbeatColors.textPrimary,
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
@@ -351,7 +339,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                   children: [
                     Text(
                       name,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: ArtbeatColors.textPrimary,
@@ -361,7 +349,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       const SizedBox(height: 8),
                       Text(
                         bio,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           color: ArtbeatColors.textSecondary,
                         ),
@@ -371,7 +359,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.location_on_outlined,
                             size: 16,
                             color: ArtbeatColors.primaryPurple,
@@ -379,7 +367,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           const SizedBox(width: 4),
                           Text(
                             location,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: ArtbeatColors.textSecondary,
                             ),
                           ),
@@ -491,7 +479,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         const SizedBox(height: 4),
         Text(
           value.toString(),
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: ArtbeatColors.textPrimary,
@@ -499,7 +487,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         ),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: ArtbeatColors.textSecondary),
+          style: const TextStyle(fontSize: 12, color: ArtbeatColors.textSecondary),
         ),
       ],
     );
@@ -520,7 +508,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       child: Center(
         child: Text(
           name.isNotEmpty ? name[0].toUpperCase() : '?',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 48,
             fontWeight: FontWeight.bold,
             color: ArtbeatColors.primaryPurple,
@@ -535,13 +523,13 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.camera_alt_outlined,
                 color: ArtbeatColors.primaryPurple,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Art Captures',
                 style: TextStyle(
@@ -570,7 +558,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: ArtbeatColors.border),
                         ),
-                        child: Center(
+                        child: const Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -579,7 +567,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                                 color: ArtbeatColors.textSecondary,
                                 size: 32,
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
                                 'Uploaded',
                                 style: TextStyle(
@@ -594,7 +582,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       );
                     },
                   )
-                : Center(
+                : const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -604,7 +592,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           size: 48,
                           color: ArtbeatColors.textSecondary,
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Text(
                           'No captures yet',
                           style: TextStyle(
@@ -612,7 +600,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                             color: ArtbeatColors.textSecondary,
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         Text(
                           'Start capturing art to see it here!',
                           style: TextStyle(
@@ -635,10 +623,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.front_hand, color: ArtbeatColors.accentYellow),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Fan of',
                 style: TextStyle(
@@ -664,15 +652,15 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           ),
                         ),
                         title: Text('User ${index + 1}'),
-                        subtitle: Text('Art enthusiast'),
-                        trailing: Icon(
+                        subtitle: const Text('Art enthusiast'),
+                        trailing: const Icon(
                           Icons.front_hand,
                           color: ArtbeatColors.accentYellow,
                         ),
                       );
                     },
                   )
-                : Center(
+                : const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -681,7 +669,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           size: 64,
                           color: ArtbeatColors.textSecondary,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
                           'No fans yet',
                           style: TextStyle(
@@ -689,7 +677,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                             color: ArtbeatColors.textSecondary,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(
                           'Keep creating great art to gain fans!',
                           style: TextStyle(
@@ -712,13 +700,13 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.emoji_events_outlined,
                 color: ArtbeatColors.accentYellow,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Achievements',
                 style: TextStyle(
@@ -813,7 +801,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           const SizedBox(height: 4),
           Text(
             description,
-            style: TextStyle(fontSize: 10, color: ArtbeatColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 10,
+              color: ArtbeatColors.textSecondary,
+            ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

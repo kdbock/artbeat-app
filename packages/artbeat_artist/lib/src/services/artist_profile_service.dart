@@ -37,6 +37,7 @@ class ArtistProfileService {
         'subscriptionTier': subscriptionTier.name,
         'isVerified': false,
         'isFeatured': false,
+        'isPortfolioPublic': true, // Default to public for featured artists
         'socialLinks': <String, String>{},
         'createdAt': now,
         'updatedAt': now,
@@ -59,6 +60,7 @@ class ArtistProfileService {
         socialLinks: const {},
         isVerified: false,
         isFeatured: false,
+        isPortfolioPublic: true,
         subscriptionTier: subscriptionTier,
         createdAt: now,
         updatedAt: now,
@@ -101,6 +103,7 @@ class ArtistProfileService {
             Map<String, String>.from(data['socialLinks'] as Map? ?? {}),
         isVerified: (data['isVerified'] as bool?) ?? false,
         isFeatured: (data['isFeatured'] as bool?) ?? false,
+        isPortfolioPublic: (data['isPortfolioPublic'] as bool?) ?? true,
         subscriptionTier: core.SubscriptionTier.values.firstWhere(
           (tier) => tier.name == data['subscriptionTier'],
           orElse: () => core.SubscriptionTier.artistBasic,
@@ -142,6 +145,7 @@ class ArtistProfileService {
             Map<String, String>.from(data['socialLinks'] as Map? ?? {}),
         isVerified: (data['isVerified'] as bool?) ?? false,
         isFeatured: (data['isFeatured'] as bool?) ?? false,
+        isPortfolioPublic: (data['isPortfolioPublic'] as bool?) ?? true,
         subscriptionTier: core.SubscriptionTier.values.firstWhere(
           (tier) => tier.apiName == data['subscriptionTier'],
           orElse: () => core.SubscriptionTier.artistBasic,
@@ -168,6 +172,7 @@ class ArtistProfileService {
     Map<String, String>? socialLinks,
     bool? isVerified,
     bool? isFeatured,
+    bool? isPortfolioPublic,
     core.SubscriptionTier? subscriptionTier,
   }) async {
     try {
@@ -186,6 +191,8 @@ class ArtistProfileService {
       if (socialLinks != null) updates['socialLinks'] = socialLinks;
       if (isVerified != null) updates['isVerified'] = isVerified;
       if (isFeatured != null) updates['isFeatured'] = isFeatured;
+      if (isPortfolioPublic != null)
+        updates['isPortfolioPublic'] = isPortfolioPublic;
       if (subscriptionTier != null) {
         updates['subscriptionTier'] = subscriptionTier.name;
       }
@@ -197,7 +204,8 @@ class ArtistProfileService {
   }
 
   /// Get featured artists
-  Future<List<core.ArtistProfileModel>> getFeaturedArtists({int limit = 10}) async {
+  Future<List<core.ArtistProfileModel>> getFeaturedArtists(
+      {int limit = 10}) async {
     try {
       final query = await _artistProfilesCollection
           .where('isFeatured', isEqualTo: true)

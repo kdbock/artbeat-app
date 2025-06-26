@@ -4,7 +4,7 @@ import '../../models/filter_types.dart';
 class SortFilter extends StatelessWidget {
   final SortOption currentSort;
   final bool ascending;
-  final Function(SortOption, bool) onSortChanged;
+  final void Function(SortOption, bool) onSortChanged;
 
   const SortFilter({
     super.key,
@@ -20,10 +20,7 @@ class SortFilter extends StatelessWidget {
       children: [
         const Text(
           'Sort By',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Wrap(

@@ -30,6 +30,9 @@ dependencies:
   timeago: ^3.6.0
   device_info_plus: ^11.5.0
 
+  artbeat_capture:
+    path: ../artbeat_capture
+
 flutter:
   uses-material-design: true
 

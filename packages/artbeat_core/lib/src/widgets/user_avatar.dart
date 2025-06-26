@@ -101,7 +101,7 @@ class UserAvatar extends StatelessWidget {
             child: SizedBox(
               width: radius * 0.5,
               height: radius * 0.5,
-              child: CircularProgressIndicator(
+              child: const CircularProgressIndicator(
                 strokeWidth: 2,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   ArtbeatColors.primaryPurple,

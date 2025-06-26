@@ -22,6 +22,7 @@ export 'src/services/payment_service.dart' show PaymentService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
 export 'src/services/feedback_service.dart' show FeedbackService;
+export 'src/services/maps_diagnostic_service.dart' show MapsDiagnosticService;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file

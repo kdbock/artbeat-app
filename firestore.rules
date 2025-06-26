@@ -85,32 +85,34 @@ service cloud.firestore {
 
     // Artist profiles (public portfolios)
     match /artistProfiles/{artistId} {
-      allow read: if resource.data.isPortfolioPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.userId);
-      allow create: if request.auth != null && 
-                    request.auth.uid == request.resource.data.userId;
+      allow read: if true; // Allow public read of all artist profiles
+      allow create: if request.auth != null && (
+                    request.auth.uid == request.resource.data.userId || 
+                    // Allow creating featured public artist profiles for seeding
+                    (request.resource.data.isFeatured == true && 
+                     request.resource.data.isPortfolioPublic == true)
+                  );
       allow update, delete: if request.auth != null && 
                             request.auth.uid == resource.data.userId;
     }
 
-    // Captures collection
+    // Captures collection - users can manage their own captures, public captures are readable by all
     match /captures/{captureId} {
       allow read: if resource.data.isPublic == true || 
                   (request.auth != null && request.auth.uid == resource.data.userId);
-      allow write: if request.auth != null && 
-                   request.auth.uid == request.resource.data.userId &&
-                   request.auth.uid == request.resource.data.artistId;
-    }
-
-    // Captures collection - allow users to save their own captures
-    match /captures/{captureId} {
-      allow read: if request.auth != null && 
-                 (request.auth.uid == resource.data.userId || 
-                  resource.data.isPublic == true);
                   
       allow create: if request.auth != null && 
                     request.auth.uid == request.resource.data.userId;
                     
+      allow update, delete: if request.auth != null && 
+                            request.auth.uid == resource.data.userId;
+    }
+
+    // Artists collection - publicly readable for featured artists, users can manage their own
+    match /artists/{artistId} {
+      allow read: if true; // Allow public reading of artist profiles
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
       allow update, delete: if request.auth != null && 
                             request.auth.uid == resource.data.userId;
     }

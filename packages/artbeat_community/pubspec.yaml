@@ -23,6 +23,8 @@ dependencies:
   provider: ^6.1.1
   artbeat_artist:
     path: ../artbeat_artist
+  artbeat_artwork:
+    path: ../artbeat_artwork
   share_plus: ^11.0.0
   google_maps_flutter: ^2.5.3
   flutter_svg: ^2.0.10+1

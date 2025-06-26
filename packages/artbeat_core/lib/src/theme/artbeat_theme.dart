@@ -8,12 +8,12 @@ class ArtbeatTheme {
   static ThemeData get lightTheme {
     final baseTheme = ThemeData.light();
     return baseTheme.copyWith(
-      colorScheme: ColorScheme.light(
-        primary: const Color(0xFF8C52FF),
-        secondary: const Color(0xFF6C63FF),
-        surface: const Color(0xFFF5F5F5),
-        onSurface: const Color(0xFF1D1D1D),
-        error: const Color(0xFFB00020),
+      colorScheme: const ColorScheme.light(
+        primary: Color(0xFF8C52FF),
+        secondary: Color(0xFF6C63FF),
+        surface: Color(0xFFF5F5F5),
+        onSurface: Color(0xFF1D1D1D),
+        error: Color(0xFFB00020),
       ),
       scaffoldBackgroundColor: Colors.white,
       shadowColor: const Color(0xFF000000).withAlpha(51), // 0.2 * 255 = 51

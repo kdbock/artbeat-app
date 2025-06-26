@@ -39,7 +39,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   }
 
   Future<void> _loadArtistProfile() async {
-    print(
+    debugPrint(
         '🎨 ArtistPublicProfileScreen: Loading profile for userId: ${widget.userId}');
     setState(() {
       _isLoading = true;
@@ -48,17 +48,18 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     try {
       // Get current user ID
       _currentUserId = _subscriptionService.getCurrentUserId();
-      print('👤 ArtistPublicProfileScreen: Current user ID: $_currentUserId');
+      debugPrint(
+          '👤 ArtistPublicProfileScreen: Current user ID: $_currentUserId');
 
       // Get artist profile by user ID
       final artistProfile =
           await _subscriptionService.getArtistProfileByUserId(widget.userId);
 
-      print(
+      debugPrint(
           '📄 ArtistPublicProfileScreen: Artist profile result: ${artistProfile != null ? 'Found ${artistProfile.displayName}' : 'Not found'}');
 
       if (artistProfile == null) {
-        print(
+        debugPrint(
             '❌ ArtistPublicProfileScreen: No artist profile found, showing error');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -79,7 +80,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
       final artwork =
           await _artworkService.getArtworkByArtistProfileId(artistProfile.id);
 
-      print('🖼️ ArtistPublicProfileScreen: Found ${artwork.length} artworks');
+      debugPrint(
+          '🖼️ ArtistPublicProfileScreen: Found ${artwork.length} artworks');
 
       // Check if current user is following this artist
       bool isFollowing = false;
@@ -87,7 +89,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
         isFollowing = await _subscriptionService.isFollowingArtist(
           artistProfileId: artistProfile.id,
         );
-        print('👥 ArtistPublicProfileScreen: Following status: $isFollowing');
+        debugPrint(
+            '👥 ArtistPublicProfileScreen: Following status: $isFollowing');
       }
 
       if (mounted) {
@@ -98,10 +101,11 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
           _isFollowing = isFollowing;
           _isLoading = false;
         });
-        print('✅ ArtistPublicProfileScreen: Successfully loaded profile UI');
+        debugPrint(
+            '✅ ArtistPublicProfileScreen: Successfully loaded profile UI');
       }
     } catch (e) {
-      print('❌ ArtistPublicProfileScreen: Error loading profile: $e');
+      debugPrint('❌ ArtistPublicProfileScreen: Error loading profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading artist profile: $e')),

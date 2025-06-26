@@ -91,9 +91,10 @@ class EventService {
             .limit(10)
             .get();
 
-        events.addAll(organizerSnapshot.docs.map((doc) => EventModel.fromFirestore(doc)));
+        events.addAll(
+            organizerSnapshot.docs.map((doc) => EventModel.fromFirestore(doc)));
       } catch (e) {
-        print('Error getting organizer events: $e');
+        debugPrint('Error getting organizer events: $e');
       }
 
       // Get events where the user is an attendee
@@ -114,7 +115,7 @@ class EventService {
           }
         }
       } catch (e) {
-        print('Error getting attendee events: $e');
+        debugPrint('Error getting attendee events: $e');
       }
 
       // Sort by start date and limit to 10

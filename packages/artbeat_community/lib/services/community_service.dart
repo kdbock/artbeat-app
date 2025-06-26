@@ -28,14 +28,14 @@ class CommunityService extends ChangeNotifier {
 
       if (lastPostId != null) {
         // Get the last document for pagination
-        DocumentSnapshot lastDocSnapshot = await _firestore
+        final lastDocSnapshot = await _firestore
             .collection('posts')
             .doc(lastPostId)
             .get();
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => PostModel.fromFirestore(doc))
@@ -60,14 +60,14 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastPostId != null) {
-        DocumentSnapshot lastDocSnapshot = await _firestore
+        final lastDocSnapshot = await _firestore
             .collection('posts')
             .doc(lastPostId)
             .get();
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => PostModel.fromFirestore(doc))
@@ -100,7 +100,7 @@ class CommunityService extends ChangeNotifier {
       debugPrint('🏷️ Tags: $tags');
       debugPrint('📍 Location: $location');
 
-      DocumentReference docRef = await _firestore.collection('posts').add({
+      final docRef = await _firestore.collection('posts').add({
         'userId': userId,
         'userName': userName,
         'userPhotoUrl': userPhotoUrl,
@@ -150,7 +150,7 @@ class CommunityService extends ChangeNotifier {
   }) async {
     try {
       // Add the comment to Firestore
-      DocumentReference commentRef = await _firestore
+      final commentRef = await _firestore
           .collection('posts')
           .doc(postId)
           .collection('comments')
@@ -191,7 +191,7 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastCommentId != null) {
-        DocumentSnapshot lastDocSnapshot = await _firestore
+        final lastDocSnapshot = await _firestore
             .collection('posts')
             .doc(postId)
             .collection('comments')
@@ -200,7 +200,7 @@ class CommunityService extends ChangeNotifier {
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => CommentModel.fromFirestore(doc))
@@ -228,7 +228,7 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastReplyId != null) {
-        DocumentSnapshot lastDocSnapshot = await _firestore
+        final lastDocSnapshot = await _firestore
             .collection('posts')
             .doc(postId)
             .collection('comments')
@@ -237,7 +237,7 @@ class CommunityService extends ChangeNotifier {
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => CommentModel.fromFirestore(doc))

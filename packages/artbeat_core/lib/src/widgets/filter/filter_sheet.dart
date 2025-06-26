@@ -6,7 +6,7 @@ import 'sort_filter.dart';
 
 class FilterSheet extends StatefulWidget {
   final FilterParameters initialFilters;
-  final Function(FilterParameters) onFiltersChanged;
+  final void Function(FilterParameters) onFiltersChanged;
   final List<String>? availableLocations;
   final List<String>? availableTags;
   final bool showArtistTypes;
@@ -91,10 +91,12 @@ class _FilterSheetState extends State<FilterSheet> {
                       currentSort: _currentFilters.sortBy,
                       ascending: _currentFilters.ascending,
                       onSortChanged: (sort, ascending) {
-                        _updateFilters(_currentFilters.copyWith(
-                          sortBy: sort,
-                          ascending: ascending,
-                        ));
+                        _updateFilters(
+                          _currentFilters.copyWith(
+                            sortBy: sort,
+                            ascending: ascending,
+                          ),
+                        );
                       },
                     ),
                     const Divider(height: 32),
@@ -115,7 +117,8 @@ class _FilterSheetState extends State<FilterSheet> {
                         getLabel: (type) => type.displayName,
                         onSelectionChanged: (types) {
                           _updateFilters(
-                              _currentFilters.copyWith(artistTypes: types));
+                            _currentFilters.copyWith(artistTypes: types),
+                          );
                         },
                       ),
                       const Divider(height: 32),
@@ -137,7 +140,8 @@ class _FilterSheetState extends State<FilterSheet> {
                         getLabel: (medium) => medium.displayName,
                         onSelectionChanged: (mediums) {
                           _updateFilters(
-                              _currentFilters.copyWith(artMediums: mediums));
+                            _currentFilters.copyWith(artMediums: mediums),
+                          );
                         },
                       ),
                       const Divider(height: 32),
@@ -159,7 +163,8 @@ class _FilterSheetState extends State<FilterSheet> {
                         getLabel: (location) => location,
                         onSelectionChanged: (locations) {
                           _updateFilters(
-                              _currentFilters.copyWith(locations: locations));
+                            _currentFilters.copyWith(locations: locations),
+                          );
                         },
                       ),
                       const Divider(height: 32),
@@ -192,10 +197,12 @@ class _FilterSheetState extends State<FilterSheet> {
                         startDate: _currentFilters.startDate,
                         endDate: _currentFilters.endDate,
                         onDateRangeChanged: (start, end) {
-                          _updateFilters(_currentFilters.copyWith(
-                            startDate: start,
-                            endDate: end,
-                          ));
+                          _updateFilters(
+                            _currentFilters.copyWith(
+                              startDate: start,
+                              endDate: end,
+                            ),
+                          );
                         },
                       ),
                   ],

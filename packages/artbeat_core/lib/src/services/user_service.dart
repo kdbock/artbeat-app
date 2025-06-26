@@ -20,31 +20,52 @@ class UserService extends ChangeNotifier {
   late final FirebaseAuth _auth;
   late final FirebaseFirestore _firestore;
   late final FirebaseStorage _storage;
+  bool _firebaseInitialized = false;
 
   UserService._internal() {
-    _initializeFirebase();
+    // Don't initialize Firebase instances immediately
+    // Let them be initialized lazily when first accessed
   }
 
   void _initializeFirebase() {
+    if (_firebaseInitialized) return;
+
     try {
       _auth = FirebaseAuth.instance;
       _firestore = FirebaseFirestore.instance;
       _storage = FirebaseStorage.instance;
+      _firebaseInitialized = true;
     } catch (e, s) {
       _log.severe('Error initializing Firebase in UserService', e, s);
     }
   }
 
-  CollectionReference get _usersCollection => _firestore.collection('users');
-  CollectionReference get _followersCollection =>
-      _firestore.collection('followers');
-  CollectionReference get _followingCollection =>
-      _firestore.collection('following');
+  // Lazy getters that initialize Firebase when first accessed
+  FirebaseAuth get auth {
+    _initializeFirebase();
+    return _auth;
+  }
 
-  User? get currentUser => _auth.currentUser;
+  FirebaseFirestore get firestore {
+    _initializeFirebase();
+    return _firestore;
+  }
+
+  FirebaseStorage get storage {
+    _initializeFirebase();
+    return _storage;
+  }
+
+  CollectionReference get _usersCollection => firestore.collection('users');
+  CollectionReference get _followersCollection =>
+      firestore.collection('followers');
+  CollectionReference get _followingCollection =>
+      firestore.collection('following');
+
+  User? get currentUser => auth.currentUser;
   String? get currentUserId => currentUser?.uid;
 
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  Stream<User?> get authStateChanges => auth.authStateChanges();
 
   Future<void> createNewUser({
     required String uid,
@@ -237,7 +258,7 @@ class UserService extends ChangeNotifier {
         '📤 uploadAndUpdateProfilePhoto: Starting upload for user $userId',
       );
 
-      final ref = _storage.ref().child('profile_images/$userId/profile.jpg');
+      final ref = storage.ref().child('profile_images/$userId/profile.jpg');
       debugPrint(
         '📂 uploadAndUpdateProfilePhoto: Storage path: profile_images/$userId/profile.jpg',
       );
@@ -272,7 +293,7 @@ class UserService extends ChangeNotifier {
     if (userId == null) return;
 
     try {
-      final ref = _storage.ref().child('cover_photos/$userId/cover.jpg');
+      final ref = storage.ref().child('cover_photos/$userId/cover.jpg');
       await ref.putFile(imageFile);
       final url = await ref.getDownloadURL();
       await _usersCollection.doc(userId).set({
@@ -290,7 +311,7 @@ class UserService extends ChangeNotifier {
     if (userId == null || userId == targetUserId) return;
 
     try {
-      final batch = _firestore.batch();
+      final batch = firestore.batch();
       // Add to following list of current user
       batch.set(
         _followingCollection.doc(userId).collection('users').doc(targetUserId),
@@ -322,7 +343,7 @@ class UserService extends ChangeNotifier {
     if (userId == null) return;
 
     try {
-      final batch = _firestore.batch();
+      final batch = firestore.batch();
       // Remove from following list of current user
       batch.delete(
         _followingCollection.doc(userId).collection('users').doc(targetUserId),

@@ -79,7 +79,7 @@ class MediaViewerScreen extends StatelessWidget {
 
   Future<void> _shareMedia(String mediaUrl) async {
     try {
-      await Share.share(mediaUrl, subject: 'Shared from chat');
+      await SharePlus.instance.share(ShareParams(text: mediaUrl));
     } catch (e) {
       debugPrint('Error sharing media: $e');
     }

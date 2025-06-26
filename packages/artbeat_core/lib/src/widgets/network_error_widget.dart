@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/index.dart';
 
 class NetworkErrorWidget extends StatelessWidget {
   final VoidCallback onRetry;
@@ -19,7 +18,7 @@ class NetworkErrorWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24.0),
         decoration: BoxDecoration(
-          color: Color(
+          color: const Color(
             0x1BDD3131,
           ), // 0.1 opacity for error color (example ARGB for Material error color)
           borderRadius: BorderRadius.circular(8.0),

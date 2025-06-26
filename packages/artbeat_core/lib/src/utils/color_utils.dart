@@ -30,7 +30,11 @@ extension ColorUtils on Color {
   /// Returns a color that contrasts well with this color (black or white)
   Color get contrastingColor {
     // Calculate perceived brightness using W3C formula
-    final brightness = ((red * 299) + (green * 587) + (blue * 114)) / 1000;
+    final brightness =
+        (((r * 255.0).round() & 0xff * 299) +
+            ((g * 255.0).round() & 0xff * 587) +
+            ((b * 255.0).round() & 0xff * 114)) /
+        1000;
     return brightness > 128 ? Colors.black : Colors.white;
   }
 

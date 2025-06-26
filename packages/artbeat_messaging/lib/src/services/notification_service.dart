@@ -167,7 +167,7 @@ class NotificationService {
   Stream<QuerySnapshot> getNotifications() {
     final userId = _auth.currentUser?.uid;
     if (userId == null) {
-      return Stream.empty();
+      return const Stream.empty();
     }
 
     return _firestore

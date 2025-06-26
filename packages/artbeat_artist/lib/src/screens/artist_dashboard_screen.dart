@@ -27,12 +27,12 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    print('🎨 ArtistDashboard: initState called');
+    debugPrint('🎨 ArtistDashboard: initState called');
     _loadArtistData();
   }
 
   Future<void> _loadArtistData() async {
-    print('🎨 ArtistDashboard: _loadArtistData started');
+    debugPrint('🎨 ArtistDashboard: _loadArtistData started');
     if (_isRefreshing) return;
 
     setState(() {
@@ -41,7 +41,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
     });
 
     try {
-      print('🎨 ArtistDashboard: Loading artist profile...');
+      debugPrint('🎨 ArtistDashboard: Loading artist profile...');
       final profileFuture = _subscriptionService.getCurrentArtistProfile();
       final subscriptionFuture = _subscriptionService.getUserSubscription();
       final results = await Future.wait([profileFuture, subscriptionFuture]);
@@ -49,11 +49,13 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
       final artistProfile = results[0] as core.ArtistProfileModel?;
       final subscription = results[1] as SubscriptionModel?;
 
-      print('🎨 ArtistDashboard: Artist profile: ${artistProfile?.displayName ?? 'null'}');
-      print('🎨 ArtistDashboard: Subscription: ${subscription?.tier ?? 'null'}');
+      debugPrint(
+          '🎨 ArtistDashboard: Artist profile: ${artistProfile?.displayName ?? 'null'}');
+      debugPrint(
+          '🎨 ArtistDashboard: Subscription: ${subscription?.tier ?? 'null'}');
 
       if (artistProfile != null) {
-        print('🎨 ArtistDashboard: Loading analytics data...');
+        debugPrint('🎨 ArtistDashboard: Loading analytics data...');
         final dataFutures = await Future.wait([
           _analyticsService.getQuickStats(artistProfile.userId),
           _analyticsService.getRecentActivities(artistProfile.userId),
@@ -61,7 +63,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
           _analyticsService.getCommissionSummary(),
         ]);
 
-        print('🎨 ArtistDashboard: Analytics data loaded successfully');
+        debugPrint('🎨 ArtistDashboard: Analytics data loaded successfully');
 
         if (mounted) {
           setState(() {
@@ -74,10 +76,10 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
             _isLoading = false;
             _isRefreshing = false;
           });
-          print('🎨 ArtistDashboard: UI updated successfully');
+          debugPrint('🎨 ArtistDashboard: UI updated successfully');
         }
       } else {
-        print('🎨 ArtistDashboard: No artist profile found');
+        debugPrint('🎨 ArtistDashboard: No artist profile found');
         if (mounted) {
           setState(() {
             _artistProfile = artistProfile;
@@ -88,7 +90,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
         }
       }
     } catch (e) {
-      print('🎨 ArtistDashboard: Error loading data: $e');
+      debugPrint('🎨 ArtistDashboard: Error loading data: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show PaymentService, PaymentMethodModel, SubscriptionTier;
 
 /// Widget for displaying local galleries and museums in a grid layout
 class LocalGalleriesWidget extends StatelessWidget {

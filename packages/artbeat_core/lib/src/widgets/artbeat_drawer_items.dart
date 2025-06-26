@@ -96,6 +96,31 @@ class ArtbeatDrawerItems {
     route: '/artist/artwork/upload',
   );
 
+  // Events Section
+  static const allEvents = ArtbeatDrawerItem(
+    title: 'All Events',
+    icon: Icons.event_outlined,
+    route: '/events/all',
+  );
+
+  static const myTickets = ArtbeatDrawerItem(
+    title: 'My Tickets',
+    icon: Icons.confirmation_number_outlined,
+    route: '/events/my-tickets',
+  );
+
+  static const createEvent = ArtbeatDrawerItem(
+    title: 'Create Event',
+    icon: Icons.event_note_outlined,
+    route: '/events/create',
+  );
+
+  static const myEvents = ArtbeatDrawerItem(
+    title: 'My Events',
+    icon: Icons.calendar_today_outlined,
+    route: '/events/my-events',
+  );
+
   // Gallery Section
   static const artistsManagement = ArtbeatDrawerItem(
     title: 'Artists Management',
@@ -172,6 +197,13 @@ class ArtbeatDrawerItems {
     uploadArtwork,
     artistAnalytics,
     artistApprovedAds,
+  ];
+
+  static List<ArtbeatDrawerItem> get eventsItems => [
+    allEvents,
+    myTickets,
+    createEvent,
+    myEvents,
   ];
 
   static List<ArtbeatDrawerItem> get galleryItems => [

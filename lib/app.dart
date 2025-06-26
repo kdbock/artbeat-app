@@ -10,6 +10,10 @@ import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_settings/artbeat_settings.dart';
+import 'screens/events/all_events_screen.dart';
+import 'screens/events/my_tickets_screen.dart';
+import 'screens/events/create_event_screen.dart';
+import 'screens/events/my_events_screen.dart';
 import 'widgets/developer_menu.dart';
 
 class MyApp extends StatelessWidget {
@@ -24,9 +28,9 @@ class MyApp extends StatelessWidget {
         // Core providers
         ChangeNotifierProvider<core.UserService>(
           create: (_) => core.UserService(),
-          lazy: false,
+          lazy: true, // Changed to lazy to prevent early Firebase access
         ),
-        Provider<AuthService>(create: (_) => AuthService(), lazy: false),
+        Provider<AuthService>(create: (_) => AuthService(), lazy: true),
         ChangeNotifierProvider<core.ConnectivityService>(
           create: (_) => core.ConnectivityService(),
           lazy: false,
@@ -35,15 +39,14 @@ class MyApp extends StatelessWidget {
           create: (_) => core.ArtbeatTheme.lightTheme,
           lazy: false,
         ),
-        Provider<AuthService>(create: (_) => AuthService(), lazy: false),
         ChangeNotifierProvider<messaging.ChatService>(
           create: (_) => messaging.ChatService(),
-          lazy: false,
+          lazy: true, // Changed to lazy to prevent early Firebase access
         ),
         // Community providers
         ChangeNotifierProvider<CommunityService>(
           create: (_) => CommunityService(),
-          lazy: false,
+          lazy: true, // Changed to lazy to prevent early Firebase access
         ),
       ],
       child: MaterialApp(
@@ -223,6 +226,20 @@ class MyApp extends StatelessWidget {
             case '/events/dashboard':
               return MaterialPageRoute(
                 builder: (_) => const core.EventsDashboardScreen(),
+              );
+            case '/events/all':
+              return MaterialPageRoute(builder: (_) => const AllEventsScreen());
+            case '/events/my-tickets':
+              return MaterialPageRoute(
+                builder: (_) => const MyTicketsDrawerScreen(),
+              );
+            case '/events/create':
+              return MaterialPageRoute(
+                builder: (_) => const CreateEventDrawerScreen(),
+              );
+            case '/events/my-events':
+              return MaterialPageRoute(
+                builder: (_) => const MyEventsDrawerScreen(),
               );
 
             // Developer menu

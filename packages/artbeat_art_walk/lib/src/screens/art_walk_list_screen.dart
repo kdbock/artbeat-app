@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 
 class ArtWalkListScreen extends StatefulWidget {
   const ArtWalkListScreen({super.key});
@@ -72,7 +72,11 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
 
   Future<void> _shareArtWalk(ArtWalkModel walk) async {
     try {
-      await Share.share('Check out this Art Walk: "${walk.title}" on ARTbeat!');
+      await share_plus.SharePlus.instance.share(
+        share_plus.ShareParams(
+          text: 'Check out this Art Walk: "${walk.title}" on ARTbeat!',
+        ),
+      );
 
       // Record the share
       await _artWalkService.recordArtWalkShare(walk.id);

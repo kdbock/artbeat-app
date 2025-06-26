@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:logger/logger.dart';
 
@@ -180,8 +180,10 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null) return;
 
     try {
-      await Share.share(
-        'Check out this Art Walk: "${_walk!.title}" on WordNerd!',
+      await share_plus.SharePlus.instance.share(
+        share_plus.ShareParams(
+          text: 'Check out this Art Walk: "${_walk!.title}" on WordNerd!',
+        ),
       );
 
       await _artWalkService.recordArtWalkShare(_walk!.id);
@@ -201,7 +203,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     // Navigate to the art walk experience screen
     Navigator.of(context)
         .push(
-          MaterialPageRoute(
+          MaterialPageRoute<bool>(
             builder: (context) =>
                 ArtWalkExperienceScreen(artWalkId: _walk!.id, artWalk: _walk!),
           ),

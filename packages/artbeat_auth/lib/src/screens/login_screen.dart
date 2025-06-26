@@ -57,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
           );
 
           // Try to get additional user data from Firebase Auth
-          User? freshUser = FirebaseAuth.instance.currentUser;
+          final freshUser = FirebaseAuth.instance.currentUser;
           await freshUser?.reload(); // Refresh user data
 
           await userService.createNewUser(

@@ -17,6 +17,7 @@ class ArtistProfileModel {
   final SubscriptionTier subscriptionTier;
   final bool isVerified;
   final bool isFeatured;
+  final bool isPortfolioPublic;
   final List<String> mediums;
   final List<String> styles;
   final Map<String, String> socialLinks;
@@ -36,6 +37,7 @@ class ArtistProfileModel {
     this.subscriptionTier = SubscriptionTier.artistBasic,
     this.isVerified = false,
     this.isFeatured = false,
+    this.isPortfolioPublic = true,
     this.mediums = const [],
     this.styles = const [],
     this.socialLinks = const {},
@@ -49,8 +51,8 @@ class ArtistProfileModel {
 
     return ArtistProfileModel(
       id: doc.id,
-      userId: data['userId'] as String,
-      displayName: data['displayName'] as String,
+      userId: (data['userId'] as String?) ?? '',
+      displayName: (data['displayName'] as String?) ?? 'Unknown Artist',
       bio: data['bio'] as String?,
       profileImageUrl: data['profileImageUrl'] as String?,
       coverImageUrl: data['coverImageUrl'] as String?,
@@ -60,11 +62,12 @@ class ArtistProfileModel {
       subscriptionTier: _parseSubscriptionTier(data['subscriptionTier']),
       isVerified: data['isVerified'] as bool? ?? false,
       isFeatured: data['isFeatured'] as bool? ?? false,
+      isPortfolioPublic: data['isPortfolioPublic'] as bool? ?? true,
       mediums: _parseStringList(data['mediums']),
       styles: _parseStringList(data['styles']),
       socialLinks: _parseStringMap(data['socialLinks']),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -82,6 +85,7 @@ class ArtistProfileModel {
       'subscriptionTier': subscriptionTier.name,
       'isVerified': isVerified,
       'isFeatured': isFeatured,
+      'isPortfolioPublic': isPortfolioPublic,
       'mediums': mediums,
       'styles': styles,
       'socialLinks': socialLinks,
