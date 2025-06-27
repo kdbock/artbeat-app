@@ -6,7 +6,6 @@ import '../utils/user_sync_helper.dart';
 import '../theme/artbeat_colors.dart';
 import '../utils/color_extensions.dart';
 
-/// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -74,15 +73,12 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(route);
     } catch (e) {
-      debugPrint('Error checking auth status: $e');
       if (!mounted) return;
-      // Dismiss keyboard before navigating
       FocusScope.of(context).unfocus();
       Navigator.of(context).pushReplacementNamed('/login');
     }
   }
 
-  // Sync user data in background without blocking navigation
   void _syncUserInBackground() {
     Future.delayed(Duration.zero, () async {
       try {
@@ -90,9 +86,7 @@ class _SplashScreenState extends State<SplashScreen>
           const Duration(seconds: 5),
         );
       } on TimeoutException {
-        // Ignore timeout
       } catch (syncError) {
-        // Ignore sync errors in background
       }
     });
   }
@@ -128,7 +122,6 @@ class _SplashScreenState extends State<SplashScreen>
               height: 300,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
-                // Fallback if image not found
                 return Icon(
                   Icons.image_not_supported,
                   size: 100,
