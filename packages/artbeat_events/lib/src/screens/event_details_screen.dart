@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/artbeat_event.dart';
 import '../models/ticket_type.dart';
 import '../services/event_service.dart';
@@ -29,6 +30,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       EventNotificationService();
 
   late ArtbeatEvent _event;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _ticketsSectionKey = GlobalKey();
 
   @override
   void initState() {
@@ -93,6 +96,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
           child: SingleChildScrollView(
+            controller: _scrollController,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -311,6 +315,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     if (_event.ticketTypes.isEmpty) return const SizedBox.shrink();
 
     return Padding(
+      key: _ticketsSectionKey,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,10 +598,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   void _shareEvent() {
-    // TODO: Implement share functionality
-    final shareText = EventUtils.generateShareText(_event);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Share text: $shareText')),
+    final eventUrl = 'https://artbeat.app/events/${_event.id}';
+    SharePlus.instance.share(
+      ShareParams(text: 'Check out this event on ARTbeat! $eventUrl'),
     );
   }
 
@@ -699,7 +703,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       _showTicketPurchaseSheet(_event.ticketTypes.first);
     } else {
       // Scroll to tickets section
-      // TODO: Implement scroll-to functionality
+      final context = _ticketsSectionKey.currentContext;
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -714,5 +725,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     } on Exception {
       // Handle error silently or show a subtle message
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }

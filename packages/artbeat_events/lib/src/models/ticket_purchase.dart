@@ -50,6 +50,8 @@ class TicketPurchase {
   final TicketPurchaseStatus status;
   final String? paymentIntentId; // Stripe payment intent ID
   final String? refundId; // Stripe refund ID if refunded
+  final String? paymentId; // Stripe payment intent or charge ID for refund
+  final double? amount; // Amount paid for this ticket (for refund)
   final DateTime purchaseDate;
   final DateTime? refundDate;
   final Map<String, dynamic>? metadata;
@@ -66,6 +68,8 @@ class TicketPurchase {
     required this.status,
     this.paymentIntentId,
     this.refundId,
+    this.paymentId,
+    this.amount,
     required this.purchaseDate,
     this.refundDate,
     this.metadata,
@@ -117,6 +121,8 @@ class TicketPurchase {
       status: TicketPurchaseStatus.fromString(data['status']?.toString() ?? 'pending'),
       paymentIntentId: data['paymentIntentId']?.toString(),
       refundId: data['refundId']?.toString(),
+      paymentId: data['paymentId']?.toString(),
+      amount: (data['amount'] as num?)?.toDouble(),
       purchaseDate: _parseDateTime(data['purchaseDate']),
       refundDate: data['refundDate'] != null ? _parseDateTime(data['refundDate']) : null,
       metadata: data['metadata'] as Map<String, dynamic>?,
@@ -136,6 +142,8 @@ class TicketPurchase {
       'status': status.name,
       'paymentIntentId': paymentIntentId,
       'refundId': refundId,
+      'paymentId': paymentId,
+      'amount': amount,
       'purchaseDate': Timestamp.fromDate(purchaseDate),
       'refundDate': refundDate != null ? Timestamp.fromDate(refundDate!) : null,
       'metadata': metadata,
@@ -155,6 +163,8 @@ class TicketPurchase {
     TicketPurchaseStatus? status,
     String? paymentIntentId,
     String? refundId,
+    String? paymentId,
+    double? amount,
     DateTime? purchaseDate,
     DateTime? refundDate,
     Map<String, dynamic>? metadata,
@@ -171,6 +181,8 @@ class TicketPurchase {
       status: status ?? this.status,
       paymentIntentId: paymentIntentId ?? this.paymentIntentId,
       refundId: refundId ?? this.refundId,
+      paymentId: paymentId ?? this.paymentId,
+      amount: amount ?? this.amount,
       purchaseDate: purchaseDate ?? this.purchaseDate,
       refundDate: refundDate ?? this.refundDate,
       metadata: metadata ?? this.metadata,

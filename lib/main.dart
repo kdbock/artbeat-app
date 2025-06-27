@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'app.dart';
+import 'tools/migrate_storage_to_firestore.dart' as migration;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

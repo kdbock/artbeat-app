@@ -448,6 +448,19 @@ class PaymentService {
     }
   }
 
+  /// Request a refund for a ticket purchase
+  static Future<void> refundPayment({
+    required String paymentId,
+    required double amount,
+    String? reason,
+  }) async {
+    // TODO: Integrate with backend/cloud function for actual refund
+    // For now, simulate a successful refund
+    await Future<void>.delayed(const Duration(seconds: 1));
+    // In production, call your backend endpoint here
+    // throw Exception('Refund failed'); // Uncomment to simulate failure
+  }
+
   /// Get price ID for subscription tier
   String _getPriceIdForTier(SubscriptionTier tier) {
     switch (tier) {

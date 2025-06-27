@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/artbeat_event.dart';
 import '../models/ticket_type.dart';
 import '../models/refund_policy.dart';
@@ -635,16 +636,29 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _getRefundPolicyKey(),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Refund Policy',
+                filled: true,
+                fillColor:
+                    ArtbeatColors.backgroundPrimary, // match login_screen
+                border: const OutlineInputBorder(),
               ),
+              dropdownColor:
+                  ArtbeatColors.backgroundPrimary, // match login_screen
+              style: const TextStyle(color: Colors.black),
               items: const [
                 DropdownMenuItem(
-                    value: 'standard', child: Text('Standard (24 hours)')),
+                    value: 'standard',
+                    child: Text('Standard (24 hours)',
+                        style: TextStyle(color: Colors.black))),
                 DropdownMenuItem(
-                    value: 'flexible', child: Text('Flexible (7 days)')),
+                    value: 'flexible',
+                    child: Text('Flexible (7 days)',
+                        style: TextStyle(color: Colors.black))),
                 DropdownMenuItem(
-                    value: 'no_refunds', child: Text('No Refunds')),
+                    value: 'no_refunds',
+                    child: Text('No Refunds',
+                        style: TextStyle(color: Colors.black))),
               ],
               onChanged: (value) {
                 setState(() {
@@ -758,7 +772,15 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     }
   }
 
-  void _submitForm() {
+  // Helper to upload a file to Firebase Storage and get its download URL
+  Future<String> _uploadImageToStorage(File file, String path) async {
+    final storageRef = FirebaseStorage.instance.ref().child(path);
+    final uploadTask = storageRef.putFile(file);
+    final snapshot = await uploadTask.whenComplete(() {});
+    return await snapshot.ref.getDownloadURL();
+  }
+
+  Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -791,19 +813,43 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
       return;
     }
 
-    // TODO: Upload images to Firebase Storage and get URLs
-    // For now, using placeholder URLs
-    final imageUrls =
-        _eventImages.map((e) => 'placeholder_url_${e.path}').toList();
-    const artistHeadshotUrl = 'placeholder_headshot_url';
-    const eventBannerUrl = 'placeholder_banner_url';
+    // Upload images to Firebase Storage and get URLs
+    // Get current user ID from UserService
+    final userId = UserService().currentUserId;
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not logged in.')),
+      );
+      return;
+    }
+    final eventId = widget.initialEvent?.id ??
+        DateTime.now().millisecondsSinceEpoch.toString();
+    String headshotUrl = '';
+    String bannerUrl = '';
+    List<String> imageUrls = [];
+    try {
+      headshotUrl = await _uploadImageToStorage(
+          _artistHeadshot!, 'events/$userId/$eventId/headshot.jpg');
+      bannerUrl = await _uploadImageToStorage(
+          _eventBanner!, 'events/$userId/$eventId/banner.jpg');
+      imageUrls = await Future.wait(_eventImages.asMap().entries.map((entry) =>
+          _uploadImageToStorage(
+              entry.value, 'events/$userId/$eventId/image_${entry.key}.jpg')));
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload images: $e')),
+        );
+      }
+      return;
+    }
 
     final event = widget.initialEvent?.copyWith(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           imageUrls: imageUrls,
-          artistHeadshotUrl: artistHeadshotUrl,
-          eventBannerUrl: eventBannerUrl,
+          artistHeadshotUrl: headshotUrl,
+          eventBannerUrl: bannerUrl,
           dateTime: _selectedDateTime!,
           location: _locationController.text.trim(),
           ticketTypes: _ticketTypes,
@@ -820,10 +866,10 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
         ArtbeatEvent.create(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
-          artistId: 'current_user_id', // TODO: Get from auth service
+          artistId: userId,
           imageUrls: imageUrls,
-          artistHeadshotUrl: artistHeadshotUrl,
-          eventBannerUrl: eventBannerUrl,
+          artistHeadshotUrl: headshotUrl,
+          eventBannerUrl: bannerUrl,
           dateTime: _selectedDateTime!,
           location: _locationController.text.trim(),
           ticketTypes: _ticketTypes,

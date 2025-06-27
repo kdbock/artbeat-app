@@ -58,8 +58,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = 7
+        versionName = "1.0.5"
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")

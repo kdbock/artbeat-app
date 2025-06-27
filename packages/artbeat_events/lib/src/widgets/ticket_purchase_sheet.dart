@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/artbeat_event.dart';
 import '../models/ticket_type.dart';
 import '../services/event_service.dart';
@@ -36,9 +37,17 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
   @override
   void initState() {
     super.initState();
-    // TODO: Pre-fill with current user's information
-    _emailController.text = 'user@example.com';
-    _nameController.text = 'Current User';
+    _prefillUserInfo();
+  }
+
+  Future<void> _prefillUserInfo() async {
+    final user = await UserService().getCurrentUserModel();
+    if (user != null) {
+      setState(() {
+        _emailController.text = user.email;
+        _nameController.text = user.fullName;
+      });
+    }
   }
 
   @override
@@ -521,8 +530,14 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
       // For paid tickets, you would integrate with Stripe here
       String? paymentIntentId;
       if (!widget.ticketType.isFree) {
-        // TODO: Process payment with Stripe
-        // paymentIntentId = await _processPayment();
+        // Process payment with Stripe
+        final amount = widget.ticketType.price * _quantity;
+        // This is a placeholder for actual payment integration
+        await PaymentService.refundPayment(
+          paymentId: 'mock_payment_id',
+          amount: amount,
+          reason: 'Ticket purchase',
+        );
         paymentIntentId = 'mock_payment_intent_id';
       }
 

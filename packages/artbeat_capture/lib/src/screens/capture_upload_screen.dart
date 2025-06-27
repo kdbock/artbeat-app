@@ -114,7 +114,9 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
     super.initState();
     debugPrint('CaptureUploadScreen: Art types count: ${_artTypes.length}');
     debugPrint('CaptureUploadScreen: Art mediums count: ${_artMediums.length}');
-    debugPrint('CaptureUploadScreen: First few art types: ${_artTypes.take(5).toList()}');
+    debugPrint(
+      'CaptureUploadScreen: First few art types: ${_artTypes.take(5).toList()}',
+    );
     _initializeForm();
   }
 
@@ -202,13 +204,13 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
       }
 
       setState(() => _uploadStatus = 'Uploading image...');
-      
+
       // Debug: Print selected values
       debugPrint('CaptureUpload: Selected art type: $_selectedArtType');
       debugPrint('CaptureUpload: Selected art medium: $_selectedArtMedium');
       debugPrint('CaptureUpload: Art types available: ${_artTypes.length}');
       debugPrint('CaptureUpload: Art mediums available: ${_artMediums.length}');
-      
+
       // Upload image to storage (should work now with correct bucket)
       final imageUrl = await _storageService.uploadImage(widget.imageFile);
 
@@ -406,15 +408,26 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                   // Art Type dropdown
                   DropdownButtonFormField<String>(
                     value: _selectedArtType,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Art Type',
-                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: core
+                          .ArtbeatColors
+                          .backgroundPrimary, // match login_screen
+                      border: const OutlineInputBorder(),
                     ),
+                    dropdownColor: core
+                        .ArtbeatColors
+                        .backgroundPrimary, // match login_screen
+                    style: const TextStyle(color: Colors.black),
                     isExpanded: true,
                     items: _artTypes.map((String type) {
                       return DropdownMenuItem<String>(
                         value: type,
-                        child: Text(type),
+                        child: Text(
+                          type,
+                          style: const TextStyle(color: Colors.black),
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? value) {
@@ -422,22 +435,36 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                         _selectedArtType = value;
                       });
                     },
-                    hint: const Text('Select art type'),
+                    hint: const Text(
+                      'Select art type',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
                   // Art Medium dropdown
                   DropdownButtonFormField<String>(
                     value: _selectedArtMedium,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Art Medium',
-                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: core
+                          .ArtbeatColors
+                          .backgroundPrimary, // match login_screen
+                      border: const OutlineInputBorder(),
                     ),
+                    dropdownColor: core
+                        .ArtbeatColors
+                        .backgroundPrimary, // match login_screen
+                    style: const TextStyle(color: Colors.black),
                     isExpanded: true,
                     items: _artMediums.map((String medium) {
                       return DropdownMenuItem<String>(
                         value: medium,
-                        child: Text(medium),
+                        child: Text(
+                          medium,
+                          style: const TextStyle(color: Colors.black),
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? value) {
@@ -445,7 +472,10 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                         _selectedArtMedium = value;
                       });
                     },
-                    hint: const Text('Select art medium'),
+                    hint: const Text(
+                      'Select art medium',
+                      style: TextStyle(color: Colors.black),
+                    ),
                   ),
                   const SizedBox(height: 16),
 

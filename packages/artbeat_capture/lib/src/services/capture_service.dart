@@ -125,6 +125,60 @@ class CaptureService {
     }
   }
 
+  /// Get all captures (for dashboard display)
+  Future<List<CaptureModel>> getAllCaptures({int limit = 50}) async {
+    try {
+      debugPrint(
+        '🚀 CaptureService.getAllCaptures() called with limit: $limit',
+      );
+
+      // Try with orderBy first
+      final querySnapshot = await _capturesRef
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      final captures = querySnapshot.docs
+          .map(
+            (doc) => CaptureModel.fromJson({
+              ...doc.data() as Map<String, dynamic>,
+              'id': doc.id,
+            }),
+          )
+          .toList();
+
+      debugPrint(
+        '✅ CaptureService.getAllCaptures() found ${captures.length} captures',
+      );
+      return captures;
+    } catch (e) {
+      debugPrint('❌ Error fetching all captures with orderBy: $e');
+
+      // Fallback: Try without orderBy to avoid index requirement
+      try {
+        debugPrint('🔄 Trying fallback query without orderBy...');
+        final fallbackQuery = await _capturesRef.limit(limit).get();
+
+        final captures = fallbackQuery.docs
+            .map(
+              (doc) => CaptureModel.fromJson({
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              }),
+            )
+            .toList();
+
+        // Sort manually by createdAt
+        captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        debugPrint('✅ Fallback query found ${captures.length} all captures');
+        return captures;
+      } catch (fallbackError) {
+        debugPrint('❌ Fallback query also failed: $fallbackError');
+        return [];
+      }
+    }
+  }
+
   /// Get public captures
   Future<List<CaptureModel>> getPublicCaptures({int limit = 20}) async {
     try {

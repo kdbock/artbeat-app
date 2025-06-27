@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/artbeat_event.dart';
 import '../services/event_service.dart';
 import 'event_card.dart';
+import '../screens/event_details_screen.dart';
 
 /// Widget that displays upcoming events in the community feed
 class CommunityFeedEventsWidget extends StatefulWidget {
@@ -200,56 +200,10 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
   }
 
   void _navigateToEventDetails(ArtbeatEvent event) {
-    // TODO: Navigate to event details screen
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => EventDetailsScreen(event: event),
-    //   ),
-    // );
-
-    // For now, show a placeholder dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(event.title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(event.description),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16),
-                const SizedBox(width: 8),
-                Text(DateFormat('MMM d, y \'at\' h:mm a')
-                    .format(event.dateTime)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.location_on, size: 16),
-                const SizedBox(width: 8),
-                Expanded(child: Text(event.location)),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Navigate to ticket purchase
-            },
-            child: const Text('Get Tickets'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventDetailsScreen(event: event),
       ),
     );
   }

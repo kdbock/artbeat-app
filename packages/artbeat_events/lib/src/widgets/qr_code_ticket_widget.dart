@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/ticket_purchase.dart';
 import '../models/artbeat_event.dart';
 import '../utils/event_utils.dart';
@@ -388,11 +389,12 @@ class QRCodeTicketWidget extends StatelessWidget {
   }
 
   void _shareTicket(BuildContext context) {
-    // TODO: Implement ticket sharing functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Ticket sharing functionality coming soon!'),
-      ),
+    final shareText = 'Here is my ARTbeat event ticket for ${event.title} on '
+        '${EventUtils.formatEventDate(event.dateTime)} at ${event.location}.\n'
+        'Ticket ID: ${_formatTicketId(ticket.id)}\n'
+        'Show this QR code at the entrance!';
+    SharePlus.instance.share(
+      ShareParams(text: shareText),
     );
   }
 }

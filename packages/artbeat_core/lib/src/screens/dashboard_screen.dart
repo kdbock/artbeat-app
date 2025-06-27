@@ -2,15 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../services/user_service.dart';
-import '../services/maps_diagnostic_service.dart';
-import '../utils/location_utils.dart';
 import '../models/user_model.dart';
 import '../models/artist_profile_model.dart';
 import '../models/artwork_model.dart';
-import '../models/capture_model.dart';
 
 import '../widgets/universal_header.dart';
 import '../widgets/artbeat_drawer.dart';
@@ -19,6 +14,7 @@ import '../theme/index.dart';
 
 import 'package:artbeat_events/artbeat_events.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -34,9 +30,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   Set<Marker> _markers = {};
   late TabController _tabController;
 
-  List<ArtistProfileModel> _featuredArtists = [];
-  bool _mapsInitialized = false;
-
   List<ArtistProfileModel> _nearbyArtists = [];
   bool _isLoadingNearbyArtists = false;
 
@@ -49,19 +42,18 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<ArtbeatEvent> _upcomingEvents = [];
   bool _isLoadingEvents = false;
 
+  bool _mapsInitialized = false;
+
+  // Services
+  final CaptureService _captureService = CaptureService();
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Print debug info for Firebase App Check
-    debugPrint(
-      'ℹ️ Note: Firebase App Check errors are expected in debug mode and can be ignored',
-    );
-
     _initializeMaps();
     _loadUserData();
-    _loadFeaturedArtists();
     _loadNearbyArtists();
     _loadNearbyArtworks();
     _loadNearbyCaptures();
@@ -77,8 +69,6 @@ class _DashboardScreenState extends State<DashboardScreen>
   /// Initialize Google Maps service
   Future<void> _initializeMaps() async {
     try {
-      debugPrint('🗺️ Initializing Google Maps...');
-
       // Initialize Google Maps service for iOS compatibility
       await GoogleMapsService().initializeMaps();
 
@@ -86,15 +76,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         _mapsInitialized = true;
       });
 
-      debugPrint('✅ Google Maps initialized successfully');
-
       // Get user location after maps are initialized
       await _getUserLocation();
     } catch (e) {
-      debugPrint('❌ Failed to initialize Google Maps: $e');
-      debugPrint(
-        '📋 If maps don\'t work, please check docs/IOS_GOOGLE_MAPS_FIX_GUIDE.md',
-      );
       // Still try to get location even if maps fail
       await _getUserLocation();
     }
@@ -113,11 +97,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           _updateMapMarkers();
         });
       }
-      debugPrint('📍 User location set to: $userLocation');
 
       // Location set successfully for map display
     } catch (e) {
-      debugPrint('❌ Failed to get user location: $e, using default location');
       // Fallback to default location (Asheville, NC)
       const defaultLocation = LatLng(35.5951, -82.5515);
 
@@ -186,172 +168,14 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Load all artists from artistProfiles collection
-  Future<void> _loadFeaturedArtists() async {
-    try {
-      debugPrint('🎨 Loading all artist profiles...');
-
-      // Get all users with userType = 'artist' first
-      final QuerySnapshot artistUsersSnapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .where('userType', isEqualTo: 'artist')
-          .get();
-
-      debugPrint('📊 Found ${artistUsersSnapshot.docs.length} artist users');
-
-      // Then get their corresponding artist profiles
-      final List<Future<DocumentSnapshot>> profileFutures = artistUsersSnapshot
-          .docs
-          .map(
-            (userDoc) => FirebaseFirestore.instance
-                .collection('artistProfiles')
-                .doc(userDoc.id)
-                .get(),
-          )
-          .toList();
-
-      final List<DocumentSnapshot> profileDocs = await Future.wait(
-        profileFutures,
-      );
-
-      // Convert to ArtistProfileModel - INCLUDE ALL PROFILES
-      final List<ArtistProfileModel> artistProfiles = [];
-
-      for (var profileDoc in profileDocs) {
-        if (!profileDoc.exists) continue;
-
-        try {
-          final data = profileDoc.data() as Map<String, dynamic>;
-
-          // Log ALL document data for debugging
-          debugPrint('📋 Processing document ${profileDoc.id}:');
-          debugPrint(
-            '  Raw userType value: ${data['userType']} (${data['userType'].runtimeType})',
-          );
-          debugPrint('  displayName: ${data['displayName']}');
-          debugPrint('  Full document data: $data');
-
-          final profile = ArtistProfileModel.fromFirestore(profileDoc);
-
-          // ADD ALL PROFILES - The requirement is to show all artistProfiles with userType 'artist'
-          // Since these are in the artistProfiles collection, they should all be artists
-          artistProfiles.add(profile);
-          debugPrint(
-            '✅ Added profile: ${profile.displayName} (userType: ${profile.userType.name})',
-          );
-        } catch (e) {
-          debugPrint('❌ Error converting document ${profileDoc.id}: $e');
-          final data = profileDoc.data() as Map<String, dynamic>;
-          debugPrint('   Document data: $data');
-          // Continue processing other documents even if one fails
-        }
-      }
-
-      // Sort by most recently updated
-      artistProfiles.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-
-      if (mounted) {
-        setState(() {
-          _featuredArtists = artistProfiles;
-        });
-        debugPrint('🔄 State updated with ${artistProfiles.length} artists');
-        debugPrint('🔄 _featuredArtists.length = ${_featuredArtists.length}');
-      }
-
-      debugPrint('✅ Successfully loaded ${artistProfiles.length} artists');
-
-      // Log final results
-      for (var artist in artistProfiles) {
-        debugPrint(
-          '🎨 Final Artist: ${artist.displayName} (${artist.userType.name})',
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Error loading artist profiles: $e');
-    }
-  }
-
   Future<void> _loadNearbyCaptures() async {
     setState(() {
       _isLoadingCaptures = true;
     });
 
     try {
-      debugPrint('🎨 Loading captured art using working approach...');
-
-      final captures = <CaptureModel>[];
-
-      // First, load the user's own captures (this works from drawer)
-      final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-      if (currentUserId != null) {
-        debugPrint('🔍 [Dashboard] Loading user captures for: $currentUserId');
-
-        try {
-          final userCapturesSnapshot = await FirebaseFirestore.instance
-              .collection('captures')
-              .where('userId', isEqualTo: currentUserId)
-              .orderBy('createdAt', descending: true)
-              .get();
-
-          debugPrint(
-            '🔍 [Dashboard] User captures found: ${userCapturesSnapshot.docs.length}',
-          );
-
-          for (final doc in userCapturesSnapshot.docs) {
-            try {
-              final data = doc.data();
-              final capture = CaptureModel.fromJson({...data, 'id': doc.id});
-              captures.add(capture);
-              debugPrint(
-                '  ✅ Added user capture: ${capture.id}, title: ${capture.title}',
-              );
-            } catch (e) {
-              debugPrint('  ❌ Error parsing user capture ${doc.id}: $e');
-            }
-          }
-        } catch (e) {
-          debugPrint('❌ Error loading user captures: $e');
-        }
-      }
-
-      // Try to load public captures from other users (might fail due to permissions)
-      try {
-        debugPrint(
-          '🔍 [Dashboard] Attempting to load public captures from other users...',
-        );
-        final publicCapturesSnapshot = await FirebaseFirestore.instance
-            .collection('captures')
-            .where('isPublic', isEqualTo: true)
-            .where('isProcessed', isEqualTo: true)
-            .limit(20) // Limit to avoid large queries
-            .get();
-
-        debugPrint(
-          '🔍 [Dashboard] Public captures found: ${publicCapturesSnapshot.docs.length}',
-        );
-
-        for (final doc in publicCapturesSnapshot.docs) {
-          try {
-            final data = doc.data();
-            // Skip if it's already the user's own capture
-            if (data['userId'] != currentUserId) {
-              final capture = CaptureModel.fromJson({...data, 'id': doc.id});
-              captures.add(capture);
-              debugPrint(
-                '  ✅ Added public capture: ${capture.id}, title: ${capture.title}',
-              );
-            }
-          } catch (e) {
-            debugPrint('  ❌ Error parsing public capture ${doc.id}: $e');
-          }
-        }
-      } catch (e) {
-        debugPrint('⚠️ Could not load public captures (permissions): $e');
-        debugPrint('   Using only user captures');
-      }
-
-      // Sort all captures by creation date
-      captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // Use CaptureService to get all captures
+      final captures = await _captureService.getAllCaptures(limit: 50);
 
       if (mounted) {
         setState(() {
@@ -360,11 +184,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _updateMapMarkers(); // Update map markers with captured art
         });
       }
-
-      debugPrint('✅ Loaded ${captures.length} total captures for dashboard');
     } catch (e) {
-      debugPrint('❌ Error loading captures: $e');
-      debugPrint('❌ Stack trace: ${StackTrace.current}');
       if (mounted) {
         setState(() {
           _isLoadingCaptures = false;
@@ -379,8 +199,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
 
     try {
-      debugPrint('📅 Loading upcoming events...');
-
       final eventService = EventService();
       final events = await eventService.getUpcomingPublicEvents(limit: 10);
 
@@ -390,10 +208,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _isLoadingEvents = false;
         });
       }
-
-      debugPrint('✅ Loaded ${events.length} upcoming events');
     } catch (e) {
-      debugPrint('❌ Error loading upcoming events: $e');
       if (mounted) {
         setState(() {
           _isLoadingEvents = false;
@@ -409,8 +224,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
 
     try {
-      debugPrint('🎨 Loading all artists...');
-
       // Get all artists - no location filtering
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('artistProfiles')
@@ -425,9 +238,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         try {
           final profile = ArtistProfileModel.fromFirestore(doc);
           allArtists.add(profile);
-        } catch (e) {
-          debugPrint('❌ Error converting artist ${doc.id}: $e');
-        }
+        } catch (e) {}
       }
 
       // Sort by most recently updated
@@ -439,10 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _isLoadingNearbyArtists = false;
         });
       }
-
-      debugPrint('✅ Loaded ${allArtists.length} total artists');
     } catch (e) {
-      debugPrint('❌ Error loading artists: $e');
       if (mounted) {
         setState(() {
           _isLoadingNearbyArtists = false;
@@ -458,77 +266,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
 
     try {
-      debugPrint('🖼️ Loading all artworks...');
-
-      // Load all artworks from Firebase Storage - no location filtering
-      await _loadNearbyArtworkFromStorage();
-    } catch (e) {
-      debugPrint('❌ Error loading artworks: $e');
-      if (mounted) {
-        setState(() {
-          _isLoadingNearbyArtworks = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadNearbyArtworkFromStorage() async {
-    try {
-      debugPrint('📁 Loading all artworks from Firebase Storage...');
-
-      // Check if Firebase Storage is available
-      try {
-        FirebaseStorage.instance.ref();
-      } catch (e) {
-        debugPrint('⚠️ Firebase Storage not available: $e');
-        if (mounted) {
-          setState(() {
-            _isLoadingNearbyArtworks = false;
-          });
-        }
-        return;
-      }
-
-      final Reference storageRef = FirebaseStorage.instance.ref().child(
-        'artwork_images',
-      );
-      final ListResult result = await storageRef.listAll();
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('artwork')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
 
       final List<ArtworkModel> artworks = [];
-      int processed = 0;
-      // Process all artworks - no limit
-
-      for (var item in result.items) {
+      for (var doc in snapshot.docs) {
         try {
-          final String downloadUrl = await item.getDownloadURL();
-          final FullMetadata metadata = await item.getMetadata();
-
-          final artwork = ArtworkModel(
-            id: item.name,
-            title:
-                metadata.customMetadata?['title'] ??
-                item.name
-                    .replaceAll('_', ' ')
-                    .replaceAll('.jpg', '')
-                    .replaceAll('.png', ''),
-            artistId: metadata.customMetadata?['artistId'] ?? 'unknown',
-            imageUrl: downloadUrl,
-            description:
-                metadata.customMetadata?['description'] ?? 'Local artwork',
-            createdAt: metadata.timeCreated ?? DateTime.now(),
-            tags: metadata.customMetadata?['tags']?.split(',') ?? [],
-            isSold: false,
-            price: 0.0,
-            medium: metadata.customMetadata?['medium'] ?? 'Mixed Media',
-          );
-
-          artworks.add(artwork);
-          processed++;
-
-          debugPrint('✅ Loaded artwork: ${artwork.title}');
-        } catch (e) {
-          debugPrint('❌ Error loading artwork ${item.name}: $e');
-        }
+          artworks.add(ArtworkModel.fromFirestore(doc));
+        } catch (e) {}
       }
 
       if (mounted) {
@@ -537,10 +285,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           _isLoadingNearbyArtworks = false;
         });
       }
-
-      debugPrint('✅ Successfully loaded $processed total artworks');
     } catch (e) {
-      debugPrint('❌ Error loading artworks from storage: $e');
       if (mounted) {
         setState(() {
           _isLoadingNearbyArtworks = false;
@@ -552,7 +297,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 0, // Dashboard is index 0 (Home)
+      currentIndex: 0,
       child: Scaffold(
         appBar: UniversalHeader(
           title: 'ARTbeat',
@@ -707,124 +452,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey[400]!),
               ),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: _userLocation != null && _mapsInitialized
-                        ? GoogleMap(
-                            initialCameraPosition: CameraPosition(
-                              target: _userLocation!,
-                              zoom: 14.0,
-                            ),
-                            markers: _markers,
-                            myLocationEnabled: false,
-                            zoomControlsEnabled: false,
-                            mapToolbarEnabled: false,
-                            onMapCreated:
-                                (GoogleMapController controller) async {
-                                  debugPrint('🗺️ Map created successfully');
-                                  try {
-                                    await controller.animateCamera(
-                                      CameraUpdate.newLatLng(_userLocation!),
-                                    );
-                                    debugPrint('✅ Map camera test successful');
-                                  } catch (e) {
-                                    debugPrint('❌ Map camera test failed: $e');
-                                    await MapsDiagnosticService.logDiagnostics();
-                                  }
-                                },
-                          )
-                        : Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.grey[200],
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (!_mapsInitialized) ...[
-                                    const CircularProgressIndicator(),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Initializing maps...',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ] else if (_userLocation == null) ...[
-                                    const Icon(
-                                      Icons.location_searching,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Getting your location...',
-                                      style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                  ),
-                  // Overlay with map info
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha((0.7 * 255).toInt()),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.map, color: Colors.white, size: 20),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              'Tap to explore Art Walk',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          if (_nearbyCaptures.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ArtbeatColors.primaryGreen,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${_nearbyCaptures.length}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: _mapsInitialized && _userLocation != null
+                    ? GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: _userLocation!,
+                          zoom: 14,
+                        ),
+                        markers: _markers,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: true,
+                        zoomControlsEnabled: false,
+                        onMapCreated: (controller) {},
+                      )
+                    : const Center(child: CircularProgressIndicator()),
               ),
             ),
           ),
@@ -835,9 +477,9 @@ class _DashboardScreenState extends State<DashboardScreen>
           const Text(
             'Captured Art',
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
               color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
           const SizedBox(height: 16),
@@ -847,52 +489,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: _isLoadingCaptures
                 ? const Center(child: CircularProgressIndicator())
                 : _nearbyCaptures.isEmpty
-                ? Container(
-                    height: 120,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: ArtbeatColors.primaryGreen.withAlpha(25),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: ArtbeatColors.primaryGreen.withAlpha(77),
-                      ),
-                    ),
-                    child: const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.camera_alt_outlined,
-                            size: 32,
-                            color: ArtbeatColors.primaryGreen,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'No Captured Art Found',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: ArtbeatColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            'Be the first to capture art!',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: ArtbeatColors.textSecondary,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
+                ? const Center(child: Text('No captures found.'))
                 : ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _nearbyCaptures.length,
                     itemBuilder: (context, index) {
-                      final capture = _nearbyCaptures[index];
-                      return _buildCapturedArtCard(capture);
+                      return _buildCapturedArtCard(_nearbyCaptures[index]);
                     },
                   ),
           ),
@@ -901,11 +503,11 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           // Artists section - ALL ARTISTS
           const Text(
-            'Artists',
+            'Featured Artists',
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
               color: Colors.black87,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
           const SizedBox(height: 16),
@@ -914,54 +516,47 @@ class _DashboardScreenState extends State<DashboardScreen>
             height: 145,
             child: Builder(
               builder: (context) {
-                debugPrint('🎨 UI Building Artists Section:');
-                debugPrint(
-                  '  _isLoadingNearbyArtists: $_isLoadingNearbyArtists',
-                );
-                debugPrint('  _nearbyArtists.length: ${_nearbyArtists.length}');
-                debugPrint(
-                  '  _nearbyArtists.isEmpty: ${_nearbyArtists.isEmpty}',
-                );
-
-                return _isLoadingNearbyArtists
-                    ? const Center(child: CircularProgressIndicator())
-                    : _nearbyArtists.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.palette_outlined,
-                              size: 48,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'No artists found nearby',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Check back later for artists in your area',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                if (_isLoadingNearbyArtists) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (_nearbyArtists.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.palette_outlined,
+                          size: 48,
+                          color: Colors.grey[400],
                         ),
-                      )
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _nearbyArtists.length,
-                        itemBuilder: (context, index) {
-                          final artist = _nearbyArtists[index];
-                          return _buildArtistCard(artist);
-                        },
-                      );
+                        const SizedBox(height: 8),
+                        Text(
+                          'No artists found nearby',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Check back later for artists in your area',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _nearbyArtists.length,
+                    itemBuilder: (context, index) {
+                      final artist = _nearbyArtists[index];
+                      return _buildArtistCard(artist);
+                    },
+                  );
+                }
               },
             ),
           ),
@@ -1241,75 +836,76 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildArtistCard(ArtistProfileModel artist) {
-    return Container(
+    return SizedBox(
       width: 120,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((0.1 * 255).toInt()),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          Navigator.pushNamed(context, '/artist/profile', arguments: artist.id);
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Artist avatar
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: ArtbeatColors.primaryPurple.withAlpha(25),
-                backgroundImage: artist.profileImageUrl != null
-                    ? NetworkImage(artist.profileImageUrl!)
-                    : null,
-                child: artist.profileImageUrl == null
-                    ? Text(
-                        artist.displayName.isNotEmpty
-                            ? artist.displayName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+      height: 160, // Fixed height to prevent overflow and ensure tap area
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha((0.1 * 255).toInt()),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () {
+            Navigator.pushNamed(
+              context,
+              '/artist/profile',
+              arguments: artist.id,
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: ArtbeatColors.primaryPurple.withAlpha(25),
+                  backgroundImage:
+                      artist.profileImageUrl != null &&
+                          artist.profileImageUrl!.isNotEmpty
+                      ? NetworkImage(artist.profileImageUrl!)
+                      : null,
+                  child:
+                      (artist.profileImageUrl == null ||
+                          artist.profileImageUrl!.isEmpty)
+                      ? const Icon(
+                          Icons.person,
                           color: ArtbeatColors.primaryPurple,
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(height: 6),
-              // Artist name
-              Text(
-                artist.displayName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
+                          size: 30,
+                        )
+                      : null,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 2),
-              // Artist bio/medium
-              Text(
-                artist.bio ??
-                    (artist.mediums.isNotEmpty
-                        ? artist.mediums.first
-                        : 'Artist'),
-                style: TextStyle(color: Colors.grey[600], fontSize: 9),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  artist.displayName,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  artist.bio ?? '',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 9),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1343,19 +939,18 @@ class _DashboardScreenState extends State<DashboardScreen>
               CircleAvatar(
                 radius: 40,
                 backgroundColor: ArtbeatColors.primaryPurple.withAlpha(25),
-                backgroundImage: artist.profileImageUrl != null
+                backgroundImage:
+                    artist.profileImageUrl != null &&
+                        artist.profileImageUrl!.isNotEmpty
                     ? NetworkImage(artist.profileImageUrl!)
                     : null,
-                child: artist.profileImageUrl == null
-                    ? Text(
-                        artist.displayName.isNotEmpty
-                            ? artist.displayName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: ArtbeatColors.primaryPurple,
-                        ),
+                child:
+                    (artist.profileImageUrl == null ||
+                        artist.profileImageUrl!.isEmpty)
+                    ? const Icon(
+                        Icons.person,
+                        color: ArtbeatColors.primaryPurple,
+                        size: 40,
                       )
                     : null,
               ),
@@ -1435,7 +1030,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             arguments: artwork.id,
           );
         },
-        borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1454,26 +1048,19 @@ class _DashboardScreenState extends State<DashboardScreen>
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child: Image.network(
-                    artwork.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: Colors.grey[200],
-                        child: const Icon(
-                          Icons.image,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      );
-                    },
-                  ),
+                  child:
+                      artwork.imageUrl != null && artwork.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          artwork.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                                Icons.broken_image,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                        )
+                      : const Icon(Icons.image, size: 48, color: Colors.grey),
                 ),
               ),
             ),
@@ -1486,29 +1073,39 @@ class _DashboardScreenState extends State<DashboardScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      artwork.title,
+                      artwork.title ?? 'Untitled',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: 14,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      artwork.medium,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 10),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const Spacer(),
-                    if (!artwork.isSold && artwork.price > 0)
+                    const SizedBox(height: 4),
+                    Text(
+                      artwork
+                          .artistId, // Use artistId directly since it's non-nullable
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    if (artwork.price != null)
                       Text(
-                        '\$${artwork.price.toStringAsFixed(0)}',
+                        '\$${artwork.price!.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          color: ArtbeatColors.primaryGreen,
-                          fontSize: 12,
+                          color: Colors.green,
                           fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    if (artwork.isSold == true)
+                      const Text(
+                        'SOLD',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
                         ),
                       ),
                   ],
@@ -1522,40 +1119,144 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildCapturedArtCard(CaptureModel capture) {
-    return Container(
+    return SizedBox(
       width: 150,
-      margin: const EdgeInsets.only(right: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha((0.1 * 255).toInt()),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          // Navigate to capture detail or art walk
-          Navigator.pushNamed(context, '/art-walk/dashboard');
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Captured art image
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
+      height: 180, // Fixed height to prevent overflow
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha((0.1 * 255).toInt()),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () {
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              builder: (context) {
+                return Padding(
+                  padding: MediaQuery.of(context).viewInsets,
+                  child: Wrap(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: capture.imageUrl.isNotEmpty
+                                    ? Image.network(
+                                        capture.imageUrl,
+                                        height: 180,
+                                        width: 180,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Container(
+                                        height: 180,
+                                        width: 180,
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          size: 40,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              capture.title ??
+                                  capture.artistName ??
+                                  'Captured Art',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            if (capture.locationName != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Text(
+                                  capture.locationName!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.camera_alt,
+                                  size: 16,
+                                  color: ArtbeatColors.primaryGreen,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  capture.artType ?? 'Public Art',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: ArtbeatColors.primaryGreen,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                icon: const Icon(Icons.add_location_alt),
+                                label: const Text('Add to Art Walk'),
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the modal
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/art-walk/create',
+                                    arguments: {'capture': capture},
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ArtbeatColors.primaryPurple,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  textStyle: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                );
+              },
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Captured art image
+              SizedBox(
+                height: 100,
+                width: double.infinity,
                 child: ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
@@ -1591,14 +1292,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ),
                 ),
               ),
-            ),
-            // Captured art info
-            Expanded(
-              flex: 2,
-              child: Padding(
+              Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       capture.title ?? capture.artistName ?? 'Captured Art',
@@ -1617,7 +1315,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    const Spacer(),
                     Row(
                       children: [
                         const Icon(
@@ -1643,8 +1340,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

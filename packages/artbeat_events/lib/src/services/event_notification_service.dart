@@ -295,10 +295,15 @@ class EventNotificationService {
     final payload = response.payload;
     if (payload != null) {
       _logger.i('Notification tapped with payload: $payload');
-
-      // TODO: Navigate to appropriate screen based on payload
-      // This would typically involve using a navigation service
-      // or app-level navigation handler
+      // For flutter_local_notifications, payload is a String
+      // We can parse it or use it directly as eventId if it contains the eventId
+      try {
+        // If the payload is just the eventId string
+        eventNotificationNavigatorKey.currentState
+            ?.pushNamed('/event/$payload');
+      } on Exception catch (e) {
+        _logger.e('Error handling notification tap: $e');
+      }
     }
   }
 
@@ -318,24 +323,24 @@ class EventNotificationService {
     if (payload != null) {
       final logger = Logger();
       logger.i('Notification action received with payload: $payload');
-
-      // TODO: Handle navigation based on payload
+      final eventId = payload['eventId'];
+      if (eventId != null) {
+        eventNotificationNavigatorKey.currentState
+            ?.pushNamed('/event/$eventId');
+      }
     }
   }
 
-  /// Handle notification created
   static Future<void> _onNotificationCreated(
       ReceivedNotification receivedNotification) async {
     // Optional: Handle when notification is created
   }
 
-  /// Handle notification displayed
   static Future<void> _onNotificationDisplayed(
       ReceivedNotification receivedNotification) async {
     // Optional: Handle when notification is displayed
   }
 
-  /// Handle notification dismissed
   static Future<void> _onDismissActionReceived(
       ReceivedAction receivedAction) async {
     // Optional: Handle when notification is dismissed
@@ -351,3 +356,7 @@ class EventNotificationService {
     return await AwesomeNotifications().listScheduledNotifications();
   }
 }
+
+/// Global navigator key for notification navigation
+final GlobalKey<NavigatorState> eventNotificationNavigatorKey =
+    GlobalKey<NavigatorState>();

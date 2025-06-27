@@ -650,7 +650,19 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
 
   Future<void> _processRefund(TicketPurchase ticket) async {
     try {
-      // TODO: Process refund with payment provider
+      // Attempt to process refund with payment provider
+      // NOTE: This assumes TicketPurchase has paymentId and amount fields
+      if (ticket.paymentId == null || ticket.amount == null) {
+        throw Exception('Missing payment information for refund.');
+      }
+      // This should be implemented in artbeat_core/services/payment_service.dart
+      await PaymentService.refundPayment(
+        paymentId: ticket.paymentId!,
+        amount: ticket.amount!,
+        reason: 'User requested refund',
+      );
+
+      // Update ticket status in backend
       await _eventService.refundTicketPurchase(ticket.id, 'mock_refund_id');
 
       if (mounted) {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -31,6 +32,37 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   @override
   void initState() {
     super.initState();
+    // Check for passed capture and pre-select it
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['capture'] != null) {
+        final capture = args['capture'];
+        // Try to cast to PublicArtModel or convert if needed
+        if (capture is PublicArtModel) {
+          setState(() {
+            _selectedArtIds.add(capture.id);
+          });
+        } else if (capture is CaptureModel) {
+          // Convert CaptureModel to PublicArtModel if needed
+          final publicArt = PublicArtModel(
+            id: capture.id,
+            title: capture.title ?? 'Captured Art',
+            artistName: capture.artistName ?? '',
+            imageUrl: capture.imageUrl,
+            location: capture.location ?? const GeoPoint(0, 0),
+            description: capture.description ?? '',
+            tags: capture.tags ?? [],
+            userId: capture.userId,
+            usersFavorited: const [],
+            createdAt: Timestamp.fromDate(capture.createdAt),
+          );
+          setState(() {
+            _selectedArtIds.add(publicArt.id);
+            _availablePublicArt.insert(0, publicArt);
+          });
+        }
+      }
+    });
     _loadAvailablePublicArt();
     _getCurrentLocation(); // Added
   }

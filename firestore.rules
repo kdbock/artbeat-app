@@ -96,16 +96,11 @@ service cloud.firestore {
                             request.auth.uid == resource.data.userId;
     }
 
-    // Captures collection - users can manage their own captures, public captures are readable by all
+    // Captures collection - allow public read for all captures for dashboard/explore
     match /captures/{captureId} {
-      allow read: if resource.data.isPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.userId);
-                  
-      allow create: if request.auth != null && 
-                    request.auth.uid == request.resource.data.userId;
-                    
-      allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.userId;
+      allow read: if true; // Allow public read for all captures
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // Artists collection - publicly readable for featured artists, users can manage their own

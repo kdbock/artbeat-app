@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/artbeat_event.dart';
 
 /// Card widget for displaying event information in lists
@@ -193,15 +194,47 @@ class EventCard extends StatelessWidget {
               : null,
         ),
         const SizedBox(width: 8),
-        Text(
-          'By Artist', // TODO: Get artist name from artistId
-          style: TextStyle(
-            color: Colors.grey.shade700,
-            fontSize: 12,
-          ),
+        FutureBuilder<String?>(
+          future: _fetchArtistName(event.artistId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                width: 60,
+                height: 12,
+                child: LinearProgressIndicator(minHeight: 2),
+              );
+            }
+            final artistName = snapshot.data ?? 'Artist';
+            return Text(
+              'By $artistName',
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 12,
+              ),
+            );
+          },
         ),
       ],
     );
+  }
+
+  Future<String?> _fetchArtistName(String artistId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('artistProfiles')
+          .doc(artistId)
+          .get();
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null && data['displayName'] != null) {
+          return data['displayName'] as String;
+        }
+      }
+    } on Exception catch (e) {
+      // Log the error but return null as fallback
+      debugPrint('Error fetching artist name: $e');
+    }
+    return null;
   }
 
   Widget _buildTicketInfo() {

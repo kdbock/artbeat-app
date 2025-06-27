@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/artbeat_event.dart';
 import '../forms/event_form_builder.dart';
 import '../services/event_service.dart';
@@ -223,23 +224,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   void _shareEvent(String eventId) {
-    // TODO: Implement event sharing
-    // This could open a share sheet or navigate to a sharing screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Share event: $eventId')),
+    final eventUrl = 'https://artbeat.app/events/$eventId';
+    SharePlus.instance.share(
+      ShareParams(text: 'Check out this event on ARTbeat! $eventUrl'),
     );
   }
 
   void _viewEvent(String eventId) {
-    // TODO: Navigate to event details screen
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => EventDetailsScreen(eventId: eventId),
-    //   ),
-    // );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('View event: $eventId')),
-    );
+    Navigator.pushNamed(context, '/event/$eventId');
   }
 }

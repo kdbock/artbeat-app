@@ -1,5 +1,6 @@
 name: artbeat_capture
 description: Camera and capture module for ARTbeat
+publish_to: 'none'
 version: 0.0.1
 
 environment:

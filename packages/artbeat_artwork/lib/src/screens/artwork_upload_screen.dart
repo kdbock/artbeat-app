@@ -6,7 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
-import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier;
+import 'package:artbeat_core/artbeat_core.dart'
+    show SubscriptionTier, ArtbeatColors;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
@@ -509,14 +510,21 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
               // Medium dropdown
               DropdownButtonFormField<String>(
                 value: _medium.isEmpty ? null : _medium,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Medium',
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor:
+                      ArtbeatColors.backgroundPrimary, // match login_screen
+                  border: const OutlineInputBorder(),
                 ),
+                dropdownColor:
+                    ArtbeatColors.backgroundPrimary, // match login_screen
+                style: const TextStyle(color: Colors.black),
                 items: _availableMediums.map((medium) {
                   return DropdownMenuItem<String>(
                     value: medium,
-                    child: Text(medium),
+                    child: Text(medium,
+                        style: const TextStyle(color: Colors.black)),
                   );
                 }).toList(),
                 onChanged: (value) {
