@@ -71,8 +71,7 @@ service cloud.firestore {
 
     // Artwork collection (public reading, artists manage their own)
     match /artwork/{artworkId} {
-      allow read: if resource.data.isPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.artistId);
+      allow read: if true; // Allow reading all artwork documents
       allow create: if request.auth != null && request.auth.uid == request.resource.data.artistId;
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.artistId;
     }

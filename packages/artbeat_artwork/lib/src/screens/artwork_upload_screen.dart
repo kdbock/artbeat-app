@@ -510,12 +510,12 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
               // Medium dropdown
               DropdownButtonFormField<String>(
                 value: _medium.isEmpty ? null : _medium,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Medium',
                   filled: true,
                   fillColor:
                       ArtbeatColors.backgroundPrimary, // match login_screen
-                  border: const OutlineInputBorder(),
+                  border: OutlineInputBorder(),
                 ),
                 dropdownColor:
                     ArtbeatColors.backgroundPrimary, // match login_screen

@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
 import '../models/artist_profile_model.dart';
-import '../models/artwork_model.dart';
 
 import '../widgets/universal_header.dart';
 import '../widgets/artbeat_drawer.dart';
@@ -15,6 +14,7 @@ import '../theme/index.dart';
 import 'package:artbeat_events/artbeat_events.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_artwork/artbeat_artwork.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -46,6 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   // Services
   final CaptureService _captureService = CaptureService();
+  final ArtworkService _artworkService = ArtworkService();
 
   @override
   void initState() {
@@ -155,7 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _navigateToArtistOnboarding() {
-    Navigator.pushNamed(context, '/artist/onboarding');
+    Navigator.pushNamed(context, '/artist/onboarding', arguments: _currentUser);
   }
 
   Future<void> _loadUserData() async {
@@ -259,25 +260,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Load all artworks
+  /// Load all artworks (no filter on isPublic)
   Future<void> _loadNearbyArtworks() async {
     setState(() {
       _isLoadingNearbyArtworks = true;
     });
 
     try {
-      final QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('artwork')
-          .orderBy('createdAt', descending: true)
-          .limit(50)
-          .get();
+      // Use ArtworkService to get all artwork (no filter)
+      final artworks = await _artworkService.getAllArtwork(limit: 50);
 
-      final List<ArtworkModel> artworks = [];
-      for (var doc in snapshot.docs) {
-        try {
-          artworks.add(ArtworkModel.fromFirestore(doc));
-        } catch (e) {}
-      }
+      // Replace print with debugPrint for logging
+      debugPrint('Dashboard: Successfully loaded ${artworks.length} artworks');
 
       if (mounted) {
         setState(() {
@@ -286,6 +280,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
       }
     } catch (e) {
+      // Replace print with debugPrint for logging
+      debugPrint('Dashboard: Error loading artworks: $e');
       if (mounted) {
         setState(() {
           _isLoadingNearbyArtworks = false;
@@ -857,7 +853,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             Navigator.pushNamed(
               context,
               '/artist/profile',
-              arguments: artist.id,
+              arguments: artist.userId,
             );
           },
           borderRadius: BorderRadius.circular(12),
@@ -927,7 +923,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, '/artist/profile', arguments: artist.id);
+          Navigator.pushNamed(
+            context,
+            '/artist/profile',
+            arguments: artist.userId,
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -990,7 +990,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     Navigator.pushNamed(
                       context,
                       '/artist/profile',
-                      arguments: artist.id,
+                      arguments: artist.userId,
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -1048,10 +1048,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
-                  child:
-                      artwork.imageUrl != null && artwork.imageUrl!.isNotEmpty
+                  child: artwork.imageUrl.isNotEmpty
                       ? Image.network(
-                          artwork.imageUrl!,
+                          artwork.imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(
@@ -1073,7 +1072,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      artwork.title ?? 'Untitled',
+                      artwork.title.isNotEmpty ? artwork.title : 'Untitled',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -1083,8 +1082,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      artwork
-                          .artistId, // Use artistId directly since it's non-nullable
+                      artwork.userId, // Use userId from the new ArtworkModel
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -1099,7 +1097,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           fontSize: 13,
                         ),
                       ),
-                    if (artwork.isSold == true)
+                    if (artwork.isSold)
                       const Text(
                         'SOLD',
                         style: TextStyle(

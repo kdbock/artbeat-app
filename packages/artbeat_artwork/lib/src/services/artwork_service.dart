@@ -381,4 +381,78 @@ class ArtworkService {
       return [];
     }
   }
+
+  /// Get all public artwork
+  Future<List<ArtworkModel>> getAllPublicArtwork({int limit = 50}) async {
+    try {
+      // First try the optimal query (requires composite index)
+      final snapshot = await _artworkCollection
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ArtworkModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting public artwork with composite query: $e');
+
+      // Fallback: Get all public artwork without ordering (doesn't require composite index)
+      try {
+        final fallbackSnapshot = await _artworkCollection
+            .where('isPublic', isEqualTo: true)
+            .limit(limit)
+            .get();
+
+        final artworks = fallbackSnapshot.docs
+            .map((doc) => ArtworkModel.fromFirestore(doc))
+            .toList();
+
+        // Sort in memory by createdAt
+        artworks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        debugPrint(
+            'Fallback query successful: loaded ${artworks.length} artworks');
+        return artworks;
+      } catch (fallbackError) {
+        debugPrint('Fallback query also failed: $fallbackError');
+        return [];
+      }
+    }
+  }
+
+  /// Get all artwork (no filter on isPublic)
+  Future<List<ArtworkModel>> getAllArtwork({int limit = 50}) async {
+    try {
+      final snapshot = await _artworkCollection
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ArtworkModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting all artwork: $e');
+      // Fallback: Get all artwork without ordering
+      try {
+        final fallbackSnapshot = await _artworkCollection.limit(limit).get();
+
+        final artworks = fallbackSnapshot.docs
+            .map((doc) => ArtworkModel.fromFirestore(doc))
+            .toList();
+
+        // Sort in memory by createdAt if available
+        artworks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        debugPrint(
+            'Fallback query successful: loaded ${artworks.length} artworks');
+        return artworks;
+      } catch (fallbackError) {
+        debugPrint('Fallback query also failed: $fallbackError');
+        return [];
+      }
+    }
+  }
 }

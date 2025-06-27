@@ -28,14 +28,14 @@ class ArtworkModel {
   });
 
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return ArtworkModel(
       id: doc.id,
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
-      artistId: data['artistId'] as String? ?? '',
+      artistId: data['artistId'] as String? ?? data['userId'] as String? ?? '',
       imageUrl: data['imageUrl'] as String? ?? '',
-      price: (data['price'] as num? ?? 0.0).toDouble(),
+      price: (data['price'] as num?)?.toDouble() ?? 0.0,
       medium: data['medium'] as String? ?? '',
       tags: List<String>.from(data['tags'] as List<dynamic>? ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),

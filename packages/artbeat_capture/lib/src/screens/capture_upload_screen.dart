@@ -408,13 +408,13 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                   // Art Type dropdown
                   DropdownButtonFormField<String>(
                     value: _selectedArtType,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Art Type',
                       filled: true,
                       fillColor: core
                           .ArtbeatColors
                           .backgroundPrimary, // match login_screen
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(),
                     ),
                     dropdownColor: core
                         .ArtbeatColors
@@ -445,13 +445,13 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                   // Art Medium dropdown
                   DropdownButtonFormField<String>(
                     value: _selectedArtMedium,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Art Medium',
                       filled: true,
                       fillColor: core
                           .ArtbeatColors
                           .backgroundPrimary, // match login_screen
-                      border: const OutlineInputBorder(),
+                      border: OutlineInputBorder(),
                     ),
                     dropdownColor: core
                         .ArtbeatColors

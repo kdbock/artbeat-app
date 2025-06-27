@@ -9,13 +9,14 @@ class AdminUserManagementScreen extends StatefulWidget {
   const AdminUserManagementScreen({super.key});
 
   @override
-  State<AdminUserManagementScreen> createState() => _AdminUserManagementScreenState();
+  State<AdminUserManagementScreen> createState() =>
+      _AdminUserManagementScreenState();
 }
 
 class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   final AdminService _adminService = AdminService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<UserAdminModel> _users = [];
   List<UserAdminModel> _selectedUsers = [];
   bool _isLoading = true;
@@ -115,7 +116,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
 
     try {
       final userIds = _selectedUsers.map((user) => user.id).toList();
-      
+
       switch (action) {
         case 'suspend':
           for (final userId in userIds) {
@@ -135,9 +136,10 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully ${action}ed ${userIds.length} users')),
+        SnackBar(
+            content: Text('Successfully ${action}ed ${userIds.length} users')),
       );
-      
+
       _loadUsers();
     } catch (e) {
       if (mounted) {
@@ -240,7 +242,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             onSubmitted: (_) => _loadUsers(),
           ),
@@ -255,7 +258,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Filter by Type',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: [
                     const DropdownMenuItem<UserType>(
@@ -263,9 +267,9 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                       child: Text('All Types'),
                     ),
                     ...UserType.values.map((type) => DropdownMenuItem(
-                      value: type,
-                      child: Text(type.name.toUpperCase()),
-                    )),
+                          value: type,
+                          child: Text(type.name.toUpperCase()),
+                        )),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -283,13 +287,16 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Sort By',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   items: const [
-                    DropdownMenuItem(value: 'createdAt', child: Text('Created Date')),
+                    DropdownMenuItem(
+                        value: 'createdAt', child: Text('Created Date')),
                     DropdownMenuItem(value: 'fullName', child: Text('Name')),
                     DropdownMenuItem(value: 'email', child: Text('Email')),
-                    DropdownMenuItem(value: 'lastActiveAt', child: Text('Last Active')),
+                    DropdownMenuItem(
+                        value: 'lastActiveAt', child: Text('Last Active')),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -304,7 +311,9 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               const SizedBox(width: 12),
               // Sort direction
               IconButton(
-                icon: Icon(_sortDescending ? Icons.arrow_downward : Icons.arrow_upward),
+                icon: Icon(_sortDescending
+                    ? Icons.arrow_downward
+                    : Icons.arrow_upward),
                 onPressed: () {
                   setState(() {
                     _sortDescending = !_sortDescending;
@@ -376,7 +385,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           child: Row(
             children: [
               Checkbox(
-                value: _selectedUsers.length == _users.length && _users.isNotEmpty,
+                value:
+                    _selectedUsers.length == _users.length && _users.isNotEmpty,
                 tristate: true,
                 onChanged: (_) => _selectAllUsers(),
               ),
@@ -393,7 +403,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
             itemBuilder: (context, index) {
               final user = _users[index];
               final isSelected = _selectedUsers.contains(user);
-              
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: ListTile(
@@ -414,10 +424,14 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                                   height: 40,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U'),
+                                      Text(user.fullName.isNotEmpty
+                                          ? user.fullName[0].toUpperCase()
+                                          : 'U'),
                                 ),
                               )
-                            : Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U'),
+                            : Text(user.fullName.isNotEmpty
+                                ? user.fullName[0].toUpperCase()
+                                : 'U'),
                       ),
                     ],
                   ),
@@ -466,7 +480,9 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         value: user.isVerified ? 'unverify' : 'verify',
                         child: Row(
                           children: [
-                            Icon(user.isVerified ? Icons.cancel : Icons.verified),
+                            Icon(user.isVerified
+                                ? Icons.cancel
+                                : Icons.verified),
                             const SizedBox(width: 8),
                             Text(user.isVerified ? 'Unverify' : 'Verify'),
                           ],
@@ -476,7 +492,9 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         value: user.isSuspended ? 'unsuspend' : 'suspend',
                         child: Row(
                           children: [
-                            Icon(user.isSuspended ? Icons.check_circle : Icons.block),
+                            Icon(user.isSuspended
+                                ? Icons.check_circle
+                                : Icons.block),
                             const SizedBox(width: 8),
                             Text(user.isSuspended ? 'Unsuspend' : 'Suspend'),
                           ],
@@ -507,13 +525,13 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   Widget _buildStatusChip(UserAdminModel user) {
     final status = user.statusText;
     final color = _getStatusColor(user.statusColor);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         status,
@@ -528,13 +546,13 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
 
   Widget _buildUserTypeChip(UserType userType) {
     final color = _getUserTypeColor(userType);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         userType.name.toUpperCase(),
@@ -626,7 +644,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   void _navigateToUserDetail(UserAdminModel user) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (context) => AdminUserDetailScreen(user: user),
       ),
     ).then((_) => _loadUsers());
@@ -634,8 +652,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
 
   void _showChangeUserTypeDialog(UserAdminModel user) {
     UserType? selectedType = user.userType;
-    
-    showDialog(
+
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -651,10 +669,12 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                   labelText: 'New User Type',
                   border: OutlineInputBorder(),
                 ),
-                items: UserType.values.map((type) => DropdownMenuItem(
-                  value: type,
-                  child: Text(type.name.toUpperCase()),
-                )).toList(),
+                items: UserType.values
+                    .map((type) => DropdownMenuItem(
+                          value: type,
+                          child: Text(type.name.toUpperCase()),
+                        ))
+                    .toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedType = value;
@@ -672,18 +692,22 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               onPressed: selectedType != null && selectedType != user.userType
                   ? () async {
                       try {
-                        await _adminService.updateUserType(user.id, selectedType!);
+                        await _adminService.updateUserType(
+                            user.id, selectedType!);
                         if (mounted) {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('User type updated successfully')),
+                            const SnackBar(
+                                content:
+                                    Text('User type updated successfully')),
                           );
                           _loadUsers();
                         }
                       } catch (e) {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error updating user type: $e')),
+                            SnackBar(
+                                content: Text('Error updating user type: $e')),
                           );
                         }
                       }
@@ -699,8 +723,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
 
   void _showSuspendUserDialog(UserAdminModel user) {
     final reasonController = TextEditingController();
-    
-    showDialog(
+
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Suspend ${user.fullName}'),
@@ -728,13 +752,14 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
             onPressed: () async {
               final reason = reasonController.text.trim();
               if (reason.isEmpty) return;
-              
+
               try {
                 await _adminService.suspendUser(user.id, reason, 'admin');
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('User suspended successfully')),
+                    const SnackBar(
+                        content: Text('User suspended successfully')),
                   );
                   _loadUsers();
                 }
@@ -754,7 +779,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   }
 
   void _showDeleteUserDialog(UserAdminModel user) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Delete ${user.fullName}'),
@@ -793,6 +818,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   }
 
   void _showCreateUserDialog() {
-    Navigator.pushNamed(context, '/admin/create-user').then((_) => _loadUsers());
+    Navigator.pushNamed(context, '/admin/create-user')
+        .then((_) => _loadUsers());
   }
 }

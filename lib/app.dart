@@ -146,6 +146,25 @@ class MyApp extends StatelessWidget {
               );
 
             // Artist routes
+            case '/artist/onboarding':
+              final user = settings.arguments as core.UserModel?;
+              return MaterialPageRoute(
+                builder: (_) => ArtistOnboardingScreen(
+                  user:
+                      user ??
+                      core.UserModel(
+                        id: core.UserService().currentUser?.uid ?? '',
+                        email: core.UserService().currentUser?.email ?? '',
+                        fullName:
+                            core.UserService().currentUser?.displayName ?? '',
+                        userType: core.UserType.artist,
+                        level: 1,
+                        experiencePoints: 0,
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                      ),
+                ),
+              );
             case '/artist/dashboard':
               return MaterialPageRoute(
                 builder: (_) => const ArtistDashboardScreen(),
@@ -153,6 +172,11 @@ class MyApp extends StatelessWidget {
             case '/artist/profile/edit':
               return MaterialPageRoute(
                 builder: (_) => const ArtistProfileEditScreen(),
+              );
+            case '/artist/profile':
+              final artistId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (_) => ArtistPublicProfileScreen(userId: artistId),
               );
             case '/artist/profile/public':
               return MaterialPageRoute(

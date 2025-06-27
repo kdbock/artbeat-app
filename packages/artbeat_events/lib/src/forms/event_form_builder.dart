@@ -636,12 +636,12 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _getRefundPolicyKey(),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Refund Policy',
                 filled: true,
                 fillColor:
                     ArtbeatColors.backgroundPrimary, // match login_screen
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
               dropdownColor:
                   ArtbeatColors.backgroundPrimary, // match login_screen

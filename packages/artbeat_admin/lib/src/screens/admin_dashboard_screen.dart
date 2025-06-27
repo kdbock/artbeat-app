@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import '../models/admin_stats_model.dart';
-import '../models/user_admin_model.dart';
 import '../services/admin_service.dart';
 import 'admin_user_management_screen.dart';
 
@@ -268,7 +266,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Colors.blue,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (context) => const AdminUserManagementScreen(),
                 ),
               ),
@@ -354,7 +352,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.trending_up, color: Colors.green),
+                    const Icon(Icons.trending_up, color: Colors.green),
                     const SizedBox(width: 8),
                     Text('New Users Today: ${_stats?.newUsersToday ?? 0}'),
                   ],
@@ -362,7 +360,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.trending_up, color: Colors.blue),
+                    const Icon(Icons.trending_up, color: Colors.blue),
                     const SizedBox(width: 8),
                     Text(
                         'New Users This Week: ${_stats?.newUsersThisWeek ?? 0}'),
@@ -371,7 +369,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.trending_up, color: Colors.purple),
+                    const Icon(Icons.trending_up, color: Colors.purple),
                     const SizedBox(width: 8),
                     Text(
                         'New Users This Month: ${_stats?.newUsersThisMonth ?? 0}'),
@@ -380,7 +378,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const Divider(),
                 Row(
                   children: [
-                    Icon(Icons.person, color: Colors.teal),
+                    const Icon(Icons.person, color: Colors.teal),
                     const SizedBox(width: 8),
                     Text(
                         'Active Users Today: ${_stats?.activeUsersToday ?? 0}'),
@@ -389,7 +387,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.person, color: Colors.indigo),
+                    const Icon(Icons.person, color: Colors.indigo),
                     const SizedBox(width: 8),
                     Text(
                         'Active Users This Week: ${_stats?.activeUsersThisWeek ?? 0}'),
@@ -398,7 +396,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.person, color: Colors.deepPurple),
+                    const Icon(Icons.person, color: Colors.deepPurple),
                     const SizedBox(width: 8),
                     Text(
                         'Active Users This Month: ${_stats?.activeUsersThisMonth ?? 0}'),
@@ -413,7 +411,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   void _showLogoutDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Logout'),

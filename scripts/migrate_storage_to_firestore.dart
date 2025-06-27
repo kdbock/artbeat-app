@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 Future<void> migrateArtworkStorageToFirestore() async {
   await Firebase.initializeApp();
@@ -45,9 +46,9 @@ Future<void> migrateArtworkStorageToFirestore() async {
           // Add more fields as needed
         });
 
-        print('Migrated $imageUrl for user $userId');
+        debugPrint('Migrated $imageUrl for user $userId');
       }
     }
   }
-  print('Migration complete!');
+  debugPrint('Migration complete!');
 }

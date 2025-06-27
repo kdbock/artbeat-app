@@ -22,7 +22,7 @@ class AdminService {
       final users = usersSnapshot.docs;
 
       // Calculate user type counts
-      int totalUsers = users.length;
+      final int totalUsers = users.length;
       int totalArtists = 0;
       int totalGalleries = 0;
       int totalModerators = 0;
@@ -35,7 +35,7 @@ class AdminService {
       int activeUsersThisMonth = 0;
 
       for (var doc in users) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         final userType =
             UserType.fromString(data['userType'] as String? ?? 'user');
         final createdAt = (data['createdAt'] as Timestamp?)?.toDate();

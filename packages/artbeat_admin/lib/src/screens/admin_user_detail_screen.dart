@@ -452,10 +452,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
                         Icon(Icons.block, color: Colors.red),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           'User Suspended',
                           style: TextStyle(
@@ -740,9 +740,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         userType.name.toUpperCase(),
@@ -762,9 +762,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         status,
@@ -814,6 +814,6 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
   Future<void> _handleAction(String action) async {
     // Implementation for handling actions would go here
     // Similar to the user management screen actions
-    print('Handling action: $action for user: ${_currentUser.id}');
+    debugPrint('Handling action: $action for user: ${_currentUser.id}');
   }
 }

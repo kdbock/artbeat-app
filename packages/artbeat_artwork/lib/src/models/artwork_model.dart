@@ -110,12 +110,15 @@ class ArtworkModel {
     final data = doc.data() as Map<String, dynamic>;
     return ArtworkModel(
       id: doc.id,
-      userId: data['userId'] as String,
-      artistProfileId: data['artistProfileId'] as String,
-      title: data['title'] as String,
-      description: data['description'] as String,
-      imageUrl: data['imageUrl'] as String,
-      medium: data['medium'] as String,
+      // Handle legacy documents that have artistId instead of userId/artistProfileId
+      userId: data['userId'] as String? ?? data['artistId'] as String? ?? '',
+      artistProfileId: data['artistProfileId'] as String? ??
+          data['artistId'] as String? ??
+          '',
+      title: data['title'] as String? ?? '',
+      description: data['description'] as String? ?? '',
+      imageUrl: data['imageUrl'] as String? ?? '',
+      medium: data['medium'] as String? ?? '',
       styles: (data['styles'] as List<dynamic>? ?? []).cast<String>(),
       dimensions: data['dimensions'] as String?,
       materials: data['materials'] as String?,
@@ -136,8 +139,8 @@ class ArtworkModel {
       viewCount: data['viewCount'] as int? ?? 0,
       likeCount: data['likeCount'] as int? ?? 0,
       commentCount: data['commentCount'] as int? ?? 0,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp? ?? Timestamp.now()).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
