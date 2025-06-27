@@ -54,11 +54,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    // Print debug info for Firebase App Check
-    debugPrint(
-      'ℹ️ Note: Firebase App Check errors are expected in debug mode and can be ignored',
-    );
-
     _initializeMaps();
     _loadUserData();
     _loadFeaturedArtists();
@@ -74,36 +69,30 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  /// Initialize Google Maps service
+
   Future<void> _initializeMaps() async {
     try {
-      debugPrint('🗺️ Initializing Google Maps...');
 
-      // Initialize Google Maps service for iOS compatibility
+
       await GoogleMapsService().initializeMaps();
 
       setState(() {
         _mapsInitialized = true;
       });
 
-      debugPrint('✅ Google Maps initialized successfully');
 
-      // Get user location after maps are initialized
+
       await _getUserLocation();
     } catch (e) {
-      debugPrint('❌ Failed to initialize Google Maps: $e');
-      debugPrint(
-        '📋 If maps don\'t work, please check docs/IOS_GOOGLE_MAPS_FIX_GUIDE.md',
-      );
-      // Still try to get location even if maps fail
+
       await _getUserLocation();
     }
   }
 
-  /// Get user location and set up markers
+
   Future<void> _getUserLocation() async {
     try {
-      // Try to get actual user location first
+
       final position = await LocationUtils.getCurrentPosition();
       final userLocation = LatLng(position.latitude, position.longitude);
 
@@ -113,12 +102,10 @@ class _DashboardScreenState extends State<DashboardScreen>
           _updateMapMarkers();
         });
       }
-      debugPrint('📍 User location set to: $userLocation');
 
-      // Location set successfully for map display
+
     } catch (e) {
-      debugPrint('❌ Failed to get user location: $e, using default location');
-      // Fallback to default location (Asheville, NC)
+
       const defaultLocation = LatLng(35.5951, -82.5515);
 
       if (mounted) {
@@ -128,16 +115,16 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
       }
 
-      // Default location set for map display
+
     }
   }
 
-  /// Update markers on the map with user location and captured art
+
   void _updateMapMarkers() {
     if (_userLocation == null) return;
 
     final Set<Marker> markers = {
-      // User location marker
+
       Marker(
         markerId: const MarkerId('user_location'),
         position: _userLocation!,
@@ -146,7 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     };
 
-    // Add captured art markers
+
     for (int i = 0; i < _nearbyCaptures.length; i++) {
       final capture = _nearbyCaptures[i];
       if (capture.location != null) {
@@ -165,7 +152,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               BitmapDescriptor.hueGreen,
             ),
           ),
-        );
       }
     }
 
@@ -186,20 +172,18 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Load all artists from artistProfiles collection
+
   Future<void> _loadFeaturedArtists() async {
     try {
-      debugPrint('🎨 Loading all artist profiles...');
 
-      // Get all users with userType = 'artist' first
+
       final QuerySnapshot artistUsersSnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('userType', isEqualTo: 'artist')
           .get();
 
-      debugPrint('📊 Found ${artistUsersSnapshot.docs.length} artist users');
 
-      // Then get their corresponding artist profiles
+
       final List<Future<DocumentSnapshot>> profileFutures = artistUsersSnapshot
           .docs
           .map(
@@ -212,9 +196,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       final List<DocumentSnapshot> profileDocs = await Future.wait(
         profileFutures,
-      );
 
-      // Convert to ArtistProfileModel - INCLUDE ALL PROFILES
+
       final List<ArtistProfileModel> artistProfiles = [];
 
       for (var profileDoc in profileDocs) {
@@ -223,51 +206,34 @@ class _DashboardScreenState extends State<DashboardScreen>
         try {
           final data = profileDoc.data() as Map<String, dynamic>;
 
-          // Log ALL document data for debugging
-          debugPrint('📋 Processing document ${profileDoc.id}:');
-          debugPrint(
+
             '  Raw userType value: ${data['userType']} (${data['userType'].runtimeType})',
-          );
-          debugPrint('  displayName: ${data['displayName']}');
-          debugPrint('  Full document data: $data');
 
           final profile = ArtistProfileModel.fromFirestore(profileDoc);
 
-          // ADD ALL PROFILES - The requirement is to show all artistProfiles with userType 'artist'
-          // Since these are in the artistProfiles collection, they should all be artists
+
+
           artistProfiles.add(profile);
-          debugPrint(
-            '✅ Added profile: ${profile.displayName} (userType: ${profile.userType.name})',
-          );
         } catch (e) {
-          debugPrint('❌ Error converting document ${profileDoc.id}: $e');
           final data = profileDoc.data() as Map<String, dynamic>;
-          debugPrint('   Document data: $data');
-          // Continue processing other documents even if one fails
+
         }
       }
 
-      // Sort by most recently updated
+
       artistProfiles.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
       if (mounted) {
         setState(() {
           _featuredArtists = artistProfiles;
         });
-        debugPrint('🔄 State updated with ${artistProfiles.length} artists');
-        debugPrint('🔄 _featuredArtists.length = ${_featuredArtists.length}');
       }
 
-      debugPrint('✅ Successfully loaded ${artistProfiles.length} artists');
 
-      // Log final results
+
       for (var artist in artistProfiles) {
-        debugPrint(
-          '🎨 Final Artist: ${artist.displayName} (${artist.userType.name})',
-        );
       }
     } catch (e) {
-      debugPrint('❌ Error loading artist profiles: $e');
     }
   }
 
@@ -277,14 +243,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
 
     try {
-      debugPrint('🎨 Loading captured art using working approach...');
 
       final captures = <CaptureModel>[];
 
-      // First, load the user's own captures (this works from drawer)
+
       final currentUserId = FirebaseAuth.instance.currentUser?.uid;
       if (currentUserId != null) {
-        debugPrint('🔍 [Dashboard] Loading user captures for: $currentUserId');
 
         try {
           final userCapturesSnapshot = await FirebaseFirestore.instance
@@ -293,78 +257,55 @@ class _DashboardScreenState extends State<DashboardScreen>
               .orderBy('createdAt', descending: true)
               .get();
 
-          debugPrint(
-            '🔍 [Dashboard] User captures found: ${userCapturesSnapshot.docs.length}',
-          );
 
           for (final doc in userCapturesSnapshot.docs) {
             try {
               final data = doc.data();
               final capture = CaptureModel.fromJson({...data, 'id': doc.id});
               captures.add(capture);
-              debugPrint(
-                '  ✅ Added user capture: ${capture.id}, title: ${capture.title}',
-              );
             } catch (e) {
-              debugPrint('  ❌ Error parsing user capture ${doc.id}: $e');
             }
           }
         } catch (e) {
-          debugPrint('❌ Error loading user captures: $e');
         }
       }
 
-      // Try to load public captures from other users (might fail due to permissions)
+
       try {
-        debugPrint(
-          '🔍 [Dashboard] Attempting to load public captures from other users...',
-        );
         final publicCapturesSnapshot = await FirebaseFirestore.instance
             .collection('captures')
             .where('isPublic', isEqualTo: true)
             .where('isProcessed', isEqualTo: true)
-            .limit(20) // Limit to avoid large queries
+            .limit(20)
             .get();
 
-        debugPrint(
-          '🔍 [Dashboard] Public captures found: ${publicCapturesSnapshot.docs.length}',
-        );
 
         for (final doc in publicCapturesSnapshot.docs) {
           try {
             final data = doc.data();
-            // Skip if it's already the user's own capture
+
             if (data['userId'] != currentUserId) {
               final capture = CaptureModel.fromJson({...data, 'id': doc.id});
               captures.add(capture);
-              debugPrint(
-                '  ✅ Added public capture: ${capture.id}, title: ${capture.title}',
-              );
             }
           } catch (e) {
-            debugPrint('  ❌ Error parsing public capture ${doc.id}: $e');
           }
         }
       } catch (e) {
-        debugPrint('⚠️ Could not load public captures (permissions): $e');
-        debugPrint('   Using only user captures');
       }
 
-      // Sort all captures by creation date
+
       captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (mounted) {
         setState(() {
           _nearbyCaptures = captures;
           _isLoadingCaptures = false;
-          _updateMapMarkers(); // Update map markers with captured art
+          _updateMapMarkers();
         });
       }
 
-      debugPrint('✅ Loaded ${captures.length} total captures for dashboard');
     } catch (e) {
-      debugPrint('❌ Error loading captures: $e');
-      debugPrint('❌ Stack trace: ${StackTrace.current}');
       if (mounted) {
         setState(() {
           _isLoadingCaptures = false;
@@ -379,7 +320,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
 
     try {
-      debugPrint('📅 Loading upcoming events...');
 
       final eventService = EventService();
       final events = await eventService.getUpcomingPublicEvents(limit: 10);
@@ -391,9 +331,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
       }
 
-      debugPrint('✅ Loaded ${events.length} upcoming events');
     } catch (e) {
-      debugPrint('❌ Error loading upcoming events: $e');
       if (mounted) {
         setState(() {
           _isLoadingEvents = false;
@@ -402,16 +340,15 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Load all artists
+
   Future<void> _loadNearbyArtists() async {
     setState(() {
       _isLoadingNearbyArtists = true;
     });
 
     try {
-      debugPrint('🎨 Loading all artists...');
 
-      // Get all artists - no location filtering
+
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('artistProfiles')
           .where('userType', isEqualTo: 'artist')
@@ -426,23 +363,20 @@ class _DashboardScreenState extends State<DashboardScreen>
           final profile = ArtistProfileModel.fromFirestore(doc);
           allArtists.add(profile);
         } catch (e) {
-          debugPrint('❌ Error converting artist ${doc.id}: $e');
         }
       }
 
-      // Sort by most recently updated
+
       allArtists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
       if (mounted) {
         setState(() {
-          _nearbyArtists = allArtists; // Show all artists
+          _nearbyArtists = allArtists;
           _isLoadingNearbyArtists = false;
         });
       }
 
-      debugPrint('✅ Loaded ${allArtists.length} total artists');
     } catch (e) {
-      debugPrint('❌ Error loading artists: $e');
       if (mounted) {
         setState(() {
           _isLoadingNearbyArtists = false;
@@ -451,19 +385,17 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
-  /// Load all artworks
+
   Future<void> _loadNearbyArtworks() async {
     setState(() {
       _isLoadingNearbyArtworks = true;
     });
 
     try {
-      debugPrint('🖼️ Loading all artworks...');
 
-      // Load all artworks from Firebase Storage - no location filtering
+
       await _loadNearbyArtworkFromStorage();
     } catch (e) {
-      debugPrint('❌ Error loading artworks: $e');
       if (mounted) {
         setState(() {
           _isLoadingNearbyArtworks = false;
@@ -474,13 +406,11 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   Future<void> _loadNearbyArtworkFromStorage() async {
     try {
-      debugPrint('📁 Loading all artworks from Firebase Storage...');
 
-      // Check if Firebase Storage is available
+
       try {
         FirebaseStorage.instance.ref();
       } catch (e) {
-        debugPrint('⚠️ Firebase Storage not available: $e');
         if (mounted) {
           setState(() {
             _isLoadingNearbyArtworks = false;
@@ -491,12 +421,11 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       final Reference storageRef = FirebaseStorage.instance.ref().child(
         'artwork_images',
-      );
       final ListResult result = await storageRef.listAll();
 
       final List<ArtworkModel> artworks = [];
       int processed = 0;
-      // Process all artworks - no limit
+
 
       for (var item in result.items) {
         try {
@@ -520,14 +449,11 @@ class _DashboardScreenState extends State<DashboardScreen>
             isSold: false,
             price: 0.0,
             medium: metadata.customMetadata?['medium'] ?? 'Mixed Media',
-          );
 
           artworks.add(artwork);
           processed++;
 
-          debugPrint('✅ Loaded artwork: ${artwork.title}');
         } catch (e) {
-          debugPrint('❌ Error loading artwork ${item.name}: $e');
         }
       }
 
@@ -538,9 +464,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         });
       }
 
-      debugPrint('✅ Successfully loaded $processed total artworks');
     } catch (e) {
-      debugPrint('❌ Error loading artworks from storage: $e');
       if (mounted) {
         setState(() {
           _isLoadingNearbyArtworks = false;
@@ -552,7 +476,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 0, // Dashboard is index 0 (Home)
+      currentIndex: 0,
       child: Scaffold(
         appBar: UniversalHeader(
           title: 'ARTbeat',
@@ -560,9 +484,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           actions: [
             IconButton(
               icon: const Icon(Icons.search),
-              onPressed: () {
-                // TODO: Implement search
-              },
+              onPressed: () {              },
             ),
           ],
         ),
@@ -571,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // Welcome section with user stats
+
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -608,7 +530,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                         ),
                         const SizedBox(height: 12),
-                        // XP Progress Bar
+
                         Container(
                           height: 8,
                           decoration: BoxDecoration(
@@ -653,7 +575,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
 
-                // Tab Bar
+
                 Container(
                   color: Colors.white,
                   child: TabBar(
@@ -669,7 +591,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
 
-                // Tab Content
+
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.8,
                   child: TabBarView(
@@ -686,7 +608,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
-    );
   }
 
   Widget _buildExploreTab() {
@@ -695,7 +616,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Google Map Section with Art Markers
+
           GestureDetector(
             onTap: () {
               Navigator.pushNamed(context, '/art-walk/dashboard');
@@ -723,14 +644,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                             mapToolbarEnabled: false,
                             onMapCreated:
                                 (GoogleMapController controller) async {
-                                  debugPrint('🗺️ Map created successfully');
                                   try {
                                     await controller.animateCamera(
                                       CameraUpdate.newLatLng(_userLocation!),
-                                    );
-                                    debugPrint('✅ Map camera test successful');
                                   } catch (e) {
-                                    debugPrint('❌ Map camera test failed: $e');
                                     await MapsDiagnosticService.logDiagnostics();
                                   }
                                 },
@@ -776,7 +693,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             ),
                           ),
                   ),
-                  // Overlay with map info
+
                   Positioned(
                     bottom: 12,
                     left: 12,
@@ -831,7 +748,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           const SizedBox(height: 24),
 
-          // Captured Art section - REAL DATA
+
           const Text(
             'Captured Art',
             style: TextStyle(
@@ -899,7 +816,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           const SizedBox(height: 24),
 
-          // Artists section - ALL ARTISTS
+
           const Text(
             'Artists',
             style: TextStyle(
@@ -914,14 +831,8 @@ class _DashboardScreenState extends State<DashboardScreen>
             height: 145,
             child: Builder(
               builder: (context) {
-                debugPrint('🎨 UI Building Artists Section:');
-                debugPrint(
                   '  _isLoadingNearbyArtists: $_isLoadingNearbyArtists',
-                );
-                debugPrint('  _nearbyArtists.length: ${_nearbyArtists.length}');
-                debugPrint(
                   '  _nearbyArtists.isEmpty: ${_nearbyArtists.isEmpty}',
-                );
 
                 return _isLoadingNearbyArtists
                     ? const Center(child: CircularProgressIndicator())
@@ -961,14 +872,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                           final artist = _nearbyArtists[index];
                           return _buildArtistCard(artist);
                         },
-                      );
               },
             ),
           ),
 
           const SizedBox(height: 24),
 
-          // Upcoming Events section
+
           const Text(
             'Upcoming Events',
             style: TextStyle(
@@ -1035,7 +945,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
           const SizedBox(height: 24),
 
-          // Call to action
+
           GestureDetector(
             onTap: _navigateToArtistOnboarding,
             child: Container(
@@ -1086,7 +996,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ],
       ),
-    );
   }
 
   Widget _buildArtistsTab() {
@@ -1161,7 +1070,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
         ],
       ),
-    );
   }
 
   Widget _buildArtworkTab() {
@@ -1237,7 +1145,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
         ],
       ),
-    );
   }
 
   Widget _buildArtistCard(ArtistProfileModel artist) {
@@ -1265,7 +1172,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Artist avatar
+
               CircleAvatar(
                 radius: 30,
                 backgroundColor: ArtbeatColors.primaryPurple.withAlpha(25),
@@ -1286,7 +1193,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     : null,
               ),
               const SizedBox(height: 6),
-              // Artist name
+
               Text(
                 artist.displayName,
                 style: const TextStyle(
@@ -1298,7 +1205,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 2),
-              // Artist bio/medium
+
               Text(
                 artist.bio ??
                     (artist.mediums.isNotEmpty
@@ -1313,7 +1220,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
-    );
   }
 
   Widget _buildArtistGridCard(ArtistProfileModel artist) {
@@ -1339,7 +1245,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Artist avatar
+
               CircleAvatar(
                 radius: 40,
                 backgroundColor: ArtbeatColors.primaryPurple.withAlpha(25),
@@ -1360,7 +1266,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     : null,
               ),
               const SizedBox(height: 12),
-              // Artist name
+
               Text(
                 artist.displayName,
                 style: const TextStyle(
@@ -1372,7 +1278,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
-              // Artist bio/medium
+
               Expanded(
                 child: Text(
                   artist.bio ??
@@ -1386,7 +1292,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
               const SizedBox(height: 8),
-              // Follow button
+
               SizedBox(
                 width: double.infinity,
                 height: 28,
@@ -1396,7 +1302,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                       context,
                       '/artist/profile',
                       arguments: artist.id,
-                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ArtbeatColors.primaryPurple,
@@ -1411,7 +1316,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
-    );
   }
 
   Widget _buildArtworkCard(ArtworkModel artwork) {
@@ -1433,13 +1337,12 @@ class _DashboardScreenState extends State<DashboardScreen>
             context,
             '/artwork/details',
             arguments: artwork.id,
-          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Artwork image
+
             Expanded(
               flex: 3,
               child: Container(
@@ -1465,19 +1368,17 @@ class _DashboardScreenState extends State<DashboardScreen>
                           size: 40,
                           color: Colors.grey,
                         ),
-                      );
                     },
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return const Center(
                         child: CircularProgressIndicator(strokeWidth: 2),
-                      );
                     },
                   ),
                 ),
               ),
             ),
-            // Artwork info
+
             Expanded(
               flex: 2,
               child: Padding(
@@ -1518,7 +1419,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ],
         ),
       ),
-    );
   }
 
   Widget _buildCapturedArtCard(CaptureModel capture) {
@@ -1538,14 +1438,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       child: InkWell(
         onTap: () {
-          // Navigate to capture detail or art walk
+
           Navigator.pushNamed(context, '/art-walk/dashboard');
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Captured art image
+
             Expanded(
               flex: 3,
               child: Container(
@@ -1572,13 +1472,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                                 size: 40,
                                 color: Colors.grey,
                               ),
-                            );
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return const Center(
                               child: CircularProgressIndicator(strokeWidth: 2),
-                            );
                           },
                         )
                       : Container(
@@ -1592,7 +1490,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
             ),
-            // Captured art info
+
             Expanded(
               flex: 2,
               child: Padding(
@@ -1647,7 +1545,6 @@ class _DashboardScreenState extends State<DashboardScreen>
           ],
         ),
       ),
-    );
   }
 
   Widget _buildEventCard(ArtbeatEvent event) {
@@ -1667,14 +1564,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       child: InkWell(
         onTap: () {
-          // Navigate to event details
+
           Navigator.pushNamed(context, '/events/details', arguments: event.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Event banner image
+
             Expanded(
               flex: 3,
               child: Container(
@@ -1703,13 +1600,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   204,
                                 ),
                               ),
-                            );
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return const Center(
                               child: CircularProgressIndicator(strokeWidth: 2),
-                            );
                           },
                         )
                       : Container(
@@ -1723,7 +1618,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
               ),
             ),
-            // Event info
+
             Expanded(
               flex: 2,
               child: Padding(
@@ -1794,17 +1689,16 @@ class _DashboardScreenState extends State<DashboardScreen>
           ],
         ),
       ),
-    );
   }
 
-  /// Get level progress (0.0 to 1.0)
+
   double _getLevelProgress() {
     if (_currentUser == null) return 0.0;
 
     final currentXP = _currentUser!.experiencePoints;
     final currentLevel = _currentUser!.level;
 
-    // XP needed for next level: level * 100
+
     final xpForCurrentLevel = currentLevel * 100;
     final xpForNextLevel = (currentLevel + 1) * 100;
     final xpInCurrentLevel = currentXP - xpForCurrentLevel;
@@ -1815,7 +1709,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     return (xpInCurrentLevel / xpNeededForLevel).clamp(0.0, 1.0);
   }
 
-  /// Get user level title
+
   String _getLevelTitle(int level) {
     final Map<int, String> levelTitles = {
       0: 'Art Explorer',
