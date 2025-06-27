@@ -454,7 +454,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
                 ArtbeatColors.primaryPurple,
               ),
@@ -476,7 +476,11 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: ArtbeatColors.error),
+            const Icon(
+              Icons.error_outline,
+              size: 64,
+              color: ArtbeatColors.error,
+            ),
             const SizedBox(height: 16),
             Text(
               _errorMessage ?? 'An error occurred',
@@ -501,7 +505,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.forum_outlined,
               size: 64,
               color: ArtbeatColors.textSecondary,
@@ -541,9 +545,9 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
         itemCount: _posts.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _posts.length) {
-            return Center(
+            return const Center(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
                     ArtbeatColors.primaryPurple,

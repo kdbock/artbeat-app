@@ -17,7 +17,6 @@ class CalendarIntegrationService {
         endDate: event.dateTime.add(
           const Duration(hours: 2),
         ), // Default 2-hour duration
-        allDay: false,
       );
 
       final success = await Add2Calendar.addEvent2Cal(calendarEvent);
@@ -29,7 +28,7 @@ class CalendarIntegrationService {
       }
 
       return success;
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error adding event to calendar: $e');
       return false;
     }
@@ -40,7 +39,7 @@ class CalendarIntegrationService {
     final buffer = StringBuffer();
 
     buffer.writeln(event.description);
-    buffer.writeln('');
+    buffer.writeln();
 
     // Add ticket information
     if (event.ticketTypes.isNotEmpty) {
@@ -48,7 +47,7 @@ class CalendarIntegrationService {
       for (final ticket in event.ticketTypes) {
         buffer.writeln('• ${ticket.name}: ${ticket.formattedPrice}');
       }
-      buffer.writeln('');
+      buffer.writeln();
     }
 
     // Add contact information
@@ -56,17 +55,17 @@ class CalendarIntegrationService {
     if (event.contactPhone != null && event.contactPhone!.isNotEmpty) {
       buffer.writeln('📞 Phone: ${event.contactPhone}');
     }
-    buffer.writeln('');
+    buffer.writeln();
 
     // Add tags
     if (event.tags.isNotEmpty) {
       buffer.writeln('🏷️ Tags: ${event.tags.join(', ')}');
-      buffer.writeln('');
+      buffer.writeln();
     }
 
     // Add refund policy
     buffer.writeln('🔄 Refund Policy: ${event.refundPolicy.terms}');
-    buffer.writeln('');
+    buffer.writeln();
 
     buffer.writeln('Created with ARTbeat');
 
@@ -90,7 +89,6 @@ class CalendarIntegrationService {
         endDate: reminderTime.add(
           const Duration(minutes: 15),
         ), // 15-minute reminder
-        allDay: false,
       );
 
       final success = await Add2Calendar.addEvent2Cal(reminderEvent);
@@ -102,7 +100,7 @@ class CalendarIntegrationService {
       }
 
       return success;
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error adding event reminder to calendar: $e');
       return false;
     }
@@ -130,12 +128,11 @@ class CalendarIntegrationService {
         description: 'This is a test event',
         startDate: DateTime.now(),
         endDate: DateTime.now().add(const Duration(minutes: 1)),
-        allDay: false,
       );
 
       // This will return false if permissions are not granted
       return await Add2Calendar.addEvent2Cal(testEvent);
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error checking calendar permissions: $e');
       return false;
     }
@@ -202,10 +199,10 @@ class CalendarIntegrationService {
   /// Escape special characters for iCalendar format
   String _escapeICalText(String text) {
     return text
-        .replaceAll('\\', '\\\\')
-        .replaceAll(',', '\\,')
-        .replaceAll(';', '\\;')
-        .replaceAll('\n', '\\n')
-        .replaceAll('\r', '\\r');
+        .replaceAll(r'\', r'\\')
+        .replaceAll(',', r'\,')
+        .replaceAll(';', r'\;')
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r');
   }
 }

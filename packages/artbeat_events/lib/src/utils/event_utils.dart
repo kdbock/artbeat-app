@@ -48,8 +48,8 @@ class EventUtils {
   static bool isEventToday(DateTime eventDateTime) {
     final now = DateTime.now();
     return eventDateTime.year == now.year &&
-           eventDateTime.month == now.month &&
-           eventDateTime.day == now.day;
+        eventDateTime.month == now.month &&
+        eventDateTime.day == now.day;
   }
 
   /// Check if event is happening this week
@@ -57,26 +57,27 @@ class EventUtils {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
-    
-    return eventDateTime.isAfter(startOfWeek) && eventDateTime.isBefore(endOfWeek);
+
+    return eventDateTime.isAfter(startOfWeek) &&
+        eventDateTime.isBefore(endOfWeek);
   }
 
   /// Get event status string
   static String getEventStatus(ArtbeatEvent event) {
     final now = DateTime.now();
-    
+
     if (event.dateTime.isBefore(now)) {
       return 'Ended';
     }
-    
+
     if (event.isSoldOut) {
       return 'Sold Out';
     }
-    
+
     if (event.totalTicketsSold > event.totalAvailableTickets * 0.8) {
       return 'Almost Full';
     }
-    
+
     return 'Available';
   }
 
@@ -149,7 +150,7 @@ class EventUtils {
     }
 
     final totalTickets = event.ticketTypes.fold<int>(
-      0, 
+      0,
       (sum, ticket) => sum + ticket.quantity,
     );
     if (totalTickets > event.maxAttendees) {
@@ -167,28 +168,28 @@ class EventUtils {
   /// Generate event share text
   static String generateShareText(ArtbeatEvent event) {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('🎨 ${event.title}');
     buffer.writeln('📅 ${formatEventDateTime(event.dateTime)}');
     buffer.writeln('📍 ${event.location}');
-    
+
     final priceRange = getTicketPriceRange(event.ticketTypes);
     buffer.writeln('🎫 $priceRange');
-    
+
     if (event.tags.isNotEmpty) {
       buffer.writeln('🏷️ ${event.tags.take(3).join(' • ')}');
     }
-    
+
     buffer.writeln('\n${event.description}');
     buffer.writeln('\nGet your tickets on ARTbeat!');
-    
+
     return buffer.toString();
   }
 
   /// Get event category from tags
   static String getEventCategory(List<String> tags) {
     if (tags.isEmpty) return 'General';
-    
+
     // Priority categories
     const priorityCategories = [
       'Art Exhibition',
@@ -197,40 +198,40 @@ class EventUtils {
       'Artist Talk',
       'Live Performance',
     ];
-    
+
     for (final category in priorityCategories) {
       if (tags.contains(category)) {
         return category;
       }
     }
-    
+
     return tags.first;
   }
 
   /// Calculate event popularity score
   static double calculatePopularityScore(ArtbeatEvent event) {
     double score = 0.0;
-    
+
     // Base score from attendees
     final attendeeRatio = event.attendeeIds.length / event.maxAttendees;
     score += attendeeRatio * 50;
-    
+
     // Bonus for ticket sales
     final salesRatio = event.totalTicketsSold / event.totalAvailableTickets;
     score += salesRatio * 30;
-    
+
     // Bonus for being public
     if (event.isPublic) {
       score += 10;
     }
-    
+
     // Bonus for having tags
     score += event.tags.length * 2;
-    
+
     // Time penalty for older events
     final daysSinceCreated = DateTime.now().difference(event.createdAt).inDays;
     score *= (1 - (daysSinceCreated * 0.01)).clamp(0.5, 1.0);
-    
+
     return score.clamp(0.0, 100.0);
   }
 
@@ -241,34 +242,36 @@ class EventUtils {
     DateTime? referenceDate,
   }) {
     final reference = referenceDate ?? DateTime.now();
-    
+
     events.sort((a, b) {
       double scoreA = 0.0;
       double scoreB = 0.0;
-      
+
       // Time relevance (upcoming events are more relevant)
       final daysUntilA = a.dateTime.difference(reference).inDays;
       final daysUntilB = b.dateTime.difference(reference).inDays;
-      
+
       if (daysUntilA >= 0 && daysUntilA <= 7) scoreA += 10;
       if (daysUntilB >= 0 && daysUntilB <= 7) scoreB += 10;
-      
+
       // Interest matching
       if (userInterests != null) {
-        final matchingTagsA = a.tags.where((tag) => userInterests.contains(tag)).length;
-        final matchingTagsB = b.tags.where((tag) => userInterests.contains(tag)).length;
-        
+        final matchingTagsA =
+            a.tags.where((tag) => userInterests.contains(tag)).length;
+        final matchingTagsB =
+            b.tags.where((tag) => userInterests.contains(tag)).length;
+
         scoreA += matchingTagsA * 5;
         scoreB += matchingTagsB * 5;
       }
-      
+
       // Popularity
       scoreA += calculatePopularityScore(a) * 0.1;
       scoreB += calculatePopularityScore(b) * 0.1;
-      
+
       return scoreB.compareTo(scoreA);
     });
-    
+
     return events;
   }
 
@@ -279,7 +282,7 @@ class EventUtils {
 
   /// Parse QR code data
   static String? parseEventIdFromQrCode(String qrData) {
-    final regex = RegExp(r'artbeat://event/(.+)');
+    final regex = RegExp('artbeat://event/(.+)');
     final match = regex.firstMatch(qrData);
     return match?.group(1);
   }

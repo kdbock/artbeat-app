@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_core/widgets/artbeat_bottom_nav_bar.dart';
 
 class ArtbeatBottomNavBar extends StatelessWidget {
   final int currentIndex;

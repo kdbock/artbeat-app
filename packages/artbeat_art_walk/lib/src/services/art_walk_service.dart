@@ -227,21 +227,90 @@ class ArtWalkService {
   /// Get all captured art (public captures)
   Future<List<CaptureModel>> getAllCapturedArt() async {
     try {
-      final snapshot = await _capturesCollection
+      debugPrint('🔍 [ArtWalkService] Starting getAllCapturedArt query...');
+
+      // Try a simple query first - just get all captures
+      debugPrint(
+        '🔍 [ArtWalkService] Step 1: Getting ALL captures (no filters)',
+      );
+      final allSnapshot = await _capturesCollection.get();
+      debugPrint(
+        '🔍 [ArtWalkService] Total captures in database: ${allSnapshot.docs.length}',
+      );
+
+      // Now try with individual filters to see what we get
+      debugPrint('🔍 [ArtWalkService] Step 2: Filtering by isPublic = true');
+      final publicSnapshot = await _capturesCollection
+          .where('isPublic', isEqualTo: true)
+          .get();
+      debugPrint(
+        '🔍 [ArtWalkService] Public captures: ${publicSnapshot.docs.length}',
+      );
+
+      debugPrint('🔍 [ArtWalkService] Step 3: Filtering by isProcessed = true');
+      final processedSnapshot = await _capturesCollection
+          .where('isProcessed', isEqualTo: true)
+          .get();
+      debugPrint(
+        '🔍 [ArtWalkService] Processed captures: ${processedSnapshot.docs.length}',
+      );
+
+      // Try the combined query without orderBy to avoid index issues
+      debugPrint('🔍 [ArtWalkService] Step 4: Combined filters (no orderBy)');
+      final combinedSnapshot = await _capturesCollection
           .where('isPublic', isEqualTo: true)
           .where('isProcessed', isEqualTo: true)
-          .orderBy('createdAt', descending: true)
           .get();
+      debugPrint(
+        '🔍 [ArtWalkService] Combined filtered captures: ${combinedSnapshot.docs.length}',
+      );
 
-      return snapshot.docs
-          .map(
-            (doc) => CaptureModel.fromFirestore(
-              doc as DocumentSnapshot<Map<String, dynamic>>,
-              null,
-            ),
-          )
-          .toList();
+      // Use the combined snapshot (without orderBy to avoid index issues)
+      // If no results from filtered query, use all captures for debugging
+      final snapshot = combinedSnapshot.docs.isEmpty
+          ? allSnapshot
+          : combinedSnapshot;
+
+      if (combinedSnapshot.docs.isEmpty) {
+        debugPrint(
+          '⚠️ [ArtWalkService] No captures match filters, showing ALL captures for debugging',
+        );
+      }
+
+      final captures = <CaptureModel>[];
+      for (int i = 0; i < snapshot.docs.length; i++) {
+        try {
+          final doc = snapshot.docs[i];
+          final data = doc.data() as Map<String, dynamic>;
+          debugPrint(
+            '🔍 [ArtWalkService] Processing doc ${i + 1}/${snapshot.docs.length}: id=${doc.id}',
+          );
+          debugPrint('  Raw data keys: ${data.keys.toList()}');
+          debugPrint('  isPublic: ${data['isPublic']}');
+          debugPrint('  isProcessed: ${data['isProcessed']}');
+          debugPrint('  title: ${data['title']}');
+          debugPrint('  imageUrl exists: ${data.containsKey('imageUrl')}');
+
+          final capture = CaptureModel.fromFirestore(
+            doc as DocumentSnapshot<Map<String, dynamic>>,
+            null,
+          );
+          captures.add(capture);
+          debugPrint('  ✅ Successfully parsed capture: ${capture.id}');
+        } catch (e) {
+          debugPrint('  ❌ Error parsing document ${i + 1}: $e');
+        }
+      }
+
+      // Sort manually since we removed orderBy
+      captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      debugPrint(
+        '🔍 [ArtWalkService] Successfully parsed ${captures.length} captures',
+      );
+      return captures;
     } catch (e) {
+      debugPrint('❌ [ArtWalkService] Error getting all captured art: $e');
       _logger.e('Error getting all captured art: $e');
       return [];
     }

@@ -33,7 +33,7 @@ class AllEventsScreen extends StatelessWidget {
   void _navigateToSearch(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<EventsListScreen>(
         builder: (context) => const EventsListScreen(
           title: 'Search Events',
           showCreateButton: false,

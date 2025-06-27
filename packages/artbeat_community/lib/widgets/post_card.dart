@@ -81,7 +81,7 @@ class PostCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.location_on_outlined,
                             size: 14,
                             color: ArtbeatColors.textSecondary,
@@ -91,17 +91,15 @@ class PostCard extends StatelessWidget {
                             flex: 2,
                             child: Text(
                               post.location,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: ArtbeatColors.textSecondary,
                                 fontSize: 13,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                            ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text(
                               '•',
                               style: TextStyle(
@@ -113,7 +111,7 @@ class PostCard extends StatelessWidget {
                             flex: 1,
                             child: Text(
                               timeago.format(post.createdAt),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: ArtbeatColors.textSecondary,
                                 fontSize: 13,
                               ),
@@ -157,7 +155,7 @@ class PostCard extends StatelessWidget {
                       ],
                       if (post.userId == currentUserId)
                         IconButton(
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.more_vert,
                             color: ArtbeatColors.textSecondary,
                           ),
@@ -268,7 +266,7 @@ class PostCard extends StatelessWidget {
                     ),
                     child: Text(
                       '#$tag',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: ArtbeatColors.primaryPurple,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,

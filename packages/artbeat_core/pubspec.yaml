@@ -30,6 +30,8 @@ dependencies:
     path: ../artbeat_capture
   artbeat_community:
     path: ../artbeat_community
+  artbeat_events:
+    path: ../artbeat_events
   artbeat_messaging:
     path: ../artbeat_messaging
   artbeat_profile:

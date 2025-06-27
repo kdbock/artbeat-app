@@ -53,39 +53,24 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Short delay to show splash screen briefly (reduced from 2 seconds)
     await Future<void>.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
 
     try {
-      // Ensure Firebase is fully initialized
-      debugPrint('🔥 SplashScreen: Verifying Firebase initialization...');
       if (Firebase.apps.isEmpty) {
-        debugPrint(
-          '❌ SplashScreen: No Firebase apps found, redirecting to login',
-        );
         if (!mounted) return;
         Navigator.of(context).pushReplacementNamed('/login');
         return;
       }
 
-      // Check if user is logged in directly with Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
-      debugPrint('SplashScreen: currentUser = ${user?.uid ?? 'null'}');
-
-      // If user is authenticated, sync user document in background
       if (user != null) {
-        debugPrint('🔄 SplashScreen: Starting background user sync...');
-        // Start user sync in background (non-blocking)
         _syncUserInBackground();
       }
 
-      // Navigate immediately without waiting for sync
-      // Dismiss keyboard before navigating
       FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
 
-      debugPrint('🔗 SplashScreen navigating to: $route');
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(route);
     } catch (e) {
@@ -102,13 +87,12 @@ class _SplashScreenState extends State<SplashScreen>
     Future.delayed(Duration.zero, () async {
       try {
         await UserSyncHelper.ensureUserDocumentExists().timeout(
-          const Duration(seconds: 5), // Reduced timeout
+          const Duration(seconds: 5),
         );
-        debugPrint('✅ Background user sync completed');
       } on TimeoutException {
-        debugPrint('⏱️ Background user sync timed out');
+        // Ignore timeout
       } catch (syncError) {
-        debugPrint('⚠️ Background user sync failed: $syncError');
+        // Ignore sync errors in background
       }
     });
   }

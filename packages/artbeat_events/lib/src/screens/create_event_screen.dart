@@ -118,7 +118,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       if (mounted) {
         _showSuccessDialog(eventId, widget.editEvent != null);
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
         _showErrorDialog(e.toString());

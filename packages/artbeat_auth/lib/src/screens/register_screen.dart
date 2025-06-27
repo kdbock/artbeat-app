@@ -431,7 +431,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.error_outline,
                             color: ArtbeatColors.error,
                             size: 24,
@@ -608,7 +608,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             children: [
                               TextSpan(
                                 text: 'Terms of Service',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: ArtbeatColors.primaryPurple,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -618,7 +618,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               const TextSpan(text: ' and '),
                               TextSpan(
                                 text: 'Privacy Policy',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: ArtbeatColors.primaryPurple,
                                   fontWeight: FontWeight.w600,
                                 ),

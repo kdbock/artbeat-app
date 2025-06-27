@@ -32,9 +32,12 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.ticketType.name);
-    _descriptionController = TextEditingController(text: widget.ticketType.description);
-    _priceController = TextEditingController(text: widget.ticketType.price.toString());
-    _quantityController = TextEditingController(text: widget.ticketType.quantity.toString());
+    _descriptionController =
+        TextEditingController(text: widget.ticketType.description);
+    _priceController =
+        TextEditingController(text: widget.ticketType.price.toString());
+    _quantityController =
+        TextEditingController(text: widget.ticketType.quantity.toString());
     _selectedCategory = widget.ticketType.category;
     _benefits = List.from(widget.ticketType.benefits);
 
@@ -87,8 +90,8 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                   child: Text(
                     'Ticket Type',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
                 IconButton(
@@ -164,13 +167,15 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                   child: TextFormField(
                     controller: _priceController,
                     decoration: InputDecoration(
-                      labelText: 'Price (\$)',
+                      labelText: r'Price ($)',
                       border: const OutlineInputBorder(),
                       enabled: _selectedCategory != TicketCategory.free,
                     ),
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d*\.?\d{0,2}')),
                     ],
                     validator: (value) {
                       if (_selectedCategory != TicketCategory.free) {
@@ -184,7 +189,7 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Quantity field
                 Expanded(
                   child: TextFormField(
@@ -209,15 +214,16 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
             const SizedBox(height: 16),
 
             // Benefits section (especially for VIP tickets)
-            if (_selectedCategory == TicketCategory.vip || _benefits.isNotEmpty) ...[
+            if (_selectedCategory == TicketCategory.vip ||
+                _benefits.isNotEmpty) ...[
               Text(
                 'Benefits & Inclusions',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               const SizedBox(height: 8),
-              
+
               // Benefits list
               if (_benefits.isNotEmpty)
                 Column(
@@ -226,7 +232,8 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                     final benefit = entry.value;
                     return ListTile(
                       dense: true,
-                      leading: const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                      leading: const Icon(Icons.check_circle,
+                          color: Colors.green, size: 20),
                       title: Text(benefit),
                       trailing: IconButton(
                         icon: const Icon(Icons.close, size: 18),
@@ -241,7 +248,7 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                     );
                   }).toList(),
                 ),
-              
+
               // Add benefit field
               Row(
                 children: [
@@ -268,7 +275,8 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
 
             // Quick benefit suggestions for VIP tickets
             if (_selectedCategory == TicketCategory.vip) ...[
-              const Text('Quick add:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text('Quick add:',
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 8,

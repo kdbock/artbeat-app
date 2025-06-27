@@ -48,5 +48,5 @@ linter:
     avoid_catches_without_on_clauses: true
     avoid_catching_errors: true
     use_rethrow_when_possible: true
-    invariant_booleans: true
+
     lines_longer_than_80_chars: false

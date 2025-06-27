@@ -10,11 +10,12 @@ class EventNotificationService {
   static const String _channelName = 'Event Reminders';
   static const String _channelDescription = 'Notifications for upcoming events';
 
-  final FlutterLocalNotificationsPlugin _localNotifications = 
+  final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final Logger _logger = Logger();
 
-  static final EventNotificationService _instance = EventNotificationService._internal();
+  static final EventNotificationService _instance =
+      EventNotificationService._internal();
   factory EventNotificationService() => _instance;
   EventNotificationService._internal();
 
@@ -24,20 +25,17 @@ class EventNotificationService {
       await _initializeLocalNotifications();
       await _initializeAwesomeNotifications();
       _logger.i('Notification service initialized');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error initializing notification service: $e');
     }
   }
 
   /// Initialize flutter_local_notifications
   Future<void> _initializeLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iOSSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-    
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iOSSettings = DarwinInitializationSettings();
+
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iOSSettings,
@@ -84,9 +82,9 @@ class EventNotificationService {
   Future<bool> requestPermissions() async {
     try {
       // Request permissions for awesome_notifications
-      final awesomePermission = await AwesomeNotifications()
-          .isNotificationAllowed();
-      
+      final awesomePermission =
+          await AwesomeNotifications().isNotificationAllowed();
+
       if (!awesomePermission) {
         await AwesomeNotifications().requestPermissionToSendNotifications();
       }
@@ -95,15 +93,11 @@ class EventNotificationService {
       final localPermission = await _localNotifications
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-          );
+          ?.requestPermissions();
 
       _logger.i('Notification permissions requested');
       return awesomePermission && (localPermission ?? true);
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error requesting notification permissions: $e');
       return false;
     }
@@ -116,7 +110,7 @@ class EventNotificationService {
     try {
       // Schedule 1 hour before event
       final reminderTime = event.dateTime.subtract(const Duration(hours: 1));
-      
+
       // Don't schedule if the reminder time is in the past
       if (reminderTime.isBefore(DateTime.now())) {
         _logger.w('Event reminder time is in the past: ${event.title}');
@@ -130,9 +124,10 @@ class EventNotificationService {
           channelKey: _channelId,
           title: 'Event Reminder: ${event.title}',
           body: 'Your event starts in 1 hour at ${event.location}',
-          bigPicture: event.eventBannerUrl.isNotEmpty ? event.eventBannerUrl : null,
-          notificationLayout: event.eventBannerUrl.isNotEmpty 
-              ? NotificationLayout.BigPicture 
+          bigPicture:
+              event.eventBannerUrl.isNotEmpty ? event.eventBannerUrl : null,
+          notificationLayout: event.eventBannerUrl.isNotEmpty
+              ? NotificationLayout.BigPicture
               : NotificationLayout.Default,
           payload: {
             'eventId': event.id,
@@ -143,7 +138,7 @@ class EventNotificationService {
       );
 
       _logger.i('Event reminder scheduled for: ${event.title}');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error scheduling event reminder: $e');
     }
   }
@@ -164,7 +159,8 @@ class EventNotificationService {
             id: '${event.id}_day'.hashCode,
             channelKey: _channelId,
             title: 'Tomorrow: ${event.title}',
-            body: 'Don\'t forget about your event tomorrow at ${event.location}',
+            body:
+                'Don\'t forget about your event tomorrow at ${event.location}',
             payload: {
               'eventId': event.id,
               'type': 'event_reminder_day',
@@ -183,7 +179,8 @@ class EventNotificationService {
             channelKey: _channelId,
             title: 'Event Starting Soon: ${event.title}',
             body: 'Your event starts in 1 hour at ${event.location}',
-            bigPicture: event.eventBannerUrl.isNotEmpty ? event.eventBannerUrl : null,
+            bigPicture:
+                event.eventBannerUrl.isNotEmpty ? event.eventBannerUrl : null,
             payload: {
               'eventId': event.id,
               'type': 'event_reminder_hour',
@@ -194,7 +191,7 @@ class EventNotificationService {
       }
 
       _logger.i('Multiple event reminders scheduled for: ${event.title}');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error scheduling event reminders: $e');
     }
   }
@@ -211,7 +208,7 @@ class EventNotificationService {
       await _localNotifications.cancel(eventId.hashCode);
 
       _logger.i('Event reminders cancelled for: $eventId');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error cancelling event reminders: $e');
     }
   }
@@ -228,8 +225,8 @@ class EventNotificationService {
           id: DateTime.now().millisecondsSinceEpoch,
           channelKey: _channelId,
           title: 'Tickets Purchased!',
-          body: 'You\'ve successfully purchased $quantity $ticketType ticket${quantity > 1 ? 's' : ''} for $eventTitle',
-          notificationLayout: NotificationLayout.Default,
+          body:
+              'You\'ve successfully purchased $quantity $ticketType ticket${quantity > 1 ? 's' : ''} for $eventTitle',
           payload: {
             'type': 'ticket_purchase_confirmation',
           },
@@ -237,7 +234,7 @@ class EventNotificationService {
       );
 
       _logger.i('Ticket purchase confirmation sent');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error sending ticket purchase confirmation: $e');
     }
   }
@@ -253,8 +250,8 @@ class EventNotificationService {
           id: DateTime.now().millisecondsSinceEpoch,
           channelKey: _channelId,
           title: 'Refund Processed',
-          body: 'Your refund of \$${refundAmount.toStringAsFixed(2)} for $eventTitle has been processed',
-          notificationLayout: NotificationLayout.Default,
+          body:
+              'Your refund of \$${refundAmount.toStringAsFixed(2)} for $eventTitle has been processed',
           payload: {
             'type': 'refund_confirmation',
           },
@@ -262,7 +259,7 @@ class EventNotificationService {
       );
 
       _logger.i('Refund confirmation sent');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error sending refund confirmation: $e');
     }
   }
@@ -280,7 +277,6 @@ class EventNotificationService {
           channelKey: _channelId,
           title: 'Event Update: $eventTitle',
           body: updateMessage,
-          notificationLayout: NotificationLayout.Default,
           payload: {
             'eventId': eventId,
             'type': 'event_update',
@@ -289,7 +285,7 @@ class EventNotificationService {
       );
 
       _logger.i('Event update notification sent');
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error sending event update notification: $e');
     }
   }
@@ -299,7 +295,7 @@ class EventNotificationService {
     final payload = response.payload;
     if (payload != null) {
       _logger.i('Notification tapped with payload: $payload');
-      
+
       // TODO: Navigate to appropriate screen based on payload
       // This would typically involve using a navigation service
       // or app-level navigation handler
@@ -322,23 +318,26 @@ class EventNotificationService {
     if (payload != null) {
       final logger = Logger();
       logger.i('Notification action received with payload: $payload');
-      
+
       // TODO: Handle navigation based on payload
     }
   }
 
   /// Handle notification created
-  static Future<void> _onNotificationCreated(ReceivedNotification receivedNotification) async {
+  static Future<void> _onNotificationCreated(
+      ReceivedNotification receivedNotification) async {
     // Optional: Handle when notification is created
   }
 
   /// Handle notification displayed
-  static Future<void> _onNotificationDisplayed(ReceivedNotification receivedNotification) async {
+  static Future<void> _onNotificationDisplayed(
+      ReceivedNotification receivedNotification) async {
     // Optional: Handle when notification is displayed
   }
 
   /// Handle notification dismissed
-  static Future<void> _onDismissActionReceived(ReceivedAction receivedAction) async {
+  static Future<void> _onDismissActionReceived(
+      ReceivedAction receivedAction) async {
     // Optional: Handle when notification is dismissed
   }
 

@@ -136,28 +136,12 @@ class UserService extends ChangeNotifier {
   // Get user by ID
   Future<UserModel?> getUserById(String userId) async {
     try {
-      debugPrint('🔍 getUserById: Fetching user $userId');
       final doc = await _usersCollection.doc(userId).get();
       if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>?;
-        debugPrint(
-          '📄 getUserById: User document data keys: ${data?.keys.toList()}',
-        );
-        debugPrint(
-          '🖼️ getUserById: profileImageUrl value: "${data?['profileImageUrl']}"',
-        );
-
-        final userModel = UserModel.fromDocumentSnapshot(doc);
-        debugPrint(
-          '✅ getUserById: UserModel created with profileImageUrl: "${userModel.profileImageUrl}"',
-        );
-        return userModel;
-      } else {
-        debugPrint('❌ getUserById: User document does not exist');
+        return UserModel.fromDocumentSnapshot(doc);
       }
       return null;
     } catch (e, s) {
-      debugPrint('❌ getUserById: Error occurred: $e');
       _log.severe('Error getting user by ID', e, s);
       return null;
     }

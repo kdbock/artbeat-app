@@ -12,7 +12,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MaterialApp(home: LoadingScreen()));
+    await tester.pumpWidget(const MaterialApp(home: LoadingScreen()));
 
     // Verify that we have a LoadingScreen
     expect(find.byType(LoadingScreen), findsOneWidget);

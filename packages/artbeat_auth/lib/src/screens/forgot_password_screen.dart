@@ -149,7 +149,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.error_outline,
                             color: ArtbeatColors.error,
                             size: 24,
@@ -174,7 +174,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.check_circle_outline,
                             color: ArtbeatColors.primaryGreen,
                             size: 24,
@@ -222,7 +222,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               ),
                             ),
                           )
-                        : Row(
+                        : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
@@ -230,7 +230,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 color: Colors.white,
                                 size: 20,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Text('Reset Password'),
                             ],
                           ),

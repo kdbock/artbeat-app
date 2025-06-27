@@ -24,6 +24,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>AppGroup</key>
+	<string>group.H49R32NPY6.com.wordnerd.artbeat</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+	<key>FirebaseAppCheckDebugToken</key>
+	<string>DD5EC9D5-A26F-4A26-BC09-9B2AF260CE06</string>
+	<key>FirebaseAppCheckTokenTTL</key>
+	<integer>604800</integer>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -48,7 +56,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs your location to show nearby art walks.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs your location to show nearby art walks even in the background.</string>
+	<string>This app needs your location to show nearby art walks.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs your location to show nearby art walks and provide location-based art discovery features.</string>
 	<key>GMSApiKey</key>
@@ -61,5 +69,18 @@
 	<string>This app needs photo library access to save and select images.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>FirebaseAppCheckDebugProviderFactory</key>
+	<string>true</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.wordnerd.artbeat</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.wordnerd.artbeat</string>
+		</dict>
+	</array>
 </dict>
 </plist>

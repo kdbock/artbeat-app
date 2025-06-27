@@ -1,3 +1,0 @@
-class FirebaseConfigService {
-  // ...existing code...
-}

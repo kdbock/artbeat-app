@@ -87,7 +87,7 @@ class _EventsListScreenState extends State<EventsListScreen>
         });
         _applyFilters();
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -227,7 +227,7 @@ class _EventsListScreenState extends State<EventsListScreen>
       ),
       child: Row(
         children: [
-          Icon(Icons.search, color: ArtbeatColors.primaryPurple),
+          const Icon(Icons.search, color: ArtbeatColors.primaryPurple),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -275,8 +275,6 @@ class _EventsListScreenState extends State<EventsListScreen>
             child: EventCard(
               event: event,
               onTap: () => _navigateToEventDetails(event),
-              showTicketInfo: true,
-              showArtistInfo: true,
             ),
           );
         },

@@ -1,16 +1,16 @@
 {
   "indexes": [
     {
-      "collectionGroup": "artworks",
+      "collectionGroup": "artistProfiles",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "isPublic",
+          "fieldPath": "isPortfolioPublic",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
+          "fieldPath": "username",
+          "order": "ASCENDING"
         }
       ]
     },
@@ -29,6 +29,34 @@
       ]
     },
     {
+      "collectionGroup": "artistProfileViews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "viewedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artistProfileViews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "viewedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "artWalks",
       "queryScope": "COLLECTION",
       "fields": [
@@ -39,6 +67,242 @@
         {
           "fieldPath": "createdAt",
           "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artWalks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "viewCount",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artWalks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "zipCode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "viewCount",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artWalks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artworks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artworkViews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "viewedAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artworkViews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "viewedAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "captures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isProcessed",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "captures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "captures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "parentCommentId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "parentCommentId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "postId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "postId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "startDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "attendeeIds",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "startDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "isPublic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateTime",
+          "order": "ASCENDING"
         }
       ]
     },
@@ -57,99 +321,33 @@
       ]
     },
     {
-      "collectionGroup": "comments",
-      "queryScope": "COLLECTION", 
+      "collectionGroup": "posts",
+      "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "postId",
+          "fieldPath": "isPublic",
           "order": "ASCENDING"
         },
         {
           "fieldPath": "createdAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "comments",
-      "queryScope": "COLLECTION", 
-      "fields": [
-        {
-          "fieldPath": "parentCommentId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "artworkViews",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "artistId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "viewedAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "artworkViews",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "artistId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "viewedAt",
           "order": "DESCENDING"
         }
       ]
     },
     {
-      "collectionGroup": "artistProfileViews",
+      "collectionGroup": "posts",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "artistId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "viewedAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "artistProfileViews",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "artistId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "viewedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "comments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "artistId",
+          "fieldPath": "isPublic",
           "order": "ASCENDING"
         },
         {
           "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "applauseCount",
           "order": "DESCENDING"
         }
       ]

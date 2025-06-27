@@ -29,7 +29,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       EventNotificationService();
 
   late ArtbeatEvent _event;
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -117,7 +116,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildEventBanner() {
-    return Container(
+    return SizedBox(
       height: 250,
       width: double.infinity,
       child: _event.eventBannerUrl.isNotEmpty
@@ -175,7 +174,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _getStatusColor().withOpacity(0.1),
+                  color: _getStatusColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: _getStatusColor()),
                 ),
@@ -324,7 +323,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._event.ticketTypes.map((ticket) => _buildTicketTypeCard(ticket)),
+          ..._event.ticketTypes.map(_buildTicketTypeCard),
         ],
       ),
     );
@@ -616,8 +615,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Future<void> _addToCalendar() async {
-    setState(() => _isLoading = true);
-
     try {
       final success = await _calendarService.addEventToCalendar(_event);
       if (mounted) {
@@ -631,15 +628,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
       }
     }
   }
@@ -652,7 +645,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           const SnackBar(content: Text('Reminder set!')),
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error setting reminder: $e')),
@@ -718,7 +711,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           _event = updatedEvent;
         });
       }
-    } catch (e) {
+    } on Exception {
       // Handle error silently or show a subtle message
     }
   }

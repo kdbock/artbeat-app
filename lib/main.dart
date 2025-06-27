@@ -1,45 +1,48 @@
-// filepath: /Users/kristybock/updated_artbeat_app/lib/main.dart
+// Copyright (c) 2025 ArtBeat. All rights reserved.
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'app.dart';
 
 Future<void> main() async {
-  // CRITICAL: Initialize Flutter bindings before ANYTHING else
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Disable AppCheck globally in debug mode before any Firebase initialization
-    SecureFirebaseConfig.disableAppCheckInDebug();
-
-    // Initialize configuration service to load environment variables
     await ConfigService.instance.initialize();
 
-    // Use development-friendly Firebase initialization in debug mode
-    await SecureFirebaseConfig.initializeFirebaseForDevelopment();
+    // Check if Firebase is already initialized
+    if (Firebase.apps.isEmpty) {
+      // IMPORTANT: Configure App Check BEFORE Firebase initialization
+      await SecureFirebaseConfig.configureAppCheck(
+        teamId: 'H49R32NPY6',
+        debug: kDebugMode,
+      );
 
-    debugPrint('🚀 App initialization completed successfully');
-  } catch (e) {
-    debugPrint('❌ App initialization failed: $e');
-    // Still try to run the app even if initialization fails partially
-  }
-
-  // Start the app immediately - diagnostics can run in background
-  runApp(MyApp());
-
-  // Run diagnostics in background (non-blocking)
-  if (kDebugMode) {
-    _runBackgroundDiagnostics();
-  }
-}
-
-// Run diagnostics in the background without blocking app startup
-void _runBackgroundDiagnostics() {
-  Future.delayed(Duration.zero, () async {
-    try {
-      await SecureFirebaseConfig.runFirebaseDiagnostics();
-    } catch (e) {
-      debugPrint('🔍 Background diagnostics failed: $e');
+      // Initialize Firebase after App Check is configured
+      await SecureFirebaseConfig.initializeFirebase();
+    } else {
+      if (kDebugMode) {
+        print(
+          '🔥 Firebase already initialized, skipping SecureFirebaseConfig initialization',
+        );
+      }
     }
-  });
+
+    if (kDebugMode) {
+      print('✅ Firebase initialization completed successfully');
+
+      // Print Firebase status for debugging
+      final status = SecureFirebaseConfig.getStatus();
+      print('🔍 Firebase Status: $status');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Firebase initialization failed: $e');
+    } else {
+      rethrow;
+    }
+  }
+
+  runApp(MyApp());
 }

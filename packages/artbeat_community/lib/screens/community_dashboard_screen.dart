@@ -34,7 +34,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
     return core.MainLayout(
       currentIndex: 2, // Community index
       child: Scaffold(
-        appBar: core.UniversalHeader(
+        appBar: const core.UniversalHeader(
           title: 'Community Critique',
           showLogo: false,
           showDeveloperTools: true,
@@ -54,11 +54,11 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
-                children: [
-                  const UnifiedCommunityFeed(),
-                  const TrendingContentScreen(),
-                  const PortfoliosScreen(),
-                  const StudiosScreen(),
+                children: const [
+                  UnifiedCommunityFeed(),
+                  TrendingContentScreen(),
+                  PortfoliosScreen(),
+                  StudiosScreen(),
                 ],
               ),
             ),

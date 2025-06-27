@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:artbeat_core/services/user_service.dart';
 
 class DashboardHeader extends StatelessWidget {
   const DashboardHeader({super.key});
@@ -8,7 +6,6 @@ class DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final userService = Provider.of<UserService>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

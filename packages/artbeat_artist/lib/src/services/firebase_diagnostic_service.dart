@@ -1,3 +1,0 @@
-class FirebaseDiagnosticService {
-  // ...existing code...
-}

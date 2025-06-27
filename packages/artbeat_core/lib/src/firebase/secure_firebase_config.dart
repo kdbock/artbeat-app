@@ -1,266 +1,192 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:artbeat_core/firebase_options.dart' as fb_opts;
 
-/// Provides secure initialization for Firebase with platform-specific handling
+/// Handles Firebase initialization and App Check configuration
 class SecureFirebaseConfig {
   const SecureFirebaseConfig._();
 
   static bool _initialized = false;
   static bool _appCheckInitialized = false;
+  static Duration? _tokenTTL;
+  static bool _debug = false;
+  static String? _teamId;
 
-  /// Initializes Firebase with proper options and platform-specific configuration
+  /// Configure App Check settings
+  static Future<void> configureAppCheck({
+    required String teamId,
+    Duration? tokenTTL,
+    bool debug = false,
+  }) async {
+    _teamId = teamId;
+    _tokenTTL = tokenTTL;
+    _debug = debug;
+
+    if (kDebugMode) {
+      print('🔐 App Check configured - Team ID: $teamId, Debug: $debug');
+    }
+  }
+
+  /// Initialize Firebase with proper configuration
   static Future<FirebaseApp> initializeFirebase() async {
     if (_initialized) {
+      if (kDebugMode) {
+        print('🔥 Firebase already initialized');
+      }
+      return Firebase.app();
+    }
+
+    if (Firebase.apps.isNotEmpty) {
+      _initialized = true;
+      if (kDebugMode) {
+        print('🔥 Firebase apps already exist, using existing app');
+      }
       return Firebase.app();
     }
 
     try {
-      // Check if Firebase is already initialized
-      if (Firebase.apps.isNotEmpty) {
-        debugPrint('🔥 Firebase already initialized, using existing app');
-        _initialized = true;
-        return Firebase.app();
+      if (kDebugMode) {
+        print('🔥 Initializing Firebase with options...');
       }
 
-      debugPrint('🔥 Initializing Firebase...');
-
-      // Initialize Firebase first
       final app = await Firebase.initializeApp(
         options: fb_opts.DefaultFirebaseOptions.currentPlatform,
       );
 
-      debugPrint('🔥 Firebase core initialized successfully');
-
-      // Only initialize AppCheck in production mode AND if not already initialized
-      if (!kDebugMode) {
-        await _initializeAppCheck();
-      } else {
-        debugPrint('🛡️ AppCheck DISABLED in debug mode for development');
+      if (kDebugMode) {
+        print('🔥 Firebase core initialized successfully');
       }
 
+      await _initializeAppCheck();
       _initialized = true;
-      debugPrint('🔥 Firebase initialization completed successfully');
-      return app;
-    } on FirebaseException catch (e) {
-      debugPrint('❌ Firebase initialization failed with FirebaseException: $e');
-      if (e.code == 'duplicate-app') {
-        debugPrint('🔥 Duplicate app detected, using existing instance');
-        _initialized = true;
-        return Firebase.app();
+
+      if (kDebugMode) {
+        print('✅ Complete Firebase initialization finished');
       }
-      rethrow;
-    } catch (e) {
-      debugPrint('❌ Firebase initialization failed with unexpected error: $e');
-      rethrow;
-    }
-  }
-
-  /// Initialize Firebase for development with enhanced debugging
-  static Future<FirebaseApp> initializeFirebaseForDevelopment() async {
-    if (!kDebugMode) {
-      // In production, use the standard initialization
-      return initializeFirebase();
-    }
-
-    debugPrint('🔧 Initializing Firebase for DEVELOPMENT mode...');
-    debugPrint('🔧 Current Firebase apps count: ${Firebase.apps.length}');
-    debugPrint('🔧 _initialized state: $_initialized');
-
-    if (_initialized) {
-      debugPrint('🔥 Firebase already initialized in development mode');
-      return Firebase.app();
-    }
-
-    try {
-      // Note: We assume Flutter bindings are already initialized by the caller
-      // This method should only be called after WidgetsFlutterBinding.ensureInitialized()
-      debugPrint(
-        '🔧 Proceeding with Firebase initialization (Flutter bindings assumed initialized)',
-      );
-
-      // Check if Firebase is already initialized
-      if (Firebase.apps.isNotEmpty) {
-        debugPrint(
-          '🔥 Firebase already initialized by another component, using existing app',
-        );
-        debugPrint('🔥 Existing app name: ${Firebase.app().name}');
-        _initialized = true;
-        return Firebase.app();
-      }
-
-      debugPrint('🔥 Initializing Firebase core for the first time...');
-
-      // Initialize Firebase first
-      final app = await Firebase.initializeApp(
-        options: fb_opts.DefaultFirebaseOptions.currentPlatform,
-      );
-
-      debugPrint('🔥 Firebase core initialized successfully');
-      debugPrint('🛡️ AppCheck DISABLED for development (simulator-friendly)');
-
-      // Skip AppCheck entirely in development
-      // This prevents all the DeviceCheckProvider errors in simulator
-
-      _initialized = true;
-      debugPrint(
-        '🔥 Firebase development initialization completed successfully',
-      );
-      debugPrint(
-        '🎯 Ready for development - AppCheck warnings expected and safe to ignore',
-      );
 
       return app;
-    } on FirebaseException catch (e) {
-      debugPrint('❌ Firebase development initialization failed: $e');
-      if (e.code == 'duplicate-app') {
-        debugPrint('🔥 Duplicate app detected, using existing instance');
-        _initialized = true;
-        return Firebase.app();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Firebase initialization failed: $e');
       }
       rethrow;
-    } catch (e) {
-      debugPrint('❌ Firebase development initialization failed: $e');
-      rethrow;
     }
   }
 
-  /// Utility method to check if running in debug mode
-  static bool isDebugMode() {
-    bool isDebug = false;
-    assert(() {
-      isDebug = true;
-      return true;
-    }());
-    return isDebug;
-  }
-
-  /// Reset initialization state (for testing/development only)
-  static void resetInitializationState() {
-    if (kDebugMode) {
-      _initialized = false;
-      _appCheckInitialized = false;
-      debugPrint('🔄 Firebase initialization state reset');
-    }
-  }
-
-  /// Check if Firebase is properly initialized
+  /// Check if Firebase is initialized
   static bool get isInitialized => _initialized && Firebase.apps.isNotEmpty;
 
-  /// Get current Firebase app instance safely
+  /// Get current Firebase app instance
   static FirebaseApp? get currentApp {
     try {
       return Firebase.apps.isNotEmpty ? Firebase.app() : null;
-    } catch (e) {
-      debugPrint('⚠️ Error getting current Firebase app: $e');
+    } catch (_) {
       return null;
     }
   }
 
-  /// Initialize Firebase App Check with better error handling for simulators
+  /// Initialize App Check
   static Future<void> _initializeAppCheck() async {
-    // Skip AppCheck entirely in debug mode to avoid all simulator issues
-    if (kDebugMode) {
-      debugPrint('🛡️ AppCheck DISABLED in debug mode for development');
-      return;
-    }
-
-    // Check if AppCheck is already initialized
     if (_appCheckInitialized) {
-      debugPrint('🛡️ AppCheck already initialized, skipping');
+      if (kDebugMode) {
+        print('🔐 App Check already initialized');
+      }
       return;
     }
 
-    debugPrint('🛡️ Attempting to initialize AppCheck for production...');
-
     try {
+      if (kDebugMode) {
+        print('🔐 Initializing App Check...');
+        print('🔐 Debug mode: $_debug');
+        print('🔐 Team ID: $_teamId');
+      }
+
       await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
-        appleProvider: AppleProvider.deviceCheck,
-        webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
+        androidProvider: _debug
+            ? AndroidProvider.debug
+            : AndroidProvider.playIntegrity,
+        appleProvider: _debug ? AppleProvider.debug : AppleProvider.appAttest,
       );
-      _appCheckInitialized = true;
-      debugPrint('🛡️ AppCheck initialized successfully for production');
-    } catch (e) {
-      debugPrint('⚠️ AppCheck initialization failed: $e');
-      // Continue without AppCheck in case of any errors
-      // Firebase services will still work with placeholder tokens
-    }
-  }
 
-  /// Disable AppCheck globally in debug mode (call this early in main())
-  static void disableAppCheckInDebug() {
-    if (kDebugMode) {
-      _appCheckInitialized = true; // Mark as initialized to prevent activation
-      debugPrint('🛡️ AppCheck disabled globally for debug mode');
-    }
-  }
+      if (kDebugMode) {
+        print('🔐 App Check activated successfully');
+      }
 
-  /// Check if AppCheck should be skipped
-  static bool get shouldSkipAppCheck => kDebugMode || _appCheckInitialized;
-
-  /// Test Firebase connectivity and provide diagnostic information
-  static Future<Map<String, dynamic>> runFirebaseDiagnostics() async {
-    final diagnostics = <String, dynamic>{
-      'timestamp': DateTime.now().toIso8601String(),
-      'isDebugMode': kDebugMode,
-      'platform': defaultTargetPlatform.toString(),
-    };
-
-    try {
-      // Check if Firebase is initialized
-      diagnostics['firebaseInitialized'] = isInitialized;
-      diagnostics['firebaseAppsCount'] = Firebase.apps.length;
-
-      if (isInitialized) {
-        final app = Firebase.app();
-        diagnostics['firebaseAppName'] = app.name;
-        diagnostics['firebaseAppOptions'] = {
-          'projectId': app.options.projectId,
-          'appId': app.options.appId,
-          'apiKey':
-              app.options.apiKey.substring(0, 10) +
-              '...', // Partial for security
-        };
-
-        // Test Firestore connectivity
+      if (_tokenTTL != null) {
+        await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
         try {
-          final firestore = FirebaseFirestore.instance;
-          await firestore.enableNetwork();
-          diagnostics['firestoreConnectivity'] = 'enabled';
+          await FirebaseAppCheck.instance.getToken(true);
+          if (kDebugMode) {
+            print('🔐 App Check token retrieved successfully');
+          }
         } catch (e) {
-          diagnostics['firestoreError'] = e.toString();
-        }
-
-        // Test Firebase Storage
-        try {
-          final storage = FirebaseStorage.instance;
-          // Just test if we can access the storage instance
-          storage.ref().child('test'); // Test reference creation
-          diagnostics['storageConnectivity'] = 'accessible';
-        } catch (e) {
-          diagnostics['storageError'] = e.toString();
-        }
-
-        // Test Firebase Auth
-        try {
-          final auth = FirebaseAuth.instance;
-          diagnostics['authUser'] = auth.currentUser?.uid ?? 'anonymous';
-        } catch (e) {
-          diagnostics['authError'] = e.toString();
+          if (kDebugMode) {
+            print(
+              '⚠️ App Check token retrieval failed (may be expected in debug): $e',
+            );
+          }
         }
       }
+
+      _appCheckInitialized = true;
+      if (kDebugMode) {
+        print('✅ App Check initialization complete');
+      }
     } catch (e) {
-      diagnostics['diagnosticError'] = e.toString();
+      if (kDebugMode) {
+        print('⚠️ App Check initialization error: $e');
+        print('⚠️ This may be expected in debug mode');
+      }
+      // Don't throw in debug mode to allow development
+      if (!kDebugMode) {
+        rethrow;
+      }
+      _appCheckInitialized = true; // Mark as initialized to avoid retries
+    }
+  }
+
+  /// Get basic Firebase status information
+  static Map<String, dynamic> getStatus() => {
+    'initialized': _initialized,
+    'appCheckInitialized': _appCheckInitialized,
+    'appsCount': Firebase.apps.length,
+    'debug': _debug,
+    'teamId': _teamId,
+    'tokenTTL': _tokenTTL?.inMinutes,
+    'hasCurrentApp': currentApp != null,
+  };
+
+  /// Test Firebase Storage access (for debugging -13020 errors)
+  static Future<bool> testStorageAccess() async {
+    if (!_initialized) {
+      if (kDebugMode) {
+        print('⚠️ Firebase not initialized for storage test');
+      }
+      return false;
     }
 
-    // Print diagnostics for debugging
-    debugPrint('🔍 Firebase Diagnostics: $diagnostics');
-    return diagnostics;
+    try {
+      final storage = FirebaseStorage.instance;
+
+      // Try to list files in a simple directory
+      final ref = storage.ref().child('test');
+      await ref.listAll();
+
+      if (kDebugMode) {
+        print('✅ Firebase Storage access test passed');
+      }
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Firebase Storage access test failed: $e');
+        if (e.toString().contains('-13020')) {
+          print('💡 Error -13020 indicates App Check authentication issue');
+          print('💡 This is often expected in debug mode');
+        }
+      }
+      return false;
+    }
   }
 }

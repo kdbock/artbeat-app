@@ -21,6 +21,9 @@ dependencies:
   firebase_core: ^3.14.0
   firebase_auth: ^5.6.0
   cloud_firestore: ^5.6.9
+  firebase_storage: ^12.4.7
+  firebase_analytics: ^11.5.0
+  firebase_app_check: ^0.3.2+7
 
   # Utilities
   provider: ^6.0.5

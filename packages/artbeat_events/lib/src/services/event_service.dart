@@ -8,7 +8,7 @@ import '../models/ticket_purchase.dart';
 class EventService {
   static const String _eventsCollection = 'events';
   static const String _ticketPurchasesCollection = 'ticket_purchases';
-  
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Logger _logger = Logger();
@@ -19,7 +19,7 @@ class EventService {
       final docRef = await _firestore
           .collection(_eventsCollection)
           .add(event.toFirestore());
-      
+
       _logger.i('Event created with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
@@ -35,7 +35,7 @@ class EventService {
           .collection(_eventsCollection)
           .doc(event.id)
           .update(event.copyWith(updatedAt: DateTime.now()).toFirestore());
-      
+
       _logger.i('Event updated: ${event.id}');
     } catch (e) {
       _logger.e('Error updating event: $e');
@@ -46,11 +46,8 @@ class EventService {
   /// Delete an event
   Future<void> deleteEvent(String eventId) async {
     try {
-      await _firestore
-          .collection(_eventsCollection)
-          .doc(eventId)
-          .delete();
-      
+      await _firestore.collection(_eventsCollection).doc(eventId).delete();
+
       _logger.i('Event deleted: $eventId');
     } catch (e) {
       _logger.e('Error deleting event: $e');
@@ -61,10 +58,8 @@ class EventService {
   /// Get a single event by ID
   Future<ArtbeatEvent?> getEvent(String eventId) async {
     try {
-      final doc = await _firestore
-          .collection(_eventsCollection)
-          .doc(eventId)
-          .get();
+      final doc =
+          await _firestore.collection(_eventsCollection).doc(eventId).get();
 
       if (doc.exists) {
         return ArtbeatEvent.fromFirestore(doc);
@@ -90,9 +85,7 @@ class EventService {
       }
 
       final snapshot = await query.get();
-      return snapshot.docs
-          .map((doc) => ArtbeatEvent.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map(ArtbeatEvent.fromFirestore).toList();
     } catch (e) {
       _logger.e('Error getting upcoming public events: $e');
       rethrow;
@@ -108,9 +101,7 @@ class EventService {
           .orderBy('dateTime', descending: true)
           .get();
 
-      return snapshot.docs
-          .map((doc) => ArtbeatEvent.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map(ArtbeatEvent.fromFirestore).toList();
     } catch (e) {
       _logger.e('Error getting events by artist: $e');
       rethrow;
@@ -128,9 +119,7 @@ class EventService {
           .orderBy('dateTime', descending: false)
           .get();
 
-      return snapshot.docs
-          .map((doc) => ArtbeatEvent.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map(ArtbeatEvent.fromFirestore).toList();
     } catch (e) {
       _logger.e('Error getting events by tags: $e');
       rethrow;
@@ -149,7 +138,7 @@ class EventService {
           .get();
 
       final events = snapshot.docs
-          .map((doc) => ArtbeatEvent.fromFirestore(doc))
+          .map(ArtbeatEvent.fromFirestore)
           .where((event) =>
               event.title.toLowerCase().contains(query.toLowerCase()) ||
               event.description.toLowerCase().contains(query.toLowerCase()) ||
@@ -193,9 +182,8 @@ class EventService {
         throw Exception('Event not found');
       }
 
-      final ticketType = event.ticketTypes
-          .where((t) => t.id == ticketTypeId)
-          .firstOrNull;
+      final ticketType =
+          event.ticketTypes.where((t) => t.id == ticketTypeId).firstOrNull;
       if (ticketType == null) {
         throw Exception('Ticket type not found');
       }
@@ -250,9 +238,7 @@ class EventService {
           .orderBy('purchaseDate', descending: true)
           .get();
 
-      return snapshot.docs
-          .map((doc) => TicketPurchase.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map(TicketPurchase.fromFirestore).toList();
     } catch (e) {
       _logger.e('Error getting user ticket purchases: $e');
       rethrow;
@@ -268,9 +254,7 @@ class EventService {
           .orderBy('purchaseDate', descending: true)
           .get();
 
-      return snapshot.docs
-          .map((doc) => TicketPurchase.fromFirestore(doc))
-          .toList();
+      return snapshot.docs.map(TicketPurchase.fromFirestore).toList();
     } catch (e) {
       _logger.e('Error getting event ticket purchases: $e');
       rethrow;
@@ -337,7 +321,8 @@ class EventService {
       final updatedTicketTypes = event.ticketTypes.map((ticket) {
         if (ticket.id == ticketTypeId) {
           final currentSold = ticket.quantitySold ?? 0;
-          final newSold = (currentSold + quantityChange).clamp(0, ticket.quantity);
+          final newSold =
+              (currentSold + quantityChange).clamp(0, ticket.quantity);
           return ticket.copyWith(quantitySold: newSold);
         }
         return ticket;
@@ -350,10 +335,7 @@ class EventService {
 
   /// Add attendee to event
   Future<void> _addAttendeeToEvent(String eventId, String userId) async {
-    await _firestore
-        .collection(_eventsCollection)
-        .doc(eventId)
-        .update({
+    await _firestore.collection(_eventsCollection).doc(eventId).update({
       'attendeeIds': FieldValue.arrayUnion([userId]),
     });
   }
@@ -383,8 +365,8 @@ class EventService {
       query = query.limit(limit);
     }
 
-    return query.snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => ArtbeatEvent.fromFirestore(doc)).toList());
+    return query.snapshots().map(
+        (snapshot) => snapshot.docs.map(ArtbeatEvent.fromFirestore).toList());
   }
 
   /// Stream of events by artist for real-time updates
@@ -395,6 +377,6 @@ class EventService {
         .orderBy('dateTime', descending: true)
         .snapshots()
         .map((snapshot) =>
-            snapshot.docs.map((doc) => ArtbeatEvent.fromFirestore(doc)).toList());
+            snapshot.docs.map(ArtbeatEvent.fromFirestore).toList());
   }
 }

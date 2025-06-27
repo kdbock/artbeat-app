@@ -51,7 +51,7 @@ class QRCodeTicketWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -109,7 +109,7 @@ class QRCodeTicketWidget extends StatelessWidget {
                     Text(
                       'ARTbeat Event',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         fontSize: 14,
                       ),
                     ),
@@ -215,11 +215,11 @@ class QRCodeTicketWidget extends StatelessWidget {
             ),
             child: QrImageView(
               data: ticket.qrCodeData,
-              version: QrVersions.auto,
               size: 200.0,
               backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
               errorCorrectionLevel: QrErrorCorrectLevel.H,
+              eyeStyle: const QrEyeStyle(),
+              dataModuleStyle: const QrDataModuleStyle(),
             ),
           ),
           const SizedBox(height: 16),
@@ -278,7 +278,8 @@ class QRCodeTicketWidget extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
                       borderRadius: BorderRadius.circular(12),
@@ -347,7 +348,7 @@ class QRCodeTicketWidget extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Container(
+          child: SizedBox(
             height: 2,
             child: Row(
               children: List.generate(

@@ -84,7 +84,7 @@ class ArtbeatEvent {
       dateTime: dateTime,
       location: location,
       ticketTypes: ticketTypes,
-      refundPolicy: refundPolicy ?? RefundPolicy(),
+      refundPolicy: refundPolicy ?? const RefundPolicy(),
       reminderEnabled: reminderEnabled,
       isPublic: isPublic,
       attendeeIds: [],
@@ -101,7 +101,7 @@ class ArtbeatEvent {
   /// Create an ArtbeatEvent from a Firestore document
   factory ArtbeatEvent.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     return ArtbeatEvent(
       id: doc.id,
       title: data['title']?.toString() ?? '',
@@ -205,8 +205,8 @@ class ArtbeatEvent {
   /// Check if the event is sold out
   bool get isSoldOut {
     final totalSold = ticketTypes.fold<int>(
-      0, 
-      (sum, ticket) => sum + (ticket.quantitySold ?? 0),
+      0,
+      (total, ticket) => total + (ticket.quantitySold ?? 0),
     );
     return totalSold >= maxAttendees;
   }
@@ -223,16 +223,16 @@ class ArtbeatEvent {
   /// Get total available tickets
   int get totalAvailableTickets {
     return ticketTypes.fold<int>(
-      0, 
-      (sum, ticket) => sum + ticket.quantity,
+      0,
+      (total, ticket) => total + ticket.quantity,
     );
   }
 
   /// Get total tickets sold
   int get totalTicketsSold {
     return ticketTypes.fold<int>(
-      0, 
-      (sum, ticket) => sum + (ticket.quantitySold ?? 0),
+      0,
+      (total, ticket) => total + (ticket.quantitySold ?? 0),
     );
   }
 

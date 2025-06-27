@@ -11,7 +11,8 @@ class RefundPolicy {
     this.fullRefundDeadline = const Duration(hours: 24),
     this.allowPartialRefunds = false,
     this.partialRefundPercentage = 0.0,
-    this.terms = 'Full refund available up to 24 hours before event start time.',
+    this.terms =
+        'Full refund available up to 24 hours before event start time.',
     this.exceptions = const [],
   });
 
@@ -22,8 +23,10 @@ class RefundPolicy {
         hours: map['fullRefundDeadlineHours'] as int? ?? 24,
       ),
       allowPartialRefunds: map['allowPartialRefunds'] as bool? ?? false,
-      partialRefundPercentage: (map['partialRefundPercentage'] as num?)?.toDouble() ?? 0.0,
-      terms: map['terms']?.toString() ?? 'Full refund available up to 24 hours before event start time.',
+      partialRefundPercentage:
+          (map['partialRefundPercentage'] as num?)?.toDouble() ?? 0.0,
+      terms: map['terms']?.toString() ??
+          'Full refund available up to 24 hours before event start time.',
       exceptions: _parseStringList(map['exceptions']),
     );
   }
@@ -48,8 +51,6 @@ class RefundPolicy {
   factory RefundPolicy.noRefunds() {
     return const RefundPolicy(
       fullRefundDeadline: Duration.zero,
-      allowPartialRefunds: false,
-      partialRefundPercentage: 0.0,
       terms: 'No refunds available for this event.',
       exceptions: ['All sales are final'],
     );
@@ -61,7 +62,8 @@ class RefundPolicy {
       fullRefundDeadline: Duration(days: 7),
       allowPartialRefunds: true,
       partialRefundPercentage: 50.0,
-      terms: 'Full refund available up to 7 days before event. 50% refund available up to 24 hours before event.',
+      terms:
+          'Full refund available up to 7 days before event. 50% refund available up to 24 hours before event.',
     );
   }
 
@@ -76,7 +78,8 @@ class RefundPolicy {
     return RefundPolicy(
       fullRefundDeadline: fullRefundDeadline ?? this.fullRefundDeadline,
       allowPartialRefunds: allowPartialRefunds ?? this.allowPartialRefunds,
-      partialRefundPercentage: partialRefundPercentage ?? this.partialRefundPercentage,
+      partialRefundPercentage:
+          partialRefundPercentage ?? this.partialRefundPercentage,
       terms: terms ?? this.terms,
       exceptions: exceptions ?? this.exceptions,
     );
@@ -92,7 +95,7 @@ class RefundPolicy {
   bool canGetPartialRefund(DateTime eventDate) {
     if (!allowPartialRefunds) return false;
     if (canGetFullRefund(eventDate)) return true; // full refund is better
-    
+
     // Check if we're still before the event
     return DateTime.now().isBefore(eventDate);
   }
@@ -124,23 +127,24 @@ class RefundPolicy {
   /// Get comprehensive refund policy description
   String get fullDescription {
     final buffer = StringBuffer();
-    
+
     if (fullRefundDeadline > Duration.zero) {
       buffer.write('Full refund available up to $deadlineDescription. ');
     }
-    
+
     if (allowPartialRefunds && partialRefundPercentage > 0) {
-      buffer.write('${partialRefundPercentage.toStringAsFixed(0)}% refund available after deadline until event start. ');
+      buffer.write(
+          '${partialRefundPercentage.toStringAsFixed(0)}% refund available after deadline until event start. ');
     }
-    
+
     if (exceptions.isNotEmpty) {
       buffer.write('Exceptions: ${exceptions.join(', ')}. ');
     }
-    
+
     if (buffer.isEmpty) {
       return 'No refunds available.';
     }
-    
+
     return buffer.toString().trim();
   }
 

@@ -18,7 +18,8 @@ class CommunityFeedEventsWidget extends StatefulWidget {
   });
 
   @override
-  State<CommunityFeedEventsWidget> createState() => _CommunityFeedEventsWidgetState();
+  State<CommunityFeedEventsWidget> createState() =>
+      _CommunityFeedEventsWidgetState();
 }
 
 class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
@@ -50,7 +51,7 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -68,8 +69,10 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
         if (widget.showHeader) _buildHeader(),
         if (_isLoading) _buildLoadingState(),
         if (_error != null) _buildErrorState(),
-        if (!_isLoading && _error == null && _events.isEmpty) _buildEmptyState(),
-        if (!_isLoading && _error == null && _events.isNotEmpty) _buildEventsList(),
+        if (!_isLoading && _error == null && _events.isEmpty)
+          _buildEmptyState(),
+        if (!_isLoading && _error == null && _events.isNotEmpty)
+          _buildEventsList(),
       ],
     );
   }
@@ -204,7 +207,7 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
     //     builder: (context) => EventDetailsScreen(event: event),
     //   ),
     // );
-    
+
     // For now, show a placeholder dialog
     showDialog(
       context: context,
@@ -220,7 +223,8 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
               children: [
                 const Icon(Icons.calendar_today, size: 16),
                 const SizedBox(width: 8),
-                Text(DateFormat('MMM d, y \'at\' h:mm a').format(event.dateTime)),
+                Text(DateFormat('MMM d, y \'at\' h:mm a')
+                    .format(event.dateTime)),
               ],
             ),
             const SizedBox(height: 8),

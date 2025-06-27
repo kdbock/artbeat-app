@@ -12,13 +12,15 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDzH_pJ_I2U_rkC4OBKVasjjJMus3LtSH0',
+    apiKey: 'AIzaSyAXFpdz_5cJ8m4ZDgBb7kVx7PHxinwEkdA',
     appId: '1:665020451634:ios:2aa5cc17ac7d0dad78652b',
     messagingSenderId: '665020451634',
     projectId: 'wordnerd-artbeat',
     storageBucket: 'wordnerd-artbeat.firebasestorage.app',
-    androidClientId: '665020451634-sb8o1cgfji453vifsr3gqqqe1u2o5in4.apps.googleusercontent.com',
+    androidClientId:
+        '665020451634-sb8o1cgfji453vifsr3gqqqe1u2o5in4.apps.googleusercontent.com',
     iosBundleId: 'com.wordnerd.artbeat',
+    appGroupId: 'group.H49R32NPY6.com.wordnerd.artbeat',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -28,5 +30,4 @@ class DefaultFirebaseOptions {
     projectId: 'wordnerd-artbeat',
     storageBucket: 'wordnerd-artbeat.firebasestorage.app',
   );
-
 }

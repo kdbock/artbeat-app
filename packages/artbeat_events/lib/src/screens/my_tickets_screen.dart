@@ -75,7 +75,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
           if (event != null) {
             events[eventId] = event;
           }
-        } catch (e) {
+        } on Exception {
           // Continue loading other events if one fails
           continue;
         }
@@ -89,7 +89,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
         });
         _applyFilters();
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         setState(() {
           _error = e.toString();
@@ -146,7 +146,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     return MainLayout(
       currentIndex: 3, // Events tab
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: const UniversalHeader(
           title: 'My Tickets',
           showLogo: false,
         ),
@@ -401,7 +401,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color),
       ),
@@ -616,7 +616,8 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Are you sure you want to request a refund for this ticket?'),
+            const Text(
+                'Are you sure you want to request a refund for this ticket?'),
             const SizedBox(height: 16),
             Text('Refund amount: ${ticket.formattedAmount}'),
             const SizedBox(height: 8),
@@ -652,21 +653,25 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
       // TODO: Process refund with payment provider
       await _eventService.refundTicketPurchase(ticket.id, 'mock_refund_id');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Refund request submitted successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Refund request submitted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      _loadTickets(); // Refresh the list
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to process refund: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+        _loadTickets(); // Refresh the list
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to process refund: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

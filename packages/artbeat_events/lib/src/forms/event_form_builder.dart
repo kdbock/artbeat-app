@@ -38,7 +38,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
   final _maxAttendeesController = TextEditingController();
 
   DateTime? _selectedDateTime;
-  List<File> _eventImages = [];
+  final List<File> _eventImages = [];
   File? _artistHeadshot;
   File? _eventBanner;
   List<TicketType> _ticketTypes = [];

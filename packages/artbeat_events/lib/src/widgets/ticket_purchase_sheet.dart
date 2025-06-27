@@ -26,8 +26,9 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
   final _emailController = TextEditingController();
   final _nameController = TextEditingController();
   final EventService _eventService = EventService();
-  final EventNotificationService _notificationService = EventNotificationService();
-  
+  final EventNotificationService _notificationService =
+      EventNotificationService();
+
   int _quantity = 1;
   bool _isProcessing = false;
   bool _agreedToTerms = false;
@@ -121,15 +122,15 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
         Text(
           'Purchase Tickets',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         Text(
           widget.event.title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.grey.shade600,
-          ),
+                color: Colors.grey.shade600,
+              ),
         ),
       ],
     );
@@ -179,7 +180,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
                 ),
               ],
             ),
-            
+
             // Benefits for VIP tickets
             if (widget.ticketType.benefits.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -192,22 +193,22 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
               ),
               const SizedBox(height: 8),
               ...widget.ticketType.benefits.map((benefit) => Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Row(
-                  children: [
-                    const Icon(Icons.check, size: 16, color: Colors.green),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        benefit,
-                        style: const TextStyle(fontSize: 13),
-                      ),
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.check, size: 16, color: Colors.green),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            benefit,
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  )),
             ],
-            
+
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -246,7 +247,8 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
         Row(
           children: [
             IconButton(
-              onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
+              onPressed:
+                  _quantity > 1 ? () => setState(() => _quantity--) : null,
               icon: const Icon(Icons.remove),
               style: IconButton.styleFrom(
                 backgroundColor: Colors.grey.shade100,
@@ -504,10 +506,10 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
   }
 
   bool _canPurchase() {
-    return !_isProcessing && 
-           _agreedToTerms && 
-           _quantity > 0 && 
-           _quantity <= widget.ticketType.remainingQuantity;
+    return !_isProcessing &&
+        _agreedToTerms &&
+        _quantity > 0 &&
+        _quantity <= widget.ticketType.remainingQuantity;
   }
 
   Future<void> _purchaseTickets() async {
@@ -544,7 +546,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
       if (mounted) {
         _showSuccessDialog(purchaseId);
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         _showErrorDialog(e.toString());
       }
@@ -565,11 +567,13 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('You have successfully purchased $_quantity ticket${_quantity > 1 ? 's' : ''} for ${widget.event.title}.'),
+            Text(
+                'You have successfully purchased $_quantity ticket${_quantity > 1 ? 's' : ''} for ${widget.event.title}.'),
             const SizedBox(height: 16),
             Text('Confirmation ID: $purchaseId'),
             const SizedBox(height: 16),
-            const Text('A confirmation email has been sent to your email address.'),
+            const Text(
+                'A confirmation email has been sent to your email address.'),
           ],
         ),
         actions: [
