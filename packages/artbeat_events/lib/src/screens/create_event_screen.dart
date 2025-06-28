@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:logger/logger.dart';
 import '../models/artbeat_event.dart';
 import '../forms/event_form_builder.dart';
 import '../services/event_service.dart';
@@ -23,31 +23,29 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final EventService _eventService = EventService();
   final EventNotificationService _notificationService =
       EventNotificationService();
+  final Logger _logger = Logger();
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 3, // Events tab
-      child: PopScope(
-        canPop: !_isLoading,
-        onPopInvokedWithResult: (didPop, result) {
-          if (!didPop && _isLoading) {
-            _showUnsavedChangesDialog();
-          }
-        },
-        child: Stack(
-          children: [
-            EventFormBuilder(
-              initialEvent: widget.editEvent,
-              onEventCreated: _handleEventCreated,
-              onCancel: () => Navigator.pop(context),
-              useUniversalHeader:
-                  true, // Tell the form builder to use universal header
-            ),
-            if (_isLoading) _buildLoadingOverlay(),
-          ],
-        ),
+    return PopScope(
+      canPop: !_isLoading,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && _isLoading) {
+          _showUnsavedChangesDialog();
+        }
+      },
+      child: Stack(
+        children: [
+          EventFormBuilder(
+            initialEvent: widget.editEvent,
+            onEventCreated: _handleEventCreated,
+            onCancel: () => Navigator.pop(context),
+            useUniversalHeader:
+                true, // Tell the form builder to use universal header
+          ),
+          if (_isLoading) _buildLoadingOverlay(),
+        ],
       ),
     );
   }
@@ -100,15 +98,22 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         eventId = await _eventService.createEvent(event);
 
         // Schedule event reminders if enabled
+        String successMessage = 'Event created successfully!';
         if (event.reminderEnabled) {
-          final updatedEvent = event.copyWith(id: eventId);
-          await _notificationService.scheduleEventReminders(updatedEvent);
+          try {
+            final updatedEvent = event.copyWith(id: eventId);
+            await _notificationService.scheduleEventReminders(updatedEvent);
+          } catch (notificationError) {
+            _logger.e('Failed to schedule reminders: $notificationError');
+            successMessage =
+                'Event created successfully! (Reminder notifications require permission)';
+          }
         }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Event created successfully!'),
+            SnackBar(
+              content: Text(successMessage),
               backgroundColor: Colors.green,
             ),
           );

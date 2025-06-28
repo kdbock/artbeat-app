@@ -10,10 +10,7 @@ import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_settings/artbeat_settings.dart';
-import 'screens/events/all_events_screen.dart';
-import 'screens/events/my_tickets_screen.dart';
-import 'screens/events/create_event_screen.dart';
-import 'screens/events/my_events_screen.dart';
+import 'package:artbeat_events/artbeat_events.dart';
 import 'widgets/developer_menu.dart';
 
 class MyApp extends StatelessWidget {
@@ -201,6 +198,14 @@ class MyApp extends StatelessWidget {
                 builder: (_) => const artwork.ArtworkUploadScreen(),
               );
 
+            // Artwork detail route
+            case '/artwork/details':
+              final artworkId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (_) =>
+                    artwork.ArtworkDetailScreen(artworkId: artworkId),
+              );
+
             // Gallery routes
             case '/gallery/artists-management':
               return MaterialPageRoute(
@@ -252,18 +257,36 @@ class MyApp extends StatelessWidget {
                 builder: (_) => const core.EventsDashboardScreen(),
               );
             case '/events/all':
-              return MaterialPageRoute(builder: (_) => const AllEventsScreen());
+              return MaterialPageRoute(
+                builder: (_) => const EventsListScreen(),
+              );
             case '/events/my-tickets':
               return MaterialPageRoute(
-                builder: (_) => const MyTicketsDrawerScreen(),
+                builder: (_) => MyTicketsScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
               );
             case '/events/create':
               return MaterialPageRoute(
-                builder: (_) => const CreateEventDrawerScreen(),
+                builder: (_) => const CreateEventScreen(),
               );
             case '/events/my-events':
               return MaterialPageRoute(
-                builder: (_) => const MyEventsDrawerScreen(),
+                builder: (_) => EventsListScreen(
+                  title: 'My Events',
+                  artistId: core.UserService().currentUser?.uid ?? '',
+                  showCreateButton: true,
+                ),
+              );
+            case '/events/details':
+              final eventId = settings.arguments as String?;
+              if (eventId == null) {
+                return MaterialPageRoute(
+                  builder: (_) => const core.SplashScreen(),
+                );
+              }
+              return MaterialPageRoute(
+                builder: (_) => EventDetailsWrapper(eventId: eventId),
               );
 
             // Developer menu

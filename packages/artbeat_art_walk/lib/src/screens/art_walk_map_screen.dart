@@ -35,10 +35,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   String _currentZipCode = '';
   String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
 
-  // Default to North Carolina center
+  // Default to North Carolina center with better zoom with better zoom
   static const CameraPosition _defaultLocation = CameraPosition(
     target: LatLng(35.7596, -79.0193), // Center of NC
-    zoom: 7.0,
+    zoom: 10.0, // Better initial zoom level // Better initial zoom level
   );
 
   @override
@@ -292,7 +292,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         // Create markers for nearby art
         _updateMarkers();
 
-        // If map is ready, move to current location
+        // If map is ready, move to current location with better zoom
         if (_mapController != null && mounted) {
           try {
             debugPrint('🗺️ Moving map to current location');
@@ -304,7 +304,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                         _currentPosition!.latitude,
                         _currentPosition!.longitude,
                       ),
-                      zoom: 13.0,
+                      zoom: 15.0, // Increased zoom for better visibility
                     ),
                   ),
                 )
@@ -670,27 +670,18 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       drawer: const ArtbeatDrawer(),
       body: Stack(
         children: [
-          FutureBuilder<String>(
-            future: _mapsService.defaultMapStyle,
-            builder: (context, snapshot) {
-              // We'll get the map style from the GoogleMapsService
-              final String? mapStyleString = snapshot.data;
-
-              return GoogleMap(
-                initialCameraPosition: _defaultLocation,
-                onMapCreated: _onMapCreated,
-                markers: _markers,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                mapType: MapType.normal,
-                zoomControlsEnabled: false,
-                compassEnabled: true,
-                // Apply the style if available
-                style: mapStyleString,
-                // Use optimized settings for emulators
-                trafficEnabled: false,
-              );
-            },
+          GoogleMap(
+            initialCameraPosition: _defaultLocation,
+            onMapCreated: _onMapCreated,
+            markers: _markers,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: false,
+            mapType: MapType.normal,
+            zoomControlsEnabled: false,
+            compassEnabled: true,
+            trafficEnabled: false,
+            buildingsEnabled: true,
+            indoorViewEnabled: false,
           ),
           Positioned(
             right: 16,

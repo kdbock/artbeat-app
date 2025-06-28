@@ -9,10 +9,12 @@ import '../models/artist_profile_model.dart';
 import '../widgets/universal_header.dart';
 import '../widgets/artbeat_drawer.dart';
 import '../widgets/main_layout.dart';
+import '../widgets/achievement_runner.dart';
+import '../widgets/achievement_badge.dart';
 import '../theme/index.dart';
 
 import 'package:artbeat_events/artbeat_events.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 
@@ -44,6 +46,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   bool _mapsInitialized = false;
 
+  // Achievement dropdown state
+  bool _isAchievementsExpanded = false;
+
   // Services
   final CaptureService _captureService = CaptureService();
   final ArtworkService _artworkService = ArtworkService();
@@ -71,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _initializeMaps() async {
     try {
       // Initialize Google Maps service for iOS compatibility
-      await GoogleMapsService().initializeMaps();
+      await art_walk.GoogleMapsService().initializeMaps();
 
       setState(() {
         _mapsInitialized = true;
@@ -89,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   Future<void> _getUserLocation() async {
     try {
       // Try to get actual user location first
-      final position = await LocationUtils.getCurrentPosition();
+      final position = await art_walk.LocationUtils.getCurrentPosition();
       final userLocation = LatLng(position.latitude, position.longitude);
 
       if (mounted) {
@@ -341,45 +346,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       const SizedBox(height: 8),
                       if (_currentUser != null) ...[
-                        Text(
-                          'Level ${_currentUser!.level} • ${_currentUser!.experiencePoints} XP',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: ArtbeatColors.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        // XP Progress Bar
-                        Container(
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: _getLevelProgress(),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    ArtbeatColors.primaryPurple,
-                                    ArtbeatColors.primaryGreen,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _getLevelTitle(_currentUser!.level),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: ArtbeatColors.primaryPurple,
-                          ),
+                        // Enhanced Achievement Runner
+                        AchievementRunner(
+                          progress: _getLevelProgress(),
+                          currentLevel: _currentUser!.level,
+                          experiencePoints: _currentUser!.experiencePoints,
+                          levelTitle: _getLevelTitle(_currentUser!.level),
+                          showAnimations: true,
+                          height: 24.0, // Made thinner
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
                         ),
                       ] else ...[
                         const Text(
@@ -393,6 +368,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ],
                   ),
                 ),
+
+                // Achievements Section - Now a dropdown
+                if (_currentUser != null) _buildAchievementsDropdown(),
 
                 // Tab Bar
                 Container(
@@ -410,9 +388,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
 
-                // Tab Content
+                // Tab Content - Now fully scrollable with minimum height
                 SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.8,
+                  height: 600, // Provide minimum height for tab content
                   child: TabBarView(
                     controller: _tabController,
                     children: [
@@ -1425,37 +1403,42 @@ class _DashboardScreenState extends State<DashboardScreen>
                 padding: const EdgeInsets.all(8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      event.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                    Flexible(
+                      child: Text(
+                        event.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      event.location,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 10),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 1),
+                    Flexible(
+                      child: Text(
+                        event.location,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 9),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const Spacer(),
                     Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          size: 12,
+                          size: 10,
                           color: ArtbeatColors.accentYellow.withAlpha(204),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 3),
                         Expanded(
                           child: Text(
                             '${event.dateTime.month}/${event.dateTime.day}',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 9,
                               color: ArtbeatColors.accentYellow.withAlpha(204),
                               fontWeight: FontWeight.w500,
                             ),
@@ -1464,18 +1447,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                         if (event.hasFreeTickets)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 2,
+                              horizontal: 3,
+                              vertical: 1,
                             ),
                             decoration: BoxDecoration(
                               color: ArtbeatColors.primaryGreen,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(3),
                             ),
                             child: const Text(
                               'FREE',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 8,
+                                fontSize: 7,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1527,5 +1510,203 @@ class _DashboardScreenState extends State<DashboardScreen>
     };
 
     return levelTitles[level] ?? 'Unknown Level';
+  }
+
+  /// Build achievements dropdown section
+  Widget _buildAchievementsDropdown() {
+    final achievements = _getSampleAchievements();
+    final unlockedCount = achievements.where((a) => a.isUnlocked).length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Header with dropdown toggle
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isAchievementsExpanded = !_isAchievementsExpanded;
+              });
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.emoji_events,
+                    color: ArtbeatColors.primaryPurple,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Recent Achievements',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: ArtbeatColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          '$unlockedCount/${achievements.length} unlocked',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: ArtbeatColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: _isAchievementsExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: const Icon(
+                      Icons.expand_more,
+                      color: ArtbeatColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Expandable content
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            height: _isAchievementsExpanded ? 170 : 0,
+            child: _isAchievementsExpanded
+                ? Container(
+                    decoration: BoxDecoration(
+                      border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                    ),
+                    child: achievements.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.emoji_events_outlined,
+                                  size: 48,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'No achievements yet',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: achievements.length,
+                            itemBuilder: (context, index) {
+                              final achievement = achievements[index];
+                              return AchievementBadge(
+                                title: achievement.title,
+                                description: achievement.description,
+                                icon: achievement.icon,
+                                isUnlocked: achievement.isUnlocked,
+                                progress: achievement.progress,
+                                customColor: achievement.customColor,
+                                showProgress: achievement.showProgress,
+                                progressText: achievement.progressText,
+                                onTap: achievement.onTap,
+                              );
+                            },
+                          ),
+                  )
+                : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Get sample achievements based on user data and activities
+  List<AchievementBadgeData> _getSampleAchievements() {
+    final userLevel = _currentUser?.level ?? 0;
+    final userXP = _currentUser?.experiencePoints ?? 0;
+    final capturesCount = _nearbyCaptures.length;
+    final artistsDiscovered = _nearbyArtists.length;
+
+    return [
+      AchievementBadgeData(
+        title: 'First Steps',
+        description: 'Create your first account',
+        icon: Icons.person_add,
+        isUnlocked: _currentUser != null,
+        customColor: ArtbeatColors.primaryGreen,
+      ),
+      AchievementBadgeData(
+        title: 'Art Hunter',
+        description: 'Capture 5 artworks',
+        icon: Icons.camera_alt,
+        isUnlocked: capturesCount >= 5,
+        progress: (capturesCount / 5).clamp(0.0, 1.0),
+        showProgress: capturesCount < 5,
+        progressText: '$capturesCount/5',
+        customColor: ArtbeatColors.secondaryTeal,
+      ),
+      AchievementBadgeData(
+        title: 'Art Enthusiast',
+        description: 'Reach Level 3',
+        icon: Icons.star,
+        isUnlocked: userLevel >= 3,
+        progress: userLevel < 3 ? (userLevel / 3).clamp(0.0, 1.0) : 1.0,
+        showProgress: userLevel < 3,
+        progressText: 'Level $userLevel/3',
+        customColor: ArtbeatColors.primaryPurple,
+      ),
+      AchievementBadgeData(
+        title: 'Explorer',
+        description: 'Discover 10 artists',
+        icon: Icons.explore,
+        isUnlocked: artistsDiscovered >= 10,
+        progress: (artistsDiscovered / 10).clamp(0.0, 1.0),
+        showProgress: artistsDiscovered < 10,
+        progressText: '$artistsDiscovered/10',
+        customColor: ArtbeatColors.accentYellow,
+      ),
+      AchievementBadgeData(
+        title: 'Experience Master',
+        description: 'Earn 500 XP',
+        icon: Icons.emoji_events,
+        isUnlocked: userXP >= 500,
+        progress: (userXP / 500).clamp(0.0, 1.0),
+        showProgress: userXP < 500,
+        progressText: '$userXP/500 XP',
+        customColor: ArtbeatColors.featured,
+      ),
+      AchievementBadgeData(
+        title: 'Community Member',
+        description: 'Join ARTbeat community',
+        icon: Icons.group,
+        isUnlocked: true, // Always unlocked for being in the app
+        customColor: ArtbeatColors.primaryGreen,
+      ),
+    ];
   }
 }

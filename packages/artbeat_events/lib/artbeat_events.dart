@@ -28,6 +28,7 @@ export 'src/widgets/qr_code_ticket_widget.dart';
 
 // Screens
 export 'src/screens/event_details_screen.dart';
+export 'src/screens/event_details_wrapper.dart';
 export 'src/screens/events_list_screen.dart';
 export 'src/screens/create_event_screen.dart';
 export 'src/screens/my_tickets_screen.dart';

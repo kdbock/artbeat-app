@@ -101,19 +101,37 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       final latitude = _currentPosition?.latitude ?? 35.7796;
       final longitude = _currentPosition?.longitude ?? -78.6382;
 
-      // Get combined art (public art + captured art) for art walk creation
-      final artWorks = await _artWalkService.getCombinedArtNearLocation(
+      // Fetch all captures (like dashboard)
+      final captureService = CaptureService();
+      final captures = await captureService.getAllCaptures(limit: 50);
+      final List<PublicArtModel> captureArt = captures
+          .map(
+            (capture) => PublicArtModel(
+              id: capture.id,
+              title: capture.title ?? 'Captured Art',
+              artistName: capture.artistName ?? '',
+              imageUrl: capture.imageUrl,
+              location: capture.location ?? const GeoPoint(0, 0),
+              description: capture.description ?? '',
+              tags: capture.tags ?? [],
+              userId: capture.userId,
+              usersFavorited: const [],
+              createdAt: Timestamp.fromDate(capture.createdAt),
+            ),
+          )
+          .toList();
+
+      // Optionally, also fetch public art near location
+      final publicArt = await _artWalkService.getPublicArtNearLocation(
         latitude: latitude,
         longitude: longitude,
-        radiusKm: 50.0, // Reasonable radius for art walk creation
-        includeUserCaptures: true, // Include captured art
+        radiusKm: 50.0,
       );
 
       setState(() {
-        _availablePublicArt = artWorks;
+        _availablePublicArt = [...publicArt, ...captureArt];
       });
     } catch (e) {
-      // Error loading art: $e
       if (mounted) {
         ScaffoldMessenger.of(
           context,

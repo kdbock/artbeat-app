@@ -6,10 +6,8 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import '../services/art_walk_service.dart';
 import '../services/google_maps_service.dart';
 import '../models/art_walk_model.dart';
-import 'my_captures_screen.dart';
 
-/// Art Walk Dashboard Screen
-/// Shows user's art walks, public walks, and map preview. Entry point for creating and exploring art walks.
+/// Fixed Art Walk Dashboard Screen - No overflow issues
 class ArtWalkDashboardScreen extends StatefulWidget {
   const ArtWalkDashboardScreen({super.key});
 
@@ -20,73 +18,61 @@ class ArtWalkDashboardScreen extends StatefulWidget {
 class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _showOnboarding = true;
   GoogleMapController? _mapController;
   CameraPosition? _initialCameraPosition;
+  Set<Marker> _markers = {};
   final ArtWalkService _artWalkService = ArtWalkService();
   final UserService _userService = UserService();
   final CaptureService _captureService = CaptureService();
   List<ArtWalkModel> _myWalks = [];
   List<ArtWalkModel> _publicWalks = [];
   List<CaptureModel> _myCaptures = [];
+  List<CaptureModel> _nearbyCaptures = [];
   bool _isLoadingWalks = true;
   bool _isLoadingCaptures = true;
   String _userZipCode = '';
   bool _mapsInitialized = false;
+  final TextEditingController _zipSearchController = TextEditingController();
+  bool _isSearchingZip = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // Changed to 3 tabs
+    _tabController = TabController(length: 3, vsync: this);
     _initializeMaps();
     _loadUserLocationAndSetMap();
     _loadData();
   }
 
-  /// Initialize Google Maps
   Future<void> _initializeMaps() async {
-    debugPrint('🗺️ Initializing Google Maps...');
     final googleMapsService = GoogleMapsService();
     final initialized = await googleMapsService.initializeMaps();
-
     if (mounted) {
-      setState(() {
-        _mapsInitialized = initialized;
-      });
-
-      if (initialized) {
-        debugPrint('✅ Maps initialized successfully');
-      } else {
-        debugPrint('❌ Failed to initialize maps');
-      }
+      setState(() => _mapsInitialized = initialized);
     }
   }
 
   Future<void> _loadUserLocationAndSetMap() async {
     try {
-      // First try to use user's ZIP code if available
       final user = await _userService.getCurrentUserModel();
       if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
         final coordinates = await LocationUtils.getCoordinatesFromZipCode(
           user.zipCode!,
         );
-        if (coordinates != null) {
-          debugPrint(
-            '📍 Art Walk Dashboard: Using user ZIP code location: ${user.zipCode}',
-          );
-          if (mounted) {
-            setState(() {
-              _initialCameraPosition = CameraPosition(
-                target: LatLng(coordinates.latitude, coordinates.longitude),
-                zoom: 13,
-              );
-            });
-          }
+        if (coordinates != null && mounted) {
+          setState(() {
+            _initialCameraPosition = CameraPosition(
+              target: LatLng(coordinates.latitude, coordinates.longitude),
+              zoom: 13,
+            );
+            _userZipCode = user.zipCode!;
+          });
+          _updateMapMarkers();
+          _loadNearbyCaptures();
           return;
         }
       }
 
-      // Fall back to GPS location
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -98,27 +84,12 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         return;
       }
 
-      // Get current position
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
           timeLimit: Duration(seconds: 10),
         ),
       );
-
-      // Update user's ZIP code if we don't have one
-      if (user?.zipCode == null || user!.zipCode!.isEmpty) {
-        final zipCode = await LocationUtils.getZipCodeFromCoordinates(
-          position.latitude,
-          position.longitude,
-        );
-        if (zipCode.isNotEmpty) {
-          await _userService.updateUserZipCode(zipCode);
-          debugPrint(
-            '📍 Art Walk Dashboard: Updated user ZIP code to: $zipCode',
-          );
-        }
-      }
 
       if (mounted) {
         setState(() {
@@ -127,9 +98,10 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
             zoom: 13,
           );
         });
+        _updateMapMarkers();
+        _loadNearbyCaptures();
       }
     } catch (e) {
-      debugPrint('Error getting user location: $e');
       _setFallbackLocation();
     }
   }
@@ -138,51 +110,31 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     if (mounted) {
       setState(() {
         _initialCameraPosition = const CameraPosition(
-          target: LatLng(37.7749, -122.4194), // San Francisco
+          target: LatLng(37.7749, -122.4194),
           zoom: 13,
         );
       });
+      _updateMapMarkers();
+      _loadNearbyCaptures();
     }
   }
 
   Future<void> _loadData() async {
-    await _loadUserZipCode();
-    await Future.wait([_loadMyWalks(), _loadPublicWalks(), _loadMyCaptures()]);
-  }
-
-  Future<void> _loadUserZipCode() async {
-    try {
-      final user = await _userService.getCurrentUserModel();
-      if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
-        if (mounted) {
-          setState(() {
-            _userZipCode = user.zipCode!;
-          });
-        }
-        debugPrint(
-          '📍 Art Walk Dashboard: Loaded user ZIP code: ${user.zipCode}',
-        );
-      } else {
-        debugPrint('📍 Art Walk Dashboard: No user ZIP code found');
-      }
-    } catch (e) {
-      debugPrint('❌ Art Walk Dashboard: Error loading user ZIP code: $e');
-    }
+    await Future.wait([
+      _loadMyWalks(),
+      _loadPublicWalks(),
+      _loadMyCaptures(),
+      _loadNearbyCaptures(),
+    ]);
   }
 
   Future<void> _loadMyWalks() async {
     try {
       final userId = _artWalkService.getCurrentUserId();
       if (userId == null) {
-        if (mounted) {
-          setState(() {
-            _myWalks = [];
-            _isLoadingWalks = false;
-          });
-        }
+        if (mounted) setState(() => _isLoadingWalks = false);
         return;
       }
-
       final walks = await _artWalkService.getUserArtWalks(userId);
       if (mounted) {
         setState(() {
@@ -191,51 +143,16 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         });
       }
     } catch (e) {
-      debugPrint('Error loading my walks: $e');
-      if (mounted) {
-        setState(() {
-          _myWalks = [];
-          _isLoadingWalks = false;
-        });
-      }
+      if (mounted) setState(() => _isLoadingWalks = false);
     }
   }
 
   Future<void> _loadPublicWalks() async {
     try {
-      List<ArtWalkModel> walks;
-      if (_userZipCode.isNotEmpty) {
-        // Load walks near user's ZIP code first
-        walks = await _artWalkService.getArtWalksByZipCodes([
-          _userZipCode,
-        ], limit: 20);
-        debugPrint(
-          '📍 Loaded ${walks.length} walks for ZIP code: $_userZipCode',
-        );
-
-        // If no walks found for user's ZIP, fall back to popular walks
-        if (walks.isEmpty) {
-          walks = await _artWalkService.getPopularArtWalks(limit: 20);
-          debugPrint('📍 Fallback: Loaded ${walks.length} popular walks');
-        }
-      } else {
-        // No user ZIP code, load popular walks
-        walks = await _artWalkService.getPopularArtWalks(limit: 20);
-        debugPrint('📍 No user ZIP, loaded ${walks.length} popular walks');
-      }
-
-      if (mounted) {
-        setState(() {
-          _publicWalks = walks;
-        });
-      }
+      final walks = await _artWalkService.getPopularArtWalks(limit: 20);
+      if (mounted) setState(() => _publicWalks = walks);
     } catch (e) {
-      debugPrint('Error loading public walks: $e');
-      if (mounted) {
-        setState(() {
-          _publicWalks = [];
-        });
-      }
+      if (mounted) setState(() => _publicWalks = []);
     }
   }
 
@@ -243,305 +160,505 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     try {
       final userId = _artWalkService.getCurrentUserId();
       if (userId == null) {
-        if (mounted) {
-          setState(() {
-            _myCaptures = [];
-            _isLoadingCaptures = false;
-          });
-        }
+        if (mounted) setState(() => _isLoadingCaptures = false);
         return;
       }
-
       final captures = await _captureService.getCapturesForUser(userId);
       if (mounted) {
         setState(() {
           _myCaptures = captures;
           _isLoadingCaptures = false;
         });
+        _updateMapMarkers();
       }
     } catch (e) {
-      debugPrint('Error loading captures: $e');
+      if (mounted) setState(() => _isLoadingCaptures = false);
+    }
+  }
+
+  Future<void> _loadNearbyCaptures() async {
+    setState(() {
+      _isLoadingCaptures = true;
+    });
+
+    try {
+      // Use CaptureService to get all captures
+      final captures = await _captureService.getAllCaptures(limit: 50);
+
       if (mounted) {
         setState(() {
-          _myCaptures = [];
+          _nearbyCaptures = captures;
           _isLoadingCaptures = false;
         });
-        // Only show error if it's not a simple "no captures" case
-        if (e.toString().contains('permission-denied') ||
-            e.toString().contains('network') ||
-            e.toString().contains('timeout')) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Failed to load captures: Please check your connection',
-              ),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
+        _updateMapMarkers(); // Update map markers with captured art
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCaptures = false;
+        });
       }
     }
+  }
+
+  void _updateMapMarkers() {
+    if (!mounted || _initialCameraPosition == null) return;
+
+    final Set<Marker> markers = {
+      // User location marker
+      Marker(
+        markerId: const MarkerId('user_location'),
+        position: _initialCameraPosition!.target,
+        infoWindow: const InfoWindow(title: 'Your Location'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+      ),
+    };
+
+    // Add captured art markers (show all nearby captures, not just user's)
+    for (final capture in _nearbyCaptures) {
+      if (capture.location != null) {
+        markers.add(
+          Marker(
+            markerId: MarkerId('capture_capture.id'),
+            position: LatLng(
+              capture.location!.latitude,
+              capture.location!.longitude,
+            ),
+            infoWindow: InfoWindow(
+              title: capture.title ?? capture.artistName ?? 'Captured Art',
+              snippet: capture.locationName ?? 'Public Art',
+            ),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueGreen,
+            ),
+            onTap: () => _showCaptureDetails(capture),
+          ),
+        );
+      }
+    }
+
+    setState(() {
+      _markers = markers;
+    });
+  }
+
+  void _showCaptureDetails(CaptureModel capture) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+
+                // Image
+                if (capture.imageUrl.isNotEmpty)
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      image: DecorationImage(
+                        image: NetworkImage(capture.imageUrl),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+
+                // Title
+                Text(
+                  capture.title ?? 'Untitled Art Piece',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Artist
+                if (capture.artistName?.isNotEmpty == true) ...[
+                  Text(
+                    'Artist: ${capture.artistName}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: ArtbeatColors.primaryPurple,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // Description
+                if (capture.description?.isNotEmpty == true) ...[
+                  Text(
+                    capture.description!,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Location
+                if (capture.locationName?.isNotEmpty == true)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: ArtbeatColors.primaryPurple,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          capture.locationName!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Navigate to capture details or gallery
+                        },
+                        icon: const Icon(Icons.visibility),
+                        label: const Text('View Details'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ArtbeatColors.primaryPurple,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          // Navigate to directions or map
+                        },
+                        icon: const Icon(Icons.directions),
+                        label: const Text('Directions'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     _mapController?.dispose();
+    _zipSearchController.dispose();
     super.dispose();
-  }
-
-  void _onCreateArtWalk() {
-    Navigator.pushNamed(context, '/art-walk/create');
-  }
-
-  void _onCapture() {
-    Navigator.pushNamed(context, '/capture');
-  }
-
-  Set<Marker> _getMarkers() {
-    if (_initialCameraPosition == null) return {};
-
-    final Set<Marker> markers = {};
-
-    // Add user location marker
-    markers.add(
-      Marker(
-        markerId: const MarkerId('user_location'),
-        position: _initialCameraPosition!.target,
-        infoWindow: const InfoWindow(title: 'Your Location'),
-      ),
-    );
-
-    // Add markers for nearby captured art
-    for (final capture in _myCaptures) {
-      if (capture.location != null) {
-        final geoPoint = capture.location!;
-        final latLng = LatLng(geoPoint.latitude, geoPoint.longitude);
-        final markerId = capture.id.isNotEmpty
-            ? capture.id
-            : (capture.title ?? 'capture_marker');
-        markers.add(
-          Marker(
-            markerId: MarkerId(markerId),
-            position: latLng,
-            infoWindow: InfoWindow(title: capture.title ?? 'Captured Art'),
-          ),
-        );
-      }
-    }
-
-    return markers;
   }
 
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 1, // Art Walk is index 1
+      currentIndex: 1, // Art Walk tab in bottom navigation
       child: Scaffold(
-        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.grey[100],
         appBar: UniversalHeader(
-          title: 'Art Walks',
+          title: 'Art Walk Dashboard',
           showLogo: false,
           showDeveloperTools: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
           actions: [
             IconButton(
-              icon: const Icon(
-                Icons.help_outline,
-                color: ArtbeatColors.primaryPurple,
-              ),
-              tooltip: 'How Art Walks Work',
+              icon: const Icon(Icons.notifications_outlined),
               onPressed: () {
-                setState(() => _showOnboarding = true);
+                // Handle notifications
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () {
+                // Handle settings
               },
             ),
           ],
         ),
         drawer: const ArtbeatDrawer(),
-        body: Container(
-          constraints: const BoxConstraints.expand(),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withAlpha(13),
-                Colors.white,
-                ArtbeatColors.primaryGreen.withAlpha(13),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                if (_showOnboarding) _onboardingCard(),
-
-                // Create Art Walk Button
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(230),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: ArtbeatColors.border.withAlpha(128),
-                        width: 1,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // ZIP Search
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _zipSearchController,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter ZIP code',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                        maxLength: 5,
+                        buildCounter:
+                            (
+                              _, {
+                              required currentLength,
+                              required isFocused,
+                              maxLength,
+                            }) => null,
                       ),
                     ),
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: _onCreateArtWalk,
-                    icon: const Icon(Icons.add_road),
-                    label: const Text('Create Art Walk'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ArtbeatColors.primaryPurple,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      textStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () =>
+                          _searchByZipCode(_zipSearchController.text.trim()),
+                      child: const Text('Search'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Map
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                height: 180,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _mapsInitialized && _initialCameraPosition != null
+                          ? GoogleMap(
+                              initialCameraPosition: _initialCameraPosition!,
+                              onMapCreated: (controller) =>
+                                  _mapController = controller,
+                              myLocationEnabled: true,
+                              myLocationButtonEnabled: false,
+                              zoomControlsEnabled: false,
+                              markers: _markers,
+                            )
+                          : Container(
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                    ),
+                    // Sync to location button
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Material(
+                        color: Colors.white,
+                        shape: const CircleBorder(),
+                        elevation: 2,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.my_location,
+                            color: Colors.blue,
+                          ),
+                          tooltip: 'Sync to my location',
+                          onPressed: _syncToCurrentLocation,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
+              ),
 
-                // Tab Bar
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(230),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: ArtbeatColors.border.withAlpha(128),
-                        width: 1,
+              // Map Legend
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildLegendItem(
+                      color: Colors.blue,
+                      label: 'Your Location',
+                      icon: Icons.person_pin_circle,
+                    ),
+                    _buildLegendItem(
+                      color: Colors.green,
+                      label: 'Captured Art',
+                      icon: Icons.photo_camera,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Tabs
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      color: Colors.white,
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: ArtbeatColors.primaryPurple,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorColor: ArtbeatColors.primaryPurple,
+                        tabs: const [
+                          Tab(text: 'My Walks'),
+                          Tab(text: 'Discover'),
+                          Tab(text: 'My Captures'),
+                        ],
                       ),
                     ),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    labelColor: ArtbeatColors.primaryPurple,
-                    unselectedLabelColor: ArtbeatColors.textSecondary,
-                    indicatorColor: ArtbeatColors.primaryPurple,
-                    tabs: const [
-                      Tab(text: 'My Walks'),
-                      Tab(text: 'Discover'),
-                      Tab(text: 'My Captures'), // Added My Captures tab
-                    ],
-                  ),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildMyWalksTab(),
+                              _buildDiscoverTab(),
+                              _buildMyCapturesTab(),
+                            ],
+                          ),
+                          // Floating action button for creating an art walk (only on My Walks tab)
+                          Positioned(
+                            bottom: 24,
+                            right: 24,
+                            child: AnimatedBuilder(
+                              animation: _tabController,
+                              builder: (context, child) {
+                                return _tabController.index == 0
+                                    ? FloatingActionButton.extended(
+                                        onPressed: () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            '/art-walk/create',
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.add_location_alt,
+                                        ),
+                                        label: const Text('Create Art Walk'),
+                                        backgroundColor:
+                                            ArtbeatColors.primaryPurple,
+                                      )
+                                    : const SizedBox.shrink();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-
-                // Tab Content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _myWalksTab(),
-                      _discoverTab(),
-                      _myCapturesTab(), // Added My Captures tab content
-                    ],
-                  ),
-                ),
-
-                // Map Preview
-                _mapPreviewSection(),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _onboardingCard() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ArtbeatColors.primaryPurple.withAlpha(25),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ArtbeatColors.primaryPurple.withAlpha(77)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.directions_walk,
-            size: 40,
-            color: ArtbeatColors.primaryPurple,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'How Art Walks Work',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Capture art with your camera. Each photo is pinned to its location. Create self-guided art walks by linking your art locations. Share your walks, explore others, and leave reviews!',
-                  style: TextStyle(color: ArtbeatColors.textSecondary),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => setState(() => _showOnboarding = false),
-                    style: TextButton.styleFrom(
-                      foregroundColor: ArtbeatColors.primaryPurple,
-                    ),
-                    child: const Text('Got it'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _myWalksTab() {
+  Widget _buildMyWalksTab() {
     if (_isLoadingWalks) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_myWalks.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
+      return const SingleChildScrollView(
+        padding: EdgeInsets.all(24),
+        child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.directions_walk, size: 80, color: Colors.grey[400]),
-              const SizedBox(height: 16),
+              Icon(Icons.directions_walk, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
               Text(
                 'No Art Walks Yet',
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
-                'Create your first art walk by capturing art and linking locations!',
+                'Create your first art walk!',
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _onCreateArtWalk,
-                icon: const Icon(Icons.add_road),
-                label: const Text('Create Art Walk'),
+                style: TextStyle(color: Colors.grey),
               ),
             ],
           ),
@@ -549,55 +666,36 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadMyWalks,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _myWalks.length,
-        itemBuilder: (context, index) {
-          final walk = _myWalks[index];
-          return _artWalkListTile(
-            walk: walk,
-            onTap: () => Navigator.pushNamed(
-              context,
-              '/art-walk/detail',
-              arguments: walk.id,
-            ),
-            onEdit: () => Navigator.pushNamed(
-              context,
-              '/art-walk/edit',
-              arguments: walk.id,
-            ),
-            onDelete: () => _deleteWalk(walk),
-          );
-        },
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _myWalks.length,
+      itemBuilder: (context, index) => _buildWalkCard(_myWalks[index], true),
     );
   }
 
-  Widget _discoverTab() {
+  Widget _buildDiscoverTab() {
     if (_publicWalks.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
+      return const SingleChildScrollView(
+        padding: EdgeInsets.all(24),
+        child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.explore, size: 80, color: Colors.grey[400]),
-              const SizedBox(height: 16),
+              Icon(Icons.explore, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
               Text(
                 'No Public Walks Available',
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
-                'Check back later for new art walks from the community!',
+                'Check back later!',
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                style: TextStyle(color: Colors.grey),
               ),
             ],
           ),
@@ -605,64 +703,41 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadPublicWalks,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _publicWalks.length,
-        itemBuilder: (context, index) {
-          final walk = _publicWalks[index];
-          return _artWalkListTile(
-            walk: walk,
-            onTap: () => Navigator.pushNamed(
-              context,
-              '/art-walk/detail',
-              arguments: walk.id,
-            ),
-            isPublic: true,
-          );
-        },
-      ),
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _publicWalks.length,
+      itemBuilder: (context, index) =>
+          _buildWalkCard(_publicWalks[index], false),
     );
   }
 
-  Widget _myCapturesTab() {
+  Widget _buildMyCapturesTab() {
     if (_isLoadingCaptures) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (_myCaptures.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
+      return const SingleChildScrollView(
+        padding: EdgeInsets.all(24),
+        child: Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.camera_alt_outlined,
-                size: 80,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 16),
+              Icon(Icons.camera_alt, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
               Text(
                 'No Captures Yet',
-                style: Theme.of(
-                  context,
-                ).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
-                'Start capturing art around you to see them here!',
+                'Start capturing art!',
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _onCapture,
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Capture Art'),
+                style: TextStyle(color: Colors.grey),
               ),
             ],
           ),
@@ -670,278 +745,170 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadMyCaptures,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.8,
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.8,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: _myCaptures.length,
+      itemBuilder: (context, index) => _buildCaptureCard(_myCaptures[index]),
+    );
+  }
+
+  Widget _buildWalkCard(ArtWalkModel walk, bool isOwner) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(
+          isOwner ? Icons.directions_walk : Icons.public,
+          color: isOwner
+              ? ArtbeatColors.primaryPurple
+              : ArtbeatColors.primaryGreen,
         ),
-        itemCount: _myCaptures.length,
-        itemBuilder: (context, index) {
-          final capture = _myCaptures[index];
-          return _buildCaptureCard(capture);
-        },
+        title: Text(
+          walk.title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text('${walk.artPieces.length} art pieces'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.pushNamed(
+          context,
+          '/art-walk/detail',
+          arguments: {'walkId': walk.id}, // Pass as map for detail screen
+        ),
       ),
     );
   }
 
   Widget _buildCaptureCard(CaptureModel capture) {
     return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _showCaptureDetail(capture),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(color: Colors.grey[200]),
-                child: capture.imageUrl.isNotEmpty
-                    ? Image.network(
-                        capture.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey[300],
-                            child: const Icon(
-                              Icons.broken_image,
-                              color: Colors.grey,
-                              size: 40,
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.image,
-                          color: Colors.grey,
-                          size: 40,
-                        ),
-                      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            flex: 3,
+            child: capture.imageUrl.isNotEmpty
+                ? Image.network(
+                    capture.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.image_not_supported, size: 40),
+                    ),
+                  )
+                : Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.camera_alt, size: 40),
+                  ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                capture.title ?? 'Untitled',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      capture.title ?? 'Untitled',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (capture.artistName != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        'by ${capture.artistName}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          capture.isPublic ? Icons.public : Icons.lock,
-                          size: 12,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          capture.isPublic ? 'Public' : 'Private',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  void _showCaptureDetail(CaptureModel capture) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => MyCapturesScreen(initialCapture: capture),
-      ),
-    );
-  }
-
-  Widget _artWalkListTile({
-    required ArtWalkModel walk,
-    required VoidCallback onTap,
-    VoidCallback? onEdit,
-    VoidCallback? onDelete,
-    bool isPublic = false,
+  Widget _buildLegendItem({
+    required Color color,
+    required String label,
+    required IconData icon,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        leading: Icon(
-          isPublic ? Icons.public : Icons.directions_walk,
-          color: isPublic
-              ? ArtbeatColors.primaryGreen
-              : ArtbeatColors.primaryPurple,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
         ),
-        title: Text(
-          walk.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: ArtbeatColors.textPrimary,
-          ),
-        ),
-        subtitle: Text(
-          walk.description,
-          style: const TextStyle(color: ArtbeatColors.textSecondary),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        onTap: onTap,
-        trailing: onEdit != null && onDelete != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.edit,
-                      color: ArtbeatColors.primaryPurple,
-                    ),
-                    onPressed: onEdit,
-                    tooltip: 'Edit',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: onDelete,
-                    tooltip: 'Delete',
-                  ),
-                ],
-              )
-            : null,
-      ),
+      ],
     );
   }
 
-  Future<void> _deleteWalk(ArtWalkModel walk) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Art Walk'),
-        content: Text('Are you sure you want to delete "${walk.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _searchByZipCode(String zipCode) async {
+    if (zipCode.length != 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid 5-digit ZIP code')),
+      );
+      return;
+    }
 
-    if (confirmed == true) {
-      try {
-        await _artWalkService.deleteArtWalk(walk.id);
-        _loadMyWalks(); // Refresh the list
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Art walk deleted successfully')),
+    try {
+      final coordinates = await LocationUtils.getCoordinatesFromZipCode(
+        zipCode,
+      );
+      if (coordinates != null && mounted) {
+        setState(() {
+          _initialCameraPosition = CameraPosition(
+            target: LatLng(coordinates.latitude, coordinates.longitude),
+            zoom: 13,
           );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error deleting art walk: $e')),
-          );
-        }
+          _userZipCode = zipCode;
+        });
+        _updateMapMarkers();
+        _loadNearbyCaptures();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error searching location')),
+        );
       }
     }
   }
 
-  Widget _mapPreviewSection() {
-    if (_initialCameraPosition == null || !_mapsInitialized) {
-      return Container(
-        height: 180,
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 8),
-              Text(
-                _mapsInitialized ? 'Loading map...' : 'Initializing maps...',
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ],
+  Future<void> _syncToCurrentLocation() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permission denied.')),
+          );
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permission permanently denied. Please enable it in settings.',
+            ),
           ),
-        ),
+        );
+        return;
+      }
+      final position = await Geolocator.getCurrentPosition();
+      final newCameraPosition = CameraPosition(
+        target: LatLng(position.latitude, position.longitude),
+        zoom: 13,
       );
+      setState(() {
+        _initialCameraPosition = newCameraPosition;
+      });
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(newCameraPosition),
+      );
+      _updateMapMarkers();
+      _loadNearbyCaptures();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error syncing to location: $e')));
     }
-
-    return Container(
-      height: 180,
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: GoogleMap(
-          initialCameraPosition: _initialCameraPosition!,
-          onMapCreated: (controller) {
-            _mapController = controller;
-            debugPrint('🗺️ Art Walk Map created successfully');
-          },
-          myLocationEnabled: true,
-          myLocationButtonEnabled: false,
-          zoomControlsEnabled: false,
-          markers: _getMarkers(),
-          onTap: (position) {
-            // Navigate to full map view
-            Navigator.pushNamed(context, '/art-walk/map');
-          },
-        ),
-      ),
-    );
   }
 }

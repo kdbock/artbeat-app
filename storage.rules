@@ -111,6 +111,20 @@ service firebase.storage {
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
+    // Event images - for event creation (headshots, banners, event images)
+    match /events/{userId}/{eventId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Event images - more permissive path for development
+    match /events/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
     // Debug mode bypass for testing
     match /{path=**}/{fileName} {
       allow read, write: if isDebugMode();

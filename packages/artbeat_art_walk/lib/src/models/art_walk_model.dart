@@ -82,4 +82,6 @@ class ArtWalkModel {
       zipCode: zipCode ?? this.zipCode, // Added
     );
   }
+
+  List<String> get artPieces => publicArtIds;
 }

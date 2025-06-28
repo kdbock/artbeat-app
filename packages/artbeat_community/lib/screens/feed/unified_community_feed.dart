@@ -6,7 +6,7 @@ import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatComponents;
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
-import '../../widgets/post_card.dart';
+import '../../widgets/critique_card.dart';
 import 'create_post_screen.dart';
 import 'comments_screen.dart';
 
@@ -414,35 +414,98 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: ArtbeatColors.background,
-      appBar: AppBar(
-        title: Text(
-          'Community Critique',
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: ArtbeatColors.textPrimary,
+      backgroundColor: ArtbeatColors.backgroundSecondary,
+      body: Column(
+        children: [
+          // Custom header with critique focus
+          Container(
+            decoration: const BoxDecoration(
+              color: ArtbeatColors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: ArtbeatColors.primaryPurple.withAlpha(25),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.palette,
+                            color: ArtbeatColors.primaryPurple,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Critique Gallery',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: ArtbeatColors.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                'Share your art for constructive feedback',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: ArtbeatColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh),
+                          onPressed: _loadPosts,
+                          tooltip: 'Refresh',
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Submit artwork button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _navigateToCreatePost,
+                        icon: const Icon(Icons.add_photo_alternate_outlined),
+                        label: const Text('Submit Artwork for Critique'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ArtbeatColors.primaryPurple,
+                          foregroundColor: ArtbeatColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-        backgroundColor: ArtbeatColors.white,
-        elevation: 1,
-        shadowColor: ArtbeatColors.black.withAlpha(25),
-        iconTheme: const IconThemeData(color: ArtbeatColors.textPrimary),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: _navigateToCreatePost,
-            tooltip: 'Create Post',
-            color: ArtbeatColors.primaryPurple,
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadPosts,
-            tooltip: 'Refresh',
-            color: ArtbeatColors.textSecondary,
-          ),
+          // Body content
+          Expanded(child: _buildBody()),
         ],
       ),
-      body: _buildBody(),
     );
   }
 
@@ -461,7 +524,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Loading community posts...',
+              'Loading artwork submissions...',
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: ArtbeatColors.textSecondary,
               ),
@@ -502,36 +565,59 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
 
     if (_posts.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.forum_outlined,
-              size: 64,
-              color: ArtbeatColors.textSecondary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No artwork shared yet',
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: ArtbeatColors.textPrimary,
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: ArtbeatColors.primaryPurple.withAlpha(25),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Icon(
+                  Icons.palette_outlined,
+                  size: 64,
+                  color: ArtbeatColors.primaryPurple,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Share your artwork and get thoughtful feedback from the community!',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: ArtbeatColors.textSecondary,
+              const SizedBox(height: 24),
+              Text(
+                'No artwork submitted yet',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: ArtbeatColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _navigateToCreatePost,
-              style: ArtbeatComponents.primaryButtonStyle,
-              child: const Text('Share Artwork'),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                'Be the first to share your artwork and receive constructive feedback from fellow artists and art enthusiasts.',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: ArtbeatColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _navigateToCreatePost,
+                  icon: const Icon(Icons.add_photo_alternate_outlined),
+                  label: const Text('Submit Your First Artwork'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ArtbeatColors.primaryPurple,
+                    foregroundColor: ArtbeatColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -541,7 +627,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
       color: ArtbeatColors.primaryPurple,
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(20),
         itemCount: _posts.length + (_isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= _posts.length) {
@@ -561,8 +647,8 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
           final comments = _postComments[post.id] ?? [];
 
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: PostCard(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: CritiqueCard(
               post: post,
               currentUserId: _currentUserId,
               comments: comments,

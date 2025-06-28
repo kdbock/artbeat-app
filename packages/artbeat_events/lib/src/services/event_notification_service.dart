@@ -81,13 +81,16 @@ class EventNotificationService {
   /// Request notification permissions
   Future<bool> requestPermissions() async {
     try {
-      // Request permissions for awesome_notifications
-      final awesomePermission =
-          await AwesomeNotifications().isNotificationAllowed();
-
-      if (!awesomePermission) {
-        await AwesomeNotifications().requestPermissionToSendNotifications();
+      // Check if already allowed
+      final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+      if (isAllowed) {
+        _logger.i('Notification permissions already granted');
+        return true;
       }
+
+      // Request permissions for awesome_notifications
+      final granted =
+          await AwesomeNotifications().requestPermissionToSendNotifications();
 
       // Request permissions for local_notifications on iOS
       final localPermission = await _localNotifications
@@ -95,8 +98,22 @@ class EventNotificationService {
               IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions();
 
-      _logger.i('Notification permissions requested');
-      return awesomePermission && (localPermission ?? true);
+      // Request permissions for Android
+      final androidPermission = await _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+
+      final finalResult =
+          granted && (localPermission ?? true) && (androidPermission ?? true);
+
+      if (finalResult) {
+        _logger.i('Notification permissions granted successfully');
+      } else {
+        _logger.w('Notification permissions denied or partially granted');
+      }
+
+      return finalResult;
     } on Exception catch (e) {
       _logger.e('Error requesting notification permissions: $e');
       return false;
@@ -106,6 +123,14 @@ class EventNotificationService {
   /// Schedule event reminder notification
   Future<void> scheduleEventReminder(ArtbeatEvent event) async {
     if (!event.reminderEnabled) return;
+
+    // Check and request notification permissions first
+    final hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      _logger.w(
+          'Notification permissions not granted, skipping event reminder for: ${event.title}');
+      return;
+    }
 
     try {
       // Schedule 1 hour before event
@@ -146,6 +171,14 @@ class EventNotificationService {
   /// Schedule multiple reminders for an event
   Future<void> scheduleEventReminders(ArtbeatEvent event) async {
     if (!event.reminderEnabled) return;
+
+    // Check and request notification permissions first
+    final hasPermission = await requestPermissions();
+    if (!hasPermission) {
+      _logger.w(
+          'Notification permissions not granted, skipping event reminders for: ${event.title}');
+      return;
+    }
 
     try {
       final eventTime = event.dateTime;

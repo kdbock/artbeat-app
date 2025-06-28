@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ZipCodeSearchBox extends StatelessWidget {
+class ZipCodeSearchBox extends StatefulWidget {
   final String initialValue;
   final void Function(String) onZipCodeSubmitted;
   final bool isLoading;
@@ -12,6 +12,33 @@ class ZipCodeSearchBox extends StatelessWidget {
     required this.onZipCodeSubmitted,
     this.isLoading = false,
   });
+
+  @override
+  State<ZipCodeSearchBox> createState() => _ZipCodeSearchBoxState();
+}
+
+class _ZipCodeSearchBoxState extends State<ZipCodeSearchBox> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void didUpdateWidget(covariant ZipCodeSearchBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue) {
+      _controller.text = widget.initialValue;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,33 +56,52 @@ class ZipCodeSearchBox extends StatelessWidget {
           ),
         ],
       ),
-      child: TextField(
-        controller: TextEditingController(text: initialValue),
-        decoration: InputDecoration(
-          hintText: 'Enter ZIP code',
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: 'Enter ZIP code',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: widget.isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(5),
+              ],
+              onSubmitted: widget.onZipCodeSubmitted,
+            ),
           ),
-        ),
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(5),
+          if (!widget.isLoading)
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              child: IconButton(
+                onPressed: () {
+                  if (_controller.text.isNotEmpty) {
+                    widget.onZipCodeSubmitted(_controller.text);
+                  }
+                },
+                icon: const Icon(Icons.send),
+                tooltip: 'Search',
+              ),
+            ),
         ],
-        onSubmitted: onZipCodeSubmitted,
       ),
     );
   }
