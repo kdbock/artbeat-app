@@ -398,15 +398,28 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
   /// Called when the map is created to initialize the controller
   Future<void> _onMapCreated(GoogleMapController controller) async {
+    debugPrint('🗺️ GoogleMap controller created successfully');
+    debugPrint(
+      '🔑 Using API key: ${ConfigService.instance.googleMapsApiKey?.substring(0, 20)}...',
+    );
+
     _mapController = controller;
     _mapControllerCompleter.complete(controller);
 
-    // Note: We cannot apply map style directly via controller anymore
-    // Map style is now set using the GoogleMap.styleString property
-    // We'll implement that in the GoogleMap widget in the build method
-
-    // Initialize location after map is ready
-    await _initializeLocation();
+    // Test if the map can load tiles by checking if we can get the camera position
+    try {
+      final position = await controller.getLatLng(
+        const ScreenCoordinate(x: 100, y: 100),
+      );
+      debugPrint('🗺️ Map tiles loading properly - test coordinate: $position');
+    } catch (e) {
+      debugPrint('⚠️ Map tiles may not be loading: $e');
+      if (mounted) {
+        _showSnackBar(
+          'Map tiles not loading properly. This may be an API key issue.',
+        );
+      }
+    }
 
     // Initialize location after map is ready
     await _initializeLocation();
@@ -682,6 +695,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             trafficEnabled: false,
             buildingsEnabled: true,
             indoorViewEnabled: false,
+            // Add error handling for API key issues
+            onTap: (LatLng position) {
+              debugPrint('🗺️ Map tapped at: $position');
+            },
           ),
           Positioned(
             right: 16,

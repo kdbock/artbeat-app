@@ -108,6 +108,11 @@ class GoogleMapsService {
       return false;
     }
 
+    debugPrint(
+      '🔑 Google Maps API key found: ${_mapsApiKey!.substring(0, 20)}...',
+    );
+    debugPrint('🔑 API key length: ${_mapsApiKey!.length}');
+
     if (_initialized) {
       debugPrint('🗺️ Google Maps already initialized');
       return true;

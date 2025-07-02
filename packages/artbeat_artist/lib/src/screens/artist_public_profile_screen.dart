@@ -77,6 +77,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
       );
 
       // Get artist's artwork using the artist profile document ID
+      debugPrint(
+          '🔍 ArtistPublicProfileScreen: About to query artwork with artistProfileId: ${artistProfile.id}');
       final artwork =
           await _artworkService.getArtworkByArtistProfileId(artistProfile.id);
 

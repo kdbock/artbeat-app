@@ -4,7 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 Future<void> migrateArtworkStorageToFirestore() async {
-  await Firebase.initializeApp();
+  // Check if Firebase is already initialized before initializing
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+    debugPrint('Firebase initialized for migration script');
+  } else {
+    debugPrint('Using existing Firebase app instance');
+  }
 
   final storage = FirebaseStorage.instance;
   final firestore = FirebaseFirestore.instance;

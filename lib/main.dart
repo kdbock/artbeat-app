@@ -9,10 +9,18 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize config service first
     await ConfigService.instance.initialize();
+    if (kDebugMode) {
+      print('✅ ConfigService initialized');
+    }
 
     // Check if Firebase is already initialized
     if (Firebase.apps.isEmpty) {
+      if (kDebugMode) {
+        print('🔥 Starting Firebase initialization...');
+      }
+
       // IMPORTANT: Configure App Check BEFORE Firebase initialization
       await SecureFirebaseConfig.configureAppCheck(
         teamId: 'H49R32NPY6',
@@ -21,6 +29,10 @@ Future<void> main() async {
 
       // Initialize Firebase after App Check is configured
       await SecureFirebaseConfig.initializeFirebase();
+
+      if (kDebugMode) {
+        print('✅ Firebase initialization completed successfully');
+      }
     } else {
       if (kDebugMode) {
         print(
@@ -30,15 +42,15 @@ Future<void> main() async {
     }
 
     if (kDebugMode) {
-      print('✅ Firebase initialization completed successfully');
-
       // Print Firebase status for debugging
       final status = SecureFirebaseConfig.getStatus();
       print('🔍 Firebase Status: $status');
+      print('🔍 Firebase apps count: ${Firebase.apps.length}');
     }
-  } catch (e) {
+  } catch (e, stackTrace) {
     if (kDebugMode) {
       print('❌ Firebase initialization failed: $e');
+      print('❌ Stack trace: $stackTrace');
     } else {
       rethrow;
     }

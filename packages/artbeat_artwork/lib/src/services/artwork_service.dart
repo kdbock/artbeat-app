@@ -158,16 +158,83 @@ class ArtworkService {
   Future<List<ArtworkModel>> getArtworkByArtistProfileId(
       String artistProfileId) async {
     try {
-      final snapshot = await _artworkCollection
-          .where('artistProfileId', isEqualTo: artistProfileId)
-          .orderBy('createdAt', descending: true)
+      debugPrint(
+          '🔍 ArtworkService: Querying artwork for artistProfileId: $artistProfileId');
+
+      // First get the artist profile to get the userId
+      final artistProfileDoc = await FirebaseFirestore.instance
+          .collection('artistProfiles')
+          .doc(artistProfileId)
           .get();
 
-      return snapshot.docs
-          .map((doc) => ArtworkModel.fromFirestore(doc))
-          .toList();
+      if (!artistProfileDoc.exists) {
+        debugPrint('❌ ArtworkService: Artist profile not found');
+        return [];
+      }
+
+      final userId = artistProfileDoc.data()?['userId'];
+      if (userId == null) {
+        debugPrint('❌ ArtworkService: No userId found in artist profile');
+        return [];
+      }
+
+      debugPrint(
+          '🔍 ArtworkService: Found userId: $userId for artistProfileId: $artistProfileId');
+
+      // Try querying by artistProfileId first (for newer artwork)
+      final snapshot = await _artworkCollection
+          .where('artistProfileId', isEqualTo: artistProfileId)
+          .get();
+
+      debugPrint(
+          '📊 ArtworkService: Found ${snapshot.docs.length} artwork documents by artistProfileId');
+
+      List<ArtworkModel> artworks =
+          snapshot.docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
+
+      // Also query by artistId (for legacy artwork that might use this field)
+      final legacySnapshot =
+          await _artworkCollection.where('artistId', isEqualTo: userId).get();
+
+      debugPrint(
+          '📊 ArtworkService: Found ${legacySnapshot.docs.length} artwork documents by artistId (legacy)');
+
+      if (legacySnapshot.docs.isNotEmpty) {
+        final legacyArtworks = legacySnapshot.docs
+            .map((doc) => ArtworkModel.fromFirestore(doc))
+            .toList();
+        artworks.addAll(legacyArtworks);
+      }
+
+      // Also query by userId as final fallback
+      final userSnapshot =
+          await _artworkCollection.where('userId', isEqualTo: userId).get();
+
+      debugPrint(
+          '📊 ArtworkService: Found ${userSnapshot.docs.length} artwork documents by userId');
+
+      if (userSnapshot.docs.isNotEmpty) {
+        final userArtworks = userSnapshot.docs
+            .map((doc) => ArtworkModel.fromFirestore(doc))
+            .toList();
+
+        // Add only artworks that aren't already in the list (avoid duplicates)
+        for (final artwork in userArtworks) {
+          if (!artworks.any((existing) => existing.id == artwork.id)) {
+            artworks.add(artwork);
+          }
+        }
+      }
+
+      // Sort by creation date (newest first)
+      artworks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      debugPrint(
+          '🖼️ ArtworkService: Total unique artworks found: ${artworks.length}');
+
+      return artworks;
     } catch (e) {
-      debugPrint('Error getting artist artwork: $e');
+      debugPrint('❌ Error getting artist artwork: $e');
       return [];
     }
   }

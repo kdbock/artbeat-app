@@ -87,8 +87,10 @@ import 'package:artbeat_events/artbeat_events.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp();
+  // Check if Firebase is already initialized to avoid duplicate initialization
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
   
   // Initialize notification service
   await EventNotificationService().initialize();

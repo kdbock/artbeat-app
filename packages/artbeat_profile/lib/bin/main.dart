@@ -19,9 +19,14 @@ void main() async {
 
   // Initialize Firebase
   try {
-    await Firebase.initializeApp(
+    // Check if Firebase is already initialized to avoid duplicate initialization
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
       options: mockFirebaseOptions,
     );
+    } else {
+      debugPrint('Firebase already initialized, using existing app instance');
+    }
     debugPrint('Firebase initialized successfully');
   } catch (e) {
     debugPrint('Failed to initialize Firebase: $e');

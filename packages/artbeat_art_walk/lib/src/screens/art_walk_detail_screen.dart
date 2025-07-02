@@ -25,11 +25,18 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   List<PublicArtModel> _artPieces = [];
   Set<Marker> _markers = <Marker>{};
   Set<Polyline> _polylines = <Polyline>{};
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
     _loadArtWalk();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   /// Check if the current user has already completed this walk
@@ -44,7 +51,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         userId,
         _walk!.id,
       );
-      if (mounted) {
+      if (mounted && !_disposed) {
         setState(() {
           _hasCompletedWalk = hasCompleted;
         });
@@ -55,7 +62,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   }
 
   Future<void> _loadArtWalk() async {
-    setState(() => _isLoading = true);
+    if (mounted && !_disposed) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       // First check for expired cache and clean it if needed
@@ -85,22 +94,24 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       // final polylines = _createPolylines(walk, artPieces); // Updated: routePolyline removed from model
       final polylines = _createPolylines(artPieces); // Pass only artPieces
 
-      setState(() {
-        _walk = walk;
-        _artPieces = artPieces;
-        _markers = markers;
-        _polylines = polylines;
-      });
+      if (mounted && !_disposed) {
+        setState(() {
+          _walk = walk;
+          _artPieces = artPieces;
+          _markers = markers;
+          _polylines = polylines;
+        });
 
-      // Check if user has completed this walk
-      await _checkCompletionStatus();
+        // Check if user has completed this walk
+        await _checkCompletionStatus();
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     } finally {
-      if (mounted) {
+      if (mounted && !_disposed) {
         setState(() => _isLoading = false);
       }
     }
@@ -295,6 +306,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
+        key: const ValueKey('loading'),
         appBar: AppBar(title: const Text('Art Walk Details')),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -302,13 +314,16 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
     if (_walk == null) {
       return Scaffold(
+        key: const ValueKey('not_found'),
         appBar: AppBar(title: const Text('Art Walk Details')),
         body: const Center(child: Text('Art walk not found')),
       );
     }
 
     return Scaffold(
+      key: ValueKey('art_walk_${_walk!.id}'),
       body: CustomScrollView(
+        key: ValueKey('scroll_view_${_walk!.id}'),
         slivers: [
           // App bar with image
           SliverAppBar(
@@ -529,20 +544,24 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                       ..._artPieces.asMap().entries.map((entry) {
                         final index = entry.key;
                         final art = entry.value;
-                        return _buildArtCard(art, index);
+                        return _buildArtCard(
+                          art,
+                          index,
+                          key: ValueKey('art_${art.id}'),
+                        );
                       }),
                     ],
                   ),
                 ),
-
-                // Comment section
-                SliverToBoxAdapter(
-                  child: ArtWalkCommentSection(
-                    artWalkId: widget.walkId,
-                    artWalkTitle: _walk!.title,
-                  ),
-                ),
               ],
+            ),
+          ),
+
+          // Comment section
+          SliverToBoxAdapter(
+            child: ArtWalkCommentSection(
+              artWalkId: widget.walkId,
+              artWalkTitle: _walk!.title,
             ),
           ),
         ],
@@ -567,8 +586,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     );
   }
 
-  Widget _buildArtCard(PublicArtModel art, int index) {
+  Widget _buildArtCard(PublicArtModel art, int index, {Key? key}) {
     return Card(
+      key: key,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

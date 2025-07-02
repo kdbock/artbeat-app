@@ -42,9 +42,14 @@ service cloud.firestore {
 
     // Commissions (artist can read/write their own commissions)
     match /commissions/{commissionId} {
-      allow read, write: if request.auth != null && 
-                          (request.auth.uid == resource.data.userId || 
-                           request.auth.uid == resource.data.artistId);
+      allow read: if request.auth != null && 
+                    (request.auth.uid == resource.data.userId || 
+                     request.auth.uid == resource.data.artistId);
+      allow create: if request.auth != null && 
+                      request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && 
+                            (request.auth.uid == resource.data.userId || 
+                             request.auth.uid == resource.data.artistId);
     }
 
     // Subscriptions (users can read/write their own subscription)
@@ -58,13 +63,10 @@ service cloud.firestore {
                   (request.auth.uid == resource.data.artistId || 
                    request.auth.uid == resource.data.viewerId);
       allow create: if request.auth != null && 
-        (request.auth.uid == request.resource.data.viewerId || request.auth.uid == request.resource.data.artistId);
-      allow update, delete: if request.auth != null && (
-        (resource.data.viewerId != null && request.auth.uid == resource.data.viewerId) ||
-        (resource.data.artistId != null && request.auth.uid == resource.data.artistId) ||
-        (request.resource.data.viewerId != null && request.auth.uid == request.resource.data.viewerId) ||
-        (request.resource.data.artistId != null && request.auth.uid == request.resource.data.artistId)
-      );
+                      request.auth.uid == request.resource.data.viewerId;
+      allow update, delete: if request.auth != null && 
+                            (request.auth.uid == resource.data.viewerId ||
+                             request.auth.uid == resource.data.artistId);
     }
 
     match /artistProfileViews/{viewId} {
@@ -77,9 +79,15 @@ service cloud.firestore {
 
     // Artwork collection (public reading, artists manage their own)
     match /artwork/{artworkId} {
-      allow read: if true; // Allow reading all artwork documents
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.artistId;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.artistId;
+      allow read: if true; // Allow reading all artwork documents and queries
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Likes subcollection - authenticated users can like/unlike artwork
+      match /likes/{userId} {
+        allow read: if true; // Public reading for like counts
+        allow write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Sponsorships (publicly readable)
@@ -148,6 +156,20 @@ service cloud.firestore {
                     request.auth.uid == request.resource.data.userId;
       allow update, delete: if request.auth != null && 
                             request.auth.uid == resource.data.userId;
+
+      // Art walk comments subcollection
+      match /comments/{commentId} {
+        allow read: if true; // Publicly readable
+        allow create: if request.auth != null; // Any authenticated user can comment
+        allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      }
+
+      // Art walk achievements subcollection
+      match /achievements/{userId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow update, delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Public Art collection - publicly readable, authenticated users can create
@@ -182,6 +204,18 @@ service cloud.firestore {
       allow update: if request.auth != null && 
                     request.auth.uid == resource.data.userId;
       allow delete: if request.auth != null; // Allow any authenticated user to delete (for admin functionality)
+    }
+
+    // Artist follows collection - users can manage their own follows
+    match /artistFollows/{followId} {
+      // Allow reading follows to check following status
+      // Document ID format is: userId_artistProfileId
+      allow read: if request.auth != null;
+      // Allow creating/deleting follows (following/unfollowing)
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && 
+                    request.auth.uid == resource.data.userId;
     }
 
     // Fallback: deny all other access

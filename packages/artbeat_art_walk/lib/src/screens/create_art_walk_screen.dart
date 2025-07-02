@@ -195,7 +195,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
           _currentPosition!.longitude,
         ),
         routeData: routeData,
-        coverImageUrl: null, // Handle cover image separately if needed
+        coverImageFile: _coverImageFile, // Pass the selected cover image file
         isPublic: _isPublic,
       );
 

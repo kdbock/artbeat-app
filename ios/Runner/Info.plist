@@ -60,9 +60,9 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs your location to show nearby art walks and provide location-based art discovery features.</string>
 	<key>GMSApiKey</key>
-	<string>AIzaSyDzH_pJ_I2U_rkC4OBKVasjjJMus3LtSH0</string>
+	<string>AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA</string>
 	<key>io.flutter.plugins.googlemaps.API_KEY</key>
-	<string>AIzaSyDzH_pJ_I2U_rkC4OBKVasjjJMus3LtSH0</string>
+	<string>AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs camera access to capture photos of artwork.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

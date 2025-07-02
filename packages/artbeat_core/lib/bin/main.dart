@@ -15,18 +15,23 @@ void main() async {
 
   // Initialize Firebase with secure configuration
   try {
-    final config = ConfigService.instance.firebaseConfig;
+    // Check if Firebase is already initialized
+    if (Firebase.apps.isEmpty) {
+      final config = ConfigService.instance.firebaseConfig;
 
-    final options = FirebaseOptions(
-      apiKey: config['apiKey'] ?? '',
-      appId: config['appId'] ?? '',
-      messagingSenderId: config['messagingSenderId'] ?? '',
-      projectId: config['projectId'] ?? '',
-      storageBucket: config['storageBucket'] ?? '',
-    );
+      final options = FirebaseOptions(
+        apiKey: config['apiKey'] ?? '',
+        appId: config['appId'] ?? '',
+        messagingSenderId: config['messagingSenderId'] ?? '',
+        projectId: config['projectId'] ?? '',
+        storageBucket: config['storageBucket'] ?? '',
+      );
 
-    await Firebase.initializeApp(options: options);
-    debugPrint('Firebase initialized successfully with secure configuration');
+      await Firebase.initializeApp(options: options);
+      debugPrint('Firebase initialized successfully with secure configuration');
+    } else {
+      debugPrint('Firebase already initialized, using existing app instance');
+    }
 
     if (kDebugMode &&
         const bool.fromEnvironment(

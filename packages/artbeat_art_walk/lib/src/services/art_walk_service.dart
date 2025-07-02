@@ -543,9 +543,9 @@ class ArtWalkService {
       // Fetch all art pieces in the walk from Firestore
       final List<PublicArtModel> artPieces = [];
 
-      for (final artId in walk.publicArtIds) {
+      for (final artId in walk.artworkIds) {
         try {
-          final artDoc = await _publicArtCollection.doc(artId).get();
+          final artDoc = await _capturesCollection.doc(artId).get();
           if (artDoc.exists) {
             artPieces.add(PublicArtModel.fromFirestore(artDoc));
           }
@@ -665,7 +665,7 @@ class ArtWalkService {
       final List<PublicArtModel> artPieces = [];
 
       // Get each art piece by ID
-      for (final artId in artWalk.publicArtIds) {
+      for (final artId in artWalk.artworkIds) {
         final art = await getPublicArtById(artId);
         if (art != null) {
           artPieces.add(art);
@@ -845,6 +845,25 @@ class ArtWalkService {
     }
   }
 
+  /// Upload image to Firebase Storage and return the download URL
+  Future<String> _uploadImageToStorage(File imageFile, String folder) async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId.jpg';
+      final ref = _storage.ref().child(folder).child(userId).child(fileName);
+
+      final uploadTask = await ref.putFile(imageFile);
+      return await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      _logger.e('Error uploading image to storage: $e');
+      throw Exception('Failed to upload image: $e');
+    }
+  }
+
   /// Calculate walking directions between art pieces using Google Directions API
   Future<Map<String, dynamic>?> getWalkingDirections(
     List<PublicArtModel> artPieces,
@@ -959,7 +978,7 @@ class ArtWalkService {
     required List<String> artworkIds,
     required GeoPoint startLocation,
     required String routeData,
-    String? coverImageUrl,
+    File? coverImageFile,
     bool isPublic = true,
   }) async {
     // Check internet connectivity
@@ -983,6 +1002,27 @@ class ArtWalkService {
     }
 
     try {
+      // Upload cover image if provided
+      List<String> imageUrls = [];
+      if (coverImageFile != null) {
+        final String imageUrl = await _uploadImageToStorage(
+          coverImageFile,
+          'art_walks',
+        );
+        imageUrls.add(imageUrl);
+      }
+
+      // Get ZIP code from start location
+      String zipCode = '00000';
+      try {
+        zipCode = await getZipCodeFromCoordinates(
+          startLocation.latitude,
+          startLocation.longitude,
+        );
+      } catch (e) {
+        debugPrint('Warning: Could not get ZIP code for art walk: $e');
+      }
+
       final docRef = await _artWalksCollection.add({
         'userId': userId,
         'title': title,
@@ -990,7 +1030,9 @@ class ArtWalkService {
         'artworkIds': artworkIds,
         'startLocation': startLocation,
         'routeData': routeData,
-        'coverImageUrl': coverImageUrl,
+        'imageUrls':
+            imageUrls, // Updated to use imageUrls instead of coverImageUrl
+        'zipCode': zipCode, // Add ZIP code
         'isPublic': isPublic,
         'viewCount': 0,
         'completionCount': 0,

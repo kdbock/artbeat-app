@@ -6,7 +6,7 @@ class ArtWalkModel {
   final String title;
   final String description;
   final String userId;
-  final List<String> publicArtIds;
+  final List<String> artworkIds;
   final DateTime createdAt;
   final bool isPublic;
   final int viewCount;
@@ -18,7 +18,7 @@ class ArtWalkModel {
     required this.title,
     required this.description,
     required this.userId,
-    required this.publicArtIds,
+    required this.artworkIds,
     required this.createdAt,
     this.isPublic = false,
     this.viewCount = 0,
@@ -33,8 +33,7 @@ class ArtWalkModel {
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
       userId: data['userId'] as String? ?? '',
-      publicArtIds:
-          List<String>.from(data['publicArtIds'] as List<dynamic>? ?? []),
+      artworkIds: List<String>.from(data['artworkIds'] as List<dynamic>? ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isPublic: data['isPublic'] as bool? ?? false,
       viewCount: data['viewCount'] as int? ?? 0,
@@ -48,7 +47,7 @@ class ArtWalkModel {
       'title': title,
       'description': description,
       'userId': userId,
-      'publicArtIds': publicArtIds,
+      'artworkIds': artworkIds,
       'createdAt': Timestamp.fromDate(createdAt),
       'isPublic': isPublic,
       'viewCount': viewCount,
@@ -62,7 +61,7 @@ class ArtWalkModel {
     String? title,
     String? description,
     String? userId,
-    List<String>? publicArtIds,
+    List<String>? artworkIds,
     DateTime? createdAt,
     bool? isPublic,
     int? viewCount,
@@ -74,7 +73,7 @@ class ArtWalkModel {
       title: title ?? this.title,
       description: description ?? this.description,
       userId: userId ?? this.userId,
-      publicArtIds: publicArtIds ?? this.publicArtIds,
+      artworkIds: artworkIds ?? this.artworkIds,
       createdAt: createdAt ?? this.createdAt,
       isPublic: isPublic ?? this.isPublic,
       viewCount: viewCount ?? this.viewCount,
@@ -83,5 +82,5 @@ class ArtWalkModel {
     );
   }
 
-  List<String> get artPieces => publicArtIds;
+  List<String> get artPieces => artworkIds;
 }

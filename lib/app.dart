@@ -72,26 +72,34 @@ class MyApp extends StatelessWidget {
             // Profile routes
             case '/profile':
               return MaterialPageRoute(
-                builder: (_) => ProfileViewScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => ProfileViewScreen(
+                    userId: userService.currentUser?.uid ?? '',
+                  ),
                 ),
               );
             case '/profile/public':
               return MaterialPageRoute(
-                builder: (_) => ProfileViewScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => ProfileViewScreen(
+                    userId: userService.currentUser?.uid ?? '',
+                  ),
                 ),
               );
             case '/profile/edit':
               return MaterialPageRoute(
-                builder: (_) => EditProfileScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => EditProfileScreen(
+                    userId: userService.currentUser?.uid ?? '',
+                  ),
                 ),
               );
             case '/favorites':
               return MaterialPageRoute(
-                builder: (_) => FavoritesScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => FavoritesScreen(
+                    userId: userService.currentUser?.uid ?? '',
+                  ),
                 ),
               );
             case '/captures':
@@ -104,8 +112,10 @@ class MyApp extends StatelessWidget {
               );
             case '/following':
               return MaterialPageRoute(
-                builder: (_) => FollowingListScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => FollowingListScreen(
+                    userId: userService.currentUser?.uid ?? '',
+                  ),
                 ),
               );
 
@@ -141,24 +151,38 @@ class MyApp extends StatelessWidget {
               return MaterialPageRoute(
                 builder: (_) => const CreateArtWalkScreen(),
               );
+            case '/art-walk/detail':
+              final args = settings.arguments as Map<String, dynamic>?;
+              final walkId = args?['walkId'] as String?;
+              if (walkId == null) {
+                return MaterialPageRoute(
+                  builder: (_) => const ArtWalkDashboardScreen(),
+                );
+              }
+              return MaterialPageRoute(
+                builder: (_) => ArtWalkDetailScreen(walkId: walkId),
+              );
 
             // Artist routes
             case '/artist/onboarding':
               final user = settings.arguments as core.UserModel?;
               return MaterialPageRoute(
-                builder: (_) => ArtistOnboardingScreen(
-                  user:
-                      user ??
-                      core.UserModel(
-                        id: core.UserService().currentUser?.uid ?? '',
-                        email: core.UserService().currentUser?.email ?? '',
-                        fullName:
-                            core.UserService().currentUser?.displayName ?? '',
-                        userType: core.UserType.artist,
-                        level: 1,
-                        experiencePoints: 0,
-                        createdAt: DateTime.now(),
-                        updatedAt: DateTime.now(),
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) =>
+                      ArtistOnboardingScreen(
+                        user:
+                            user ??
+                            core.UserModel(
+                              id: userService.currentUser?.uid ?? '',
+                              email: userService.currentUser?.email ?? '',
+                              fullName:
+                                  userService.currentUser?.displayName ?? '',
+                              userType: core.UserType.artist,
+                              level: 1,
+                              experiencePoints: 0,
+                              createdAt: DateTime.now(),
+                              updatedAt: DateTime.now(),
+                            ),
                       ),
                 ),
               );
@@ -177,8 +201,11 @@ class MyApp extends StatelessWidget {
               );
             case '/artist/profile/public':
               return MaterialPageRoute(
-                builder: (_) => ArtistPublicProfileScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) =>
+                      ArtistPublicProfileScreen(
+                        userId: userService.currentUser?.uid ?? '',
+                      ),
                 ),
               );
             case '/artist/analytics':
@@ -268,8 +295,10 @@ class MyApp extends StatelessWidget {
               );
             case '/events/my-tickets':
               return MaterialPageRoute(
-                builder: (_) => MyTicketsScreen(
-                  userId: core.UserService().currentUser?.uid ?? '',
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => MyTicketsScreen(
+                    userId: userService.currentUser?.uid ?? '',
+                  ),
                 ),
               );
             case '/events/create':
@@ -278,10 +307,12 @@ class MyApp extends StatelessWidget {
               );
             case '/events/my-events':
               return MaterialPageRoute(
-                builder: (_) => EventsListScreen(
-                  title: 'My Events',
-                  artistId: core.UserService().currentUser?.uid ?? '',
-                  showCreateButton: true,
+                builder: (_) => Consumer<core.UserService>(
+                  builder: (context, userService, child) => EventsListScreen(
+                    title: 'My Events',
+                    artistId: userService.currentUser?.uid ?? '',
+                    showCreateButton: true,
+                  ),
                 ),
               );
             case '/events/details':

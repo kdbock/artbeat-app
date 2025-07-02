@@ -91,7 +91,7 @@ class ArtWalkCacheService {
       final cachedArt = _getCachedPublicArt(prefs);
 
       final List<PublicArtModel> artPieces = [];
-      for (final artId in artWalk.publicArtIds) {
+      for (final artId in artWalk.artworkIds) {
         // Changed from artWalk.artIds
         if (cachedArt.containsKey(artId)) {
           final art = _deserializePublicArtModel(cachedArt[artId], artId);
@@ -209,7 +209,7 @@ class ArtWalkCacheService {
       'userId': walk.userId,
       'title': walk.title,
       'description': walk.description,
-      'publicArtIds': walk.publicArtIds, // Changed from artIds
+      'artworkIds': walk.artworkIds, // Changed from artIds
       'isPublic': walk.isPublic,
       'viewCount': walk.viewCount,
       'createdAt': walk.createdAt.millisecondsSinceEpoch,
@@ -238,8 +238,8 @@ class ArtWalkCacheService {
         userId: data['userId'] as String,
         title: data['title'] as String,
         description: data['description'] as String,
-        publicArtIds: List<String>.from(
-          (data['publicArtIds'] as List<dynamic>?) ?? [],
+        artworkIds: List<String>.from(
+          (data['artworkIds'] as List<dynamic>?) ?? [],
         ), // Changed from artIds
         isPublic: (data['isPublic'] as bool?) ?? true,
         viewCount: (data['viewCount'] as int?) ?? 0,

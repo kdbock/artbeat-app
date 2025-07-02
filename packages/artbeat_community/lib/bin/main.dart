@@ -17,7 +17,9 @@ void main() async {
   try {
     await ConfigService.instance.initialize();
     final config = ConfigService.instance.firebaseConfig;
-    await Firebase.initializeApp(
+    // Check if Firebase is already initialized to avoid duplicate initialization
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
       options: FirebaseOptions(
         apiKey: config['apiKey'] ?? '',
         appId: config['appId'] ?? '',
@@ -26,6 +28,9 @@ void main() async {
         storageBucket: config['storageBucket'] ?? '',
       ),
     );
+    } else {
+      debugPrint('Firebase already initialized, using existing app instance');
+    }
     debugPrint('Firebase initialized successfully');
   } catch (e) {
     debugPrint('Failed to initialize Firebase: $e');

@@ -443,7 +443,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                       color: Colors.grey.shade600,
                     ),
                     const SizedBox(width: 4),
-                    Text('${walk.publicArtIds.length} artworks'),
+                    Text('${walk.artworkIds.length} artworks'),
                   ],
                 ),
               ],
