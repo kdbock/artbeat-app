@@ -58,8 +58,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = 7
-        versionName = "1.0.5"
+        versionCode = 8
+        versionName = "1.0.6"
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")
@@ -67,8 +67,18 @@ android {
 
     buildTypes {
         release {
-            // Use the release signing config for release builds
-            signingConfig = signingConfigs.getByName("release")
+            // Robust check for release signing config
+            val hasReleaseKeystore = keystoreProperties.getProperty("storeFile") != null &&
+                keystoreProperties.getProperty("storePassword") != null &&
+                keystoreProperties.getProperty("keyAlias") != null &&
+                keystoreProperties.getProperty("keyPassword") != null &&
+                rootProject.file(keystoreProperties.getProperty("storeFile")).exists()
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                logger.warn("Release keystore not found or incomplete, using debug signing for release build.")
+                signingConfigs.getByName("debug")
+            }
             
             // Temporarily disable minification to avoid Stripe SDK issues
             isMinifyEnabled = false

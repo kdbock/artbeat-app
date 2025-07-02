@@ -67,6 +67,8 @@
 	<string>This app needs camera access to capture photos of artwork.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photo library access to save and select images.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app may access your calendar to help you save and manage art events and art walk schedules.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>FirebaseAppCheckDebugProviderFactory</key>
