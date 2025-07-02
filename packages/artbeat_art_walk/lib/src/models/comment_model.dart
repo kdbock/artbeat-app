@@ -37,7 +37,7 @@ class CommentModel {
       parentCommentId: json['parentCommentId'] as String?,
       createdAt: timestamp.toDate(),
       likeCount: json['likeCount'] as int? ?? 0,
-      userLikes: List<String>.from(json['userLikes'] ?? []),
+      userLikes: List<String>.from(json['userLikes'] as List<dynamic>? ?? []),
       userName: json['userName'] as String? ?? 'Anonymous',
       userPhotoUrl: json['userPhotoUrl'] as String?,
       rating: (json['rating'] as num?)?.toDouble(),

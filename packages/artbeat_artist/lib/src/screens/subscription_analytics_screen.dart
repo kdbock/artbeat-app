@@ -116,7 +116,7 @@ class _SubscriptionAnalyticsScreenState
           paymentsSnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
       _logger.e('Error loading payment history: $e');
-      details['recentPayments'] = [];
+      details['recentPayments'] = <Map<String, dynamic>>[];
     }
 
     return details;
@@ -152,9 +152,9 @@ class _SubscriptionAnalyticsScreenState
 
       // Calculate engagement metrics
       analytics['engagementRate'] = _calculateEngagementRate(
-        analytics['totalProfileViews'] ?? 0,
-        analytics['totalViews'] ?? 0,
-        analytics['newFollowers'] ?? 0,
+        (analytics['totalProfileViews'] ?? 0) as int,
+        (analytics['totalViews'] ?? 0) as int,
+        (analytics['newFollowers'] ?? 0) as int,
       );
 
       // Get artwork count
@@ -186,7 +186,7 @@ class _SubscriptionAnalyticsScreenState
 
   /// Update the date range and reload data
   void _updateDateRange(String range) {
-    DateTime now = DateTime.now();
+    final DateTime now = DateTime.now();
     DateTime start;
 
     switch (range) {
@@ -217,16 +217,27 @@ class _SubscriptionAnalyticsScreenState
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Subscription Analytics')),
-        body: const Center(child: CircularProgressIndicator()),
+      return core.MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: const core.UniversalHeader(
+            title: 'Subscription Analytics',
+            showLogo: false,
+          ),
+          body: const Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
     // Show upgrade prompt for users without Pro access
     if (!_hasProAccess) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Subscription Analytics')),
+      return core.MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: const core.UniversalHeader(
+            title: 'Subscription Analytics',
+            showLogo: false,
+          ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -264,37 +275,40 @@ class _SubscriptionAnalyticsScreenState
             ],
           ),
         ),
-      );
+      ));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Subscription Analytics'),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: _updateDateRange,
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'last_30_days',
-                child: Text('Last 30 Days'),
-              ),
-              const PopupMenuItem(
-                value: 'last_90_days',
-                child: Text('Last 90 Days'),
-              ),
-              const PopupMenuItem(
-                value: 'this_year',
-                child: Text('This Year'),
-              ),
-              const PopupMenuItem(
-                value: 'all_time',
-                child: Text('All Time'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
+    return core.MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: core.UniversalHeader(
+          title: 'Subscription Analytics',
+          showLogo: false,
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: _updateDateRange,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'last_30_days',
+                  child: Text('Last 30 Days'),
+                ),
+                const PopupMenuItem(
+                  value: 'last_90_days',
+                  child: Text('Last 90 Days'),
+                ),
+                const PopupMenuItem(
+                  value: 'this_year',
+                  child: Text('This Year'),
+                ),
+                const PopupMenuItem(
+                  value: 'all_time',
+                  child: Text('All Time'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        body: RefreshIndicator(
         onRefresh: _loadData,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -314,7 +328,7 @@ class _SubscriptionAnalyticsScreenState
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildSubscriptionCard() {

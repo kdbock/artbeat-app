@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class DateRangeFilter extends StatelessWidget {
   final DateTime? startDate;
   final DateTime? endDate;
-  final Function(DateTime?, DateTime?) onDateRangeChanged;
+  final void Function(DateTime?, DateTime?) onDateRangeChanged;
 
   const DateRangeFilter({
     super.key,
@@ -22,10 +22,7 @@ class DateRangeFilter extends StatelessWidget {
       children: [
         const Text(
           'Date Range',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Row(
@@ -62,7 +59,7 @@ class DateRangeFilter extends StatelessWidget {
 class _DatePickerField extends StatelessWidget {
   final String label;
   final DateTime? date;
-  final Function(DateTime?) onDateSelected;
+  final void Function(DateTime?) onDateSelected;
   final DateFormat dateFormat;
   final DateTime? minimumDate;
 

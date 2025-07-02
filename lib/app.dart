@@ -1,16 +1,16 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_auth/artbeat_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
-import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
-import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:artbeat_artist/artbeat_artist.dart';
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
+import 'package:artbeat_settings/artbeat_settings.dart';
+import 'package:artbeat_events/artbeat_events.dart';
 import 'widgets/developer_menu.dart';
 
 class MyApp extends StatelessWidget {
@@ -25,236 +25,286 @@ class MyApp extends StatelessWidget {
         // Core providers
         ChangeNotifierProvider<core.UserService>(
           create: (_) => core.UserService(),
-          lazy: false,
+          lazy: true, // Changed to lazy to prevent early Firebase access
         ),
-        Provider<core.NotificationService>(
-          create: (_) => core.NotificationService(),
-          lazy: false,
-        ),
+        Provider<AuthService>(create: (_) => AuthService(), lazy: true),
         ChangeNotifierProvider<core.ConnectivityService>(
           create: (_) => core.ConnectivityService(),
           lazy: false,
         ),
-        Provider<core.PaymentService>(
-          create: (_) => core.PaymentService(),
-          lazy: false,
-        ),
-
-        // Theme setup
         Provider<ThemeData>(
           create: (_) => core.ArtbeatTheme.lightTheme,
           lazy: false,
         ),
-
-        // Auth service
-        Provider<AuthService>(
-          create: (_) => AuthService(),
-          lazy: false,
-        ),
-
-        // Message services
         ChangeNotifierProvider<messaging.ChatService>(
           create: (_) => messaging.ChatService(),
+          lazy: true, // Changed to lazy to prevent early Firebase access
         ),
-        ProxyProvider<messaging.ChatService, messaging.ChatController>(
-          create: (context) => messaging.ChatController(
-            context.read<messaging.ChatService>(),
-          ),
-          update: (context, chatService, previous) =>
-              previous ?? messaging.ChatController(chatService),
+        // Community providers
+        ChangeNotifierProvider<CommunityService>(
+          create: (_) => CommunityService(),
+          lazy: true, // Changed to lazy to prevent early Firebase access
         ),
       ],
-      child: Builder(
-        builder: (context) {
-          final theme = Provider.of<ThemeData>(context);
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        title: 'ARTbeat',
+        theme: core.ArtbeatTheme.lightTheme,
+        initialRoute: '/splash',
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            // Core routes
+            case '/splash':
+              return MaterialPageRoute(
+                builder: (_) => const core.SplashScreen(),
+              );
 
-          return MaterialApp(
-            title: 'ARTbeat',
-            theme: theme,
-            navigatorKey: navigatorKey,
-            home: const LoadingScreen(),
-            routes: {
-              '/login': (context) => const LoginScreen(),
-              '/register': (context) => const RegisterScreen(),
-              '/forgot-password': (context) => const ForgotPasswordScreen(),
-              '/dashboard': (context) => core.DashboardScreen(
-                    screens: const [
-                      DiscoverScreen(),
-                      ArtWalkMapScreen(),
-                      CommunityFeedScreen(),
-                      artist.EventsScreen(),
-                    ],
-                    onCapturePressed: () => _onCapture(context),
+            // Auth routes
+            case '/login':
+              return MaterialPageRoute(builder: (_) => const LoginScreen());
+            case '/register':
+              return MaterialPageRoute(builder: (_) => const RegisterScreen());
+            case '/forgot-password':
+              return MaterialPageRoute(
+                builder: (_) => const ForgotPasswordScreen(),
+              );
+
+            // Profile routes
+            case '/profile':
+              return MaterialPageRoute(
+                builder: (_) => ProfileViewScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+            case '/profile/public':
+              return MaterialPageRoute(
+                builder: (_) => ProfileViewScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+            case '/profile/edit':
+              return MaterialPageRoute(
+                builder: (_) => EditProfileScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+            case '/favorites':
+              return MaterialPageRoute(
+                builder: (_) => FavoritesScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+            case '/captures':
+              return MaterialPageRoute(
+                builder: (_) => const CaptureListScreen(),
+              );
+            case '/achievements':
+              return MaterialPageRoute(
+                builder: (_) => const AchievementsScreen(),
+              );
+            case '/following':
+              return MaterialPageRoute(
+                builder: (_) => FollowingListScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+
+            // Capture routes
+            case '/capture/camera':
+              return MaterialPageRoute(builder: (_) => const CaptureScreen());
+            case '/capture/detail':
+              final captureId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (_) => CaptureDetailScreen(captureId: captureId),
+              );
+
+            // Community routes
+            case '/community/feed':
+              return MaterialPageRoute(
+                builder: (_) => const UnifiedCommunityFeed(),
+              );
+            case '/community/dashboard':
+              return MaterialPageRoute(
+                builder: (_) => const CommunityDashboardScreen(),
+              );
+
+            // Art Walk routes
+            case '/art-walk/map':
+              return MaterialPageRoute(
+                builder: (_) => const ArtWalkMapScreen(),
+              );
+            case '/art-walk/dashboard':
+              return MaterialPageRoute(
+                builder: (_) => const ArtWalkDashboardScreen(),
+              );
+            case '/art-walk/create':
+              return MaterialPageRoute(
+                builder: (_) => const CreateArtWalkScreen(),
+              );
+
+            // Artist routes
+            case '/artist/onboarding':
+              final user = settings.arguments as core.UserModel?;
+              return MaterialPageRoute(
+                builder: (_) => ArtistOnboardingScreen(
+                  user:
+                      user ??
+                      core.UserModel(
+                        id: core.UserService().currentUser?.uid ?? '',
+                        email: core.UserService().currentUser?.email ?? '',
+                        fullName:
+                            core.UserService().currentUser?.displayName ?? '',
+                        userType: core.UserType.artist,
+                        level: 1,
+                        experiencePoints: 0,
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                      ),
+                ),
+              );
+            case '/artist/dashboard':
+              return MaterialPageRoute(
+                builder: (_) => const ArtistDashboardScreen(),
+              );
+            case '/artist/profile/edit':
+              return MaterialPageRoute(
+                builder: (_) => const ArtistProfileEditScreen(),
+              );
+            case '/artist/profile':
+              final artistId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (_) => ArtistPublicProfileScreen(userId: artistId),
+              );
+            case '/artist/profile/public':
+              return MaterialPageRoute(
+                builder: (_) => ArtistPublicProfileScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+            case '/artist/analytics':
+              return MaterialPageRoute(
+                builder: (_) => const AnalyticsDashboardScreen(),
+              );
+            case '/artist/approved-ads':
+              return MaterialPageRoute(
+                builder: (_) => const ArtistApprovedAdsScreen(),
+              );
+            case '/artist/artwork':
+              return MaterialPageRoute(
+                builder: (_) => const artwork.ArtworkBrowseScreen(),
+              );
+            case '/artist/artwork/upload':
+              return MaterialPageRoute(
+                builder: (_) => const artwork.ArtworkUploadScreen(),
+              );
+
+            // Artwork detail route
+            case '/artwork/details':
+              final artworkId = settings.arguments as String;
+              return MaterialPageRoute(
+                builder: (_) =>
+                    artwork.ArtworkDetailScreen(artworkId: artworkId),
+              );
+
+            // Gallery routes
+            case '/gallery/artists-management':
+              return MaterialPageRoute(
+                builder: (_) => const GalleryArtistsManagementScreen(),
+              );
+            case '/gallery/analytics':
+              return MaterialPageRoute(
+                builder: (_) => const GalleryAnalyticsDashboardScreen(),
+              );
+
+            // Settings routes
+            case '/settings/account':
+              return MaterialPageRoute(
+                builder: (_) => const AccountSettingsScreen(),
+              );
+            case '/settings/notifications':
+              return MaterialPageRoute(
+                builder: (_) => const NotificationSettingsScreen(),
+              );
+            case '/settings/privacy':
+              return MaterialPageRoute(
+                builder: (_) => const PrivacySettingsScreen(),
+              );
+            case '/settings/security':
+              return MaterialPageRoute(
+                builder: (_) => const SecuritySettingsScreen(),
+              );
+            case '/support':
+              return MaterialPageRoute(
+                builder: (_) => core.MainLayout(
+                  currentIndex: -1,
+                  child: Scaffold(
+                    appBar: const core.UniversalHeader(
+                      title: 'Help & Support',
+                      showLogo: false,
+                    ),
+                    body: const Center(child: Text('Support page coming soon')),
                   ),
-              '/capture': (context) => const CaptureScreen(),
-              '/artwork/upload': (context) {
-                final args = ModalRoute.of(context)!.settings.arguments
-                    as Map<String, dynamic>;
-                final file = args['file'] as File;
-                return artwork.ArtworkUploadScreen(imageFile: file);
-              },
-              '/chat': (context) => const messaging.ChatListScreen(),
-              '/chat/new': (context) =>
-                  const messaging.ContactSelectionScreen(),
-            },
-          );
+                ),
+              );
+            case '/feedback':
+              return MaterialPageRoute(
+                builder: (_) => const core.FeedbackForm(),
+              );
+
+            // Dashboard route
+            case '/dashboard':
+              return MaterialPageRoute(
+                builder: (_) => const core.DashboardScreen(),
+              );
+
+            // Events routes
+            case '/events/dashboard':
+              return MaterialPageRoute(
+                builder: (_) => const core.EventsDashboardScreen(),
+              );
+            case '/events/all':
+              return MaterialPageRoute(
+                builder: (_) => const EventsListScreen(),
+              );
+            case '/events/my-tickets':
+              return MaterialPageRoute(
+                builder: (_) => MyTicketsScreen(
+                  userId: core.UserService().currentUser?.uid ?? '',
+                ),
+              );
+            case '/events/create':
+              return MaterialPageRoute(
+                builder: (_) => const CreateEventScreen(),
+              );
+            case '/events/my-events':
+              return MaterialPageRoute(
+                builder: (_) => EventsListScreen(
+                  title: 'My Events',
+                  artistId: core.UserService().currentUser?.uid ?? '',
+                  showCreateButton: true,
+                ),
+              );
+            case '/events/details':
+              final eventId = settings.arguments as String?;
+              if (eventId == null) {
+                return MaterialPageRoute(
+                  builder: (_) => const core.SplashScreen(),
+                );
+              }
+              return MaterialPageRoute(
+                builder: (_) => EventDetailsWrapper(eventId: eventId),
+              );
+
+            // Developer menu
+            case '/dev':
+              return MaterialPageRoute(builder: (_) => const DeveloperMenu());
+
+            default:
+              return MaterialPageRoute(
+                builder: (_) => const core.SplashScreen(),
+              );
+          }
         },
-      ),
-    );
-  }
-
-  void _onCapture(BuildContext context) async {
-    final result = await Navigator.pushNamed(context, '/capture');
-    if (result != null && context.mounted) {
-      await Navigator.pushNamed(context, '/artwork/upload',
-          arguments: {'file': result});
-    }
-  }
-}
-
-class AppShell extends StatelessWidget {
-  final Widget child;
-
-  const AppShell({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final canPop = Navigator.of(context).canPop();
-
-    return Scaffold(
-      body: child,
-      endDrawer: const DeveloperMenu(),
-      appBar: AppBar(
-        leading: canPop ? const BackButton() : null,
-        actions: [
-          Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.developer_mode),
-              onPressed: () {
-                final scaffold = Scaffold.of(context);
-                scaffold.openEndDrawer();
-              },
-              tooltip: 'Developer Menu',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({super.key});
-
-  @override
-  State<LoadingScreen> createState() => _LoadingScreenState();
-}
-
-class _LoadingScreenState extends State<LoadingScreen> {
-  final core.UserService _userService = core.UserService();
-  String _status = 'Initializing...';
-  bool _hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initialize();
-  }
-
-  Future<void> _initialize() async {
-    try {
-      setState(() {
-        _status = 'Initializing services...';
-        _hasError = false;
-      });
-
-      await Future.delayed(const Duration(milliseconds: 500));
-      if (!mounted) return;
-
-      final user = _userService.currentUser;
-      if (user != null) {
-        debugPrint('✅ User is logged in, navigating to dashboard...');
-        Navigator.pushReplacementNamed(context, '/dashboard');
-      } else {
-        debugPrint('⚠️ User not logged in, navigating to login...');
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _status = 'Error: $e';
-        _hasError = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (_hasError)
-                Icon(Icons.error_outline,
-                    size: 48, color: theme.colorScheme.error),
-              const SizedBox(height: 16),
-              Text(_status,
-                  style: TextStyle(
-                      color: _hasError
-                          ? theme.colorScheme.error
-                          : theme.colorScheme.onSurface)),
-              if (_hasError)
-                TextButton(
-                  onPressed: _initialize,
-                  child: const Text('Retry'),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class ErrorApp extends StatelessWidget {
-  const ErrorApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(
-                  'Initialization Error',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Check debug console for details',
-                  style: TextStyle(color: Colors.grey),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    // Trigger a hot restart
-                    const MethodChannel('flutter/hotRestart')
-                        .invokeMethod<void>('hotRestart');
-                  },
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

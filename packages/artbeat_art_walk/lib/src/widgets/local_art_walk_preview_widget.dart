@@ -33,10 +33,7 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
             children: [
               const Text(
                 'Local Art Walks',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               TextButton(
                 onPressed: widget.onSeeAllPressed,
@@ -68,7 +65,8 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
               final artWalkData = artWalk.data() as Map<String, dynamic>;
 
               // Extract coordinates for the map center
-              final List<dynamic> artPoints = artWalkData['artPoints'] ?? [];
+              final List<dynamic> artPoints =
+                  (artWalkData['artPoints'] as List<dynamic>?) ?? [];
 
               if (artPoints.isEmpty) {
                 return _buildDefaultMapView();
@@ -104,7 +102,9 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
   }
 
   Widget _buildMapWithArtWalk(
-      Map<String, dynamic> artWalkData, List<dynamic> artPoints) {
+    Map<String, dynamic> artWalkData,
+    List<dynamic> artPoints,
+  ) {
     // Get coordinates of the first art point for the center
     final firstPoint = artPoints.first as Map<String, dynamic>;
     final lat = firstPoint['latitude'] as double;
@@ -136,8 +136,9 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => Navigator.pushNamed(context, '/art-walk/map'),
-                  splashColor:
-                      Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                  splashColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.2),
                 ),
               ),
             ),
@@ -147,8 +148,10 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
               left: 0,
               right: 0,
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -163,7 +166,7 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      artWalkData['title'] ?? 'Art Walk',
+                      (artWalkData['title'] as String?) ?? 'Art Walk',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -191,7 +194,9 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
     final markers = artPoints.map((point) {
       final Map<String, dynamic> pointData = point as Map<String, dynamic>;
       return Marker(
-        markerId: MarkerId(pointData['id'] ?? DateTime.now().toString()),
+        markerId: MarkerId(
+          (pointData['id'] as String?) ?? DateTime.now().toString(),
+        ),
         position: LatLng(
           pointData['latitude'] as double,
           pointData['longitude'] as double,
@@ -232,11 +237,7 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.explore,
-                  size: 48,
-                  color: Colors.blueGrey,
-                ),
+                Icon(Icons.explore, size: 48, color: Colors.blueGrey),
                 SizedBox(height: 12),
                 Text(
                   'Discover Local Art Walks',
@@ -250,10 +251,7 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
                 SizedBox(height: 4),
                 Text(
                   'Explore art walks in your neighborhood',
-                  style: TextStyle(
-                    color: Colors.blueGrey,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ],

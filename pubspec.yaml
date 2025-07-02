@@ -1,169 +1,85 @@
 name: artbeat
-description: ARTbeat application for artists and art enthusiasts
+description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
+publish_to: 'none'
 
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
-
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.0.5+7
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.0.0"
+  sdk: '^3.8.0'
+  flutter: '>=3.32.0'
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`.
-# To see which dependencies have newer versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
+
+  # Local modules
   artbeat_admin:
     path: packages/artbeat_admin
-
-  # The following adds the Cupertino Icons font to your application.
-  cupertino_icons: ^1.0.5
-  
-  # Local package dependencies
-  artbeat_core:
-    path: packages/artbeat_core
-  artbeat_auth:
-    path: packages/artbeat_auth
-  artbeat_profile:
-    path: packages/artbeat_profile
-  artbeat_artwork:
-    path: packages/artbeat_artwork
   artbeat_art_walk:
     path: packages/artbeat_art_walk
   artbeat_artist:
     path: packages/artbeat_artist
+  artbeat_artwork:
+    path: packages/artbeat_artwork
+  artbeat_auth:
+    path: packages/artbeat_auth
   artbeat_community:
     path: packages/artbeat_community
+  artbeat_core:
+    path: packages/artbeat_core
+  artbeat_messaging:
+    path: packages/artbeat_messaging
+  artbeat_profile:
+    path: packages/artbeat_profile
   artbeat_settings:
     path: packages/artbeat_settings
   artbeat_capture:
     path: packages/artbeat_capture
-  artbeat_messaging:
-    path: packages/artbeat_messaging
+  artbeat_events:
+    path: packages/artbeat_events
 
-  # Firebase dependencies - align with packages
-  firebase_core: ^2.24.2  # Base version
-  firebase_auth: ^4.15.3  # Compatible with firebase_core 2.24.2
-  cloud_firestore: ^4.13.6  # Compatible with firebase_core 2.24.2
-  firebase_storage: ^11.5.6  # Compatible with firebase_core 2.24.2
-  firebase_app_check: ^0.2.1+8  # Compatible with firebase_core 2.24.2
-  
-  # Camera and image handling
-  camera: ^0.10.6  # Updated version
-  image_picker: ^1.0.4  # Updated version
-  
-  # File system and storage
-  path_provider: ^2.1.5
-  path: ^1.9.1
-  
-  # Geolocation and device info
-  geocoding: ^2.2.0  # Updated for compatibility
-  device_info_plus: ^10.1.2
-  connectivity_plus: ^6.1.4
-  package_info_plus: ^8.3.0
-  geolocator: ^11.0.0  # Updated for compatibility
-  
-  # Google Maps and ML Kit
+  # Firebase
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.9
+  firebase_storage: ^12.4.7
+  firebase_analytics: ^11.5.0
+  firebase_app_check: ^0.3.2+7
+  firebase_messaging: ^15.2.7
+  firebase_data_connect: ^0.1.5+1  # Added for Data Connect support
+
+  # UI packages
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.1.0
+  # Temporarily removed due to dependency conflict
+  # cached_network_image: ^3.4.1
   google_maps_flutter: ^2.5.3
-  google_mlkit_text_recognition: ^0.11.0
-  
-  # Networking and sharing
-  http: ^1.2.0
-  share_plus: ^7.2.1
-  url_launcher: ^6.2.4
-  
-  # Local storage and caching
-  sqflite: ^2.3.2
-  flutter_cache_manager: ^3.3.1
-  
-  # Math and utilities
-  vector_math: ^2.1.4  # Required for Matrix4 operations
-  provider: ^6.1.1
-  intl: ^0.19.0  # Updated to latest version
+
+  # Utils
+  provider: ^6.1.5
+  shared_preferences: ^2.5.3
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  http: ^1.4.0
+  geocoding: ^4.0.0
+  camera: ^0.11.1
+  device_info_plus: ^11.5.0
+  package_info_plus: ^8.2.0
+  image_picker: ^1.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/images/artbeat_logo.png
+    - assets/images/artbeat_header.png
+    - assets/images/admin_banner_ad.png
+    - assets/images/artist_banner_ad.png
+    - assets/images/splashTRANS_logo.png
+    - packages/artbeat_core/assets/images/artbeat_splash_bg.png
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  integration_test:
-    sdk: flutter
-  mockito: ^5.4.4
-  build_runner: ^2.4.8
-  fake_async: ^1.3.1
-  
-  # Development helpers
-  flutter_lints: ^3.0.1
-  fake_cloud_firestore: ^2.5.2
-
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
-flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
-  uses-material-design: true
-
-  # To add assets to your application, add an assets section, like this:
-  assets:
-    - assets/images/artbeat_logo.png
-    - assets/default_profile.png
-    - assets/event_placeholder.png
-    - assets/event_placeholder.svg
-    - assets/triangle.png
-    - assets/fonts/
-    - assets/icons/
-    - assets/images/
-    - test_resources/
-    - test_resources/test_image.jpg
-
-  # Font configuration
-  fonts:
-    - family: FallingSky
-      fonts:
-        - asset: assets/fonts/FallingSky.otf
-        - asset: assets/fonts/FallingSkyBd.otf
-          weight: 700
-        - asset: assets/fonts/FallingSkyCond.otf
-
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
+  flutter_lints: ^6.0.0

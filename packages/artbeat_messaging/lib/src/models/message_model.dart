@@ -25,17 +25,19 @@ class MessageModel {
 
   factory MessageModel.fromMap(Map<String, dynamic> map) {
     return MessageModel(
-      id: map['id'] ?? '',
-      senderId: map['senderId'] ?? '',
-      content: map['content'] ?? '',
-      timestamp: (map['timestamp'] as Timestamp).toDate(),
+      id: (map['id'] as String?) ?? '',
+      senderId: (map['senderId'] as String?) ?? '',
+      content: (map['content'] as String?) ?? '',
+      timestamp: map['timestamp'] != null
+          ? (map['timestamp'] as Timestamp).toDate()
+          : DateTime.now(),
       type: MessageType.values.firstWhere(
-        (e) => e.toString() == map['type'],
+        (e) => e.toString() == (map['type'] as String?),
         orElse: () => MessageType.text,
       ),
-      isRead: map['isRead'] ?? false,
-      replyToId: map['replyToId'],
-      metadata: map['metadata'],
+      isRead: (map['isRead'] as bool?) ?? false,
+      replyToId: map['replyToId'] as String?,
+      metadata: map['metadata'] as Map<String, dynamic>?,
     );
   }
 
@@ -43,23 +45,21 @@ class MessageModel {
     final data = doc.data() as Map<String, dynamic>;
     return MessageModel(
       id: doc.id,
-      senderId: data['senderId'] ?? '',
-      content: data['text'] ?? '',
-      timestamp:
-          data['timestamp'] != null
-              ? (data['timestamp'] as Timestamp).toDate()
-              : DateTime.now(),
-      type:
-          data['imageUrl'] != null
-              ? MessageType.image
-              : data['fileUrl'] != null
-              ? MessageType.file
-              : MessageType.text,
+      senderId: (data['senderId'] as String?) ?? '',
+      content: (data['text'] as String?) ?? (data['content'] as String?) ?? '',
+      timestamp: data['timestamp'] != null
+          ? (data['timestamp'] as Timestamp).toDate()
+          : DateTime.now(),
+      type: data['imageUrl'] != null
+          ? MessageType.image
+          : data['fileUrl'] != null
+          ? MessageType.file
+          : MessageType.text,
       isRead:
           (data['read'] as Map<String, dynamic>?)?.values.contains(true) ??
           false,
-      replyToId: data['replyToMessageId'],
-      metadata: data['metadata'],
+      replyToId: data['replyToMessageId'] as String?,
+      metadata: data['metadata'] as Map<String, dynamic>?,
     );
   }
 

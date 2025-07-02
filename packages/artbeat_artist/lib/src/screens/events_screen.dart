@@ -140,10 +140,8 @@ class _EventsScreenState extends State<EventsScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   event.endDate != null
-                                      ? ArtbeatDateFormatter.formatDateRange(
-                                          event.startDate, event.endDate!)
-                                      : ArtbeatDateFormatter.formatDateTime(
-                                          event.startDate),
+                                      ? '${event.startDate.day}/${event.startDate.month}/${event.startDate.year} - ${event.endDate!.day}/${event.endDate!.month}/${event.endDate!.year}'
+                                      : '${event.startDate.day}/${event.startDate.month}/${event.startDate.year}',
                                 ),
                                 const SizedBox(height: 2),
                                 Text(

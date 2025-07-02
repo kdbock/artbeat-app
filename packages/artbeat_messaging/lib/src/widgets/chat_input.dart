@@ -6,8 +6,8 @@ import '../services/chat_service.dart';
 
 class ChatInputWidget extends StatefulWidget {
   final String chatId;
-  final Function(String) onSendMessage;
-  final Function(File) onSendImage;
+  final void Function(String) onSendMessage;
+  final void Function(File) onSendImage;
 
   const ChatInputWidget({
     super.key,

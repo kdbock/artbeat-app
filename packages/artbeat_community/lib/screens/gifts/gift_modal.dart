@@ -5,10 +5,7 @@ import 'package:artbeat_core/artbeat_core.dart'; // Use the main package export 
 class GiftModal extends StatefulWidget {
   final String recipientId;
 
-  const GiftModal({
-    super.key,
-    required this.recipientId,
-  });
+  const GiftModal({super.key, required this.recipientId});
 
   @override
   State<GiftModal> createState() => _GiftModalState();
@@ -67,14 +64,19 @@ class _GiftModalState extends State<GiftModal> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Send a Gift',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Send a Gift',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           ..._giftOptions.map((gift) {
             return ListTile(
-              title: Text(gift['type']),
+              title: Text(gift['type'] as String),
               subtitle: Text('Amount: \$${gift['amount']}'),
               trailing: ElevatedButton(
-                onPressed: () => _sendGift(gift['type'], gift['amount']),
+                onPressed: () => _sendGift(
+                  gift['type'] as String,
+                  (gift['amount'] as num).toDouble(),
+                ),
                 child: const Text('Send'),
               ),
             );

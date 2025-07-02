@@ -1,0 +1,3 @@
+class CommunityService {
+  // ...existing code...
+}

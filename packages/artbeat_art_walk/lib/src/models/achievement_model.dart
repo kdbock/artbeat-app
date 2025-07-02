@@ -57,10 +57,10 @@ class AchievementModel {
 
     return AchievementModel(
       id: doc.id,
-      userId: data['userId'] ?? '',
+      userId: data['userId'] as String? ?? '',
       type: achievementType,
       earnedAt: earnedAt,
-      isNew: data['isNew'] ?? true,
+      isNew: data['isNew'] as bool? ?? true,
       metadata: data['metadata'] as Map<String, dynamic>? ?? {},
     );
   }

@@ -1,39 +1,28 @@
 import '../models/message.dart';
 import '../models/message_model.dart';
 
-extension MessageModelConverter on MessageModel {
-  Message toMessage(String chatId) {
+// Create MessageConverter utility for converting between models
+class MessageConverter {
+  static Message fromMessageModel(MessageModel messageModel, String chatId) {
     return Message(
-      id: id,
+      id: messageModel.id,
       chatId: chatId,
-      senderId: senderId,
-      text: type == MessageType.text ? content : null,
-      imageUrl: type == MessageType.image ? content : null,
-      timestamp: timestamp,
-      isRead: isRead,
-      metadata: {
-        ...?metadata,
-        if (replyToId != null) 'replyToId': replyToId,
-        'type': type.toString(),
-      },
+      senderId: messageModel.senderId,
+      text: messageModel.type == MessageType.text ? messageModel.content : null,
+      imageUrl: messageModel.type == MessageType.image
+          ? messageModel.content
+          : null,
+      timestamp: messageModel.timestamp,
+      isRead: messageModel.isRead,
+      replyToId: messageModel.replyToId,
+      metadata: messageModel.metadata,
     );
   }
 }
 
-extension MessageConverter on Message {
-  MessageModel toMessageModel() {
-    return MessageModel(
-      id: id,
-      senderId: senderId,
-      content: text ?? imageUrl ?? '',
-      timestamp: timestamp,
-      type: imageUrl != null ? MessageType.image : MessageType.text,
-      isRead: isRead,
-      replyToId: metadata?['replyToId'] as String?,
-      metadata: {
-        ...?metadata,
-        if (metadata?.containsKey('replyToId') != true) ...{},
-      },
-    );
+// Extension to add toMessage method to MessageModel
+extension MessageModelExtension on MessageModel {
+  Message toMessage(String chatId) {
+    return MessageConverter.fromMessageModel(this, chatId);
   }
 }

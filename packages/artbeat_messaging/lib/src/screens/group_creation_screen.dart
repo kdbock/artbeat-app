@@ -36,8 +36,9 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
             TextButton(
               onPressed: () async {
                 final groupName = _groupNameController.text.trim();
-                final selectedUserIds =
-                    _selectedUsers.map((u) => u.id).toList();
+                final selectedUserIds = _selectedUsers
+                    .map((u) => u.id)
+                    .toList();
 
                 try {
                   final chat = await chatService.createGroupChat(
@@ -47,9 +48,9 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
 
                   if (!mounted) return;
 
-                  Navigator.pushReplacement(
+                  Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (context) => ChatScreen(chat: chat),
                     ),
                   );
@@ -99,14 +100,12 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                           children: [
                             CircleAvatar(
                               radius: 30,
-                              backgroundImage:
-                                  user.photoUrl != null
-                                      ? NetworkImage(user.photoUrl!)
-                                      : null,
-                              child:
-                                  user.photoUrl == null
-                                      ? Text(user.displayName[0].toUpperCase())
-                                      : null,
+                              backgroundImage: user.photoUrl != null
+                                  ? NetworkImage(user.photoUrl!)
+                                  : null,
+                              child: user.photoUrl == null
+                                  ? Text(user.displayName[0].toUpperCase())
+                                  : null,
                             ),
                             Positioned(
                               right: -4,
@@ -173,10 +172,9 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                 }
 
                 final users = snapshot.data ?? [];
-                final availableUsers =
-                    users
-                        .where((user) => !_selectedUsers.contains(user))
-                        .toList();
+                final availableUsers = users
+                    .where((user) => !_selectedUsers.contains(user))
+                    .toList();
 
                 if (availableUsers.isEmpty) {
                   return Center(
@@ -193,14 +191,12 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                     final user = availableUsers[index];
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundImage:
-                            user.photoUrl != null
-                                ? NetworkImage(user.photoUrl!)
-                                : null,
-                        child:
-                            user.photoUrl == null
-                                ? Text(user.displayName[0].toUpperCase())
-                                : null,
+                        backgroundImage: user.photoUrl != null
+                            ? NetworkImage(user.photoUrl!)
+                            : null,
+                        child: user.photoUrl == null
+                            ? Text(user.displayName[0].toUpperCase())
+                            : null,
                       ),
                       title: Text(user.displayName),
                       subtitle: Text(

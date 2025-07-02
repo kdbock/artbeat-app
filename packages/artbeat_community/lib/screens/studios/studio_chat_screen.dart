@@ -32,10 +32,10 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
           .doc(widget.studioId)
           .collection('messages')
           .add({
-        'text': _messageController.text.trim(),
-        'senderId': user.uid,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'text': _messageController.text.trim(),
+            'senderId': user.uid,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
       _messageController.clear();
     }
   }
@@ -43,9 +43,7 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Studio Chat'),
-      ),
+      appBar: AppBar(title: const Text('Studio Chat')),
       body: Column(
         children: [
           Expanded(
@@ -73,8 +71,10 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
                   itemBuilder: (context, index) {
                     final message = messages[index];
                     return ListTile(
-                      title: Text(message['text'] ?? ''),
-                      subtitle: Text('Sent by: ${message['senderId']}'),
+                      title: Text(message['text'] as String? ?? ''),
+                      subtitle: Text(
+                        'Sent by: ${message['senderId'] as String? ?? 'Unknown'}',
+                      ),
                     );
                   },
                 );

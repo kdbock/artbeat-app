@@ -12,7 +12,8 @@ class FirebaseUtils {
 
   // Get current user document
   static Future<DocumentSnapshot?> getCurrentUserDocument(
-      String collection) async {
+    String collection,
+  ) async {
     final userId = getCurrentUserId();
     if (userId == null) return null;
     return _firestore.collection(collection).doc(userId).get();
@@ -20,13 +21,18 @@ class FirebaseUtils {
 
   // Add a document to a collection
   static Future<void> addDocument(
-      String collection, Map<String, dynamic> data) async {
+    String collection,
+    Map<String, dynamic> data,
+  ) async {
     await _firestore.collection(collection).add(data);
   }
 
   // Update a document in a collection
   static Future<void> updateDocument(
-      String collection, String docId, Map<String, dynamic> data) async {
+    String collection,
+    String docId,
+    Map<String, dynamic> data,
+  ) async {
     await _firestore.collection(collection).doc(docId).update(data);
   }
 
@@ -37,11 +43,13 @@ class FirebaseUtils {
 
   // Query documents in a collection
   static Future<QuerySnapshot> queryCollection(
-      String collection, Map<String, dynamic> filters) async {
+    String collection,
+    Map<String, dynamic> filters,
+  ) async {
     Query query = _firestore.collection(collection);
     filters.forEach((key, value) {
       query = query.where(key, isEqualTo: value);
     });
-    return await query.get();
+    return query.get();
   }
 }

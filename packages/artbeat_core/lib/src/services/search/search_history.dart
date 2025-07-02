@@ -41,8 +41,11 @@ class SearchHistory {
     final String? historyJson = prefs.getString(_prefsKey);
     if (historyJson == null) return [];
 
-    final List<dynamic> decoded = jsonDecode(historyJson);
-    return decoded.cast<Map<String, dynamic>>();
+    final dynamic decoded = jsonDecode(historyJson);
+    if (decoded is List) {
+      return decoded.cast<Map<String, dynamic>>();
+    }
+    return [];
   }
 
   Future<void> clearHistory() async {

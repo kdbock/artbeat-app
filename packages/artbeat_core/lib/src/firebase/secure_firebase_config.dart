@@ -1,53 +1,192 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/firebase_options.dart' as fb_opts;
 
-/// Provides secure initialization for Firebase with platform-specific handling
+/// Handles Firebase initialization and App Check configuration
 class SecureFirebaseConfig {
   const SecureFirebaseConfig._();
 
   static bool _initialized = false;
+  static bool _appCheckInitialized = false;
+  static Duration? _tokenTTL;
+  static bool _debug = false;
+  static String? _teamId;
 
-  /// Initializes Firebase with proper options and platform-specific configuration
+  /// Configure App Check settings
+  static Future<void> configureAppCheck({
+    required String teamId,
+    Duration? tokenTTL,
+    bool debug = false,
+  }) async {
+    _teamId = teamId;
+    _tokenTTL = tokenTTL;
+    _debug = debug;
+
+    if (kDebugMode) {
+      print('🔐 App Check configured - Team ID: $teamId, Debug: $debug');
+    }
+  }
+
+  /// Initialize Firebase with proper configuration
   static Future<FirebaseApp> initializeFirebase() async {
-    if (_initialized && Firebase.apps.isNotEmpty) {
+    if (_initialized) {
+      if (kDebugMode) {
+        print('🔥 Firebase already initialized');
+      }
+      return Firebase.app();
+    }
+
+    if (Firebase.apps.isNotEmpty) {
+      _initialized = true;
+      if (kDebugMode) {
+        print('🔥 Firebase apps already exist, using existing app');
+      }
       return Firebase.app();
     }
 
     try {
-      if (Firebase.apps.isNotEmpty) {
-        _initialized = true;
-        return Firebase.app();
+      if (kDebugMode) {
+        print('🔥 Initializing Firebase with options...');
       }
 
-      // Initialize Firebase first
       final app = await Firebase.initializeApp(
         options: fb_opts.DefaultFirebaseOptions.currentPlatform,
       );
 
-      // Then initialize App Check with platform-specific providers
-      await FirebaseAppCheck.instance.activate(
-        // Use DeviceCheck provider for iOS, Play Integrity for Android
-        androidProvider: AndroidProvider.playIntegrity,
-        appleProvider: AppleProvider.deviceCheck,
-      );
+      if (kDebugMode) {
+        print('🔥 Firebase core initialized successfully');
+      }
 
+      await _initializeAppCheck();
       _initialized = true;
+
+      if (kDebugMode) {
+        print('✅ Complete Firebase initialization finished');
+      }
+
       return app;
     } catch (e) {
-      debugPrint('Firebase initialization failed: $e');
+      if (kDebugMode) {
+        print('❌ Firebase initialization failed: $e');
+      }
       rethrow;
     }
   }
 
-  /// Utility method to check if running in debug mode
-  static bool isDebugMode() {
-    bool isDebug = false;
-    assert(() {
-      isDebug = true;
+  /// Check if Firebase is initialized
+  static bool get isInitialized => _initialized && Firebase.apps.isNotEmpty;
+
+  /// Get current Firebase app instance
+  static FirebaseApp? get currentApp {
+    try {
+      return Firebase.apps.isNotEmpty ? Firebase.app() : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Initialize App Check
+  static Future<void> _initializeAppCheck() async {
+    if (_appCheckInitialized) {
+      if (kDebugMode) {
+        print('🔐 App Check already initialized');
+      }
+      return;
+    }
+
+    try {
+      if (kDebugMode) {
+        print('🔐 Initializing App Check...');
+        print('🔐 Debug mode: $_debug');
+        print('🔐 Team ID: $_teamId');
+      }
+
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: _debug
+            ? AndroidProvider.debug
+            : AndroidProvider.playIntegrity,
+        appleProvider: _debug ? AppleProvider.debug : AppleProvider.appAttest,
+      );
+
+      if (kDebugMode) {
+        print('🔐 App Check activated successfully');
+      }
+
+      if (_tokenTTL != null) {
+        await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+        try {
+          await FirebaseAppCheck.instance.getToken(true);
+          if (kDebugMode) {
+            print('🔐 App Check token retrieved successfully');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print(
+              '⚠️ App Check token retrieval failed (may be expected in debug): $e',
+            );
+          }
+        }
+      }
+
+      _appCheckInitialized = true;
+      if (kDebugMode) {
+        print('✅ App Check initialization complete');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ App Check initialization error: $e');
+        print('⚠️ This may be expected in debug mode');
+      }
+      // Don't throw in debug mode to allow development
+      if (!kDebugMode) {
+        rethrow;
+      }
+      _appCheckInitialized = true; // Mark as initialized to avoid retries
+    }
+  }
+
+  /// Get basic Firebase status information
+  static Map<String, dynamic> getStatus() => {
+    'initialized': _initialized,
+    'appCheckInitialized': _appCheckInitialized,
+    'appsCount': Firebase.apps.length,
+    'debug': _debug,
+    'teamId': _teamId,
+    'tokenTTL': _tokenTTL?.inMinutes,
+    'hasCurrentApp': currentApp != null,
+  };
+
+  /// Test Firebase Storage access (for debugging -13020 errors)
+  static Future<bool> testStorageAccess() async {
+    if (!_initialized) {
+      if (kDebugMode) {
+        print('⚠️ Firebase not initialized for storage test');
+      }
+      return false;
+    }
+
+    try {
+      final storage = FirebaseStorage.instance;
+
+      // Try to list files in a simple directory
+      final ref = storage.ref().child('test');
+      await ref.listAll();
+
+      if (kDebugMode) {
+        print('✅ Firebase Storage access test passed');
+      }
       return true;
-    }());
-    return isDebug;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Firebase Storage access test failed: $e');
+        if (e.toString().contains('-13020')) {
+          print('💡 Error -13020 indicates App Check authentication issue');
+          print('💡 This is often expected in debug mode');
+        }
+      }
+      return false;
+    }
   }
 }

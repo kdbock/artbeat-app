@@ -7,13 +7,39 @@ class StorageService {
 
   Future<String?> uploadFile(File file, String path) async {
     try {
+      debugPrint('Uploading file to path: $path');
+      debugPrint('File exists: ${await file.exists()}');
+      debugPrint('File size: ${await file.length()} bytes');
+
       final ref = _storage.ref().child(path);
-      final uploadTask = ref.putFile(file);
+
+      // Add metadata for better debugging
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: {
+          'uploaded_at': DateTime.now().toIso8601String(),
+          'uploaded_by': 'mobile_app',
+          'debug_mode': kDebugMode.toString(),
+          'build_mode': kDebugMode ? 'debug' : 'release',
+        },
+      );
+
+      final uploadTask = ref.putFile(file, metadata);
+
+      // Monitor upload progress
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+        debugPrint('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
+      });
+
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      debugPrint('Upload successful. Download URL: $downloadUrl');
       return downloadUrl;
     } catch (e) {
       debugPrint('Error uploading file: $e');
+      debugPrint('Stack trace: ${StackTrace.current}');
       return null;
     }
   }

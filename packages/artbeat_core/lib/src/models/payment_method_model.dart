@@ -1,4 +1,3 @@
-
 /// A model representing a payment method with full Stripe compatibility
 class PaymentMethodModel {
   final String id;
@@ -17,12 +16,15 @@ class PaymentMethodModel {
 
   factory PaymentMethodModel.fromJson(Map<String, dynamic> json) {
     return PaymentMethodModel(
-      id: json['id'],
-      type: json['type'] ?? 'card',
-      card:
-          json['card'] != null ? PaymentCardModel.fromJson(json['card']) : null,
-      isDefault: json['isDefault'] ?? false,
-      billingDetails: json['billing_details'] as Map<String, dynamic>?,
+      id: json['id'] as String,
+      type: (json['type'] as String?) ?? 'card',
+      card: json['card'] != null
+          ? PaymentCardModel.fromJson(json['card'] as Map<String, dynamic>)
+          : null,
+      isDefault: (json['isDefault'] as bool?) ?? false,
+      billingDetails: json['billing_details'] != null
+          ? Map<String, dynamic>.from(json['billing_details'] as Map)
+          : null,
     );
   }
 
@@ -101,16 +103,16 @@ class PaymentCardModel {
 
   factory PaymentCardModel.fromJson(Map<String, dynamic> json) {
     return PaymentCardModel(
-      brand: json['brand'],
+      brand: json['brand'] as String?,
       expMonth: json['exp_month'] is int
-          ? json['exp_month']
+          ? json['exp_month'] as int
           : int.tryParse(json['exp_month']?.toString() ?? ''),
       expYear: json['exp_year'] is int
-          ? json['exp_year']
-          : int.tryParse(json['exp_year']?.toString() ?? ''),
-      last4: json['last4'],
-      country: json['country'],
-      funding: json['funding'],
+          ? json['exp_year'] as int
+          : int.tryParse((json['exp_year'] as dynamic)?.toString() ?? ''),
+      last4: json['last4'] as String?,
+      country: json['country'] as String?,
+      funding: json['funding'] as String?,
     );
   }
 

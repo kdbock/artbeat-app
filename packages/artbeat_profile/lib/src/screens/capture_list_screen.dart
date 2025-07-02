@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
-import '../services/capture_service.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show UniversalHeader, MainLayout;
+// If CaptureService is not exported by artbeat_capture.dart, import its file directly:
+// import 'package:artbeat_capture/src/services/capture_service.dart';
 
 class CaptureListScreen extends StatefulWidget {
   const CaptureListScreen({super.key});
@@ -16,7 +19,7 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
   bool _isLoading = false;
   List<CaptureModel> _captures = [];
   String? _errorMessage;
-  bool _isRefreshing = false;
+  final bool _isRefreshing = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -42,6 +45,9 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
 
     try {
       final captures = await _captureService.getCapturesForUser(_currentUserId);
+      debugPrint(
+        '📸 Loaded ${captures.length} captures for user $_currentUserId',
+      );
       setState(() {
         _captures = captures;
       });
@@ -58,13 +64,18 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
   }
 
   void _navigateToCameraScreen() {
-    Navigator.pushNamed(context, '/capture/camera')
-        .then((_) => _fetchCaptures());
+    Navigator.pushNamed(
+      context,
+      '/capture/camera',
+    ).then((_) => _fetchCaptures());
   }
 
   void _navigateToCaptureDetail(String captureId) {
-    Navigator.pushNamed(context, '/capture/detail', arguments: captureId)
-        .then((_) => _fetchCaptures());
+    Navigator.pushNamed(
+      context,
+      '/capture/detail',
+      arguments: captureId,
+    ).then((_) => _fetchCaptures());
   }
 
   List<CaptureModel> _getFilteredCaptures() {
@@ -75,8 +86,9 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
     return _captures.where((capture) {
       return (capture.title?.toLowerCase().contains(searchLower) ?? false) ||
           (capture.description?.toLowerCase().contains(searchLower) ?? false) ||
-          (capture.tags
-                  ?.any((tag) => tag.toLowerCase().contains(searchLower)) ??
+          (capture.tags?.any(
+                (tag) => tag.toLowerCase().contains(searchLower),
+              ) ??
               false);
     }).toList();
   }
@@ -142,12 +154,85 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
                 Image.network(
                   capture.thumbnailUrl ?? capture.imageUrl,
                   fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      color: Colors.grey[200],
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      ),
+                    );
+                  },
                   errorBuilder: (context, error, stackTrace) {
                     return const Center(
-                      child: Icon(Icons.error_outline, color: Colors.red),
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.grey,
+                        size: 40,
+                      ),
                     );
                   },
                 ),
+                // Processing status indicator
+                if (!capture.isProcessed)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withAlpha(230),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.hourglass_empty,
+                            size: 12,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Processing',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                // Privacy status indicator
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: capture.isPublic
+                          ? Colors.green.withAlpha(230)
+                          : Colors.grey.withAlpha(230),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      capture.isPublic ? Icons.public : Icons.lock,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                // Title overlay
                 if (capture.title != null)
                   Positioned(
                     bottom: 0,
@@ -160,7 +245,7 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
                           colors: [
-                            Colors.black.withOpacity(0.7),
+                            Colors.black.withAlpha((255 * 0.7).round()),
                             Colors.transparent,
                           ],
                         ),
@@ -186,47 +271,47 @@ class _CaptureListScreenState extends State<CaptureListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Captures'),
-        actions: [
-          IconButton(
-            onPressed: _navigateToCameraScreen,
-            icon: const Icon(Icons.photo_camera),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search captures...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: UniversalHeader(
+          title: 'My Captures',
+          showLogo: false,
+          actions: [
+            IconButton(
+              onPressed: _navigateToCameraScreen,
+              icon: const Icon(Icons.photo_camera),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search captures...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                onChanged: (value) => setState(() {}),
               ),
-              onChanged: (value) => setState(() {}),
             ),
-          ),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                setState(() => _isRefreshing = true);
-                await _fetchCaptures();
-                setState(() => _isRefreshing = false);
-              },
-              child: _buildCaptureGrid(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _fetchCaptures,
+                child: _buildCaptureGrid(),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

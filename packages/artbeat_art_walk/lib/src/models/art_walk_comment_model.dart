@@ -46,18 +46,18 @@ class ArtWalkCommentModel {
 
     return ArtWalkCommentModel(
       id: doc.id,
-      artWalkId: artWalkId ?? data['artWalkId'] ?? '',
-      userId: data['userId'] ?? '',
-      userName: data['userName'] ?? '',
-      userPhotoUrl: data['userPhotoUrl'] ?? '',
-      content: data['content'] ?? '',
+      artWalkId: artWalkId ?? data['artWalkId'] as String? ?? '',
+      userId: data['userId'] as String? ?? '',
+      userName: data['userName'] as String? ?? '',
+      userPhotoUrl: data['userPhotoUrl'] as String? ?? '',
+      content: data['content'] as String? ?? '',
       createdAt: createdAt,
-      likeCount: data['likeCount'] ?? 0,
-      parentCommentId: data['parentCommentId'],
-      isEdited: data['isEdited'] ?? false,
-      rating: data['rating']?.toDouble(),
+      likeCount: data['likeCount'] as int? ?? 0,
+      parentCommentId: data['parentCommentId'] as String?,
+      isEdited: data['isEdited'] as bool? ?? false,
+      rating: (data['rating'] as num?)?.toDouble(),
       mentionedUsers: data['mentionedUsers'] != null
-          ? List<String>.from(data['mentionedUsers'])
+          ? List<String>.from(data['mentionedUsers'] as List<dynamic>)
           : null,
     );
   }

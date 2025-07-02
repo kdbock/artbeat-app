@@ -21,22 +21,22 @@ class UserModel {
     final data = doc.data() as Map<String, dynamic>;
     return UserModel(
       id: doc.id,
-      displayName: data['displayName'] ?? '',
-      photoUrl: data['photoUrl'],
+      displayName: data['displayName'] as String,
+      photoUrl: data['photoUrl'] as String?,
+      isOnline: data['isOnline'] as bool,
       lastSeen: (data['lastSeen'] as Timestamp).toDate(),
-      isOnline: data['isOnline'] ?? false,
-      deviceTokens: List<String>.from(data['deviceTokens'] ?? []),
+      deviceTokens: List<String>.from(data['deviceTokens'] as Iterable<dynamic>),
     );
   }
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromMap(Map<String, dynamic> data) {
     return UserModel(
-      id: map['id'] ?? '',
-      displayName: map['displayName'] ?? '',
-      photoUrl: map['photoUrl'],
-      lastSeen: (map['lastSeen'] as Timestamp).toDate(),
-      isOnline: map['isOnline'] ?? false,
-      deviceTokens: List<String>.from(map['deviceTokens'] ?? []),
+      id: data['id'] as String,
+      displayName: data['displayName'] as String,
+      photoUrl: data['photoUrl'] as String?,
+      isOnline: data['isOnline'] as bool,
+      lastSeen: (data['lastSeen'] as Timestamp).toDate(),
+      deviceTokens: List<String>.from(data['deviceTokens'] as Iterable<dynamic>),
     );
   }
 

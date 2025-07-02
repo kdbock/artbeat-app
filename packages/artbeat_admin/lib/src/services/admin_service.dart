@@ -1,183 +1,373 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import '../models/admin_user_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import '../models/admin_stats_model.dart';
+import '../models/user_admin_model.dart';
 
-/// Service class for handling administrator operations
-class AdminService extends ChangeNotifier {
-  final FirebaseAuth _auth;
-  final FirebaseFirestore _firestore;
-  User? _currentAdmin;
-  bool _isInitialized = false;
+/// Service for admin-specific operations
+class AdminService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  AdminService({FirebaseAuth? auth, FirebaseFirestore? firestore})
-      : _auth = auth ?? FirebaseAuth.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance;
-
-  /// Initialize the admin service
-  Future<void> initialize() async {
-    if (_isInitialized) return;
-
-    // Listen to auth state changes
-    _auth.authStateChanges().listen((User? user) {
-      _currentAdmin = user;
-      notifyListeners();
-    });
-
-    _isInitialized = true;
-  }
-
-  /// Get the current admin user
-  User? get currentAdmin => _currentAdmin;
-
-  /// Check if the current user has admin privileges
-  Future<bool> hasAdminPrivileges() async {
-    if (_currentAdmin == null) return false;
-
+  /// Get admin dashboard statistics
+  Future<AdminStatsModel> getAdminStats() async {
     try {
-      final userDoc =
-          await _firestore.collection('users').doc(_currentAdmin!.uid).get();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final weekAgo = today.subtract(const Duration(days: 7));
+      final monthAgo = DateTime(now.year, now.month - 1, now.day);
 
-      if (!userDoc.exists) return false;
+      // Get all users
+      final usersSnapshot = await _firestore.collection('user').get();
+      final users = usersSnapshot.docs;
 
-      final role = userDoc.data()?['role'] as String?;
-      return role == 'admin' || role == 'superAdmin';
+      // Calculate user type counts
+      final int totalUsers = users.length;
+      int totalArtists = 0;
+      int totalGalleries = 0;
+      int totalModerators = 0;
+      int totalAdmins = 0;
+      int newUsersToday = 0;
+      int newUsersThisWeek = 0;
+      int newUsersThisMonth = 0;
+      int activeUsersToday = 0;
+      int activeUsersThisWeek = 0;
+      int activeUsersThisMonth = 0;
+
+      for (var doc in users) {
+        final data = doc.data();
+        final userType =
+            UserType.fromString(data['userType'] as String? ?? 'user');
+        final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+        final lastActiveAt = (data['lastActiveAt'] as Timestamp?)?.toDate();
+
+        // Count user types
+        switch (userType) {
+          case UserType.artist:
+            totalArtists++;
+            break;
+          case UserType.gallery:
+            totalGalleries++;
+            break;
+          case UserType.moderator:
+            totalModerators++;
+            break;
+          case UserType.admin:
+            totalAdmins++;
+            break;
+          default:
+            break;
+        }
+
+        // Count new users
+        if (createdAt != null) {
+          if (createdAt.isAfter(today)) {
+            newUsersToday++;
+          }
+          if (createdAt.isAfter(weekAgo)) {
+            newUsersThisWeek++;
+          }
+          if (createdAt.isAfter(monthAgo)) {
+            newUsersThisMonth++;
+          }
+        }
+
+        // Count active users
+        if (lastActiveAt != null) {
+          if (lastActiveAt.isAfter(today)) {
+            activeUsersToday++;
+          }
+          if (lastActiveAt.isAfter(weekAgo)) {
+            activeUsersThisWeek++;
+          }
+          if (lastActiveAt.isAfter(monthAgo)) {
+            activeUsersThisMonth++;
+          }
+        }
+      }
+
+      // Get artwork count
+      final artworksSnapshot = await _firestore.collection('artworks').get();
+      final totalArtworks = artworksSnapshot.docs.length;
+
+      // Get captures count
+      final capturesSnapshot = await _firestore.collection('captures').get();
+      final totalCaptures = capturesSnapshot.docs.length;
+
+      // Get events count
+      final eventsSnapshot = await _firestore.collection('events').get();
+      final totalEvents = eventsSnapshot.docs.length;
+
+      return AdminStatsModel(
+        totalUsers: totalUsers,
+        totalArtists: totalArtists,
+        totalGalleries: totalGalleries,
+        totalModerators: totalModerators,
+        totalAdmins: totalAdmins,
+        totalArtworks: totalArtworks,
+        totalCaptures: totalCaptures,
+        totalEvents: totalEvents,
+        newUsersToday: newUsersToday,
+        newUsersThisWeek: newUsersThisWeek,
+        newUsersThisMonth: newUsersThisMonth,
+        activeUsersToday: activeUsersToday,
+        activeUsersThisWeek: activeUsersThisWeek,
+        activeUsersThisMonth: activeUsersThisMonth,
+        lastUpdated: DateTime.now(),
+      );
     } catch (e) {
-      debugPrint('Error checking admin privileges: $e');
-      return false;
+      throw Exception('Failed to get admin stats: $e');
     }
   }
 
-  /// Get all users with pagination
-  Future<List<AdminUserModel>> getUsers({
-    int limit = 20,
-    DocumentSnapshot? startAfter,
+  /// Get all users with admin functionality
+  Future<List<UserAdminModel>> getAllUsers({
+    int? limit,
+    String? orderBy,
+    bool? descending,
+    UserType? filterByType,
     String? searchQuery,
-    UserRole? roleFilter,
   }) async {
     try {
-      Query<Map<String, dynamic>> query = _firestore
-          .collection('users')
-          .orderBy('createdAt', descending: true)
-          .limit(limit);
+      Query query = _firestore.collection('user');
 
-      if (startAfter != null) {
-        query = query.startAfterDocument(startAfter);
+      // Apply filters
+      if (filterByType != null) {
+        query = query.where('userType', isEqualTo: filterByType.name);
       }
 
-      if (roleFilter != null) {
-        query = query.where(
-          'role',
-          isEqualTo: roleFilter.toString().split('.').last,
-        );
+      // Apply ordering
+      if (orderBy != null) {
+        query = query.orderBy(orderBy, descending: descending ?? false);
+      } else {
+        query = query.orderBy('createdAt', descending: true);
       }
 
-      if (searchQuery != null && searchQuery.isNotEmpty) {
-        query = query
-            .where('email', isGreaterThanOrEqualTo: searchQuery)
-            .where('email', isLessThan: '$searchQuery\uf8ff');
+      // Apply limit
+      if (limit != null) {
+        query = query.limit(limit);
       }
 
       final snapshot = await query.get();
-      return snapshot.docs
-          .map((doc) => AdminUserModel.fromFirestore(doc, null))
+
+      List<UserAdminModel> users = snapshot.docs
+          .map((doc) => UserAdminModel.fromDocumentSnapshot(doc))
           .toList();
+
+      // Apply search filter if provided
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        final lowerQuery = searchQuery.toLowerCase();
+        users = users
+            .where((user) =>
+                user.fullName.toLowerCase().contains(lowerQuery) ||
+                user.email.toLowerCase().contains(lowerQuery) ||
+                (user.username?.toLowerCase().contains(lowerQuery) ?? false))
+            .toList();
+      }
+
+      return users;
     } catch (e) {
-      debugPrint('Error getting users: $e');
-      rethrow;
+      throw Exception('Failed to get users: $e');
     }
   }
 
-  /// Update user role
-  Future<void> updateUserRole(String userId, UserRole newRole) async {
+  /// Update user type
+  Future<void> updateUserType(String userId, UserType newType) async {
     try {
-      await _firestore.collection('users').doc(userId).update({
-        'role': newRole.toString().split('.').last,
+      await _firestore.collection('user').doc(userId).update({
+        'userType': newType.name,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error updating user role: $e');
-      rethrow;
+      throw Exception('Failed to update user type: $e');
     }
   }
 
-  /// Enable or disable a user
-  Future<void> setUserEnabled(String userId, bool enabled) async {
+  /// Suspend user
+  Future<void> suspendUser(
+      String userId, String reason, String suspendedBy) async {
     try {
-      await _firestore.collection('users').doc(userId).update({
-        'isEnabled': enabled,
+      await _firestore.collection('user').doc(userId).update({
+        'isSuspended': true,
+        'suspensionReason': reason,
+        'suspendedAt': FieldValue.serverTimestamp(),
+        'suspendedBy': suspendedBy,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error updating user status: $e');
-      rethrow;
+      throw Exception('Failed to suspend user: $e');
     }
   }
 
-  /// Delete a user
+  /// Unsuspend user
+  Future<void> unsuspendUser(String userId) async {
+    try {
+      await _firestore.collection('user').doc(userId).update({
+        'isSuspended': false,
+        'suspensionReason': null,
+        'suspendedAt': null,
+        'suspendedBy': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to unsuspend user: $e');
+    }
+  }
+
+  /// Verify user
+  Future<void> verifyUser(String userId) async {
+    try {
+      await _firestore.collection('user').doc(userId).update({
+        'isVerified': true,
+        'emailVerifiedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to verify user: $e');
+    }
+  }
+
+  /// Unverify user
+  Future<void> unverifyUser(String userId) async {
+    try {
+      await _firestore.collection('user').doc(userId).update({
+        'isVerified': false,
+        'emailVerifiedAt': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to unverify user: $e');
+    }
+  }
+
+  /// Delete user (soft delete)
   Future<void> deleteUser(String userId) async {
     try {
-      // Start a batch operation
+      await _firestore.collection('user').doc(userId).update({
+        'isDeleted': true,
+        'deletedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to delete user: $e');
+    }
+  }
+
+  /// Restore deleted user
+  Future<void> restoreUser(String userId) async {
+    try {
+      await _firestore.collection('user').doc(userId).update({
+        'isDeleted': false,
+        'deletedAt': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to restore user: $e');
+    }
+  }
+
+  /// Add admin note to user
+  Future<void> addAdminNote(String userId, String note, String addedBy) async {
+    try {
+      final noteId = DateTime.now().millisecondsSinceEpoch.toString();
+      await _firestore.collection('user').doc(userId).update({
+        'adminNotes.$noteId': {
+          'note': note,
+          'addedBy': addedBy,
+          'addedAt': FieldValue.serverTimestamp(),
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to add admin note: $e');
+    }
+  }
+
+  /// Update user experience points
+  Future<void> updateUserExperience(String userId, int experiencePoints) async {
+    try {
+      final level = _calculateLevel(experiencePoints);
+      await _firestore.collection('user').doc(userId).update({
+        'experiencePoints': experiencePoints,
+        'level': level,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update user experience: $e');
+    }
+  }
+
+  /// Calculate level based on experience points
+  int _calculateLevel(int experiencePoints) {
+    // Simple level calculation - can be customized
+    if (experiencePoints < 100) return 1;
+    if (experiencePoints < 500) return 2;
+    if (experiencePoints < 1000) return 3;
+    if (experiencePoints < 2500) return 4;
+    if (experiencePoints < 5000) return 5;
+    if (experiencePoints < 10000) return 6;
+    if (experiencePoints < 25000) return 7;
+    if (experiencePoints < 50000) return 8;
+    if (experiencePoints < 100000) return 9;
+    return 10;
+  }
+
+  /// Get user by ID
+  Future<UserAdminModel?> getUserById(String userId) async {
+    try {
+      final doc = await _firestore.collection('user').doc(userId).get();
+      if (doc.exists) {
+        return UserAdminModel.fromDocumentSnapshot(doc);
+      }
+      return null;
+    } catch (e) {
+      throw Exception('Failed to get user: $e');
+    }
+  }
+
+  /// Bulk update users
+  Future<void> bulkUpdateUsers(
+      List<String> userIds, Map<String, dynamic> updates) async {
+    try {
       final batch = _firestore.batch();
 
-      // Delete user document
-      batch.delete(_firestore.collection('users').doc(userId));
+      for (final userId in userIds) {
+        final docRef = _firestore.collection('user').doc(userId);
+        batch.update(docRef, {
+          ...updates,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
 
-      // Delete related data
-      batch.delete(_firestore.collection('userSettings').doc(userId));
-      batch.delete(_firestore.collection('userProfiles').doc(userId));
-
-      // Commit the batch
       await batch.commit();
-
-      // Delete the user from Firebase Auth
-      await _auth.currentUser?.delete();
     } catch (e) {
-      debugPrint('Error deleting user: $e');
-      rethrow;
+      throw Exception('Failed to bulk update users: $e');
     }
   }
 
-  /// Get user activity history
-  Future<List<Map<String, dynamic>>> getUserActivity(String userId) async {
+  /// Search users
+  Future<List<UserAdminModel>> searchUsers(String query) async {
     try {
-      final snapshot = await _firestore
-          .collection('userActivity')
-          .doc(userId)
-          .collection('events')
-          .orderBy('timestamp', descending: true)
-          .limit(50)
-          .get();
+      final users = await getAllUsers();
+      final lowerQuery = query.toLowerCase();
 
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      return users
+          .where((user) =>
+              user.fullName.toLowerCase().contains(lowerQuery) ||
+              user.email.toLowerCase().contains(lowerQuery) ||
+              (user.username?.toLowerCase().contains(lowerQuery) ?? false) ||
+              user.userType.name.toLowerCase().contains(lowerQuery))
+          .toList();
     } catch (e) {
-      debugPrint('Error getting user activity: $e');
-      rethrow;
+      throw Exception('Failed to search users: $e');
     }
   }
 
-  /// Get user payment history
-  Future<List<Map<String, dynamic>>> getUserPayments(String userId) async {
-    try {
-      final snapshot = await _firestore
-          .collection('payments')
-          .where('userId', isEqualTo: userId)
-          .orderBy('timestamp', descending: true)
-          .limit(50)
-          .get();
-
-      return snapshot.docs.map((doc) => doc.data()).toList();
-    } catch (e) {
-      debugPrint('Error getting user payments: $e');
-      rethrow;
-    }
-  }
-
-  /// Sign out the current admin
-  Future<void> signOut() async {
-    try {
-      await _auth.signOut();
-    } catch (e) {
-      debugPrint('Error signing out: $e');
-      rethrow;
-    }
+  /// Check if the current user has admin privileges
+  Future<bool> hasAdminPrivileges() async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+    final doc = await _firestore.collection('user').doc(user.uid).get();
+    return doc.exists && (doc.data()?['userType'] == 'admin');
   }
 }

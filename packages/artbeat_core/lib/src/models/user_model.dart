@@ -27,6 +27,9 @@ class UserModel {
   final DateTime? updatedAt;
   final bool isVerified;
   final UserType userType;
+  final int experiencePoints;
+  final int level;
+  final List<String> achievements;
 
   UserModel({
     required this.id,
@@ -52,6 +55,9 @@ class UserModel {
     this.updatedAt,
     this.isVerified = false,
     this.userType = UserType.regular,
+    this.experiencePoints = 0,
+    this.level = 1,
+    this.achievements = const [],
   });
 
   factory UserModel.placeholder(String id) {
@@ -79,35 +85,35 @@ class UserModel {
 
     return UserModel(
       id: doc.id,
-      email: data['email'] ?? '',
-      fullName: data['fullName'] ?? '',
-      username: data['username'],
-      bio: data['bio'],
-      profileImageUrl: data['profileImageUrl'],
-      coverImageUrl: data['coverImageUrl'],
-      zipCode: data['zipCode'],
-      location: data['location'],
-      birthDate: data['birthDate'] != null
-          ? (data['birthDate'] as Timestamp).toDate()
-          : null,
-      gender: data['gender'],
-      posts: List<String>.from(data['posts'] ?? []),
-      followers: List<String>.from(data['followers'] ?? []),
-      following: List<String>.from(data['following'] ?? []),
-      captures: List<String>.from(data['captures'] ?? []),
-      followersCount: data['followersCount'] ?? 0,
-      followingCount: data['followingCount'] ?? 0,
-      postsCount: data['postsCount'] ?? 0,
-      capturesCount: data['capturesCount'] ?? 0,
-      createdAt: data['createdAt'] != null
-          ? (data['createdAt'] as Timestamp).toDate()
-          : DateTime.now(),
-      updatedAt: data['updatedAt'] != null
-          ? (data['updatedAt'] as Timestamp).toDate()
-          : null,
-      isVerified: data['isVerified'] ?? false,
+      email: data['email'] as String? ?? '',
+      fullName: data['fullName'] as String? ?? '',
+      username: data['username'] as String?,
+      bio: data['bio'] as String?,
+      profileImageUrl: data['profileImageUrl'] as String?,
+      coverImageUrl: data['coverImageUrl'] as String?,
+      zipCode: data['zipCode'] as String?,
+      location: data['location'] as String?,
+      birthDate: (data['birthDate'] as Timestamp?)?.toDate(),
+      gender: data['gender'] as String?,
+      posts: List<String>.from(data['posts'] as List<dynamic>? ?? []),
+      followers: List<String>.from(data['followers'] as List<dynamic>? ?? []),
+      following: List<String>.from(data['following'] as List<dynamic>? ?? []),
+      captures: List<String>.from(data['captures'] as List<dynamic>? ?? []),
+      followersCount: data['followersCount'] as int? ?? 0,
+      followingCount: data['followingCount'] as int? ?? 0,
+      postsCount: data['postsCount'] as int? ?? 0,
+      capturesCount: data['capturesCount'] as int? ?? 0,
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      isVerified: data['isVerified'] as bool? ?? false,
       userType: UserType.fromString(
-          data['userType'] as String? ?? UserType.regular.name),
+        data['userType'] as String? ?? UserType.regular.name,
+      ),
+      experiencePoints: data['experiencePoints'] as int? ?? 0,
+      level: data['level'] as int? ?? 1,
+      achievements: List<String>.from(
+        data['achievements'] as List<dynamic>? ?? [],
+      ),
     );
   }
 
@@ -136,6 +142,9 @@ class UserModel {
       'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
       'isVerified': isVerified,
       'userType': userType.name,
+      'experiencePoints': experiencePoints,
+      'level': level,
+      'achievements': achievements,
     };
   }
 
@@ -163,6 +172,9 @@ class UserModel {
     DateTime? updatedAt,
     bool? isVerified,
     UserType? userType,
+    int? experiencePoints,
+    int? level,
+    List<String>? achievements,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -188,6 +200,9 @@ class UserModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isVerified: isVerified ?? this.isVerified,
       userType: userType ?? this.userType,
+      experiencePoints: experiencePoints ?? this.experiencePoints,
+      level: level ?? this.level,
+      achievements: achievements ?? this.achievements,
     );
   }
 

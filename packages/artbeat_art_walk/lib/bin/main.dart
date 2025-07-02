@@ -1,4 +1,4 @@
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -40,8 +40,8 @@ class ArtWalkModuleApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Core providers
-        ChangeNotifierProvider<UserService>(
-          create: (_) => UserService(),
+        ChangeNotifierProvider<core.UserService>(
+          create: (_) => core.UserService(),
         ),
         // Provider fix: use Provider<ArtWalkService> instead of ChangeNotifierProvider
         Provider<ArtWalkService>(
@@ -78,9 +78,9 @@ class ArtWalkModuleHome extends StatelessWidget {
             const SizedBox(height: 20),
             // Navigation buttons to art walk screens
             ElevatedButton(
-              onPressed: () => Navigator.push(
+              onPressed: () => Navigator.push<void>(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (_) => const ArtWalkMapScreen(),
                 ),
               ),
@@ -88,9 +88,9 @@ class ArtWalkModuleHome extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () => Navigator.push(
+              onPressed: () => Navigator.push<void>(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (_) => const ArtWalkListScreen(),
                 ),
               ),
@@ -98,9 +98,9 @@ class ArtWalkModuleHome extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: () => Navigator.push(
+              onPressed: () => Navigator.push<void>(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (_) => const CreateArtWalkScreen(),
                 ),
               ),

@@ -43,20 +43,21 @@ class PublicArtModel {
     final data = doc.data() as Map<String, dynamic>;
     return PublicArtModel(
       id: doc.id,
-      userId: data['userId'] as String,
-      title: data['title'] as String,
-      description: data['description'] as String,
-      imageUrl: data['imageUrl'] as String,
+      userId: data['userId'] as String? ?? '',
+      title: data['title'] as String? ?? '',
+      description: data['description'] as String? ?? '',
+      imageUrl: data['imageUrl'] as String? ?? '',
       artistName: data['artistName'] as String?,
-      location: data['location'] as GeoPoint,
+      location: data['location'] as GeoPoint? ?? const GeoPoint(0, 0),
       address: data['address'] as String?,
-      tags: List<String>.from(data['tags'] ?? []),
+      tags: List<String>.from(data['tags'] as List<dynamic>? ?? []),
       artType: data['artType'] as String?,
       isVerified: data['isVerified'] as bool? ?? false,
       viewCount: data['viewCount'] as int? ?? 0,
       likeCount: data['likeCount'] as int? ?? 0,
-      usersFavorited: List<String>.from(data['usersFavorited'] ?? []),
-      createdAt: data['createdAt'] as Timestamp,
+      usersFavorited:
+          List<String>.from(data['usersFavorited'] as List<dynamic>? ?? []),
+      createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp?,
     );
   }
@@ -72,12 +73,13 @@ class PublicArtModel {
       artistName: json['artistName'] as String?,
       location: json['location'] as GeoPoint,
       address: json['address'] as String?,
-      tags: List<String>.from(json['tags'] ?? []),
+      tags: List<String>.from(json['tags'] as List<dynamic>? ?? []),
       artType: json['artType'] as String?,
       isVerified: json['isVerified'] as bool? ?? false,
       viewCount: json['viewCount'] as int? ?? 0,
       likeCount: json['likeCount'] as int? ?? 0,
-      usersFavorited: List<String>.from(json['usersFavorited'] ?? []),
+      usersFavorited:
+          List<String>.from(json['usersFavorited'] as List<dynamic>? ?? []),
       createdAt: json['createdAt'] as Timestamp,
       updatedAt: json['updatedAt'] as Timestamp?,
     );

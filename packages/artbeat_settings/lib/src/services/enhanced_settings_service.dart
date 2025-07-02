@@ -9,8 +9,8 @@ class EnhancedSettingsService {
   EnhancedSettingsService({
     required IAuthService authService,
     required IFirestoreService firestoreService,
-  })  : _authService = authService,
-        _firestoreService = firestoreService;
+  }) : _authService = authService,
+       _firestoreService = firestoreService;
 
   /// Get current user account settings
   Future<Map<String, dynamic>> getUserAccountSettings() async {
@@ -56,7 +56,9 @@ class EnhancedSettingsService {
     if (!doc.exists) throw Exception('User settings not found');
 
     final data = doc.data() ?? {};
-    return List<String>.from(data['blockedUsers'] ?? []);
+    return (data['blockedUsers'] as List<dynamic>? ?? [])
+        .map((e) => e as String)
+        .toList();
   }
 
   /// Get device activity
@@ -68,6 +70,8 @@ class EnhancedSettingsService {
     if (!doc.exists) throw Exception('User settings not found');
 
     final data = doc.data() ?? {};
-    return List<Map<String, dynamic>>.from(data['deviceActivity'] ?? []);
+    return (data['deviceActivity'] as List<dynamic>? ?? [])
+        .map((e) => e as Map<String, dynamic>)
+        .toList();
   }
 }

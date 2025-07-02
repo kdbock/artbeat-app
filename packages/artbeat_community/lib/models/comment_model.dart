@@ -24,17 +24,17 @@ class CommentModel {
   });
 
   factory CommentModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
     return CommentModel(
       id: doc.id,
-      postId: data['postId'] ?? '',
-      userId: data['userId'] ?? '',
-      content: data['content'] ?? '',
-      parentCommentId: data['parentCommentId'] ?? '',
-      type: data['type'] ?? 'Appreciation',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
-      userName: data['userName'] ?? '',
-      userAvatarUrl: data['userAvatarUrl'] ?? '',
+      postId: (data['postId'] as String?) ?? '',
+      userId: (data['userId'] as String?) ?? '',
+      content: (data['content'] as String?) ?? '',
+      parentCommentId: (data['parentCommentId'] as String?) ?? '',
+      type: (data['type'] as String?) ?? 'Appreciation',
+      createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
+      userName: (data['userName'] as String?) ?? '',
+      userAvatarUrl: (data['userAvatarUrl'] as String?) ?? '',
     );
   }
 

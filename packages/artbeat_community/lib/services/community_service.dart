@@ -28,12 +28,14 @@ class CommunityService extends ChangeNotifier {
 
       if (lastPostId != null) {
         // Get the last document for pagination
-        DocumentSnapshot lastDocSnapshot =
-            await _firestore.collection('posts').doc(lastPostId).get();
+        final lastDocSnapshot = await _firestore
+            .collection('posts')
+            .doc(lastPostId)
+            .get();
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => PostModel.fromFirestore(doc))
@@ -45,8 +47,11 @@ class CommunityService extends ChangeNotifier {
   }
 
   // Get posts by user ID
-  Future<List<PostModel>> getPostsByUserId(String userId,
-      {int limit = 10, String? lastPostId}) async {
+  Future<List<PostModel>> getPostsByUserId(
+    String userId, {
+    int limit = 10,
+    String? lastPostId,
+  }) async {
     try {
       Query query = _firestore
           .collection('posts')
@@ -55,12 +60,14 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastPostId != null) {
-        DocumentSnapshot lastDocSnapshot =
-            await _firestore.collection('posts').doc(lastPostId).get();
+        final lastDocSnapshot = await _firestore
+            .collection('posts')
+            .doc(lastPostId)
+            .get();
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => PostModel.fromFirestore(doc))
@@ -87,7 +94,13 @@ class CommunityService extends ChangeNotifier {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      DocumentReference docRef = await _firestore.collection('posts').add({
+      debugPrint('🔄 Creating post for user: $userId');
+      debugPrint('📝 Post content: $content');
+      debugPrint('🖼️ Image URLs: $imageUrls');
+      debugPrint('🏷️ Tags: $tags');
+      debugPrint('📍 Location: $location');
+
+      final docRef = await _firestore.collection('posts').add({
         'userId': userId,
         'userName': userName,
         'userPhotoUrl': userPhotoUrl,
@@ -98,7 +111,7 @@ class CommunityService extends ChangeNotifier {
         'geoPoint': geoPoint,
         'zipCode': zipCode,
         'createdAt': FieldValue.serverTimestamp(),
-        'likeCount': 0,
+        'applauseCount': 0,
         'commentCount': 0,
         'shareCount': 0,
         'isPublic': isPublic,
@@ -106,9 +119,11 @@ class CommunityService extends ChangeNotifier {
         'metadata': metadata,
       });
 
+      debugPrint('✅ Post created successfully with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      debugPrint('Error creating post: $e');
+      debugPrint('❌ Error creating post: $e');
+      debugPrint('📍 Stack trace: ${StackTrace.current}');
       return null;
     }
   }
@@ -135,19 +150,18 @@ class CommunityService extends ChangeNotifier {
   }) async {
     try {
       // Add the comment to Firestore
-      DocumentReference commentRef = await _firestore
+      final commentRef = await _firestore
           .collection('posts')
           .doc(postId)
           .collection('comments')
           .add({
-        'userId': userId,
-        'userName': userName,
-        'userPhotoUrl': userPhotoUrl,
-        'content': content,
-        'createdAt': FieldValue.serverTimestamp(),
-        'parentCommentId': parentCommentId,
-        'likeCount': 0,
-      });
+            'userId': userId,
+            'userName': userName,
+            'userPhotoUrl': userPhotoUrl,
+            'content': content,
+            'createdAt': FieldValue.serverTimestamp(),
+            'parentCommentId': parentCommentId,
+          });
 
       // Update the comment count on the post
       await _firestore.collection('posts').doc(postId).update({
@@ -162,8 +176,11 @@ class CommunityService extends ChangeNotifier {
   }
 
   // Get comments for a post
-  Future<List<CommentModel>> getComments(String postId,
-      {int limit = 50, String? lastCommentId}) async {
+  Future<List<CommentModel>> getComments(
+    String postId, {
+    int limit = 50,
+    String? lastCommentId,
+  }) async {
     try {
       Query query = _firestore
           .collection('posts')
@@ -174,7 +191,7 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastCommentId != null) {
-        DocumentSnapshot lastDocSnapshot = await _firestore
+        final lastDocSnapshot = await _firestore
             .collection('posts')
             .doc(postId)
             .collection('comments')
@@ -183,7 +200,7 @@ class CommunityService extends ChangeNotifier {
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => CommentModel.fromFirestore(doc))
@@ -195,8 +212,12 @@ class CommunityService extends ChangeNotifier {
   }
 
   // Get replies to a comment
-  Future<List<CommentModel>> getReplies(String postId, String commentId,
-      {int limit = 50, String? lastReplyId}) async {
+  Future<List<CommentModel>> getReplies(
+    String postId,
+    String commentId, {
+    int limit = 50,
+    String? lastReplyId,
+  }) async {
     try {
       Query query = _firestore
           .collection('posts')
@@ -207,7 +228,7 @@ class CommunityService extends ChangeNotifier {
           .limit(limit);
 
       if (lastReplyId != null) {
-        DocumentSnapshot lastDocSnapshot = await _firestore
+        final lastDocSnapshot = await _firestore
             .collection('posts')
             .doc(postId)
             .collection('comments')
@@ -216,7 +237,7 @@ class CommunityService extends ChangeNotifier {
         query = query.startAfterDocument(lastDocSnapshot);
       }
 
-      QuerySnapshot querySnapshot = await query.get();
+      final querySnapshot = await query.get();
 
       return querySnapshot.docs
           .map((doc) => CommentModel.fromFirestore(doc))

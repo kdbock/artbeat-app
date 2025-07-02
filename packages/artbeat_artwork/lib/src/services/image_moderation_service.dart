@@ -20,7 +20,7 @@ class ImageModerationService {
       // Convert image to base64
       final bytes = await imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
-      
+
       // Call API (using placeholder API for demonstration)
       final response = await http.post(
         Uri.parse('https://api.moderatecontent.com/moderate'),
@@ -32,16 +32,17 @@ class ImageModerationService {
           'image_base64': base64Image,
         }),
       );
-      
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+
         // Log the moderation result
         await _logModerationResult(data, bytes.length);
-        
+
         // Return formatted result
         return {
-          'isAppropriate': data['rating_index'] < 2, // 0-1 are appropriate, 2+ are inappropriate
+          'isAppropriate': data['rating_index'] <
+              2, // 0-1 are appropriate, 2+ are inappropriate
           'confidence': data['rating_confidence'],
           'classification': data['rating_label'],
           'details': data,
@@ -65,13 +66,14 @@ class ImageModerationService {
       };
     }
   }
-  
+
   // Log moderation results for audit and improvement
-  Future<void> _logModerationResult(Map<String, dynamic> result, int imageSize) async {
+  Future<void> _logModerationResult(
+      Map<String, dynamic> result, int imageSize) async {
     try {
       final userId = _auth.currentUser?.uid;
       if (userId == null) return;
-      
+
       await _firestore.collection('moderation_logs').add({
         'userId': userId,
         'timestamp': FieldValue.serverTimestamp(),
@@ -82,14 +84,15 @@ class ImageModerationService {
       debugPrint('Error logging moderation result: $e');
     }
   }
-  
+
   // Check batch of images
-  Future<List<Map<String, dynamic>>> checkMultipleImages(List<File> images) async {
+  Future<List<Map<String, dynamic>>> checkMultipleImages(
+      List<File> images) async {
     final results = <Map<String, dynamic>>[];
     for (final image in images) {
       final result = await checkImage(image);
       results.add(result);
-      
+
       // If any image is inappropriate, can return early
       if (!(result['isAppropriate'] as bool)) {
         break;
@@ -97,5 +100,4 @@ class ImageModerationService {
     }
     return results;
   }
-  
 }

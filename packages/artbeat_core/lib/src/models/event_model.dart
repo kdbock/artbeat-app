@@ -35,19 +35,19 @@ class EventModel {
     final data = doc.data() as Map<String, dynamic>;
     return EventModel(
       id: doc.id,
-      title: data['title'] as String,
-      description: data['description'] as String,
-      startDate: (data['startDate'] as Timestamp).toDate(),
-      endDate: data['endDate'] != null
-          ? (data['endDate'] as Timestamp).toDate()
-          : null,
-      location: data['location'] as String,
+      title: data['title'] as String? ?? '',
+      description: data['description'] as String? ?? '',
+      startDate: (data['startDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      endDate: (data['endDate'] as Timestamp?)?.toDate(),
+      location: data['location'] as String? ?? '',
       imageUrl: data['imageUrl'] as String?,
-      artistId: data['artistId'] as String,
-      isPublic: data['isPublic'] as bool,
-      attendeeIds: List<String>.from(data['attendeeIds'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      artistId: data['artistId'] as String? ?? '',
+      isPublic: data['isPublic'] as bool? ?? false,
+      attendeeIds: List<String>.from(
+        data['attendeeIds'] as List<dynamic>? ?? [],
+      ),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 

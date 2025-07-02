@@ -10,13 +10,13 @@ class FirestoreService {
       final data = doc.data();
       return StudioModel(
         id: doc.id,
-        name: data['name'],
-        description: data['description'],
-        tags: List<String>.from(data['tags'] ?? []),
-        privacyType: data['privacyType'],
-        memberList: List<String>.from(data['memberList'] ?? []),
-        createdAt: data['createdAt'] ?? Timestamp.now(),
-        updatedAt: data['updatedAt'] ?? Timestamp.now(),
+        name: data['name'] as String,
+        description: data['description'] as String,
+        tags: List<String>.from(data['tags'] as Iterable? ?? []),
+        privacyType: data['privacyType'] as String,
+        memberList: List<String>.from(data['memberList'] as Iterable? ?? []),
+        createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
+        updatedAt: (data['updatedAt'] as Timestamp?) ?? Timestamp.now(),
       );
     }).toList();
   }

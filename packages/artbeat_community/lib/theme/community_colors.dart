@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:artbeat_core/theme/index.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Custom colors for the community module
 class CommunityColors {

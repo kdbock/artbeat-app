@@ -1,0 +1,57 @@
+name: artbeat_core
+description: Core components for the ARTbeat application
+version: 0.0.1
+publish_to: 'none'
+homepage: https://artbeat.app
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Environment configuration
+  flutter_dotenv: ^5.1.0
+
+  # Core should not depend on feature modules
+  # Feature modules should depend on core instead
+
+  # Firebase - versions aligned with iOS SDK 10.25.0
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  firebase_storage: ^11.5.6
+  firebase_analytics: ^10.7.4
+  firebase_app_check: ^0.2.1+8
+
+  # Location services
+  geolocator: ^14.0.1
+
+  # State management
+  provider: ^6.1.1
+
+  # Storage
+  shared_preferences: ^2.2.2
+  flutter_cache_manager: ^3.3.1
+
+  # Feature modules
+  artbeat_artwork:
+    path: ../artbeat_artwork
+  artbeat_artist:
+    path: ../artbeat_artist
+  artbeat_art_walk:
+    path: ../artbeat_art_walk
+  artbeat_auth:
+    path: ../artbeat_auth
+  artbeat_capture:
+    path: ../artbeat_capture
+  artbeat_community:
+    path: ../artbeat_community
+  artbeat_messaging:
+    path: ../artbeat_messaging
+  artbeat_profile:
+    path: ../artbeat_profile
+  artbeat_settings:
+    path: ../artbeat_settings

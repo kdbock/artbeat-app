@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show PaymentService, SubscriptionTier, UniversalHeader, MainLayout;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,65 +26,70 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Subscribe to ${_getTierName(widget.tier)}'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPlanDetails(),
-                  const SizedBox(height: 24),
-                  _buildFeaturesList(),
-                  const SizedBox(height: 32),
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(8.0),
-                      margin: const EdgeInsets.only(bottom: 16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline, color: Colors.red.shade700),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(color: Colors.red.shade700),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: UniversalHeader(
+          title: 'Subscribe to ${_getTierName(widget.tier)}',
+          showLogo: false,
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildPlanDetails(),
+                    const SizedBox(height: 24),
+                    _buildFeaturesList(),
+                    const SizedBox(height: 32),
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline,
+                                color: Colors.red.shade700),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(color: Colors.red.shade700),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _handlePayment,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(
+                            'Subscribe Now - ${_getPriceString(widget.tier)}'),
                       ),
                     ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _handlePayment,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
+                    const SizedBox(height: 16),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
                       ),
-                      child: Text(
-                          'Subscribe Now - ${_getPriceString(widget.tier)}'),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 
@@ -187,9 +193,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           .doc(user.uid)
           .get();
 
-      final String? stripeCustomerId = customerDoc.data()?['stripeCustomerId'];
+      final String? stripeCustomerId =
+          customerDoc.data()?['stripeCustomerId'] as String?;
       final String? defaultPaymentMethodId =
-          customerDoc.data()?['defaultPaymentMethodId'];
+          customerDoc.data()?['defaultPaymentMethodId'] as String?;
 
       if (stripeCustomerId == null || defaultPaymentMethodId == null) {
         throw Exception('Please add a payment method before subscribing');
@@ -208,7 +215,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       if (success) {
         if (mounted) {
           // Show success dialog
-          await showDialog(
+          await showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Subscription Successful'),
@@ -252,7 +259,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   String _getPriceString(SubscriptionTier tier) {
-    double price = tier.monthlyPrice;
+    final double price = tier.monthlyPrice;
     return '\$${price.toStringAsFixed(2)}';
   }
 

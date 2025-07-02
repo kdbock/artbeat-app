@@ -52,18 +52,14 @@ class PaymentService {
       final response = await _httpClient.post(
         Uri.parse('$_baseUrl/create-customer'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'name': name,
-          'userId': userId,
-        }),
+        body: json.encode({'email': email, 'name': name, 'userId': userId}),
       );
 
       if (response.statusCode != 200) {
         throw Exception('Failed to create customer');
       }
 
-      final data = json.decode(response.body);
+      final data = json.decode(response.body) as Map<String, dynamic>;
       return data['customerId'] as String;
     } catch (e) {
       debugPrint('Error creating customer: $e');
@@ -84,7 +80,7 @@ class PaymentService {
         throw Exception('Failed to create setup intent');
       }
 
-      final data = json.decode(response.body);
+      final data = json.decode(response.body) as Map<String, dynamic>;
       return data['clientSecret'] as String;
     } catch (e) {
       debugPrint('Error creating setup intent: $e');
@@ -124,9 +120,13 @@ class PaymentService {
         throw Exception('Failed to get payment methods');
       }
 
-      final data = json.decode(response.body);
-      return (data['paymentMethods'] as List)
-          .map((pm) => PaymentMethodModel.fromJson(pm))
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      final paymentMethodsData = data['paymentMethods'] as List<dynamic>?;
+      if (paymentMethodsData == null) {
+        return [];
+      }
+      return paymentMethodsData
+          .map((pm) => PaymentMethodModel.fromJson(pm as Map<String, dynamic>))
           .toList();
     } catch (e) {
       debugPrint('Error getting payment methods: $e');
@@ -153,7 +153,7 @@ class PaymentService {
         throw Exception('Failed to set default payment method');
       }
 
-      return json.decode(response.body);
+      return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
       debugPrint('Error setting default payment method: $e');
       rethrow;
@@ -162,7 +162,8 @@ class PaymentService {
 
   /// Detach a payment method from a customer
   Future<Map<String, dynamic>> detachPaymentMethod(
-      String paymentMethodId) async {
+    String paymentMethodId,
+  ) async {
     try {
       final response = await _httpClient.post(
         Uri.parse('$_baseUrl/detach-payment-method'),
@@ -174,7 +175,7 @@ class PaymentService {
         throw Exception('Failed to detach payment method');
       }
 
-      return json.decode(response.body);
+      return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
       debugPrint('Error detaching payment method: $e');
       rethrow;
@@ -208,8 +209,8 @@ class PaymentService {
         throw Exception('Failed to process payment');
       }
 
-      final data = json.decode(response.body);
-      return data['success'] as bool;
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return data['success'] as bool? ?? false;
     } catch (e) {
       debugPrint('Error processing payment: $e');
       rethrow;
@@ -245,7 +246,7 @@ class PaymentService {
         throw Exception('Failed to request refund');
       }
 
-      final data = json.decode(response.body);
+      final data = json.decode(response.body) as Map<String, dynamic>;
 
       // Update subscription status in Firestore
       await _updateSubscriptionInFirestore(subscriptionId, {
@@ -291,7 +292,7 @@ class PaymentService {
         throw Exception('Failed to change subscription tier');
       }
 
-      final data = json.decode(response.body);
+      final data = json.decode(response.body) as Map<String, dynamic>;
 
       // Update subscription in Firestore
       await _updateSubscriptionInFirestore(subscriptionId, {
@@ -319,7 +320,7 @@ class PaymentService {
         throw Exception('Failed to cancel subscription');
       }
 
-      final data = json.decode(response.body);
+      final data = json.decode(response.body) as Map<String, dynamic>;
 
       // Update subscription in Firestore
       await _updateSubscriptionInFirestore(subscriptionId, {
@@ -363,7 +364,7 @@ class PaymentService {
         throw Exception('Failed to process gift payment');
       }
 
-      final data = json.decode(response.body);
+      final data = json.decode(response.body) as Map<String, dynamic>;
 
       // Create gift record in Firestore
       await _firestore.collection('gifts').add({
@@ -429,6 +430,37 @@ class PaymentService {
     }
   }
 
+  /// Process a sponsorship payment (placeholder for Stripe integration)
+  Future<void> processSponsorshipPayment(
+    Map<String, dynamic> sponsorship,
+  ) async {
+    try {
+      // This is a placeholder for actual Stripe recurring payment logic
+      // You would call a cloud function to create a recurring subscription for the artist
+      await _firestore.collection('sponsorships').add({
+        ...sponsorship,
+        'status': 'pending',
+      });
+      // TODO: Integrate with Stripe for real recurring billing
+    } catch (e) {
+      debugPrint('Error processing sponsorship payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Request a refund for a ticket purchase
+  static Future<void> refundPayment({
+    required String paymentId,
+    required double amount,
+    String? reason,
+  }) async {
+    // TODO: Integrate with backend/cloud function for actual refund
+    // For now, simulate a successful refund
+    await Future<void>.delayed(const Duration(seconds: 1));
+    // In production, call your backend endpoint here
+    // throw Exception('Refund failed'); // Uncomment to simulate failure
+  }
+
   /// Get price ID for subscription tier
   String _getPriceIdForTier(SubscriptionTier tier) {
     switch (tier) {
@@ -466,13 +498,17 @@ class PaymentService {
 
     // Check if customer ID already exists in Firestore
     final userDoc = await _firestore.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      return userDoc.data()?['customerId'] as String;
+    final data = userDoc.data();
+    if (userDoc.exists && data != null && data.containsKey('customerId')) {
+      final customerId = data['customerId'] as String?;
+      if (customerId != null) {
+        return customerId;
+      }
     }
 
     // If not, create a new customer in Stripe
     final email = _auth.currentUser?.email ?? '';
     final name = _auth.currentUser?.displayName ?? '';
-    return await createCustomer(email: email, name: name);
+    return createCustomer(email: email, name: name);
   }
 }

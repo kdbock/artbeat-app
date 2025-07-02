@@ -22,16 +22,16 @@ class CommissionModel {
   });
 
   factory CommissionModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
     return CommissionModel(
       id: doc.id,
-      galleryId: data['galleryId'] ?? '',
-      artistId: data['artistId'] ?? '',
-      artworkId: data['artworkId'] ?? '',
-      commissionRate: (data['commissionRate'] ?? 0.0).toDouble(),
-      status: data['status'] ?? 'pending',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
-      updatedAt: data['updatedAt'] ?? Timestamp.now(),
+      galleryId: (data['galleryId'] as String?) ?? '',
+      artistId: (data['artistId'] as String?) ?? '',
+      artworkId: (data['artworkId'] as String?) ?? '',
+      commissionRate: ((data['commissionRate'] as num?) ?? 0.0).toDouble(),
+      status: (data['status'] as String?) ?? 'pending',
+      createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?) ?? Timestamp.now(),
     );
   }
 
@@ -49,14 +49,15 @@ class CommissionModel {
 
   CommissionModel copyWith(Map<String, dynamic> updates) {
     return CommissionModel(
-      id: updates['id'] ?? id,
-      galleryId: updates['galleryId'] ?? galleryId,
-      artistId: updates['artistId'] ?? artistId,
-      artworkId: updates['artworkId'] ?? artworkId,
-      commissionRate: updates['commissionRate'] ?? commissionRate,
-      status: updates['status'] ?? status,
-      createdAt: updates['createdAt'] ?? createdAt,
-      updatedAt: updates['updatedAt'] ?? updatedAt,
+      id: (updates['id'] as String?) ?? id,
+      galleryId: (updates['galleryId'] as String?) ?? galleryId,
+      artistId: (updates['artistId'] as String?) ?? artistId,
+      artworkId: (updates['artworkId'] as String?) ?? artworkId,
+      commissionRate: ((updates['commissionRate'] as num?) ?? commissionRate)
+          .toDouble(),
+      status: (updates['status'] as String?) ?? status,
+      createdAt: (updates['createdAt'] as Timestamp?) ?? createdAt,
+      updatedAt: (updates['updatedAt'] as Timestamp?) ?? updatedAt,
     );
   }
 }

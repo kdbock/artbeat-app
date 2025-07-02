@@ -1,9 +1,11 @@
 // Screens barrel file for artbeat_community
 // Generated on Wed Jun 15 10:30:12 EDT 2025
 
+// Dashboard
+export 'community_dashboard_screen.dart';
+
 // Feed screens
-export 'feed/community_feed_screen.dart';
-export 'feed/social_feed_screen.dart';
+export 'feed/unified_community_feed.dart';
 export 'feed/create_post_screen.dart';
 export 'feed/comments_screen.dart';
 export 'feed/trending_content_screen.dart';

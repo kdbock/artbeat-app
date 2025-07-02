@@ -1,18 +1,16 @@
-import 'package:artbeat_core/artbeat_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import '../widgets/artist_search_dialog.dart';
-import '../widgets/map_picker_dialog.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
+import '../services/storage_service.dart';
+import '../services/capture_service.dart';
 
 class CaptureUploadScreen extends StatefulWidget {
-  final CaptureModel capture;
-  final Function(CaptureModel) onUploadComplete;
+  final File imageFile;
 
-  const CaptureUploadScreen({
-    super.key,
-    required this.capture,
-    required this.onUploadComplete,
-  });
+  const CaptureUploadScreen({Key? key, required this.imageFile})
+    : super(key: key);
 
   @override
   State<CaptureUploadScreen> createState() => _CaptureUploadScreenState();
@@ -21,436 +19,539 @@ class CaptureUploadScreen extends StatefulWidget {
 class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _artistController = TextEditingController();
+  final _photographerController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _tagsController = TextEditingController();
   final _locationController = TextEditingController();
-  bool _isPublic = false;
+
+  final StorageService _storageService = StorageService();
+  final CaptureService _captureService = CaptureService();
+  final core.UserService _userService = core.UserService();
+
+  bool _uploading = false;
+  bool _locationPermissionGranted = false;
+  bool _disclaimerAccepted = false;
+  Position? _currentPosition;
+  String _uploadStatus = '';
+
   String? _selectedArtType;
   String? _selectedArtMedium;
-  GeoPoint? _selectedLocation;
-  ArtistModel? _selectedArtist;
-  final _captureService = CaptureService();
-  bool _isSaving = false;
-  String? _imageLoadError;
 
-  final List<String> _artTypes = [
-    'Painting',
-    'Sculpture',
+  // Static lists to ensure they're properly initialized
+  static const List<String> _artTypes = [
     'Mural',
-    'Installation',
-    'Performance',
-    'Photography',
-    'Digital Art',
-    'Mixed Media',
     'Street Art',
-    // Add more from the list in to_do.md as needed
+    'Sculpture',
+    'Statue',
+    'Graffiti',
+    'Monument',
+    'Memorial',
+    'Fountain',
+    'Installation',
+    'Mosaic',
+    'Public Art',
+    'Wall Art',
+    'Building Art',
+    'Bridge Art',
+    'Park Art',
+    'Garden Art',
+    'Plaza Art',
+    'Architecture',
+    'Relief',
+    'Transit Art',
+    'Playground Art',
+    'Community Art',
+    'Cultural Art',
+    'Historical Marker',
+    'Signage Art',
+    'Other',
+    'I don\'t know',
   ];
 
-  final List<String> _artMediums = [
-    'Oil',
-    'Acrylic',
-    'Watercolor',
-    'Digital',
-    'Mixed Media',
-    'Sculpture',
-    'Photography',
+  static const List<String> _artMediums = [
+    'Paint',
     'Spray Paint',
+    'Acrylic',
+    'Oil Paint',
+    'Watercolor',
+    'Bronze',
+    'Steel',
+    'Iron',
+    'Aluminum',
+    'Copper',
+    'Stone',
+    'Marble',
+    'Granite',
+    'Limestone',
+    'Concrete',
+    'Brick',
+    'Wood',
+    'Glass',
+    'Stained Glass',
+    'Ceramic',
+    'Tile',
+    'Mosaic Tile',
     'Metal',
-    // Add more from the list in to_do.md as needed
+    'Plaster',
+    'Fiberglass',
+    'Resin',
+    'Mixed Media',
+    'Digital/LED',
+    'Neon',
+    'Chalk',
+    'Charcoal',
+    'Fabric',
+    'Plastic',
+    'Vinyl',
+    'Paper',
+    'Canvas',
+    'Other',
+    'Unknown',
   ];
 
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
-  }
-
-  void _loadInitialData() {
-    _titleController.text = widget.capture.title ?? '';
-    _descriptionController.text = widget.capture.description ?? '';
-    _tagsController.text = widget.capture.tags?.join(', ') ?? '';
-    _locationController.text = widget.capture.locationName ?? '';
-    _isPublic = widget.capture.isPublic;
-    _selectedArtType = widget.capture.artType;
-    _selectedArtMedium = widget.capture.artMedium;
-    _selectedLocation = widget.capture.location;
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _tagsController.dispose();
-    _locationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _selectLocation() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => MapPickerDialog(
-        initialLocation: _selectedLocation,
-        initialAddress: _locationController.text,
-      ),
+    debugPrint('CaptureUploadScreen: Art types count: ${_artTypes.length}');
+    debugPrint('CaptureUploadScreen: Art mediums count: ${_artMediums.length}');
+    debugPrint(
+      'CaptureUploadScreen: First few art types: ${_artTypes.take(5).toList()}',
     );
+    _initializeForm();
+  }
 
-    if (result != null) {
-      setState(() {
-        _selectedLocation = result['location'] as GeoPoint;
-        _locationController.text = result['address'] as String;
-      });
+  void _initializeForm() async {
+    // Auto-populate photographer name from current user
+    final currentUserModel = await _userService.getCurrentUserModel();
+    if (currentUserModel != null && mounted) {
+      _photographerController.text = currentUserModel.fullName;
     }
   }
 
-  Future<void> _selectArtist() async {
-    final artist = await showDialog<ArtistModel>(
-      context: context,
-      builder: (context) => ArtistSearchDialog(
-        onArtistSelected: (artist) => Navigator.pop(context, artist),
-      ),
-    );
+  Future<void> _requestLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
 
-    if (artist != null) {
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled.')),
+      );
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Location permissions are permanently denied, we cannot request permissions.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Get current location
+    try {
+      _currentPosition = await Geolocator.getCurrentPosition();
       setState(() {
-        _selectedArtist = artist;
+        _locationPermissionGranted = true;
+        _locationController.text =
+            'Current Location (${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)})';
       });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to get location: $e')));
     }
   }
 
-  Future<void> _save() async {
-    if (!_canSave || _isSaving) return;
+  Future<void> _submitCapture() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (!_disclaimerAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept the public art disclaimer'),
+        ),
+      );
+      return;
+    }
 
-    setState(() => _isSaving = true);
+    setState(() {
+      _uploading = true;
+      _uploadStatus = 'Preparing upload...';
+    });
 
     try {
-      final updatedCapture = widget.capture.copyWith(
+      // Validate user is logged in
+      if (_userService.currentUser?.uid == null) {
+        throw Exception('User not logged in');
+      }
+
+      setState(() => _uploadStatus = 'Uploading image...');
+
+      // Debug: Print selected values
+      debugPrint('CaptureUpload: Selected art type: $_selectedArtType');
+      debugPrint('CaptureUpload: Selected art medium: $_selectedArtMedium');
+      debugPrint('CaptureUpload: Art types available: ${_artTypes.length}');
+      debugPrint('CaptureUpload: Art mediums available: ${_artMediums.length}');
+
+      // Upload image to storage (should work now with correct bucket)
+      final imageUrl = await _storageService.uploadImage(widget.imageFile);
+
+      // Create capture model
+      final capture = core.CaptureModel(
+        id: '', // Will be set by Firestore
+        userId: _userService.currentUser!.uid,
         title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        tags: _tagsController.text
-            .split(',')
-            .map((tag) => tag.trim())
-            .where((tag) => tag.isNotEmpty)
-            .toList(),
-        location: _selectedLocation,
-        locationName: _locationController.text.trim(),
-        isPublic: _isPublic,
+        imageUrl: imageUrl,
+        createdAt: DateTime.now(),
+        artistName: _artistController.text.trim().isEmpty
+            ? null
+            : _artistController.text.trim(),
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        location: _currentPosition != null
+            ? GeoPoint(_currentPosition!.latitude, _currentPosition!.longitude)
+            : null,
+        locationName: _locationController.text.trim().isEmpty
+            ? null
+            : _locationController.text.trim(),
         artType: _selectedArtType,
         artMedium: _selectedArtMedium,
-        artistId: _selectedArtist?.id,
+        isPublic: true, // Since disclaimer was accepted
+        tags: [], // Could be enhanced later
       );
 
-      final savedCapture = await _captureService.saveCapture(
-        imageUrl: updatedCapture.imageUrl,
-        title: updatedCapture.title ?? '',
-        description: updatedCapture.description ?? '',
-        artistId: updatedCapture.artistId ?? '',
-        location: updatedCapture.location,
-      );
+      setState(() => _uploadStatus = 'Saving to database...');
+      // Save to database
+      await _captureService.createCapture(capture);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Capture saved successfully')),
+          const SnackBar(
+            content: Text('Capture uploaded successfully!'),
+            backgroundColor: Colors.green,
+          ),
         );
-        Navigator.pop(context, savedCapture);
+        Navigator.of(context).pop(true); // Return success
       }
     } catch (e) {
-      debugPrint('❌ Error saving capture: $e');
       if (mounted) {
+        String errorMessage = 'Upload failed';
+
+        if (e.toString().contains('Failed to upload image')) {
+          errorMessage =
+              'Failed to upload image. Please check your internet connection.';
+        } else if (e.toString().contains('User not logged in')) {
+          errorMessage = 'Please log in to upload captures.';
+        } else if (e.toString().contains('permission-denied')) {
+          errorMessage =
+              'Permission denied. Please check your account permissions.';
+        } else if (e.toString().contains('network')) {
+          errorMessage =
+              'Network error. Please check your internet connection.';
+        } else {
+          errorMessage = 'Upload failed: ${e.toString()}';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error saving capture: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
     } finally {
       if (mounted) {
-        setState(() => _isSaving = false);
+        setState(() {
+          _uploading = false;
+          _uploadStatus = '';
+        });
       }
     }
-  }
-
-  // Check if required fields are filled
-  bool get _canSave {
-    if (_isSaving) return false;
-    if (_titleController.text.trim().isEmpty) return false;
-    if (_descriptionController.text.trim().isEmpty) return false;
-    if (_imageLoadError != null) return false;
-    return true;
-  }
-
-  Widget _buildImagePreview() {
-    if (widget.capture.imageUrl.isEmpty) {
-      return _buildImageError('No image URL provided');
-    }
-
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline,
-            width: 1,
-          ),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Image.network(
-          widget.capture.imageUrl,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) {
-              _imageLoadError = null; // Clear any previous errors
-              return child;
-            }
-            return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            debugPrint('❌ Error loading capture image: $error');
-            debugPrint('Stack trace: $stackTrace');
-            _imageLoadError = error.toString();
-            return _buildImageError('Failed to load image');
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImageError(String message) {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.error,
-            width: 1,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: Theme.of(context).colorScheme.error,
-                size: 48,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (_imageLoadError != null) ...[
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    _imageLoadError!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload Capture'),
+      appBar: core.UniversalHeader(
+        title: 'Upload Capture',
+        showLogo: false,
         actions: [
           TextButton(
-            onPressed: _isSaving ? null : (_canSave ? _save : null),
-            child: _isSaving
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+            onPressed: _uploading ? null : _submitCapture,
+            child: _uploading
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _uploadStatus.isEmpty ? 'Uploading...' : _uploadStatus,
+                      ),
+                    ],
                   )
-                : const Text('Save'),
+                : const Text('Submit'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Preview Image
-              _buildImagePreview(),
-              const SizedBox(height: 16),
-
-              // Title
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  hintText: 'Enter a title for this artwork',
-                ),
-                validator: (value) =>
-                    value?.isEmpty == true ? 'Please enter a title' : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Artist Selection
-              InkWell(
-                onTap: _selectArtist,
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Artist',
-                    border: OutlineInputBorder(),
-                    suffixIcon: Icon(Icons.search),
-                  ),
-                  child: _selectedArtist == null
-                      ? const Text(
-                          'Select Artist',
-                          style: TextStyle(color: Colors.grey),
-                        )
-                      : Text(_selectedArtist!.name),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Art Type Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedArtType,
-                decoration: const InputDecoration(
-                  labelText: 'Art Type',
-                  hintText: 'Select art type',
-                ),
-                items: _artTypes
-                    .map((type) => DropdownMenuItem(
-                          value: type,
-                          child: Text(type),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedArtType = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Art Medium Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedArtMedium,
-                decoration: const InputDecoration(
-                  labelText: 'Art Medium',
-                  hintText: 'Select medium',
-                ),
-                items: _artMediums
-                    .map((medium) => DropdownMenuItem(
-                          value: medium,
-                          child: Text(medium),
-                        ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedArtMedium = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-
-              // Description
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  hintText: 'Describe this artwork',
-                ),
-                validator: (value) => value?.isEmpty == true
-                    ? 'Please enter a description'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-
-              // Tags Field
-              TextFormField(
-                controller: _tagsController,
-                decoration: const InputDecoration(
-                  labelText: 'Tags',
-                  hintText: 'Enter tags separated by commas',
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Location Field
-              TextFormField(
-                controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location',
-                  hintText: 'Where was this art captured?',
-                  suffixIcon: Icon(Icons.location_on),
-                ),
-                onTap: () async {
-                  final result = await showDialog<Map<String, dynamic>>(
-                    context: context,
-                    builder: (context) => MapPickerDialog(
-                      initialLocation: _selectedLocation,
-                      initialAddress: _locationController.text.isNotEmpty
-                          ? _locationController.text
-                          : null,
+      body: Stack(
+        children: [
+          Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Image preview
+                  AspectRatio(
+                    aspectRatio: 1,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(widget.imageFile, fit: BoxFit.cover),
                     ),
-                  );
+                  ),
+                  const SizedBox(height: 24),
 
-                  if (result != null && mounted) {
-                    setState(() {
-                      _selectedLocation = result['location'] as GeoPoint;
-                      _locationController.text =
-                          result['address'] as String? ?? 'Location selected';
-                    });
-                  }
-                },
-                readOnly: true,
-              ),
-              const SizedBox(height: 16),
+                  // Title field
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Title *',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Title is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-              // Public/Private Toggle
-              SwitchListTile(
-                title: const Text('Make Public'),
-                subtitle: const Text(
-                  'Allow this capture to be visible in public art walks',
-                ),
-                value: _isPublic,
-                onChanged: (value) {
-                  setState(() {
-                    _isPublic = value;
-                  });
-                },
+                  // Artist field
+                  TextFormField(
+                    controller: _artistController,
+                    decoration: const InputDecoration(
+                      labelText: 'Artist',
+                      border: OutlineInputBorder(),
+                      hintText: 'Leave blank if unknown',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Photographer field (auto-populated)
+                  TextFormField(
+                    controller: _photographerController,
+                    decoration: const InputDecoration(
+                      labelText: 'Photographer',
+                      border: OutlineInputBorder(),
+                    ),
+                    readOnly: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Location field with button
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _locationController,
+                          decoration: const InputDecoration(
+                            labelText: 'Location',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: _uploading
+                            ? null
+                            : _requestLocationPermission,
+                        icon: Icon(
+                          _locationPermissionGranted
+                              ? Icons.check
+                              : Icons.location_on,
+                        ),
+                        label: Text(
+                          _locationPermissionGranted
+                              ? 'Located'
+                              : 'Get Location',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Art Type dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedArtType,
+                    decoration: const InputDecoration(
+                      labelText: 'Art Type',
+                      filled: true,
+                      fillColor: core
+                          .ArtbeatColors
+                          .backgroundPrimary, // match login_screen
+                      border: OutlineInputBorder(),
+                    ),
+                    dropdownColor: core
+                        .ArtbeatColors
+                        .backgroundPrimary, // match login_screen
+                    style: const TextStyle(color: Colors.black),
+                    isExpanded: true,
+                    items: _artTypes.map((String type) {
+                      return DropdownMenuItem<String>(
+                        value: type,
+                        child: Text(
+                          type,
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedArtType = value;
+                      });
+                    },
+                    hint: const Text(
+                      'Select art type',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Art Medium dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedArtMedium,
+                    decoration: const InputDecoration(
+                      labelText: 'Art Medium',
+                      filled: true,
+                      fillColor: core
+                          .ArtbeatColors
+                          .backgroundPrimary, // match login_screen
+                      border: OutlineInputBorder(),
+                    ),
+                    dropdownColor: core
+                        .ArtbeatColors
+                        .backgroundPrimary, // match login_screen
+                    style: const TextStyle(color: Colors.black),
+                    isExpanded: true,
+                    items: _artMediums.map((String medium) {
+                      return DropdownMenuItem<String>(
+                        value: medium,
+                        child: Text(
+                          medium,
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedArtMedium = value;
+                      });
+                    },
+                    hint: const Text(
+                      'Select art medium',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Description field
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(),
+                      hintText: 'Describe the artwork...',
+                    ),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Disclaimer checkbox
+                  CheckboxListTile(
+                    value: _disclaimerAccepted,
+                    onChanged: (value) {
+                      setState(() => _disclaimerAccepted = value ?? false);
+                    },
+                    title: const Text('Public Art Disclaimer'),
+                    subtitle: const Text(
+                      'I confirm this is public art in a safe, accessible location. No private property, unsafe areas, nudity, or derogatory content.',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+
+          // Upload overlay
+          if (_uploading)
+            Container(
+              color: Colors.black54,
+              child: Center(
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 16),
+                        Text(
+                          _uploadStatus.isEmpty
+                              ? 'Uploading...'
+                              : _uploadStatus,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Please wait while we upload your capture',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _artistController.dispose();
+    _photographerController.dispose();
+    _descriptionController.dispose();
+    _locationController.dispose();
+    super.dispose();
   }
 }

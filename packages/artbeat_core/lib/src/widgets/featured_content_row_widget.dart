@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../theme/index.dart';
+import '../theme/index.dart';
 
 /// Widget for displaying featured artist content and articles in a row
 class FeaturedContentRowWidget extends StatelessWidget {
@@ -25,10 +25,7 @@ class FeaturedContentRowWidget extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Featured Content',
-                style: theme.textTheme.headlineMedium,
-              ),
+              Text('Featured Content', style: theme.textTheme.headlineMedium),
               TextButton(
                 onPressed: onSeeAllPressed,
                 child: Text(
@@ -101,21 +98,26 @@ class FeaturedContentRowWidget extends StatelessWidget {
                       if (content['type'] == 'article') {
                         // Open article
                       } else if (content['type'] == 'artist') {
-                        Navigator.pushNamed(context, '/artist/public-profile',
-                            arguments: {'artistId': content['artistId']});
+                        Navigator.pushNamed(
+                          context,
+                          '/artist/public-profile',
+                          arguments: {'artistId': content['artistId']},
+                        );
                       }
                     },
                     child: Container(
                       width: 260,
                       margin: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 4.0),
+                        horizontal: 8.0,
+                        vertical: 4.0,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12.0),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
-                            color: ArtbeatColors.black.withOpacity(0.1),
+                            color: Color(0x1A000000), // 0.1 opacity black
                             blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            offset: Offset(0, 2),
                           ),
                         ],
                       ),
@@ -129,9 +131,10 @@ class FeaturedContentRowWidget extends StatelessWidget {
                           children: [
                             ClipRRect(
                               borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12.0)),
+                                top: Radius.circular(12.0),
+                              ),
                               child: Image.network(
-                                content['imageUrl'],
+                                content['imageUrl'] as String,
                                 height: 150,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
@@ -155,36 +158,42 @@ class FeaturedContentRowWidget extends StatelessWidget {
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 3),
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: content['type'] == 'article'
-                                          ? ArtbeatColors.info.withOpacity(0.2)
-                                          : ArtbeatColors.primaryPurple
-                                              .withOpacity(0.2),
+                                          ? const Color(
+                                              0x335BC6FF,
+                                            ) // 0.2 opacity info color
+                                          : const Color(
+                                              0x338C52FF,
+                                            ), // 0.2 opacity primaryPurple
                                       borderRadius: BorderRadius.circular(4.0),
                                     ),
                                     child: Text(
-                                      content['type']?.toUpperCase() ??
-                                          'FEATURED',
-                                      style:
-                                          theme.textTheme.labelLarge?.copyWith(
-                                        fontSize: 10,
-                                        color: content['type'] == 'article'
-                                            ? ArtbeatColors.info
-                                            : ArtbeatColors.primaryPurple,
-                                      ),
+                                      (content['type'] as String? ?? 'FEATURED')
+                                          .toUpperCase(),
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                            fontSize: 10,
+                                            color: content['type'] == 'article'
+                                                ? ArtbeatColors.info
+                                                : ArtbeatColors.primaryPurple,
+                                          ),
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    content['title'],
+                                    content['title'] as String,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.titleLarge,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    content['author'] ?? 'ARTbeat Staff',
+                                    content['author'] as String? ??
+                                        'ARTbeat Staff',
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: ArtbeatColors.textSecondary,
                                     ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show MainLayout;
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 
@@ -46,8 +48,9 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
           .orderBy('flaggedAt', descending: true)
           .get();
 
-      final posts =
-          postsQuery.docs.map((doc) => PostModel.fromFirestore(doc)).toList();
+      final posts = postsQuery.docs
+          .map((doc) => PostModel.fromFirestore(doc))
+          .toList();
 
       // Load flagged comments
       final commentsQuery = await FirebaseFirestore.instance
@@ -87,15 +90,15 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         _flaggedPosts.remove(post);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Post approved')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Post approved')));
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error approving post: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error approving post: $e')));
     }
   }
 
@@ -114,15 +117,15 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         _flaggedPosts.remove(post);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Post removed')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Post removed')));
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error removing post: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error removing post: $e')));
     }
   }
 
@@ -132,10 +135,10 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
           .collection('comments')
           .doc(comment.id)
           .update({
-        'flagged': false,
-        'moderationStatus': 'approved',
-        'moderatedAt': FieldValue.serverTimestamp(),
-      });
+            'flagged': false,
+            'moderationStatus': 'approved',
+            'moderatedAt': FieldValue.serverTimestamp(),
+          });
 
       if (!mounted) return;
 
@@ -143,15 +146,15 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         _flaggedComments.remove(comment);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comment approved')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Comment approved')));
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error approving comment: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error approving comment: $e')));
     }
   }
 
@@ -166,9 +169,7 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
       await FirebaseFirestore.instance
           .collection('posts')
           .doc(comment.postId)
-          .update({
-        'commentCount': FieldValue.increment(-1),
-      });
+          .update({'commentCount': FieldValue.increment(-1)});
 
       if (!mounted) return;
 
@@ -176,15 +177,15 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         _flaggedComments.remove(comment);
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comment removed')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Comment removed')));
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error removing comment: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error removing comment: $e')));
     }
   }
 
@@ -217,8 +218,10 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
                     ),
                     Text(
                       post.location,
-                      style:
-                          TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -252,9 +255,7 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
                               width: 120,
                               height: 120,
                               color: Colors.grey.shade300,
-                              child: const Center(
-                                child: Icon(Icons.error),
-                              ),
+                              child: const Center(child: Icon(Icons.error)),
                             );
                           },
                         ),
@@ -269,12 +270,14 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
             Wrap(
               spacing: 8,
               children: post.tags
-                  .map((tag) => Chip(
-                        label: Text(tag),
-                        padding: EdgeInsets.zero,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        labelStyle: const TextStyle(fontSize: 12),
-                      ))
+                  .map(
+                    (tag) => Chip(
+                      label: Text(tag),
+                      padding: EdgeInsets.zero,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      labelStyle: const TextStyle(fontSize: 12),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 8),
@@ -330,9 +333,11 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
                       ? NetworkImage(comment.userAvatarUrl)
                       : null,
                   child: comment.userAvatarUrl.isEmpty
-                      ? Text(comment.userName.isNotEmpty
-                          ? comment.userName[0]
-                          : '?')
+                      ? Text(
+                          comment.userName.isNotEmpty
+                              ? comment.userName[0]
+                              : '?',
+                        )
                       : null,
                 ),
                 const SizedBox(width: 8),
@@ -345,8 +350,10 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
                     ),
                     Text(
                       'Comment Type: ${comment.type}',
-                      style:
-                          TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -423,47 +430,52 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Moderation Queue'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'Posts (${_flaggedPosts.length})'),
-            Tab(text: 'Comments (${_flaggedComments.length})'),
-          ],
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Moderation Queue'),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: 'Posts (${_flaggedPosts.length})'),
+              Tab(text: 'Comments (${_flaggedComments.length})'),
+            ],
+          ),
         ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                // Posts tab
-                _flaggedPosts.isEmpty
-                    ? const Center(child: Text('No flagged posts to review'))
-                    : ListView.builder(
-                        itemCount: _flaggedPosts.length,
-                        itemBuilder: (context, index) {
-                          return _buildPostItem(_flaggedPosts[index]);
-                        },
-                      ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : TabBarView(
+                controller: _tabController,
+                children: [
+                  // Posts tab
+                  _flaggedPosts.isEmpty
+                      ? const Center(child: Text('No flagged posts to review'))
+                      : ListView.builder(
+                          itemCount: _flaggedPosts.length,
+                          itemBuilder: (context, index) {
+                            return _buildPostItem(_flaggedPosts[index]);
+                          },
+                        ),
 
-                // Comments tab
-                _flaggedComments.isEmpty
-                    ? const Center(child: Text('No flagged comments to review'))
-                    : ListView.builder(
-                        itemCount: _flaggedComments.length,
-                        itemBuilder: (context, index) {
-                          return _buildCommentItem(_flaggedComments[index]);
-                        },
-                      ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _loadModerationQueue,
-        tooltip: 'Refresh',
-        child: const Icon(Icons.refresh),
+                  // Comments tab
+                  _flaggedComments.isEmpty
+                      ? const Center(
+                          child: Text('No flagged comments to review'),
+                        )
+                      : ListView.builder(
+                          itemCount: _flaggedComments.length,
+                          itemBuilder: (context, index) {
+                            return _buildCommentItem(_flaggedComments[index]);
+                          },
+                        ),
+                ],
+              ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _loadModerationQueue,
+          tooltip: 'Refresh',
+          child: const Icon(Icons.refresh),
+        ),
       ),
     );
   }

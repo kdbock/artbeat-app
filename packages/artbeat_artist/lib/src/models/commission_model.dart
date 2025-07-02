@@ -50,34 +50,43 @@ class CommissionModel {
     // Convert transactions if they exist
     List<CommissionTransaction>? transactions;
     if (data['transactions'] != null) {
-      transactions = List<Map<String, dynamic>>.from(data['transactions'])
-          .map(
-              (transactionMap) => CommissionTransaction.fromMap(transactionMap))
+      transactions = (data['transactions'] as List<dynamic>?)
+          ?.map((transactionMap) => CommissionTransaction.fromMap(
+              transactionMap as Map<String, dynamic>))
           .toList();
     }
 
     return CommissionModel(
       id: doc.id,
-      galleryId: data['galleryId'],
-      galleryUserId: data['galleryUserId'],
-      artistId: data['artistId'],
-      artistUserId: data['artistUserId'],
-      commissionRate: (data['commissionRate'] as num).toDouble(),
-      status: _statusFromString(data['status']),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: data['updatedAt'] != null
+      galleryId: data['galleryId'] != null ? data['galleryId'].toString() : '',
+      galleryUserId:
+          data['galleryUserId'] != null ? data['galleryUserId'].toString() : '',
+      artistId: data['artistId'] != null ? data['artistId'].toString() : '',
+      artistUserId:
+          data['artistUserId'] != null ? data['artistUserId'].toString() : '',
+      commissionRate: data['commissionRate'] is num
+          ? (data['commissionRate'] as num).toDouble()
+          : 0.0,
+      status: _statusFromString(
+          data['status'] != null ? data['status'].toString() : 'pending'),
+      createdAt: data['createdAt'] is Timestamp
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      updatedAt: data['updatedAt'] is Timestamp
           ? (data['updatedAt'] as Timestamp).toDate()
           : null,
-      completedAt: data['completedAt'] != null
+      completedAt: data['completedAt'] is Timestamp
           ? (data['completedAt'] as Timestamp).toDate()
           : null,
-      paidAt: data['paidAt'] != null
+      paidAt: data['paidAt'] is Timestamp
           ? (data['paidAt'] as Timestamp).toDate()
           : null,
-      artworkIds: data['artworkIds'] != null
-          ? List<String>.from(data['artworkIds'])
+      artworkIds: data['artworkIds'] is List
+          ? (data['artworkIds'] as List).map((e) => e.toString()).toList()
           : null,
-      terms: data['terms'] as Map<String, dynamic>?,
+      terms: data['terms'] is Map
+          ? Map<String, dynamic>.from(data['terms'] as Map)
+          : null,
       transactions: transactions,
     );
   }
@@ -196,15 +205,23 @@ class CommissionTransaction {
   /// Convert Map to CommissionTransaction
   factory CommissionTransaction.fromMap(Map<String, dynamic> map) {
     return CommissionTransaction(
-      id: map['id'],
-      artworkId: map['artworkId'],
-      artworkTitle: map['artworkTitle'],
-      saleAmount: (map['saleAmount'] as num).toDouble(),
-      commissionAmount: (map['commissionAmount'] as num).toDouble(),
-      transactionDate: (map['transactionDate'] as Timestamp).toDate(),
-      paymentMethod: map['paymentMethod'],
-      status: map['status'],
-      receiptId: map['receiptId'],
+      id: map['id'] != null ? map['id'].toString() : '',
+      artworkId: map['artworkId'] != null ? map['artworkId'].toString() : '',
+      artworkTitle:
+          map['artworkTitle'] != null ? map['artworkTitle'].toString() : '',
+      saleAmount: map['saleAmount'] is num
+          ? (map['saleAmount'] as num).toDouble()
+          : 0.0,
+      commissionAmount: map['commissionAmount'] is num
+          ? (map['commissionAmount'] as num).toDouble()
+          : 0.0,
+      transactionDate: map['transactionDate'] is Timestamp
+          ? (map['transactionDate'] as Timestamp).toDate()
+          : DateTime.now(),
+      paymentMethod:
+          map['paymentMethod'] != null ? map['paymentMethod'].toString() : null,
+      status: map['status'] != null ? map['status'].toString() : '',
+      receiptId: map['receiptId'] != null ? map['receiptId'].toString() : null,
     );
   }
 

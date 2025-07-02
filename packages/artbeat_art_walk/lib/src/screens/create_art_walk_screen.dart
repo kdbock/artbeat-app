@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -31,13 +32,44 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   @override
   void initState() {
     super.initState();
+    // Check for passed capture and pre-select it
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is Map && args['capture'] != null) {
+        final capture = args['capture'];
+        // Try to cast to PublicArtModel or convert if needed
+        if (capture is PublicArtModel) {
+          setState(() {
+            _selectedArtIds.add(capture.id);
+          });
+        } else if (capture is CaptureModel) {
+          // Convert CaptureModel to PublicArtModel if needed
+          final publicArt = PublicArtModel(
+            id: capture.id,
+            title: capture.title ?? 'Captured Art',
+            artistName: capture.artistName ?? '',
+            imageUrl: capture.imageUrl,
+            location: capture.location ?? const GeoPoint(0, 0),
+            description: capture.description ?? '',
+            tags: capture.tags ?? [],
+            userId: capture.userId,
+            usersFavorited: const [],
+            createdAt: Timestamp.fromDate(capture.createdAt),
+          );
+          setState(() {
+            _selectedArtIds.add(publicArt.id);
+            _availablePublicArt.insert(0, publicArt);
+          });
+        }
+      }
+    });
     _loadAvailablePublicArt();
     _getCurrentLocation(); // Added
   }
 
   Future<void> _getCurrentLocation() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         // Handle location services disabled...
         return;
@@ -65,27 +97,45 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       _isLoading = true;
     });
     try {
-      // TODO: Replace with a more appropriate method if available, e.g., getAllPublicArt()
-      // Using getPublicArtNearLocation with a very large radius to fetch as much art as possible.
-      // This is not ideal for performance with large datasets.
-      // Consider adding a dedicated method in ArtWalkService to get all public art
-      // or public art suitable for selection in an art walk.
-      final artWorks = await _artWalkService.getPublicArtNearLocation(
-        latitude:
-            35.7796, // Default to a central NC latitude or user's current if available
-        longitude:
-            -78.6382, // Default to a central NC longitude or user's current if available
-        radiusKm: 100000, // Large radius to capture more art
+      // Use current position if available, otherwise default to central NC
+      final latitude = _currentPosition?.latitude ?? 35.7796;
+      final longitude = _currentPosition?.longitude ?? -78.6382;
+
+      // Fetch all captures (like dashboard)
+      final captureService = CaptureService();
+      final captures = await captureService.getAllCaptures(limit: 50);
+      final List<PublicArtModel> captureArt = captures
+          .map(
+            (capture) => PublicArtModel(
+              id: capture.id,
+              title: capture.title ?? 'Captured Art',
+              artistName: capture.artistName ?? '',
+              imageUrl: capture.imageUrl,
+              location: capture.location ?? const GeoPoint(0, 0),
+              description: capture.description ?? '',
+              tags: capture.tags ?? [],
+              userId: capture.userId,
+              usersFavorited: const [],
+              createdAt: Timestamp.fromDate(capture.createdAt),
+            ),
+          )
+          .toList();
+
+      // Optionally, also fetch public art near location
+      final publicArt = await _artWalkService.getPublicArtNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: 50.0,
       );
+
       setState(() {
-        _availablePublicArt = artWorks;
+        _availablePublicArt = [...publicArt, ...captureArt];
       });
     } catch (e) {
-      // Error loading public art: $e
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading public art: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading art: $e')));
       }
     } finally {
       if (mounted) {
@@ -97,8 +147,9 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   }
 
   Future<void> _pickCoverImage() async {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       setState(() {
         _coverImageFile = File(pickedFile.path);
@@ -127,7 +178,8 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       // Ensure we have a location
       if (_currentPosition == null) {
         throw Exception(
-            'Location not available. Please enable location services.');
+          'Location not available. Please enable location services.',
+        );
       }
 
       // Create a route data string (simplified for now)
@@ -138,8 +190,10 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         title: _titleController.text,
         description: _descriptionController.text,
         artworkIds: _selectedArtIds,
-        startLocation:
-            GeoPoint(_currentPosition!.latitude, _currentPosition!.longitude),
+        startLocation: GeoPoint(
+          _currentPosition!.latitude,
+          _currentPosition!.longitude,
+        ),
         routeData: routeData,
         coverImageUrl: null, // Handle cover image separately if needed
         isPublic: _isPublic,
@@ -153,9 +207,9 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating art walk: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error creating art walk: $e')));
       }
     } finally {
       if (mounted) {
@@ -175,7 +229,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder: (context) => ArtWalkInfoCard(
                   onDismiss: () {
@@ -310,8 +364,8 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
     }
     if (_availablePublicArt.isEmpty) {
       return const Center(
-          child:
-              Text('No public art found. Try adding some public art first!'));
+        child: Text('No public art found. Try adding some public art first!'),
+      );
     }
     return ListView.builder(
       shrinkWrap: true,
@@ -334,8 +388,9 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                   )
                 : const Icon(Icons.image_not_supported, size: 50),
             title: Text(artPiece.title),
-            subtitle: Text(artPiece.artistName ??
-                'Unknown Artist'), // Corrected: was artist
+            subtitle: Text(
+              artPiece.artistName ?? 'Unknown Artist',
+            ), // Corrected: was artist
             trailing: Checkbox(
               value: isSelected,
               onChanged: (bool? value) {

@@ -42,9 +42,7 @@ class AuthModuleApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Core providers
-        ChangeNotifierProvider<UserService>(
-          create: (_) => UserService(),
-        ),
+        ChangeNotifierProvider<UserService>(create: (_) => UserService()),
         // Corrected Provider for AuthService
         Provider<AuthService>(
           create: (_) => AuthService(), // Removed userService parameter
@@ -70,9 +68,7 @@ class AuthModuleHome extends StatelessWidget {
     final auth = Provider.of<AuthService>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ARTbeat Auth Module'),
-      ),
+      appBar: AppBar(title: const Text('ARTbeat Auth Module')),
       body: Center(
         child: auth.currentUser != null
             ? Column(
@@ -93,7 +89,7 @@ class AuthModuleHome extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<LoginScreen>(
                         builder: (_) => const LoginScreen(),
                       ),
                     ),
@@ -103,7 +99,7 @@ class AuthModuleHome extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<RegisterScreen>(
                         builder: (_) => const RegisterScreen(),
                       ),
                     ),
@@ -113,7 +109,7 @@ class AuthModuleHome extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<ForgotPasswordScreen>(
                         builder: (_) => const ForgotPasswordScreen(),
                       ),
                     ),

@@ -13,7 +13,7 @@ class UserService extends ChangeNotifier {
       notifyListeners();
 
       // Add your refresh logic here
-      await Future.delayed(const Duration(seconds: 1)); // Simulate network call
+      await Future<void>.delayed(const Duration(seconds: 1)); // Simulate network call
 
       _error = null;
     } catch (e) {

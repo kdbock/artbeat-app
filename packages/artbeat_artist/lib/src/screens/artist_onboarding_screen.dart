@@ -1,9 +1,9 @@
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter/material.dart';
 import '../services/artist_profile_service.dart';
 
 class ArtistOnboardingScreen extends StatefulWidget {
-  final UserModel user;
+  final core.UserModel user;
   final VoidCallback? onComplete;
 
   const ArtistOnboardingScreen({
@@ -69,7 +69,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
     try {
       // Create artist profile
       final artistProfileService = ArtistProfileService();
-      final userService = UserService();
+      final userService = core.UserService();
 
       await artistProfileService.createArtistProfile(
         userId: widget.user.id,
@@ -78,15 +78,14 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
         website: _websiteController.text,
         mediums: _selectedMediums,
         styles: _selectedStyles,
-        userType: UserType.artist,
-        subscriptionTier: SubscriptionTier.artistBasic,
+        userType: core.UserType.artist,
+        subscriptionTier: core.SubscriptionTier.artistBasic,
       );
 
       // Update user type in core user model
-      await userService.updateUserProfile(
-        userId: widget.user.id,
-        userType: UserType.artist.name,
-      );
+      await userService.updateUserProfileWithMap({
+        'userType': core.UserType.artist.name,
+      });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -109,134 +108,138 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Become an Artist'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome to ARTbeat for Artists',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Complete your artist profile to get started.',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _bioController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Artist Bio',
-                  hintText: 'Tell us about your artistic journey...',
+    return core.MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: const core.UniversalHeader(
+          title: 'Become an Artist',
+          showLogo: false,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome to ARTbeat for Artists',
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'Please enter your bio';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _websiteController,
-                decoration: const InputDecoration(
-                  labelText: 'Website (Optional)',
-                  hintText: 'https://your-portfolio.com',
+                const SizedBox(height: 8),
+                Text(
+                  'Complete your artist profile to get started.',
+                  style: Theme.of(context).textTheme.bodyLarge,
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Art Mediums',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: _availableMediums.map((medium) {
-                  return FilterChip(
-                    label: Text(medium),
-                    selected: _selectedMediums.contains(medium),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedMediums.add(medium);
-                        } else {
-                          _selectedMediums.remove(medium);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-              if (_selectedMediums.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Please select at least one medium',
-                    style: TextStyle(color: Colors.red),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _bioController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Artist Bio',
+                    hintText: 'Tell us about your artistic journey...',
+                  ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'Please enter your bio';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _websiteController,
+                  decoration: const InputDecoration(
+                    labelText: 'Website (Optional)',
+                    hintText: 'https://your-portfolio.com',
                   ),
                 ),
-              const SizedBox(height: 24),
-              Text(
-                'Art Styles',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: _availableStyles.map((style) {
-                  return FilterChip(
-                    label: Text(style),
-                    selected: _selectedStyles.contains(style),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedStyles.add(style);
-                        } else {
-                          _selectedStyles.remove(style);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
-              ),
-              if (_selectedStyles.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Please select at least one style',
-                    style: TextStyle(color: Colors.red),
+                const SizedBox(height: 24),
+                Text(
+                  'Art Mediums',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: _availableMediums.map((medium) {
+                    return FilterChip(
+                      label: Text(medium),
+                      selected: _selectedMediums.contains(medium),
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedMediums.add(medium);
+                          } else {
+                            _selectedMediums.remove(medium);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                if (_selectedMediums.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Please select at least one medium',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                Text(
+                  'Art Styles',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: _availableStyles.map((style) {
+                    return FilterChip(
+                      label: Text(style),
+                      selected: _selectedStyles.contains(style),
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedStyles.add(style);
+                          } else {
+                            _selectedStyles.remove(style);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                if (_selectedStyles.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'Please select at least one style',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ||
+                            _selectedMediums.isEmpty ||
+                            _selectedStyles.isEmpty
+                        ? null
+                        : _submitForm,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Create Artist Profile'),
                   ),
                 ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ||
-                          _selectedMediums.isEmpty ||
-                          _selectedStyles.isEmpty
-                      ? null
-                      : _submitForm,
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text('Create Artist Profile'),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

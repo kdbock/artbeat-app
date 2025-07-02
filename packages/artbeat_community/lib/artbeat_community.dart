@@ -1,5 +1,5 @@
 /// ARTbeat Community package with social and community functionality
-library;
+library artbeat_community;
 
 // Export all screens via the barrel file
 export 'screens/screens.dart';

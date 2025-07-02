@@ -18,14 +18,13 @@ class FavoriteModel {
   factory FavoriteModel.fromMap(Map<String, dynamic> data, String documentId) {
     return FavoriteModel(
       id: documentId,
-      title: data['title'] ?? '',
-      description: data['description'] ?? '',
-      type: data['type'] ?? 'content',
-      imageUrl: data['imageUrl'] ?? '',
-      metadata:
-          data['metadata'] != null
-              ? Map<String, dynamic>.from(data['metadata'])
-              : null,
+      title: (data['title'] as String?) ?? '',
+      description: (data['description'] as String?) ?? '',
+      type: (data['type'] as String?) ?? 'content',
+      imageUrl: (data['imageUrl'] as String?) ?? '',
+      metadata: data['metadata'] != null
+          ? Map<String, dynamic>.from(data['metadata'] as Map<String, dynamic>)
+          : null,
     );
   }
 

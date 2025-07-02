@@ -5,8 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_community/artbeat_community.dart';
-import 'package:artbeat_community/screens/screens.dart';
-import 'package:artbeat_community/services/services.dart';
 
 // You can replace this with actual Firebase options for development
 // Get Firebase configuration from ConfigService
@@ -46,9 +44,7 @@ class CommunityModuleApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Core providers
-        ChangeNotifierProvider<UserService>(
-          create: (_) => UserService(),
-        ),
+        ChangeNotifierProvider<UserService>(create: (_) => UserService()),
         ChangeNotifierProvider<CommunityService>(
           create: (_) => CommunityService(),
         ),
@@ -70,13 +66,17 @@ class CommunityModuleHome extends StatelessWidget {
 
   // Helper method to build navigation buttons
   Widget _buildNavButton(
-      BuildContext context, String title, Widget destination, IconData icon) {
+    BuildContext context,
+    String title,
+    Widget destination,
+    IconData icon,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: ElevatedButton.icon(
         onPressed: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => destination),
+          MaterialPageRoute<void>(builder: (_) => destination),
         ),
         icon: Icon(icon),
         label: Text(title),
@@ -105,70 +105,101 @@ class CommunityModuleHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ARTbeat Community Module'),
-      ),
+      appBar: AppBar(title: const Text('ARTbeat Community Module')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Community Module Demo',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
+            const Text(
+              'Community Module Demo',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 30),
 
             // Feed section
-            const Text('Feed Screens',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            _buildSectionCard(
-              context,
-              [
-                _buildNavButton(context, 'Community Feed',
-                    const CommunityFeedScreen(), Icons.view_stream),
-                _buildNavButton(context, 'Social Feed',
-                    const SocialFeedScreen(), Icons.people),
-                _buildNavButton(context, 'Create Post',
-                    const CreatePostScreen(), Icons.add_box),
-                _buildNavButton(context, 'Trending Content',
-                    const TrendingContentScreen(), Icons.trending_up),
-              ],
+            const Text(
+              'Feed Screens',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 10),
+            _buildSectionCard(context, [
+              _buildNavButton(
+                context,
+                'Unified Community Feed',
+                const UnifiedCommunityFeed(),
+                Icons.view_stream,
+              ),
+              _buildNavButton(
+                context,
+                'Create Post',
+                const CreatePostScreen(),
+                Icons.add_box,
+              ),
+              _buildNavButton(
+                context,
+                'Trending Content',
+                const TrendingContentScreen(),
+                Icons.trending_up,
+              ),
+            ]),
             const SizedBox(height: 20),
 
             // Moderation section
-            const Text('Moderation',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            _buildSectionCard(
-              context,
-              [
-                _buildNavButton(context, 'Moderation Queue',
-                    const ModerationQueueScreen(), Icons.admin_panel_settings),
-              ],
+            const Text(
+              'Moderation',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 10),
+            _buildSectionCard(context, [
+              _buildNavButton(
+                context,
+                'Moderation Queue',
+                const ModerationQueueScreen(),
+                Icons.admin_panel_settings,
+              ),
+            ]),
             const SizedBox(height: 20),
 
             // Other features
-            const Text('Other Features',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            _buildSectionCard(
-              context,
-              [
-                _buildNavButton(
-                    context, 'Gifts', const GiftsScreen(), Icons.card_giftcard),
-                _buildNavButton(context, 'Portfolios', const PortfoliosScreen(),
-                    Icons.photo_album),
-                _buildNavButton(
-                    context, 'Studios', const StudiosScreen(), Icons.forum),
-                _buildNavButton(context, 'Commissions',
-                    const CommissionsScreen(), Icons.work),
-                _buildNavButton(context, 'Sponsorships',
-                    const SponsorshipScreen(), Icons.volunteer_activism),
-              ],
+            const Text(
+              'Other Features',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 10),
+            _buildSectionCard(context, [
+              _buildNavButton(
+                context,
+                'Gifts',
+                const GiftsScreen(),
+                Icons.card_giftcard,
+              ),
+              _buildNavButton(
+                context,
+                'Portfolios',
+                const PortfoliosScreen(),
+                Icons.photo_album,
+              ),
+              _buildNavButton(
+                context,
+                'Studios',
+                const StudiosScreen(),
+                Icons.forum,
+              ),
+              _buildNavButton(
+                context,
+                'Commissions',
+                const CommissionsScreen(),
+                Icons.work,
+              ),
+              _buildNavButton(
+                context,
+                'Sponsorships',
+                const SponsorshipScreen(),
+                Icons.volunteer_activism,
+              ),
+            ]),
           ],
         ),
       ),

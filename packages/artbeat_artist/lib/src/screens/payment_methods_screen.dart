@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 /// Screen for managing payment methods
@@ -13,13 +13,13 @@ class PaymentMethodsScreen extends StatefulWidget {
 }
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
-  final PaymentService _paymentService = PaymentService();
+  final core.PaymentService _paymentService = core.PaymentService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool _isLoading = true;
   String? _errorMessage;
-  List<PaymentMethodModel> _paymentMethods = [];
+  List<core.PaymentMethodModel> _paymentMethods = [];
   String? _defaultPaymentMethodId;
 
   @override
@@ -55,8 +55,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       }
 
       final customerData = customerDoc.data();
-      final stripeCustomerId = customerData?['stripeCustomerId'];
-      _defaultPaymentMethodId = customerData?['defaultPaymentMethodId'];
+      final stripeCustomerId = customerData?['stripeCustomerId'] as String?;
+      _defaultPaymentMethodId =
+          customerData?['defaultPaymentMethodId'] as String?;
 
       if (stripeCustomerId == null) {
         setState(() {
@@ -95,14 +96,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
       String? stripeCustomerId;
       if (customerDoc.exists) {
-        stripeCustomerId = customerDoc.data()?['stripeCustomerId'];
+        stripeCustomerId = customerDoc.data()?['stripeCustomerId'] as String?;
       }
 
       if (stripeCustomerId == null) {
         // Create new customer
         final userDoc = await _firestore.collection('users').doc(userId).get();
-        final email = userDoc.data()?['email'] ?? '';
-        final name = userDoc.data()?['fullName'] ?? '';
+        final email = userDoc.data()?['email'] as String? ?? '';
+        final name = userDoc.data()?['fullName'] as String? ?? '';
 
         stripeCustomerId = await _paymentService.createCustomer(
           email: email,
@@ -159,7 +160,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         throw Exception('Customer not found');
       }
 
-      final stripeCustomerId = customerDoc.data()?['stripeCustomerId'];
+      final stripeCustomerId =
+          customerDoc.data()?['stripeCustomerId'] as String?;
       if (stripeCustomerId == null) {
         throw Exception('Stripe customer not found');
       }
@@ -330,7 +332,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     );
   }
 
-  Widget _buildPaymentMethodItem(PaymentMethodModel method) {
+  Widget _buildPaymentMethodItem(core.PaymentMethodModel method) {
     final isDefault = _defaultPaymentMethodId == method.id;
     final card = method.card;
 

@@ -59,7 +59,7 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_favoriteData?['title'] ?? 'Favorite Detail'),
+        title: Text((_favoriteData?['title'] as String?) ?? 'Favorite Detail'),
         actions: _isCurrentUser
             ? [
                 IconButton(
@@ -73,8 +73,8 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _favoriteData == null
-              ? _buildNotFoundState()
-              : _buildDetailView(theme),
+          ? _buildNotFoundState()
+          : _buildDetailView(theme),
     );
   }
 
@@ -105,13 +105,15 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
 
   Widget _buildDetailView(ThemeData theme) {
     final data = _favoriteData!;
-    final String type = data['type'] ?? 'unknown';
-    final String? imageUrl = data['imageUrl'];
-    final String title = data['title'] ?? 'Untitled';
-    final String description = data['description'] ?? '';
-    final String content = data['content'] ?? '';
-    final String? sourceUrl = data['sourceUrl'];
-    final int createdTimestamp = data['createdAt'] ?? 0;
+    final String type = data['type'] as String? ?? 'unknown';
+    final String? imageUrl = data['imageUrl'] as String?;
+    final String title = data['title'] as String? ?? 'Untitled';
+    final String description = data['description'] as String? ?? '';
+    final String content = data['content'] as String? ?? '';
+    final String? sourceUrl = data['sourceUrl'] as String?;
+    final int createdTimestamp = data['createdAt'] is int
+        ? data['createdAt'] as int
+        : int.tryParse(data['createdAt']?.toString() ?? '') ?? 0;
     final DateTime createdAt = DateTime.fromMillisecondsSinceEpoch(
       createdTimestamp,
     );

@@ -32,9 +32,9 @@ class _StudiosScreenState extends State<StudiosScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading studios: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading studios: $e')));
     }
   }
 
@@ -64,9 +64,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: _studios.isEmpty
               ? const SliverToBoxAdapter(
-                  child: Center(
-                    child: Text('No studios available'),
-                  ),
+                  child: Center(child: Text('No studios available')),
                 )
               : SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -75,78 +73,75 @@ class _StudiosScreenState extends State<StudiosScreen> {
                     crossAxisSpacing: 16.0,
                     childAspectRatio: 1.0,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final studio = _studios[index];
-                      return InkWell(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                StudioChatScreen(studioId: studio.id),
-                          ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final studio = _studios[index];
+                    return InkWell(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) =>
+                              StudioChatScreen(studioId: studio.id),
                         ),
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Privacy indicator
-                                Icon(
-                                  studio.privacyType == 'public'
-                                      ? Icons.public
-                                      : Icons.lock,
-                                  color: Colors.grey,
+                      ),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Privacy indicator
+                              Icon(
+                                studio.privacyType == 'public'
+                                    ? Icons.public
+                                    : Icons.lock,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(height: 8),
+                              // Studio name
+                              Text(
+                                studio.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
                                 ),
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              // Member count
+                              Text(
+                                '${studio.memberList.length} members',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              // Tags
+                              if (studio.tags.isNotEmpty) ...[
                                 const SizedBox(height: 8),
-                                // Studio name
-                                Text(
-                                  studio.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                // Member count
-                                Text(
-                                  '${studio.memberList.length} members',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                                // Tags
-                                if (studio.tags.isNotEmpty) ...[
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 4,
-                                    runSpacing: 4,
-                                    children: studio.tags
-                                        .take(2)
-                                        .map(
-                                          (tag) => Chip(
-                                            label: Text(
-                                              tag,
-                                              style:
-                                                  const TextStyle(fontSize: 10),
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: studio.tags
+                                      .take(2)
+                                      .map(
+                                        (tag) => Chip(
+                                          label: Text(
+                                            tag,
+                                            style: const TextStyle(
+                                              fontSize: 10,
                                             ),
-                                            materialTapTargetSize:
-                                                MaterialTapTargetSize
-                                                    .shrinkWrap,
                                           ),
-                                        )
-                                        .toList(),
-                                  ),
-                                ],
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
                               ],
-                            ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                    childCount: _studios.length,
-                  ),
+                      ),
+                    );
+                  }, childCount: _studios.length),
                 ),
         ),
       ],

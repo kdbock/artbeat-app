@@ -4,13 +4,13 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
     sdk: flutter
-    
+
   # Core dependencies
   artbeat_core:
     path: ../artbeat_core
@@ -18,22 +18,22 @@ dependencies:
     path: ../artbeat_artist
 
   # Firebase dependencies - match main project versions
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.17.4
-  cloud_firestore: ^4.15.4
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.9
+  firebase_storage: ^12.4.7
+  firebase_analytics: ^11.5.0
+  firebase_app_check: ^0.3.2+7
 
   # Utilities
   provider: ^6.0.5
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^2.0.0
-  mockito: ^5.4.2
-  fake_cloud_firestore: ^2.4.2
-  build_runner: ^2.4.6
 
 flutter:
   uses-material-design: true
   assets:
     - assets/default_profile.png
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

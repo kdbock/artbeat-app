@@ -1,0 +1,52 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "build/**"
+    - "lib/generated_plugin_registrant.dart"
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_const_constructors_in_immutables: true
+    avoid_print: true
+    avoid_unnecessary_containers: true
+    avoid_web_libraries_in_flutter: true
+    prefer_if_null_operators: true
+    prefer_null_aware_operators: true
+    unnecessary_null_in_if_null_operators: false
+    prefer_collection_literals: true
+    prefer_spread_collections: true
+    prefer_for_elements_to_map_fromIterable: true
+    prefer_if_elements_to_conditional_expressions: true
+    prefer_inlined_adds: true
+    prefer_function_declarations_over_variables: true
+    prefer_generic_function_type_aliases: true
+    prefer_typing_uninitialized_variables: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    prefer_relative_imports: true
+    avoid_redundant_argument_values: true
+    avoid_void_async: true
+    cancel_subscriptions: true
+    close_sinks: true
+    comment_references: true
+    literal_only_boolean_expressions: true
+    no_adjacent_strings_in_list: true
+    prefer_asserts_in_initializer_lists: true
+    prefer_interpolation_to_compose_strings: true
+    unnecessary_lambdas: true
+    unnecessary_parenthesis: true
+    unnecessary_raw_strings: true
+    unnecessary_string_escapes: true
+    unnecessary_string_interpolations: true
+    use_raw_strings: true
+    use_string_buffers: true
+    avoid_catches_without_on_clauses: true
+    avoid_catching_errors: true
+    use_rethrow_when_possible: true
+
+    lines_longer_than_80_chars: false

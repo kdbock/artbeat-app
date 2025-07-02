@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_artist/src/screens/screens.dart';
-import 'package:artbeat_artist/src/screens/artist_onboarding_screen.dart';
 
 // Get Firebase configuration from ConfigService
 final firebaseConfig = ConfigService.instance.firebaseConfig;
@@ -119,7 +118,7 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.dashboard,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                     builder: (_) => const ArtistDashboardScreen()),
               ),
             ),
@@ -130,7 +129,8 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.people,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ArtistBrowseScreen()),
+                MaterialPageRoute<void>(
+                    builder: (_) => const ArtistBrowseScreen()),
               ),
             ),
             _buildFeatureCard(
@@ -140,7 +140,8 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.image,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ArtworkBrowseScreen()),
+                MaterialPageRoute<void>(
+                    builder: (_) => const ArtworkBrowseScreen()),
               ),
             ),
             const SizedBox(height: 40),
@@ -157,7 +158,8 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.card_membership,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+                MaterialPageRoute<void>(
+                    builder: (_) => const SubscriptionScreen()),
               ),
             ),
             _buildFeatureCard(
@@ -167,7 +169,7 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.compare_arrows,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                     builder: (_) => const SubscriptionComparisonScreen()),
               ),
             ),
@@ -185,7 +187,7 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.analytics,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                     builder: (_) => const GalleryAnalyticsDashboardScreen()),
               ),
             ),
@@ -196,7 +198,7 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.group_work,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                     builder: (_) => const GalleryArtistsManagementScreen()),
               ),
             ),
@@ -207,7 +209,8 @@ class ArtistModuleHome extends StatelessWidget {
               Icons.event,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const EventCreationScreen()),
+                MaterialPageRoute<void>(
+                    builder: (_) => const EventCreationScreen()),
               ),
             ),
             const SizedBox(height: 20),

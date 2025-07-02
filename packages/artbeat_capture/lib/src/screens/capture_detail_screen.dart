@@ -1,178 +1,127 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../models/capture_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart' show CaptureService;
 
 class CaptureDetailScreen extends StatelessWidget {
-  final CaptureModel capture;
+  final String captureId;
+  final CaptureModel? capture;
   final bool isCurrentUser;
 
   const CaptureDetailScreen({
     super.key,
-    required this.capture,
+    this.captureId = '',
+    this.capture,
     this.isCurrentUser = false,
-  });
+  }) : assert(
+         captureId != '' || capture != null,
+         'Either captureId or capture must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(capture.title ?? 'Capture Details'),
-        actions: [
-          if (isCurrentUser)
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                // TODO: Navigate to edit screen
-              },
-            ),
-        ],
+    return MainLayout(
+      currentIndex: -1, // No navigation highlight for detail screens
+      child: Scaffold(
+        appBar: const UniversalHeader(
+          title: 'Capture Details',
+          showLogo: false,
+        ),
+        body: capture != null
+            ? _buildCaptureDetails(context, capture!)
+            : FutureBuilder<CaptureModel?>(
+                future: CaptureService().getCaptureById(captureId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  if (!snapshot.hasData || snapshot.data == null) {
+                    return const Center(child: Text('Capture not found'));
+                  }
+                  return _buildCaptureDetails(context, snapshot.data!);
+                },
+              ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Image
-            AspectRatio(
-              aspectRatio: 1,
-              child: Hero(
-                tag: 'capture_${capture.id}',
-                child: Image.network(
-                  capture.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Center(
-                    child: Icon(Icons.broken_image_outlined),
-                  ),
-                ),
+    );
+  }
+
+  Widget _buildCaptureDetails(BuildContext context, CaptureModel capture) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          AspectRatio(
+            aspectRatio: 1,
+            child: Hero(
+              tag: 'capture_${capture.id}',
+              child: Image.network(
+                capture.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Theme.of(context).colorScheme.surface,
+                    child: const Center(
+                      child: Icon(Icons.error_outline, size: 48),
+                    ),
+                  );
+                },
               ),
             ),
-
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title and Privacy
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (capture.title != null) ...[
+                  Text(
+                    capture.title!,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                if (capture.description != null) ...[
+                  Text(
+                    capture.description!,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                if (capture.locationName != null) ...[
                   Row(
                     children: [
-                      Expanded(
-                        child: Text(
-                          capture.title ?? 'Untitled',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                      ),
-                      Icon(
-                        capture.isPublic ? Icons.public : Icons.lock_outline,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
+                      const Icon(Icons.location_on_outlined, size: 16),
+                      const SizedBox(width: 4),
+                      Text(capture.locationName!),
                     ],
                   ),
                   const SizedBox(height: 8),
-
-                  // Artist Info
-                  if (capture.artistName != null) ...[
-                    Text(
-                      'Artist',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      capture.artistName!,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Art Type and Medium
-                  if (capture.artType != null || capture.artMedium != null) ...[
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        if (capture.artType != null)
-                          Chip(label: Text(capture.artType!)),
-                        if (capture.artMedium != null)
-                          Chip(label: Text(capture.artMedium!)),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Description
-                  if (capture.description?.isNotEmpty == true) ...[
-                    Text(
-                      'Description',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      capture.description!,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Tags
-                  if (capture.tags?.isNotEmpty == true) ...[
-                    Text(
-                      'Tags',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: capture.tags!
-                          .map((tag) => Chip(label: Text(tag)))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Location
-                  if (capture.location != null) ...[
-                    Text(
-                      'Location',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      capture.locationName ?? 'View on map',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    AspectRatio(
-                      aspectRatio: 16 / 9,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: LatLng(
-                              capture.location!.latitude,
-                              capture.location!.longitude,
-                            ),
-                            zoom: 15,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: MarkerId(capture.id),
-                              position: LatLng(
-                                capture.location!.latitude,
-                                capture.location!.longitude,
-                              ),
-                            ),
-                          },
-                          liteModeEnabled: true,
-                          zoomControlsEnabled: false,
-                          mapToolbarEnabled: false,
-                          myLocationButtonEnabled: false,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
+                if (capture.artistName != null) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.palette_outlined, size: 16),
+                      const SizedBox(width: 4),
+                      Text(capture.artistName!),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                if (capture.tags?.isNotEmpty ?? false) ...[
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: capture.tags!.map((tag) {
+                      return Chip(label: Text(tag));
+                    }).toList(),
+                  ),
+                ],
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

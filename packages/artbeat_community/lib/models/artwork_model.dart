@@ -1,4 +1,4 @@
-import 'package:artbeat_artist/artbeat_artist.dart'; // Import ArtistProfileModel
+import 'package:artbeat_core/artbeat_core.dart' show ArtistProfileModel;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ArtworkModel {
@@ -25,18 +25,20 @@ class ArtworkModel {
   });
 
   factory ArtworkModel.fromFirestore(
-      DocumentSnapshot doc, ArtistProfileModel? artist) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    DocumentSnapshot doc,
+    ArtistProfileModel? artist,
+  ) {
+    final data = doc.data() as Map<String, dynamic>;
     return ArtworkModel(
       id: doc.id,
-      title: data['title'] ?? '',
-      description: data['description'] ?? '',
-      imageUrl: data['imageUrl'] ?? '',
-      artistId: data['artistId'] ?? '',
+      title: (data['title'] as String?) ?? '',
+      description: (data['description'] as String?) ?? '',
+      imageUrl: (data['imageUrl'] as String?) ?? '',
+      artistId: (data['artistId'] as String?) ?? '',
       artist: artist, // Populate artist property
-      medium: data['medium'] ?? '',
-      location: data['location'] ?? '',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
+      medium: (data['medium'] as String?) ?? '',
+      location: (data['location'] as String?) ?? '',
+      createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
     );
   }
 

@@ -35,19 +35,28 @@ class EventModel {
     final data = doc.data() as Map<String, dynamic>;
     return EventModel(
       id: doc.id,
-      title: data['title'] as String,
-      description: data['description'] as String,
-      startDate: (data['startDate'] as Timestamp).toDate(),
-      endDate: data['endDate'] != null
+      title: data['title'] != null ? data['title'].toString() : '',
+      description:
+          data['description'] != null ? data['description'].toString() : '',
+      startDate: data['startDate'] is Timestamp
+          ? (data['startDate'] as Timestamp).toDate()
+          : DateTime.now(),
+      endDate: data['endDate'] is Timestamp
           ? (data['endDate'] as Timestamp).toDate()
           : null,
-      location: data['location'] as String,
-      imageUrl: data['imageUrl'] as String?,
-      artistId: data['artistId'] as String,
-      isPublic: data['isPublic'] as bool,
-      attendeeIds: List<String>.from(data['attendeeIds'] ?? []),
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      location: data['location'] != null ? data['location'].toString() : '',
+      imageUrl: data['imageUrl'] != null ? data['imageUrl'].toString() : null,
+      artistId: data['artistId'] != null ? data['artistId'].toString() : '',
+      isPublic: data['isPublic'] is bool ? data['isPublic'] as bool : false,
+      attendeeIds: data['attendeeIds'] is List
+          ? (data['attendeeIds'] as List).map((e) => e.toString()).toList()
+          : <String>[],
+      createdAt: data['createdAt'] is Timestamp
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      updatedAt: data['updatedAt'] is Timestamp
+          ? (data['updatedAt'] as Timestamp).toDate()
+          : DateTime.now(),
     );
   }
 

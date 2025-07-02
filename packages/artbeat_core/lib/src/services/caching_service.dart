@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'dart:math';
+import 'dart:math' as math;
 
 class CachingService {
   static final CachingService _instance = CachingService._internal();
   factory CachingService() => _instance;
   CachingService._internal();
 
-  final BaseCacheManager _cacheManager = DefaultCacheManager();
+  DefaultCacheManager get _cacheManager => DefaultCacheManager();
 
   /// Clear old cached images to free up memory
   Future<void> clearOldCache() async {
@@ -50,7 +50,7 @@ class CachingService {
   String _formatBytes(int bytes) {
     if (bytes <= 0) return '0 B';
     const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    var i = (log(bytes) / log(1024)).floor();
-    return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
+    final i = (math.log(bytes) / math.log(1024)).floor();
+    return '${(bytes / math.pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
   }
 }

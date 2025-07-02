@@ -28,8 +28,10 @@ class _QuietModeScreenState extends State<QuietModeScreen> {
           .get();
       if (userDoc.exists) {
         setState(() {
-          _isQuietModeEnabled = userDoc.data()?['quietModeEnabled'] ?? false;
-          _quietModeMessage = userDoc.data()?['quietModeMessage'] ?? "";
+          _isQuietModeEnabled =
+              (userDoc.data()?['quietModeEnabled'] as bool?) ?? false;
+          _quietModeMessage =
+              (userDoc.data()?['quietModeMessage'] as String?) ?? "";
         });
       }
     }
@@ -48,9 +50,7 @@ class _QuietModeScreenState extends State<QuietModeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Quiet Mode'),
-      ),
+      appBar: AppBar(title: const Text('Quiet Mode')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

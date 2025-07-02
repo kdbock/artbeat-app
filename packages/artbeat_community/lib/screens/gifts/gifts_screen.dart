@@ -25,8 +25,10 @@ class _GiftsScreenState extends State<GiftsScreen> {
   Future<void> _loadGifts() async {
     setState(() => _isLoading = true);
     try {
-      final querySnapshot =
-          await _firestore.collection('gifts').limit(20).get();
+      final querySnapshot = await _firestore
+          .collection('gifts')
+          .limit(20)
+          .get();
       final gifts = querySnapshot.docs
           .map((doc) => GiftModel.fromFirestore(doc))
           .toList();
@@ -37,9 +39,9 @@ class _GiftsScreenState extends State<GiftsScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading gifts: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading gifts: $e')));
     }
   }
 
@@ -58,7 +60,7 @@ class _GiftsScreenState extends State<GiftsScreen> {
               TextButton.icon(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  MaterialPageRoute<void>(
                     builder: (context) => const GiftRulesScreen(),
                   ),
                 ),

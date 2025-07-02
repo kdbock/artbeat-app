@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' show ArtistModel, ArtistService;
 
 class ArtistSearchDialog extends StatefulWidget {
-  final Function(ArtistModel) onArtistSelected;
+  final void Function(ArtistModel) onArtistSelected;
 
-  const ArtistSearchDialog({
-    super.key,
-    required this.onArtistSelected,
-  });
+  const ArtistSearchDialog({super.key, required this.onArtistSelected});
 
   @override
   State<ArtistSearchDialog> createState() => _ArtistSearchDialogState();
@@ -15,7 +12,7 @@ class ArtistSearchDialog extends StatefulWidget {
 
 class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
   final TextEditingController _searchController = TextEditingController();
-  final _artistService = ArtistService();
+  final ArtistService _artistService = ArtistService();
   List<ArtistModel> _artists = [];
   bool _isLoading = false;
   bool _showAddNew = false;
@@ -40,9 +37,9 @@ class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error searching artists: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error searching artists: $e')));
       }
     } finally {
       if (mounted) {
@@ -64,9 +61,9 @@ class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error creating artist: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error creating artist: $e')));
       }
     } finally {
       if (mounted) {
@@ -89,10 +86,7 @@ class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
               children: [
                 const Text(
                   'Select Artist',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -127,10 +121,7 @@ class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
                   padding: EdgeInsets.all(16.0),
                   child: Text(
                     'No artists found',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ),
               )
@@ -139,49 +130,47 @@ class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
                 child: ListView(
                   shrinkWrap: true,
                   children: [
-                    ..._artists.map((artist) => Card(
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: artist.profileImageUrl != null
-                                  ? NetworkImage(artist.profileImageUrl!)
-                                  : null,
-                              child: artist.profileImageUrl == null
-                                  ? const Icon(Icons.person)
-                                  : null,
-                            ),
-                            title: Text(
-                              artist.name,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                            subtitle: artist.isVerified
-                                ? Row(
-                                    children: [
-                                      Icon(
-                                        Icons.verified,
-                                        size: 16,
-                                        color: Theme.of(context).primaryColor,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Text('Verified Artist'),
-                                    ],
-                                  )
+                    ..._artists.map(
+                      (artist) => Card(
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: artist.profileImageUrl != null
+                                ? NetworkImage(artist.profileImageUrl!)
                                 : null,
-                            onTap: () {
-                              widget.onArtistSelected(artist);
-                              Navigator.of(context).pop();
-                            },
+                            child: artist.profileImageUrl == null
+                                ? const Icon(Icons.person)
+                                : null,
                           ),
-                        )),
+                          title: Text(
+                            artist.name,
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          subtitle: artist.isVerified
+                              ? Row(
+                                  children: [
+                                    Icon(
+                                      Icons.verified,
+                                      size: 16,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text('Verified Artist'),
+                                  ],
+                                )
+                              : null,
+                          onTap: () {
+                            widget.onArtistSelected(artist);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                    ),
                     if (_showAddNew)
                       Card(
                         child: ListTile(
                           leading: CircleAvatar(
                             backgroundColor: Theme.of(context).primaryColor,
-                            child: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                            ),
+                            child: const Icon(Icons.add, color: Colors.white),
                           ),
                           title: Text(
                             'Add "${_searchController.text}"',

@@ -4,8 +4,8 @@ version: 0.0.1
 publish_to: 'none'
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.8.0 <4.0.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
@@ -16,25 +16,27 @@ dependencies:
     path: ../artbeat_art_walk
   artbeat_capture:
     path: ../artbeat_capture
-  firebase_core: ^2.32.0
-  firebase_auth: ^4.17.4 # Matching version for firebase_core 2.32.0
-  cloud_firestore: ^4.15.4  # Matching version for firebase_core 2.32.0
-  firebase_storage: ^11.7.7  # Matching version for firebase_core 2.32.0
-  provider: ^6.0.5
+  firebase_core: ^3.14.0
+  firebase_auth: ^5.6.0
+  firebase_storage: ^12.4.7
+  firebase_app_check: ^0.3.2+7
+  provider: ^6.1.1
   image_picker: ^1.0.4
   cached_network_image: ^3.2.3
   artbeat_artwork:
     path: ../artbeat_artwork
   artbeat_artist:
     path: ../artbeat_artist
+  artbeat_community:
+    path: ../artbeat_community
+  cloud_firestore: ^5.6.9
+  geolocator: ^14.0.1
+  intl: ^0.20.2
+
+flutter:
+  uses-material-design: true
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
-  mockito: ^5.4.2
-  build_runner: ^2.4.7
-  fake_cloud_firestore: ^2.4.4
-
-flutter:
-  uses-material-design: true
+  flutter_lints: ^6.0.0

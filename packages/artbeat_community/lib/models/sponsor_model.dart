@@ -20,15 +20,15 @@ class SponsorModel {
   });
 
   factory SponsorModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
     return SponsorModel(
       id: doc.id,
-      sponsorName: data['sponsorName'] ?? '',
-      sponsorLogoUrl: data['sponsorLogoUrl'] ?? '',
-      sponsoredArtworkId: data['sponsoredArtworkId'] ?? '',
-      description: data['description'] ?? '',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
-      updatedAt: data['updatedAt'] ?? Timestamp.now(),
+      sponsorName: (data['sponsorName'] as String?) ?? '',
+      sponsorLogoUrl: (data['sponsorLogoUrl'] as String?) ?? '',
+      sponsoredArtworkId: (data['sponsoredArtworkId'] as String?) ?? '',
+      description: (data['description'] as String?) ?? '',
+      createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?) ?? Timestamp.now(),
     );
   }
 

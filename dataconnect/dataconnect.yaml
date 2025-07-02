@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "artbeat-data-service"
+location: "northamerica-northeast2"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "fdcdb"
+      cloudSql:
+        instanceId: "artbeat-data-service-fdc"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]

@@ -1,0 +1,3 @@
+class SubscriptionPlanValidator {
+  // ...existing code...
+}

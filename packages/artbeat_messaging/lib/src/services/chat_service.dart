@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
 import '../models/user_model.dart';
@@ -46,12 +45,11 @@ class ChatService extends ChangeNotifier {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    final snapshot =
-        await _firestore
-            .collection('chats')
-            .where('participantIds', arrayContains: userId)
-            .orderBy('updatedAt', descending: true)
-            .get();
+    final snapshot = await _firestore
+        .collection('chats')
+        .where('participantIds', arrayContains: userId)
+        .orderBy('updatedAt', descending: true)
+        .get();
 
     return snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList();
   }
@@ -64,10 +62,9 @@ class ChatService extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs
-                  .map((doc) => MessageModel.fromMap(doc.data()))
-                  .toList(),
+          (snapshot) => snapshot.docs
+              .map((doc) => MessageModel.fromMap(doc.data()))
+              .toList(),
         );
   }
 
@@ -128,13 +125,9 @@ class ChatService extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs
-                  .map(
-                    (doc) =>
-                        MessageModel.fromMap({...doc.data(), 'id': doc.id}),
-                  )
-                  .toList(),
+          (snapshot) => snapshot.docs
+              .map((doc) => MessageModel.fromMap({...doc.data(), 'id': doc.id}))
+              .toList(),
         );
   }
 
@@ -232,12 +225,11 @@ class ChatService extends ChangeNotifier {
 
     query = query.toLowerCase();
     try {
-      final snapshot =
-          await _firestore
-              .collection('users')
-              .where('searchTerms', arrayContains: query)
-              .limit(20)
-              .get();
+      final snapshot = await _firestore
+          .collection('users')
+          .where('searchTerms', arrayContains: query)
+          .limit(20)
+          .get();
 
       return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
     } catch (e) {
@@ -250,33 +242,37 @@ class ChatService extends ChangeNotifier {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    // Check if chat already exists
-    final existingChatQuery =
-        await _firestore
-            .collection('chats')
-            .where('participantIds', arrayContainsAny: [userId])
-            .where('isGroup', isEqualTo: false)
-            .get();
-
-    final existingChat = existingChatQuery.docs.firstWhere((doc) {
-      final participantIds =
-          (doc.data()['participantIds'] as List).cast<String>();
-      return participantIds.contains(otherUserId) && participantIds.length == 2;
-    }, orElse: () => throw Exception('Chat not found'));
-
-    return ChatModel.fromFirestore(existingChat);
-  
-    // Create new chat
     try {
-      final otherUser =
-          await _firestore.collection('users').doc(otherUserId).get();
+      // Check if chat already exists
+      final existingChatQuery = await _firestore
+          .collection('chats')
+          .where('participantIds', arrayContainsAny: [userId])
+          .where('isGroup', isEqualTo: false)
+          .get();
 
-      if (!otherUser.exists) {
-        throw Exception('User not found');
+      for (final doc in existingChatQuery.docs) {
+        final participantIds = (doc.data()['participantIds'] as List)
+            .cast<String>();
+        if (participantIds.contains(otherUserId) &&
+            participantIds.length == 2) {
+          return ChatModel.fromFirestore(doc);
+        }
       }
 
-      final currentUser =
-          await _firestore.collection('users').doc(userId).get();
+      // No existing chat found, create new one
+      final otherUser = await _firestore
+          .collection('users')
+          .doc(otherUserId)
+          .get();
+
+      if (!otherUser.exists) {
+        throw Exception('Other user not found');
+      }
+
+      final currentUser = await _firestore
+          .collection('users')
+          .doc(userId)
+          .get();
 
       if (!currentUser.exists) {
         throw Exception('Current user not found');
@@ -293,8 +289,8 @@ class ChatService extends ChangeNotifier {
       final newChat = await chatDoc.get();
       return ChatModel.fromFirestore(newChat);
     } catch (e) {
-      debugPrint('Error creating chat: $e');
-      throw Exception('Failed to create chat');
+      debugPrint('Error creating/getting chat: $e');
+      throw Exception('Failed to create or get chat');
     }
   }
 

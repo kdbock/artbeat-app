@@ -4,7 +4,7 @@ class FilterChips<T> extends StatelessWidget {
   final List<T> options;
   final List<T> selected;
   final String Function(T) getLabel;
-  final Function(List<T>) onSelectionChanged;
+  final void Function(List<T>) onSelectionChanged;
 
   const FilterChips({
     super.key,

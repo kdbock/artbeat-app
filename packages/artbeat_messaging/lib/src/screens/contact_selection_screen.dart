@@ -88,14 +88,12 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
                     final user = users[index];
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundImage:
-                            user.photoUrl != null
-                                ? NetworkImage(user.photoUrl!)
-                                : null,
-                        child:
-                            user.photoUrl == null
-                                ? Text(user.displayName[0].toUpperCase())
-                                : null,
+                        backgroundImage: user.photoUrl != null
+                            ? NetworkImage(user.photoUrl!)
+                            : null,
+                        child: user.photoUrl == null
+                            ? Text(user.displayName[0].toUpperCase())
+                            : null,
                       ),
                       title: Text(user.displayName),
                       subtitle: Text(
@@ -113,7 +111,7 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
 
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(
+                            MaterialPageRoute<void>(
                               builder: (context) => ChatScreen(chat: chat),
                             ),
                           );

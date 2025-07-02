@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 
 class ArtWalkListScreen extends StatefulWidget {
   const ArtWalkListScreen({super.key});
@@ -72,18 +72,19 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
 
   Future<void> _shareArtWalk(ArtWalkModel walk) async {
     try {
-      await Share.share(
-        'Check out this Art Walk: "${walk.title}" on ARTbeat!',
-        subject: 'ARTbeat Art Walk: ${walk.title}',
+      await share_plus.SharePlus.instance.share(
+        share_plus.ShareParams(
+          text: 'Check out this Art Walk: "${walk.title}" on ARTbeat!',
+        ),
       );
 
       // Record the share
       await _artWalkService.recordArtWalkShare(walk.id);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
     }
   }
 
@@ -111,9 +112,9 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     try {
       await _artWalkService.deleteArtWalk(walk.id);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Art walk deleted')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Art walk deleted')));
       _loadArtWalks(); // Refresh the list
     } catch (e) {
       if (!mounted) return;
@@ -195,11 +196,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
           padding: const EdgeInsets.all(16.0),
           child: const Row(
             children: [
-              Icon(
-                Icons.map_outlined,
-                size: 40,
-                color: Colors.green,
-              ),
+              Icon(Icons.map_outlined, size: 40, color: Colors.green),
               SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -242,10 +239,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadArtWalks,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadArtWalks),
         ],
       ),
       body: _isLoading
@@ -307,7 +301,9 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
         child: const Icon(Icons.add),
       ),
       // Add the NC Regions banner below the app bar
-      bottomSheet: _tabController.index == 2 // Only show on NC Regions tab
+      bottomSheet:
+          _tabController.index ==
+              2 // Only show on NC Regions tab
           ? _buildNCRegionsBanner()
           : null,
     );
@@ -320,39 +316,31 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.route,
-              size: 80,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.route, size: 80, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               description,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            _tabController.index == 0 // Only show on My Walks tab
+            _tabController.index ==
+                    0 // Only show on My Walks tab
                 ? ElevatedButton.icon(
                     onPressed: () async {
                       // Added async
                       await Navigator.push(
                         // Added await
                         context,
-                        MaterialPageRoute(
-                            builder: (_) => const CreateArtWalkScreen()),
+                        MaterialPageRoute<void>(
+                          builder: (_) => const CreateArtWalkScreen(),
+                        ),
                       );
                       // Potentially refresh if needed, though FAB already does
                       if (mounted) {
@@ -385,8 +373,9 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
   }
 
   Widget _buildWalkCard(ArtWalkModel walk, bool isMyWalk) {
-    final String? imageUrl =
-        walk.imageUrls.isNotEmpty ? walk.imageUrls.first : null;
+    final String? imageUrl = walk.imageUrls.isNotEmpty
+        ? walk.imageUrls.first
+        : null;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
       child: Column(
@@ -419,11 +408,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                     ),
                   ),
                   child: const Center(
-                    child: Icon(
-                      Icons.map,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
+                    child: Icon(Icons.map, size: 40, color: Colors.grey),
                   ),
                 ),
 
@@ -445,9 +430,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                   walk.description,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 8),
 
@@ -482,7 +465,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                   await Navigator.push(
                     // Added await
                     context,
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (_) => ArtWalkDetailScreen(walkId: walk.id),
                     ),
                   );
@@ -497,10 +480,15 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
               if (isMyWalk)
                 TextButton.icon(
                   onPressed: () => _deleteArtWalk(walk),
-                  icon: const Icon(Icons.delete_outline,
-                      color: Colors.red, size: 18),
-                  label:
-                      const Text('Delete', style: TextStyle(color: Colors.red)),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
             ],
           ),

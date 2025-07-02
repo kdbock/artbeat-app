@@ -5,10 +5,13 @@ import 'package:intl/intl.dart';
 
 // Import the models and services from our packages
 import 'package:artbeat_artist/src/services/analytics_service.dart';
+import 'package:artbeat_artist/src/services/artwork_service.dart';
+import 'package:artbeat_artist/src/models/artwork_model.dart';
 import 'package:artbeat_artist/src/services/subscription_service.dart'
     as artist_subscription;
-import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/artbeat_core.dart'
+    show UniversalHeader, MainLayout;
+// Import provider for subscriptions
 
 /// Analytics Dashboard Screen for Artists with Pro and Gallery plans
 class AnalyticsDashboardScreen extends StatefulWidget {
@@ -33,7 +36,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
 
   // Date range for analytics
   DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
-  DateTime _endDate = DateTime.now();
+  final DateTime _endDate = DateTime.now();
   String _selectedRange = '30d'; // 7d, 30d, 90d, 1y
 
   @override
@@ -48,198 +51,157 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     });
 
     try {
-      // Get current user's subscription
-      final subscription = await _subscriptionService.getUserSubscription();
+      // Check if user has pro subscription
+      final String userId = _auth.currentUser?.uid ?? '';
+      final userSubscription =
+          await _subscriptionService.getCurrentSubscription(userId);
+      final hasProAccess =
+          userSubscription != null && userSubscription.isActive;
 
-      setState(() {
-        // Added null check for subscription before accessing tier
-        _hasProAccess = subscription != null &&
-            (subscription.tier == core.SubscriptionTier.artistPro ||
-                subscription.tier == core.SubscriptionTier.gallery);
-      });
+      // Load artwork
+      final artworks = await _artworkService.getArtworkByUserId(userId);
 
-      if (!_hasProAccess) {
-        setState(() {
-          _isLoading = false;
-        });
-        return;
+      // Load analytics data based on subscription
+      Map<String, dynamic> analyticsData;
+      if (hasProAccess) {
+        analyticsData = await _analyticsService.getArtistAnalyticsData(
+          userId,
+          _startDate,
+          _endDate,
+        );
+      } else {
+        analyticsData = await _analyticsService.getBasicArtistAnalyticsData(
+          userId,
+          _startDate,
+          _endDate,
+        );
       }
 
-      // Get user's artwork
-      final artworks = await _artworkService.getArtworkByArtistProfileId(
-        _auth.currentUser!.uid,
-      );
-
-      // Get analytics data
-      final analytics = await _analyticsService.getProfileAnalytics(
-        startDate: _startDate,
-        endDate: _endDate,
-      );
-
       setState(() {
+        _hasProAccess = hasProAccess;
         _artworks = artworks;
-        _analytics = analytics;
+        _analytics = analyticsData;
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading analytics data: $e');
       setState(() {
         _isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading analytics data: ${e.toString()}'),
+        ),
+      );
     }
   }
 
-  void _updateDateRange(String range) {
+  // Update the date range and reload data
+  Future<void> _updateDateRange(String range) async {
+    DateTime startDate;
+    switch (range) {
+      case '7d':
+        startDate = DateTime.now().subtract(const Duration(days: 7));
+        break;
+      case '30d':
+        startDate = DateTime.now().subtract(const Duration(days: 30));
+        break;
+      case '90d':
+        startDate = DateTime.now().subtract(const Duration(days: 90));
+        break;
+      case '1y':
+        startDate = DateTime.now().subtract(const Duration(days: 365));
+        break;
+      default:
+        startDate = DateTime.now().subtract(const Duration(days: 30));
+    }
+
     setState(() {
+      _startDate = startDate;
       _selectedRange = range;
-
-      switch (range) {
-        case '7d':
-          _startDate = DateTime.now().subtract(const Duration(days: 7));
-          break;
-        case '30d':
-          _startDate = DateTime.now().subtract(const Duration(days: 30));
-          break;
-        case '90d':
-          _startDate = DateTime.now().subtract(const Duration(days: 90));
-          break;
-        case '1y':
-          _startDate = DateTime.now().subtract(const Duration(days: 365));
-          break;
-      }
-
-      _endDate = DateTime.now();
     });
 
-    _loadData();
+    await _loadData();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Analytics Dashboard')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (!_hasProAccess) {
-      return _buildUpgradePrompt();
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () => _showDateRangePicker(),
-            tooltip: 'Select Date Range',
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildDateRangeSelector(),
-              const SizedBox(height: 16),
-              _buildOverviewMetrics(),
-              const SizedBox(height: 24),
-              _buildVisitorsChart(),
-              const SizedBox(height: 24),
-              _buildTopArtworks(),
-              const SizedBox(height: 24),
-              _buildLocationBreakdown(),
-            ],
-          ),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: UniversalHeader(
+          title: 'Analytics Dashboard',
+          showLogo: false,
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadData,
+            ),
+          ],
         ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _buildDateRangeSelector(),
+                      const SizedBox(height: 16),
+                      _buildOverviewMetrics(),
+                      const SizedBox(height: 24),
+                      _buildVisitorsChart(),
+                      const SizedBox(height: 24),
+                      if (_hasProAccess) ...<Widget>[
+                        _buildLocationBreakdown(),
+                        const SizedBox(height: 24),
+                        _buildTopArtworks(),
+                        const SizedBox(height: 24),
+                        _buildReferralSources(),
+                      ],
+                      if (!_hasProAccess) _buildSubscriptionUpgradeCard(),
+                    ],
+                  ),
+                ),
+              ),
       ),
     );
   }
 
   Widget _buildDateRangeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _dateRangeButton('7d', '7 Days'),
-        _dateRangeButton('30d', '30 Days'),
-        _dateRangeButton('90d', '90 Days'),
-        _dateRangeButton('1y', '1 Year'),
-      ],
-    );
-  }
-
-  Widget _dateRangeButton(String value, String label) {
-    final isSelected = _selectedRange == value;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => _updateDateRange(value),
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            _buildDateRangeButton('7d', '7 Days'),
+            _buildDateRangeButton('30d', '30 Days'),
+            _buildDateRangeButton('90d', '90 Days'),
+            _buildDateRangeButton('1y', 'Year'),
+          ],
+        ),
       ),
     );
   }
 
-  void _showDateRangePicker() async {
-    final pickedRange = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime.now().subtract(const Duration(days: 365 * 2)),
-      lastDate: DateTime.now(),
-      initialDateRange: DateTimeRange(
-        start: _startDate,
-        end: _endDate,
-      ),
-    );
-
-    if (pickedRange != null) {
-      setState(() {
-        _startDate = pickedRange.start;
-        _endDate = pickedRange.end;
-        _selectedRange = 'custom';
-      });
-
-      _loadData();
-    }
-  }
-
-  Widget _buildUpgradePrompt() {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Analytics Dashboard')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.analytics_outlined,
-                  size: 64, color: Colors.grey),
-              const SizedBox(height: 16),
-              const Text(
-                'Pro Analytics',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Upgrade to Artist Pro or Gallery plan to access detailed analytics about your artwork, audience, and sales.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/artist/subscription'),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(200, 50),
-                ),
-                child: const Text('Upgrade Subscription'),
-              ),
-            ],
+  Widget _buildDateRangeButton(String range, String label) {
+    final isSelected = _selectedRange == range;
+    return InkWell(
+      onTap: () => _updateDateRange(range),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),
@@ -247,28 +209,38 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
   }
 
   Widget _buildOverviewMetrics() {
-    final profileViews = _analytics['profileViews'] ?? 0;
-    final artworkViews = _analytics['artworkViews'] ?? 0;
-    final favorites = _analytics['favorites'] ?? 0;
-    final leadClicks = _analytics['leadClicks'] ?? 0;
+    // Safely extract int values from analytics with proper type handling
+    int getIntValue(String key) {
+      final dynamic value = _analytics[key];
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+      return int.tryParse(value.toString()) ?? 0;
+    }
+
+    // Get values with proper type casting
+    final int profileViews = getIntValue('profileViews');
+    final int artworkViews = getIntValue('artworkViews');
+    final int favorites = getIntValue('favorites');
+    final int leadClicks = getIntValue('leadClicks');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         const Text(
           'Overview',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Row(
-          children: [
+          children: <Widget>[
             _buildMetricCard('Profile Views', profileViews, Icons.visibility),
             _buildMetricCard('Artwork Views', artworkViews, Icons.image),
           ],
         ),
         const SizedBox(height: 8),
         Row(
-          children: [
+          children: <Widget>[
             _buildMetricCard('Favorites', favorites, Icons.favorite),
             _buildMetricCard('Lead Clicks', leadClicks, Icons.link),
           ],
@@ -284,7 +256,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            children: <Widget>[
               Icon(icon, color: Theme.of(context).primaryColor),
               const SizedBox(height: 8),
               Text(
@@ -310,7 +282,8 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
   }
 
   Widget _buildVisitorsChart() {
-    final visitorsData = _analytics['visitorsOverTime'] as List<dynamic>? ?? [];
+    final List<dynamic> visitorsData =
+        _analytics['visitorsOverTime'] as List<dynamic>? ?? [];
 
     if (visitorsData.isEmpty) {
       return const Card(
@@ -323,8 +296,14 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
       );
     }
 
-    final spots = visitorsData.asMap().entries.map((e) {
-      return FlSpot(e.key.toDouble(), e.value['value'].toDouble());
+    final List<FlSpot> spots = visitorsData.asMap().entries.map<FlSpot>((e) {
+      final dynamic value = e.value['value'];
+      final double yValue = value is double
+          ? value
+          : (value is int
+              ? value.toDouble()
+              : (double.tryParse(value.toString()) ?? 0.0));
+      return FlSpot(e.key.toDouble(), yValue);
     }).toList();
 
     return Card(
@@ -332,32 +311,26 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             const Text(
               'Profile Visitors',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 24),
-            SizedBox(
-              height: 200,
+            const SizedBox(height: 16),
+            AspectRatio(
+              aspectRatio: 1.7,
               child: LineChart(
-                // Corrected from SafeSafeSafeSafeSafeLineChart
                 LineChartData(
-                  gridData: const FlGridData(show: false), // Removed const
-                  titlesData: const FlTitlesData(show: false), // Removed const
+                  gridData: const FlGridData(show: false),
+                  titlesData: const FlTitlesData(show: false),
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
                     LineChartBarData(
                       spots: spots,
                       isCurved: true,
-                      barWidth: 2,
-                      color: Theme.of(context).primaryColor,
-                      dotData: const FlDotData(show: false), // Removed const
-                      belowBarData: BarAreaData(
-                        show: true,
-                        color: Theme.of(context).primaryColor.withAlpha(
-                            (255 * 0.2).round()), // Corrected withAlpha
-                      ),
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      belowBarData: BarAreaData(show: true),
                     ),
                   ],
                 ),
@@ -369,12 +342,79 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     );
   }
 
+  Widget _buildLocationBreakdown() {
+    final locationData =
+        _analytics['locationBreakdown'] as Map<dynamic, dynamic>? ?? {};
+
+    if (locationData.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(
+            child: Text('No location data available'),
+          ),
+        ),
+      );
+    }
+
+    // Convert to a list of entries sorted by value
+    final sortedLocations = locationData.entries.toList()
+      ..sort((a, b) {
+        final aValue = a.value is num ? (a.value as num) : 0;
+        final bValue = b.value is num ? (b.value as num) : 0;
+        return bValue.compareTo(aValue);
+      });
+
+    // Take top 5 locations
+    final topLocations = sortedLocations.take(5).toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'Top Locations',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ...topLocations.map<Widget>((entry) {
+              final String locationName = entry.key.toString();
+              final int locationValue = entry.value is num
+                  ? (entry.value as num).toInt()
+                  : int.tryParse(entry.value.toString()) ?? 0;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(locationName),
+                    ),
+                    Text(
+                      NumberFormat.compact().format(locationValue),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTopArtworks() {
-    final topArtworkIds = _analytics['topArtworks'] as List<dynamic>? ?? [];
+    final List<String> topArtworkIds =
+        (_analytics['topArtworks'] as List<dynamic>? ?? [])
+            .map<String>((dynamic id) => id?.toString() ?? '')
+            .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         const Text(
           'Top Performing Artwork',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -396,7 +436,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
               scrollDirection: Axis.horizontal,
               itemCount: topArtworkIds.length > 5 ? 5 : topArtworkIds.length,
               itemBuilder: (context, index) {
-                final artworkId = topArtworkIds[index];
+                final String artworkId = topArtworkIds[index];
                 final artwork = _artworks.firstWhere(
                   (a) => a.id == artworkId,
                   orElse: () => ArtworkModel(
@@ -409,63 +449,53 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                     price: 0,
                     medium: '',
                     isForSale: false,
-                    styles: [], // Updated from style to styles (List)
-                    tags: [],
-                    createdAt: DateTime.now(),
-                    updatedAt: DateTime.now(), // Added required field
+                    styles: <String>[],
                   ),
                 );
 
-                final views = _analytics['artworkViews_$artworkId'] ?? 0;
-
                 return Card(
-                  margin: const EdgeInsets.only(right: 16),
-                  child: SizedBox(
-                    width: 160,
+                  margin: const EdgeInsets.only(right: 8),
+                  child: Container(
+                    width: 180,
+                    padding: const EdgeInsets.all(8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(4),
-                            topRight: Radius.circular(4),
-                          ),
+                      children: <Widget>[
+                        AspectRatio(
+                          aspectRatio: 1.2,
                           child: artwork.imageUrl.isNotEmpty
                               ? Image.network(
                                   artwork.imageUrl,
-                                  height: 120,
-                                  width: double.infinity,
                                   fit: BoxFit.cover,
                                 )
                               : Container(
-                                  height: 120,
-                                  width: double.infinity,
                                   color: Colors.grey[300],
-                                  child: const Icon(Icons.image, size: 40),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.image,
+                                      size: 40,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                artwork.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(Icons.visibility, size: 16),
-                                  const SizedBox(width: 4),
-                                  Text('$views views'),
-                                ],
-                              ),
-                            ],
+                        const SizedBox(height: 8),
+                        Text(
+                          artwork.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          artwork.isForSale
+                              ? '\$${artwork.price?.toStringAsFixed(2) ?? '0.00'}'
+                              : 'Not for Sale',
+                          style: TextStyle(
+                            color:
+                                artwork.isForSale ? Colors.green : Colors.grey,
                           ),
                         ),
                       ],
@@ -479,69 +509,125 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     );
   }
 
-  Widget _buildLocationBreakdown() {
-    final locationData =
-        _analytics['locationBreakdown'] as Map<dynamic, dynamic>? ?? {};
+  Widget _buildReferralSources() {
+    final referralData =
+        _analytics['referralSources'] as Map<dynamic, dynamic>? ?? {};
 
-    if (locationData.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Convert to list of entries and sort by count
-    final entries = locationData.entries.toList()
-      ..sort((a, b) => (b.value as int).compareTo(a.value as int));
-
-    // Take top 5
-    final topLocations = entries.take(5).toList();
-
-    // Calculate total for percentages
-    final total = entries.fold<int>(
-        0,
-        (currentSum, entry) =>
-            currentSum + (entry.value as int)); // Renamed sum to currentSum
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Audience Location',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: topLocations.map((entry) {
-                final location = entry.key as String;
-                final count = entry.value as int;
-                final percentage = total > 0 ? (count / total * 100) : 0;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(location),
-                          Text('${percentage.toStringAsFixed(1)}%'),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      LinearProgressIndicator(
-                        value: percentage / 100,
-                        backgroundColor: Colors.grey[200],
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+    if (referralData.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(
+            child: Text('No referral data available'),
           ),
         ),
-      ],
+      );
+    }
+
+    // Convert to a list of entries sorted by value
+    final sortedReferrals = referralData.entries.toList()
+      ..sort((a, b) {
+        final aValue = a.value is num ? (a.value as num) : 0;
+        final bValue = b.value is num ? (b.value as num) : 0;
+        return bValue.compareTo(aValue);
+      });
+
+    // Take top 5 referrals
+    final topReferrals = sortedReferrals.take(5).toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'Top Referral Sources',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            ...topReferrals.map<Widget>((entry) {
+              final String sourceName = entry.key.toString();
+              final int sourceValue = entry.value is num
+                  ? (entry.value as num).toInt()
+                  : int.tryParse(entry.value.toString()) ?? 0;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(_formatReferralSource(sourceName)),
+                    ),
+                    Text(
+                      NumberFormat.compact().format(sourceValue),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatReferralSource(String source) {
+    switch (source.toLowerCase()) {
+      case 'direct':
+        return 'Direct Traffic';
+      case 'google':
+      case 'google.com':
+        return 'Google';
+      case 'facebook':
+      case 'facebook.com':
+        return 'Facebook';
+      case 'instagram':
+      case 'instagram.com':
+        return 'Instagram';
+      case 'pinterest':
+      case 'pinterest.com':
+        return 'Pinterest';
+      case 'twitter':
+      case 'twitter.com':
+      case 'x.com':
+        return 'Twitter / X';
+      default:
+        return source;
+    }
+  }
+
+  Widget _buildSubscriptionUpgradeCard() {
+    return Card(
+      color: Theme.of(context).primaryColor.withAlpha(26), // ~0.1 opacity
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'Upgrade to PRO for Advanced Analytics',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Get access to location breakdown, top artwork performance, referral sources, and more detailed insights.',
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to subscription screen
+                Navigator.pushNamed(context, '/subscription');
+              },
+              child: const Text('Upgrade Now'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

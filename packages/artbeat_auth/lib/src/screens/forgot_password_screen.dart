@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import '../services/auth_service.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show
+        ArtbeatColors,
+        ArtbeatInput,
+        ArtbeatButton,
+        ButtonVariant,
+        UniversalHeader;
+import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Forgot password screen with email reset functionality
 class ForgotPasswordScreen extends StatefulWidget {
@@ -73,18 +80,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: const UniversalHeader(
+        title: 'Reset Password',
+        showLogo: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
             colors: [
-              ArtbeatColors.primaryPurple.withOpacity(0.1),
+              ArtbeatColors.primaryPurple.withAlphaValue(0.05),
               Colors.white,
+              ArtbeatColors.accent2.withAlphaValue(0.05),
             ],
           ),
         ),
@@ -96,12 +106,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 24),
-                  Center(
+                  const SizedBox(height: 16),
+                  // Logo with subtle animation
+                  TweenAnimationBuilder(
+                    duration: const Duration(seconds: 2),
+                    tween: Tween<double>(begin: 0.8, end: 1.0),
+                    builder: (context, double value, child) {
+                      return Transform.scale(scale: value, child: child);
+                    },
                     child: Image.asset(
                       'assets/images/artbeat_logo.png',
-                      width: 80,
-                      height: 80,
+                      width: 100,
+                      height: 100,
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -109,47 +125,82 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Text(
                     'Reset Password',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: ArtbeatColors.primaryPurple,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     'Enter your email to receive a password reset link',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: ArtbeatColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        _errorMessage!,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: ArtbeatColors.error,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.error.withAlphaValue(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: ArtbeatColors.error,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: ArtbeatColors.error),
                             ),
+                          ),
+                        ],
                       ),
                     ),
                   if (_resetSent)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        'Password reset link sent. Please check your email.',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: ArtbeatColors.primaryGreen,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.primaryGreen.withAlphaValue(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.check_circle_outline,
+                            color: ArtbeatColors.primaryGreen,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Password reset link sent. Please check your email.',
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: ArtbeatColors.primaryGreen),
                             ),
+                          ),
+                        ],
                       ),
                     ),
+                  const SizedBox(height: 24),
                   ArtbeatInput(
                     controller: _emailController,
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    validator: (String? value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'Please enter your email.';
                       }
                       if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                        return 'Please enter a valid email address.';
                       }
                       return null;
                     },
@@ -157,29 +208,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   const SizedBox(height: 24),
                   ArtbeatButton(
                     onPressed: _isLoading ? null : _handleResetPassword,
+                    variant: ButtonVariant.primary,
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
+                              color: Colors.white,
                               strokeWidth: 2,
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 Colors.white,
                               ),
                             ),
                           )
-                        : const Text('Reset Password'),
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.restore_outlined,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              SizedBox(width: 8),
+                              Text('Reset Password'),
+                            ],
+                          ),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                    ),
                     child: Text(
                       'Back to Login',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: ArtbeatColors.primaryPurple,
-                          ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: ArtbeatColors.primaryPurple,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],

@@ -5,9 +5,9 @@ import 'filter_sheet.dart';
 class SearchBarWithFilter extends StatefulWidget
     implements PreferredSizeWidget {
   final String searchHint;
-  final Function(String) onSearchChanged;
+  final void Function(String) onSearchChanged;
   final FilterParameters initialFilters;
-  final Function(FilterParameters) onFiltersChanged;
+  final void Function(FilterParameters) onFiltersChanged;
   final List<String>? availableLocations;
   final List<String>? availableTags;
   final bool showArtistTypes;
@@ -42,8 +42,9 @@ class _SearchBarWithFilterState extends State<SearchBarWithFilter> {
   @override
   void initState() {
     super.initState();
-    _searchController =
-        TextEditingController(text: widget.initialFilters.searchQuery);
+    _searchController = TextEditingController(
+      text: widget.initialFilters.searchQuery,
+    );
     _currentFilters = widget.initialFilters;
     _updateActiveFiltersStatus();
   }
@@ -56,7 +57,8 @@ class _SearchBarWithFilterState extends State<SearchBarWithFilter> {
 
   void _updateActiveFiltersStatus() {
     setState(() {
-      _hasActiveFilters = _currentFilters.artistTypes?.isNotEmpty == true ||
+      _hasActiveFilters =
+          _currentFilters.artistTypes?.isNotEmpty == true ||
           _currentFilters.artMediums?.isNotEmpty == true ||
           _currentFilters.locations?.isNotEmpty == true ||
           _currentFilters.tags?.isNotEmpty == true ||
@@ -67,7 +69,7 @@ class _SearchBarWithFilterState extends State<SearchBarWithFilter> {
   }
 
   void _showFilterSheet() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

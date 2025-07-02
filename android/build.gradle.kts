@@ -14,16 +14,6 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
-    
-    // Apply the android plugin configuration to all subprojects with the android plugin
-    plugins.withId("com.android.library") {
-        // Configure android for all subprojects
-        extensions.configure<com.android.build.gradle.LibraryExtension> {
-            buildFeatures {
-                buildConfig = true
-            }
-        }
-    }
 }
 
 tasks.register<Delete>("clean") {

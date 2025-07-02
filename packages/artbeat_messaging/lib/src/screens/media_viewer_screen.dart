@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'dart:io';
 
 class MediaViewerScreen extends StatelessWidget {
@@ -58,21 +58,19 @@ class MediaViewerScreen extends StatelessWidget {
           );
         },
         itemCount: mediaUrls.length,
-        loadingBuilder:
-            (context, event) => Center(
-              child: SizedBox(
-                width: 20.0,
-                height: 20.0,
-                child: CircularProgressIndicator(
-                  value:
-                      event == null
-                          ? 0
-                          : event.cumulativeBytesLoaded /
-                              event.expectedTotalBytes!,
-                  valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
-                ),
-              ),
+        loadingBuilder: (context, ImageChunkEvent? event) => Center(
+          child: SizedBox(
+            width: 20.0,
+            height: 20.0,
+            child: CircularProgressIndicator(
+              value: event == null
+                  ? 0
+                  : event.cumulativeBytesLoaded /
+                        (event.expectedTotalBytes ?? 1),
+              valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
             ),
+          ),
+        ),
         backgroundDecoration: const BoxDecoration(color: Colors.black),
         pageController: pageController,
       ),
@@ -81,11 +79,7 @@ class MediaViewerScreen extends StatelessWidget {
 
   Future<void> _shareMedia(String mediaUrl) async {
     try {
-      final response = await http.get(Uri.parse(mediaUrl));
-      final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/shared_media.jpg');
-      await file.writeAsBytes(response.bodyBytes);
-      await Share.shareFiles([file.path]);
+      await SharePlus.instance.share(ShareParams(text: mediaUrl));
     } catch (e) {
       debugPrint('Error sharing media: $e');
     }

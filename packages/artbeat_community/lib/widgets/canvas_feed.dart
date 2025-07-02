@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_artist/artbeat_artist.dart'; // Import ArtistProfileModel
+import 'package:artbeat_core/artbeat_core.dart' show ArtistProfileModel;
 import '../models/artwork_model.dart';
 import 'avatar_widget.dart';
 
 class CanvasFeed extends StatelessWidget {
   final List<ArtworkModel> artworks;
-  final Function(ArtistProfileModel)
-      onArtistTap; // Updated to accept ArtistProfileModel
+  final void Function(ArtistProfileModel)
+  onArtistTap; // Updated to accept ArtistProfileModel
 
-  const CanvasFeed(
-      {super.key, required this.artworks, required this.onArtistTap});
+  const CanvasFeed({
+    super.key,
+    required this.artworks,
+    required this.onArtistTap,
+  });
 
   @override
   Widget build(BuildContext context) {

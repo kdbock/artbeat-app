@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:artbeat_core/artbeat_core.dart'; // Assuming UserService is here
+// Assuming UserService is here
 
 class ExampleUserProfileScreen extends StatelessWidget {
   const ExampleUserProfileScreen({Key? key}) : super(key: key);
@@ -12,22 +11,20 @@ class ExampleUserProfileScreen extends StatelessWidget {
     // final user = userService.currentUser; // This is a simplified example
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Example User Profile'),
-      ),
-      body: Center(
+      appBar: AppBar(title: const Text('Example User Profile')),
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('This is a placeholder for Core User Profile Screen'),
-            const SizedBox(height: 20),
+            Text('This is a placeholder for Core User Profile Screen'),
+            SizedBox(height: 20),
             // if (user != null) ...[
             //   Text('User ID: \${user.uid}'),
             //   Text('User Email: \${user.email}'),
             // ] else ...[
             //   const Text('No user data available (UserService not fully implemented in this demo)'),
             // ]
-            const Text('UserService would be used here.'),
+            Text('UserService would be used here.'),
           ],
         ),
       ),

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:device_info_plus/device_info_plus.dart';
 
 /// Service for handling Google Maps initialization and configuration
 class GoogleMapsService {
@@ -15,9 +17,27 @@ class GoogleMapsService {
   int _initRetryCount = 0;
   static const int _maxRetries = 3;
   static const Duration _retryDelay = Duration(seconds: 2);
+  bool _isEmulator = false;
 
   String? get _mapsApiKey => ConfigService.instance.googleMapsApiKey;
 
+  // Reduced complexity map style that works better on emulators
+  static const String _emulatorMapStyleJson = '''
+  [
+    {
+      "featureType": "poi",
+      "elementType": "labels",
+      "stylers": [{"visibility": "off"}]
+    },
+    {
+      "featureType": "transit",
+      "elementType": "labels",
+      "stylers": [{"visibility": "off"}]
+    }
+  ]
+  ''';
+
+  // Standard map style for physical devices
   static const String _defaultMapStyleJson = '''
   [
     {
@@ -33,14 +53,50 @@ class GoogleMapsService {
   ]
   ''';
 
-  /// Get the default map style JSON
+  /// Check if the device is running in an emulator
+  Future<bool> _checkIfEmulator() async {
+    try {
+      if (Platform.isAndroid) {
+        final deviceInfo = DeviceInfoPlugin();
+        final androidInfo = await deviceInfo.androidInfo;
+        // Check various properties that indicate an emulator
+        return androidInfo.isPhysicalDevice == false ||
+            androidInfo.model.contains('sdk') ||
+            androidInfo.model.contains('google_sdk') ||
+            androidInfo.model.contains('emulator') ||
+            androidInfo.model.contains('Android SDK');
+      } else if (Platform.isIOS) {
+        final deviceInfo = DeviceInfoPlugin();
+        final iosInfo = await deviceInfo.iosInfo;
+        // Check if it's a simulator
+        return !iosInfo.isPhysicalDevice;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error checking if device is emulator: $e');
+      return false; // Default to assuming it's not an emulator
+    }
+  }
+
+  /// Get the appropriate map style JSON based on device type
   Future<String> get defaultMapStyle async {
     try {
-      // Try to load from assets first
-      final style = await rootBundle.loadString('assets/map_style.json');
-      return style;
+      // First check if we have a custom style in assets
+      try {
+        final style = await rootBundle.loadString('assets/map_style.json');
+        return style;
+      } catch (e) {
+        // Asset not found, use built-in styles
+        _isEmulator = await _checkIfEmulator();
+        if (_isEmulator) {
+          debugPrint('🔍 Using simplified map style for emulator');
+          return _emulatorMapStyleJson;
+        } else {
+          return _defaultMapStyleJson;
+        }
+      }
     } catch (e) {
-      debugPrint('⚠️ Using fallback map style: $e');
+      debugPrint('⚠️ Error determining map style: $e');
       return _defaultMapStyleJson;
     }
   }
@@ -64,14 +120,29 @@ class GoogleMapsService {
 
     _initializing = true;
 
+    // Check if we're running in an emulator
+    _isEmulator = await _checkIfEmulator();
+    if (_isEmulator) {
+      debugPrint(
+        '🔍 Running in emulator environment - using optimized settings',
+      );
+    }
+
     while (_initRetryCount < _maxRetries) {
       try {
         if (defaultTargetPlatform == TargetPlatform.android) {
           debugPrint('🗺️ Initializing Google Maps for Android...');
 
           final mapsImplementation = GoogleMapsFlutterAndroid();
-          await mapsImplementation
-              .initializeWithRenderer(AndroidMapRenderer.latest);
+
+          // Use a more compatible renderer for emulators
+          final renderer = _isEmulator
+              ? AndroidMapRenderer
+                    .legacy // Better for emulators
+              : AndroidMapRenderer.latest; // Better for physical devices
+
+          debugPrint('🗺️ Using renderer: $renderer');
+          await mapsImplementation.initializeWithRenderer(renderer);
 
           _initialized = true;
           _initializing = false;
@@ -89,12 +160,32 @@ class GoogleMapsService {
         _initRetryCount++;
         if (_initRetryCount < _maxRetries) {
           debugPrint(
-              '⚠️ Maps initialization attempt $_initRetryCount failed: $e');
-          await Future.delayed(_retryDelay);
+            '⚠️ Maps initialization attempt $_initRetryCount failed: $e',
+          );
+          await Future<void>.delayed(_retryDelay);
+
+          // If we've tried with the latest renderer and it failed, try with surface renderer
+          if (_initRetryCount == 2 &&
+              defaultTargetPlatform == TargetPlatform.android &&
+              !_isEmulator) {
+            debugPrint('⚠️ Falling back to surface renderer for stability');
+            try {
+              final fallbackImplementation = GoogleMapsFlutterAndroid();
+              await fallbackImplementation.initializeWithRenderer(
+                AndroidMapRenderer.legacy,
+              );
+              _initialized = true;
+              _initializing = false;
+              return true;
+            } catch (fallbackError) {
+              debugPrint('❌ Surface renderer also failed: $fallbackError');
+            }
+          }
           continue;
         }
         debugPrint(
-            '❌ Maps initialization failed after $_maxRetries attempts: $e');
+          '❌ Maps initialization failed after $_maxRetries attempts: $e',
+        );
         _initializing = false;
         return false;
       }
@@ -106,4 +197,7 @@ class GoogleMapsService {
 
   /// Check if maps are initialized
   bool get isInitialized => _initialized;
+
+  /// Check if running on emulator
+  bool get isEmulator => _isEmulator;
 }

@@ -1,0 +1,3 @@
+class OfflineDataProvider {
+  // ...existing code...
+}

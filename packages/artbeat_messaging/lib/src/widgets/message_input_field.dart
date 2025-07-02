@@ -3,12 +3,14 @@ import '../theme/chat_theme.dart';
 import '../controllers/typing_indicator_controller.dart';
 
 class MessageInputField extends StatefulWidget {
-  final Function(String) onSend;
+  final String chatId;
+  final void Function(String) onSendMessage;
   final TypingIndicatorController? typingController;
 
   const MessageInputField({
     super.key,
-    required this.onSend,
+    required this.chatId,
+    required this.onSendMessage,
     this.typingController,
   });
 
@@ -35,7 +37,7 @@ class _MessageInputFieldState extends State<MessageInputField> {
   }
 
   void _handleSubmitted(String text) {
-    widget.onSend(text);
+    widget.onSendMessage(text);
     _controller.clear();
     widget.typingController?.setTypingStatus(false);
   }
@@ -59,8 +61,9 @@ class _MessageInputFieldState extends State<MessageInputField> {
           ),
           IconButton(
             icon: const Icon(Icons.send),
-            onPressed:
-                _isComposing ? () => _handleSubmitted(_controller.text) : null,
+            onPressed: _isComposing
+                ? () => _handleSubmitted(_controller.text)
+                : null,
           ),
         ],
       ),

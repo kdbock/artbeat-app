@@ -43,9 +43,9 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading followers: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading followers: $e')));
         setState(() {
           _isLoading = false;
         });
@@ -109,89 +109,90 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
     final theme = Theme.of(context);
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Followers ${_isLoading ? '' : '(${_followers.length})'}'),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: UniversalHeader(
+          title: 'Followers ${_isLoading ? '' : '(${_followers.length})'}',
+          showLogo: false,
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _followers.isEmpty
+            ? const Center(
+                child: Text('No followers yet', style: TextStyle(fontSize: 16)),
+              )
+            : ListView.builder(
+                itemCount: _followers.length,
+                itemBuilder: (context, index) {
+                  final follower = _followers[index];
+                  final isCurrentUser = follower.id == currentUserId;
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.grey.shade200,
+                      backgroundImage: follower.profileImageUrl != null
+                          ? NetworkImage(follower.profileImageUrl!)
+                          : null,
+                      child: follower.profileImageUrl == null
+                          ? Text(
+                              follower.fullName[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.grey),
+                            )
+                          : null,
+                    ),
+                    title: Text(
+                      follower.fullName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(follower.username ?? ''),
+                    trailing: !_isCurrentUser || isCurrentUser
+                        ? null
+                        : FutureBuilder<bool>(
+                            future: _userService.isFollowing(follower.id),
+                            builder: (context, snapshot) {
+                              final isFollowing = snapshot.data ?? false;
+
+                              return TextButton(
+                                onPressed: () => _toggleFollow(follower),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: isFollowing
+                                      ? Colors.grey.shade200
+                                      : theme.primaryColor.withAlpha(25),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                    side: isFollowing
+                                        ? BorderSide.none
+                                        : BorderSide(color: theme.primaryColor),
+                                  ),
+                                  minimumSize: const Size(80, 30),
+                                ),
+                                child: Text(
+                                  isFollowing ? 'Following' : 'Follow',
+                                  style: TextStyle(
+                                    color: isFollowing
+                                        ? Colors.black
+                                        : theme.primaryColor,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                    onTap: () {
+                      // Navigate to the follower's profile
+                      Navigator.pushNamed(
+                        context,
+                        '/profile/view',
+                        arguments: {
+                          'userId': follower.id,
+                          'isCurrentUser': isCurrentUser,
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _followers.isEmpty
-              ? const Center(
-                  child:
-                      Text('No followers yet', style: TextStyle(fontSize: 16)),
-                )
-              : ListView.builder(
-                  itemCount: _followers.length,
-                  itemBuilder: (context, index) {
-                    final follower = _followers[index];
-                    final isCurrentUser = follower.id == currentUserId;
-
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.grey.shade200,
-                        backgroundImage: follower.profileImageUrl != null
-                            ? NetworkImage(follower.profileImageUrl!)
-                            : null,
-                        child: follower.profileImageUrl == null
-                            ? Text(
-                                follower.fullName[0].toUpperCase(),
-                                style: const TextStyle(color: Colors.grey),
-                              )
-                            : null,
-                      ),
-                      title: Text(
-                        follower.fullName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(follower.username ?? ''),
-                      trailing: !_isCurrentUser || isCurrentUser
-                          ? null
-                          : FutureBuilder<bool>(
-                              future: _userService.isFollowing(follower.id),
-                              builder: (context, snapshot) {
-                                final isFollowing = snapshot.data ?? false;
-
-                                return TextButton(
-                                  onPressed: () => _toggleFollow(follower),
-                                  style: TextButton.styleFrom(
-                                    backgroundColor: isFollowing
-                                        ? Colors.grey.shade200
-                                        : theme.primaryColor.withAlpha(25),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      side: isFollowing
-                                          ? BorderSide.none
-                                          : BorderSide(
-                                              color: theme.primaryColor,
-                                            ),
-                                    ),
-                                    minimumSize: const Size(80, 30),
-                                  ),
-                                  child: Text(
-                                    isFollowing ? 'Following' : 'Follow',
-                                    style: TextStyle(
-                                      color: isFollowing
-                                          ? Colors.black
-                                          : theme.primaryColor,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                      onTap: () {
-                        // Navigate to the follower's profile
-                        Navigator.pushNamed(
-                          context,
-                          '/profile/view',
-                          arguments: {
-                            'userId': follower.id,
-                            'isCurrentUser': isCurrentUser,
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
     );
   }
 }

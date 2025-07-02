@@ -27,10 +27,12 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('🎨 ArtistDashboard: initState called');
     _loadArtistData();
   }
 
   Future<void> _loadArtistData() async {
+    debugPrint('🎨 ArtistDashboard: _loadArtistData started');
     if (_isRefreshing) return;
 
     setState(() {
@@ -39,6 +41,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
     });
 
     try {
+      debugPrint('🎨 ArtistDashboard: Loading artist profile...');
       final profileFuture = _subscriptionService.getCurrentArtistProfile();
       final subscriptionFuture = _subscriptionService.getUserSubscription();
       final results = await Future.wait([profileFuture, subscriptionFuture]);
@@ -46,13 +49,21 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
       final artistProfile = results[0] as core.ArtistProfileModel?;
       final subscription = results[1] as SubscriptionModel?;
 
+      debugPrint(
+          '🎨 ArtistDashboard: Artist profile: ${artistProfile?.displayName ?? 'null'}');
+      debugPrint(
+          '🎨 ArtistDashboard: Subscription: ${subscription?.tier ?? 'null'}');
+
       if (artistProfile != null) {
+        debugPrint('🎨 ArtistDashboard: Loading analytics data...');
         final dataFutures = await Future.wait([
           _analyticsService.getQuickStats(artistProfile.userId),
           _analyticsService.getRecentActivities(artistProfile.userId),
           _eventService.getUpcomingEvents(),
           _analyticsService.getCommissionSummary(),
         ]);
+
+        debugPrint('🎨 ArtistDashboard: Analytics data loaded successfully');
 
         if (mounted) {
           setState(() {
@@ -65,8 +76,10 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
             _isLoading = false;
             _isRefreshing = false;
           });
+          debugPrint('🎨 ArtistDashboard: UI updated successfully');
         }
       } else {
+        debugPrint('🎨 ArtistDashboard: No artist profile found');
         if (mounted) {
           setState(() {
             _artistProfile = artistProfile;
@@ -77,6 +90,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
         }
       }
     } catch (e) {
+      debugPrint('🎨 ArtistDashboard: Error loading data: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -343,7 +357,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   }
 
   void _showCommissionInfo() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Commission Information'),

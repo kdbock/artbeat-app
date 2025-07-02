@@ -22,21 +22,20 @@ class UserProfileScreen extends StatelessWidget {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(user.displayName),
-              background:
-                  user.photoUrl != null
-                      ? Image.network(user.photoUrl!, fit: BoxFit.cover)
-                      : Container(
-                        color: theme.primaryColor,
-                        child: Center(
-                          child: Text(
-                            user.displayName[0].toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 72,
-                              color: Colors.white,
-                            ),
+              background: user.photoUrl != null
+                  ? Image.network(user.photoUrl!, fit: BoxFit.cover)
+                  : Container(
+                      color: theme.primaryColor,
+                      child: Center(
+                        child: Text(
+                          user.displayName[0].toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 72,
+                            color: Colors.white,
                           ),
                         ),
                       ),
+                    ),
             ),
           ),
           SliverToBoxAdapter(
@@ -58,8 +57,9 @@ class UserProfileScreen extends StatelessWidget {
                                     ? Icons.circle
                                     : Icons.circle_outlined,
                                 size: 12,
-                                color:
-                                    user.isOnline ? Colors.green : Colors.grey,
+                                color: user.isOnline
+                                    ? Colors.green
+                                    : Colors.grey,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -85,10 +85,9 @@ class UserProfileScreen extends StatelessWidget {
 
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (context) =>
-                                                  ChatScreen(chat: chat),
+                                        MaterialPageRoute<void>(
+                                          builder: (context) =>
+                                              ChatScreen(chat: chat),
                                         ),
                                       );
                                     } catch (e) {
@@ -129,31 +128,33 @@ class UserProfileScreen extends StatelessWidget {
   }
 
   void _showUserOptions(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.block),
-              title: const Text('Block User'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement block user functionality
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.flag),
-              title: const Text('Report User'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement report user functionality
-              },
-            ),
-          ],
-        );
-      },
+      builder: (context) => _buildActionSheet(context),
+    );
+  }
+
+  Widget _buildActionSheet(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.block),
+          title: const Text('Block User'),
+          onTap: () {
+            Navigator.pop(context);
+            // TODO: Implement block user functionality
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.flag),
+          title: const Text('Report User'),
+          onTap: () {
+            Navigator.pop(context);
+            // TODO: Implement report user functionality
+          },
+        ),
+      ],
     );
   }
 

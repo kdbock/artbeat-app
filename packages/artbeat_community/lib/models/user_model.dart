@@ -20,15 +20,15 @@ class UserModel {
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
     return UserModel(
       id: doc.id,
-      fullName: data['fullName'] ?? '',
-      username: data['username'] ?? '',
-      avatarUrl: data['avatarUrl'] ?? '',
-      bio: data['bio'] ?? '',
-      location: data['location'] ?? '',
-      createdAt: data['createdAt'] ?? Timestamp.now(),
+      fullName: (data['fullName'] as String?) ?? '',
+      username: (data['username'] as String?) ?? '',
+      avatarUrl: (data['avatarUrl'] as String?) ?? '',
+      bio: (data['bio'] as String?) ?? '',
+      location: (data['location'] as String?) ?? '',
+      createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
     );
   }
 

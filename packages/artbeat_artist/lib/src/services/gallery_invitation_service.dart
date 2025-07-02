@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show NotificationService, NotificationType, UserType;
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 
 /// Service for managing gallery invitations to artists
@@ -164,8 +163,9 @@ class GalleryInvitationService {
             await _firestore.collection('artistProfiles').doc(galleryId).get();
 
         if (galleryProfileDoc.exists) {
-          final galleryArtists =
-              List<String>.from(galleryProfileDoc.get('galleryArtists') ?? []);
+          final galleryArtists = List<String>.from(
+              (galleryProfileDoc.get('galleryArtists') as List<dynamic>?) ??
+                  []);
 
           if (!galleryArtists.contains(artistProfile.id)) {
             await _firestore
@@ -187,7 +187,7 @@ class GalleryInvitationService {
           : '${artistProfile.displayName} has declined your gallery invitation';
 
       await _notificationService.sendNotification(
-        userId: invitationData['galleryUserId'],
+        userId: invitationData['galleryUserId'] as String,
         title: notificationTitle,
         message: notificationBody,
         type: NotificationType.invitationResponse,
@@ -312,7 +312,7 @@ class GalleryInvitationService {
 
       // Optionally notify the artist
       await _notificationService.sendNotification(
-        userId: invitationData['artistUserId'],
+        userId: invitationData['artistUserId'] as String,
         title: 'Invitation Cancelled',
         message: '${galleryProfile.displayName} has cancelled their invitation',
         type: NotificationType.invitationCancelled,

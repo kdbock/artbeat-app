@@ -1,267 +1,182 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
-/// Service class for handling Google Directions API requests
+/// Service for fetching walking directions between locations
 class DirectionsService {
-  // API key for Google Directions API is loaded from environment variables
-  // Make sure the API key has the "Directions API" enabled in the Google Cloud Console.
-  // For more information, see: https://developers.google.com/maps/documentation/directions/get-api-key
-  static String get _apiKey => AppConfig.googleMapsApiKey;
-  static const String _baseUrl =
-      'https://maps.googleapis.com/maps/api/directions/json';
+  final String? _apiKey;
+  static const Duration _requestTimeout = Duration(seconds: 10);
+  static const int _maxRetries = 2;
+  static const String _cacheKey = 'artbeat_directions_cache';
 
-  final Logger _logger = Logger();
-  final http.Client _httpClient;
+  DirectionsService({String? apiKey}) : _apiKey = apiKey;
 
-  DirectionsService({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
-
-  /// Get walking directions between multiple points
-  Future<DirectionsResult> getWalkingDirections({
-    required List<LatLng> waypoints,
-    bool optimizeWaypoints = true,
+  /// Get directions between two points with caching and retry logic
+  Future<Map<String, dynamic>> getDirections(
+    String origin,
+    String destination, {
+    bool useCachedData = true,
   }) async {
-    if (waypoints.length < 2) {
-      throw ArgumentError('At least 2 waypoints are required for directions');
+    final apiKey = _apiKey ?? ConfigService.instance.googleMapsApiKey;
+
+    if (apiKey == null ||
+        apiKey.isEmpty ||
+        apiKey == 'YOUR_GOOGLE_MAPS_API_KEY') {
+      debugPrint('⚠️ Invalid Google Maps API key');
+      throw Exception('Invalid or missing API key for directions');
     }
 
-    try {
-      final origin = waypoints.first;
-      final destination = waypoints.last;
+    // Create cache key based on origin and destination
+    final String cacheEntryKey = '${origin}_to_${destination}_directions';
 
-      // For development/testing: you can use mock data by calling _getMockDirectionsData directly if needed.
+    // Try to get cached directions first if requested
+    if (useCachedData) {
+      final cachedData = await _getCachedDirections(cacheEntryKey);
+      if (cachedData != null) {
+        debugPrint('🗺️ Using cached directions');
+        return cachedData;
+      }
+    }
 
-      // Format intermediate waypoints if any
-      String waypointsParam = '';
-      if (waypoints.length > 2) {
-        final intermediatePoints = waypoints.sublist(1, waypoints.length - 1);
-        waypointsParam = intermediatePoints
-            .map((point) => '${point.latitude},${point.longitude}')
-            .join('|');
+    // Parameters for request
+    final queryParams = {
+      'origin': origin,
+      'destination': destination,
+      'mode': 'walking', // Always use walking mode for art walks
+      'key': apiKey,
+    };
+
+    final url = Uri.https(
+      'maps.googleapis.com',
+      '/maps/api/directions/json',
+      queryParams,
+    );
+
+    int attempt = 0;
+    Exception? lastError;
+
+    while (attempt < _maxRetries) {
+      try {
+        debugPrint(
+          '🗺️ Fetching directions (attempt ${attempt + 1}/$_maxRetries)',
+        );
+
+        final response = await http.get(url).timeout(_requestTimeout);
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body) as Map<String, dynamic>;
+
+          // Check if the API returned an error status
+          if (data.containsKey('status') && data['status'] != 'OK') {
+            throw Exception(
+              'API error: ${data['status']} - ${data['error_message'] ?? 'Unknown error'}',
+            );
+          }
+
+          // Cache valid directions data
+          _cacheDirections(cacheEntryKey, data);
+          return data;
+        } else {
+          throw Exception(
+            'HTTP error ${response.statusCode}: ${response.reasonPhrase}',
+          );
+        }
+      } on TimeoutException {
+        lastError = Exception('Request timed out');
+        debugPrint('⌛ Directions request timed out (attempt ${attempt + 1})');
+      } on SocketException {
+        lastError = Exception('Network error');
+        debugPrint(
+          '🌐 Network error while fetching directions (attempt ${attempt + 1})',
+        );
+      } on Exception catch (e) {
+        lastError = e;
+        debugPrint('❌ Error fetching directions: $e (attempt ${attempt + 1})');
       }
 
-      // Build the request URL
-      // Note: API key restrictions should be set in Google Cloud Console
-      final Uri url = Uri.parse('$_baseUrl?'
-          'origin=${origin.latitude},${origin.longitude}'
-          '&destination=${destination.latitude},${destination.longitude}'
-          '${waypoints.length > 2 ? '&waypoints=${optimizeWaypoints ? "optimize:true|" : ""}$waypointsParam' : ''}'
-          '&mode=walking'
-          '&key=$_apiKey');
+      attempt++;
+      if (attempt < _maxRetries) {
+        // Exponential backoff
+        await Future<void>.delayed(Duration(seconds: 1 * attempt));
+      }
+    }
 
-      // Make the API call
-      final response = await _httpClient.get(url);
+    // After all retries failed, try to return cached data even if not requested initially
+    if (!useCachedData) {
+      final fallbackCachedData = await _getCachedDirections(cacheEntryKey);
+      if (fallbackCachedData != null) {
+        debugPrint('🔄 Falling back to cached directions after API failures');
+        return fallbackCachedData;
+      }
+    }
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+    throw lastError ??
+        Exception('Failed to get directions after $_maxRetries attempts');
+  }
 
-        if (data['status'] == 'OK') {
-          return DirectionsResult.fromJson(data);
-        } else {
-          _logger.e(
-              'Directions API error: ${data['status']} - ${data['error_message'] ?? 'Unknown error'}');
-          throw Exception('Failed to get directions: ${data['status']}');
+  /// Cache directions data for offline use
+  Future<void> _cacheDirections(String key, Map<String, dynamic> data) async {
+    try {
+      // Get the current cache data by leveraging the existing cache format
+      final prefs = await SharedPreferences.getInstance();
+      final String? jsonCache = prefs.getString(_cacheKey);
+      Map<String, dynamic> cache = {};
+      if (jsonCache != null) {
+        cache = jsonDecode(jsonCache) as Map<String, dynamic>;
+      }
+
+      // Add new entry
+      cache[key] = {
+        'data': data,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      // Save back to preferences
+      await prefs.setString(_cacheKey, jsonEncode(cache));
+    } catch (e) {
+      debugPrint('⚠️ Failed to cache directions: $e');
+    }
+  }
+
+  /// Get cached directions if available and not expired
+  Future<Map<String, dynamic>?> _getCachedDirections(String key) async {
+    try {
+      // Get the cache data using shared preferences directly
+      final prefs = await SharedPreferences.getInstance();
+      final String? jsonCache = prefs.getString(_cacheKey);
+      if (jsonCache == null || jsonCache.isEmpty) {
+        return null;
+      }
+
+      final cache = jsonDecode(jsonCache) as Map<String, dynamic>;
+      final entry = cache[key];
+
+      if (entry != null) {
+        final timestamp = entry['timestamp'] as int;
+        final now = DateTime.now().millisecondsSinceEpoch;
+        // Use cache if less than 1 day old
+        if (now - timestamp < const Duration(days: 1).inMilliseconds) {
+          return entry['data'] as Map<String, dynamic>;
         }
-      } else {
-        _logger.e('HTTP error: ${response.statusCode} - ${response.body}');
-        throw Exception(
-            'Failed to get directions: HTTP ${response.statusCode}');
       }
     } catch (e) {
-      _logger.e('Error getting directions: $e');
-      rethrow;
+      debugPrint('⚠️ Error retrieving cached directions: $e');
     }
+    return null;
   }
 
-  /// Dispose method to clean up resources
-  void dispose() {
-    _httpClient.close();
-  }
-}
-
-/// Model to represent the API response
-class DirectionsResult {
-  final List<Route> routes;
-
-  DirectionsResult({required this.routes});
-
-  factory DirectionsResult.fromJson(Map<String, dynamic> json) {
-    final List<Route> routes =
-        (json['routes'] as List).map((route) => Route.fromJson(route)).toList();
-
-    return DirectionsResult(routes: routes);
-  }
-}
-
-/// Model to represent a route in the directions result
-class Route {
-  final List<Leg> legs;
-  final String polyline;
-  final List<LatLng> points;
-  final int distanceMeters;
-  final int durationSeconds;
-  final LatLngBounds bounds;
-
-  Route({
-    required this.legs,
-    required this.polyline,
-    required this.points,
-    required this.distanceMeters,
-    required this.durationSeconds,
-    required this.bounds,
-  });
-
-  factory Route.fromJson(Map<String, dynamic> json) {
-    // Parse legs
-    final List<Leg> legs =
-        (json['legs'] as List).map((leg) => Leg.fromJson(leg)).toList();
-
-    // Calculate total distance and duration
-    int totalDistance = 0;
-    int totalDuration = 0;
-
-    for (final leg in legs) {
-      totalDistance += leg.distanceMeters;
-      totalDuration += leg.durationSeconds;
+  /// Clear the directions cache
+  Future<void> clearCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheKey);
+    } catch (e) {
+      debugPrint('⚠️ Failed to clear directions cache: $e');
     }
-
-    // Parse encoded polyline
-    final encodedPolyline = json['overview_polyline']['points'] as String;
-    final points = _decodePolyline(encodedPolyline);
-
-    // Parse bounds
-    final northeast = json['bounds']['northeast'];
-    final southwest = json['bounds']['southwest'];
-    final bounds = LatLngBounds(
-      northeast: LatLng(northeast['lat'], northeast['lng']),
-      southwest: LatLng(southwest['lat'], southwest['lng']),
-    );
-
-    return Route(
-      legs: legs,
-      polyline: encodedPolyline,
-      points: points,
-      distanceMeters: totalDistance,
-      durationSeconds: totalDuration,
-      bounds: bounds,
-    );
-  }
-
-  /// Utility method to decode an encoded polyline string to List<LatLng>
-  static List<LatLng> _decodePolyline(String encoded) {
-    List<LatLng> points = [];
-    int index = 0, len = encoded.length;
-    int lat = 0, lng = 0;
-
-    while (index < len) {
-      int b, shift = 0, result = 0;
-
-      do {
-        b = encoded.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-
-      do {
-        b = encoded.codeUnitAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-      lng += dlng;
-
-      final latitude = lat / 1e5;
-      final longitude = lng / 1e5;
-      points.add(LatLng(latitude, longitude));
-    }
-
-    return points;
-  }
-}
-
-/// Model to represent a leg of a route
-class Leg {
-  final int distanceMeters;
-  final int durationSeconds;
-  final String startAddress;
-  final String endAddress;
-  final LatLng startLocation;
-  final LatLng endLocation;
-  final List<Step> steps;
-
-  Leg({
-    required this.distanceMeters,
-    required this.durationSeconds,
-    required this.startAddress,
-    required this.endAddress,
-    required this.startLocation,
-    required this.endLocation,
-    required this.steps,
-  });
-
-  factory Leg.fromJson(Map<String, dynamic> json) {
-    final startLocation = json['start_location'];
-    final endLocation = json['end_location'];
-
-    return Leg(
-      distanceMeters: json['distance']['value'],
-      durationSeconds: json['duration']['value'],
-      startAddress: json['start_address'],
-      endAddress: json['end_address'],
-      startLocation: LatLng(startLocation['lat'], startLocation['lng']),
-      endLocation: LatLng(endLocation['lat'], endLocation['lng']),
-      steps:
-          (json['steps'] as List).map((step) => Step.fromJson(step)).toList(),
-    );
-  }
-}
-
-/// Model to represent a step in a leg
-class Step {
-  final String instruction;
-  final int distanceMeters;
-  final int durationSeconds;
-  final LatLng startLocation;
-  final LatLng endLocation;
-  final String polyline;
-  final List<LatLng> points;
-  final String travelMode;
-
-  Step({
-    required this.instruction,
-    required this.distanceMeters,
-    required this.durationSeconds,
-    required this.startLocation,
-    required this.endLocation,
-    required this.polyline,
-    required this.points,
-    required this.travelMode,
-  });
-
-  factory Step.fromJson(Map<String, dynamic> json) {
-    final startLocation = json['start_location'];
-    final endLocation = json['end_location'];
-    final encodedPolyline = json['polyline']['points'] as String;
-
-    return Step(
-      instruction: json['html_instructions'],
-      distanceMeters: json['distance']['value'],
-      durationSeconds: json['duration']['value'],
-      startLocation: LatLng(startLocation['lat'], startLocation['lng']),
-      endLocation: LatLng(endLocation['lat'], endLocation['lng']),
-      polyline: encodedPolyline,
-      points: Route._decodePolyline(encodedPolyline),
-      travelMode: json['travel_mode'],
-    );
   }
 }

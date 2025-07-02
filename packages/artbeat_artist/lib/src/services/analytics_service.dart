@@ -289,7 +289,8 @@ class AnalyticsService {
       final galleryData = galleryDoc.data() as Map<String, dynamic>;
 
       // Get associated artists
-      final artistIds = List<String>.from(galleryData['galleryArtists'] ?? []);
+      final artistIds = List<String>.from(
+          (galleryData['galleryArtists'] as List<dynamic>?) ?? []);
       result['totalArtists'] = artistIds.length;
 
       // Get total artworks
@@ -389,7 +390,8 @@ class AnalyticsService {
       final galleryData = galleryDoc.data() as Map<String, dynamic>;
 
       // Get associated artists
-      final artistIds = List<String>.from(galleryData['galleryArtists'] ?? []);
+      final artistIds = List<String>.from(
+          (galleryData['galleryArtists'] as List<dynamic>?) ?? []);
 
       // Fetch performance data for each artist
       for (final artistId in artistIds) {
@@ -493,8 +495,9 @@ class AnalyticsService {
 
         // Calculate pending and paid commissions
         if (data['transactions'] != null) {
-          final transactions =
-              List<Map<String, dynamic>>.from(data['transactions']);
+          final transactions = List<Map<String, dynamic>>.from(
+              (data['transactions'] as List<dynamic>? ?? [])
+                  .map((e) => e as Map<String, dynamic>));
           for (final transaction in transactions) {
             final amount = (transaction['commissionAmount'] as num).toDouble();
 
@@ -552,7 +555,8 @@ class AnalyticsService {
       final galleryData = galleryDoc.data() as Map<String, dynamic>;
 
       // Get associated artists
-      final artistIds = List<String>.from(galleryData['galleryArtists'] ?? []);
+      final artistIds = List<String>.from(
+          (galleryData['galleryArtists'] as List<dynamic>?) ?? []);
 
       // Create a map to store revenue by date
       final revenueByDate = <String, double>{};
@@ -655,7 +659,7 @@ class AnalyticsService {
       int totalLikes = 0;
       int totalComments = 0;
       for (var doc in artworkSnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         totalLikes += (data['likes'] ?? 0) as int;
         totalComments += (data['comments'] ?? 0) as int;
       }
@@ -785,8 +789,9 @@ class AnalyticsService {
         galleries.add(data['galleryId'] as String);
 
         if (data['transactions'] != null) {
-          final transactions =
-              List<Map<String, dynamic>>.from(data['transactions']);
+          final transactions = List<Map<String, dynamic>>.from(
+              (data['transactions'] as List<dynamic>? ?? [])
+                  .map((e) => e as Map<String, dynamic>));
           for (final transaction in transactions) {
             final amount = (transaction['commissionAmount'] as num).toDouble();
             if (transaction['status'] == 'pending') {
@@ -809,8 +814,9 @@ class AnalyticsService {
       for (final doc in commissionsSnapshot.docs) {
         final data = doc.data();
         if (data['transactions'] != null) {
-          final transactions =
-              List<Map<String, dynamic>>.from(data['transactions']);
+          final transactions = List<Map<String, dynamic>>.from(
+              (data['transactions'] as List<dynamic>? ?? [])
+                  .map((e) => e as Map<String, dynamic>));
           for (final transaction in transactions) {
             final date = (transaction['date'] as Timestamp).toDate();
             if (date.isAfter(thirtyDaysAgo)) {
@@ -835,6 +841,101 @@ class AnalyticsService {
     } catch (e) {
       logger.e('Error getting commission summary: $e');
       throw Exception('Failed to load commission summary: $e');
+    }
+  }
+
+  /// Get comprehensive artist analytics data for Pro subscribers
+  Future<Map<String, dynamic>> getArtistAnalyticsData(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      // Get artwork views
+      final artworkViewsSnapshot = await _firestore
+          .collection('artworkViews')
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('viewedAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .get();
+
+      // Get profile views
+      final profileViewsSnapshot = await _firestore
+          .collection('artistProfileViews')
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('viewedAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .get();
+
+      // Get artwork data
+      final artworkSnapshot = await _firestore
+          .collection('artwork')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      return {
+        'totalArtworkViews': artworkViewsSnapshot.docs.length,
+        'totalProfileViews': profileViewsSnapshot.docs.length,
+        'totalArtwork': artworkSnapshot.docs.length,
+        'averageViewsPerArtwork': artworkSnapshot.docs.isEmpty
+            ? 0.0
+            : artworkViewsSnapshot.docs.length / artworkSnapshot.docs.length,
+        'artworkViews':
+            artworkViewsSnapshot.docs.map((doc) => doc.data()).toList(),
+        'profileViews':
+            profileViewsSnapshot.docs.map((doc) => doc.data()).toList(),
+        'artwork': artworkSnapshot.docs
+            .map((doc) => {
+                  'id': doc.id,
+                  ...doc.data(),
+                })
+            .toList(),
+      };
+    } catch (e) {
+      logger.e('Error getting artist analytics data: $e');
+      return {};
+    }
+  }
+
+  /// Get basic artist analytics data for Basic subscribers
+  Future<Map<String, dynamic>> getBasicArtistAnalyticsData(
+    String userId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      // Get total views count only
+      final artworkViewsSnapshot = await _firestore
+          .collection('artworkViews')
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('viewedAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .get();
+
+      final profileViewsSnapshot = await _firestore
+          .collection('artistProfileViews')
+          .where('artistId', isEqualTo: userId)
+          .where('viewedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+          .where('viewedAt', isLessThanOrEqualTo: Timestamp.fromDate(endDate))
+          .get();
+
+      final artworkSnapshot = await _firestore
+          .collection('artwork')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      return {
+        'totalArtworkViews': artworkViewsSnapshot.docs.length,
+        'totalProfileViews': profileViewsSnapshot.docs.length,
+        'totalArtwork': artworkSnapshot.docs.length,
+      };
+    } catch (e) {
+      logger.e('Error getting basic artist analytics data: $e');
+      return {};
     }
   }
 }

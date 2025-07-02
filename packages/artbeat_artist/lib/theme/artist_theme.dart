@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/theme/index.dart';
+import 'package:artbeat_core/src/theme/artbeat_typography.dart';
 
 class ArtistThemeWrapper extends StatelessWidget {
   final Widget child;
@@ -33,7 +33,7 @@ class ArtistThemeWrapper extends StatelessWidget {
           alignment: AlignmentDirectional.topEnd,
         ),
         // Stats and analytics card styles
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 1,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

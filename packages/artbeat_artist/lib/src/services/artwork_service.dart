@@ -212,4 +212,26 @@ class ArtworkService {
       return [];
     }
   }
+
+  /// Get all artwork by user ID
+  Future<List<ArtworkModel>> getArtworkByUserId(String userId) async {
+    try {
+      final snapshot = await _firestore
+          .collection('artwork')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return ArtworkModel.fromMap({
+          'id': doc.id,
+          ...data,
+        });
+      }).toList();
+    } catch (e) {
+      debugPrint('Error getting artwork by user ID: $e');
+      return [];
+    }
+  }
 }

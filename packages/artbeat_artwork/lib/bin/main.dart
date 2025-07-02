@@ -82,7 +82,7 @@ class ArtworkModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (_) => const ArtworkBrowseScreen(),
                 ),
               ),
@@ -92,7 +92,7 @@ class ArtworkModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (_) => const ArtworkUploadScreen(),
                 ),
               ),

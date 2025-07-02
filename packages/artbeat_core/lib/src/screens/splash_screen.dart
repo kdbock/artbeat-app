@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../utils/user_sync_helper.dart';
+import '../theme/artbeat_colors.dart';
+import '../utils/color_extensions.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
@@ -28,42 +32,69 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
     );
 
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.2),
-        weight: 1,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.2, end: 1.0),
-        weight: 1,
-      ),
-    ]).animate(CurvedAnimation(
-      parent: _heartbeatController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.0, end: 1.2),
+            weight: 1,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 1.2, end: 1.0),
+            weight: 1,
+          ),
+        ]).animate(
+          CurvedAnimation(
+            parent: _heartbeatController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
     _heartbeatController.repeat();
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Delay to show splash screen for at least 2 seconds
-    await Future.delayed(const Duration(seconds: 2));
-
+    await Future<void>.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
 
     try {
-      // Check if user is logged in directly with Firebase Auth
+      if (Firebase.apps.isEmpty) {
+        if (!mounted) return;
+        Navigator.of(context).pushReplacementNamed('/login');
+        return;
+      }
+
       final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        _syncUserInBackground();
+      }
+
+      FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
 
-      debugPrint('🔗 SplashScreen navigating to: $route');
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(route);
     } catch (e) {
       debugPrint('Error checking auth status: $e');
       if (!mounted) return;
+      // Dismiss keyboard before navigating
+      FocusScope.of(context).unfocus();
       Navigator.of(context).pushReplacementNamed('/login');
     }
+  }
+
+  // Sync user data in background without blocking navigation
+  void _syncUserInBackground() {
+    Future.delayed(Duration.zero, () async {
+      try {
+        await UserSyncHelper.ensureUserDocumentExists().timeout(
+          const Duration(seconds: 5),
+        );
+      } on TimeoutException {
+        // Ignore timeout
+      } catch (syncError) {
+        // Ignore sync errors in background
+      }
+    });
   }
 
   @override
@@ -76,47 +107,35 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        constraints: const BoxConstraints.expand(),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF8C52FF), // Primary purple
-              const Color(0xFF8C52FF).withOpacity(0.8),
-              const Color(0xFF00BF63), // Primary green
+              ArtbeatColors.primaryPurple.withAlphaValue(0.05),
+              Colors.white,
+              ArtbeatColors.primaryGreen.withAlphaValue(0.05),
             ],
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Animated ARTbeat logo
-              ScaleTransition(
-                scale: _scaleAnimation,
-                child: Image.asset(
-                  'assets/images/artbeat_logo.png',
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'ARTbeat',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Discover Local Art',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-              ),
-            ],
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Image.asset(
+              'assets/images/splashTRANS_logo.png',
+              width: 300,
+              height: 300,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                // Fallback if image not found
+                return Icon(
+                  Icons.image_not_supported,
+                  size: 100,
+                  color: ArtbeatColors.primaryPurple.withAlpha(120),
+                );
+              },
+            ),
           ),
         ),
       ),

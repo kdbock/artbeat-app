@@ -1,56 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../models/admin_user_model.dart';
+import '../models/admin_stats_model.dart';
 import '../services/admin_service.dart';
+import 'admin_user_management_screen.dart';
 
+/// Main admin dashboard screen with overview stats and navigation
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({Key? key}) : super(key: key);
+  const AdminDashboardScreen({super.key});
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  UserRole? _selectedRole;
-  List<AdminUserModel>? _users;
-  bool _isLoading = false;
+  final AdminService _adminService = AdminService();
+  AdminStatsModel? _stats;
+  bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadUsers();
+    _loadStats();
   }
 
-  Future<void> _loadUsers() async {
-    if (!mounted) return;
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
+  Future<void> _loadStats() async {
     try {
-      final adminService = context.read<AdminService>();
-      final users = await adminService.getUsers(
-        searchQuery: _searchController.text,
-        roleFilter: _selectedRole,
-      );
-
-      if (!mounted) return;
-
       setState(() {
-        _users = users;
-        _isLoading = false;
+        _isLoading = true;
+        _error = null;
       });
+
+      final stats = await _adminService.getAdminStats();
+
+      if (mounted) {
+        setState(() {
+          _stats = stats;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _error = 'Error loading users: $e';
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -59,197 +53,383 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin Dashboard'),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              // Store scaffold messenger and service before async gap
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              final adminService = context.read<AdminService>();
-
-              try {
-                await adminService.signOut();
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(content: Text('Error signing out: $e')),
-                );
-              }
-            },
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadStats,
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: const InputDecoration(
-                      hintText: 'Search users...',
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onSubmitted: (_) => _loadUsers(),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                DropdownButton<UserRole>(
-                  value: _selectedRole,
-                  hint: const Text('Filter by role'),
-                  items: UserRole.values
-                      .map(
-                        (role) => DropdownMenuItem(
-                          value: role,
-                          child: Text(role.toString().split('.').last),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (role) {
-                    setState(() {
-                      _selectedRole = role;
-                    });
-                    _loadUsers();
-                  },
-                ),
-              ],
-            ),
-          ),
-          Expanded(child: _buildUserList()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserList() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadUsers, child: const Text('Retry')),
-          ],
-        ),
-      );
-    }
-
-    if (_users == null || _users!.isEmpty) {
-      return const Center(child: Text('No users found'));
-    }
-
-    return ListView.builder(
-      itemCount: _users!.length,
-      itemBuilder: (context, index) {
-        final user = _users![index];
-        return ListTile(
-          leading: CircleAvatar(
-            child: Text(user.displayName?[0] ?? user.email[0].toUpperCase()),
-          ),
-          title: Text(user.displayName ?? user.email),
-          subtitle: Text(user.role.toString().split('.').last),
-          trailing: PopupMenuButton<String>(
-            onSelected: (value) async {
+          PopupMenuButton<String>(
+            onSelected: (value) {
               switch (value) {
-                case 'edit':
-                  // TODO: Implement edit user dialog
+                case 'settings':
+                  // Navigate to system settings
                   break;
-                case 'delete':
-                  if (!mounted) return;
-                  final adminService = context.read<AdminService>();
-                  final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Confirm Delete'),
-                      content: const Text(
-                        'Are you sure you want to delete this user? This action cannot be undone.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm == true) {
-                    try {
-                      await adminService.deleteUser(user.id);
-                      if (mounted) {
-                        await _loadUsers(); // Reload the list
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(content: Text('Error deleting user: $e')),
-                        );
-                      }
-                    }
-                  }
-                  break;
-                case 'activity':
-                  // TODO: Navigate to user activity screen
-                  break;
-                case 'payments':
-                  // TODO: Navigate to user payments screen
+                case 'logout':
+                  _showLogoutDialog();
                   break;
               }
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
-                value: 'edit',
-                child: ListTile(
-                  leading: Icon(Icons.edit),
-                  title: Text('Edit User'),
+                value: 'settings',
+                child: Row(
+                  children: [
+                    Icon(Icons.settings),
+                    SizedBox(width: 8),
+                    Text('System Settings'),
+                  ],
                 ),
               ),
               const PopupMenuItem(
-                value: 'activity',
-                child: ListTile(
-                  leading: Icon(Icons.history),
-                  title: Text('View Activity'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'payments',
-                child: ListTile(
-                  leading: Icon(Icons.payment),
-                  title: Text('View Payments'),
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: ListTile(
-                  leading: Icon(Icons.delete, color: Colors.red),
-                  title: Text(
-                    'Delete User',
-                    style: TextStyle(color: Colors.red),
-                  ),
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text('Logout'),
+                  ],
                 ),
               ),
             ],
           ),
-        );
-      },
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red.shade300,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading dashboard',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _error!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadStats,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : _buildDashboard(),
     );
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  Widget _buildDashboard() {
+    return RefreshIndicator(
+      onRefresh: _loadStats,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatsOverview(),
+            const SizedBox(height: 24),
+            _buildQuickActions(),
+            const SizedBox(height: 24),
+            _buildRecentActivity(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsOverview() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Overview',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.5,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildStatCard(
+              'Total Users',
+              _stats?.totalUsers.toString() ?? '0',
+              Icons.people,
+              Colors.blue,
+            ),
+            _buildStatCard(
+              'Artists',
+              _stats?.totalArtists.toString() ?? '0',
+              Icons.brush,
+              Colors.purple,
+            ),
+            _buildStatCard(
+              'Galleries',
+              _stats?.totalGalleries.toString() ?? '0',
+              Icons.store,
+              Colors.green,
+            ),
+            _buildStatCard(
+              'Artworks',
+              _stats?.totalArtworks.toString() ?? '0',
+              Icons.image,
+              Colors.orange,
+            ),
+            _buildStatCard(
+              'Captures',
+              _stats?.totalCaptures.toString() ?? '0',
+              Icons.camera_alt,
+              Colors.red,
+            ),
+            _buildStatCard(
+              'Events',
+              _stats?.totalEvents.toString() ?? '0',
+              Icons.event,
+              Colors.teal,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          children: [
+            _buildActionCard(
+              'User Management',
+              Icons.person_add,
+              Colors.blue,
+              () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => const AdminUserManagementScreen(),
+                ),
+              ),
+            ),
+            _buildActionCard(
+              'Content Management',
+              Icons.content_paste,
+              Colors.green,
+              () {
+                // TODO: Navigate to content management
+              },
+            ),
+            _buildActionCard(
+              'Analytics',
+              Icons.analytics,
+              Colors.purple,
+              () {
+                // TODO: Navigate to analytics
+              },
+            ),
+            _buildActionCard(
+              'System Settings',
+              Icons.settings,
+              Colors.orange,
+              () {
+                // TODO: Navigate to system settings
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, size: 24, color: color),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivity() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Recent Activity',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.trending_up, color: Colors.green),
+                    const SizedBox(width: 8),
+                    Text('New Users Today: ${_stats?.newUsersToday ?? 0}'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.trending_up, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Text(
+                        'New Users This Week: ${_stats?.newUsersThisWeek ?? 0}'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.trending_up, color: Colors.purple),
+                    const SizedBox(width: 8),
+                    Text(
+                        'New Users This Month: ${_stats?.newUsersThisMonth ?? 0}'),
+                  ],
+                ),
+                const Divider(),
+                Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.teal),
+                    const SizedBox(width: 8),
+                    Text(
+                        'Active Users Today: ${_stats?.activeUsersToday ?? 0}'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.indigo),
+                    const SizedBox(width: 8),
+                    Text(
+                        'Active Users This Week: ${_stats?.activeUsersThisWeek ?? 0}'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.person, color: Colors.deepPurple),
+                    const SizedBox(width: 8),
+                    Text(
+                        'Active Users This Month: ${_stats?.activeUsersThisMonth ?? 0}'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showLogoutDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
   }
 }

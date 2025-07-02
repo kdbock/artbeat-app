@@ -27,18 +27,19 @@ class ArtWalkModel {
   });
 
   factory ArtWalkModel.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return ArtWalkModel(
       id: doc.id,
-      title: data['title'] ?? '',
-      description: data['description'] ?? '',
-      userId: data['userId'] ?? '',
-      publicArtIds: List<String>.from(data['publicArtIds'] ?? []),
+      title: data['title'] as String? ?? '',
+      description: data['description'] as String? ?? '',
+      userId: data['userId'] as String? ?? '',
+      publicArtIds:
+          List<String>.from(data['publicArtIds'] as List<dynamic>? ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      isPublic: data['isPublic'] ?? false,
-      viewCount: data['viewCount'] ?? 0,
-      imageUrls: List<String>.from(data['imageUrls'] ?? []),
-      zipCode: data['zipCode'], // Added
+      isPublic: data['isPublic'] as bool? ?? false,
+      viewCount: data['viewCount'] as int? ?? 0,
+      imageUrls: List<String>.from(data['imageUrls'] as List<dynamic>? ?? []),
+      zipCode: data['zipCode'] as String?, // Added
     );
   }
 
@@ -81,4 +82,6 @@ class ArtWalkModel {
       zipCode: zipCode ?? this.zipCode, // Added
     );
   }
+
+  List<String> get artPieces => publicArtIds;
 }

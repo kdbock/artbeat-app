@@ -56,25 +56,25 @@ class PostModel {
 
     return PostModel(
       id: doc.id,
-      userId: data['userId'] ?? '',
-      userName: data['userName'] ?? '',
-      userPhotoUrl: data['userPhotoUrl'] ?? '',
-      content: data['content'] ?? '',
-      imageUrls: List<String>.from(data['imageUrls'] ?? []),
-      tags: List<String>.from(data['tags'] ?? []),
-      location: data['location'] ?? '',
-      geoPoint: data['geoPoint'],
-      zipCode: data['zipCode'],
+      userId: (data['userId'] as String?) ?? '',
+      userName: (data['userName'] as String?) ?? '',
+      userPhotoUrl: (data['userPhotoUrl'] as String?) ?? '',
+      content: (data['content'] as String?) ?? '',
+      imageUrls: List<String>.from(data['imageUrls'] as Iterable? ?? []),
+      tags: List<String>.from(data['tags'] as Iterable? ?? []),
+      location: (data['location'] as String?) ?? '',
+      geoPoint: data['geoPoint'] as GeoPoint?,
+      zipCode: data['zipCode'] as String?,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
-      applauseCount: data['applauseCount'] ?? 0,
-      commentCount: data['commentCount'] ?? 0,
-      shareCount: data['shareCount'] ?? 0,
-      isPublic: data['isPublic'] ?? true,
+      applauseCount: (data['applauseCount'] as int?) ?? 0,
+      commentCount: (data['commentCount'] as int?) ?? 0,
+      shareCount: (data['shareCount'] as int?) ?? 0,
+      isPublic: (data['isPublic'] as bool?) ?? true,
       mentionedUsers: data['mentionedUsers'] != null
-          ? List<String>.from(data['mentionedUsers'])
+          ? List<String>.from(data['mentionedUsers'] as Iterable)
           : null,
-      metadata: data['metadata'],
-      isUserVerified: data['isUserVerified'] ?? false,
+      metadata: data['metadata'] as Map<String, dynamic>?,
+      isUserVerified: (data['isUserVerified'] as bool?) ?? false,
     );
   }
 
@@ -115,6 +115,7 @@ class PostModel {
     int? commentCount,
     int? shareCount,
     bool? isPublic,
+    bool? isUserVerified,
     List<String>? mentionedUsers,
     Map<String, dynamic>? metadata,
   }) {
@@ -134,6 +135,7 @@ class PostModel {
       commentCount: commentCount ?? this.commentCount,
       shareCount: shareCount ?? this.shareCount,
       isPublic: isPublic ?? this.isPublic,
+      isUserVerified: isUserVerified ?? this.isUserVerified,
       mentionedUsers: mentionedUsers ?? this.mentionedUsers,
       metadata: metadata ?? this.metadata,
     );

@@ -2,5 +2,5 @@
 // Generated on Tue Jun  5 09:15:48 EDT 2025
 
 export 'dashboard_screen.dart';
-export 'loading_screen.dart';
 export 'splash_screen.dart';
+export 'events_dashboard_screen.dart';

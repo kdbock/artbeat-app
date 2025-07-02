@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Enum representing different types of notifications
 enum NotificationType {
@@ -37,7 +37,7 @@ class NotificationService {
 
       return snapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      print('Error getting user notifications: $e');
+      debugPrint('Error getting user notifications: $e');
       return [];
     }
   }
@@ -55,7 +55,7 @@ class NotificationService {
           .doc(notificationId)
           .update({'read': true});
     } catch (e) {
-      print('Error marking notification as read: $e');
+      debugPrint('Error marking notification as read: $e');
     }
   }
 
@@ -79,7 +79,7 @@ class NotificationService {
 
       await batch.commit();
     } catch (e) {
-      print('Error marking all notifications as read: $e');
+      debugPrint('Error marking all notifications as read: $e');
     }
   }
 
@@ -96,7 +96,7 @@ class NotificationService {
           .doc(notificationId)
           .delete();
     } catch (e) {
-      print('Error deleting notification: $e');
+      debugPrint('Error deleting notification: $e');
     }
   }
 

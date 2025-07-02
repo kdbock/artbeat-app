@@ -59,10 +59,11 @@ class SubscriptionService extends ChangeNotifier {
       if (artistDoc.docs.isEmpty) return SubscriptionTier.free;
 
       // Get subscription tier from artist profile
-      final artistProfile =
-          ArtistProfileModel.fromFirestore(artistDoc.docs.first);
-      SubscriptionTier tier = artistProfile.subscriptionTier;
-      return Future<SubscriptionTier>.value(tier);
+      final artistProfile = ArtistProfileModel.fromFirestore(
+        artistDoc.docs.first,
+      );
+      final tier = artistProfile.subscriptionTier;
+      return tier;
     } catch (e) {
       debugPrint('Error getting current subscription tier: $e');
       return SubscriptionTier.free;
@@ -181,7 +182,7 @@ class SubscriptionService extends ChangeNotifier {
           'name': 'None',
           'price': 0.00,
           'priceId': '',
-          'features': [],
+          'features': <String>[],
         };
     }
   }
@@ -235,8 +236,9 @@ class SubscriptionService extends ChangeNotifier {
             'updatedAt': FieldValue.serverTimestamp(),
           });
         } else {
-          final newSubscriptionRef =
-              _firestore.collection('subscriptions').doc();
+          final newSubscriptionRef = _firestore
+              .collection('subscriptions')
+              .doc();
           transaction.set(newSubscriptionRef, {
             'userId': userId,
             'tier': newTier.apiName,
@@ -258,11 +260,12 @@ class SubscriptionService extends ChangeNotifier {
 
   /// Change subscription tier with validation
   Future<Map<String, dynamic>> changeTierWithValidation(
-      SubscriptionTier newTier,
-      {bool validateOnly = false}) async {
+    SubscriptionTier newTier, {
+    bool validateOnly = false,
+  }) async {
     try {
       final validation = await _validationService.prepareTierChange(newTier);
-      if (!validation['isValid']) {
+      if ((validation['isValid'] as bool? ?? false) == false) {
         return validation;
       }
 
@@ -308,8 +311,9 @@ class SubscriptionService extends ChangeNotifier {
             'updatedAt': FieldValue.serverTimestamp(),
           });
         } else {
-          final newSubscriptionRef =
-              _firestore.collection('subscriptions').doc();
+          final newSubscriptionRef = _firestore
+              .collection('subscriptions')
+              .doc();
           transaction.set(newSubscriptionRef, {
             'userId': userId,
             'tier': newTier.apiName,
@@ -345,7 +349,8 @@ class SubscriptionService extends ChangeNotifier {
   Future<bool> hasCapability(String capability) async {
     try {
       final capabilities = await getCurrentTierCapabilities();
-      return capabilities[capability] ?? false;
+      final dynamic value = capabilities[capability];
+      return (value as bool?) ?? false;
     } catch (e) {
       debugPrint('Error checking capability $capability: $e');
       return false;

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/auth_service.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import '../services/auth_service.dart'; // Only import local AuthService
+import 'package:artbeat_core/artbeat_core.dart'
+    show ArtbeatColors, ArtbeatInput, ArtbeatButton, UniversalHeader;
+import 'package:artbeat_core/src/utils/location_utils.dart' show LocationUtils;
+import 'package:artbeat_core/src/utils/color_extensions.dart';
+import 'package:artbeat_core/artbeat_core.dart' show UserService;
 
 /// Registration screen with email/password account creation
 class RegisterScreen extends StatefulWidget {
@@ -53,7 +57,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
       } else {
         _showErrorSnackBar(
-            'Could not determine your location. Please enter your ZIP code manually.');
+          'Could not determine your location. Please enter your ZIP code manually.',
+        );
       }
     } catch (e) {
       _showErrorSnackBar('Error accessing location: ${e.toString()}');
@@ -66,10 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -93,12 +95,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final fullName =
           "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}";
-      await _authService.registerWithEmailAndPassword(
-        _emailController.text.trim(),
-        _passwordController.text,
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+      final zipCode = _zipCodeController.text.trim();
+
+      // Register user and create profile in Firestore
+      final userCredential = await _authService.registerWithEmailAndPassword(
+        email,
+        password,
         fullName,
-        zipCode: _zipCodeController.text.trim(),
+        zipCode: zipCode,
       );
+
+      // Double-check that user document exists in Firestore
+      final user = userCredential.user;
+      if (user != null) {
+        final userService = UserService();
+        final userDoc = await userService.getUserById(user.uid);
+
+        if (userDoc == null) {
+          debugPrint(
+            '⚠️ User document not found in Firestore. Creating it now...',
+          );
+          await userService.createNewUser(
+            uid: user.uid,
+            email: user.email ?? email,
+            displayName: fullName,
+            zipCode: zipCode,
+          );
+        } else {
+          debugPrint('✅ User document confirmed in Firestore');
+        }
+      }
 
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/dashboard');
@@ -135,12 +163,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _navigateToTerms() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -235,12 +261,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   /// Show terms and privacy dialog
   void _navigateToPrivacyPolicy() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -333,18 +357,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: const UniversalHeader(
+        title: 'Create Account',
+        showLogo: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              ArtbeatColors.primaryPurple.withOpacity(0.1),
+              ArtbeatColors.primaryPurple.withAlphaValue(0.05),
               Colors.white,
+              ArtbeatColors.accent2.withAlphaValue(0.05),
             ],
           ),
         ),
@@ -356,45 +383,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
+                  const SizedBox(height: 16),
+                  // Animated logo
+                  TweenAnimationBuilder(
+                    duration: const Duration(seconds: 2),
+                    tween: Tween<double>(begin: 0.8, end: 1.0),
+                    builder: (context, double value, child) {
+                      return Transform.scale(scale: value, child: child);
+                    },
                     child: Image.asset(
                       'assets/images/artbeat_logo.png',
-                      width: 80,
-                      height: 80,
+                      width: 100,
+                      height: 100,
                       fit: BoxFit.contain,
                     ),
                   ),
                   const SizedBox(height: 32),
                   Text(
-                    'Create Account',
+                    'Join ARTbeat',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: ArtbeatColors.primaryPurple,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
-                    'Join our community of artists and art enthusiasts',
+                    'Create your account to start your artistic journey',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: ArtbeatColors.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        _errorMessage!,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: ArtbeatColors.error,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.error.withAlphaValue(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: ArtbeatColors.error,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: ArtbeatColors.error),
                             ),
+                          ),
+                        ],
                       ),
                     ),
+                  const SizedBox(height: 24),
+                  // Name fields in a row
                   Row(
                     children: [
                       Expanded(
                         child: ArtbeatInput(
-                          key: const Key('register_first_name_field'),
                           controller: _firstNameController,
                           label: 'First Name',
+                          prefixIcon: const Icon(Icons.person_outline),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Required';
@@ -406,9 +461,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: ArtbeatInput(
-                          key: const Key('register_last_name_field'),
                           controller: _lastNameController,
                           label: 'Last Name',
+                          prefixIcon: const Icon(Icons.person_outline),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Required';
@@ -424,10 +479,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       Expanded(
                         child: ArtbeatInput(
-                          key: const Key('register_zip_code_field'),
                           controller: _zipCodeController,
                           label: 'ZIP Code',
                           keyboardType: TextInputType.number,
+                          prefixIcon: const Icon(Icons.location_on_outlined),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Required';
@@ -440,41 +495,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      TextButton.icon(
-                        key: const Key('register_auto_zip_button'),
-                        onPressed: _isLoading ? null : _getZipCodeFromLocation,
-                        icon: const Icon(Icons.location_on),
-                        label: const Text('Auto'),
+                      IconButton(
+                        onPressed: _getZipCodeFromLocation,
+                        icon: const Icon(Icons.my_location),
+                        color: ArtbeatColors.primaryPurple,
+                        tooltip: 'Use current location',
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
-                    key: const Key('register_email_field'),
                     controller: _emailController,
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
+                    prefixIcon: const Icon(Icons.email_outlined),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
                       if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                        return 'Invalid email format';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
-                    key: const Key('register_password_field'),
                     controller: _passwordController,
                     label: 'Password',
                     obscureText: _obscurePassword,
+                    prefixIcon: const Icon(Icons.lock_outlined),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: ArtbeatColors.textSecondary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -486,23 +542,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a password';
                       }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                      if (value.length < 8) {
+                        return 'Password must be at least 8 characters';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
                   ArtbeatInput(
-                    key: const Key('register_confirm_password_field'),
                     controller: _confirmPasswordController,
                     label: 'Confirm Password',
                     obscureText: _obscureConfirmPassword,
+                    prefixIcon: const Icon(Icons.lock_outlined),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: ArtbeatColors.textSecondary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -523,26 +580,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Checkbox(
-                        value: _agreedToTerms,
-                        onChanged: (value) {
-                          setState(() {
-                            _agreedToTerms = value ?? false;
-                          });
-                        },
-                        activeColor: ArtbeatColors.primaryPurple,
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _agreedToTerms,
+                          onChanged: (value) {
+                            setState(() {
+                              _agreedToTerms = value ?? false;
+                            });
+                          },
+                          activeColor: ArtbeatColors.primaryPurple,
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: RichText(
-                          text: TextSpan(
+                        child: Text.rich(
+                          TextSpan(
+                            text: 'I agree to the ',
                             style: Theme.of(context).textTheme.bodyMedium,
                             children: [
-                              const TextSpan(text: 'I agree to the '),
                               TextSpan(
                                 text: 'Terms of Service',
                                 style: const TextStyle(
                                   color: ArtbeatColors.primaryPurple,
-                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = _navigateToTerms,
@@ -552,7 +614,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 text: 'Privacy Policy',
                                 style: const TextStyle(
                                   color: ArtbeatColors.primaryPurple,
-                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
                                 ),
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = _navigateToPrivacyPolicy,
@@ -565,43 +627,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 24),
                   ArtbeatButton(
-                    key: const Key('register_submit_button'),
                     onPressed: _isLoading ? null : _handleRegister,
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Create Account'),
+                        : const Text('Register'),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account? ',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/login'),
+                    child: Text(
+                      'Already have an account? Log in',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: ArtbeatColors.primaryPurple,
+                        fontWeight: FontWeight.w500,
                       ),
-                      TextButton(
-                        key: const Key('go_to_login_button'),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text(
-                          'Log In',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: ArtbeatColors.primaryPurple,
-                                  ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -617,10 +662,7 @@ class _TermsSection extends StatelessWidget {
   final String title;
   final String content;
 
-  const _TermsSection({
-    required this.title,
-    required this.content,
-  });
+  const _TermsSection({required this.title, required this.content});
 
   @override
   Widget build(BuildContext context) {
@@ -631,10 +673,7 @@ class _TermsSection extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 8),
           Text(content),

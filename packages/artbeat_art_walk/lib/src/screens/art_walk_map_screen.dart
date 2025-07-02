@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'dart:io' show SocketException;
+import 'dart:io' show Platform, SocketException;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import '../widgets/art_detail_bottom_sheet.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 import '../widgets/zip_code_search_box.dart';
 
 /// Screen that displays a map with nearby public art and art walks
@@ -22,6 +24,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   final Set<Marker> _markers = {};
   final ArtWalkService _artWalkService = ArtWalkService();
   final GoogleMapsService _mapsService = GoogleMapsService();
+  final UserService _userService = UserService();
   Position? _currentPosition;
   bool _isLoading = true;
   bool _isSearchingZip = false;
@@ -30,17 +33,50 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   List<PublicArtModel> _nearbyArt = [];
   bool _showInfoCard = true;
   String _currentZipCode = '';
+  String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
 
-  // Default to North Carolina center
+  // Default to North Carolina center with better zoom with better zoom
   static const CameraPosition _defaultLocation = CameraPosition(
     target: LatLng(35.7596, -79.0193), // Center of NC
-    zoom: 7.0,
+    zoom: 10.0, // Better initial zoom level // Better initial zoom level
   );
 
   @override
   void initState() {
     super.initState();
     _initializeMapsAndLocation();
+  }
+
+  void _onBottomNavTap(int index) {
+    switch (index) {
+      case 0: // Home - Dashboard
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (route) => false,
+        );
+        break;
+      case 1: // Art Walk - Stay here
+        break;
+      case 2: // Community
+        Navigator.pushNamed(context, '/community/dashboard');
+        break;
+      case 3: // Events
+        Navigator.pushNamed(context, '/events/dashboard');
+        break;
+      case 4: // Capture (Camera button) - Open as modal
+        _openCaptureModal();
+        break;
+    }
+  }
+
+  void _openCaptureModal() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => const CaptureScreen(),
+        fullscreenDialog: true,
+      ),
+    );
   }
 
   /// Initialize Google Maps and location services
@@ -50,14 +86,23 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
     try {
       debugPrint('🗺️ Initializing Google Maps...');
+
+      // Check if we're running on an emulator to provide appropriate feedback
+      final isEmulator = await _checkIfEmulator();
+      if (isEmulator) {
+        debugPrint('⚠️ Running on emulator - map performance may be limited');
+      }
+
+      // Initialize Maps with retry logic
       final mapsInitialized = await _mapsService.initializeMaps();
 
       if (!mapsInitialized) {
         if (!mounted) return;
         setState(() {
           _hasMapError = true;
-          _mapErrorMessage =
-              'Failed to initialize Google Maps. Please check your connectivity and try again.';
+          _mapErrorMessage = isEmulator
+              ? 'Maps initialization failed. Emulators may have performance issues with Google Maps.'
+              : 'Failed to initialize Google Maps. Please check your connectivity and try again.';
           _isLoading = false;
         });
         return;
@@ -72,8 +117,25 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       debugPrint('✅ Maps initialized successfully');
 
+      // Load user's ZIP code first, then initialize location
+      await _loadUserZipCode();
+
       // Now initialize location
       await _initializeLocation();
+
+      // If we're on an emulator, reduce map resource usage
+      if (isEmulator && _mapController != null) {
+        debugPrint('🗺️ Optimizing map settings for emulator');
+        try {
+          // Use a more modest zoom level to reduce tile loading
+          await _mapController!.moveCamera(CameraUpdate.zoomTo(10.0));
+
+          // Note: Traffic layer and map type are set in the GoogleMap widget
+          // We can't modify them directly through the controller
+        } catch (e) {
+          debugPrint('⚠️ Error optimizing map for emulator: $e');
+        }
+      }
     } catch (e) {
       debugPrint('❌ Error in map/location initialization: $e');
       if (mounted) {
@@ -87,18 +149,60 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     }
   }
 
+  /// Check if running on an emulator
+  Future<bool> _checkIfEmulator() async {
+    try {
+      if (Platform.isAndroid) {
+        final deviceInfo = DeviceInfoPlugin();
+        final androidInfo = await deviceInfo.androidInfo;
+        return androidInfo.isPhysicalDevice == false ||
+            androidInfo.model.contains('sdk') ||
+            androidInfo.model.contains('emulator');
+      } else if (Platform.isIOS) {
+        final deviceInfo = DeviceInfoPlugin();
+        final iosInfo = await deviceInfo.iosInfo;
+        return !iosInfo.isPhysicalDevice;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error checking if device is emulator: $e');
+    }
+    return false;
+  }
+
+  /// Load user's ZIP code from profile
+  Future<void> _loadUserZipCode() async {
+    try {
+      final user = await _userService.getCurrentUserModel();
+      if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _currentZipCode = user.zipCode!;
+          });
+        }
+        debugPrint('📍 Loaded user ZIP code: ${user.zipCode}');
+      } else {
+        debugPrint(
+          '📍 No user ZIP code found, will use location-based detection',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading user ZIP code: $e');
+    }
+  }
+
   Future<void> _initializeLocation() async {
     if (!mounted) return;
 
     try {
       // Check if location services are enabled
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Location services are disabled. Please enable them to see nearby art.'),
+                'Location services are disabled. Please enable them to see nearby art.',
+              ),
               duration: Duration(seconds: 3),
             ),
           );
@@ -116,7 +220,8 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text(
-                    'Location permission denied. Some features may be limited.'),
+                  'Location permission denied. Some features may be limited.',
+                ),
                 duration: Duration(seconds: 3),
               ),
             );
@@ -128,44 +233,66 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       // Get current position with a timeout
       try {
-        _currentPosition = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        ).timeout(const Duration(seconds: 10), onTimeout: () {
-          // If getting high accuracy location times out, try lower accuracy
-          return Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.medium,
-            timeLimit: const Duration(seconds: 5),
-          );
-        });
+        _currentPosition =
+            await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.high,
+                timeLimit: Duration(seconds: 10),
+              ),
+            ).timeout(
+              const Duration(seconds: 10),
+              onTimeout: () {
+                // If getting high accuracy location times out, try lower accuracy
+                return Geolocator.getCurrentPosition(
+                  locationSettings: const LocationSettings(
+                    accuracy: LocationAccuracy.medium,
+                    timeLimit: Duration(seconds: 5),
+                  ),
+                );
+              },
+            );
 
         debugPrint('🌍 Got current position: $_currentPosition');
 
-        // Get ZIP code from coordinates (simplified)
-        _currentZipCode = await _artWalkService.getZipCodeFromCoordinates(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-        );
-        debugPrint('📍 Location ZIP code: $_currentZipCode');
+        // Get ZIP code from coordinates if we don't have user's ZIP code
+        if (_currentZipCode.isEmpty) {
+          _currentZipCode = await _artWalkService.getZipCodeFromCoordinates(
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          );
+          debugPrint('📍 Location-derived ZIP code: $_currentZipCode');
+
+          // Save the detected ZIP code to user profile if valid
+          if (_currentZipCode.isNotEmpty && _currentZipCode != '00000') {
+            _updateUserZipCode(_currentZipCode);
+          }
+        } else {
+          debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
+        }
 
         // Load nearby art with a timeout
         _nearbyArt = await _artWalkService
             .getPublicArtNearLocation(
-          latitude: _currentPosition!.latitude,
-          longitude: _currentPosition!.longitude,
-          radiusKm: 10.0,
-        )
-            .timeout(const Duration(seconds: 15), onTimeout: () {
-          debugPrint(
-              '⚠️ Loading nearby art timed out, using cached data if available');
-          return _artWalkService.getCachedPublicArt();
-        });
+              latitude: _currentPosition!.latitude,
+              longitude: _currentPosition!.longitude,
+              radiusKm: 10.0,
+            )
+            .timeout(
+              const Duration(seconds: 15),
+              onTimeout: () {
+                debugPrint(
+                  '⚠️ Loading nearby art timed out, using cached data if available',
+                );
+                return _artWalkService.getCachedPublicArt();
+              },
+            );
 
         debugPrint('🎨 Loaded ${_nearbyArt.length} nearby art pieces');
 
         // Create markers for nearby art
         _updateMarkers();
 
-        // If map is ready, move to current location
+        // If map is ready, move to current location with better zoom
         if (_mapController != null && mounted) {
           try {
             debugPrint('🗺️ Moving map to current location');
@@ -173,9 +300,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 .animateCamera(
                   CameraUpdate.newCameraPosition(
                     CameraPosition(
-                      target: LatLng(_currentPosition!.latitude,
-                          _currentPosition!.longitude),
-                      zoom: 13.0,
+                      target: LatLng(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                      ),
+                      zoom: 15.0, // Increased zoom for better visibility
                     ),
                   ),
                 )
@@ -193,7 +322,8 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                  'Location services timed out. Using approximate location.'),
+                'Location services timed out. Using approximate location.',
+              ),
               duration: Duration(seconds: 3),
             ),
           );
@@ -210,7 +340,8 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Error getting location: ${e.toString().split('] ').last}'),
+              'Error getting location: ${e.toString().split('] ').last}',
+            ),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -219,6 +350,16 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  /// Update user's ZIP code in profile
+  void _updateUserZipCode(String zipCode) async {
+    try {
+      await _userService.updateUserZipCode(zipCode);
+      debugPrint('✅ Successfully updated user ZIP code to: $zipCode');
+    } catch (e) {
+      debugPrint('❌ Error updating user ZIP code: $e');
     }
   }
 
@@ -247,7 +388,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   /// Handle marker tap events
   void _onMarkerTapped(PublicArtModel art) {
     if (!mounted) return;
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -260,13 +401,12 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     _mapController = controller;
     _mapControllerCompleter.complete(controller);
 
-    try {
-      // Note: setMapStyle is still the recommended way until the new API reaches stable
-      final mapStyle = await _mapsService.defaultMapStyle;
-      await controller.setMapStyle(mapStyle);
-    } catch (e) {
-      debugPrint('Error setting map style: $e');
-    }
+    // Note: We cannot apply map style directly via controller anymore
+    // Map style is now set using the GoogleMap.styleString property
+    // We'll implement that in the GoogleMap widget in the build method
+
+    // Initialize location after map is ready
+    await _initializeLocation();
 
     // Initialize location after map is ready
     await _initializeLocation();
@@ -286,7 +426,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     if (!mounted) return;
     try {
       final newPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       if (!mounted) return;
@@ -302,11 +444,54 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     if (!mounted || _currentPosition == null) return;
 
     try {
-      final nearbyArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        radiusKm: 10.0,
-      );
+      List<PublicArtModel> nearbyArt = [];
+
+      switch (_artFilter) {
+        case 'all':
+          nearbyArt = await _artWalkService.getCombinedArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+            includeUserCaptures: true,
+          );
+          break;
+        case 'public':
+          nearbyArt = await _artWalkService.getPublicArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+          );
+          break;
+        case 'captures':
+          // Get all public captures (community + user's own)
+          final allCaptures = await _artWalkService.getCapturedArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+            includeUserOnly: false, // Gets all public captures
+          );
+          debugPrint('🔍 [DEBUG] all captures length: ${allCaptures.length}');
+          nearbyArt = allCaptures
+              .map(
+                (captureModel) =>
+                    _artWalkService.captureToPublicArt(captureModel),
+              )
+              .toList();
+          break;
+        case 'my_captures':
+          debugPrint('🔍 [DEBUG] Filter my_captures selected');
+          final captures = await _artWalkService.getCapturedArtNearLocation(
+            latitude: _currentPosition!.latitude,
+            longitude: _currentPosition!.longitude,
+            radiusKm: 10.0,
+            includeUserOnly: true,
+          );
+          debugPrint('🔍 [DEBUG] my_captures docs count: ${captures.length}');
+          nearbyArt = captures
+              .map((c) => _artWalkService.captureToPublicArt(c))
+              .toList();
+          break;
+      }
 
       if (!mounted) return;
       setState(() {
@@ -332,6 +517,69 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     );
   }
 
+  /// Show filter dialog for art types
+  void _showFilterDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Filter Art'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RadioListTile<String>(
+              title: const Text('All Art'),
+              subtitle: const Text('Public art + captured art'),
+              value: 'all',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('Public Art Only'),
+              subtitle: const Text('Curated public art pieces'),
+              value: 'public',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('Community Captures'),
+              subtitle: const Text('Art captured by community'),
+              value: 'captures',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('My Captures'),
+              subtitle: const Text('Art you\'ve captured'),
+              value: 'my_captures',
+              groupValue: _artFilter,
+              onChanged: (value) {
+                Navigator.of(context).pop();
+                _changeFilter(value!);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Change the art filter and refresh the map
+  void _changeFilter(String newFilter) {
+    setState(() {
+      _artFilter = newFilter;
+    });
+    _updateNearbyArt();
+  }
+
   /// Handle ZIP code search submission
   Future<void> _handleZipCodeSearch(String zipCode) async {
     if (!mounted) return;
@@ -344,10 +592,21 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     });
 
     try {
-      // Get nearby art from the service
+      // Convert ZIP code to coordinates
+      final coordinates = await LocationUtils.getCoordinatesFromZipCode(
+        zipCode,
+      );
+      if (coordinates == null) {
+        if (mounted) {
+          _showSnackBar('Invalid ZIP code or unable to find location');
+        }
+        return;
+      }
+
+      // Get nearby art from the service using the actual coordinates
       final nearbyArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: 35.7596, // This should be replaced with geocoding
-        longitude: -79.0193,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
         radiusKm: 10.0,
       );
 
@@ -357,6 +616,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         _nearbyArt = nearbyArt;
         _updateMarkers();
       });
+
+      // Update user's ZIP code if they searched for a valid one
+      if (zipCode.isNotEmpty && zipCode != '00000') {
+        _updateUserZipCode(zipCode);
+      }
 
       if (nearbyArt.isNotEmpty && mapController != null) {
         final firstArt = nearbyArt.first;
@@ -389,6 +653,21 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: UniversalHeader(
+        title: 'Art Walk Map',
+        showDeveloperTools: false,
+        onSearchPressed: () {
+          // Handle search action - could open a search overlay
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Search functionality coming soon!'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+      ),
+      drawer: const ArtbeatDrawer(),
       body: Stack(
         children: [
           GoogleMap(
@@ -400,29 +679,44 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             mapType: MapType.normal,
             zoomControlsEnabled: false,
             compassEnabled: true,
+            trafficEnabled: false,
+            buildingsEnabled: true,
+            indoorViewEnabled: false,
           ),
           Positioned(
             right: 16,
-            top: MediaQuery.of(context).padding.top + 72,
-            child: FloatingActionButton.small(
-              heroTag: 'myLocation',
-              onPressed: () async {
-                if (_currentPosition != null && _mapController != null) {
-                  await _mapController!.animateCamera(
-                    CameraUpdate.newLatLng(
-                      LatLng(_currentPosition!.latitude,
-                          _currentPosition!.longitude),
-                    ),
-                  );
-                }
-              },
-              child: const Icon(Icons.my_location),
+            top:
+                MediaQuery.of(context).padding.top +
+                120, // Increased to account for app bar
+            child: Column(
+              children: [
+                FloatingActionButton.small(
+                  heroTag: 'artFilter',
+                  onPressed: _showFilterDialog,
+                  child: const Icon(Icons.filter_list),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton.small(
+                  heroTag: 'myLocation',
+                  onPressed: () async {
+                    if (_currentPosition != null && _mapController != null) {
+                      await _mapController!.animateCamera(
+                        CameraUpdate.newLatLng(
+                          LatLng(
+                            _currentPosition!.latitude,
+                            _currentPosition!.longitude,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Icon(Icons.my_location),
+                ),
+              ],
             ),
           ),
           if (_isLoading || _isSearchingZip)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+            const Center(child: CircularProgressIndicator()),
           if (_hasMapError)
             Center(
               child: Padding(
@@ -451,7 +745,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
               ),
             ),
           Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
+            top:
+                MediaQuery.of(context).padding.top +
+                80, // Increased to account for app bar
             left: 16,
             right: 16,
             child: ZipCodeSearchBox(
@@ -461,7 +757,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           ),
           if (_showInfoCard)
             Positioned(
-              bottom: 16,
+              bottom: 100, // Increased to account for bottom navigation
               left: 16,
               right: 16,
               child: ArtWalkInfoCard(
@@ -470,13 +766,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (!mounted) return;
-          Navigator.of(context).pushNamed('/art-walks');
-        },
-        label: const Text('View Art Walks'),
-        icon: const Icon(Icons.museum),
+      bottomNavigationBar: UniversalBottomNav(
+        currentIndex: 1, // Art Walk is index 1
+        onTap: _onBottomNavTap,
       ),
     );
   }

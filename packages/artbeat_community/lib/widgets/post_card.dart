@@ -3,9 +3,11 @@ import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import 'applause_button.dart';
 import 'artist_avatar.dart';
-import '../theme/index.dart';
+import 'package:artbeat_core/artbeat_core.dart' show ArtbeatColors;
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
+import '../screens/gifts/gift_modal.dart';
+import '../screens/sponsorships/sponsor_modal.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
@@ -31,142 +33,209 @@ class PostCard extends StatelessWidget {
     required this.onToggleExpand,
   });
 
-  CommunityTypography _getTypography(BuildContext context) {
-    return CommunityTypography(Theme.of(context));
-  }
+  // Always show gift/sponsor/applause for all posts in the artist community feed
+  bool get canGift => true;
 
   @override
   Widget build(BuildContext context) {
-    final typography = _getTypography(context);
+    final theme = Theme.of(context);
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      elevation: 2,
+      color: ArtbeatColors.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // User info and post header
-          ListTile(
-            leading: ArtistAvatar(
-              imageUrl: post.userPhotoUrl,
-              displayName: post.userName,
-              isVerified: post.isUserVerified,
-              onTap: () => onUserTap(post.userId),
-              radius: CommunitySpacing.avatarSizeMedium,
-            ),
-            title: Text(
-              post.userName,
-              style: typography.feedPostTitle,
-            ),
-            subtitle: Row(
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  size: 14,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 153), // Fixed deprecated withOpacity
+                ArtistAvatar(
+                  imageUrl: post.userPhotoUrl,
+                  displayName: post.userName,
+                  isVerified: post.isUserVerified,
+                  onTap: () {
+                    debugPrint(
+                      'Avatar tapped - User: ${post.userName}, PhotoURL: "${post.userPhotoUrl}"',
+                    );
+                    onUserTap(post.userId);
+                  },
+                  radius: 20,
                 ),
-                const SizedBox(width: 4),
-                Text(
-                  post.location,
-                  style: typography.commentTimestamp,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        post.userName,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 14,
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              post.location,
+                              style: const TextStyle(
+                                color: ArtbeatColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              '•',
+                              style: TextStyle(
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Text(
+                              timeago.format(post.createdAt),
+                              style: const TextStyle(
+                                color: ArtbeatColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  '•',
-                  style: typography.commentTimestamp,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  timeago.format(post.createdAt),
-                  style: typography.commentTimestamp,
+                // Gift and Sponsor buttons - constrain this column
+                SizedBox(
+                  width: 80, // Fixed width to prevent overflow
+                  child: Column(
+                    children: [
+                      if (canGift) ...[
+                        _buildActionChip(
+                          context,
+                          icon: Icons.card_giftcard,
+                          label: 'Gift',
+                          color: ArtbeatColors.primaryPurple,
+                          onTap: () => showDialog<GiftModal>(
+                            context: context,
+                            builder: (ctx) =>
+                                GiftModal(recipientId: post.userId),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        _buildActionChip(
+                          context,
+                          icon: Icons.volunteer_activism,
+                          label: 'Sponsor',
+                          color: ArtbeatColors.accentYellow,
+                          onTap: () => showDialog<SponsorModal>(
+                            context: context,
+                            builder: (ctx) =>
+                                SponsorModal(artistId: post.userId),
+                          ),
+                        ),
+                      ],
+                      if (post.userId == currentUserId)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                          onPressed: () => _showPostOptions(context),
+                        ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            trailing: post.userId == currentUserId
-                ? IconButton(
-                    icon: const Icon(Icons.more_vert),
-                    onPressed: () => _showPostOptions(context),
-                  )
-                : null,
           ),
 
           // Post content
           if (post.content.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: CommunitySpacing.feedHorizontalPadding,
-                vertical: CommunitySpacing.feedItemSpacing,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 post.content,
-                style: typography.feedPostBody,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontSize: 15,
+                  height: 1.4,
+                  color: ArtbeatColors.textPrimary,
+                ),
               ),
             ),
 
-          // Post images (Canvas section)
+          // Post images (Artwork section)
           if (post.imageUrls.isNotEmpty)
             Container(
-              margin: const EdgeInsets.symmetric(vertical: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(CommunitySpacing.canvasBorderRadius),
-                border: Border.all(
-                  color: CommunityColors.canvasBorder.withOpacity(0.1),
-                  width: 1,
-                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: ArtbeatColors.black.withAlpha(26), // 0.1 opacity
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(CommunitySpacing.canvasBorderRadius),
+                borderRadius: BorderRadius.circular(12),
                 child: AspectRatio(
                   aspectRatio: 4 / 3,
                   child: PageView.builder(
                     itemCount: post.imageUrls.length,
                     itemBuilder: (context, index) {
-                      return Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          CachedNetworkImage(
-                            imageUrl: post.imageUrls[index],
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Theme.of(context).colorScheme.surface,
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .error
-                                  .withOpacity(0.1),
-                              child: const Center(
-                                child: Icon(Icons.error_outline),
-                              ),
+                      final imageUrl = post.imageUrls[index];
+                      if (imageUrl.isEmpty) {
+                        return Container(
+                          color: ArtbeatColors.backgroundSecondary,
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 48,
+                              color: ArtbeatColors.textSecondary,
                             ),
                           ),
-                          // Gradient overlay for text visibility
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            height: 72,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.black.withOpacity(0.6),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
+                        );
+                      }
+                      return CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          color: ArtbeatColors.backgroundSecondary,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: ArtbeatColors.primaryPurple,
                             ),
                           ),
-                        ],
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: ArtbeatColors.error.withAlpha(25),
+                          child: const Center(
+                            child: Icon(
+                              Icons.error_outline,
+                              color: ArtbeatColors.error,
+                            ),
+                          ),
+                        ),
                       );
                     },
                   ),
@@ -177,22 +246,32 @@ class PostCard extends StatelessWidget {
           // Tags and metadata
           if (post.tags.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: CommunitySpacing.feedHorizontalPadding,
-                vertical: CommunitySpacing.feedItemSpacing,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
+                spacing: 6,
+                runSpacing: 6,
                 children: post.tags.map((tag) {
-                  return Chip(
-                    label: Text(
-                      '#$tag',
-                      style: typography.hashtagText,
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
                     ),
-                    backgroundColor: CommunityColors.threadBackground,
-                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      color: ArtbeatColors.primaryPurple.withAlpha(25),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: ArtbeatColors.primaryPurple.withAlpha(77),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '#$tag',
+                      style: const TextStyle(
+                        color: ArtbeatColors.primaryPurple,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   );
                 }).toList(),
               ),
@@ -200,171 +279,120 @@ class PostCard extends StatelessWidget {
 
           // Action buttons
           Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: CommunityColors.canvasBorder.withValues(alpha: 25),
-                ),
-              ),
-            ),
-            padding: const EdgeInsets.all(CommunitySpacing.feedItemSpacing),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
+                // Applause button
                 ApplauseButton(
                   postId: post.id,
                   userId: currentUserId,
                   count: post.applauseCount,
                   onTap: () => onApplause(post),
+                  maxApplause: PostModel.maxApplausePerUser,
+                  color: ArtbeatColors.accentYellow,
                 ),
-                const SizedBox(width: 16),
-                OutlinedButton.icon(
-                  onPressed: () => onComment(post.id),
-                  style: ButtonStyle(
-                    padding: WidgetStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                  ),
-                  icon: const Icon(Icons.comment_outlined, size: 18),
-                  label: Text(
-                    '${post.commentCount}',
-                    style: typography.commentCount,
+                const SizedBox(width: 8),
+                // Art Discussion button (renamed from comment)
+                Expanded(
+                  flex: 2,
+                  child: _buildActionButton(
+                    icon: Icons.palette_outlined,
+                    label: 'Art Discussion',
+                    count: comments.length,
+                    color: ArtbeatColors.primaryPurple,
+                    onTap: () => onComment(post.id),
                   ),
                 ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => onShare(post),
-                  icon: const Icon(Icons.share_outlined),
-                  tooltip: 'Share this artwork',
+                const SizedBox(width: 8),
+                // Share button
+                Expanded(
+                  flex: 1,
+                  child: _buildActionButton(
+                    icon: Icons.share_outlined,
+                    label: 'Share',
+                    color: ArtbeatColors.primaryGreen,
+                    onTap: () => onShare(post),
+                  ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
 
-          // Comments section
-          if (comments.isNotEmpty)
-            InkWell(
-              onTap: onToggleExpand,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(
-                      color: CommunityColors.canvasBorder.withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
+  Widget _buildActionChip(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withAlpha(25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withAlpha(77)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 12, color: color),
+            const SizedBox(width: 3),
+            Flexible(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: CommunitySpacing.feedHorizontalPadding,
-                  vertical: CommunitySpacing.feedItemSpacing,
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'View ${comments.length} comments',
-                      style: typography.commentCount.copyWith(
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(
-                      isExpanded
-                          ? Icons.keyboard_arrow_up
-                          : Icons.keyboard_arrow_down,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.tertiary,
-                    ),
-                  ],
-                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
-          // Expanded comments
-          if (isExpanded && comments.isNotEmpty)
-            Container(
-              decoration: BoxDecoration(
-                color: CommunityColors.threadBackground,
-                border: Border(
-                  top: BorderSide(
-                    color: CommunityColors.canvasBorder.withOpacity(0.1),
-                    width: 1,
-                  ),
-                ),
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    int? count,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              count != null && count > 0 ? '$label ($count)' : label,
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
               ),
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: comments.length,
-                itemBuilder: (context, index) {
-                  final comment = comments[index];
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index == comments.length - 1
-                          ? 0
-                          : CommunitySpacing.commentVerticalSpacing,
-                    ),
-                    child: ListTile(
-                      leading: ArtistAvatar(
-                        imageUrl: comment.userAvatarUrl,
-                        displayName: comment.userName,
-                        radius: CommunitySpacing.avatarSizeSmall,
-                      ),
-                      title: Row(
-                        children: [
-                          Text(
-                            comment.userName,
-                            style: typography.commentAuthor,
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .tertiary
-                                  .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              comment.type,
-                              style: typography.commentCount.copyWith(
-                                color: Theme.of(context).colorScheme.tertiary,
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            timeago.format(comment.createdAt.toDate()),
-                            style: typography.commentTimestamp,
-                          ),
-                        ],
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          comment.content,
-                          style: typography.commentText,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: CommunitySpacing.feedHorizontalPadding,
-                        vertical: CommunitySpacing.commentVerticalSpacing / 2,
-                      ),
-                    ),
-                  );
-                },
-              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
+          ),
         ],
       ),
     );
   }
 
   void _showPostOptions(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,

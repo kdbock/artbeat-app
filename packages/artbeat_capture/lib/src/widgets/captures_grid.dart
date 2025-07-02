@@ -28,21 +28,56 @@ class _CapturesGridState extends State<CapturesGrid> {
   }
 
   void _setupCapturesStream() {
-    var query = FirebaseFirestore.instance
-        .collection('captures')
-        .where('userId', isEqualTo: widget.userId)
-        .orderBy('createdAt', descending: true)
-        .withConverter<CaptureModel>(
-          fromFirestore: (snapshot, _) =>
-              CaptureModel.fromFirestore(snapshot, null),
-          toFirestore: (capture, _) => capture.toFirestore(),
+    try {
+      if (widget.userId.isEmpty) {
+        debugPrint('Warning: Empty userId provided to CapturesGrid');
+        // Create a dummy stream with no results
+        _capturesStream = Stream.value(
+          FirebaseFirestore.instance
+                  .collection('captures')
+                  .withConverter<CaptureModel>(
+                    fromFirestore: (snapshot, _) =>
+                        CaptureModel.fromFirestore(snapshot, null),
+                    toFirestore: (capture, _) => capture.toFirestore(),
+                  )
+                  .snapshots()
+                  .first
+              as QuerySnapshot<CaptureModel>,
         );
+        return;
+      }
 
-    if (widget.showPublicOnly) {
-      query = query.where('isPublic', isEqualTo: true);
+      var query = FirebaseFirestore.instance
+          .collection('captures')
+          .where('userId', isEqualTo: widget.userId)
+          .orderBy('createdAt', descending: true)
+          .withConverter<CaptureModel>(
+            fromFirestore: (snapshot, _) =>
+                CaptureModel.fromFirestore(snapshot, null),
+            toFirestore: (capture, _) => capture.toFirestore(),
+          );
+
+      if (widget.showPublicOnly) {
+        query = query.where('isPublic', isEqualTo: true);
+      }
+
+      _capturesStream = query.snapshots();
+      debugPrint(
+        'CapturesGrid: Stream setup successfully for userId: ${widget.userId}',
+      );
+    } catch (e) {
+      debugPrint('Error setting up captures stream: $e');
+      // Fallback to empty stream
+      _capturesStream = FirebaseFirestore.instance
+          .collection('captures')
+          .withConverter<CaptureModel>(
+            fromFirestore: (snapshot, _) =>
+                CaptureModel.fromFirestore(snapshot, null),
+            toFirestore: (capture, _) => capture.toFirestore(),
+          )
+          .limit(0)
+          .snapshots();
     }
-
-    _capturesStream = query.snapshots();
   }
 
   @override
@@ -53,17 +88,34 @@ class _CapturesGridState extends State<CapturesGrid> {
         if (snapshot.hasError) {
           debugPrint('Error loading captures: ${snapshot.error}');
           return Center(
-            child: Text(
-              'Error loading captures',
-              style: Theme.of(context).textTheme.bodyLarge,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.image_not_supported,
+                  size: 48,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Could not load images',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _setupCapturesStream();
+                    });
+                  },
+                  child: const Text('Try Again'),
+                ),
+              ],
             ),
           );
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
         final captures = snapshot.data?.docs.map((doc) => doc.data()).toList();
@@ -105,8 +157,9 @@ class _CapturesGridState extends State<CapturesGrid> {
                 tag: 'capture_${capture.id}',
                 child: Container(
                   decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     image: DecorationImage(
                       image: NetworkImage(
                         capture.thumbnailUrl ?? capture.imageUrl,

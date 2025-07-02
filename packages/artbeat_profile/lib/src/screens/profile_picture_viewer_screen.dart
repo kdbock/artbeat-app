@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show UniversalHeader, MainLayout;
 
 class ProfilePictureViewerScreen extends StatefulWidget {
   final String imageUrl;
@@ -44,18 +46,17 @@ class _ProfilePictureViewerScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar:
-          _isFullScreen
-              ? null
-              : AppBar(
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: _isFullScreen
+            ? null
+            : UniversalHeader(
+                title: 'Profile Photo',
+                showLogo: false,
                 backgroundColor: Colors.black,
-                iconTheme: const IconThemeData(color: Colors.white),
-                title: const Text(
-                  'Profile Photo',
-                  style: TextStyle(color: Colors.white),
-                ),
+                foregroundColor: Colors.white,
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.share),
@@ -72,32 +73,30 @@ class _ProfilePictureViewerScreenState
                   ),
                 ],
               ),
-      body: GestureDetector(
-        onTap: () {
-          setState(() {
-            _isFullScreen = !_isFullScreen;
-          });
-        },
-        child: Center(
-          child: Hero(
-            tag: 'profile_photo',
-            child: InteractiveViewer(
-              transformationController: _transformationController,
-              minScale: 0.5,
-              maxScale: 4.0,
-              child:
-                  widget.imageUrl.isNotEmpty
-                      ? Image.network(
+        body: GestureDetector(
+          onTap: () {
+            setState(() {
+              _isFullScreen = !_isFullScreen;
+            });
+          },
+          child: Center(
+            child: Hero(
+              tag: 'profile_photo',
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: widget.imageUrl.isNotEmpty
+                    ? Image.network(
                         widget.imageUrl,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Center(
                             child: CircularProgressIndicator(
-                              value:
-                                  loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                  : null,
                             ),
                           );
                         },
@@ -121,44 +120,24 @@ class _ProfilePictureViewerScreenState
                           );
                         },
                       )
-                      : Image.asset(
-                        'assets/default_profile.png',
-                        fit: BoxFit.contain,
+                    : Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 100,
+                          color: Colors.grey,
+                        ),
                       ),
+              ),
             ),
           ),
         ),
       ),
-      bottomNavigationBar:
-          _isFullScreen
-              ? null
-              : BottomAppBar(
-                color: Colors.black,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                      onPressed: () {
-                        _transformationController.value = Matrix4.identity();
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.download, color: Colors.white),
-                      onPressed: () {
-                        // Implement download functionality
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Download functionality would be implemented here',
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
     );
   }
 }

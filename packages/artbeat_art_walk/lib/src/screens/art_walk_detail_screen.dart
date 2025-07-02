@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:logger/logger.dart';
 
@@ -9,10 +9,7 @@ final Logger _logger = Logger();
 class ArtWalkDetailScreen extends StatefulWidget {
   final String walkId;
 
-  const ArtWalkDetailScreen({
-    super.key,
-    required this.walkId,
-  });
+  const ArtWalkDetailScreen({super.key, required this.walkId});
 
   @override
   State<ArtWalkDetailScreen> createState() => _ArtWalkDetailScreenState();
@@ -43,8 +40,10 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (userId == null) return;
 
     try {
-      final hasCompleted =
-          await _achievementService.hasCompletedArtWalk(userId, _walk!.id);
+      final hasCompleted = await _achievementService.hasCompletedArtWalk(
+        userId,
+        _walk!.id,
+      );
       if (mounted) {
         setState(() {
           _hasCompletedWalk = hasCompleted;
@@ -97,9 +96,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       await _checkCompletionStatus();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -116,7 +115,8 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       // Skip art pieces with invalid coordinates to prevent NaN errors
       if (!art.location.latitude.isFinite || !art.location.longitude.isFinite) {
         debugPrint(
-            "⚠️ Skipping marker for art with invalid coordinates: ${art.id}");
+          "⚠️ Skipping marker for art with invalid coordinates: ${art.id}",
+        );
         continue;
       }
 
@@ -124,8 +124,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         Marker(
           markerId: MarkerId(art.id),
           position: LatLng(art.location.latitude, art.location.longitude),
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueViolet,
+          ),
           infoWindow: InfoWindow(
             title: '${i + 1}. ${art.title}',
             snippet: art.artistName != null ? 'by ${art.artistName}' : null,
@@ -138,8 +139,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   }
 
   Set<Polyline> _createPolylines(
-      // ArtWalkModel walk, // Removed walk parameter
-      List<PublicArtModel> artPieces) {
+    // ArtWalkModel walk, // Removed walk parameter
+    List<PublicArtModel> artPieces,
+  ) {
     // If there are not enough art pieces, return empty set
     if (artPieces.length < 2) {
       return {};
@@ -147,8 +149,10 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
     // Filter out any art with invalid coordinates to prevent NaN errors
     final validArtPieces = artPieces
-        .where((art) =>
-            art.location.latitude.isFinite && art.location.longitude.isFinite)
+        .where(
+          (art) =>
+              art.location.latitude.isFinite && art.location.longitude.isFinite,
+        )
         .toList();
 
     // Check if we still have enough valid points
@@ -176,29 +180,42 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null) return;
 
     try {
-      await Share.share(
-        'Check out this Art Walk: "${_walk!.title}" on WordNerd!',
-        subject: 'WordNerd Art Walk: ${_walk!.title}',
+      await share_plus.SharePlus.instance.share(
+        share_plus.ShareParams(
+          text: 'Check out this Art Walk: "${_walk!.title}" on WordNerd!',
+        ),
       );
 
       await _artWalkService.recordArtWalkShare(_walk!.id);
       _logger.i('Shared successfully');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error sharing: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
       _logger.e('Error sharing: ${e.toString()}');
     }
   }
 
   void _startNavigation() {
-    // In a real app, this would launch the navigation mode
-    // For now, just show a snackbar
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Navigation would start here')),
-    );
+    if (_walk == null) return;
+
+    // Navigate to the art walk experience screen
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute<bool>(
+            builder: (context) =>
+                ArtWalkExperienceScreen(artWalkId: _walk!.id, artWalk: _walk!),
+          ),
+        )
+        .then((completed) {
+          // If the walk was completed, refresh the state
+          if (completed == true) {
+            setState(() {
+              _hasCompletedWalk = true;
+            });
+          }
+        });
   }
 
   Future<void> _completeArtWalk() async {
@@ -209,7 +226,8 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('You must be logged in to complete art walks')),
+          content: Text('You must be logged in to complete art walks'),
+        ),
       );
       return;
     }
@@ -220,8 +238,8 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       await _artWalkService.recordArtWalkCompletion(artWalkId: _walk!.id);
 
       // Check if user received any new achievements
-      final unviewedAchievements =
-          await _achievementService.getUnviewedAchievements();
+      final unviewedAchievements = await _achievementService
+          .getUnviewedAchievements();
 
       if (mounted) {
         setState(() {
@@ -232,16 +250,16 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
       // Show success message
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Art walk completed! 🎉')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Art walk completed! 🎉')));
 
       // If there are new achievements, show them
       if (unviewedAchievements.isNotEmpty) {
         for (final achievement in unviewedAchievements) {
           // Show one achievement at a time with a dialog
           if (!mounted) return;
-          await NewAchievementDialog.show(context, achievement);
+          await NewAchievementDialog.show(context, achievement.id);
           // Mark as viewed after showing
           await _achievementService.markAchievementAsViewed(achievement.id);
         }
@@ -298,7 +316,10 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(_walk!.title),
-              background: _walk!.imageUrls.isNotEmpty // Use imageUrls list
+              background:
+                  _walk!
+                      .imageUrls
+                      .isNotEmpty // Use imageUrls list
                   ? Image.network(
                       _walk!.imageUrls.first, // Display the first image
                       fit: BoxFit.cover,
@@ -382,13 +403,18 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Start navigation button
+                        // Start art walk experience button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: _startNavigation,
-                            icon: const Icon(Icons.navigation),
-                            label: const Text('Start Navigation'),
+                            icon: const Icon(Icons.explore),
+                            label: const Text('Start Art Walk Experience'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
                           ),
                         ),
 
@@ -398,8 +424,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton.icon(
-                              onPressed:
-                                  _isCompletingWalk ? null : _completeArtWalk,
+                              onPressed: _isCompletingWalk
+                                  ? null
+                                  : _completeArtWalk,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.white,
@@ -411,11 +438,14 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         color: Colors.white,
-                                      ))
+                                      ),
+                                    )
                                   : const Icon(Icons.check_circle),
-                              label: Text(_isCompletingWalk
-                                  ? 'Completing...'
-                                  : 'Complete Art Walk'),
+                              label: Text(
+                                _isCompletingWalk
+                                    ? 'Completing...'
+                                    : 'Complete Art Walk',
+                              ),
                             ),
                           ),
                         ],
@@ -527,17 +557,11 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
         ),
       ],
     );
@@ -600,10 +624,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                     const SizedBox(height: 4),
                     Text(
                       'by ${art.artistName}',
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.blue, fontSize: 14),
                     ),
                   ],
                   const SizedBox(height: 6),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class PortfoliosScreen extends StatefulWidget {
   const PortfoliosScreen({super.key});
@@ -11,7 +10,6 @@ class PortfoliosScreen extends StatefulWidget {
 
 class _PortfoliosScreenState extends State<PortfoliosScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   List<Map<String, dynamic>> _portfolios = [];
   bool _isLoading = true;
 
@@ -33,19 +31,16 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
 
       setState(() {
         _portfolios = querySnapshot.docs
-            .map((doc) => {
-                  ...doc.data(),
-                  'id': doc.id,
-                })
+            .map((doc) => {...doc.data(), 'id': doc.id})
             .toList();
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading portfolios: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading portfolios: $e')));
     }
   }
 
@@ -75,9 +70,7 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
           padding: const EdgeInsets.all(16.0),
           sliver: _portfolios.isEmpty
               ? const SliverToBoxAdapter(
-                  child: Center(
-                    child: Text('No portfolios available'),
-                  ),
+                  child: Center(child: Text('No portfolios available')),
                 )
               : SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -86,59 +79,58 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
                     mainAxisSpacing: 16.0,
                     crossAxisSpacing: 16.0,
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final portfolio = _portfolios[index];
-                      return Card(
-                        clipBehavior: Clip.antiAlias,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Portfolio cover image
-                            AspectRatio(
-                              aspectRatio: 1.0,
-                              child: portfolio['coverImageUrl'] != null
-                                  ? Image.network(
-                                      portfolio['coverImageUrl'],
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Container(
-                                        color: Colors.grey[200],
-                                        child: const Icon(Icons.broken_image),
-                                      ),
-                                    )
-                                  : Container(
-                                      color: Colors.grey[200],
-                                      child: const Icon(Icons.image),
-                                    ),
-                            ),
-                            // Artist info
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    portfolio['username'] ?? 'Artist',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final portfolio = _portfolios[index];
+                    return Card(
+                      clipBehavior: Clip.antiAlias,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Portfolio cover image
+                          AspectRatio(
+                            aspectRatio: 1.0,
+                            child: portfolio['coverImageUrl'] != null
+                                ? Image.network(
+                                    portfolio['coverImageUrl'] as String,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            Container(
+                                              color: Colors.grey[200],
+                                              child: const Icon(
+                                                Icons.broken_image,
+                                              ),
+                                            ),
+                                  )
+                                : Container(
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.image),
                                   ),
-                                  Text(
-                                    '${portfolio['artworkCount'] ?? 0} works',
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
+                          ),
+                          // Artist info
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  (portfolio['username'] as String?) ??
+                                      'Artist',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ],
-                              ),
+                                ),
+                                Text(
+                                  '${portfolio['artworkCount'] ?? 0} works',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                    childCount: _portfolios.length,
-                  ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }, childCount: _portfolios.length),
                 ),
         ),
       ],

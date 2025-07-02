@@ -8,6 +8,7 @@ class Message {
   final String? imageUrl;
   final DateTime timestamp;
   final bool isRead;
+  final String? replyToId;
   final Map<String, dynamic>? metadata;
 
   Message({
@@ -18,6 +19,7 @@ class Message {
     this.imageUrl,
     required this.timestamp,
     this.isRead = false,
+    this.replyToId,
     this.metadata,
   }) : assert(
          text != null || imageUrl != null,
@@ -34,6 +36,7 @@ class Message {
       imageUrl: data['imageUrl'] as String?,
       timestamp: (data['timestamp'] as Timestamp).toDate(),
       isRead: data['isRead'] as bool? ?? false,
+      replyToId: data['replyToId'] as String?,
       metadata: data['metadata'] as Map<String, dynamic>?,
     );
   }
@@ -46,6 +49,7 @@ class Message {
       if (imageUrl != null) 'imageUrl': imageUrl,
       'timestamp': Timestamp.fromDate(timestamp),
       'isRead': isRead,
+      if (replyToId != null) 'replyToId': replyToId,
       if (metadata != null) 'metadata': metadata,
     };
   }
@@ -58,6 +62,7 @@ class Message {
     String? imageUrl,
     DateTime? timestamp,
     bool? isRead,
+    String? replyToId,
     Map<String, dynamic>? metadata,
   }) {
     return Message(
@@ -68,6 +73,7 @@ class Message {
       imageUrl: imageUrl ?? this.imageUrl,
       timestamp: timestamp ?? this.timestamp,
       isRead: isRead ?? this.isRead,
+      replyToId: replyToId ?? this.replyToId,
       metadata: metadata ?? this.metadata,
     );
   }
@@ -83,7 +89,8 @@ class Message {
         other.text == text &&
         other.imageUrl == imageUrl &&
         other.timestamp == timestamp &&
-        other.isRead == isRead;
+        other.isRead == isRead &&
+        other.replyToId == replyToId;
   }
 
   @override
@@ -94,6 +101,7 @@ class Message {
         text.hashCode ^
         imageUrl.hashCode ^
         timestamp.hashCode ^
-        isRead.hashCode;
+        isRead.hashCode ^
+        replyToId.hashCode;
   }
 }

@@ -171,8 +171,11 @@ class LocalGalleriesWidget extends StatelessWidget {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: gallery['imageUrl']!.isNotEmpty
-                                          ? NetworkImage(gallery['imageUrl']!)
+                                      image: (gallery['imageUrl'] as String? ??
+                                                  '')
+                                              .isNotEmpty
+                                          ? NetworkImage(
+                                              gallery['imageUrl'] as String)
                                           : const AssetImage(
                                                   'assets/event_placeholder.png')
                                               as ImageProvider,
@@ -223,7 +226,7 @@ class LocalGalleriesWidget extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        gallery['name']!,
+                                        gallery['name'] as String? ?? 'Gallery',
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
@@ -251,7 +254,8 @@ class LocalGalleriesWidget extends StatelessWidget {
                                     const SizedBox(width: 2),
                                     Expanded(
                                       child: Text(
-                                        gallery['address']!,
+                                        gallery['address'] as String? ??
+                                            'Address',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey.shade700,
@@ -264,7 +268,8 @@ class LocalGalleriesWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  gallery['description']!,
+                                  gallery['description'] as String? ??
+                                      'Gallery description',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade800,

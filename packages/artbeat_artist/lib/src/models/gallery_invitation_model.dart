@@ -33,17 +33,29 @@ class GalleryInvitationModel {
     final data = doc.data() as Map<String, dynamic>;
     return GalleryInvitationModel(
       id: doc.id,
-      galleryId: data['galleryId'] ?? '',
-      artistId: data['artistId'] ?? '',
-      galleryName: data['galleryName'] ?? '',
-      artistName: data['artistName'] ?? '',
-      message: data['message'] ?? '',
-      status: data['status'] ?? '',
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
-      expiresAt: (data['expiresAt'] as Timestamp?)?.toDate(),
-      galleryImageUrl: data['galleryImageUrl'],
-      artistImageUrl: data['artistImageUrl'],
-      terms: data['terms'],
+      galleryId: data['galleryId'] != null ? data['galleryId'].toString() : '',
+      artistId: data['artistId'] != null ? data['artistId'].toString() : '',
+      galleryName:
+          data['galleryName'] != null ? data['galleryName'].toString() : '',
+      artistName:
+          data['artistName'] != null ? data['artistName'].toString() : '',
+      message: data['message'] != null ? data['message'].toString() : '',
+      status: data['status'] != null ? data['status'].toString() : '',
+      createdAt: data['createdAt'] is Timestamp
+          ? (data['createdAt'] as Timestamp).toDate()
+          : null,
+      expiresAt: data['expiresAt'] is Timestamp
+          ? (data['expiresAt'] as Timestamp).toDate()
+          : null,
+      galleryImageUrl: data['galleryImageUrl'] != null
+          ? data['galleryImageUrl'].toString()
+          : null,
+      artistImageUrl: data['artistImageUrl'] != null
+          ? data['artistImageUrl'].toString()
+          : null,
+      terms: data['terms'] is Map
+          ? Map<String, dynamic>.from(data['terms'] as Map)
+          : null,
     );
   }
 }

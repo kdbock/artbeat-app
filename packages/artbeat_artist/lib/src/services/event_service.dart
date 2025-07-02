@@ -79,20 +79,48 @@ class EventService {
       }
 
       final now = DateTime.now();
+      final events = <EventModel>[];
 
-      // Get events where the user is either the organizer or a participant
-      final snapshot = await _firestore
-          .collection('events')
-          .where(Filter.or(
-            Filter('organizerId', isEqualTo: userId),
-            Filter('participantIds', arrayContains: userId),
-          ))
-          .where('startDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
-          .orderBy('startDate')
-          .limit(10)
-          .get();
+      // Get events where the user is the organizer
+      try {
+        final organizerSnapshot = await _firestore
+            .collection('events')
+            .where('artistId', isEqualTo: userId)
+            .where('startDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+            .orderBy('startDate')
+            .limit(10)
+            .get();
 
-      return snapshot.docs.map((doc) => EventModel.fromFirestore(doc)).toList();
+        events.addAll(
+            organizerSnapshot.docs.map((doc) => EventModel.fromFirestore(doc)));
+      } catch (e) {
+        debugPrint('Error getting organizer events: $e');
+      }
+
+      // Get events where the user is an attendee
+      try {
+        final attendeeSnapshot = await _firestore
+            .collection('events')
+            .where('attendeeIds', arrayContains: userId)
+            .where('startDate', isGreaterThanOrEqualTo: Timestamp.fromDate(now))
+            .orderBy('startDate')
+            .limit(10)
+            .get();
+
+        // Add attendee events, avoiding duplicates
+        for (final doc in attendeeSnapshot.docs) {
+          final event = EventModel.fromFirestore(doc);
+          if (!events.any((e) => e.id == event.id)) {
+            events.add(event);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error getting attendee events: $e');
+      }
+
+      // Sort by start date and limit to 10
+      events.sort((a, b) => a.startDate.compareTo(b.startDate));
+      return events.take(10).toList();
     } catch (e) {
       throw Exception('Error getting upcoming events: $e');
     }
@@ -186,7 +214,7 @@ class EventService {
         throw Exception('End date cannot be before start date');
       }
 
-      String? imageUrl = eventDoc.get('imageUrl');
+      String? imageUrl = eventDoc.get('imageUrl') as String?;
       if (imageFile != null) {
         // Upload new image
         final fileName =

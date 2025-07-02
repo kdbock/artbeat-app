@@ -1,0 +1,1018 @@
+-------------------------------------
+Translated Report (Full Report Below)
+-------------------------------------
+
+Incident Identifier: C05633DA-ABF8-4EA1-8344-E9B1AD745A6B
+CrashReporter Key:   6F3EA58A-358D-4645-F271-014ABAF95FAB
+Hardware Model:      Mac16,1
+Process:             Runner [91070]
+Path:                /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Runner
+Identifier:          com.wordnerd.artbeat
+Version:             1.0.5 (7)
+Code Type:           ARM-64 (Native)
+Role:                Foreground
+Parent Process:      launchd_sim [1015]
+Coalition:           com.apple.CoreSimulator.SimDevice.256EDF85-5169-4DF4-842C-509B32C765C9 [999]
+Responsible Process: SimulatorTrampoline [885]
+
+Date/Time:           2025-07-01 16:38:23.3772 -0400
+Launch Time:         2025-07-01 16:38:22.2864 -0400
+OS Version:          macOS 15.5 (24F74)
+Release Type:        User
+Report Version:      104
+
+Exception Type:  EXC_BAD_ACCESS (SIGSEGV)
+Exception Subtype: KERN_INVALID_ADDRESS at 0x0000000000000000
+Exception Codes: 0x0000000000000001, 0x0000000000000000
+VM Region Info: 0 is not in any region.  Bytes before following region: 4334813184
+      REGION TYPE                    START - END         [ VSIZE] PRT/MAX SHRMOD  REGION DETAIL
+      UNUSED SPACE AT START
+--->  
+      __TEXT                      102600000-102604000    [   16K] r-x/r-x SM=COW  /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Runner
+Termination Reason: SIGNAL 11 Segmentation fault: 11
+Terminating Process: exc handler [91070]
+
+Triggered by Thread:  0
+
+Thread 0 Crashed::  Dispatch queue: com.apple.main-thread
+0   libswiftCore.dylib            	       0x195a041a0 swift_getObjectType + 36
+1   camera_avfoundation           	       0x1033dbcc0 static CameraPlugin.register(with:) + 204
+2   camera_avfoundation           	       0x1033dc644 @objc static CameraPlugin.register(with:) + 56
+3   Runner.debug.dylib            	       0x103f534ec +[GeneratedPluginRegistrant registerWithRegistry:] + 116 (GeneratedPluginRegistrant.m:150)
+4   Runner.debug.dylib            	       0x103f543a0 AppDelegate.application(_:didFinishLaunchingWithOptions:) + 2048 (AppDelegate.swift:30)
+5   Runner.debug.dylib            	       0x103f54a30 @objc AppDelegate.application(_:didFinishLaunchingWithOptions:) + 220
+6   UIKitCore                     	       0x185bcb5f4 -[UIApplication _handleDelegateCallbacksWithOptions:isSuspended:restoreState:] + 312
+7   UIKitCore                     	       0x185bccab8 -[UIApplication _callInitializationDelegatesWithActions:forCanvas:payload:fromOriginatingProcess:] + 2916
+8   UIKitCore                     	       0x185bd1e30 -[UIApplication _runWithMainScene:transitionContext:completion:] + 980
+9   UIKitCore                     	       0x1851d438c -[_UISceneLifecycleMultiplexer completeApplicationLaunchWithFBSScene:transitionContext:] + 148
+10  UIKitCore                     	       0x185bce96c -[UIApplication _compellApplicationLaunchToCompleteUnconditionally] + 44
+11  UIKitCore                     	       0x185bcec74 -[UIApplication _run] + 760
+12  UIKitCore                     	       0x185bd3064 UIApplicationMain + 124
+13  UIKitCore                     	       0x184f9ad6c 0x184d72000 + 2264428
+14  Runner.debug.dylib            	       0x103f54bfc static UIApplicationDelegate.main() + 128
+15  Runner.debug.dylib            	       0x103f54b6c static AppDelegate.$main() + 44
+16  Runner.debug.dylib            	       0x103f54c78 __debug_main_executable_dylib_entry_point + 28
+17  ???                           	       0x1029013d8 ???
+18  dyld                          	       0x1027d6b98 start + 6076
+
+Thread 1:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 2:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 3:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 4:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 5:: com.apple.uikit.eventfetch-thread
+0   libsystem_kernel.dylib        	       0x1036e4b70 mach_msg2_trap + 8
+1   libsystem_kernel.dylib        	       0x1036f5fac mach_msg2_internal + 72
+2   libsystem_kernel.dylib        	       0x1036ecc28 mach_msg_overwrite + 480
+3   libsystem_kernel.dylib        	       0x1036e4ed8 mach_msg + 20
+4   CoreFoundation                	       0x180427d14 __CFRunLoopServiceMachPort + 156
+5   CoreFoundation                	       0x1804226f4 __CFRunLoopRun + 1148
+6   CoreFoundation                	       0x180421e3c CFRunLoopRunSpecific + 536
+7   Foundation                    	       0x180f22ddc -[NSRunLoop(NSRunLoop) runMode:beforeDate:] + 208
+8   Foundation                    	       0x180f22ffc -[NSRunLoop(NSRunLoop) runUntilDate:] + 60
+9   UIKitCore                     	       0x185c7c724 -[UIEventFetcher threadMain] + 408
+10  Foundation                    	       0x180f49b98 __NSThread__start__ + 716
+11  libsystem_pthread.dylib       	       0x1037d25f0 _pthread_start + 104
+12  libsystem_pthread.dylib       	       0x1037cd998 thread_start + 8
+
+Thread 6:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 7:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 8:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 9:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 10:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 11:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+Thread 12:
+0   libsystem_pthread.dylib       	       0x1037cd984 start_wqthread + 0
+
+
+Thread 0 crashed with ARM Thread State (64-bit):
+    x0: 0x0000000000000000   x1: 0x000000016d7fcea0   x2: 0x0000000000000000   x3: 0x0000000000000020
+    x4: 0x0000000000000006   x5: 0x0000000000000000   x6: 0x000000000000000a   x7: 0x0000000000000000
+    x8: 0x0000000000000000   x9: 0x0000000000000010  x10: 0x0000000000000000  x11: 0x00006000017004a0
+   x12: 0x0000000000000003  x13: 0x0000000000000002  x14: 0x0000000000000000  x15: 0xffffffffffffffff
+   x16: 0x0000000195a0417c  x17: 0x00000001033dc60c  x18: 0x0000000000000000  x19: 0x0000000000000000
+   x20: 0x0000000103417618  x21: 0x0000000000000001  x22: 0x0000000000000001  x23: 0x0000000000000001
+   x24: 0x0000000000000001  x25: 0x00000001f3e42000  x26: 0x00000001f3e0c000  x27: 0x000000002b870064
+   x28: 0x0000000000000010   fp: 0x000000016d7fce90   lr: 0x00000001033dbcc0
+    sp: 0x000000016d7fce80   pc: 0x0000000195a041a0 cpsr: 0x20000000
+   far: 0x0000000000000000  esr: 0x92000006 (Data Abort) byte read Translation fault
+
+Binary Images:
+       0x1027d0000 -        0x10286bfff dyld (*) <9cf0401a-a938-389e-a77d-9e9608076ccf> /usr/lib/dyld
+       0x102600000 -        0x102603fff com.wordnerd.artbeat (1.0.5) <7be0b908-0889-30ee-842b-f993af7202ab> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Runner
+       0x103f50000 -        0x104a8bfff Runner.debug.dylib (*) <963ab65b-392f-3d95-a96f-fe37e39f0057> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Runner.debug.dylib
+       0x102674000 -        0x102697fff org.cocoapods.AppCheckCore (11.2.0) <0c3a8761-1c39-3713-a3a9-1b9ce551c4a2> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/AppCheckCore.framework/AppCheckCore
+       0x1026cc000 -        0x1026dffff org.cocoapods.FBLPromises (2.4.0) <0e2e596f-1556-368f-be1d-760436587c06> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FBLPromises.framework/FBLPromises
+       0x102640000 -        0x10264bfff org.cocoapods.FirebaseAppCheck (11.13.0) <6cbce939-db96-3e6b-b468-1f0415884bf0> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseAppCheck.framework/FirebaseAppCheck
+       0x102700000 -        0x102703fff org.cocoapods.FirebaseAppCheckInterop (11.15.0) <58f0e517-80ea-38b5-acb6-2587975e321c> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseAppCheckInterop.framework/FirebaseAppCheckInterop
+       0x102d6c000 -        0x102ef7fff org.cocoapods.FirebaseAuth (11.13.0) <dae5d71e-c507-326f-a2fb-09de9c412749> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseAuth.framework/FirebaseAuth
+       0x102714000 -        0x102717fff org.cocoapods.FirebaseAuthInterop (11.15.0) <75bbff5e-ca65-3372-93e4-406b64b1553f> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseAuthInterop.framework/FirebaseAuthInterop
+       0x102760000 -        0x102773fff org.cocoapods.FirebaseCore (11.13.0) <014aee94-5884-3025-b707-b3a8a7ecf286> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseCore.framework/FirebaseCore
+       0x102728000 -        0x10272bfff org.cocoapods.FirebaseCoreExtension (11.13.0) <4aa6cc5a-cd3d-34c9-a110-1acb295157ac> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseCoreExtension.framework/FirebaseCoreExtension
+       0x102a34000 -        0x102a5bfff org.cocoapods.FirebaseCoreInternal (11.13.0) <f296cae6-a605-3730-8ff2-d7d0dfacec02> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseCoreInternal.framework/FirebaseCoreInternal
+       0x102aac000 -        0x102ad3fff org.cocoapods.FirebaseFirestore (11.13.0) <dccd21c6-2bd5-3a73-970b-21e1f1563e01> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseFirestore.framework/FirebaseFirestore
+       0x106b80000 -        0x107107fff org.cocoapods.FirebaseFirestoreInternal (11.13.0) <ded7cb62-fc21-3c7b-ae0e-f1faa1d12172> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseFirestoreInternal.framework/FirebaseFirestoreInternal
+       0x102b24000 -        0x102b3ffff org.cocoapods.FirebaseInstallations (11.13.0) <4bc6bac5-a012-3173-baba-ea7863d63a82> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseInstallations.framework/FirebaseInstallations
+       0x102bf8000 -        0x102c3bfff org.cocoapods.FirebaseMessaging (11.13.0) <ffc05717-bc89-329b-ad21-728d96ca24a1> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseMessaging.framework/FirebaseMessaging
+       0x103124000 -        0x10316ffff org.cocoapods.FirebaseSharedSwift (11.15.0) <fef5ee6a-e60d-32e8-b02d-31348483bf2f> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseSharedSwift.framework/FirebaseSharedSwift
+       0x1031d4000 -        0x10322bfff org.cocoapods.FirebaseStorage (11.13.0) <78a842d1-0e21-35f5-9ff6-557223f28103> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/FirebaseStorage.framework/FirebaseStorage
+       0x102b68000 -        0x102bb7fff org.cocoapods.GTMSessionFetcher (4.5.0) <3007c5b1-ca8c-3e5c-9ae1-e28d011eaaa2> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/GTMSessionFetcher.framework/GTMSessionFetcher
+       0x102c84000 -        0x102cb3fff org.cocoapods.GoogleDataTransport (10.1.0) <a5bd8e1a-fa7a-34f4-b8a6-7795d537458e> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/GoogleDataTransport.framework/GoogleDataTransport
+       0x102cec000 -        0x102d0ffff org.cocoapods.GoogleUtilities (8.1.0) <fcf1186f-e9ce-37ee-b93d-9c61e6ee5e11> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/GoogleUtilities.framework/GoogleUtilities
+       0x10273c000 -        0x10273ffff org.cocoapods.RecaptchaInterop (101.0.0) <1c3ea31f-99ae-3ea9-b1f8-8c84111083a5> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/RecaptchaInterop.framework/RecaptchaInterop
+       0x1032a4000 -        0x1032cbfff org.cocoapods.Stripe (24.7.0) <5c407c9e-f677-36f7-aa58-13dca90931e4> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/Stripe.framework/Stripe
+       0x10347c000 -        0x10350ffff org.cocoapods.StripeApplePay (24.7.0) <6617576b-4e60-35be-ade1-108fd4dc4d28> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripeApplePay.framework/StripeApplePay
+       0x103814000 -        0x1038f3fff org.cocoapods.StripeCore (24.7.0) <b37896cc-a10c-371a-be32-b858dca08136> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripeCore.framework/StripeCore
+       0x105d04000 -        0x106027fff org.cocoapods.StripeFinancialConnections (24.7.0) <ec25c29f-7901-30f6-b109-e5817a346271> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripeFinancialConnections.framework/StripeFinancialConnections
+       0x108ca8000 -        0x109103fff org.cocoapods.StripePaymentSheet (24.7.0) <a3202bf0-c356-3c9b-8553-2d4d744c6448> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripePaymentSheet.framework/StripePaymentSheet
+       0x1081f8000 -        0x1084bffff org.cocoapods.StripePayments (24.7.0) <e2b21c8e-df7d-3e07-9b07-9e8038c245df> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripePayments.framework/StripePayments
+       0x103a3c000 -        0x103b17fff org.cocoapods.StripePaymentsUI (24.7.0) <e338eb42-6e03-3b2f-8f58-3763651448a0> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripePaymentsUI.framework/StripePaymentsUI
+       0x105504000 -        0x1055e3fff org.cocoapods.StripeUICore (24.7.0) <0f8f2d2f-0706-3a7e-b2ab-ca73c3e57651> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/StripeUICore.framework/StripeUICore
+       0x106520000 -        0x10669bfff org.cocoapods.absl (1.20240722.0) <6cd72d26-7432-33bd-bd3b-ad7ec29ce626> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/absl.framework/absl
+       0x1033c0000 -        0x10340bfff org.cocoapods.camera-avfoundation (0.0.1) <d85e862f-34bc-364c-9372-5f67ca46e3a8> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/camera_avfoundation.framework/camera_avfoundation
+       0x102618000 -        0x102623fff org.cocoapods.connectivity-plus (0.0.1) <3bf2d4ed-ba2a-3f45-b1ac-dc338011850a> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/connectivity_plus.framework/connectivity_plus
+       0x1027b0000 -        0x1027b7fff org.cocoapods.device-info-plus (0.0.1) <38bc24a9-72e8-3022-ac03-06da224e1939> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/device_info_plus.framework/device_info_plus
+       0x1029e4000 -        0x1029f3fff org.cocoapods.flutter-local-notifications (0.0.1) <02dfe9d7-aa23-381f-8618-cd8b916bc076> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/flutter_local_notifications.framework/flutter_local_notifications
+       0x10330c000 -        0x10331bfff org.cocoapods.flutter-secure-storage (6.0.0) <b3ed58f5-c0e8-38c0-8aa9-fbd48fd01a4e> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/flutter_secure_storage.framework/flutter_secure_storage
+       0x1029b8000 -        0x1029bffff org.cocoapods.geocoding-ios (1.0.5) <d0a9949f-dded-3655-81f0-57c1ea0ff656> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/geocoding_ios.framework/geocoding_ios
+       0x102d38000 -        0x102d43fff org.cocoapods.geolocator-apple (1.2.0) <d4f884dd-b0a9-3ff3-883f-0463b4535842> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/geolocator_apple.framework/geolocator_apple
+       0x10c940000 -        0x10d6bffff org.cocoapods.grpc (1.69.0) <0576a46e-0bac-3c1e-a10c-2dd1c3000225> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/grpc.framework/grpc
+       0x10976c000 -        0x109863fff org.cocoapods.grpcpp (1.69.0) <0b9b9f02-cc99-3f42-8861-7d10a1958ac6> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/grpcpp.framework/grpcpp
+       0x103374000 -        0x103387fff org.cocoapods.image-picker-ios (0.0.1) <ce893974-095d-3f52-a481-54bde0c388ae> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/image_picker_ios.framework/image_picker_ios
+       0x103c58000 -        0x103cc3fff org.cocoapods.leveldb (1.22.6) <5790a4f5-ce46-3e08-b6fe-8d7c6272dc70> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/leveldb.framework/leveldb
+       0x102a0c000 -        0x102a13fff org.cocoapods.nanopb (3.30910.0) <444e99d2-4abb-3b32-8776-3d7a0ecceaad> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/nanopb.framework/nanopb
+       0x1088a8000 -        0x108a77fff org.cocoapods.openssl-grpc (0.0.37) <73cca671-ad1b-35bf-a78a-7c26a4804115> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/openssl_grpc.framework/openssl_grpc
+       0x1029d0000 -        0x1029d3fff org.cocoapods.package-info-plus (0.4.5) <658843f6-0812-38ee-9302-8d5ea8094c92> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/package_info_plus.framework/package_info_plus
+       0x1035f0000 -        0x1035fbfff org.cocoapods.path-provider-foundation (0.0.1) <4b134cfd-2ea2-3c33-955b-5fdf7cde96ac> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/path_provider_foundation.framework/path_provider_foundation
+       0x102794000 -        0x10279bfff org.cocoapods.share-plus (0.0.1) <52364b2b-a003-35ab-a682-cbb3991ef757> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/share_plus.framework/share_plus
+       0x10333c000 -        0x10334ffff org.cocoapods.shared-preferences-foundation (0.0.1) <dfbcac0f-b173-34d6-b7cd-b6df843bb379> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/shared_preferences_foundation.framework/shared_preferences_foundation
+       0x103664000 -        0x103683fff org.cocoapods.sqflite-darwin (0.0.4) <f7d18cb3-fa6c-39d4-837a-d238a0863012> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/sqflite_darwin.framework/sqflite_darwin
+       0x105964000 -        0x105a7bfff org.cocoapods.stripe-ios (0.0.1) <8773a934-bf60-3d40-bd7b-19ff7fa52dec> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/stripe_ios.framework/stripe_ios
+       0x1036ac000 -        0x1036bbfff org.cocoapods.url-launcher-ios (0.0.1) <7eadec16-0063-38d4-a9d8-bb81f10271ce> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/url_launcher_ios.framework/url_launcher_ios
+       0x112960000 -        0x114adbfff io.flutter.flutter (1.0) <4c4c4445-5555-3144-a11f-921ceb984ad8> /Users/USER/Library/Developer/CoreSimulator/Devices/256EDF85-5169-4DF4-842C-509B32C765C9/data/Containers/Bundle/Application/2996962B-3119-48BD-BEB6-8466E9D34A42/Runner.app/Frameworks/Flutter.framework/Flutter
+       0x103618000 -        0x10361ffff libsystem_platform.dylib (*) <93afc0a9-eec9-3f50-9339-09c7757aa50a> /usr/lib/system/libsystem_platform.dylib
+       0x1036e4000 -        0x10371ffff libsystem_kernel.dylib (*) <4068b2ee-a54f-397e-882d-c5e3a40b789a> /usr/lib/system/libsystem_kernel.dylib
+       0x1037cc000 -        0x1037dbfff libsystem_pthread.dylib (*) <e9238785-e581-3e65-bedb-179c698d3554> /usr/lib/system/libsystem_pthread.dylib
+       0x1037b0000 -        0x1037bbfff libobjc-trampolines.dylib (*) <22dfc621-7386-3de3-87b2-9ed27c8be84d> /Volumes/VOLUME/*/libobjc-trampolines.dylib
+       0x1956e8000 -        0x195b6b2ff libswiftCore.dylib (*) <4f21129f-ede4-3571-b8f0-99188db009fe> /Volumes/VOLUME/*/libswiftCore.dylib
+       0x184d72000 -        0x186adb8df com.apple.UIKitCore (1.0) <d4c23b9a-c567-3e42-86ef-697aec976159> /Volumes/VOLUME/*/UIKitCore.framework/UIKitCore
+               0x0 - 0xffffffffffffffff ??? (*) <00000000-0000-0000-0000-000000000000> ???
+       0x180395000 -        0x1807acfff com.apple.CoreFoundation (6.9) <3d4aa1d5-03aa-3365-b767-944509b9bbfd> /Volumes/VOLUME/*/CoreFoundation.framework/CoreFoundation
+       0x18082c000 -        0x1813f18df com.apple.Foundation (6.9) <6ec60314-780a-318f-8bdb-5d173b13970e> /Volumes/VOLUME/*/Foundation.framework/Foundation
+
+EOF
+
+-----------
+Full Report
+-----------
+
+{"app_name":"Runner","timestamp":"2025-07-01 16:38:27.00 -0400","app_version":"1.0.5","slice_uuid":"7be0b908-0889-30ee-842b-f993af7202ab","build_version":"7","platform":7,"bundleID":"com.wordnerd.artbeat","share_with_app_devs":0,"is_first_party":0,"bug_type":"309","os_version":"macOS 15.5 (24F74)","roots_installed":0,"name":"Runner","incident_id":"C05633DA-ABF8-4EA1-8344-E9B1AD745A6B"}
+{
+  "uptime" : 5300,
+  "procRole" : "Foreground",
+  "version" : 2,
+  "userID" : 501,
+  "deployVersion" : 210,
+  "modelCode" : "Mac16,1",
+  "coalitionID" : 999,
+  "osVersion" : {
+    "train" : "macOS 15.5",
+    "build" : "24F74",
+    "releaseType" : "User"
+  },
+  "captureTime" : "2025-07-01 16:38:23.3772 -0400",
+  "codeSigningMonitor" : 2,
+  "incident" : "C05633DA-ABF8-4EA1-8344-E9B1AD745A6B",
+  "pid" : 91070,
+  "translated" : false,
+  "cpuType" : "ARM-64",
+  "roots_installed" : 0,
+  "bug_type" : "309",
+  "procLaunch" : "2025-07-01 16:38:22.2864 -0400",
+  "procStartAbsTime" : 129345875219,
+  "procExitAbsTime" : 129370586618,
+  "procName" : "Runner",
+  "procPath" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Runner",
+  "bundleInfo" : {"CFBundleShortVersionString":"1.0.5","CFBundleVersion":"7","CFBundleIdentifier":"com.wordnerd.artbeat"},
+  "storeInfo" : {"deviceIdentifierForVendor":"24E20341-4E8B-5C53-ADC5-97450A5336AD","thirdParty":true},
+  "parentProc" : "launchd_sim",
+  "parentPid" : 1015,
+  "coalitionName" : "com.apple.CoreSimulator.SimDevice.256EDF85-5169-4DF4-842C-509B32C765C9",
+  "crashReporterKey" : "6F3EA58A-358D-4645-F271-014ABAF95FAB",
+  "appleIntelligenceStatus" : {"state":"available"},
+  "responsiblePid" : 885,
+  "responsibleProc" : "SimulatorTrampoline",
+  "codeSigningID" : "com.wordnerd.artbeat",
+  "codeSigningTeamID" : "",
+  "codeSigningFlags" : 570425857,
+  "codeSigningValidationCategory" : 10,
+  "codeSigningTrustLevel" : 4294967295,
+  "codeSigningAuxiliaryInfo" : 0,
+  "instructionByteStream" : {"beforePC":"wANf1vRPvqn9ewGp\/UMAkfMDAKqgAPi24AMTqhSoAZSgAAC1CgAAFA==","atPC":"aAJA+QDNfZLgAAC0CIBAOagACDYIIED5KAIAtQAEQPlg\/\/+14AMTqg=="},
+  "bootSessionUUID" : "4A10F2A6-169D-4EF0-8EAE-CFDD56E56458",
+  "wakeTime" : 1402,
+  "sleepWakeUUID" : "5FC3A33F-553B-4575-9A0B-624E94EDA38A",
+  "sip" : "enabled",
+  "vmRegionInfo" : "0 is not in any region.  Bytes before following region: 4334813184\n      REGION TYPE                    START - END         [ VSIZE] PRT\/MAX SHRMOD  REGION DETAIL\n      UNUSED SPACE AT START\n--->  \n      __TEXT                      102600000-102604000    [   16K] r-x\/r-x SM=COW  \/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Runner",
+  "exception" : {"codes":"0x0000000000000001, 0x0000000000000000","rawCodes":[1,0],"type":"EXC_BAD_ACCESS","signal":"SIGSEGV","subtype":"KERN_INVALID_ADDRESS at 0x0000000000000000"},
+  "termination" : {"flags":0,"code":11,"namespace":"SIGNAL","indicator":"Segmentation fault: 11","byProc":"exc handler","byPid":91070},
+  "vmregioninfo" : "0 is not in any region.  Bytes before following region: 4334813184\n      REGION TYPE                    START - END         [ VSIZE] PRT\/MAX SHRMOD  REGION DETAIL\n      UNUSED SPACE AT START\n--->  \n      __TEXT                      102600000-102604000    [   16K] r-x\/r-x SM=COW  \/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Runner",
+  "extMods" : {"caller":{"thread_create":0,"thread_set_state":0,"task_for_pid":0},"system":{"thread_create":0,"thread_set_state":0,"task_for_pid":0},"targeted":{"thread_create":0,"thread_set_state":0,"task_for_pid":0},"warnings":0},
+  "faultingThread" : 0,
+  "threads" : [{"triggered":true,"id":893225,"threadState":{"x":[{"value":0},{"value":6132059808},{"value":0},{"value":32},{"value":6},{"value":0},{"value":10},{"value":0},{"value":0},{"value":16},{"value":0},{"value":105553140384928},{"value":3},{"value":2},{"value":0},{"value":18446744073709551615},{"value":6805275004,"symbolLocation":0,"symbol":"swift_getObjectType"},{"value":4349347340,"sourceFile":"\/<compiler-generated>","symbol":"@objc static CameraPlugin.register(with:)","symbolLocation":0},{"value":0},{"value":0},{"value":4349589016,"symbolLocation":0,"symbol":"type metadata for CameraPlugin"},{"value":1},{"value":1},{"value":1},{"value":1},{"value":8386781184,"symbolLocation":24,"symbol":"OBJC_METACLASS_$__UIForceLevelClassifier"},{"value":8386560000,"symbolLocation":0,"symbol":"OBJC_IVAR_$_UIPreviewItemController._previewIndicatorSnapshotView"},{"value":730267748},{"value":16}],"flavor":"ARM_THREAD_STATE64","lr":{"value":4349344960},"cpsr":{"value":536870912},"fp":{"value":6132059792},"sp":{"value":6132059776},"esr":{"value":2449473542,"description":"(Data Abort) byte read Translation fault"},"pc":{"value":6805275040,"matchesCrashFrame":1},"far":{"value":0}},"queue":"com.apple.main-thread","frames":[{"imageOffset":3260832,"symbol":"swift_getObjectType","symbolLocation":36,"imageIndex":56},{"imageOffset":113856,"sourceFile":"<stdin>","symbol":"static CameraPlugin.register(with:)","symbolLocation":204,"imageIndex":31},{"imageOffset":116292,"sourceFile":"\/<compiler-generated>","symbol":"@objc static CameraPlugin.register(with:)","symbolLocation":56,"imageIndex":31},{"imageOffset":13548,"sourceLine":150,"sourceFile":"GeneratedPluginRegistrant.m","symbol":"+[GeneratedPluginRegistrant registerWithRegistry:]","imageIndex":2,"symbolLocation":116},{"imageOffset":17312,"sourceLine":30,"sourceFile":"AppDelegate.swift","symbol":"AppDelegate.application(_:didFinishLaunchingWithOptions:)","imageIndex":2,"symbolLocation":2048},{"imageOffset":18992,"sourceFile":"\/<compiler-generated>","symbol":"@objc AppDelegate.application(_:didFinishLaunchingWithOptions:)","symbolLocation":220,"imageIndex":2},{"imageOffset":15046132,"symbol":"-[UIApplication _handleDelegateCallbacksWithOptions:isSuspended:restoreState:]","symbolLocation":312,"imageIndex":57},{"imageOffset":15051448,"symbol":"-[UIApplication _callInitializationDelegatesWithActions:forCanvas:payload:fromOriginatingProcess:]","symbolLocation":2916,"imageIndex":57},{"imageOffset":15072816,"symbol":"-[UIApplication _runWithMainScene:transitionContext:completion:]","symbolLocation":980,"imageIndex":57},{"imageOffset":4596620,"symbol":"-[_UISceneLifecycleMultiplexer completeApplicationLaunchWithFBSScene:transitionContext:]","symbolLocation":148,"imageIndex":57},{"imageOffset":15059308,"symbol":"-[UIApplication _compellApplicationLaunchToCompleteUnconditionally]","symbolLocation":44,"imageIndex":57},{"imageOffset":15060084,"symbol":"-[UIApplication _run]","symbolLocation":760,"imageIndex":57},{"imageOffset":15077476,"symbol":"UIApplicationMain","symbolLocation":124,"imageIndex":57},{"imageOffset":2264428,"imageIndex":57},{"imageOffset":19452,"sourceFile":"\/<compiler-generated>","symbol":"static UIApplicationDelegate.main()","symbolLocation":128,"imageIndex":2},{"imageOffset":19308,"sourceFile":"\/<compiler-generated>","symbol":"static AppDelegate.$main()","symbolLocation":44,"imageIndex":2},{"imageOffset":19576,"sourceFile":"\/<compiler-generated>","symbol":"__debug_main_executable_dylib_entry_point","symbolLocation":28,"imageIndex":2},{"imageOffset":4337963992,"imageIndex":58},{"imageOffset":27544,"symbol":"start","symbolLocation":6076,"imageIndex":0}]},{"id":893300,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6132625408},{"value":6919},{"value":6132088832},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6132625408},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893301,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6133198848},{"value":6659},{"value":6132662272},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6133198848},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893302,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6133772288},{"value":4099},{"value":6133235712},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6133772288},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893307,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6134345728},{"value":8451},{"value":6133809152},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6134345728},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893308,"name":"com.apple.uikit.eventfetch-thread","threadState":{"x":[{"value":268451845},{"value":21592279046},{"value":8589934592},{"value":40694815129600},{"value":4294967295},{"value":40694815129600},{"value":2},{"value":4294967295},{"value":0},{"value":17179869184},{"value":0},{"value":2},{"value":0},{"value":0},{"value":9475},{"value":3072},{"value":18446744073709551569},{"value":3516944480},{"value":0},{"value":4294967295},{"value":2},{"value":40694815129600},{"value":4294967295},{"value":40694815129600},{"value":6134914440},{"value":8589934592},{"value":21592279046},{"value":18446744073709550527},{"sourceLine":97,"value":4412409862,"sourceFile":"allocation_guard.h","symbol":"std::__1::__allocation_guard<std::__1::allocator<std::__1::__shared_ptr_emplace<firebase::firestore::model::NumericIncrementTransform::Rep, std::__1::allocator<firebase::firestore::model::NumericIncrementTransform::Rep>>>>::__destroy[abi:de190102]()","symbolLocation":62}],"flavor":"ARM_THREAD_STATE64","lr":{"value":4352597932},"cpsr":{"value":0},"fp":{"value":6134914288},"sp":{"value":6134914208},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4352527216},"far":{"value":0}},"frames":[{"imageOffset":2928,"symbol":"mach_msg2_trap","symbolLocation":8,"imageIndex":53},{"imageOffset":73644,"symbol":"mach_msg2_internal","symbolLocation":72,"imageIndex":53},{"imageOffset":35880,"symbol":"mach_msg_overwrite","symbolLocation":480,"imageIndex":53},{"imageOffset":3800,"symbol":"mach_msg","symbolLocation":20,"imageIndex":53},{"imageOffset":601364,"symbol":"__CFRunLoopServiceMachPort","symbolLocation":156,"imageIndex":59},{"imageOffset":579316,"symbol":"__CFRunLoopRun","symbolLocation":1148,"imageIndex":59},{"imageOffset":577084,"symbol":"CFRunLoopRunSpecific","symbolLocation":536,"imageIndex":59},{"imageOffset":7302620,"symbol":"-[NSRunLoop(NSRunLoop) runMode:beforeDate:]","symbolLocation":208,"imageIndex":60},{"imageOffset":7303164,"symbol":"-[NSRunLoop(NSRunLoop) runUntilDate:]","symbolLocation":60,"imageIndex":60},{"imageOffset":15771428,"symbol":"-[UIEventFetcher threadMain]","symbolLocation":408,"imageIndex":57},{"imageOffset":7461784,"symbol":"__NSThread__start__","symbolLocation":716,"imageIndex":60},{"imageOffset":26096,"symbol":"_pthread_start","symbolLocation":104,"imageIndex":54},{"imageOffset":6552,"symbol":"thread_start","symbolLocation":8,"imageIndex":54}]},{"id":893309,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6135492608},{"value":21507},{"value":6134956032},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6135492608},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893310,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6136066048},{"value":21255},{"value":6135529472},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6136066048},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893312,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6136639488},{"value":16403},{"value":6136102912},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6136639488},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893313,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6137212928},{"value":18947},{"value":6136676352},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6137212928},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893314,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6137786368},{"value":18691},{"value":6137249792},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6137786368},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893315,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6138359808},{"value":18435},{"value":6137823232},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6138359808},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}},{"id":893316,"frames":[{"imageOffset":6532,"symbol":"start_wqthread","symbolLocation":0,"imageIndex":54}],"threadState":{"x":[{"value":6138933248},{"value":16899},{"value":6138396672},{"value":0},{"value":409604},{"value":18446744073709551615},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0},{"value":0}],"flavor":"ARM_THREAD_STATE64","lr":{"value":0},"cpsr":{"value":0},"fp":{"value":0},"sp":{"value":6138933248},"esr":{"value":1442840704,"description":" Address size fault"},"pc":{"value":4353481092},"far":{"value":0}}}],
+  "usedImages" : [
+  {
+    "source" : "P",
+    "arch" : "arm64e",
+    "base" : 4336713728,
+    "size" : 638976,
+    "uuid" : "9cf0401a-a938-389e-a77d-9e9608076ccf",
+    "path" : "\/usr\/lib\/dyld",
+    "name" : "dyld"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4334813184,
+    "CFBundleShortVersionString" : "1.0.5",
+    "CFBundleIdentifier" : "com.wordnerd.artbeat",
+    "size" : 16384,
+    "uuid" : "7be0b908-0889-30ee-842b-f993af7202ab",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Runner",
+    "name" : "Runner",
+    "CFBundleVersion" : "7"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4361355264,
+    "size" : 11780096,
+    "uuid" : "963ab65b-392f-3d95-a96f-fe37e39f0057",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Runner.debug.dylib",
+    "name" : "Runner.debug.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4335288320,
+    "CFBundleShortVersionString" : "11.2.0",
+    "CFBundleIdentifier" : "org.cocoapods.AppCheckCore",
+    "size" : 147456,
+    "uuid" : "0c3a8761-1c39-3713-a3a9-1b9ce551c4a2",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/AppCheckCore.framework\/AppCheckCore",
+    "name" : "AppCheckCore",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4335648768,
+    "CFBundleShortVersionString" : "2.4.0",
+    "CFBundleIdentifier" : "org.cocoapods.FBLPromises",
+    "size" : 81920,
+    "uuid" : "0e2e596f-1556-368f-be1d-760436587c06",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FBLPromises.framework\/FBLPromises",
+    "name" : "FBLPromises",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4335075328,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseAppCheck",
+    "size" : 49152,
+    "uuid" : "6cbce939-db96-3e6b-b468-1f0415884bf0",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseAppCheck.framework\/FirebaseAppCheck",
+    "name" : "FirebaseAppCheck",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4335861760,
+    "CFBundleShortVersionString" : "11.15.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseAppCheckInterop",
+    "size" : 16384,
+    "uuid" : "58f0e517-80ea-38b5-acb6-2587975e321c",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseAppCheckInterop.framework\/FirebaseAppCheckInterop",
+    "name" : "FirebaseAppCheckInterop",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4342595584,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseAuth",
+    "size" : 1622016,
+    "uuid" : "dae5d71e-c507-326f-a2fb-09de9c412749",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseAuth.framework\/FirebaseAuth",
+    "name" : "FirebaseAuth",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4335943680,
+    "CFBundleShortVersionString" : "11.15.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseAuthInterop",
+    "size" : 16384,
+    "uuid" : "75bbff5e-ca65-3372-93e4-406b64b1553f",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseAuthInterop.framework\/FirebaseAuthInterop",
+    "name" : "FirebaseAuthInterop",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4336254976,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseCore",
+    "size" : 81920,
+    "uuid" : "014aee94-5884-3025-b707-b3a8a7ecf286",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseCore.framework\/FirebaseCore",
+    "name" : "FirebaseCore",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4336025600,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseCoreExtension",
+    "size" : 16384,
+    "uuid" : "4aa6cc5a-cd3d-34c9-a110-1acb295157ac",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseCoreExtension.framework\/FirebaseCoreExtension",
+    "name" : "FirebaseCoreExtension",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4339220480,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseCoreInternal",
+    "size" : 163840,
+    "uuid" : "f296cae6-a605-3730-8ff2-d7d0dfacec02",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseCoreInternal.framework\/FirebaseCoreInternal",
+    "name" : "FirebaseCoreInternal",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4339712000,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseFirestore",
+    "size" : 163840,
+    "uuid" : "dccd21c6-2bd5-3a73-970b-21e1f1563e01",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseFirestore.framework\/FirebaseFirestore",
+    "name" : "FirebaseFirestore",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4407689216,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseFirestoreInternal",
+    "size" : 5799936,
+    "uuid" : "ded7cb62-fc21-3c7b-ae0e-f1faa1d12172",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseFirestoreInternal.framework\/FirebaseFirestoreInternal",
+    "name" : "FirebaseFirestoreInternal",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4340203520,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseInstallations",
+    "size" : 114688,
+    "uuid" : "4bc6bac5-a012-3173-baba-ea7863d63a82",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseInstallations.framework\/FirebaseInstallations",
+    "name" : "FirebaseInstallations",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4341071872,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseMessaging",
+    "size" : 278528,
+    "uuid" : "ffc05717-bc89-329b-ad21-728d96ca24a1",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseMessaging.framework\/FirebaseMessaging",
+    "name" : "FirebaseMessaging",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4346494976,
+    "CFBundleShortVersionString" : "11.15.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseSharedSwift",
+    "size" : 311296,
+    "uuid" : "fef5ee6a-e60d-32e8-b02d-31348483bf2f",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseSharedSwift.framework\/FirebaseSharedSwift",
+    "name" : "FirebaseSharedSwift",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4347215872,
+    "CFBundleShortVersionString" : "11.13.0",
+    "CFBundleIdentifier" : "org.cocoapods.FirebaseStorage",
+    "size" : 360448,
+    "uuid" : "78a842d1-0e21-35f5-9ff6-557223f28103",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/FirebaseStorage.framework\/FirebaseStorage",
+    "name" : "FirebaseStorage",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4340482048,
+    "CFBundleShortVersionString" : "4.5.0",
+    "CFBundleIdentifier" : "org.cocoapods.GTMSessionFetcher",
+    "size" : 327680,
+    "uuid" : "3007c5b1-ca8c-3e5c-9ae1-e28d011eaaa2",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/GTMSessionFetcher.framework\/GTMSessionFetcher",
+    "name" : "GTMSessionFetcher",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4341645312,
+    "CFBundleShortVersionString" : "10.1.0",
+    "CFBundleIdentifier" : "org.cocoapods.GoogleDataTransport",
+    "size" : 196608,
+    "uuid" : "a5bd8e1a-fa7a-34f4-b8a6-7795d537458e",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/GoogleDataTransport.framework\/GoogleDataTransport",
+    "name" : "GoogleDataTransport",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4342071296,
+    "CFBundleShortVersionString" : "8.1.0",
+    "CFBundleIdentifier" : "org.cocoapods.GoogleUtilities",
+    "size" : 147456,
+    "uuid" : "fcf1186f-e9ce-37ee-b93d-9c61e6ee5e11",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/GoogleUtilities.framework\/GoogleUtilities",
+    "name" : "GoogleUtilities",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4336107520,
+    "CFBundleShortVersionString" : "101.0.0",
+    "CFBundleIdentifier" : "org.cocoapods.RecaptchaInterop",
+    "size" : 16384,
+    "uuid" : "1c3ea31f-99ae-3ea9-b1f8-8c84111083a5",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/RecaptchaInterop.framework\/RecaptchaInterop",
+    "name" : "RecaptchaInterop",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4348067840,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.Stripe",
+    "size" : 163840,
+    "uuid" : "5c407c9e-f677-36f7-aa58-13dca90931e4",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/Stripe.framework\/Stripe",
+    "name" : "Stripe",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4350001152,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripeApplePay",
+    "size" : 606208,
+    "uuid" : "6617576b-4e60-35be-ade1-108fd4dc4d28",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripeApplePay.framework\/StripeApplePay",
+    "name" : "StripeApplePay",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4353769472,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripeCore",
+    "size" : 917504,
+    "uuid" : "b37896cc-a10c-371a-be32-b858dca08136",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripeCore.framework\/StripeCore",
+    "name" : "StripeCore",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4392501248,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripeFinancialConnections",
+    "size" : 3293184,
+    "uuid" : "ec25c29f-7901-30f6-b109-e5817a346271",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripeFinancialConnections.framework\/StripeFinancialConnections",
+    "name" : "StripeFinancialConnections",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4442456064,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripePaymentSheet",
+    "size" : 4571136,
+    "uuid" : "a3202bf0-c356-3c9b-8553-2d4d744c6448",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripePaymentSheet.framework\/StripePaymentSheet",
+    "name" : "StripePaymentSheet",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4431249408,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripePayments",
+    "size" : 2916352,
+    "uuid" : "e2b21c8e-df7d-3e07-9b07-9e8038c245df",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripePayments.framework\/StripePayments",
+    "name" : "StripePayments",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4356030464,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripePaymentsUI",
+    "size" : 901120,
+    "uuid" : "e338eb42-6e03-3b2f-8f58-3763651448a0",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripePaymentsUI.framework\/StripePaymentsUI",
+    "name" : "StripePaymentsUI",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4384112640,
+    "CFBundleShortVersionString" : "24.7.0",
+    "CFBundleIdentifier" : "org.cocoapods.StripeUICore",
+    "size" : 917504,
+    "uuid" : "0f8f2d2f-0706-3a7e-b2ab-ca73c3e57651",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/StripeUICore.framework\/StripeUICore",
+    "name" : "StripeUICore",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4401004544,
+    "CFBundleShortVersionString" : "1.20240722.0",
+    "CFBundleIdentifier" : "org.cocoapods.absl",
+    "size" : 1556480,
+    "uuid" : "6cd72d26-7432-33bd-bd3b-ad7ec29ce626",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/absl.framework\/absl",
+    "name" : "absl",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4349231104,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.camera-avfoundation",
+    "size" : 311296,
+    "uuid" : "d85e862f-34bc-364c-9372-5f67ca46e3a8",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/camera_avfoundation.framework\/camera_avfoundation",
+    "name" : "camera_avfoundation",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4334911488,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.connectivity-plus",
+    "size" : 49152,
+    "uuid" : "3bf2d4ed-ba2a-3f45-b1ac-dc338011850a",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/connectivity_plus.framework\/connectivity_plus",
+    "name" : "connectivity_plus",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4336582656,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.device-info-plus",
+    "size" : 32768,
+    "uuid" : "38bc24a9-72e8-3022-ac03-06da224e1939",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/device_info_plus.framework\/device_info_plus",
+    "name" : "device_info_plus",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4338892800,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.flutter-local-notifications",
+    "size" : 65536,
+    "uuid" : "02dfe9d7-aa23-381f-8618-cd8b916bc076",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/flutter_local_notifications.framework\/flutter_local_notifications",
+    "name" : "flutter_local_notifications",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4348493824,
+    "CFBundleShortVersionString" : "6.0.0",
+    "CFBundleIdentifier" : "org.cocoapods.flutter-secure-storage",
+    "size" : 65536,
+    "uuid" : "b3ed58f5-c0e8-38c0-8aa9-fbd48fd01a4e",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/flutter_secure_storage.framework\/flutter_secure_storage",
+    "name" : "flutter_secure_storage",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4338712576,
+    "CFBundleShortVersionString" : "1.0.5",
+    "CFBundleIdentifier" : "org.cocoapods.geocoding-ios",
+    "size" : 32768,
+    "uuid" : "d0a9949f-dded-3655-81f0-57c1ea0ff656",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/geocoding_ios.framework\/geocoding_ios",
+    "name" : "geocoding_ios",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4342382592,
+    "CFBundleShortVersionString" : "1.2.0",
+    "CFBundleIdentifier" : "org.cocoapods.geolocator-apple",
+    "size" : 49152,
+    "uuid" : "d4f884dd-b0a9-3ff3-883f-0463b4535842",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/geolocator_apple.framework\/geolocator_apple",
+    "name" : "geolocator_apple",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4505993216,
+    "CFBundleShortVersionString" : "1.69.0",
+    "CFBundleIdentifier" : "org.cocoapods.grpc",
+    "size" : 14155776,
+    "uuid" : "0576a46e-0bac-3c1e-a10c-2dd1c3000225",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/grpc.framework\/grpc",
+    "name" : "grpc",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4453744640,
+    "CFBundleShortVersionString" : "1.69.0",
+    "CFBundleIdentifier" : "org.cocoapods.grpcpp",
+    "size" : 1015808,
+    "uuid" : "0b9b9f02-cc99-3f42-8861-7d10a1958ac6",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/grpcpp.framework\/grpcpp",
+    "name" : "grpcpp",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4348919808,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.image-picker-ios",
+    "size" : 81920,
+    "uuid" : "ce893974-095d-3f52-a481-54bde0c388ae",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/image_picker_ios.framework\/image_picker_ios",
+    "name" : "image_picker_ios",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4358242304,
+    "CFBundleShortVersionString" : "1.22.6",
+    "CFBundleIdentifier" : "org.cocoapods.leveldb",
+    "size" : 442368,
+    "uuid" : "5790a4f5-ce46-3e08-b6fe-8d7c6272dc70",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/leveldb.framework\/leveldb",
+    "name" : "leveldb",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4339056640,
+    "CFBundleShortVersionString" : "3.30910.0",
+    "CFBundleIdentifier" : "org.cocoapods.nanopb",
+    "size" : 32768,
+    "uuid" : "444e99d2-4abb-3b32-8776-3d7a0ecceaad",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/nanopb.framework\/nanopb",
+    "name" : "nanopb",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4438261760,
+    "CFBundleShortVersionString" : "0.0.37",
+    "CFBundleIdentifier" : "org.cocoapods.openssl-grpc",
+    "size" : 1900544,
+    "uuid" : "73cca671-ad1b-35bf-a78a-7c26a4804115",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/openssl_grpc.framework\/openssl_grpc",
+    "name" : "openssl_grpc",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4338810880,
+    "CFBundleShortVersionString" : "0.4.5",
+    "CFBundleIdentifier" : "org.cocoapods.package-info-plus",
+    "size" : 16384,
+    "uuid" : "658843f6-0812-38ee-9302-8d5ea8094c92",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/package_info_plus.framework\/package_info_plus",
+    "name" : "package_info_plus",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4351524864,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.path-provider-foundation",
+    "size" : 49152,
+    "uuid" : "4b134cfd-2ea2-3c33-955b-5fdf7cde96ac",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/path_provider_foundation.framework\/path_provider_foundation",
+    "name" : "path_provider_foundation",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4336467968,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.share-plus",
+    "size" : 32768,
+    "uuid" : "52364b2b-a003-35ab-a682-cbb3991ef757",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/share_plus.framework\/share_plus",
+    "name" : "share_plus",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4348690432,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.shared-preferences-foundation",
+    "size" : 81920,
+    "uuid" : "dfbcac0f-b173-34d6-b7cd-b6df843bb379",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/shared_preferences_foundation.framework\/shared_preferences_foundation",
+    "name" : "shared_preferences_foundation",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4352000000,
+    "CFBundleShortVersionString" : "0.0.4",
+    "CFBundleIdentifier" : "org.cocoapods.sqflite-darwin",
+    "size" : 131072,
+    "uuid" : "f7d18cb3-fa6c-39d4-837a-d238a0863012",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/sqflite_darwin.framework\/sqflite_darwin",
+    "name" : "sqflite_darwin",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4388700160,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.stripe-ios",
+    "size" : 1146880,
+    "uuid" : "8773a934-bf60-3d40-bd7b-19ff7fa52dec",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/stripe_ios.framework\/stripe_ios",
+    "name" : "stripe_ios",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4352294912,
+    "CFBundleShortVersionString" : "0.0.1",
+    "CFBundleIdentifier" : "org.cocoapods.url-launcher-ios",
+    "size" : 65536,
+    "uuid" : "7eadec16-0063-38d4-a9d8-bb81f10271ce",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/url_launcher_ios.framework\/url_launcher_ios",
+    "name" : "url_launcher_ios",
+    "CFBundleVersion" : "1"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4606787584,
+    "CFBundleShortVersionString" : "1.0",
+    "CFBundleIdentifier" : "io.flutter.flutter",
+    "size" : 35110912,
+    "uuid" : "4c4c4445-5555-3144-a11f-921ceb984ad8",
+    "path" : "\/Users\/USER\/Library\/Developer\/CoreSimulator\/Devices\/256EDF85-5169-4DF4-842C-509B32C765C9\/data\/Containers\/Bundle\/Application\/2996962B-3119-48BD-BEB6-8466E9D34A42\/Runner.app\/Frameworks\/Flutter.framework\/Flutter",
+    "name" : "Flutter",
+    "CFBundleVersion" : "1.0"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4351688704,
+    "size" : 32768,
+    "uuid" : "93afc0a9-eec9-3f50-9339-09c7757aa50a",
+    "path" : "\/usr\/lib\/system\/libsystem_platform.dylib",
+    "name" : "libsystem_platform.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4352524288,
+    "size" : 245760,
+    "uuid" : "4068b2ee-a54f-397e-882d-c5e3a40b789a",
+    "path" : "\/usr\/lib\/system\/libsystem_kernel.dylib",
+    "name" : "libsystem_kernel.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4353474560,
+    "size" : 65536,
+    "uuid" : "e9238785-e581-3e65-bedb-179c698d3554",
+    "path" : "\/usr\/lib\/system\/libsystem_pthread.dylib",
+    "name" : "libsystem_pthread.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 4353359872,
+    "size" : 49152,
+    "uuid" : "22dfc621-7386-3de3-87b2-9ed27c8be84d",
+    "path" : "\/Volumes\/VOLUME\/*\/libobjc-trampolines.dylib",
+    "name" : "libobjc-trampolines.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 6802014208,
+    "size" : 4731648,
+    "uuid" : "4f21129f-ede4-3571-b8f0-99188db009fe",
+    "path" : "\/Volumes\/VOLUME\/*\/libswiftCore.dylib",
+    "name" : "libswiftCore.dylib"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 6523658240,
+    "CFBundleShortVersionString" : "1.0",
+    "CFBundleIdentifier" : "com.apple.UIKitCore",
+    "size" : 30841056,
+    "uuid" : "d4c23b9a-c567-3e42-86ef-697aec976159",
+    "path" : "\/Volumes\/VOLUME\/*\/UIKitCore.framework\/UIKitCore",
+    "name" : "UIKitCore",
+    "CFBundleVersion" : "8444.1.105"
+  },
+  {
+    "size" : 0,
+    "source" : "A",
+    "base" : 0,
+    "uuid" : "00000000-0000-0000-0000-000000000000"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 6446206976,
+    "CFBundleShortVersionString" : "6.9",
+    "CFBundleIdentifier" : "com.apple.CoreFoundation",
+    "size" : 4292608,
+    "uuid" : "3d4aa1d5-03aa-3365-b767-944509b9bbfd",
+    "path" : "\/Volumes\/VOLUME\/*\/CoreFoundation.framework\/CoreFoundation",
+    "name" : "CoreFoundation",
+    "CFBundleVersion" : "3423"
+  },
+  {
+    "source" : "P",
+    "arch" : "arm64",
+    "base" : 6451019776,
+    "CFBundleShortVersionString" : "6.9",
+    "CFBundleIdentifier" : "com.apple.Foundation",
+    "size" : 12343520,
+    "uuid" : "6ec60314-780a-318f-8bdb-5d173b13970e",
+    "path" : "\/Volumes\/VOLUME\/*\/Foundation.framework\/Foundation",
+    "name" : "Foundation",
+    "CFBundleVersion" : "3423"
+  }
+],
+  "sharedCache" : {
+  "base" : 6442450944,
+  "size" : 3904126976,
+  "uuid" : "d7935c61-2b81-3e07-8664-21f38963502b"
+},
+  "vmSummary" : "ReadOnly portion of Libraries: Total=1.9G resident=0K(0%) swapped_out_or_unallocated=1.9G(100%)\nWritable regions: Total=635.0M written=1795K(0%) resident=1795K(0%) swapped_out=0K(0%) unallocated=633.2M(100%)\n\n                                VIRTUAL   REGION \nREGION TYPE                        SIZE    COUNT (non-coalesced) \n===========                     =======  ======= \nActivity Tracing                   256K        1 \nColorSync                           32K        2 \nFoundation                          16K        1 \nKernel Alloc Once                   32K        1 \nMALLOC                           617.6M       43 \nMALLOC guard page                  128K        8 \nSTACK GUARD                       56.2M       13 \nStack                             14.4M       13 \nVM_ALLOCATE                        160K        2 \n__DATA                            46.3M      971 \n__DATA_CONST                     115.6M      985 \n__DATA_DIRTY                        91K       11 \n__FONT_DATA                        2352        1 \n__LINKEDIT                       795.4M       57 \n__OBJC_RO                         61.2M        1 \n__OBJC_RW                         2723K        1 \n__TEXT                             1.1G     1000 \n__TPRO_CONST                       148K        2 \ndyld private memory                2.5G       17 \nmapped file                       33.1M        9 \npage table in kernel              1795K        1 \nshared memory                       16K        1 \n===========                     =======  ======= \nTOTAL                              5.3G     3141 \n",
+  "legacyInfo" : {
+  "threadTriggered" : {
+    "queue" : "com.apple.main-thread"
+  }
+},
+  "logWritingSignature" : "5663f9449e23086080b46c38b5ab0374d58acbb1",
+  "trialInfo" : {
+  "rollouts" : [
+    {
+      "rolloutId" : "66d35d7fe4d6bf7664f40ddf",
+      "factorPackIds" : {
+        "BLACKPEARL_SPARROW" : "67c7824a1baae429bb41b897"
+      },
+      "deploymentId" : 240000031
+    },
+    {
+      "rolloutId" : "642da32dea3b2418c750f848",
+      "factorPackIds" : {
+        "VISUAL_INTELLIGENCE_VICTORIA" : "66d8b2f77cd4b62688efd2cf"
+      },
+      "deploymentId" : 240000004
+    }
+  ],
+  "experiments" : [
+    {
+      "treatmentId" : "28060e10-d4e5-4163-aa2b-d8bd088d5cbf",
+      "experimentId" : "6685b283afc7c17197d69eec",
+      "deploymentId" : 400000012
+    },
+    {
+      "treatmentId" : "f18344bb-554f-48ae-8449-e108a8813a55",
+      "experimentId" : "6685b5584477001000e8c6c9",
+      "deploymentId" : 400000009
+    }
+  ]
+}
+}
+
+Model: Mac16,1, BootROM 11881.121.1, proc 10:4:6 processors, 16 GB, SMC 
+Graphics: Apple M4, Apple M4, Built-In
+Display: KA270H, 1920 x 1080 (1080p FHD - Full High Definition), Main, MirrorOff, Online
+Display: Sceptre F24, 1920 x 1080 (1080p FHD - Full High Definition), MirrorOff, Online
+Memory Module: LPDDR5, Hynix
+AirPort: spairport_wireless_card_type_wifi (0x14E4, 0x4388), wl0: Mar 22 2025 02:17:00 version 23.40.30.0.41.51.180 FWID 01-989cd4a9
+IO80211_driverkit-1475.39 "IO80211_driverkit-1475.39" Apr 18 2025 20:10:40
+AirPort: 
+Bluetooth: Version (null), 0 services, 0 devices, 0 incoming serial ports
+Network Service: Wi-Fi, AirPort, en0
+USB Device: USB31Bus
+USB Device: USB3.0 Hub
+USB Device: NS1081
+USB Device: USB3.0 Hub
+USB Device: USB 10/100/1000 LAN
+USB Device: USB2.0 Hub
+USB Device: USB PnP Audio Device
+USB Device: USB2.0 Hub
+USB Device: iPhone
+USB Device: Dell KB216 Wired Keyboard
+USB Device: USB-C multiport device
+USB Device: USB31Bus
+USB Device: USB31Bus
+Thunderbolt Bus: MacBook Pro, Apple Inc.
+Thunderbolt Bus: MacBook Pro, Apple Inc.
+Thunderbolt Bus: MacBook Pro, Apple Inc.

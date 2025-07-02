@@ -102,7 +102,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         // TODO: Replace with correct PaymentScreen import if not local
         final result = await Navigator.push<bool>(
           context,
-          MaterialPageRoute(
+          MaterialPageRoute<bool>(
             builder: (context) =>
                 Container(), // PaymentScreen(tier: _selectedTier),
           ),
@@ -214,7 +214,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (mounted) {
         final isUpgrade =
             _selectedTier.index > _currentSubscription!.tier.index;
-        await showDialog(
+        await showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(
             title:
@@ -333,7 +333,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     // Get the most recent payment
     final latestPayment = _paymentHistory.first;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Request a Refund'),
@@ -349,19 +349,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             const SizedBox(height: 8),
             ListTile(
               title: Text(
-                  '\$${(latestPayment['amount'] / 100).toStringAsFixed(2)}'),
+                  '\$${((latestPayment['amount'] as int) / 100).toStringAsFixed(2)}'),
               subtitle: Text(
                   'Date: ${_formatDate((latestPayment['createdAt'] as Timestamp).toDate())}'),
               trailing: TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  Navigator.push(
+                  Navigator.push<void>(
                     context,
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (context) => RefundRequestScreen(
                         subscriptionId: _currentSubscription!.id,
-                        paymentId: latestPayment['paymentIntentId'],
-                        amount: latestPayment['amount'] / 100,
+                        paymentId: latestPayment['paymentIntentId'] as String,
+                        amount: (latestPayment['amount'] as int) / 100,
                       ),
                     ),
                   );
@@ -406,149 +406,154 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Artist Subscriptions'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.compare),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SubscriptionComparisonScreen(
-                    currentTier: _currentSubscription?.tier,
-                  ),
-                ),
-              );
-            },
-            tooltip: 'Compare Plans',
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Current subscription info
-                  if (_currentSubscription != null) _buildCurrentSubscription(),
-
-                  const SizedBox(height: 24),
-
-                  // Subscription options
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Choose a Subscription Plan',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  SubscriptionComparisonScreen(
-                                currentTier: _currentSubscription?.tier,
-                              ),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.compare_arrows),
-                        label: const Text('Compare'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Basic plan
-                  _buildPlanCard(
-                    title: core.SubscriptionTier.artistBasic.displayName,
-                    price: core.SubscriptionTier.artistBasic.priceString,
-                    features: core.SubscriptionTier.artistBasic.features,
-                    tier: core.SubscriptionTier.artistBasic,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Pro plan
-                  _buildPlanCard(
-                    title: core.SubscriptionTier.artistPro.displayName,
-                    price: core.SubscriptionTier.artistPro.priceString,
-                    features: core.SubscriptionTier.artistPro.features,
-                    tier: core.SubscriptionTier.artistPro,
-                    isRecommended: true,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Gallery plan
-                  _buildPlanCard(
-                    title: core.SubscriptionTier.gallery.displayName,
-                    price: core.SubscriptionTier.gallery.priceString,
-                    features: core.SubscriptionTier.gallery.features,
-                    tier: core.SubscriptionTier.gallery,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Auto-renewal option
-                  if (_currentSubscription != null &&
-                      _currentSubscription!.isActive)
-                    SwitchListTile(
-                      title: const Text('Auto-renew subscription'),
-                      subtitle: const Text(
-                        'Your subscription will automatically renew at the end of the billing period',
-                      ),
-                      value: _autoRenew,
-                      onChanged: (value) {
-                        setState(() {
-                          _autoRenew = value;
-                        });
-                      },
-                    ),
-
-                  const SizedBox(height: 16),
-
-                  // Subscribe button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isProcessing ? null : _subscribe,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isProcessing
-                          ? const CircularProgressIndicator()
-                          : Text(
-                              _getButtonText(),
-                              style: const TextStyle(fontSize: 16),
-                            ),
+    return core.MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: core.UniversalHeader(
+          title: 'Artist Subscriptions',
+          showLogo: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.compare),
+              onPressed: () {
+                Navigator.push<void>(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => SubscriptionComparisonScreen(
+                      currentTier: _currentSubscription?.tier,
                     ),
                   ),
-
-                  const SizedBox(height: 32),
-
-                  // Disclaimer
-                  Text(
-                    'By subscribing, you agree to our Terms of Service and Privacy Policy. '
-                    'You can cancel your subscription at any time.',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+                );
+              },
+              tooltip: 'Compare Plans',
             ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Current subscription info
+                    if (_currentSubscription != null)
+                      _buildCurrentSubscription(),
+
+                    const SizedBox(height: 24),
+
+                    // Subscription options
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Choose a Subscription Plan',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push<void>(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (context) =>
+                                    SubscriptionComparisonScreen(
+                                  currentTier: _currentSubscription?.tier,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.compare_arrows),
+                          label: const Text('Compare'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Basic plan
+                    _buildPlanCard(
+                      title: core.SubscriptionTier.artistBasic.displayName,
+                      price: core.SubscriptionTier.artistBasic.priceString,
+                      features: core.SubscriptionTier.artistBasic.features,
+                      tier: core.SubscriptionTier.artistBasic,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Pro plan
+                    _buildPlanCard(
+                      title: core.SubscriptionTier.artistPro.displayName,
+                      price: core.SubscriptionTier.artistPro.priceString,
+                      features: core.SubscriptionTier.artistPro.features,
+                      tier: core.SubscriptionTier.artistPro,
+                      isRecommended: true,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Gallery plan
+                    _buildPlanCard(
+                      title: core.SubscriptionTier.gallery.displayName,
+                      price: core.SubscriptionTier.gallery.priceString,
+                      features: core.SubscriptionTier.gallery.features,
+                      tier: core.SubscriptionTier.gallery,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Auto-renewal option
+                    if (_currentSubscription != null &&
+                        _currentSubscription!.isActive)
+                      SwitchListTile(
+                        title: const Text('Auto-renew subscription'),
+                        subtitle: const Text(
+                          'Your subscription will automatically renew at the end of the billing period',
+                        ),
+                        value: _autoRenew,
+                        onChanged: (value) {
+                          setState(() {
+                            _autoRenew = value;
+                          });
+                        },
+                      ),
+
+                    const SizedBox(height: 16),
+
+                    // Subscribe button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isProcessing ? null : _subscribe,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: _isProcessing
+                            ? const CircularProgressIndicator()
+                            : Text(
+                                _getButtonText(),
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Disclaimer
+                    Text(
+                      'By subscribing, you agree to our Terms of Service and Privacy Policy. '
+                      'You can cancel your subscription at any time.',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 
@@ -685,7 +690,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       return;
     }
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => Dialog(
         child: Container(
@@ -714,13 +719,13 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   itemBuilder: (context, index) {
                     final payment = _paymentHistory[index];
                     final amount = payment['amount'] != null
-                        ? '\$${(payment['amount'] / 100).toStringAsFixed(2)}'
+                        ? '\$${((payment['amount'] as int) / 100).toStringAsFixed(2)}'
                         : 'N/A';
                     final date = payment['createdAt'] != null
                         ? _formatDate(
                             (payment['createdAt'] as Timestamp).toDate())
                         : 'N/A';
-                    final status = payment['status'] ?? 'N/A';
+                    final status = payment['status'] as String? ?? 'N/A';
 
                     return ListTile(
                       title: Text('Payment: $amount'),

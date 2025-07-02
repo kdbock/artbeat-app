@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/index.dart';
 
 class NetworkErrorWidget extends StatelessWidget {
   final VoidCallback onRetry;
@@ -19,17 +18,15 @@ class NetworkErrorWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24.0),
         decoration: BoxDecoration(
-          color:
-              theme.colorScheme.error.withValues(alpha: 26), // 0.1 * 255 ≈ 26
+          color: const Color(
+            0x1BDD3131,
+          ), // 0.1 opacity for error color (example ARGB for Material error color)
           borderRadius: BorderRadius.circular(8.0),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-            ),
+            const Icon(Icons.error_outline, size: 64),
             const SizedBox(height: 16),
             Text(
               message,
@@ -42,10 +39,7 @@ class NetworkErrorWidget extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
           ],
         ),
       ),

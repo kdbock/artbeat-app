@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/theme/index.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class ArtWalkThemeWrapper extends StatelessWidget {
   final Widget child;
 
-  const ArtWalkThemeWrapper({
-    super.key,
-    required this.child,
-  });
+  const ArtWalkThemeWrapper({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +18,7 @@ class ArtWalkThemeWrapper extends StatelessWidget {
           tertiaryContainer: ArtbeatColors.primaryPurple, // Marker color
         ),
         // Art walk card styles
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 3,
           shadowColor: theme.shadowColor.withAlpha((0.3 * 255).round()),
           shape: RoundedRectangleBorder(
@@ -39,11 +36,11 @@ class ArtWalkThemeWrapper extends StatelessWidget {
         ),
         // Art walk metadata styles
         listTileTheme: ListTileThemeData(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
           ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           titleTextStyle: ArtbeatTypography.textTheme.titleMedium,
           subtitleTextStyle: ArtbeatTypography.textTheme.bodyMedium,
         ),

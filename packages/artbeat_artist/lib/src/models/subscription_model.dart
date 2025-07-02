@@ -54,19 +54,24 @@ class SubscriptionModel {
 
   factory SubscriptionModel.fromMap(Map<String, dynamic> map) {
     return SubscriptionModel(
-      id: map['id'] ?? '',
-      userId: map['userId'] ?? '',
-      tier: SubscriptionTier.fromLegacyName(map['tier'] ?? 'free'),
+      id: map['id'] != null ? map['id'].toString() : '',
+      userId: map['userId'] != null ? map['userId'].toString() : '',
+      tier: SubscriptionTier.fromLegacyName((map['tier'] ?? 'free').toString()),
       startDate: map['startDate'] is Timestamp
           ? (map['startDate'] as Timestamp).toDate()
           : DateTime.now(),
       endDate: map['endDate'] is Timestamp
           ? (map['endDate'] as Timestamp).toDate()
           : null,
-      stripeSubscriptionId: map['stripeSubscriptionId'],
-      stripePriceId: map['stripePriceId'],
-      stripeCustomerId: map['stripeCustomerId'],
-      autoRenew: map['autoRenew'] ?? true,
+      stripeSubscriptionId: map['stripeSubscriptionId'] != null
+          ? map['stripeSubscriptionId'].toString()
+          : null,
+      stripePriceId:
+          map['stripePriceId'] != null ? map['stripePriceId'].toString() : null,
+      stripeCustomerId: map['stripeCustomerId'] != null
+          ? map['stripeCustomerId'].toString()
+          : null,
+      autoRenew: map['autoRenew'] is bool ? map['autoRenew'] as bool : false,
       canceledAt: map['canceledAt'] is Timestamp
           ? (map['canceledAt'] as Timestamp).toDate()
           : null,

@@ -81,7 +81,7 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<ProfileViewScreen>(
                   builder: (_) => ProfileViewScreen(
                     userId: demoUserId,
                     isCurrentUser: true,
@@ -94,7 +94,7 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<EditProfileScreen>(
                   builder: (_) => EditProfileScreen(
                     userId: demoUserId,
                   ),
@@ -106,7 +106,7 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<FollowersListScreen>(
                   builder: (_) => FollowersListScreen(
                     userId: demoUserId,
                   ),
@@ -118,7 +118,7 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<FollowingListScreen>(
                   builder: (_) => FollowingListScreen(
                     userId: demoUserId,
                   ),
@@ -130,7 +130,7 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<FavoritesScreen>(
                   builder: (_) => FavoritesScreen(
                     userId: demoUserId,
                   ),

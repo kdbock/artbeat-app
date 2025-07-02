@@ -1,34 +1,28 @@
+// This is a basic Flutter widget test.
+//
+// To perform an interaction with a widget in your test, use the WidgetTester
+// utility in the flutter_test package. For example, you can send tap and scroll
+// gestures. You can also use WidgetTester to find child widgets in the widget
+// tree, read text, and verify that the values of widget properties are correct.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-/// A simple mock app for testing basic widget functionality
-class MockApp extends StatelessWidget {
-  const MockApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('ARTbeat'),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
-    );
-  }
-}
+import 'package:artbeat_core/artbeat_core.dart';
 
 void main() {
-  testWidgets('Basic app structure test', (WidgetTester tester) async {
-    // Build our mock app
-    await tester.pumpWidget(const MockApp());
+  testWidgets('App smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MaterialApp(home: LoadingScreen()));
 
-    // Verify the app title is shown
-    expect(find.text('ARTbeat'), findsOneWidget);
+    // Verify that we have a LoadingScreen
+    expect(find.byType(LoadingScreen), findsOneWidget);
 
-    // Verify the loading indicator is shown
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
   });
 }

@@ -71,7 +71,7 @@ class _GalleryAnalyticsDashboardScreenState
       final galleryProfile =
           await _subscriptionService.getArtistProfileByUserId(userId);
       if (galleryProfile == null ||
-          galleryProfile.userType.name != core.UserType.gallery.name) {
+          galleryProfile.userType != core.UserType.gallery) {
         setState(() {
           _errorMessage = 'No gallery profile found. Please create one first.';
           _isLoading = false;
@@ -232,7 +232,7 @@ class _GalleryAnalyticsDashboardScreenState
     }
 
     // Extract chart data
-    List<FlSpot> spots = [];
+    final List<FlSpot> spots = [];
     double maxY = 0;
 
     for (int i = 0; i < _revenueData.length; i++) {
@@ -297,7 +297,7 @@ class _GalleryAnalyticsDashboardScreenState
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: Theme.of(context).primaryColor.withAlpha(51),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                 ),
               ),
             ],
@@ -336,14 +336,16 @@ class _GalleryAnalyticsDashboardScreenState
                         CircleAvatar(
                           radius: 16,
                           backgroundImage: artist['profileImageUrl'] != null
-                              ? NetworkImage(artist['profileImageUrl'])
+                              ? NetworkImage(
+                                  artist['profileImageUrl'] as String)
                               : null,
                           child: artist['profileImageUrl'] == null
                               ? const Icon(Icons.person, size: 16)
                               : null,
                         ),
                         const SizedBox(width: 8),
-                        Text(artist['displayName'] ?? 'Unknown Artist'),
+                        Text(artist['displayName'] as String? ??
+                            'Unknown Artist'),
                       ],
                     ),
                   ),

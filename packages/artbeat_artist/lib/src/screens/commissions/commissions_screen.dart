@@ -171,7 +171,7 @@ class _CommissionsScreenState extends State<CommissionsScreen> {
   }
 
   void _showCommissionDetails(CommissionModel commission) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => CommissionDetailsSheet(commission: commission),
       isScrollControlled: true,

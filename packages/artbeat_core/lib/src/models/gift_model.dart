@@ -21,11 +21,11 @@ class GiftModel {
     final data = doc.data() as Map<String, dynamic>;
     return GiftModel(
       id: doc.id,
-      senderId: data['senderId'] ?? '',
-      recipientId: data['recipientId'] ?? '',
-      giftType: data['giftType'] ?? '',
-      amount: (data['amount'] ?? 0).toDouble(),
-      createdAt: data['createdAt'] ?? Timestamp.now(),
+      senderId: data['senderId'] as String? ?? '',
+      recipientId: data['recipientId'] as String? ?? '',
+      giftType: data['giftType'] as String? ?? '',
+      amount: (data['amount'] as num? ?? 0).toDouble(),
+      createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
     );
   }
 

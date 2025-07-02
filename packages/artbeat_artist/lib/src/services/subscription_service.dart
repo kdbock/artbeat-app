@@ -4,10 +4,6 @@ import 'package:flutter/foundation.dart';
 import '../models/subscription_model.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
-// Re-export models we need
-export 'package:artbeat_core/artbeat_core.dart'
-    show ArtistProfileModel, UserType;
-
 /// Service for managing artist subscriptions
 class SubscriptionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -19,8 +15,42 @@ class SubscriptionService {
   Future<SubscriptionModel?> getUserSubscription() async {
     try {
       final userId = _auth.currentUser?.uid;
-      if (userId == null) return null;
+      if (userId == null) {
+        debugPrint('❌ getUserSubscription: No authenticated user');
+        return null;
+      }
 
+      debugPrint('🔍 getUserSubscription: Querying for userId: $userId');
+
+      final snapshot = await _firestore
+          .collection('subscriptions')
+          .where('userId', isEqualTo: userId)
+          .where('isActive', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      debugPrint(
+          '📊 getUserSubscription: Found ${snapshot.docs.length} subscriptions');
+
+      if (snapshot.docs.isEmpty) {
+        debugPrint(
+            'ℹ️ getUserSubscription: No active subscription found for user $userId');
+        return null;
+      }
+
+      final subscription = SubscriptionModel.fromFirestore(snapshot.docs.first);
+      debugPrint(
+          '✅ getUserSubscription: Found subscription: ${subscription.tier}');
+      return subscription;
+    } catch (e) {
+      debugPrint('Error getting user subscription: $e');
+      return null;
+    }
+  }
+
+  /// Get current subscription for a specific user
+  Future<SubscriptionModel?> getCurrentSubscription(String userId) async {
+    try {
       final snapshot = await _firestore
           .collection('subscriptions')
           .where('userId', isEqualTo: userId)
@@ -32,7 +62,7 @@ class SubscriptionService {
 
       return SubscriptionModel.fromFirestore(snapshot.docs.first);
     } catch (e) {
-      debugPrint('Error getting user subscription: $e');
+      debugPrint('Error getting subscription for user $userId: $e');
       return null;
     }
   }
@@ -218,16 +248,29 @@ class SubscriptionService {
   /// Get artist profile by user ID
   Future<ArtistProfileModel?> getArtistProfileByUserId(String userId) async {
     try {
+      debugPrint('🔍 getArtistProfileByUserId: Querying for userId: $userId');
+
       final query = await _firestore
           .collection('artistProfiles')
           .where('userId', isEqualTo: userId)
           .limit(1)
           .get();
 
-      if (query.docs.isEmpty) return null;
-      return ArtistProfileModel.fromFirestore(query.docs.first);
+      debugPrint(
+          '📊 getArtistProfileByUserId: Found ${query.docs.length} documents');
+
+      if (query.docs.isEmpty) {
+        debugPrint(
+            '❌ getArtistProfileByUserId: No artist profile found for user $userId');
+        return null;
+      }
+
+      final profile = ArtistProfileModel.fromFirestore(query.docs.first);
+      debugPrint(
+          '✅ getArtistProfileByUserId: Successfully loaded profile for ${profile.displayName}');
+      return profile;
     } catch (e) {
-      debugPrint('Error getting artist profile: $e');
+      debugPrint('❌ Error getting artist profile: $e');
       return null;
     }
   }

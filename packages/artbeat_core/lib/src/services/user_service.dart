@@ -1,78 +1,122 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
+
 import '../models/user_model.dart';
 
-/// Service for user-related operations
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
-  factory UserService() => _instance;
-  UserService._internal();
+  final _log = Logger('UserService');
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  factory UserService() {
+    return _instance;
+  }
 
-  CollectionReference get _usersCollection => _firestore.collection('users');
+  late final FirebaseAuth _auth;
+  late final FirebaseFirestore _firestore;
+  late final FirebaseStorage _storage;
+  bool _firebaseInitialized = false;
+
+  UserService._internal() {
+    // Don't initialize Firebase instances immediately
+    // Let them be initialized lazily when first accessed
+  }
+
+  void _initializeFirebase() {
+    if (_firebaseInitialized) return;
+
+    try {
+      _auth = FirebaseAuth.instance;
+      _firestore = FirebaseFirestore.instance;
+      _storage = FirebaseStorage.instance;
+      _firebaseInitialized = true;
+    } catch (e, s) {
+      _log.severe('Error initializing Firebase in UserService', e, s);
+    }
+  }
+
+  // Lazy getters that initialize Firebase when first accessed
+  FirebaseAuth get auth {
+    _initializeFirebase();
+    return _auth;
+  }
+
+  FirebaseFirestore get firestore {
+    _initializeFirebase();
+    return _firestore;
+  }
+
+  FirebaseStorage get storage {
+    _initializeFirebase();
+    return _storage;
+  }
+
+  CollectionReference get _usersCollection => firestore.collection('users');
   CollectionReference get _followersCollection =>
-      _firestore.collection('followers');
+      firestore.collection('followers');
   CollectionReference get _followingCollection =>
-      _firestore.collection('following');
+      firestore.collection('following');
 
-  /// Get the current user
-  User? get currentUser => _auth.currentUser;
+  User? get currentUser => auth.currentUser;
+  String? get currentUserId => currentUser?.uid;
 
-  /// Check if user is logged in
-  bool get isLoggedIn => currentUser != null;
+  Stream<User?> get authStateChanges => auth.authStateChanges();
 
-  // Get current user ID
-  String? get currentUserId => _auth.currentUser?.uid;
-
-  // Create a new user profile in Firestore
   Future<void> createNewUser({
     required String uid,
     required String email,
     String? displayName,
+    String? zipCode,
   }) async {
     try {
-      final now = DateTime.now();
+      _log.info('Creating new user document for UID: $uid, email: $email');
 
-      // Create a minimal user model with required fields
-      final userModel = UserModel(
+      // Check if user document already exists
+      final userDoc = await _usersCollection.doc(uid).get();
+      if (userDoc.exists) {
+        _log.info('User document already exists for UID: $uid. Updating...');
+        // Update any missing fields
+        await _usersCollection.doc(uid).set({
+          'email': email,
+          'fullName': displayName ?? '',
+          if (zipCode != null) 'zipCode': zipCode,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        return;
+      }
+
+      final UserModel userData = UserModel(
         id: uid,
         email: email,
-        fullName: displayName ??
-            email.split(
-                '@')[0], // Use email prefix as fullName if no displayName
-        createdAt: now,
+        fullName: displayName ?? '',
+        zipCode: zipCode,
+        createdAt: DateTime.now(),
       );
 
-      // Add additional metadata in the map to avoid constructor compatibility issues
-      final userData = userModel.toMap();
-      userData.addAll({
-        'phoneNumber': '',
-        'authProvider': 'email',
-        'isOnline': false,
-        'lastSeen': now.toIso8601String(),
-        'updatedAt': now.toIso8601String(),
-      });
+      _log.info('Creating new document with data: ${userData.toMap()}');
+      await _usersCollection.doc(uid).set(userData.toMap());
+      _log.info('✅ User document successfully created.');
 
-      await _usersCollection.doc(uid).set(userData, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('Error creating user profile: $e');
-      rethrow;
+      // Verify document creation
+      final verifyDoc = await _usersCollection.doc(uid).get();
+      if (verifyDoc.exists) {
+        _log.info('✅ Document verification successful');
+      } else {
+        _log.severe(
+          '❌ Document verification failed - document not found after creation',
+        );
+      }
+    } catch (e, s) {
+      _log.severe('Error creating new user', e, s);
     }
   }
 
   // Get current user
-  Future<User?> getCurrentUser() async {
-    return _auth.currentUser;
-  }
-
-  // Get current user model
   Future<UserModel?> getCurrentUserModel() async {
     final user = currentUser;
     if (user == null) return null;
@@ -83,8 +127,8 @@ class UserService extends ChangeNotifier {
         return UserModel.fromDocumentSnapshot(doc);
       }
       return null;
-    } catch (e) {
-      debugPrint('Error getting current user model: $e');
+    } catch (e, s) {
+      _log.severe('Error getting current user model', e, s);
       return null;
     }
   }
@@ -97,8 +141,8 @@ class UserService extends ChangeNotifier {
         return UserModel.fromDocumentSnapshot(doc);
       }
       return null;
-    } catch (e) {
-      debugPrint('Error getting user by ID: $e');
+    } catch (e, s) {
+      _log.severe('Error getting user by ID', e, s);
       return null;
     }
   }
@@ -106,273 +150,204 @@ class UserService extends ChangeNotifier {
   /// Refresh current user data from Firestore
   Future<void> refreshUserData() async {
     try {
-      if (!isLoggedIn) {
-        throw Exception('No user logged in');
+      final user = currentUser;
+      if (user != null) {
+        await user.reload();
       }
-
-      final doc = await _usersCollection.doc(currentUserId).get();
-      if (!doc.exists) {
-        throw Exception('User document not found');
-      }
-
-      // Successfully refreshed data
       notifyListeners();
-    } catch (e) {
-      debugPrint('Error refreshing user data: $e');
-      rethrow;
+    } catch (e, s) {
+      _log.warning('Error refreshing user data', e, s);
     }
   }
 
   /// Get user profile data
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
-      final doc = await _firestore.collection('users').doc(userId).get();
-      return doc.data();
-    } catch (e) {
-      debugPrint('Error getting user profile: $e');
+      final doc = await _usersCollection.doc(userId).get();
+      return doc.data() as Map<String, dynamic>?;
+    } catch (e, s) {
+      _log.severe('Error getting user profile', e, s);
       return null;
     }
   }
 
   // Update display name
   Future<void> updateDisplayName(String displayName) async {
-    final user = currentUser;
-    if (user == null) throw Exception('No user logged in');
-
+    final userId = currentUserId;
+    if (userId == null) return;
     try {
-      // Update Firebase Auth profile
-      await user.updateDisplayName(displayName);
-      await user.reload();
-
-      // Update Firestore document
-      await _usersCollection.doc(user.uid).set({
+      await _usersCollection.doc(userId).set({
         'fullName': displayName,
-        'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('Error updating display name: $e');
-      rethrow;
+      await currentUser?.updateDisplayName(displayName);
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error updating display name', e, s);
     }
   }
 
-  // Remove the duplicate updateUserProfile method and keep only this one:
+  // Update user profile
   Future<void> updateUserProfile({
     String? fullName,
     String? bio,
-    String? zipCode,
-    String? profileImageUrl,
-    String? coverImageUrl,
-    bool? isVerified,
-    String? userType,
-    String? userId,
     String? location,
-    DateTime? dateOfBirth,
     String? gender,
+    String? zipCode,
   }) async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('No authenticated user found');
-    }
-
-    final targetUserId = userId ?? user.uid;
+    final userId = currentUserId;
+    if (userId == null) return;
 
     try {
-      final userData = <String, dynamic>{};
+      final Map<String, dynamic> updates = {};
+      if (fullName != null) updates['fullName'] = fullName;
+      if (bio != null) updates['bio'] = bio;
+      if (location != null) updates['location'] = location;
+      if (gender != null) updates['gender'] = gender;
+      if (zipCode != null) updates['zipCode'] = zipCode;
 
-      if (fullName != null) {
-        userData['fullName'] = fullName;
-        if (targetUserId == user.uid) {
-          await user.updateDisplayName(fullName);
-        }
-      }
-
-      if (bio != null) userData['bio'] = bio;
-      if (zipCode != null) userData['zipCode'] = zipCode;
-      if (profileImageUrl != null) {
-        userData['profileImageUrl'] = profileImageUrl;
-      }
-      if (coverImageUrl != null) userData['coverImageUrl'] = coverImageUrl;
-      if (isVerified != null) userData['isVerified'] = isVerified;
-      if (userType != null) userData['userType'] = userType;
-      if (location != null) userData['location'] = location;
-      if (gender != null) userData['gender'] = gender;
-      if (dateOfBirth != null) {
-        userData['birthDate'] = Timestamp.fromDate(dateOfBirth);
-      }
-
-      // Update Firestore document
-      await _usersCollection
-          .doc(targetUserId)
-          .set(userData, SetOptions(merge: true));
-
-      // Update local state if needed
+      await _usersCollection.doc(userId).set(updates, SetOptions(merge: true));
       notifyListeners();
-    } catch (e) {
-      print('Error updating user profile: $e');
-      rethrow;
+    } catch (e, s) {
+      _log.severe('Error updating user profile', e, s);
+    }
+  }
+
+  // Update user ZIP code specifically
+  Future<void> updateUserZipCode(String zipCode) async {
+    final userId = currentUserId;
+    if (userId == null) return;
+
+    try {
+      await _usersCollection.doc(userId).set({
+        'zipCode': zipCode,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      notifyListeners();
+      debugPrint('✅ Updated user ZIP code to: $zipCode');
+    } catch (e, s) {
+      _log.severe('Error updating user ZIP code', e, s);
     }
   }
 
   // Upload and update profile photo
   Future<void> uploadAndUpdateProfilePhoto(File imageFile) async {
-    final user = currentUser;
-    if (user == null) {
-      debugPrint('❌ No user logged in at upload time!');
-      throw Exception('No user logged in');
+    final userId = currentUserId;
+    if (userId == null) {
+      debugPrint('❌ uploadAndUpdateProfilePhoto: No current user ID');
+      return;
     }
-    debugPrint('👤 Profile upload: currentUser.uid = ${user.uid}');
+
     try {
-      // Create directory structure if it doesn't exist
-      final fileName =
-          '${user.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final ref = _storage.ref().child('profile_images/${user.uid}/$fileName');
       debugPrint(
-          '⬆️ Uploading profile photo to: profile_images/${user.uid}/$fileName');
-      final uploadTask = ref.putFile(imageFile);
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        final progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        debugPrint(
-            '⬆️ Profile photo upload progress: ${progress.toStringAsFixed(2)}%');
-      });
-      await uploadTask;
-      final downloadUrl = await ref.getDownloadURL();
-      debugPrint('✅ Profile photo uploaded successfully. URL: $downloadUrl');
-      await _usersCollection.doc(user.uid).set({
-        'profileImageUrl': downloadUrl,
-        'updatedAt': FieldValue.serverTimestamp(),
+        '📤 uploadAndUpdateProfilePhoto: Starting upload for user $userId',
+      );
+
+      final ref = storage.ref().child('profile_images/$userId/profile.jpg');
+      debugPrint(
+        '📂 uploadAndUpdateProfilePhoto: Storage path: profile_images/$userId/profile.jpg',
+      );
+
+      await ref.putFile(imageFile);
+      debugPrint('✅ uploadAndUpdateProfilePhoto: File uploaded to storage');
+
+      final url = await ref.getDownloadURL();
+      debugPrint('🔗 uploadAndUpdateProfilePhoto: Download URL: $url');
+
+      await _usersCollection.doc(userId).set({
+        'profileImageUrl': url,
       }, SetOptions(merge: true));
-      await user.updatePhotoURL(downloadUrl);
-    } catch (e) {
-      debugPrint('❌ Error uploading profile photo: $e');
-      rethrow;
+      debugPrint('✅ uploadAndUpdateProfilePhoto: Firestore document updated');
+
+      await currentUser?.updatePhotoURL(url);
+      debugPrint(
+        '✅ uploadAndUpdateProfilePhoto: Firebase Auth profile updated',
+      );
+
+      notifyListeners();
+      debugPrint('✅ uploadAndUpdateProfilePhoto: Listeners notified');
+    } catch (e, s) {
+      debugPrint('❌ uploadAndUpdateProfilePhoto: Error occurred: $e');
+      _log.severe('Error uploading profile photo', e, s);
     }
   }
 
   // Upload and update cover photo
   Future<void> uploadAndUpdateCoverPhoto(File imageFile) async {
-    final user = currentUser;
-    if (user == null) {
-      debugPrint('❌ No user logged in at upload time!');
-      throw Exception('No user logged in');
-    }
-    debugPrint('👤 Cover upload: currentUser.uid = ${user.uid}');
+    final userId = currentUserId;
+    if (userId == null) return;
+
     try {
-      if (!imageFile.existsSync()) {
-        debugPrint('❌ Cover image file does not exist: ${imageFile.path}');
-        throw Exception('Cover image file does not exist');
-      }
-      final fileSize = await imageFile.length();
-      debugPrint('Cover image file size: $fileSize bytes');
-      if (fileSize == 0) {
-        debugPrint('❌ Cover image file is empty');
-        throw Exception('Cover image file is empty');
-      }
-      final fileName =
-          '${user.uid}_cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final ref = _storage.ref().child('cover_images/${user.uid}/$fileName');
-      debugPrint(
-          '⬆️ Attempting to upload cover photo to: cover_images/${user.uid}/$fileName');
-      final uploadTask = ref.putFile(imageFile);
-      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-        final progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        debugPrint(
-            '⬆️ Cover photo upload progress: ${progress.toStringAsFixed(2)}%');
-      });
-      await uploadTask;
-      final downloadUrl = await ref.getDownloadURL();
-      debugPrint('✅ Cover photo uploaded successfully. URL: $downloadUrl');
-      await _usersCollection.doc(user.uid).set({
-        'coverImageUrl': downloadUrl,
-        'updatedAt': FieldValue.serverTimestamp(),
+      final ref = storage.ref().child('cover_photos/$userId/cover.jpg');
+      await ref.putFile(imageFile);
+      final url = await ref.getDownloadURL();
+      await _usersCollection.doc(userId).set({
+        'coverImageUrl': url,
       }, SetOptions(merge: true));
-    } catch (e) {
-      debugPrint('❌ Error uploading cover photo: $e');
-      rethrow;
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error uploading cover photo', e, s);
     }
   }
 
   /// Follow another user
   Future<void> followUser(String targetUserId) async {
+    final userId = currentUserId;
+    if (userId == null || userId == targetUserId) return;
+
     try {
-      final user = currentUser;
-      if (user == null) throw Exception('Must be logged in to follow users');
-      if (user.uid == targetUserId) throw Exception('Cannot follow yourself');
-
-      // Get the target user to ensure they exist
-      final targetUserDoc = await _usersCollection.doc(targetUserId).get();
-      if (!targetUserDoc.exists) throw Exception('User not found');
-
-      // Start a batch write
-      final batch = _firestore.batch();
-
-      // Add to following collection
+      final batch = firestore.batch();
+      // Add to following list of current user
       batch.set(
-        _followingCollection.doc('${user.uid}_$targetUserId'),
-        {
-          'followerId': user.uid,
-          'followingId': targetUserId,
-          'createdAt': FieldValue.serverTimestamp(),
-        },
+        _followingCollection.doc(userId).collection('users').doc(targetUserId),
+        {'timestamp': FieldValue.serverTimestamp()},
       );
-
-      // Add to followers collection
+      // Add to followers list of target user
       batch.set(
-        _followersCollection.doc('${targetUserId}_${user.uid}'),
-        {
-          'followerId': user.uid,
-          'followingId': targetUserId,
-          'createdAt': FieldValue.serverTimestamp(),
-        },
+        _followersCollection.doc(targetUserId).collection('users').doc(userId),
+        {'timestamp': FieldValue.serverTimestamp()},
       );
-
-      // Increment counts
-      batch.update(_usersCollection.doc(user.uid), {
+      // Increment following count for current user
+      batch.update(_usersCollection.doc(userId), {
         'followingCount': FieldValue.increment(1),
       });
+      // Increment followers count for target user
       batch.update(_usersCollection.doc(targetUserId), {
         'followersCount': FieldValue.increment(1),
       });
-
       await batch.commit();
-    } catch (e) {
-      debugPrint('Error following user: $e');
-      rethrow;
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error following user', e, s);
     }
   }
 
   /// Unfollow a user
   Future<void> unfollowUser(String targetUserId) async {
+    final userId = currentUserId;
+    if (userId == null) return;
+
     try {
-      final user = currentUser;
-      if (user == null) throw Exception('Must be logged in to unfollow users');
-
-      // Start a batch write
-      final batch = _firestore.batch();
-
-      // Remove from following collection
-      batch.delete(_followingCollection.doc('${user.uid}_$targetUserId'));
-
-      // Remove from followers collection
-      batch.delete(_followersCollection.doc('${targetUserId}_${user.uid}'));
-
-      // Decrement counts if the documents existed
-      final followingDoc =
-          await _followingCollection.doc('${user.uid}_$targetUserId').get();
-      if (followingDoc.exists) {
-        batch.update(_usersCollection.doc(user.uid), {
-          'followingCount': FieldValue.increment(-1),
-        });
-        batch.update(_usersCollection.doc(targetUserId), {
-          'followersCount': FieldValue.increment(-1),
-        });
-      }
-
+      final batch = firestore.batch();
+      // Remove from following list of current user
+      batch.delete(
+        _followingCollection.doc(userId).collection('users').doc(targetUserId),
+      );
+      // Remove from followers list of target user
+      batch.delete(
+        _followersCollection.doc(targetUserId).collection('users').doc(userId),
+      );
+      // Decrement following count for current user
+      batch.update(_usersCollection.doc(userId), {
+        'followingCount': FieldValue.increment(-1),
+      });
+      // Decrement followers count for target user
+      batch.update(_usersCollection.doc(targetUserId), {
+        'followersCount': FieldValue.increment(-1),
+      });
       await batch.commit();
-    } catch (e) {
-      debugPrint('Error unfollowing user: $e');
-      rethrow;
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error unfollowing user', e, s);
     }
   }
 
@@ -380,23 +355,19 @@ class UserService extends ChangeNotifier {
   Future<List<UserModel>> getFollowers(String userId) async {
     try {
       final snapshot = await _followersCollection
-          .where('followingId', isEqualTo: userId)
+          .doc(userId)
+          .collection('users')
           .get();
-
-      final List<UserModel> followers = [];
-      for (final doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final followerId = data['followerId'] as String;
-        final followerDoc = await _usersCollection.doc(followerId).get();
-
-        if (followerDoc.exists) {
-          followers.add(UserModel.fromDocumentSnapshot(followerDoc));
-        }
-      }
-
-      return followers;
-    } catch (e) {
-      print('Error getting followers: $e');
+      final userIds = snapshot.docs.map((doc) => doc.id).toList();
+      if (userIds.isEmpty) return [];
+      final usersSnapshot = await _usersCollection
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+      return usersSnapshot.docs
+          .map((doc) => UserModel.fromDocumentSnapshot(doc))
+          .toList();
+    } catch (e, s) {
+      _log.severe('Error getting followers', e, s);
       return [];
     }
   }
@@ -405,96 +376,90 @@ class UserService extends ChangeNotifier {
   Future<List<UserModel>> getFollowing(String userId) async {
     try {
       final snapshot = await _followingCollection
-          .where('followerId', isEqualTo: userId)
+          .doc(userId)
+          .collection('users')
           .get();
-
-      final List<UserModel> following = [];
-      for (final doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        final followingId = data['followingId'] as String;
-        final followingDoc = await _usersCollection.doc(followingId).get();
-
-        if (followingDoc.exists) {
-          following.add(UserModel.fromDocumentSnapshot(followingDoc));
-        }
-      }
-
-      return following;
-    } catch (e) {
-      print('Error getting following: $e');
+      final userIds = snapshot.docs.map((doc) => doc.id).toList();
+      if (userIds.isEmpty) return [];
+      final usersSnapshot = await _usersCollection
+          .where(FieldPath.documentId, whereIn: userIds)
+          .get();
+      return usersSnapshot.docs
+          .map((doc) => UserModel.fromDocumentSnapshot(doc))
+          .toList();
+    } catch (e, s) {
+      _log.severe('Error getting following', e, s);
       return [];
     }
   }
 
   /// Check if the current user is following another user
   Future<bool> isFollowing(String targetUserId) async {
-    try {
-      final user = currentUser;
-      if (user == null) return false;
+    final userId = currentUserId;
+    if (userId == null) return false;
 
-      final doc =
-          await _followingCollection.doc('${user.uid}_$targetUserId').get();
+    try {
+      final doc = await _followingCollection
+          .doc(userId)
+          .collection('users')
+          .doc(targetUserId)
+          .get();
       return doc.exists;
-    } catch (e) {
-      debugPrint('Error checking follow status: $e');
+    } catch (e, s) {
+      _log.severe('Error checking if following', e, s);
       return false;
     }
   }
 
   // Search users
   Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
     try {
       final snapshot = await _usersCollection
           .where('fullName', isGreaterThanOrEqualTo: query)
-          .where('fullName', isLessThan: '$query\uf8ff')
-          .limit(20)
+          .where('fullName', isLessThanOrEqualTo: '$query\uf8ff')
+          .limit(10)
           .get();
-
       return snapshot.docs
           .map((doc) => UserModel.fromDocumentSnapshot(doc))
           .toList();
-    } catch (e) {
-      print('Error searching users: $e');
+    } catch (e, s) {
+      _log.severe('Error searching users', e, s);
       return [];
     }
   }
 
   // Get suggested users
   Future<List<UserModel>> getSuggestedUsers() async {
-    final user = currentUser;
-    if (user == null) return [];
-
     try {
-      final snapshot = await _usersCollection
-          .where('id', isNotEqualTo: user.uid)
-          .orderBy('id')
-          .limit(10)
-          .get();
-
+      // This is a simple suggestion logic, can be improved
+      final snapshot = await _usersCollection.limit(10).get();
       return snapshot.docs
           .map((doc) => UserModel.fromDocumentSnapshot(doc))
           .toList();
-    } catch (e) {
-      print('Error getting suggested users: $e');
+    } catch (e, s) {
+      _log.severe('Error getting suggested users', e, s);
       return [];
     }
   }
 
   // Get user favorites
   Future<List<Map<String, dynamic>>> getUserFavorites() async {
-    final user = currentUser;
-    if (user == null) return [];
-
+    final userId = currentUserId;
+    if (userId == null) return [];
     try {
-      final snapshot = await _firestore
+      final snapshot = await _usersCollection
+          .doc(userId)
           .collection('favorites')
-          .where('userId', isEqualTo: user.uid)
-          .orderBy('createdAt', descending: true)
+          .orderBy('timestamp', descending: true)
           .get();
-
-      return snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
-    } catch (e) {
-      print('Error getting user favorites: $e');
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    } catch (e, s) {
+      _log.severe('Error getting user favorites', e, s);
       return [];
     }
   }
@@ -503,90 +468,89 @@ class UserService extends ChangeNotifier {
   Future<void> addToFavorites({
     required String itemId,
     required String itemType,
-    String? title,
-    String? description,
     String? imageUrl,
   }) async {
-    final user = currentUser;
-    if (user == null) throw Exception('No user logged in');
-
+    final userId = currentUserId;
+    if (userId == null) return;
     try {
-      await _firestore.collection('favorites').add({
-        'userId': user.uid,
+      await _usersCollection.doc(userId).collection('favorites').add({
         'itemId': itemId,
         'itemType': itemType,
-        'title': title,
-        'description': description,
         'imageUrl': imageUrl,
-        'createdAt': FieldValue.serverTimestamp(),
+        'timestamp': FieldValue.serverTimestamp(),
       });
-    } catch (e) {
-      print('Error adding to favorites: $e');
-      rethrow;
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error adding to favorites', e, s);
     }
   }
 
   // Remove from favorites
   Future<void> removeFromFavorites(String favoriteId) async {
+    final userId = currentUserId;
+    if (userId == null) return;
     try {
-      await _firestore.collection('favorites').doc(favoriteId).delete();
-    } catch (e) {
-      print('Error removing from favorites: $e');
-      rethrow;
+      await _usersCollection
+          .doc(userId)
+          .collection('favorites')
+          .doc(favoriteId)
+          .delete();
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error removing from favorites', e, s);
     }
   }
 
   // Get favorite by ID
   Future<Map<String, dynamic>?> getFavoriteById(String favoriteId) async {
+    final userId = currentUserId;
+    if (userId == null) return null;
     try {
-      final doc =
-          await _firestore.collection('favorites').doc(favoriteId).get();
+      final doc = await _usersCollection
+          .doc(userId)
+          .collection('favorites')
+          .doc(favoriteId)
+          .get();
       if (doc.exists) {
-        return {'id': doc.id, ...doc.data()!};
+        final data = doc.data();
+        data?['id'] = doc.id;
+        return data;
       }
       return null;
-    } catch (e) {
-      print('Error getting favorite by ID: $e');
+    } catch (e, s) {
+      _log.severe('Error getting favorite by ID', e, s);
       return null;
     }
   }
 
   // Check if item is favorited
   Future<bool> isFavorited(String itemId, String itemType) async {
-    final user = currentUser;
-    if (user == null) return false;
-
+    final userId = currentUserId;
+    if (userId == null) return false;
     try {
-      final snapshot = await _firestore
+      final snapshot = await _usersCollection
+          .doc(userId)
           .collection('favorites')
-          .where('userId', isEqualTo: user.uid)
           .where('itemId', isEqualTo: itemId)
           .where('itemType', isEqualTo: itemType)
           .limit(1)
           .get();
-
       return snapshot.docs.isNotEmpty;
-    } catch (e) {
-      print('Error checking favorite status: $e');
+    } catch (e, s) {
+      _log.severe('Error checking if favorited', e, s);
       return false;
     }
   }
 
-  void notifyListenersOnChange() {
-    notifyListeners();
-  }
-
   // Example: Update user profile with a map of updates and notify listeners
   Future<void> updateUserProfileWithMap(Map<String, dynamic> updates) async {
+    final userId = currentUserId;
+    if (userId == null) return;
     try {
-      final userId = currentUserId;
-      if (userId == null) throw Exception('User not authenticated');
-
       await _usersCollection.doc(userId).update(updates);
       notifyListeners();
-    } catch (e) {
-      print('Error updating user profile: $e');
-      rethrow;
+    } catch (e, s) {
+      _log.severe('Error updating user profile with map', e, s);
     }
   }
 }

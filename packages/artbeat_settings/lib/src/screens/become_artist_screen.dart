@@ -5,17 +5,12 @@ import 'package:artbeat_artist/artbeat_artist.dart';
 class BecomeArtistScreen extends StatelessWidget {
   final UserModel user;
 
-  const BecomeArtistScreen({
-    super.key,
-    required this.user,
-  });
+  const BecomeArtistScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Become an Artist'),
-      ),
+      appBar: AppBar(title: const Text('Become an Artist')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -65,7 +60,7 @@ class BecomeArtistScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
+                    MaterialPageRoute<ArtistOnboardingScreen>(
                       builder: (context) => ArtistOnboardingScreen(
                         user: user,
                         onComplete: () {
@@ -99,20 +94,13 @@ class BecomeArtistScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Theme.of(context).primaryColor,
-            ),
+            Icon(icon, size: 32, color: Theme.of(context).primaryColor),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 4),
                   Text(
                     description,

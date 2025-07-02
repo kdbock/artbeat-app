@@ -1,0 +1,3 @@
+class NavigationService {
+  // ...existing code...
+}

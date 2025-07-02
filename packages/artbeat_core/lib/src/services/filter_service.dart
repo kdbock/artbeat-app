@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' show ArtworkModel;
-import 'package:artbeat_artist/artbeat_artist.dart' show ArtistProfileModel;
 import 'package:artbeat_core/artbeat_core.dart';
+
 import '../models/filter_types.dart';
-import '../models/user_type.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 
 /// Service for handling all filtering operations
@@ -12,19 +11,26 @@ class FilterService {
 
   /// Filter artists based on parameters
   Future<List<ArtistProfileModel>> filterArtists(
-      FilterParameters params) async {
+    FilterParameters params,
+  ) async {
     try {
-      Query query = _firestore.collection('artistProfiles');
+      Query<Map<String, dynamic>> query = _firestore.collection(
+        'artistProfiles',
+      );
 
       // Apply base filters
       if (params.artistTypes?.isNotEmpty ?? false) {
-        query = query.where('artistType',
-            whereIn: params.artistTypes!.map((t) => t.name).toList());
+        query = query.where(
+          'artistType',
+          whereIn: params.artistTypes!.map((t) => t.name).toList(),
+        );
       }
 
       if (params.artMediums?.isNotEmpty ?? false) {
-        query = query.where('mediums',
-            arrayContainsAny: params.artMediums!.map((m) => m.name).toList());
+        query = query.where(
+          'mediums',
+          arrayContainsAny: params.artMediums!.map((m) => m.name).toList(),
+        );
       }
 
       if (params.locations?.isNotEmpty ?? false) {
@@ -52,29 +58,7 @@ class FilterService {
 
       final snapshot = await query.get();
       List<ArtistProfileModel> artists = snapshot.docs.map((doc) {
-        final userType = UserType.fromString(
-            doc.get('userType') as String? ?? UserType.artist.name);
-
-        return ArtistProfileModel(
-          id: doc.id,
-          userId: doc.get('userId'),
-          displayName: doc.get('displayName'),
-          bio: doc.get('bio'),
-          userType: userType,
-          location: doc.get('location'),
-          mediums: List<String>.from(doc.get('mediums') ?? []),
-          styles: List<String>.from(doc.get('styles') ?? []),
-          profileImageUrl: doc.get('profileImageUrl'),
-          coverImageUrl: doc.get('coverImageUrl'),
-          socialLinks: Map<String, String>.from(doc.get('socialLinks') ?? {}),
-          isVerified: doc.get('isVerified') ?? false,
-          isFeatured: doc.get('isFeatured') ?? false,
-          subscriptionTier: SubscriptionTier.values.firstWhere(
-              (t) => t.name == (doc.get('subscriptionTier') ?? 'artistBasic'),
-              orElse: () => SubscriptionTier.artistBasic),
-          createdAt: (doc.get('createdAt') as Timestamp).toDate(),
-          updatedAt: (doc.get('updatedAt') as Timestamp).toDate(),
-        );
+        return ArtistProfileModel.fromFirestore(doc);
       }).toList();
 
       // Apply text search filter in memory
@@ -84,9 +68,11 @@ class FilterService {
           return artist.displayName.toLowerCase().contains(searchLower) ||
               (artist.bio?.toLowerCase() ?? '').contains(searchLower) ||
               artist.mediums.any(
-                  (medium) => medium.toLowerCase().contains(searchLower)) ||
-              artist.styles
-                  .any((style) => style.toLowerCase().contains(searchLower));
+                (medium) => medium.toLowerCase().contains(searchLower),
+              ) ||
+              artist.styles.any(
+                (style) => style.toLowerCase().contains(searchLower),
+              );
         }).toList();
       }
 
@@ -104,8 +90,10 @@ class FilterService {
 
       // Apply base filters
       if (params.artMediums?.isNotEmpty ?? false) {
-        query = query.where('medium',
-            whereIn: params.artMediums!.map((m) => m.name).toList());
+        query = query.where(
+          'medium',
+          whereIn: params.artMediums!.map((m) => m.name).toList(),
+        );
       }
 
       if (params.locations?.isNotEmpty ?? false) {
@@ -114,12 +102,16 @@ class FilterService {
 
       // Apply date range filters if specified
       if (params.startDate != null) {
-        query = query.where('createdAt',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(params.startDate!));
+        query = query.where(
+          'createdAt',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(params.startDate!),
+        );
       }
       if (params.endDate != null) {
-        query = query.where('createdAt',
-            isLessThanOrEqualTo: Timestamp.fromDate(params.endDate!));
+        query = query.where(
+          'createdAt',
+          isLessThanOrEqualTo: Timestamp.fromDate(params.endDate!),
+        );
       }
 
       // Apply sorting
@@ -143,27 +135,30 @@ class FilterService {
 
       final snapshot = await query.get();
       List<ArtworkModel> artworks = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
         return ArtworkModel(
           id: doc.id,
-          userId: doc.get('userId'),
-          artistProfileId: doc.get('artistProfileId'),
-          title: doc.get('title'),
-          description: doc.get('description'),
-          imageUrl: doc.get('imageUrl'),
-          medium: doc.get('medium'),
-          styles: List<String>.from(doc.get('styles')),
-          dimensions: doc.get('dimensions'),
-          materials: doc.get('materials'),
-          location: doc.get('location'),
-          tags: doc.get('tags') != null
-              ? List<String>.from(doc.get('tags'))
+          userId: data['userId'] as String? ?? '',
+          artistProfileId: data['artistProfileId'] as String? ?? '',
+          title: data['title'] as String? ?? '',
+          description: data['description'] as String? ?? '',
+          imageUrl: data['imageUrl'] as String? ?? '',
+          medium: data['medium'] as String? ?? '',
+          styles: List<String>.from(data['styles'] as List<dynamic>? ?? []),
+          dimensions: data['dimensions'] as String?,
+          materials: data['materials'] as String?,
+          location: data['location'] != null
+              ? (data['location'] as GeoPoint).toString()
               : null,
-          price: doc.get('price')?.toDouble(),
-          isForSale: doc.get('isForSale') ?? false,
-          isSold: doc.get('isSold') ?? false,
-          yearCreated: doc.get('yearCreated'),
-          createdAt: (doc.get('createdAt') as Timestamp).toDate(),
-          updatedAt: (doc.get('updatedAt') as Timestamp).toDate(),
+          tags: (data['tags'] as List<dynamic>?)?.cast<String>(),
+          price: (data['price'] as num?)?.toDouble(),
+          isForSale: data['isForSale'] as bool? ?? false,
+          isSold: data['isSold'] as bool? ?? false,
+          yearCreated: data['yearCreated'] as int?,
+          createdAt:
+              (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          updatedAt:
+              (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         );
       }).toList();
 
@@ -171,20 +166,24 @@ class FilterService {
       if (params.searchQuery?.isNotEmpty ?? false) {
         final searchLower = params.searchQuery!.toLowerCase();
         artworks = artworks.where((artwork) {
-          return artwork.title.toLowerCase().contains(searchLower) ||
-              artwork.description.toLowerCase().contains(searchLower) ||
-              artwork.medium.toLowerCase().contains(searchLower) ||
-              (artwork.tags
-                      ?.any((tag) => tag.toLowerCase().contains(searchLower)) ??
-                  false);
+          final title = artwork.title.toLowerCase();
+          final description = artwork.description.toLowerCase();
+          final medium = artwork.medium.toLowerCase();
+          final tags =
+              artwork.tags?.map((tag) => tag.toLowerCase()).toList() ?? [];
+
+          return title.contains(searchLower) ||
+              description.contains(searchLower) ||
+              medium.contains(searchLower) ||
+              tags.any((tag) => tag.contains(searchLower));
         }).toList();
       }
 
       // Apply tag filters in memory
       if (params.tags?.isNotEmpty ?? false) {
         artworks = artworks.where((artwork) {
-          return artwork.tags?.any((tag) => params.tags!.contains(tag)) ??
-              false;
+          final artworkTags = artwork.tags ?? [];
+          return artworkTags.any((tag) => params.tags!.contains(tag));
         }).toList();
       }
 
@@ -207,12 +206,16 @@ class FilterService {
 
       // Apply date range filters
       if (params.startDate != null) {
-        query = query.where('startDate',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(params.startDate!));
+        query = query.where(
+          'startDate',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(params.startDate!),
+        );
       }
       if (params.endDate != null) {
-        query = query.where('endDate',
-            isLessThanOrEqualTo: Timestamp.fromDate(params.endDate!));
+        query = query.where(
+          'endDate',
+          isLessThanOrEqualTo: Timestamp.fromDate(params.endDate!),
+        );
       }
 
       // Apply sorting
@@ -233,24 +236,9 @@ class FilterService {
       }
 
       final snapshot = await query.get();
-      List<EventModel> events = snapshot.docs.map((doc) {
-        return EventModel(
-          id: doc.id,
-          title: doc.get('title'),
-          description: doc.get('description'),
-          startDate: (doc.get('startDate') as Timestamp).toDate(),
-          endDate: doc.get('endDate') != null
-              ? (doc.get('endDate') as Timestamp).toDate()
-              : null,
-          location: doc.get('location'),
-          imageUrl: doc.get('imageUrl'),
-          artistId: doc.get('artistId'),
-          isPublic: doc.get('isPublic') ?? true,
-          attendeeIds: List<String>.from(doc.get('attendeeIds') ?? []),
-          createdAt: (doc.get('createdAt') as Timestamp).toDate(),
-          updatedAt: (doc.get('updatedAt') as Timestamp).toDate(),
-        );
-      }).toList();
+      List<EventModel> events = snapshot.docs
+          .map((doc) => EventModel.fromFirestore(doc))
+          .toList();
 
       // Apply text search filter in memory
       if (params.searchQuery?.isNotEmpty ?? false) {

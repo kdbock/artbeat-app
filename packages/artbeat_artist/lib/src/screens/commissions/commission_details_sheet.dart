@@ -49,7 +49,7 @@ class CommissionDetailsSheet extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      _buildStatusChip(commission.status),
+                      _buildStatusIndicator(commission.status),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -66,8 +66,9 @@ class CommissionDetailsSheet extends StatelessWidget {
                       title: const Text('Additional Terms'),
                       children: commission.terms!.entries
                           .map((e) => ListTile(
-                                title: Text(e.key),
-                                subtitle: Text(e.value.toString()),
+                                title: Text(e.key as String? ?? ''),
+                                subtitle: Text(
+                                    (e.value as String?)?.toString() ?? ''),
                               ))
                           .toList(),
                     ),
@@ -87,22 +88,28 @@ class CommissionDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(CommissionStatus status) {
-    final color = switch (status) {
+  Widget _buildStatusIndicator(CommissionStatus status) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: _getStatusColor(status).withAlpha(30),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        _formatStatus(status),
+        style: TextStyle(color: _getStatusColor(status)),
+      ),
+    );
+  }
+
+  Color _getStatusColor(CommissionStatus status) {
+    return switch (status) {
       CommissionStatus.pending => Colors.orange,
       CommissionStatus.active => Colors.green,
       CommissionStatus.completed => Colors.blue,
       CommissionStatus.paid => Colors.green,
       CommissionStatus.cancelled => Colors.red,
     };
-
-    return Chip(
-      label: Text(
-        _formatStatus(status),
-        style: TextStyle(color: color.shade50),
-      ),
-      backgroundColor: color.withOpacity(0.2),
-    );
   }
 
   Widget _buildTransactionHistory(List<CommissionTransaction> transactions) {
@@ -174,7 +181,7 @@ class CommissionDetailsSheet extends StatelessWidget {
 
   void _handleAcceptCommission(BuildContext context) {
     // TODO: Implement commission acceptance
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Accept Commission?'),
@@ -200,7 +207,7 @@ class CommissionDetailsSheet extends StatelessWidget {
 
   void _handleMarkComplete(BuildContext context) {
     // TODO: Implement marking commission as complete
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Mark Complete?'),

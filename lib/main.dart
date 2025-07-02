@@ -1,79 +1,48 @@
-import 'dart:math' show min;
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
-import 'package:flutter/foundation.dart';
+// Copyright (c) 2025 ArtBeat. All rights reserved.
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'firebase_options.dart';
+import 'package:flutter/foundation.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'app.dart';
 
-// Global key to update loading status
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() async {
   try {
-    // Ensure Flutter is initialized
-    WidgetsFlutterBinding.ensureInitialized();
+    await ConfigService.instance.initialize();
 
-    debugPrint('📱 Configuring system UI...');
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    // Check if Firebase is already initialized
+    if (Firebase.apps.isEmpty) {
+      // IMPORTANT: Configure App Check BEFORE Firebase initialization
+      await SecureFirebaseConfig.configureAppCheck(
+        teamId: 'H49R32NPY6',
+        debug: kDebugMode,
+      );
 
-    debugPrint('🔥 Initializing Firebase Core...');
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    debugPrint('🔒 Initializing App Check...');
-    try {
+      // Initialize Firebase after App Check is configured
+      await SecureFirebaseConfig.initializeFirebase();
+    } else {
       if (kDebugMode) {
-        debugPrint('🛠️ Debug mode detected, using debug providers');
-        await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.debug,
-          appleProvider: AppleProvider.debug,
+        print(
+          '🔥 Firebase already initialized, skipping SecureFirebaseConfig initialization',
         );
-
-        // Set up debug token monitoring
-        FirebaseAppCheck.instance.onTokenChange.listen(
-          (token) {
-            if (token != null) {
-              final previewLength = min(10, token.length);
-              debugPrint(
-                  '🔑 Debug token received: ${token.substring(0, previewLength)}...');
-            }
-          },
-          onError: (e) => debugPrint('⚠️ Debug token error: $e'),
-        );
-
-        debugPrint('✅ App Check initialized in debug mode');
-      } else {
-        await FirebaseAppCheck.instance.activate(
-          androidProvider: AndroidProvider.playIntegrity,
-          appleProvider: AppleProvider.deviceCheck,
-        );
-        debugPrint('✅ App Check initialized in production mode');
-      }
-    } catch (e) {
-      debugPrint('⚠️ App Check initialization failed: $e');
-      if (kDebugMode) {
-        debugPrint('''💡 Debug mode troubleshooting steps:
-1. Verify debug token in Firebase Console and build.gradle.kts:
-   - Go to Firebase Console -> App Check -> Apps
-   - Debug token is set in build.gradle.kts
-2. Check app package name matches Firebase registration
-3. Ensure Firebase project is properly configured
-''');
-        debugPrint('Continuing without App Check in debug mode...');
-      } else {
-        rethrow;
       }
     }
 
-    debugPrint('✅ All services initialized successfully');
-    runApp(MyApp());
-  } catch (e, stack) {
-    debugPrint('❌ Fatal error during initialization: $e');
-    debugPrint('Stack trace: $stack');
-    runApp(const ErrorApp());
+    if (kDebugMode) {
+      print('✅ Firebase initialization completed successfully');
+
+      // Print Firebase status for debugging
+      final status = SecureFirebaseConfig.getStatus();
+      print('🔍 Firebase Status: $status');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Firebase initialization failed: $e');
+    } else {
+      rethrow;
+    }
   }
+
+  runApp(MyApp());
 }

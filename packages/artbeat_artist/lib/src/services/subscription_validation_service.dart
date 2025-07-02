@@ -1,0 +1,3 @@
+class SubscriptionValidationService {
+  // ...existing code...
+}

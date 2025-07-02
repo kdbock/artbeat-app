@@ -12,52 +12,46 @@ class SubscriptionComparisonScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Compare Plans'),
-      ),
-      body: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildComparisonColumn(
-                  context: context,
-                  tier: core.SubscriptionTier.artistBasic,
-                  title: 'Artist Basic',
-                  price: 'Free',
-                  isCurrent: currentTier == core.SubscriptionTier.artistBasic,
-                ),
-                _buildComparisonColumn(
-                  context: context,
-                  tier: core.SubscriptionTier.artistPro,
-                  title: 'Artist Pro',
-                  price: '\$9.99/month',
-                  isRecommended: true,
-                  isCurrent: currentTier == core.SubscriptionTier.artistPro,
-                ),
-                _buildComparisonColumn(
-                  context: context,
-                  tier: core.SubscriptionTier.gallery,
-                  title: 'Gallery',
-                  price: '\$49.99/month',
-                  isCurrent: currentTier == core.SubscriptionTier.gallery,
-                ),
-              ],
-            ),
-          ),
+    return core.MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: const core.UniversalHeader(
+          title: 'Compare Plans',
+          showLogo: false,
         ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'All plans include community features, profile customization, and basic analytics.',
-            style: TextStyle(color: Colors.grey[700]),
-            textAlign: TextAlign.center,
+        body: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildComparisonColumn(
+                    context: context,
+                    tier: core.SubscriptionTier.artistBasic,
+                    title: 'Artist Basic',
+                    price: 'Free',
+                    isCurrent: currentTier == core.SubscriptionTier.artistBasic,
+                  ),
+                  _buildComparisonColumn(
+                    context: context,
+                    tier: core.SubscriptionTier.artistPro,
+                    title: 'Artist Pro',
+                    price: '\$9.99/month',
+                    isRecommended: true,
+                    isCurrent: currentTier == core.SubscriptionTier.artistPro,
+                  ),
+                  _buildComparisonColumn(
+                    context: context,
+                    tier: core.SubscriptionTier.gallery,
+                    title: 'Gallery',
+                    price: '\$49.99/month',
+                    isCurrent: currentTier == core.SubscriptionTier.gallery,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

@@ -6,7 +6,8 @@ service firebase.storage {
       return request.resource != null && (
         request.resource.metadata.debug_mode == "true" ||
         request.resource.metadata.build_mode == "debug" ||
-        request.auth.token.debug == true
+        request.auth.token.debug == true || 
+        request.path.matches('.*debug_.*') // Allow paths containing "debug_"
       );
     }
 
@@ -31,22 +32,97 @@ service firebase.storage {
 
     // Base rules that apply to all paths
     match /{allPaths=**} {
-      allow read: if isAuthorized();
+      allow read: if isAuthenticated(); // Simplified for dev - just require auth
       allow write: if false; // Specific paths must explicitly allow write
     }
 
-    // Capture images
+    // Root level files - for simple uploads during development
+    match /{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Explicit debug_uploads path - very permissive for development
+    match /debug_uploads/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Artwork images - artists can upload their own artwork
+    match /artwork_images/{userId}/{artworkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Temporary more permissive artwork upload path for debugging
+    match /artwork_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Very permissive artwork path for development
+    match /artwork_images/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+    }
+
+    // Artist images - for artist profiles (portfolio, banner, etc.)
+    match /artist_images/{userId}/{type}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Capture images - more permissive for development
     match /capture_images/{userId}/{fileName} {
-      allow read: if isAuthorized();
-      allow write: if isUserPath(userId);
-      allow delete: if isUserPath(userId);
+      allow read: if isAuthenticated();
+      // More permissive during development - just check auth
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Legacy captures path - for backward compatibility
+    match /captures/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Post images for community feed
+    match /post_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
     
     // Profile images
     match /profile_images/{userId}/{fileName} {
-      allow read: if isAuthorized();
-      allow write: if isUserPath(userId);
-      allow delete: if isUserPath(userId);
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Feedback images - for developer feedback system
+    match /feedback_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Event images - for event creation (headshots, banners, event images)
+    match /events/{userId}/{eventId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Event images - more permissive path for development
+    match /events/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
     // Debug mode bypass for testing

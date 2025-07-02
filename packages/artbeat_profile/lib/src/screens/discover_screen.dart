@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_community/artbeat_community.dart' as community;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// Screen for discovering users and artists on the platform
 class DiscoverScreen extends StatefulWidget {
@@ -15,41 +17,298 @@ class DiscoverScreen extends StatefulWidget {
 class _DiscoverScreenState extends State<DiscoverScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
-  final core.UserService _userService = core.UserService();
+  final UserService _userService = UserService();
   final artist.SubscriptionService _artistSubscriptionService =
       artist.SubscriptionService();
-  final core.SubscriptionService _subscriptionService =
-      core.SubscriptionService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
 
   late TabController _tabController;
 
-  List<core.UserModel> _searchResults = [];
-  List<core.UserModel> _suggestedUsers = [];
-  List<artist.ArtistProfileModel> _featuredArtists = []; // restored
+  // Search and loading state
+  final List<UserModel> _searchResults = <UserModel>[];
+  List<ArtistProfileModel> _featuredArtists = <ArtistProfileModel>[];
   bool _isLoading = false;
-  bool _isSearching = false;
 
-  // Placeholder lists for nearby content
-  final List<community.PostModel> _feedItems = [];
-  final List<core.UserModel> _nearbyUsers = [];
-  final List<artist.ArtistProfileModel> _nearbyArtists = [];
-  final List<artwork.ArtworkModel> _nearbyArtworks = [];
-  final List<core.EventModel> _nearbyEvents = [];
+  // Nearby content state
+  final List<community.PostModel> _feedItems = <community.PostModel>[];
+  final List<UserModel> _nearbyUsers = <UserModel>[];
+  final List<ArtistProfileModel> _nearbyArtists = <ArtistProfileModel>[];
+  final List<artwork.ArtworkModel> _nearbyArtworks = <artwork.ArtworkModel>[];
+  final List<EventModel> _nearbyEvents = <EventModel>[];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _loadSuggestedUsers();
-    _loadFeaturedArtists();
-    // TODO: Load nearby content lists (_feedItems, _nearbyUsers, etc.)
+    _loadInitialContent();
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _loadInitialContent() async {
+    setState(() => _isLoading = true);
+    try {
+      await Future.wait([
+        _loadSuggestedUsers(),
+        _loadFeaturedArtists(),
+        _loadNearbyContent(),
+      ]);
+    } catch (e) {
+      debugPrint('Error loading initial content: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadNearbyContent() async {
+    try {
+      // Save current location for caching
+      final position = await Geolocator.getCurrentPosition();
+      final point = GeoPoint(position.latitude, position.longitude);
+
+      // Load nearby content in parallel
+      await Future.wait([
+        _loadNearbyUsers(point),
+        _loadNearbyArtists(point),
+        _loadNearbyArtworks(point),
+        _loadNearbyEvents(point),
+        _loadNearbyPosts(point),
+      ]);
+    } catch (e) {
+      debugPrint('Error loading nearby content: $e');
+    }
+  }
+
+  Future<List<UserModel>> _loadNearbyUsers(GeoPoint location) async {
+    try {
+      final usersRef = FirebaseFirestore.instance.collection('users');
+      final snapshot = await usersRef.orderBy('location').limit(50).get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return UserModel(
+          id: doc.id,
+          email: data['email'] as String,
+          fullName: data['fullName'] as String,
+          username: data['username'] as String?,
+          bio: data['bio'] as String?,
+          profileImageUrl: data['profileImageUrl'] as String?,
+          coverImageUrl: data['coverImageUrl'] as String?,
+          location: data['location'] as String?,
+          zipCode: data['zipCode'] as String?,
+          gender: data['gender'] as String?,
+          posts: List<String>.from(
+            (data['posts'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          followers: List<String>.from(
+            (data['followers'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          following: List<String>.from(
+            (data['following'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          captures: List<String>.from(
+            (data['captures'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          followersCount: (data['followersCount'] as num?)?.toInt() ?? 0,
+          followingCount: (data['followingCount'] as num?)?.toInt() ?? 0,
+          postsCount: (data['postsCount'] as num?)?.toInt() ?? 0,
+          capturesCount: (data['capturesCount'] as num?)?.toInt() ?? 0,
+          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          updatedAt: data['updatedAt'] != null
+              ? (data['updatedAt'] as Timestamp).toDate()
+              : null,
+          isVerified: data['isVerified'] as bool? ?? false,
+          userType: UserType.values.firstWhere(
+            (t) => t.name == (data['userType'] as String? ?? 'regular'),
+            orElse: () => UserType.regular,
+          ),
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error loading nearby users: $e');
+      return [];
+    }
+  }
+
+  Future<List<ArtistProfileModel>> _loadNearbyArtists(GeoPoint location) async {
+    try {
+      final artistsRef = FirebaseFirestore.instance.collection(
+        'artistProfiles',
+      );
+      final snapshot = await artistsRef.orderBy('location').limit(50).get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return ArtistProfileModel(
+          id: doc.id,
+          userId: data['userId'] as String,
+          displayName: data['displayName'] as String,
+          bio: data['bio'] as String,
+          userType: UserType.artist,
+          location: data['location'] as String?,
+          mediums: List<String>.from(
+            (data['mediums'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          styles: List<String>.from(
+            (data['styles'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          profileImageUrl: data['profileImageUrl'] as String?,
+          coverImageUrl: data['coverImageUrl'] as String?,
+          socialLinks: Map<String, String>.from(
+            (data['socialLinks'] ?? <dynamic, dynamic>{})
+                as Map<dynamic, dynamic>,
+          ),
+          isVerified: data['isVerified'] as bool? ?? false,
+          isFeatured: data['isFeatured'] as bool? ?? false,
+          subscriptionTier: _getTierFromString(
+            data['subscriptionTier'] as String? ?? 'artistBasic',
+          ),
+          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error loading nearby artists: $e');
+      return [];
+    }
+  }
+
+  SubscriptionTier _getTierFromString(String tierString) {
+    return SubscriptionTier.values.firstWhere(
+      (t) => t.name == tierString,
+      orElse: () => SubscriptionTier.artistBasic,
+    );
+  }
+
+  Future<List<artwork.ArtworkModel>> _loadNearbyArtworks(
+    GeoPoint location,
+  ) async {
+    try {
+      final artworksRef = FirebaseFirestore.instance.collection('artworks');
+      final snapshot = await artworksRef
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        final locationData = data['location'] as GeoPoint?;
+        return artwork.ArtworkModel(
+          id: doc.id,
+          userId: data['userId'] as String,
+          artistProfileId: data['artistProfileId'] as String,
+          title: data['title'] as String,
+          description: data['description'] as String,
+          imageUrl: data['imageUrl'] as String,
+          medium: data['medium'] as String,
+          styles: List<String>.from(
+            (data['styles'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          location: locationData != null
+              ? '${locationData.latitude}, ${locationData.longitude}'
+              : null,
+          isForSale: data['isForSale'] as bool? ?? false,
+          isSold: data['isSold'] as bool? ?? false,
+          price: (data['price'] as num?)?.toDouble(),
+          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error loading nearby artworks: $e');
+      return [];
+    }
+  }
+
+  Future<List<EventModel>> _loadNearbyEvents(GeoPoint point) async {
+    try {
+      final eventsRef = FirebaseFirestore.instance.collection('events');
+      final snapshot = await eventsRef
+          .where('location', isNull: false)
+          .where('endDate', isGreaterThan: DateTime.now())
+          .limit(50)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return EventModel(
+          id: doc.id,
+          title: data['title'] as String,
+          description: data['description'] as String,
+          startDate: (data['startDate'] as Timestamp).toDate(),
+          endDate: data['endDate'] != null
+              ? (data['endDate'] as Timestamp).toDate()
+              : null,
+          location: data['location'] as String,
+          imageUrl: data['imageUrl'] as String?,
+          artistId: data['artistId'] as String,
+          isPublic: data['isPublic'] as bool? ?? true,
+          attendeeIds: List<String>.from(
+            (data['attendeeIds'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+        );
+      }).toList();
+    } catch (e) {
+      debugPrint('Error loading nearby events: $e');
+      return [];
+    }
+  }
+
+  Future<List<community.PostModel>> _loadNearbyPosts(GeoPoint location) async {
+    try {
+      final postsRef = FirebaseFirestore.instance.collection('posts');
+      final snapshot = await postsRef
+          .where('location', isNull: false)
+          .where('isPublic', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(10)
+          .get();
+
+      final posts = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return community.PostModel(
+          id: doc.id,
+          userId: data['userId'] as String,
+          userName: data['userName'] as String,
+          userPhotoUrl: data['userPhotoUrl'] as String? ?? '',
+          content: data['content'] as String,
+          imageUrls: List<String>.from(
+            (data['imageUrls'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          tags: List<String>.from(
+            (data['tags'] ?? <dynamic>[]) as List<dynamic>,
+          ),
+          location: data['location'] as String,
+          geoPoint: data['geoPoint'] as GeoPoint?,
+          zipCode: data['zipCode'] as String?,
+          createdAt: (data['createdAt'] as Timestamp).toDate(),
+          applauseCount: (data['applauseCount'] as num?)?.toInt() ?? 0,
+          commentCount: (data['commentCount'] as num?)?.toInt() ?? 0,
+          shareCount: (data['shareCount'] as num?)?.toInt() ?? 0,
+          isPublic: data['isPublic'] as bool? ?? true,
+          mentionedUsers: data['mentionedUsers'] != null
+              ? List<String>.from(
+                  (data['mentionedUsers'] ?? <dynamic>[]) as List<dynamic>,
+                )
+              : null,
+          metadata: data['metadata'] as Map<String, dynamic>?,
+          isUserVerified: data['isUserVerified'] as bool? ?? false,
+        );
+      }).toList();
+
+      if (mounted) {
+        setState(() {
+          _feedItems.clear();
+          _feedItems.addAll(posts);
+        });
+      }
+
+      return posts;
+    } catch (e) {
+      debugPrint('Error loading nearby posts: $e');
+      return [];
+    }
   }
 
   Future<void> _loadSuggestedUsers() async {
@@ -64,7 +323,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       if (!mounted) return;
 
       setState(() {
-        _suggestedUsers = users;
+        _searchResults.clear();
+        _searchResults.addAll(users);
       });
     } catch (e) {
       if (!mounted) return;
@@ -90,29 +350,31 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       final coreArtists = await _subscriptionService.getFeaturedArtists();
       if (!mounted) return;
 
-      final artists = await Future.wait(coreArtists.map((a) async {
-        final artistProfile =
-            await _artistSubscriptionService.getArtistProfileById(a.id);
-        if (artistProfile == null) {
-          // Create a minimal artist profile from core model
-          return artist.ArtistProfileModel(
-            id: a.id,
-            userId: a.userId,
-            displayName: a.displayName,
-            bio: a.bio ?? '',
-            userType: core.UserType.artist,
-            mediums: const [],
-            styles: const [],
-            subscriptionTier: a.subscriptionTier,
-            createdAt: a.createdAt,
-            updatedAt: DateTime.now(),
-          );
-        }
-        return artistProfile;
-      }));
+      final artists = await Future.wait(
+        coreArtists.map((a) async {
+          final artistProfile = await _artistSubscriptionService
+              .getArtistProfileById(a.id);
+          if (artistProfile == null) {
+            // Create a minimal artist profile from core model
+            return ArtistProfileModel(
+              id: a.id,
+              userId: a.userId,
+              displayName: a.displayName,
+              bio: a.bio ?? '',
+              userType: UserType.artist,
+              mediums: const <String>[],
+              styles: const <String>[],
+              subscriptionTier: a.subscriptionTier,
+              createdAt: a.createdAt,
+              updatedAt: DateTime.now(),
+            );
+          }
+          return artistProfile;
+        }),
+      );
 
       setState(() {
-        _featuredArtists = artists.cast<artist.ArtistProfileModel>();
+        _featuredArtists = artists.cast<ArtistProfileModel>();
       });
     } catch (e) {
       if (!mounted) return;
@@ -130,8 +392,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   Future<void> _searchUsers(String query) async {
     if (query.trim().isEmpty) {
       setState(() {
-        _searchResults = [];
-        _isSearching = false;
+        _searchResults.clear();
+        _isLoading = false;
       });
       return;
     }
@@ -139,7 +401,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     if (mounted) {
       setState(() {
         _isLoading = true;
-        _isSearching = true;
       });
     }
 
@@ -147,7 +408,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       final users = await _userService.searchUsers(query);
       if (mounted) {
         setState(() {
-          _searchResults = users;
+          _searchResults.clear();
+          _searchResults.addAll(users);
         });
       }
     } catch (e) {
@@ -215,7 +477,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 gradient: LinearGradient(
                   colors: [
                     Colors.deepPurple.shade300,
-                    Colors.deepPurple.shade700
+                    Colors.deepPurple.shade700,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -246,19 +508,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         SizedBox(height: 8),
                         Text(
                           'Discover public art in your area or create your own custom art walks',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 14),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.map_outlined,
-                    color: Colors.white,
-                    size: 40,
-                  ),
+                  Icon(Icons.map_outlined, color: Colors.white, size: 40),
                 ],
               ),
             ),
@@ -296,8 +551,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           // Community feed slider placeholder
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Community Feed',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Community Feed',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -324,8 +581,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           // Users nearby slider placeholder
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Users Nearby',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Users Nearby',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -355,8 +614,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           // Artists nearby slider placeholder
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Artists Nearby',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Artists Nearby',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -386,8 +647,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           // Artwork nearby slider placeholder
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Artwork Nearby',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Artwork Nearby',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -414,8 +677,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           // Events nearby slider placeholder
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('Events Nearby',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Events Nearby',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -515,10 +780,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           padding: EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
           child: Text(
             'Featured Artists',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
 
@@ -531,19 +793,19 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   itemBuilder: (context, index) {
                     final artist = _featuredArtists[index];
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: (artist.profileImageUrl?.isNotEmpty ??
-                                false)
-                            ? NetworkImage(artist.profileImageUrl!)
-                                as ImageProvider
-                            : const AssetImage('assets/default_profile.png'),
+                      leading: UserAvatar(
+                        imageUrl: artist.profileImageUrl,
+                        displayName: artist.displayName,
+                        radius: 20,
                       ),
                       title: Text(artist.displayName),
-                      subtitle: Text(artist.styles.isNotEmpty
-                          ? artist.styles.first
-                          : artist.mediums.isNotEmpty
-                              ? artist.mediums.first
-                              : 'Artist'),
+                      subtitle: Text(
+                        artist.styles.isNotEmpty
+                            ? artist.styles.first
+                            : artist.mediums.isNotEmpty
+                            ? artist.mediums.first
+                            : 'Artist',
+                      ),
                       onTap: () {
                         Navigator.pushNamed(
                           context,
@@ -558,14 +820,17 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                             final isCurrentlyFollowing =
                                 await _artistSubscriptionService
                                     .isFollowingArtist(
-                                        artistProfileId: artist.id);
+                                      artistProfileId: artist.id,
+                                    );
 
                             if (isCurrentlyFollowing) {
                               await _artistSubscriptionService.unfollowArtist(
-                                  artistProfileId: artist.id);
+                                artistProfileId: artist.id,
+                              );
                             } else {
                               await _artistSubscriptionService.followArtist(
-                                  artistProfileId: artist.id);
+                                artistProfileId: artist.id,
+                              );
                             }
 
                             if (!mounted) return;

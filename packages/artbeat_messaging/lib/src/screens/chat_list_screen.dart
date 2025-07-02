@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart'
+    show UniversalHeader, MainLayout;
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
 import '../widgets/chat_list_tile.dart';
@@ -16,87 +18,91 @@ class ChatListScreen extends StatelessWidget {
     final chatService = Provider.of<ChatService>(context);
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Messages'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => _showSearchDialog(context),
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              _showChatOptions(context);
-            },
-          ),
-        ],
-      ),
-      body: StreamBuilder<List<ChatModel>>(
-        stream: chatService.getChatStream(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading chats',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.colorScheme.error,
+    return MainLayout(
+      currentIndex: 4, // Messages tab
+      child: Scaffold(
+        appBar: UniversalHeader(
+          title: 'Messages',
+          showLogo: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () => _showSearchDialog(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                _showChatOptions(context);
+              },
+            ),
+          ],
+        ),
+        body: StreamBuilder<List<ChatModel>>(
+          stream: chatService.getChatStream(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error loading chats',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
                 ),
-              ),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final chats = snapshot.data!;
-
-          if (chats.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.chat_bubble_outline,
-                    size: 48,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text('No messages yet', style: theme.textTheme.titleLarge),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Start a conversation with fellow artists',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () => _navigateToNewChat(context),
-                    icon: const Icon(Icons.add),
-                    label: const Text('New Message'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            itemCount: chats.length,
-            itemBuilder: (context, index) {
-              final chat = chats[index];
-              return ChatListTile(
-                chat: chat,
-                onTap: () => _navigateToChat(context, chat),
               );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToNewChat(context),
-        child: const Icon(Icons.chat),
+            }
+
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final chats = snapshot.data!;
+
+            if (chats.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 48,
+                      color: theme.colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text('No messages yet', style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Start a conversation with fellow artists',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => _navigateToNewChat(context),
+                      icon: const Icon(Icons.add),
+                      label: const Text('New Message'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return ListView.builder(
+              itemCount: chats.length,
+              itemBuilder: (context, index) {
+                final chat = chats[index];
+                return ChatListTile(
+                  chat: chat,
+                  onTap: () => _navigateToChat(context, chat),
+                );
+              },
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _navigateToNewChat(context),
+          child: const Icon(Icons.chat),
+        ),
       ),
     );
   }
@@ -104,23 +110,28 @@ class ChatListScreen extends StatelessWidget {
   void _navigateToNewChat(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const ContactSelectionScreen()),
+      MaterialPageRoute<void>(
+        builder: (context) => const ContactSelectionScreen(),
+      ),
     );
   }
 
   void _navigateToChat(BuildContext context, ChatModel chat) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChatScreen(chat: chat)),
+      MaterialPageRoute<void>(builder: (context) => ChatScreen(chat: chat)),
     );
   }
 
   void _showSearchDialog(BuildContext context) {
-    showDialog(context: context, builder: (context) => _ChatSearchDialog());
+    showDialog<void>(
+      context: context,
+      builder: (context) => _ChatSearchDialog(),
+    );
   }
 
   void _showChatOptions(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) {
         return Column(
@@ -133,7 +144,7 @@ class ChatListScreen extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  MaterialPageRoute<void>(
                     builder: (context) => const GroupCreationScreen(),
                   ),
                 );
@@ -146,7 +157,7 @@ class ChatListScreen extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  MaterialPageRoute<void>(
                     builder: (context) => const ChatSettingsScreen(),
                   ),
                 );
@@ -274,31 +285,28 @@ class _ChatSearchDialogState extends State<_ChatSearchDialog> {
 
                             return ListTile(
                               leading: CircleAvatar(
-                                backgroundImage:
-                                    imageUrl.isNotEmpty
-                                        ? NetworkImage(imageUrl)
-                                        : null,
-                                child:
-                                    imageUrl.isEmpty
-                                        ? Text(chatName[0].toUpperCase())
-                                        : null,
+                                backgroundImage: imageUrl.isNotEmpty
+                                    ? NetworkImage(imageUrl)
+                                    : null,
+                                child: imageUrl.isEmpty
+                                    ? Text(chatName[0].toUpperCase())
+                                    : null,
                               ),
                               title: Text(chatName),
-                              subtitle:
-                                  chat.lastMessage != null
-                                      ? Text(
-                                        chat.lastMessage!.content,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                      : const Text('No messages yet'),
+                              subtitle: chat.lastMessage != null
+                                  ? Text(
+                                      chat.lastMessage!.content,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  : const Text('No messages yet'),
                               onTap: () {
                                 Navigator.pop(context);
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => ChatScreen(chat: chat),
+                                  MaterialPageRoute<void>(
+                                    builder: (context) =>
+                                        ChatScreen(chat: chat),
                                   ),
                                 );
                               },

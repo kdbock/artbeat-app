@@ -1,5 +1,4 @@
-import 'package:artbeat_core/artbeat_core.dart'
-    show ArtistProfileModel, SubscriptionTier, UserType;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ArtistProfileService {
@@ -13,7 +12,7 @@ class ArtistProfileService {
       _firestore.collection('artistProfiles');
 
   /// Create a new artist profile
-  Future<ArtistProfileModel> createArtistProfile({
+  Future<core.ArtistProfileModel> createArtistProfile({
     required String userId,
     required String displayName,
     required String bio,
@@ -21,8 +20,8 @@ class ArtistProfileService {
     List<String>? mediums,
     List<String>? styles,
     String? location,
-    required UserType userType,
-    required SubscriptionTier subscriptionTier,
+    required core.UserType userType,
+    required core.SubscriptionTier subscriptionTier,
   }) async {
     try {
       final now = DateTime.now();
@@ -38,6 +37,7 @@ class ArtistProfileService {
         'subscriptionTier': subscriptionTier.name,
         'isVerified': false,
         'isFeatured': false,
+        'isPortfolioPublic': true, // Default to public for featured artists
         'socialLinks': <String, String>{},
         'createdAt': now,
         'updatedAt': now,
@@ -46,7 +46,7 @@ class ArtistProfileService {
       final docRef = await _artistProfilesCollection.add(data);
       data['id'] = docRef.id;
 
-      return ArtistProfileModel(
+      return core.ArtistProfileModel(
         id: docRef.id,
         userId: userId,
         displayName: displayName,
@@ -60,6 +60,7 @@ class ArtistProfileService {
         socialLinks: const {},
         isVerified: false,
         isFeatured: false,
+        isPortfolioPublic: true,
         subscriptionTier: subscriptionTier,
         createdAt: now,
         updatedAt: now,
@@ -70,7 +71,8 @@ class ArtistProfileService {
   }
 
   /// Get artist profile by user ID
-  Future<ArtistProfileModel?> getArtistProfileByUserId(String userId) async {
+  Future<core.ArtistProfileModel?> getArtistProfileByUserId(
+      String userId) async {
     try {
       final querySnapshot = await _artistProfilesCollection
           .where('userId', isEqualTo: userId)
@@ -85,23 +87,26 @@ class ArtistProfileService {
       final data = doc.data() as Map<String, dynamic>;
       data['id'] = doc.id;
 
-      return ArtistProfileModel(
+      return core.ArtistProfileModel(
         id: doc.id,
-        userId: data['userId'],
-        displayName: data['displayName'],
-        bio: data['bio'],
-        userType: UserType.fromString(data['userType'] ?? UserType.artist.name),
-        location: data['location'],
-        mediums: List<String>.from(data['mediums'] ?? []),
-        styles: List<String>.from(data['styles'] ?? []),
-        profileImageUrl: data['profileImageUrl'],
-        coverImageUrl: data['coverImageUrl'],
-        socialLinks: Map<String, String>.from(data['socialLinks'] ?? {}),
-        isVerified: data['isVerified'] ?? false,
-        isFeatured: data['isFeatured'] ?? false,
-        subscriptionTier: SubscriptionTier.values.firstWhere(
+        userId: data['userId'] as String,
+        displayName: data['displayName'] as String,
+        bio: data['bio'] as String?,
+        userType: core.UserType.fromString(
+            (data['userType'] as String?) ?? core.UserType.artist.name),
+        location: data['location'] as String?,
+        mediums: List<String>.from(data['mediums'] as Iterable? ?? []),
+        styles: List<String>.from(data['styles'] as Iterable? ?? []),
+        profileImageUrl: data['profileImageUrl'] as String?,
+        coverImageUrl: data['coverImageUrl'] as String?,
+        socialLinks:
+            Map<String, String>.from(data['socialLinks'] as Map? ?? {}),
+        isVerified: (data['isVerified'] as bool?) ?? false,
+        isFeatured: (data['isFeatured'] as bool?) ?? false,
+        isPortfolioPublic: (data['isPortfolioPublic'] as bool?) ?? true,
+        subscriptionTier: core.SubscriptionTier.values.firstWhere(
           (tier) => tier.name == data['subscriptionTier'],
-          orElse: () => SubscriptionTier.artistBasic,
+          orElse: () => core.SubscriptionTier.artistBasic,
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),
@@ -112,7 +117,8 @@ class ArtistProfileService {
   }
 
   /// Get artist profile by ID
-  Future<ArtistProfileModel?> getArtistProfileById(String profileId) async {
+  Future<core.ArtistProfileModel?> getArtistProfileById(
+      String profileId) async {
     try {
       final doc = await _artistProfilesCollection.doc(profileId).get();
 
@@ -123,23 +129,26 @@ class ArtistProfileService {
       final data = doc.data() as Map<String, dynamic>;
       data['id'] = doc.id;
 
-      return ArtistProfileModel(
+      return core.ArtistProfileModel(
         id: doc.id,
-        userId: data['userId'],
-        displayName: data['displayName'],
-        bio: data['bio'] ?? '',
-        userType: UserType.fromString(data['userType'] ?? UserType.artist.name),
-        location: data['location'],
-        mediums: List<String>.from(data['mediums'] ?? []),
-        styles: List<String>.from(data['styles'] ?? []),
-        profileImageUrl: data['profileImageUrl'],
-        coverImageUrl: data['coverImageUrl'],
-        socialLinks: Map<String, String>.from(data['socialLinks'] ?? {}),
-        isVerified: data['isVerified'] ?? false,
-        isFeatured: data['isFeatured'] ?? false,
-        subscriptionTier: SubscriptionTier.values.firstWhere(
+        userId: data['userId'] as String,
+        displayName: data['displayName'] as String,
+        bio: (data['bio'] as String?) ?? '',
+        userType: core.UserType.fromString(
+            (data['userType'] as String?) ?? core.UserType.artist.name),
+        location: data['location'] as String?,
+        mediums: List<String>.from(data['mediums'] as Iterable? ?? []),
+        styles: List<String>.from(data['styles'] as Iterable? ?? []),
+        profileImageUrl: data['profileImageUrl'] as String?,
+        coverImageUrl: data['coverImageUrl'] as String?,
+        socialLinks:
+            Map<String, String>.from(data['socialLinks'] as Map? ?? {}),
+        isVerified: (data['isVerified'] as bool?) ?? false,
+        isFeatured: (data['isFeatured'] as bool?) ?? false,
+        isPortfolioPublic: (data['isPortfolioPublic'] as bool?) ?? true,
+        subscriptionTier: core.SubscriptionTier.values.firstWhere(
           (tier) => tier.apiName == data['subscriptionTier'],
-          orElse: () => SubscriptionTier.artistBasic,
+          orElse: () => core.SubscriptionTier.artistBasic,
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),
@@ -163,7 +172,8 @@ class ArtistProfileService {
     Map<String, String>? socialLinks,
     bool? isVerified,
     bool? isFeatured,
-    SubscriptionTier? subscriptionTier,
+    bool? isPortfolioPublic,
+    core.SubscriptionTier? subscriptionTier,
   }) async {
     try {
       final updates = <String, dynamic>{
@@ -181,6 +191,8 @@ class ArtistProfileService {
       if (socialLinks != null) updates['socialLinks'] = socialLinks;
       if (isVerified != null) updates['isVerified'] = isVerified;
       if (isFeatured != null) updates['isFeatured'] = isFeatured;
+      if (isPortfolioPublic != null)
+        updates['isPortfolioPublic'] = isPortfolioPublic;
       if (subscriptionTier != null) {
         updates['subscriptionTier'] = subscriptionTier.name;
       }
@@ -188,6 +200,68 @@ class ArtistProfileService {
       await _artistProfilesCollection.doc(profileId).update(updates);
     } catch (e) {
       throw Exception('Error updating artist profile: $e');
+    }
+  }
+
+  /// Get featured artists
+  Future<List<core.ArtistProfileModel>> getFeaturedArtists(
+      {int limit = 10}) async {
+    try {
+      final query = await _artistProfilesCollection
+          .where('isFeatured', isEqualTo: true)
+          .orderBy('updatedAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return query.docs.map((doc) {
+        return core.ArtistProfileModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting featured artists: $e');
+    }
+  }
+
+  /// Get artists by location
+  Future<List<core.ArtistProfileModel>> getArtistsByLocation(
+    String location, {
+    int limit = 10,
+  }) async {
+    try {
+      final query = await _artistProfilesCollection
+          .where('location', isEqualTo: location)
+          .orderBy('updatedAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return query.docs.map((doc) {
+        return core.ArtistProfileModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting artists by location: $e');
+    }
+  }
+
+  /// Get all artists (for discovery)
+  Future<List<core.ArtistProfileModel>> getAllArtists({
+    int limit = 20,
+    DocumentSnapshot? lastDocument,
+  }) async {
+    try {
+      Query query = _artistProfilesCollection
+          .orderBy('updatedAt', descending: true)
+          .limit(limit);
+
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
+
+      final querySnapshot = await query.get();
+
+      return querySnapshot.docs.map((doc) {
+        return core.ArtistProfileModel.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      throw Exception('Error getting all artists: $e');
     }
   }
 }

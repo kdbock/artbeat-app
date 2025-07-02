@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/theme/index.dart';
+import 'package:artbeat_core/src/theme/artbeat_typography.dart';
 
 class ArtworkThemeWrapper extends StatelessWidget {
   final Widget child;
@@ -23,7 +23,7 @@ class ArtworkThemeWrapper extends StatelessWidget {
           ),
         ),
         // Artwork detail view styles
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../theme/index.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// A circular avatar widget for displaying artist profile images
+/// This is now a wrapper around the unified UserAvatar widget
 class ArtistAvatar extends StatelessWidget {
   /// The URL of the artist's avatar image
   final String? imageUrl;
@@ -23,89 +23,21 @@ class ArtistAvatar extends StatelessWidget {
     super.key,
     this.imageUrl,
     required this.displayName,
-    this.radius = CommunitySpacing.avatarSizeMedium / 2,
+    this.radius = 20.0,
     this.isVerified = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final typography = CommunityTypography(Theme.of(context));
+    debugPrint('ArtistAvatar build - displayName: "$displayName", imageUrl: "$imageUrl"');
 
-    return GestureDetector(
+    return UserAvatar(
+      imageUrl: imageUrl,
+      displayName: displayName,
+      radius: radius,
+      isVerified: isVerified,
       onTap: onTap,
-      child: Stack(
-        children: [
-          CircleAvatar(
-            radius: radius,
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            child: ClipOval(
-              child: imageUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl!,
-                      width: radius * 2,
-                      height: radius * 2,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        width: radius * 2,
-                        height: radius * 2,
-                        color: Theme.of(context).colorScheme.surface,
-                        child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        width: radius * 2,
-                        height: radius * 2,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .error
-                            .withOpacity(0.1),
-                        child: Center(
-                          child: Text(
-                            displayName[0].toUpperCase(),
-                            style: typography.commentAuthor.copyWith(
-                              fontSize: radius * 0.8,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        displayName[0].toUpperCase(),
-                        style: typography.commentAuthor.copyWith(
-                          fontSize: radius * 0.8,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-            ),
-          ),
-          if (isVerified)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: CommunityColors.verified,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
-                padding: const EdgeInsets.all(2),
-                child: Icon(
-                  Icons.check,
-                  size: radius * 0.7,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

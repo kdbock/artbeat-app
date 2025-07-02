@@ -25,21 +25,44 @@ class ChatModel {
 
   factory ChatModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    
+    // Convert participants data to UserModel list
+    List<UserModel> participantsList = [];
+    if (data['participants'] != null) {
+      final participantsData = data['participants'] as List<dynamic>;
+      participantsList = participantsData.map((p) {
+        final participantMap = p as Map<String, dynamic>;
+        return UserModel.fromMap(participantMap);
+      }).toList();
+    }
+
     return ChatModel(
       id: doc.id,
-      participants:
-          (data['participants'] as List)
-              .map((p) => UserModel.fromMap(p))
-              .toList(),
-      lastMessage:
-          data['lastMessage'] != null
-              ? MessageModel.fromMap(data['lastMessage'])
-              : null,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
-      updatedAt: (data['updatedAt'] as Timestamp).toDate(),
-      isGroup: data['isGroup'] ?? false,
-      groupName: data['groupName'],
-      groupImage: data['groupImage'],
+      participants: participantsList,
+      lastMessage: data['lastMessage'] != null
+          ? MessageModel.fromMap(data['lastMessage'] as Map<String, dynamic>)
+          : null,
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      updatedAt: data['updatedAt'] != null
+          ? (data['updatedAt'] as Timestamp).toDate()
+          : DateTime.now(),
+      isGroup: data['isGroup'] as bool? ?? false,
+      groupName: data['groupName'] as String?,
+      groupImage: data['groupImage'] as String?,
     );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'participants': participants.map((p) => p.toMap()).toList(),
+      'lastMessage': lastMessage?.toMap(),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': Timestamp.fromDate(updatedAt),
+      'isGroup': isGroup,
+      'groupName': groupName,
+      'groupImage': groupImage,
+    };
   }
 }

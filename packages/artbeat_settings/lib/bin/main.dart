@@ -43,9 +43,7 @@ class SettingsModuleApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Core providers
-        ChangeNotifierProvider<UserService>(
-          create: (_) => UserService(),
-        ),
+        ChangeNotifierProvider<UserService>(create: (_) => UserService()),
       ],
       child: MaterialApp(
         title: 'ARTbeat Settings Module',
@@ -65,21 +63,21 @@ class SettingsModuleHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ARTbeat Settings Module'),
-      ),
+      appBar: AppBar(title: const Text('ARTbeat Settings Module')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Settings Module Demo',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Settings Module Demo',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
             // Navigation buttons to settings screens
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<SettingsScreen>(
                   builder: (_) => const SettingsScreen(),
                 ),
               ),
@@ -89,7 +87,7 @@ class SettingsModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<AccountSettingsScreen>(
                   builder: (_) => const AccountSettingsScreen(),
                 ),
               ),
@@ -99,7 +97,7 @@ class SettingsModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<PrivacySettingsScreen>(
                   builder: (_) => const PrivacySettingsScreen(),
                 ),
               ),
@@ -109,7 +107,7 @@ class SettingsModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<NotificationSettingsScreen>(
                   builder: (_) => const NotificationSettingsScreen(),
                 ),
               ),
@@ -119,7 +117,7 @@ class SettingsModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<SecuritySettingsScreen>(
                   builder: (_) => const SecuritySettingsScreen(),
                 ),
               ),
@@ -129,7 +127,7 @@ class SettingsModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<BlockedUsersScreen>(
                   builder: (_) => const BlockedUsersScreen(),
                 ),
               ),

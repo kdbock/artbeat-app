@@ -20,14 +20,17 @@ class SubscriptionValidationService {
     if (userId == null) return SubscriptionTier.free;
 
     try {
-      final doc =
-          await _firestore.collection('subscriptions').doc(userId).get();
+      final doc = await _firestore
+          .collection('subscriptions')
+          .doc(userId)
+          .get();
 
-      if (!doc.exists || !doc.data()!.containsKey('tier')) {
+      final data = doc.data();
+      if (!doc.exists || data == null || !data.containsKey('tier')) {
         return SubscriptionTier.free;
       }
 
-      final tierStr = doc.data()!['tier'] as String;
+      final tierStr = data['tier'] as String;
       return SubscriptionTier.fromLegacyName(tierStr);
     } catch (e) {
       return SubscriptionTier.free;
@@ -36,15 +39,20 @@ class SubscriptionValidationService {
 
   /// Validate subscription change request
   Future<Map<String, dynamic>> validateSubscriptionChange(
-      SubscriptionTier targetTier) async {
+    SubscriptionTier targetTier,
+  ) async {
     try {
       final currentTier = await getCurrentSubscriptionTier();
-      final canTransition =
-          await _planValidator.canTransitionTo(currentTier, targetTier);
+      final canTransition = await _planValidator.canTransitionTo(
+        currentTier,
+        targetTier,
+      );
 
       if (!canTransition) {
-        final conflicts =
-            await _getTransitionConflicts(currentTier, targetTier);
+        final conflicts = await _getTransitionConflicts(
+          currentTier,
+          targetTier,
+        );
         return {
           'isValid': false,
           'conflicts': conflicts,
@@ -54,13 +62,13 @@ class SubscriptionValidationService {
 
       return {
         'isValid': true,
-        'conflicts': [],
+        'conflicts': <String>[],
         'message': 'Transition is valid',
       };
     } catch (e) {
       return {
         'isValid': false,
-        'conflicts': [],
+        'conflicts': <String>[],
         'message': 'Error validating subscription change: $e',
       };
     }
@@ -68,7 +76,9 @@ class SubscriptionValidationService {
 
   /// Get conflicts that prevent subscription transition
   Future<List<String>> _getTransitionConflicts(
-      SubscriptionTier currentTier, SubscriptionTier targetTier) async {
+    SubscriptionTier currentTier,
+    SubscriptionTier targetTier,
+  ) async {
     final List<String> conflicts = [];
     final userId = _auth.currentUser?.uid;
     if (userId == null) return ['User not authenticated'];
@@ -86,7 +96,8 @@ class SubscriptionValidationService {
 
         if (commissionSnapshot.docs.isNotEmpty) {
           conflicts.add(
-              'Active commissions must be completed or cancelled before downgrading');
+            'Active commissions must be completed or cancelled before downgrading',
+          );
         }
 
         final artistsSnapshot = await _firestore
@@ -97,7 +108,8 @@ class SubscriptionValidationService {
 
         if (artistsSnapshot.docs.isNotEmpty) {
           conflicts.add(
-              'Remove managed artists before downgrading from Gallery plan');
+            'Remove managed artists before downgrading from Gallery plan',
+          );
         }
       }
 
@@ -113,7 +125,8 @@ class SubscriptionValidationService {
 
         if ((artworkCount.count ?? 0) > 5) {
           conflicts.add(
-              'Remove excess artwork to downgrade to Basic plan (max 5 artworks)');
+            'Remove excess artwork to downgrade to Basic plan (max 5 artworks)',
+          );
         }
       }
     }
@@ -134,10 +147,11 @@ class SubscriptionValidationService {
 
   /// Validate and preprocess tier change
   Future<Map<String, dynamic>> prepareTierChange(
-      SubscriptionTier targetTier) async {
+    SubscriptionTier targetTier,
+  ) async {
     final validation = await validateSubscriptionChange(targetTier);
 
-    if (!validation['isValid']) {
+    if ((validation['isValid'] as bool? ?? false) == false) {
       return validation;
     }
 
@@ -155,16 +169,15 @@ class SubscriptionValidationService {
         'message': 'Ready to process tier change',
       };
     } catch (e) {
-      return {
-        'isValid': false,
-        'message': 'Error preparing tier change: $e',
-      };
+      return {'isValid': false, 'message': 'Error preparing tier change: $e'};
     }
   }
 
   /// Calculate prorated amount for tier change
   double _calculateProratedAmount(
-      SubscriptionTier currentTier, SubscriptionTier targetTier) {
+    SubscriptionTier currentTier,
+    SubscriptionTier targetTier,
+  ) {
     // Get monthly prices
     final currentPrice = currentTier.monthlyPrice;
     final targetPrice = targetTier.monthlyPrice;

@@ -32,12 +32,11 @@ class ChatListTile extends StatelessWidget {
             child: Text(
               chat.isGroup
                   ? chat.groupName ?? 'Group Chat'
-                  : chat.participants.first.displayName ?? 'Unknown',
+                  : chat.participants.first.displayName,
               style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight:
-                    lastMessage?.isRead == false
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                fontWeight: lastMessage?.isRead == false
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
             ),
           ),
@@ -55,14 +54,9 @@ class ChatListTile extends StatelessWidget {
           Expanded(
             child: Text(
               lastMessage?.content ?? 'No messages yet',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color:
-                    lastMessage?.isRead == false
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onSurfaceVariant,
-              ),
             ),
           ),
           if (lastMessage?.isRead == false)
@@ -84,7 +78,7 @@ class ChatListTile extends StatelessWidget {
     if (chat.isGroup) {
       return 'G';
     }
-    final name = chat.participants.first.displayName ?? '';
+    final name = chat.participants.first.displayName;
     final parts = name.split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();

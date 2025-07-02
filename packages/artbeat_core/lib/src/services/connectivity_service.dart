@@ -2,13 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 /// Enum representing different connectivity states
-enum ConnectionStatus {
-  wifi,
-  mobile,
-  ethernet,
-  bluetooth,
-  none,
-}
+enum ConnectionStatus { wifi, mobile, ethernet, bluetooth, none }
 
 /// Service to check and monitor network connectivity (simplified implementation)
 class ConnectivityService with ChangeNotifier {
@@ -56,8 +50,6 @@ class ConnectivityService with ChangeNotifier {
         return 'Bluetooth';
       case ConnectionStatus.none:
         return 'None';
-      default:
-        return 'Unknown';
     }
   }
 

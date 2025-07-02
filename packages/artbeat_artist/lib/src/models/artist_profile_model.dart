@@ -44,21 +44,31 @@ class ArtistProfileModel {
 
   factory ArtistProfileModel.fromMap(Map<String, dynamic> map) {
     return ArtistProfileModel(
-      id: map['id'] ?? '',
-      userId: map['userId'] ?? '',
-      displayName: map['displayName'] ?? '',
-      bio: map['bio'] ?? '',
-      userType: _userTypeFromString(map['userType'] ?? 'artist'),
-      location: map['location'],
-      mediums: List<String>.from(map['mediums'] ?? []),
-      styles: List<String>.from(map['styles'] ?? []),
-      profileImageUrl: map['profileImageUrl'],
-      coverImageUrl: map['coverImageUrl'],
-      socialLinks: Map<String, String>.from(map['socialLinks'] ?? {}),
-      isVerified: map['isVerified'] ?? false,
-      isFeatured: map['isFeatured'] ?? false,
-      subscriptionTier:
-          _tierFromString(map['subscriptionTier'] ?? 'artistBasic'),
+      id: (map['id'] ?? '').toString(),
+      userId: (map['userId'] ?? '').toString(),
+      displayName: (map['displayName'] ?? '').toString(),
+      bio: (map['bio'] ?? '').toString(),
+      userType: _userTypeFromString((map['userType'] ?? 'artist').toString()),
+      location: map['location'] != null ? map['location'].toString() : null,
+      mediums: map['mediums'] is List
+          ? (map['mediums'] as List).map((e) => e.toString()).toList()
+          : <String>[],
+      styles: map['styles'] is List
+          ? (map['styles'] as List).map((e) => e.toString()).toList()
+          : <String>[],
+      profileImageUrl: map['profileImageUrl'] != null
+          ? map['profileImageUrl'].toString()
+          : null,
+      coverImageUrl:
+          map['coverImageUrl'] != null ? map['coverImageUrl'].toString() : null,
+      socialLinks: map['socialLinks'] is Map
+          ? (map['socialLinks'] as Map)
+              .map((key, value) => MapEntry(key.toString(), value.toString()))
+          : <String, String>{},
+      isVerified: map['isVerified'] is bool ? map['isVerified'] as bool : false,
+      isFeatured: map['isFeatured'] is bool ? map['isFeatured'] as bool : false,
+      subscriptionTier: _tierFromString(
+          (map['subscriptionTier'] ?? 'artistBasic').toString()),
       createdAt: map['createdAt'] is Timestamp
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),

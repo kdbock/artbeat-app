@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
-// Re-export GiftModel from core
-import '../models/gift_model_export.dart';
-
 class GiftController extends ChangeNotifier {
   final PaymentService _paymentService;
 

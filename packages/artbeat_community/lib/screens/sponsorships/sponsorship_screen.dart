@@ -34,9 +34,9 @@ class _SponsorshipScreenState extends State<SponsorshipScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading sponsorships: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading sponsorships: $e')));
     }
   }
 
@@ -75,85 +75,80 @@ class _SponsorshipScreenState extends State<SponsorshipScreen> {
         ),
         // Sponsorship list
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final sponsorship = _sponsorships[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey[200],
-                            child: Text(
-                              sponsorship['sponsorName']?[0] ?? 'S',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final sponsorship = _sponsorships[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ListTile(
+                contentPadding: const EdgeInsets.all(16),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey[200],
+                          child: Text(
+                            ((sponsorship['sponsorName'] as String?)?[0]) ??
+                                'S',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                (sponsorship['sponsorName'] as String?) ??
+                                    'Unknown Sponsor',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
+                              Text(
+                                (sponsorship['title'] as String?) ??
+                                    'Untitled Sponsorship',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  sponsorship['sponsorName'] ??
-                                      'Unknown Sponsor',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  sponsorship['title'] ??
-                                      'Untitled Sponsorship',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (sponsorship['description'] != null) ...[
-                        const SizedBox(height: 12),
-                        Text(sponsorship['description']),
+                        ),
                       ],
+                    ),
+                    if (sponsorship['description'] != null) ...[
                       const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
+                      Text(sponsorship['description'] as String),
+                    ],
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Chip(
+                          label: Text(
+                            '\$${sponsorship['budget']?.toString() ?? 'N/A'}',
+                          ),
+                          backgroundColor: Colors.green[100],
+                        ),
+                        if (sponsorship['deadline'] != null)
                           Chip(
                             label: Text(
-                                '\$${sponsorship['budget']?.toString() ?? 'N/A'}'),
-                            backgroundColor: Colors.green[100],
-                          ),
-                          if (sponsorship['deadline'] != null)
-                            Chip(
-                              label: Text((sponsorship['deadline'] as Timestamp)
+                              (sponsorship['deadline'] as Timestamp)
                                   .toDate()
                                   .toString()
-                                  .split(' ')[0]),
-                              backgroundColor: Colors.orange[100],
+                                  .split(' ')[0],
                             ),
-                        ],
-                      ),
-                    ],
-                  ),
+                            backgroundColor: Colors.orange[100],
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
-              );
-            },
-            childCount: _sponsorships.length,
-          ),
+              ),
+            );
+          }, childCount: _sponsorships.length),
         ),
       ],
     );

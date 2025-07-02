@@ -30,18 +30,25 @@ class ArtworkModel {
 
   factory ArtworkModel.fromMap(Map<String, dynamic> map) {
     return ArtworkModel(
-      id: map['id'],
-      title: map['title'],
-      description: map['description'],
-      imageUrl: map['imageUrl'],
-      medium: map['medium'],
-      styles: List<String>.from(map['styles'] ?? []),
-      price: map['price'],
-      isForSale: map['isForSale'],
-      dimensions: map['dimensions'],
-      yearCreated: map['yearCreated'],
-      artistProfileId: map['artistProfileId'],
-      userId: map['userId'],
+      id: (map['id'] ?? '').toString(),
+      title: (map['title'] ?? '').toString(),
+      description: (map['description'] ?? '').toString(),
+      imageUrl: (map['imageUrl'] ?? '').toString(),
+      medium: (map['medium'] ?? '').toString(),
+      styles: map['styles'] is List
+          ? (map['styles'] as List).map((e) => e.toString()).toList()
+          : <String>[],
+      price: map['price'] is num ? (map['price'] as num).toDouble() : null,
+      isForSale: map['isForSale'] is bool ? map['isForSale'] as bool : false,
+      dimensions:
+          map['dimensions'] != null ? map['dimensions'].toString() : null,
+      yearCreated: map['yearCreated'] is int
+          ? map['yearCreated'] as int
+          : (map['yearCreated'] != null
+              ? int.tryParse(map['yearCreated'].toString())
+              : null),
+      artistProfileId: (map['artistProfileId'] ?? '').toString(),
+      userId: (map['userId'] ?? '').toString(),
     );
   }
 

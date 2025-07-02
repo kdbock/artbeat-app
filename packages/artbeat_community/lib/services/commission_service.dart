@@ -14,13 +14,13 @@ class CommissionService {
       final data = doc.data();
       return CommissionModel(
         id: doc.id,
-        galleryId: data['galleryId'],
-        artistId: data['artistId'],
-        artworkId: data['artworkId'],
-        commissionRate: data['commissionRate'],
-        status: data['status'],
-        createdAt: data['createdAt'],
-        updatedAt: data['updatedAt'],
+        galleryId: data['galleryId'] as String,
+        artistId: data['artistId'] as String,
+        artworkId: data['artworkId'] as String,
+        commissionRate: (data['commissionRate'] as num).toDouble(),
+        status: data['status'] as String,
+        createdAt: data['createdAt'] as Timestamp,
+        updatedAt: data['updatedAt'] as Timestamp,
       );
     }).toList();
   }
@@ -38,7 +38,9 @@ class CommissionService {
   }
 
   Future<void> updateCommission(
-      String commissionId, Map<String, dynamic> updates) async {
+    String commissionId,
+    Map<String, dynamic> updates,
+  ) async {
     await _firestore
         .collection('commissions')
         .doc(commissionId)

@@ -93,39 +93,42 @@ class _GalleryArtistsManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gallery Artists'),
-        bottom: TabBar(
+    return core.MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Gallery Artists'),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Current Artists'),
+              Tab(text: 'Pending Invitations'),
+            ],
+          ),
+        ),
+        body: TabBarView(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Current Artists'),
-            Tab(text: 'Pending Invitations'),
+          children: [
+            _buildArtistsList(),
+            _buildPendingInvitations(),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildArtistsList(),
-          _buildPendingInvitations(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await showDialog<core.ArtistProfileModel>(
-            context: context,
-            builder: (context) => _ArtistSearchDialog(
-              currentArtists: _galleryArtists.map((a) => a.id).toList(),
-              onArtistSelected: (artist) => Navigator.pop(context, artist),
-            ),
-          );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final result = await showDialog<core.ArtistProfileModel>(
+              context: context,
+              builder: (context) => _ArtistSearchDialog(
+                currentArtists: _galleryArtists.map((a) => a.id).toList(),
+                onArtistSelected: (artist) => Navigator.pop(context, artist),
+              ),
+            );
 
-          if (result != null) {
-            await _addArtistToGallery(result);
-          }
-        },
-        child: const Icon(Icons.add),
+            if (result != null) {
+              await _addArtistToGallery(result);
+            }
+          },
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
@@ -172,7 +175,7 @@ class _GalleryArtistsManagementScreenState
 /// Dialog for searching and selecting artists to add to gallery
 class _ArtistSearchDialog extends StatefulWidget {
   final List<String> currentArtists;
-  final Function(core.ArtistProfileModel) onArtistSelected;
+  final void Function(core.ArtistProfileModel) onArtistSelected;
 
   const _ArtistSearchDialog({
     required this.currentArtists,

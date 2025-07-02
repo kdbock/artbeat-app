@@ -57,7 +57,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                   _selectedTheme.substring(1),
             ),
             onTap: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder:
                     (context) => AlertDialog(
@@ -109,7 +109,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
             leading: const Icon(Icons.delete_outline),
             title: const Text('Clear Chat History'),
             onTap: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder:
                     (context) => AlertDialog(
