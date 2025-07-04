@@ -30,6 +30,12 @@ dependencies:
   intl: ^0.20.2
   geolocator: ^14.0.1
   provider: ^6.1.2
+  
+  # Media file support
+  video_player: ^2.9.2
+  audioplayers: ^6.1.0
+  file_picker: ^8.1.6
+  video_thumbnail: ^0.5.5
 
 flutter:
   uses-material-design: true

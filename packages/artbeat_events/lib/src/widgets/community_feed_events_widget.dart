@@ -203,7 +203,7 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventDetailsScreen(event: event),
+        builder: (context) => EventDetailsScreen(eventId: event.id),
       ),
     );
   }

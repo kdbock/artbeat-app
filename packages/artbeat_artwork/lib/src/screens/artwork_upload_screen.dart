@@ -360,14 +360,14 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return MainLayout(
+      return const MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: const UniversalHeader(
+          appBar: UniversalHeader(
             title: 'Upload Artwork',
             showLogo: false,
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }

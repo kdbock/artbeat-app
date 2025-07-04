@@ -10,7 +10,10 @@ class BecomeArtistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Become an Artist')),
+      appBar: const UniversalHeader(
+        title: 'Become an Artist',
+        showLogo: false,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

@@ -5,6 +5,7 @@ import '../theme/artbeat_colors.dart';
 import '../theme/artbeat_typography.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
+import '../models/user_type.dart';
 import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
 
@@ -163,6 +164,34 @@ class ArtbeatDrawer extends StatelessWidget {
               (item) => _buildDrawerItem(context, item),
             ),
             const Divider(),
+
+            // Admin Section (only visible to admins)
+            Consumer<UserService>(
+              builder: (context, userService, child) {
+                return FutureBuilder<UserModel?>(
+                  future: userService.currentUser != null
+                      ? userService.getUserById(userService.currentUser!.uid)
+                      : null,
+                  builder: (context, snapshot) {
+                    final user = snapshot.data;
+                    final isAdmin = user?.userType == UserType.admin;
+
+                    if (!isAdmin) return const SizedBox.shrink();
+
+                    return Column(
+                      children: [
+                        _buildSectionHeader('Admin'),
+                        ...ArtbeatDrawerItems.adminItems.map(
+                          (item) => _buildDrawerItem(context, item),
+                        ),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+
             ListTile(
               leading: Icon(
                 ArtbeatDrawerItems.signOut.icon,
@@ -206,22 +235,62 @@ class ArtbeatDrawer extends StatelessWidget {
   }
 
   Widget _buildDrawerItem(BuildContext context, ArtbeatDrawerItem item) {
+    final currentRoute = ModalRoute.of(context)?.settings.name;
+    final bool isCurrentRoute = currentRoute == item.route;
+    final bool isMainNavigationRoute = [
+      '/dashboard',
+      '/art-walk/dashboard',
+      '/community/dashboard',
+      '/events/dashboard',
+    ].contains(item.route);
+
     return ListTile(
       leading: Icon(
         item.icon,
-        color: item.color ?? ArtbeatColors.primaryPurple,
+        color: isCurrentRoute
+            ? ArtbeatColors.primaryGreen
+            : (item.color ?? ArtbeatColors.primaryPurple),
       ),
       title: Text(
         item.title,
         style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: item.color,
+          fontWeight: isCurrentRoute ? FontWeight.w600 : FontWeight.w500,
+          color: isCurrentRoute ? ArtbeatColors.primaryGreen : item.color,
         ),
       ),
+      selected: isCurrentRoute,
       onTap: () {
-        Navigator.pop(context); // Close drawer
-        if (item.route != ModalRoute.of(context)?.settings.name) {
-          Navigator.pushNamed(context, item.route);
+        if (isCurrentRoute) {
+          Navigator.pop(
+            context,
+          ); // Just close drawer if we're already on this route
+          return;
+        }
+
+        Navigator.pop(context); // Close drawer first
+
+        if (isMainNavigationRoute) {
+          // For main navigation routes, use pushReplacement to avoid stack buildup
+          Navigator.pushReplacementNamed(context, item.route);
+        } else {
+          // For secondary routes, push normally to maintain back button
+          Navigator.pushNamed(
+                context,
+                item.route,
+                arguments: {'from': 'drawer', 'showBackButton': true},
+              )
+              .then((value) {
+                if (value == null) {
+                  debugPrint(
+                    '🚫 Navigation failed or was cancelled for route: ${item.route}',
+                  );
+                }
+              })
+              .catchError((error) {
+                debugPrint(
+                  '⚠️ Navigation error for route ${item.route}: $error',
+                );
+              });
         }
       },
     );

@@ -6,12 +6,14 @@ class ArtDetailBottomSheet extends StatelessWidget {
   final PublicArtModel art;
   final VoidCallback? onVisitPressed;
   final bool isVisited;
+  final String? distanceText;
 
   const ArtDetailBottomSheet({
     super.key,
     required this.art,
     this.onVisitPressed,
     this.isVisited = false,
+    this.distanceText,
   });
 
   @override
@@ -95,6 +97,29 @@ class ArtDetailBottomSheet extends StatelessWidget {
                             fontSize: 16,
                             color: Colors.grey[600],
                           ),
+                        ),
+                      ],
+
+                      // Distance from current location
+                      if (distanceText != null && distanceText!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.directions_walk,
+                              size: 16,
+                              color: Colors.blue[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              distanceText!,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.blue[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
 

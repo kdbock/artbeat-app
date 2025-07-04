@@ -12,6 +12,7 @@ class RewardsService {
   static const Map<String, int> _xpRewards = {
     'art_capture_approved': 50,
     'art_walk_completion': 100,
+    'art_walk_creation': 75, // Creating a new art walk
     'art_visit': 10, // For individual art visits during walks
     'review_submission': 30, // Minimum 50 words required
     'helpful_vote_received': 10,
@@ -65,6 +66,12 @@ class RewardsService {
       'description': 'Complete your first art walk',
       'icon': '🚶',
       'requirement': {'type': 'walks_completed', 'count': 1},
+    },
+    'first_walk_created': {
+      'name': 'First Walk Created',
+      'description': 'Create your first art walk',
+      'icon': '🎨',
+      'requirement': {'type': 'walks_created', 'count': 1},
     },
     'first_capture_approved': {
       'name': 'First Capture Approved',
@@ -278,6 +285,9 @@ class RewardsService {
           case 'art_walk_completion':
             updates['stats.walksCompleted'] = FieldValue.increment(1);
             break;
+          case 'art_walk_creation':
+            updates['stats.walksCreated'] = FieldValue.increment(1);
+            break;
           case 'review_submission':
             updates['stats.reviewsSubmitted'] = FieldValue.increment(1);
             break;
@@ -396,6 +406,23 @@ class RewardsService {
           await _awardBadge(userId, 'first_walk_completed');
         if (walksCompleted == 10)
           await _awardBadge(userId, 'ten_walks_completed');
+        break;
+
+      case 'art_walk_creation':
+        final walksCreated = (stats['walksCreated'] as int? ?? 0) + 1;
+        if (walksCreated == 1) await _awardBadge(userId, 'first_walk_created');
+        if (walksCreated == 5) await _awardBadge(userId, 'gallery_builder');
+        if (walksCreated == 20) {
+          // Check if user also has 10k XP for influencer status
+          final userDoc = await _firestore
+              .collection('users')
+              .doc(userId)
+              .get();
+          final xp = userDoc.data()?['experiencePoints'] as int? ?? 0;
+          if (xp >= 10000) {
+            await _awardBadge(userId, 'artistic_influencer');
+          }
+        }
         break;
 
       case 'art_capture_approved':

@@ -33,7 +33,7 @@ class SecureFirebaseConfig {
   static Future<FirebaseApp> initializeFirebase() async {
     if (_initialized) {
       if (kDebugMode) {
-        print('🔥 Firebase already initialized');
+        print('🔥 Firebase already initialized via SecureFirebaseConfig');
       }
       return Firebase.app();
     }
@@ -41,7 +41,13 @@ class SecureFirebaseConfig {
     if (Firebase.apps.isNotEmpty) {
       _initialized = true;
       if (kDebugMode) {
-        print('🔥 Firebase apps already exist, using existing app');
+        print(
+          '🔥 Firebase apps already exist (${Firebase.apps.length} apps), using existing app: ${Firebase.app().name}',
+        );
+      }
+      // Even if Firebase is already initialized, we should still initialize App Check if not done
+      if (!_appCheckInitialized) {
+        await _initializeAppCheck();
       }
       return Firebase.app();
     }
@@ -71,6 +77,23 @@ class SecureFirebaseConfig {
       if (kDebugMode) {
         print('❌ Firebase initialization failed: $e');
       }
+
+      // If it's a duplicate app error, that means Firebase is already initialized
+      // This can happen in hot reload scenarios
+      if (e.toString().contains('duplicate-app') ||
+          e.toString().contains('already exists')) {
+        if (kDebugMode) {
+          print(
+            '🔥 Firebase already initialized (caught duplicate app error), using existing app',
+          );
+        }
+        _initialized = true;
+        if (!_appCheckInitialized) {
+          await _initializeAppCheck();
+        }
+        return Firebase.app();
+      }
+
       rethrow;
     }
   }
@@ -101,18 +124,37 @@ class SecureFirebaseConfig {
         print('🔐 Initializing App Check...');
         print('🔐 Debug mode: $_debug');
         print('🔐 Team ID: $_teamId');
-      }
 
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: _debug
-            ? AndroidProvider.debug
-            : AndroidProvider.playIntegrity,
-        appleProvider: _debug ? AppleProvider.debug : AppleProvider.appAttest,
-      );
+        // Always use debug provider in debug mode
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.debug,
+          appleProvider: AppleProvider.debug,
+          webProvider: ReCaptchaV3Provider(
+            '6LeiHc...',
+          ), // Add your reCAPTCHA site key
+        );
+
+        // Get and log the debug token
+        final token = await FirebaseAppCheck.instance.getToken();
+        if (token != null) {
+          print('🔐 Debug token: $token');
+        }
+      } else {
+        // Production mode - use secure providers
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.playIntegrity,
+          appleProvider: AppleProvider.deviceCheck,
+          webProvider: ReCaptchaV3Provider(
+            '6LeiHc...',
+          ), // Add your reCAPTCHA site key
+        );
+      }
 
       if (kDebugMode) {
         print('🔐 App Check activated successfully');
       }
+
+      _appCheckInitialized = true;
 
       if (_tokenTTL != null) {
         await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
@@ -147,6 +189,64 @@ class SecureFirebaseConfig {
     }
   }
 
+  /// Reset initialization state (useful for hot restart)
+  static void resetInitializationState() {
+    _initialized = false;
+    _appCheckInitialized = false;
+    if (kDebugMode) {
+      print('🔄 SecureFirebaseConfig initialization state reset');
+    }
+  }
+
+  /// Ensure Firebase is properly initialized, handling edge cases
+  static Future<FirebaseApp> ensureInitialized({
+    String? teamId,
+    bool? debug,
+  }) async {
+    try {
+      if (Firebase.apps.isEmpty) {
+        // No Firebase apps exist, need full initialization
+        if (teamId != null) {
+          await configureAppCheck(teamId: teamId, debug: debug ?? kDebugMode);
+        }
+        return await initializeFirebase();
+      } else {
+        // Firebase apps exist, just ensure our state is correct
+        if (!_initialized) {
+          _initialized = true;
+          if (kDebugMode) {
+            print(
+              '🔥 Firebase apps already exist, updating SecureFirebaseConfig state',
+            );
+          }
+        }
+
+        // Configure App Check if needed and parameters are provided
+        if (!_appCheckInitialized && teamId != null) {
+          await configureAppCheck(teamId: teamId, debug: debug ?? kDebugMode);
+          await _initializeAppCheck();
+        }
+
+        return Firebase.app();
+      }
+    } catch (e) {
+      // Handle any edge cases where Firebase.app() fails
+      if (e.toString().contains('duplicate-app') ||
+          e.toString().contains('already exists')) {
+        if (kDebugMode) {
+          print('🔥 Handled duplicate app error in ensureInitialized');
+        }
+        _initialized = true;
+        if (!_appCheckInitialized && teamId != null) {
+          await configureAppCheck(teamId: teamId, debug: debug ?? kDebugMode);
+          await _initializeAppCheck();
+        }
+        return Firebase.app();
+      }
+      rethrow;
+    }
+  }
+
   /// Get basic Firebase status information
   static Map<String, dynamic> getStatus() => {
     'initialized': _initialized,
@@ -156,6 +256,7 @@ class SecureFirebaseConfig {
     'teamId': _teamId,
     'tokenTTL': _tokenTTL?.inMinutes,
     'hasCurrentApp': currentApp != null,
+    'appNames': Firebase.apps.map((app) => app.name).toList(),
   };
 
   /// Test Firebase Storage access (for debugging -13020 errors)

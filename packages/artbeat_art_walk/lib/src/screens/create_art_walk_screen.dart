@@ -10,7 +10,10 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Added for GeoPoint
 class CreateArtWalkScreen extends StatefulWidget {
   static const String routeName = '/create-art-walk';
 
-  const CreateArtWalkScreen({super.key});
+  final String? artWalkId; // For editing existing art walk
+  final ArtWalkModel? artWalkToEdit; // Pre-loaded art walk data
+
+  const CreateArtWalkScreen({super.key, this.artWalkId, this.artWalkToEdit});
 
   @override
   State<CreateArtWalkScreen> createState() => CreateArtWalkScreenState();
@@ -32,6 +35,12 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Initialize form if editing existing art walk
+    if (widget.artWalkToEdit != null) {
+      _initializeEditingMode();
+    }
+
     // Check for passed capture and pre-select it
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments;
@@ -65,6 +74,14 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
     });
     _loadAvailablePublicArt();
     _getCurrentLocation(); // Added
+  }
+
+  void _initializeEditingMode() {
+    final artWalk = widget.artWalkToEdit!;
+    _titleController.text = artWalk.title;
+    _descriptionController.text = artWalk.description;
+    _isPublic = artWalk.isPublic;
+    _selectedArtIds.addAll(artWalk.artworkIds);
   }
 
   Future<void> _getCurrentLocation() async {
@@ -175,41 +192,67 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
     });
 
     try {
-      // Ensure we have a location
-      if (_currentPosition == null) {
-        throw Exception(
-          'Location not available. Please enable location services.',
+      final isEditing = widget.artWalkId != null;
+
+      if (isEditing) {
+        // Update existing art walk
+        await _artWalkService.updateArtWalk(
+          walkId: widget.artWalkId!,
+          title: _titleController.text,
+          description: _descriptionController.text,
+          artworkIds: _selectedArtIds,
+          coverImageFile: _coverImageFile,
+          isPublic: _isPublic,
         );
-      }
 
-      // Create a route data string (simplified for now)
-      final routeData = _selectedArtIds.join(',');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Art Walk updated successfully!')),
+          );
+          Navigator.of(context).pop();
+        }
+      } else {
+        // Create new art walk
+        // Ensure we have a location
+        if (_currentPosition == null) {
+          throw Exception(
+            'Location not available. Please enable location services.',
+          );
+        }
 
-      // Create an art walk
-      final artWalkId = await _artWalkService.createArtWalk(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        artworkIds: _selectedArtIds,
-        startLocation: GeoPoint(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-        ),
-        routeData: routeData,
-        coverImageFile: _coverImageFile, // Pass the selected cover image file
-        isPublic: _isPublic,
-      );
+        // Create a route data string (simplified for now)
+        final routeData = _selectedArtIds.join(',');
 
-      if (mounted && artWalkId != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Art Walk created successfully!')),
+        // Create an art walk
+        final artWalkId = await _artWalkService.createArtWalk(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          artworkIds: _selectedArtIds,
+          startLocation: GeoPoint(
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          ),
+          routeData: routeData,
+          coverImageFile: _coverImageFile,
+          isPublic: _isPublic,
         );
-        Navigator.of(context).pop();
+
+        if (mounted && artWalkId != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Art Walk created successfully!')),
+          );
+          Navigator.of(context).pop();
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error creating art walk: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error ${widget.artWalkId != null ? 'updating' : 'creating'} art walk: $e',
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -224,7 +267,9 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create New Art Walk'),
+        title: Text(
+          widget.artWalkId != null ? 'Edit Art Walk' : 'Create New Art Walk',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),

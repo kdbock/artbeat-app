@@ -189,7 +189,7 @@ class ArtworkService {
       debugPrint(
           '📊 ArtworkService: Found ${snapshot.docs.length} artwork documents by artistProfileId');
 
-      List<ArtworkModel> artworks =
+      final List<ArtworkModel> artworks =
           snapshot.docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
 
       // Also query by artistId (for legacy artwork that might use this field)

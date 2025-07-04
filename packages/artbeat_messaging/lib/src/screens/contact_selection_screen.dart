@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../services/chat_service.dart';
-import '../models/user_model.dart';
+import '../models/user_model.dart' as messaging;
 import 'chat_screen.dart';
 
 class ContactSelectionScreen extends StatefulWidget {
@@ -27,7 +28,7 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
     final chatService = Provider.of<ChatService>(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('New Message')),
+      appBar: const UniversalHeader(title: 'New Message', showLogo: false),
       body: Column(
         children: [
           Padding(
@@ -53,7 +54,7 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<UserModel>>(
+            child: FutureBuilder<List<messaging.UserModel>>(
               future: chatService.searchUsers(_searchQuery),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

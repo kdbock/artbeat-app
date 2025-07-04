@@ -140,4 +140,7 @@ class PostModel {
       metadata: metadata ?? this.metadata,
     );
   }
+
+  /// Getter for authorUsername - returns userName for compatibility
+  String get authorUsername => userName;
 }

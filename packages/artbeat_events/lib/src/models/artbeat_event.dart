@@ -27,6 +27,7 @@ class ArtbeatEvent {
   final Map<String, dynamic>? metadata; // for additional event-specific data
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String category; // Added category field
 
   const ArtbeatEvent({
     required this.id,
@@ -50,6 +51,7 @@ class ArtbeatEvent {
     this.metadata,
     required this.createdAt,
     required this.updatedAt,
+    this.category = 'Other', // Default category
   });
 
   /// Factory constructor to create a new event with generated ID
@@ -71,6 +73,7 @@ class ArtbeatEvent {
     required String contactEmail,
     String? contactPhone,
     Map<String, dynamic>? metadata,
+    String category = 'Other', // Default category
   }) {
     final now = DateTime.now();
     return ArtbeatEvent(
@@ -95,6 +98,7 @@ class ArtbeatEvent {
       metadata: metadata,
       createdAt: now,
       updatedAt: now,
+      category: category, // Default category
     );
   }
 
@@ -124,6 +128,7 @@ class ArtbeatEvent {
       metadata: data['metadata'] as Map<String, dynamic>?,
       createdAt: _parseDateTime(data['createdAt']),
       updatedAt: _parseDateTime(data['updatedAt']),
+      category: data['category']?.toString() ?? 'Other', // Default category
     );
   }
 
@@ -150,6 +155,7 @@ class ArtbeatEvent {
       'metadata': metadata,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'category': category, // Added category field
     };
   }
 
@@ -176,6 +182,7 @@ class ArtbeatEvent {
     Map<String, dynamic>? metadata,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? category,
   }) {
     return ArtbeatEvent(
       id: id ?? this.id,
@@ -199,6 +206,7 @@ class ArtbeatEvent {
       metadata: metadata ?? this.metadata,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      category: category ?? this.category, // Added category field
     );
   }
 

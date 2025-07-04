@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class PrivacySettingsScreen extends StatelessWidget {
   const PrivacySettingsScreen({super.key});
@@ -6,8 +7,9 @@ class PrivacySettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Privacy Settings'),
+      appBar: const UniversalHeader(
+        title: 'Privacy Settings',
+        showLogo: false,
       ),
       body: const Center(
         child: Text('Privacy Settings Screen'),

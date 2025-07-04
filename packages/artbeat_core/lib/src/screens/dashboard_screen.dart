@@ -830,8 +830,8 @@ class _DashboardScreenState extends State<DashboardScreen>
           onTap: () {
             Navigator.pushNamed(
               context,
-              '/artist/profile',
-              arguments: artist.userId,
+              '/artist/public-profile',
+              arguments: {'artistId': artist.userId},
             );
           },
           borderRadius: BorderRadius.circular(12),
@@ -903,8 +903,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         onTap: () {
           Navigator.pushNamed(
             context,
-            '/artist/profile',
-            arguments: artist.userId,
+            '/artist/public-profile',
+            arguments: {'artistId': artist.userId},
           );
         },
         borderRadius: BorderRadius.circular(12),
@@ -967,8 +967,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                   onPressed: () {
                     Navigator.pushNamed(
                       context,
-                      '/artist/profile',
-                      arguments: artist.userId,
+                      '/artist/public-profile',
+                      arguments: {'artistId': artist.userId},
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -1004,8 +1004,8 @@ class _DashboardScreenState extends State<DashboardScreen>
         onTap: () {
           Navigator.pushNamed(
             context,
-            '/artwork/details',
-            arguments: artwork.id,
+            '/artist/artwork-detail',
+            arguments: {'artworkId': artwork.id},
           );
         },
         child: Column(
@@ -1341,7 +1341,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: InkWell(
         onTap: () {
           // Navigate to event details
-          Navigator.pushNamed(context, '/events/details', arguments: event.id);
+          Navigator.pushNamed(context, '/events/detail', arguments: {'eventId': event.id});
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(

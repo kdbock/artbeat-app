@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../services/admin_service.dart';
 import 'admin_dashboard_screen.dart';
 
@@ -77,7 +78,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Login')),
+      appBar: const UniversalHeader(
+        title: 'Admin Login',
+        showLogo: false,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

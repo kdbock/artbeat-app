@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class StudioChatScreen extends StatefulWidget {
   final String studioId;
@@ -43,7 +44,10 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Studio Chat')),
+      appBar: const UniversalHeader(
+        title: 'Studio Chat',
+        showLogo: false,
+      ),
       body: Column(
         children: [
           Expanded(

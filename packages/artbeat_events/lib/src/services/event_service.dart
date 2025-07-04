@@ -71,6 +71,28 @@ class EventService {
     }
   }
 
+  /// Get an event by its ID
+  Future<ArtbeatEvent?> getEventById(String eventId) async {
+    try {
+      final docSnapshot =
+          await _firestore.collection(_eventsCollection).doc(eventId).get();
+
+      if (!docSnapshot.exists) {
+        _logger.w('Event not found: $eventId');
+        return null;
+      }
+
+      final eventData = docSnapshot.data() as Map<String, dynamic>;
+      eventData['id'] = docSnapshot.id; // Add the document ID to the data
+
+      _logger.i('Event retrieved: $eventId');
+      return ArtbeatEvent.fromFirestore(docSnapshot);
+    } catch (e) {
+      _logger.e('Error getting event: $e');
+      rethrow;
+    }
+  }
+
   /// Get upcoming public events for community feed
   Future<List<ArtbeatEvent>> getUpcomingPublicEvents({int? limit}) async {
     try {
@@ -378,5 +400,114 @@ class EventService {
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map(ArtbeatEvent.fromFirestore).toList());
+  }
+
+  /// Get events by filters
+  Future<List<ArtbeatEvent>> getFilteredEvents({
+    String? artistId,
+    String? category,
+    List<String>? tags,
+    bool? isUpcoming,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      Query query = _firestore.collection(_eventsCollection);
+
+      if (artistId != null) {
+        query = query.where('artistId', isEqualTo: artistId);
+      }
+
+      if (category != null && category != 'All') {
+        query = query.where('category', isEqualTo: category);
+      }
+
+      if (tags != null && tags.isNotEmpty) {
+        query = query.where('tags', arrayContainsAny: tags);
+      }
+
+      if (isUpcoming == true) {
+        query = query.where('dateTime',
+            isGreaterThanOrEqualTo: DateTime.now().toIso8601String());
+      }
+
+      if (startDate != null) {
+        query = query.where('dateTime',
+            isGreaterThanOrEqualTo: startDate.toIso8601String());
+      }
+
+      if (endDate != null) {
+        query = query.where('dateTime',
+            isLessThanOrEqualTo: endDate.toIso8601String());
+      }
+
+      // Always order by date
+      query = query.orderBy('dateTime');
+
+      final querySnapshot = await query.get();
+
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id; // Add the document ID to the data
+        return ArtbeatEvent.fromFirestore(doc);
+      }).toList();
+    } catch (e) {
+      _logger.e('Error getting filtered events: $e');
+      rethrow;
+    }
+  }
+
+  /// Get events based on various criteria
+  Future<List<ArtbeatEvent>> getEvents({
+    String? artistId,
+    List<String>? tags,
+    bool? onlyMine = false,
+    bool? onlyMyTickets = false,
+  }) async {
+    try {
+      Query query = _firestore.collection(_eventsCollection);
+      final currentUserId = _auth.currentUser?.uid;
+
+      if (onlyMine == true && currentUserId != null) {
+        query = query.where('artistId', isEqualTo: currentUserId);
+      } else if (artistId != null) {
+        query = query.where('artistId', isEqualTo: artistId);
+      }
+
+      if (onlyMyTickets == true && currentUserId != null) {
+        // First get the ticket purchases for the current user
+        final ticketPurchases = await _firestore
+            .collection(_ticketPurchasesCollection)
+            .where('userId', isEqualTo: currentUserId)
+            .get();
+
+        // Get the event IDs from the purchases
+        final eventIds = ticketPurchases.docs
+            .map((doc) => doc.data()['eventId'] as String)
+            .toSet();
+
+        if (eventIds.isEmpty) {
+          return [];
+        }
+
+        // Add a where clause to only get these events
+        query = query.where(FieldPath.documentId, whereIn: eventIds.toList());
+      }
+
+      if (tags != null && tags.isNotEmpty) {
+        query = query.where('tags', arrayContainsAny: tags);
+      }
+
+      // Order by dateTime to get upcoming events first
+      query = query.orderBy('dateTime');
+
+      final querySnapshot = await query.get();
+      return querySnapshot.docs
+          .map((doc) => ArtbeatEvent.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      _logger.e('Error fetching events: $e');
+      rethrow;
+    }
   }
 }

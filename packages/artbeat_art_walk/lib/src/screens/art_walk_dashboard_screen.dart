@@ -30,7 +30,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
   List<CaptureModel> _nearbyCaptures = [];
   bool _isLoadingWalks = true;
   bool _isLoadingCaptures = true;
-  String _userZipCode = '';
+
   bool _mapsInitialized = false;
   final TextEditingController _zipSearchController = TextEditingController();
 
@@ -64,7 +64,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
               target: LatLng(coordinates.latitude, coordinates.longitude),
               zoom: 13,
             );
-            _userZipCode = user.zipCode!;
+            // Store user's zip code for later use if needed
           });
           _updateMapMarkers();
           _loadNearbyCaptures();
@@ -759,24 +759,138 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
 
   Widget _buildWalkCard(ArtWalkModel walk, bool isOwner) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(
-          isOwner ? Icons.directions_walk : Icons.public,
-          color: isOwner
-              ? ArtbeatColors.primaryPurple
-              : ArtbeatColors.primaryGreen,
-        ),
-        title: Text(
-          walk.title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text('${walk.artPieces.length} art pieces'),
-        trailing: const Icon(Icons.chevron_right),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
         onTap: () => Navigator.pushNamed(
           context,
           '/art-walk/detail',
-          arguments: {'walkId': walk.id}, // Pass as map for detail screen
+          arguments: walk.id,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+          // Image section
+          Container(
+            height: 160,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              color: Colors.grey[100],
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: _buildWalkImage(walk),
+            ),
+          ),
+          
+          // Content section
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      isOwner ? Icons.directions_walk : Icons.public,
+                      color: isOwner
+                          ? ArtbeatColors.primaryPurple
+                          : ArtbeatColors.primaryGreen,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        walk.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                if (walk.description.isNotEmpty) ...[
+                  Text(
+                    walk.description,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${walk.artPieces.length} art pieces',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, color: Colors.grey),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWalkImage(ArtWalkModel walk) {
+    // Try to show cover image first
+    if (walk.coverImageUrl != null && walk.coverImageUrl!.isNotEmpty) {
+      return Image.network(
+        walk.coverImageUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildFallbackImage(walk),
+      );
+    }
+    
+    // Try to show first image from imageUrls
+    if (walk.imageUrls.isNotEmpty) {
+      return Image.network(
+        walk.imageUrls.first,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildFallbackImage(walk),
+      );
+    }
+    
+    // Show fallback image
+    return _buildFallbackImage(walk);
+  }
+
+  Widget _buildFallbackImage(ArtWalkModel walk) {
+    return Container(
+      color: Colors.grey[200],
+      child: const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.map,
+              size: 48,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Art Walk',
+              style: TextStyle(
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -855,7 +969,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
             target: LatLng(coordinates.latitude, coordinates.longitude),
             zoom: 13,
           );
-          _userZipCode = zipCode;
+          // Store zip code for later use if needed
         });
         _updateMapMarkers();
         _loadNearbyCaptures();

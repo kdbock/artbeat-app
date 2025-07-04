@@ -24,9 +24,12 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final bool showLogo;
   final bool showDeveloperTools;
+  final bool showBackButton;
   final VoidCallback? onMenuPressed;
   final VoidCallback? onSearchPressed;
   final VoidCallback? onDeveloperPressed;
+  final VoidCallback? onProfilePressed;
+  final VoidCallback? onBackPressed;
   final List<Widget>? actions;
   final Color? backgroundColor;
   final Color? foregroundColor;
@@ -40,10 +43,13 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
     this.onMenuPressed,
     this.onSearchPressed,
     this.onDeveloperPressed,
+    this.onProfilePressed,
     this.actions,
     this.backgroundColor,
     this.foregroundColor,
     this.elevation,
+    this.showBackButton = false,
+    this.onBackPressed,
   });
 
   @override
@@ -52,38 +58,58 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: backgroundColor ?? Colors.white,
       foregroundColor: foregroundColor ?? Colors.black87,
       elevation: elevation ?? 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu),
-        onPressed: onMenuPressed ?? () => _openDrawer(context),
-      ),
+      leading: _buildLeadingIcon(context),
       title: _buildTitle(),
       centerTitle: true,
       actions: _buildActions(context),
     );
   }
 
+  Widget _buildLeadingIcon(BuildContext context) {
+    if (showBackButton) {
+      return IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: onBackPressed ?? () => Navigator.maybePop(context),
+      );
+    } else {
+      return IconButton(
+        icon: const Icon(Icons.menu),
+        onPressed: onMenuPressed ?? () => _openDrawer(context),
+      );
+    }
+  }
+
   Widget _buildTitle() {
     if (showLogo) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Try to load the logo image, fallback to text if not found
-          Image.asset(
-            'assets/images/artbeat_header.png',
-            height: 32,
-            errorBuilder: (context, error, stackTrace) {
-              // Fallback to text logo if image not found
-              return Text(
-                title ?? 'ARTbeat',
-                style: TextStyle(
-                  color: foregroundColor ?? Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
+      return Flexible(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 32),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Image.asset(
+                    'assets/images/artbeat_header.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      // Fallback to text logo if image not found
+                      return Text(
+                        title ?? 'ARTbeat',
+                        style: TextStyle(
+                          color: foregroundColor ?? Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      );
+                    },
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
-        ],
+        ),
       );
     } else if (title != null) {
       return Text(
@@ -93,6 +119,7 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
           fontWeight: FontWeight.bold,
           fontSize: 20,
         ),
+        overflow: TextOverflow.ellipsis,
       );
     } else {
       return const SizedBox.shrink();
@@ -108,6 +135,15 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
         IconButton(icon: const Icon(Icons.search), onPressed: onSearchPressed),
       );
     }
+
+    // Add profile/artist discovery icon
+    actionsList.add(
+      IconButton(
+        icon: const Icon(Icons.person_search),
+        tooltip: 'Find Artists',
+        onPressed: onProfilePressed ?? () => _showArtistDiscovery(context),
+      ),
+    );
 
     // Add developer tools icon if enabled
     if (showDeveloperTools) {
@@ -141,6 +177,94 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
         ),
       );
     }
+  }
+
+  void _showArtistDiscovery(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Discover Artists',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.search, color: Colors.blue),
+                      title: const Text('Search Artists'),
+                      subtitle: const Text('Find artists by name or style'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/search');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.trending_up,
+                        color: Colors.green,
+                      ),
+                      title: const Text('Featured Artists'),
+                      subtitle: const Text(
+                        'Explore trending and featured artists',
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/featured');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.location_on, color: Colors.red),
+                      title: const Text('Local Artists'),
+                      subtitle: const Text('Discover artists in your area'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/local');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.category, color: Colors.purple),
+                      title: const Text('Browse by Category'),
+                      subtitle: const Text(
+                        'Explore different art styles and mediums',
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/categories');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _showDeveloperTools(BuildContext context) {

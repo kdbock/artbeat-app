@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'config/maps_config.dart';
 import 'app.dart';
 
 Future<void> main() async {
@@ -15,30 +17,29 @@ Future<void> main() async {
       print('✅ ConfigService initialized');
     }
 
-    // Check if Firebase is already initialized
-    if (Firebase.apps.isEmpty) {
-      if (kDebugMode) {
-        print('🔥 Starting Firebase initialization...');
-      }
+    // Initialize Maps configuration
+    await MapsConfig.initialize();
+    if (kDebugMode) {
+      print('✅ Maps configuration initialized');
+    }
 
-      // IMPORTANT: Configure App Check BEFORE Firebase initialization
-      await SecureFirebaseConfig.configureAppCheck(
-        teamId: 'H49R32NPY6',
-        debug: kDebugMode,
-      );
+    // Reset Firebase state on hot restart in debug mode
+    if (kDebugMode) {
+      SecureFirebaseConfig.resetInitializationState();
+    }
 
-      // Initialize Firebase after App Check is configured
-      await SecureFirebaseConfig.initializeFirebase();
+    // Ensure Firebase is properly initialized
+    if (kDebugMode) {
+      print('🔥 Ensuring Firebase initialization...');
+    }
 
-      if (kDebugMode) {
-        print('✅ Firebase initialization completed successfully');
-      }
-    } else {
-      if (kDebugMode) {
-        print(
-          '🔥 Firebase already initialized, skipping SecureFirebaseConfig initialization',
-        );
-      }
+    await SecureFirebaseConfig.ensureInitialized(
+      teamId: 'H49R32NPY6',
+      debug: kDebugMode,
+    );
+
+    if (kDebugMode) {
+      print('✅ Firebase initialization completed successfully');
     }
 
     if (kDebugMode) {
@@ -46,13 +47,56 @@ Future<void> main() async {
       final status = SecureFirebaseConfig.getStatus();
       print('🔍 Firebase Status: $status');
       print('🔍 Firebase apps count: ${Firebase.apps.length}');
+      if (Firebase.apps.isNotEmpty) {
+        print(
+          '🔍 Firebase app names: ${Firebase.apps.map((app) => app.name).toList()}',
+        );
+      }
     }
   } catch (e, stackTrace) {
     if (kDebugMode) {
       print('❌ Firebase initialization failed: $e');
       print('❌ Stack trace: $stackTrace');
+    }
+
+    // Handle duplicate app errors specifically
+    if (e.toString().contains('duplicate-app') ||
+        e.toString().contains('already exists')) {
+      if (kDebugMode) {
+        print(
+          '🔥 Duplicate app error caught in main, proceeding with app launch',
+        );
+      }
+      // Continue with app launch since Firebase is already initialized
     } else {
-      rethrow;
+      // For other errors, show error dialog
+      runApp(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Initialization Error',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Error: ${e.toString()}', textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => main(),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      return;
     }
   }
 

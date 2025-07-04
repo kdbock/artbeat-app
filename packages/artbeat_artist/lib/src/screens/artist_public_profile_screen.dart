@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UserType, SubscriptionTier, ArtistProfileModel, UserAvatar;
+    show UserType, SubscriptionTier, ArtistProfileModel, UserAvatar, UniversalHeader;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
@@ -168,7 +168,10 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Artist Profile')),
+        appBar: const UniversalHeader(
+          title: 'Artist Profile',
+          showLogo: false,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }

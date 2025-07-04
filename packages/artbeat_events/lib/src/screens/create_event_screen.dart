@@ -105,7 +105,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           try {
             final updatedEvent = event.copyWith(id: eventId);
             await _notificationService.scheduleEventReminders(updatedEvent);
-          } catch (notificationError) {
+          } on Exception catch (notificationError) {
             _logger.e('Failed to schedule reminders: $notificationError');
             successMessage =
                 'Event created successfully! (Reminder notifications require permission)';

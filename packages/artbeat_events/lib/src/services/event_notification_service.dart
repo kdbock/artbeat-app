@@ -2,80 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:logger/logger.dart';
+import 'package:intl/intl.dart';
 import '../models/artbeat_event.dart';
 
-/// Service for handling event notifications and reminders
+/// Service for handling event-related notifications
 class EventNotificationService {
-  static const String _channelId = 'event_reminders';
-  static const String _channelName = 'Event Reminders';
-  static const String _channelDescription = 'Notifications for upcoming events';
-
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
-  final Logger _logger = Logger();
-
-  static final EventNotificationService _instance =
-      EventNotificationService._internal();
+  static final EventNotificationService _instance = EventNotificationService._();
   factory EventNotificationService() => _instance;
-  EventNotificationService._internal();
+  EventNotificationService._();
 
-  /// Initialize notification services
+  final String _channelId = 'artbeat_events';
+  final Logger _logger = Logger();
+  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+
+  /// Initialize notification service
   Future<void> initialize() async {
     try {
-      await _initializeLocalNotifications();
-      await _initializeAwesomeNotifications();
-      _logger.i('Notification service initialized');
+      // Initialize awesome_notifications
+      await AwesomeNotifications().initialize(
+        null,
+        [
+          NotificationChannel(
+            channelKey: _channelId,
+            channelName: 'Event Notifications',
+            channelDescription: 'Notifications for ARTbeat events',
+            defaultColor: const Color(0xFF6F42C1),
+            importance: NotificationImportance.High,
+            playSound: true,
+            enableVibration: true,
+          ),
+        ],
+      );
+
+      // Initialize local notifications
+      const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initializationSettingsIOS = DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
+      const initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsIOS,
+      );
+      await _localNotifications.initialize(initializationSettings);
+
+      _logger.i('Notification services initialized successfully');
     } on Exception catch (e) {
-      _logger.e('Error initializing notification service: $e');
+      _logger.e('Error initializing notification services: $e');
+      rethrow;
     }
-  }
-
-  /// Initialize flutter_local_notifications
-  Future<void> _initializeLocalNotifications() async {
-    const androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iOSSettings = DarwinInitializationSettings();
-
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iOSSettings,
-    );
-
-    await _localNotifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTap,
-    );
-
-    // Create notification channel for Android
-    const androidChannel = AndroidNotificationChannel(
-      _channelId,
-      _channelName,
-      description: _channelDescription,
-      importance: Importance.high,
-    );
-
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(androidChannel);
-  }
-
-  /// Initialize awesome_notifications
-  Future<void> _initializeAwesomeNotifications() async {
-    await AwesomeNotifications().initialize(
-      null, // Use default app icon
-      [
-        NotificationChannel(
-          channelKey: _channelId,
-          channelName: _channelName,
-          channelDescription: _channelDescription,
-          defaultColor: const Color(0xFF9D50DD),
-          ledColor: Colors.white,
-          importance: NotificationImportance.High,
-          channelShowBadge: true,
-        ),
-      ],
-    );
   }
 
   /// Request notification permissions
@@ -172,60 +148,62 @@ class EventNotificationService {
   Future<void> scheduleEventReminders(ArtbeatEvent event) async {
     if (!event.reminderEnabled) return;
 
-    // Check and request notification permissions first
     final hasPermission = await requestPermissions();
     if (!hasPermission) {
-      _logger.w(
-          'Notification permissions not granted, skipping event reminders for: ${event.title}');
+      _logger.w('Notification permissions not granted');
       return;
     }
 
     try {
-      final eventTime = event.dateTime;
       final now = DateTime.now();
+      final eventTime = event.dateTime;
 
-      // Schedule 24 hours before (if applicable)
-      final dayBeforeTime = eventTime.subtract(const Duration(days: 1));
-      if (dayBeforeTime.isAfter(now)) {
-        await AwesomeNotifications().createNotification(
-          content: NotificationContent(
-            id: '${event.id}_day'.hashCode,
-            channelKey: _channelId,
-            title: 'Tomorrow: ${event.title}',
-            body:
-                'Don\'t forget about your event tomorrow at ${event.location}',
-            payload: {
-              'eventId': event.id,
-              'type': 'event_reminder_day',
-            },
-          ),
-          schedule: NotificationCalendar.fromDate(date: dayBeforeTime),
-        );
+      // Schedule reminders at different intervals
+      final reminderTimes = [
+        eventTime.subtract(const Duration(days: 1)),    // 1 day before
+        eventTime.subtract(const Duration(hours: 2)),   // 2 hours before
+        eventTime.subtract(const Duration(minutes: 30)), // 30 minutes before
+      ];
+
+      for (final reminderTime in reminderTimes) {
+        if (reminderTime.isAfter(now)) {
+          await AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: '${event.id}_${reminderTime.millisecondsSinceEpoch}'.hashCode,
+              channelKey: _channelId,
+              title: _getReminderTitle(eventTime, reminderTime),
+              body: 'Event: ${event.title}\nLocation: ${event.location}',
+              bigPicture: event.eventBannerUrl,
+              notificationLayout: event.eventBannerUrl.isNotEmpty
+                  ? NotificationLayout.BigPicture
+                  : NotificationLayout.Default,
+              payload: {
+                'eventId': event.id,
+                'type': 'event_reminder',
+              },
+            ),
+            schedule: NotificationCalendar.fromDate(date: reminderTime),
+          );
+        }
       }
 
-      // Schedule 1 hour before
-      final hourBeforeTime = eventTime.subtract(const Duration(hours: 1));
-      if (hourBeforeTime.isAfter(now)) {
-        await AwesomeNotifications().createNotification(
-          content: NotificationContent(
-            id: '${event.id}_hour'.hashCode,
-            channelKey: _channelId,
-            title: 'Event Starting Soon: ${event.title}',
-            body: 'Your event starts in 1 hour at ${event.location}',
-            bigPicture:
-                event.eventBannerUrl.isNotEmpty ? event.eventBannerUrl : null,
-            payload: {
-              'eventId': event.id,
-              'type': 'event_reminder_hour',
-            },
-          ),
-          schedule: NotificationCalendar.fromDate(date: hourBeforeTime),
-        );
-      }
-
-      _logger.i('Multiple event reminders scheduled for: ${event.title}');
+      _logger.i('Event reminders scheduled for: ${event.title}');
     } on Exception catch (e) {
       _logger.e('Error scheduling event reminders: $e');
+      rethrow;
+    }
+  }
+
+  /// Get appropriate reminder title based on time until event
+  String _getReminderTitle(DateTime eventTime, DateTime reminderTime) {
+    final difference = eventTime.difference(reminderTime);
+    
+    if (difference.inDays >= 1) {
+      return 'Event Tomorrow: ${DateFormat('h:mm a').format(eventTime)}';
+    } else if (difference.inHours >= 1) {
+      return 'Event in ${difference.inHours} hours';
+    } else {
+      return 'Event starting soon!';
     }
   }
 

@@ -217,14 +217,14 @@ class _SubscriptionAnalyticsScreenState
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return core.MainLayout(
+      return const core.MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: const core.UniversalHeader(
+          appBar: core.UniversalHeader(
             title: 'Subscription Analytics',
             showLogo: false,
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }
@@ -232,103 +232,103 @@ class _SubscriptionAnalyticsScreenState
     // Show upgrade prompt for users without Pro access
     if (!_hasProAccess) {
       return core.MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          appBar: const core.UniversalHeader(
-            title: 'Subscription Analytics',
-            showLogo: false,
-          ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.analytics, size: 80, color: Colors.grey),
-              const SizedBox(height: 16),
-              const Text(
-                'Subscription Analytics',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Get detailed insights about your subscription performance',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Available with Artist Pro Plan',
-                style: TextStyle(fontSize: 18, color: Colors.deepPurple),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/artist/subscription');
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
+          currentIndex: -1,
+          child: Scaffold(
+            appBar: const core.UniversalHeader(
+              title: 'Subscription Analytics',
+              showLogo: false,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.analytics, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
+                    'Subscription Analytics',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                ),
-                child: const Text('Upgrade to Pro'),
+                  SizedBox(height: 16),
+                  Text(
+                    'Get detailed insights about your subscription performance',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(height: 24),
+                  Text(
+                    'Available with Artist Pro Plan',
+                    style: TextStyle(fontSize: 18, color: Colors.deepPurple),
+                  ),
+                  SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/artist/subscription');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                    ),
+                    child: const Text('Upgrade to Pro'),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ));
+            ),
+          ));
     }
 
     return core.MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: core.UniversalHeader(
-          title: 'Subscription Analytics',
-          showLogo: false,
-          actions: [
-            PopupMenuButton<String>(
-              onSelected: _updateDateRange,
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'last_30_days',
-                  child: Text('Last 30 Days'),
-                ),
-                const PopupMenuItem(
-                  value: 'last_90_days',
-                  child: Text('Last 90 Days'),
-                ),
-                const PopupMenuItem(
-                  value: 'this_year',
-                  child: Text('This Year'),
-                ),
-                const PopupMenuItem(
-                  value: 'all_time',
-                  child: Text('All Time'),
-                ),
-              ],
-            ),
-          ],
-        ),
-        body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSubscriptionCard(),
-              const SizedBox(height: 24),
-              _buildAnalyticsSummary(),
-              const SizedBox(height: 32),
-              _buildPerformanceChart(),
-              const SizedBox(height: 32),
-              _buildFollowerGrowthChart(),
-              const SizedBox(height: 32),
-              _buildRecentPayments(),
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: core.UniversalHeader(
+            title: 'Subscription Analytics',
+            showLogo: false,
+            actions: [
+              PopupMenuButton<String>(
+                onSelected: _updateDateRange,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'last_30_days',
+                    child: Text('Last 30 Days'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'last_90_days',
+                    child: Text('Last 90 Days'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'this_year',
+                    child: Text('This Year'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'all_time',
+                    child: Text('All Time'),
+                  ),
+                ],
+              ),
             ],
           ),
-        ),
-      ),
-    ));
+          body: RefreshIndicator(
+            onRefresh: _loadData,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSubscriptionCard(),
+                  const SizedBox(height: 24),
+                  _buildAnalyticsSummary(),
+                  const SizedBox(height: 32),
+                  _buildPerformanceChart(),
+                  const SizedBox(height: 32),
+                  _buildFollowerGrowthChart(),
+                  const SizedBox(height: 32),
+                  _buildRecentPayments(),
+                ],
+              ),
+            ),
+          ),
+        ));
   }
 
   Widget _buildSubscriptionCard() {

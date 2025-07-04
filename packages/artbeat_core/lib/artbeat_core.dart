@@ -38,7 +38,7 @@ export 'src/models/feedback_model.dart'
 // Export Core Widgets
 export 'src/widgets/artbeat_button.dart';
 export 'src/widgets/artbeat_input.dart';
-export 'src/widgets/artbeat_app_header.dart';
+
 export 'src/widgets/artbeat_drawer.dart';
 export 'src/widgets/artbeat_drawer_items.dart';
 export 'src/widgets/art_capture_warning_dialog.dart';

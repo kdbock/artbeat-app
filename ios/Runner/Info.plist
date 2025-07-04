@@ -28,10 +28,7 @@
 	<string>group.H49R32NPY6.com.wordnerd.artbeat</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
-	<key>FirebaseAppCheckDebugToken</key>
-	<string>DD5EC9D5-A26F-4A26-BC09-9B2AF260CE06</string>
-	<key>FirebaseAppCheckTokenTTL</key>
-	<integer>604800</integer>
+
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -71,8 +68,37 @@
 	<string>This app may access your calendar to help you save and manage art events and art walk schedules.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
-	<key>FirebaseAppCheckDebugProviderFactory</key>
-	<string>true</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>googleapis.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.0</string>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>firebaseapp.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<false/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.0</string>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
+	</dict>
+
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

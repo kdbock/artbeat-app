@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/artbeat_event.dart';
 import '../services/event_service.dart';
 import '../widgets/event_card.dart';
 import '../screens/event_details_screen.dart';
 import '../screens/create_event_screen.dart';
-import '../utils/event_utils.dart';
+
+enum EventListMode { all, myEvents, myTickets }
 
 /// Screen for displaying a list of events with filtering and search
 class EventsListScreen extends StatefulWidget {
@@ -13,6 +15,8 @@ class EventsListScreen extends StatefulWidget {
   final String? artistId; // Filter by specific artist
   final List<String>? tags; // Filter by tags
   final bool showCreateButton;
+  final EventListMode mode;
+  final bool showBackButton;
 
   const EventsListScreen({
     super.key,
@@ -20,6 +24,8 @@ class EventsListScreen extends StatefulWidget {
     this.artistId,
     this.tags,
     this.showCreateButton = false,
+    this.mode = EventListMode.all,
+    this.showBackButton = true,
   });
 
   @override
@@ -30,6 +36,7 @@ class _EventsListScreenState extends State<EventsListScreen>
     with TickerProviderStateMixin {
   final EventService _eventService = EventService();
   final TextEditingController _searchController = TextEditingController();
+  String _selectedCategory = 'All';
 
   List<ArtbeatEvent> _allEvents = [];
   List<ArtbeatEvent> _filteredEvents = [];
@@ -45,60 +52,73 @@ class _EventsListScreenState extends State<EventsListScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: _filterTabs.length, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() {
-          _currentTabIndex = _tabController.index;
-        });
-        _applyFilters();
-      }
-    });
     _loadEvents();
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _refreshEvents() async {
+    await _loadEvents();
   }
 
   Future<void> _loadEvents() async {
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
+
     try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      List<ArtbeatEvent> events;
-
-      if (widget.artistId != null) {
-        events = await _eventService.getEventsByArtist(widget.artistId!);
-      } else if (widget.tags != null && widget.tags!.isNotEmpty) {
-        events = await _eventService.getEventsByTags(widget.tags!);
-      } else {
-        events = await _eventService.getUpcomingPublicEvents();
-      }
+      final events = await _eventService.getEvents(
+        artistId: widget.artistId,
+        tags: widget.tags,
+        onlyMine: widget.mode == EventListMode.myEvents,
+        onlyMyTickets: widget.mode == EventListMode.myTickets,
+      );
 
       if (mounted) {
         setState(() {
           _allEvents = events;
+          _filterEvents();
           _isLoading = false;
+          _error = null;
         });
-        _applyFilters();
       }
-    } on Exception catch (e) {
+    } on FirebaseException catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = e.code == 'permission-denied'
+              ? 'You don\'t have permission to view these events. Please sign in first.'
+              : 'Failed to load events: ${e.message}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error =
+              'An unexpected error occurred while loading events. Please try again.';
           _isLoading = false;
         });
       }
     }
   }
 
-  void _applyFilters() {
-    List<ArtbeatEvent> filtered = List.from(_allEvents);
+  void _filterEvents() {
+    var filtered = List<ArtbeatEvent>.from(_allEvents);
+
+    // Apply category filter
+    if (_selectedCategory != 'All') {
+      filtered = filtered
+          .where((event) => event.category == _selectedCategory)
+          .toList();
+    }
+
+    // Apply search filter
+    final searchQuery = _searchController.text.toLowerCase();
+    if (searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where((event) =>
+              event.title.toLowerCase().contains(searchQuery) ||
+              event.description.toLowerCase().contains(searchQuery))
+          .toList();
+    }
 
     // Apply tab filter
     switch (_currentTabIndex) {
@@ -108,35 +128,99 @@ class _EventsListScreenState extends State<EventsListScreen>
             .toList();
         break;
       case 2: // Today
+        final now = DateTime.now();
         filtered = filtered
-            .where((event) => EventUtils.isEventToday(event.dateTime))
+            .where((event) =>
+                event.dateTime.year == now.year &&
+                event.dateTime.month == now.month &&
+                event.dateTime.day == now.day)
             .toList();
         break;
       case 3: // This Week
+        final now = DateTime.now();
+        final weekEnd = now.add(const Duration(days: 7));
         filtered = filtered
-            .where((event) => EventUtils.isEventThisWeek(event.dateTime))
+            .where((event) =>
+                event.dateTime.isAfter(now) && event.dateTime.isBefore(weekEnd))
             .toList();
         break;
     }
 
-    // Apply search filter
-    final searchQuery = _searchController.text.toLowerCase();
-    if (searchQuery.isNotEmpty) {
-      filtered = filtered
-          .where((event) =>
-              event.title.toLowerCase().contains(searchQuery) ||
-              event.description.toLowerCase().contains(searchQuery) ||
-              event.location.toLowerCase().contains(searchQuery) ||
-              event.tags.any((tag) => tag.toLowerCase().contains(searchQuery)))
-          .toList();
+    if (mounted) {
+      setState(() {
+        _filteredEvents = filtered;
+      });
     }
+  }
 
-    // Sort by date
-    filtered.sort((a, b) => a.dateTime.compareTo(b.dateTime));
+  void _onTabChanged(int index) {
+    if (mounted) {
+      setState(() {
+        _currentTabIndex = index;
+        _filterEvents();
+      });
+    }
+  }
 
-    setState(() {
-      _filteredEvents = filtered;
-    });
+  Widget _buildSearchAndFilter() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search events...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onChanged: (_) => _filterEvents(),
+            ),
+          ),
+          const SizedBox(width: 8),
+          DropdownButton<String>(
+            value: _selectedCategory,
+            items: [
+              'All',
+              'Art Show',
+              'Workshop',
+              'Exhibition',
+              'Gallery Opening',
+              'Other'
+            ]
+                .map((category) => DropdownMenuItem(
+                      value: category,
+                      child: Text(category),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _selectedCategory = value;
+                  _filterEvents();
+                });
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getTitle() {
+    if (widget.title != null) return widget.title!;
+
+    switch (widget.mode) {
+      case EventListMode.all:
+        return 'Events';
+      case EventListMode.myEvents:
+        return 'My Events';
+      case EventListMode.myTickets:
+        return 'My Tickets';
+    }
   }
 
   @override
@@ -145,107 +229,30 @@ class _EventsListScreenState extends State<EventsListScreen>
       currentIndex: 3, // Events tab
       child: Scaffold(
         appBar: UniversalHeader(
-          title: widget.title ?? 'Events',
+          title: _getTitle(),
           showLogo: false,
-          onSearchPressed: _showSearchDialog,
+          showBackButton: widget.showBackButton,
+          onBackPressed: () => Navigator.of(context).pop(),
           actions: [
             if (widget.showCreateButton)
               IconButton(
-                onPressed: _navigateToCreateEvent,
                 icon: const Icon(Icons.add),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CreateEventScreen(),
+                      fullscreenDialog: true,
+                    ),
+                  );
+                  if (result == true && mounted) {
+                    _loadEvents();
+                  }
+                },
               ),
           ],
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withAlpha(25),
-                ArtbeatColors.backgroundPrimary,
-                ArtbeatColors.primaryGreen.withAlpha(25),
-              ],
-            ),
-          ),
-          child: Column(
-            children: [
-              // Tab bar below header
-              Container(
-                decoration: BoxDecoration(
-                  color: ArtbeatColors.primaryPurple,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ArtbeatColors.primaryPurple.withAlpha(51),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  tabs: _filterTabs.map((tab) => Tab(text: tab)).toList(),
-                  indicatorColor: ArtbeatColors.accentYellow,
-                  labelColor: ArtbeatColors.textWhite,
-                  unselectedLabelColor: ArtbeatColors.textWhite.withAlpha(179),
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-              if (_searchController.text.isNotEmpty) _buildSearchHeader(),
-              Expanded(child: _buildBody()),
-            ],
-          ),
-        ),
-        floatingActionButton: widget.showCreateButton
-            ? FloatingActionButton(
-                onPressed: _navigateToCreateEvent,
-                child: const Icon(Icons.add),
-              )
-            : null,
-      ),
-    );
-  }
-
-  Widget _buildSearchHeader() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ArtbeatColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ArtbeatColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: ArtbeatColors.primaryPurple.withAlpha(26),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: ArtbeatColors.primaryPurple),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Searching for "${_searchController.text}"',
-              style: const TextStyle(
-                color: ArtbeatColors.textPrimary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              _searchController.clear();
-              _applyFilters();
-            },
-            icon: const Icon(Icons.close, color: ArtbeatColors.textSecondary),
-          ),
-        ],
+        body: _buildBody(),
       ),
     );
   }
@@ -256,225 +263,76 @@ class _EventsListScreenState extends State<EventsListScreen>
     }
 
     if (_error != null) {
-      return _buildErrorState();
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadEvents,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
     }
 
     if (_filteredEvents.isEmpty) {
-      return _buildEmptyState();
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.event_busy, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'No events found',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            if (widget.showCreateButton)
+              ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreateEventScreen()),
+                ),
+                child: const Text('Create Event'),
+              ),
+          ],
+        ),
+      );
     }
 
     return RefreshIndicator(
-      onRefresh: _loadEvents,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _filteredEvents.length,
-        itemBuilder: (context, index) {
-          final event = _filteredEvents[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: EventCard(
-              event: event,
-              onTap: () => _navigateToEventDetails(event),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildErrorState() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: ArtbeatColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ArtbeatColors.error.withAlpha(51)),
-        boxShadow: [
-          BoxShadow(
-            color: ArtbeatColors.error.withAlpha(26),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      onRefresh: _refreshEvents,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: ArtbeatColors.error.withAlpha(179),
+          _buildSearchAndFilter(),
+          TabBar(
+            controller: _tabController,
+            tabs: _filterTabs.map((tab) => Tab(text: tab)).toList(),
+            onTap: _onTabChanged,
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Failed to load events',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: ArtbeatColors.error,
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _filteredEvents.length,
+              itemBuilder: (context, index) {
+                final event = _filteredEvents[index];
+                return EventCard(
+                  event: event,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EventDetailsScreen(eventId: event.id),
+                    ),
+                  ),
+                );
+              },
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _error!,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: ArtbeatColors.textSecondary),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadEvents,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ArtbeatColors.primaryPurple,
-              foregroundColor: ArtbeatColors.textWhite,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('Retry'),
           ),
         ],
       ),
     );
-  }
-
-  Widget _buildEmptyState() {
-    String message;
-    String subtitle;
-    IconData icon;
-
-    switch (_currentTabIndex) {
-      case 1: // Upcoming
-        message = 'No upcoming events';
-        subtitle = 'Check back later for new events';
-        icon = Icons.schedule;
-        break;
-      case 2: // Today
-        message = 'No events today';
-        subtitle = 'Check the upcoming events tab';
-        icon = Icons.today;
-        break;
-      case 3: // This Week
-        message = 'No events this week';
-        subtitle = 'Check the upcoming events tab';
-        icon = Icons.calendar_view_week;
-        break;
-      default:
-        if (_searchController.text.isNotEmpty) {
-          message = 'No events found';
-          subtitle = 'Try different search terms';
-          icon = Icons.search_off;
-        } else {
-          message = 'No events available';
-          subtitle = 'Events will appear here when created';
-          icon = Icons.event_busy;
-        }
-    }
-
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: ArtbeatColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ArtbeatColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: ArtbeatColors.primaryPurple.withAlpha(13),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 64,
-            color: ArtbeatColors.textSecondary.withAlpha(128),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: ArtbeatColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: ArtbeatColors.textSecondary),
-          ),
-          if (widget.showCreateButton) ...[
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _navigateToCreateEvent,
-              icon: const Icon(Icons.add),
-              label: const Text('Create Event'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ArtbeatColors.primaryGreen,
-                foregroundColor: ArtbeatColors.textWhite,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  void _showSearchDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Search Events'),
-        content: TextField(
-          controller: _searchController,
-          decoration: const InputDecoration(
-            hintText: 'Search by title, description, or location',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (_) => _applyFilters(),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _searchController.clear();
-              _applyFilters();
-              Navigator.pop(context);
-            },
-            child: const Text('Clear'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Done'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _navigateToEventDetails(ArtbeatEvent event) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EventDetailsScreen(event: event),
-      ),
-    );
-  }
-
-  void _navigateToCreateEvent() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CreateEventScreen(),
-      ),
-    ).then((_) => _loadEvents()); // Refresh list after creating event
   }
 }

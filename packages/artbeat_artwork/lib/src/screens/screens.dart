@@ -4,3 +4,5 @@
 export 'artwork_upload_screen.dart';
 export 'artwork_detail_screen.dart';
 export 'artwork_browse_screen.dart';
+export 'artwork_edit_screen.dart';
+export 'enhanced_artwork_upload_screen.dart';

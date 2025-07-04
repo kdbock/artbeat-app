@@ -131,10 +131,10 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return MainLayout(
+      return const MainLayout(
         currentIndex: -1, // No navigation highlight for detail screens
         child: Scaffold(
-          appBar: const UniversalHeader(
+          appBar: UniversalHeader(
             title: 'Artwork',
             showLogo: false,
           ),

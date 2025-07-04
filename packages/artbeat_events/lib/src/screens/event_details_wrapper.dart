@@ -135,6 +135,6 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
       );
     }
 
-    return EventDetailsScreen(event: _event!);
+    return EventDetailsScreen(eventId: _event!.id);
   }
 }

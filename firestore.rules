@@ -1,6 +1,42 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Common helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin';
+    }
+    
+    // Helper function to check if user is moderator or admin
+    function isModerator(userId) {
+      let userType = get(/databases/$(database)/documents/users/$(userId)).data.userType;
+      return userType == 'moderator' || userType == 'admin';
+    }
+    
+    // Helper function to check if user is gallery
+    function isGallery(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.userType == 'gallery';
+    }
+    
+    // Helper function to check if user is artist
+    function isArtist(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.userType == 'artist';
+    }
+    
+    // Helper function to check if user is artist or gallery (content creators)
+    function isContentCreator(userId) {
+      let userType = get(/databases/$(database)/documents/users/$(userId)).data.userType;
+      return userType == 'artist' || userType == 'gallery';
+    }
+
     // Public posts (feed) - Allow all authenticated users to post and comment
     match /posts/{postId} {
       allow read: if true; // Allow reading all posts
@@ -40,16 +76,35 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == request.resource.data.ownerId;
     }
 
-    // Commissions (artist can read/write their own commissions)
+    // Commissions (artist-gallery collaborations)
     match /commissions/{commissionId} {
-      allow read: if request.auth != null && 
-                    (request.auth.uid == resource.data.userId || 
-                     request.auth.uid == resource.data.artistId);
-      allow create: if request.auth != null && 
-                      request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null && 
-                            (request.auth.uid == resource.data.userId || 
-                             request.auth.uid == resource.data.artistId);
+      allow read: if request.auth != null && (
+                    // Artist involved in commission
+                    request.auth.uid == resource.data.artistUserId ||
+                    // Gallery involved in commission
+                    request.auth.uid == resource.data.galleryUserId ||
+                    // Admin can read all commissions
+                    isAdmin(request.auth.uid)
+                  );
+      allow create: if request.auth != null && (
+                    // Gallery can create commissions for artists
+                    (isGallery(request.auth.uid) && request.auth.uid == request.resource.data.galleryUserId) ||
+                    // Artist can create commission requests
+                    (isArtist(request.auth.uid) && request.auth.uid == request.resource.data.artistUserId) ||
+                    // Admin can create any commission
+                    isAdmin(request.auth.uid)
+                  );
+      allow update: if request.auth != null && (
+                    // Parties involved can update commission
+                    request.auth.uid == resource.data.artistUserId ||
+                    request.auth.uid == resource.data.galleryUserId ||
+                    // Admin can update any commission
+                    isAdmin(request.auth.uid)
+                  );
+      allow delete: if request.auth != null && (
+                    // Only admin can delete commissions (for audit trail)
+                    isAdmin(request.auth.uid)
+                  );
     }
 
     // Subscriptions (users can read/write their own subscription)
@@ -98,87 +153,44 @@ service cloud.firestore {
 
     // Artist profiles (public portfolios)
     match /artistProfiles/{artistId} {
-      allow read: if true; // Allow public read of all artist profiles
-      allow create: if request.auth != null && (
-                    request.auth.uid == request.resource.data.userId || 
-                    // Allow creating featured public artist profiles for seeding
-                    (request.resource.data.isFeatured == true && 
-                     request.resource.data.isPortfolioPublic == true)
-                  );
-      allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == artistId;
     }
 
-    // Captures collection - allow public read for all captures for dashboard/explore
-    match /captures/{captureId} {
-      allow read: if true; // Allow public read for all captures
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-    }
-
-    // Artists collection - publicly readable for featured artists, users can manage their own
-    match /artists/{artistId} {
-      allow read: if true; // Allow public reading of artist profiles
-      allow create: if request.auth != null && 
-                    request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.userId;
-    }
-
-    // Users collection - users can read/write their own profile
-    match /users/{userId} {
-      allow read: if true; // Allow reading user profiles (for public display)
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
-      allow delete: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Events collection - public events are readable, users can manage their own events
-    match /events/{eventId} {
-      allow read: if resource.data.isPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.artistId) ||
-                  (request.auth != null && resource.data.attendeeIds != null && 
-                   request.auth.uid in resource.data.attendeeIds);
-      // Temporarily more permissive for debugging - any authenticated user can create events
-      allow create: if request.auth != null && 
-                    (request.auth.uid == request.resource.data.artistId ||
-                     // Debug mode - allow creation if artistId field exists and user is authenticated
-                     (request.resource.data.artistId != null && request.auth.uid != null));
-      allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.artistId;
-    }
-
-    // Art walks collection - similar to events
+    // Art Walks (publicly readable, authenticated users can create)
     match /artWalks/{walkId} {
-      allow read: if resource.data.isPublic == true || 
-                  (request.auth != null && request.auth.uid == resource.data.userId);
-      allow create: if request.auth != null && 
-                    request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.userId;
-
-      // Art walk comments subcollection
-      match /comments/{commentId} {
-        allow read: if true; // Publicly readable
-        allow create: if request.auth != null; // Any authenticated user can comment
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.creatorId;
+      
+      // Visits subcollection - track user visits to art pieces
+      match /visits/{visitId} {
+        allow read: if request.auth != null;  // Any authenticated user can read visits
+        allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
         allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
       }
+    }
 
-      // Art walk achievements subcollection
-      match /achievements/{userId} {
-        allow read: if request.auth != null && request.auth.uid == userId;
-        allow create: if request.auth != null && request.auth.uid == userId;
-        allow update, delete: if request.auth != null && request.auth.uid == userId;
+    // User art walk data - including completed walks and progress
+    match /users/{userId} {
+      match /completedWalks/{walkId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /artWalkProgress/{walkId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
 
-    // Public Art collection - publicly readable, authenticated users can create
-    match /publicArt/{artId} {
-      allow read: if true; // Public art is publicly readable
-      allow create: if request.auth != null && 
-                    request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null && 
-                            request.auth.uid == resource.data.userId;
+    // Achievements
+    match /users/{userId}/achievements/{achievementId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Public achievements for leaderboards
+    match /publicAchievements/{achievementId} {
+      allow read: if true;
+      allow write: if false; // Only cloud functions can write public achievements
     }
 
     // Ticket purchases collection - users can manage their own ticket purchases
@@ -216,6 +228,129 @@ service cloud.firestore {
                     request.auth.uid == request.resource.data.userId;
       allow delete: if request.auth != null && 
                     request.auth.uid == resource.data.userId;
+    }
+
+    // User profiles (public reading, users manage their own)
+    match /users/{userId} {
+      allow read: if true; // Allow reading all user profiles
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false; // Users cannot be deleted through client
+    }
+
+    // Captures (users manage their own captures)
+    match /captures/{captureId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // Events (public reading, authenticated users can create)
+    match /events/{eventId} {
+      allow read: if true; // Public reading for event discovery
+      allow create: if request.auth != null && 
+                      (request.resource.data.creatorId == request.auth.uid);
+      allow update, delete: if request.auth != null && 
+                            resource.data.creatorId == request.auth.uid;
+    }
+
+    // Ticket purchase rules
+    match /ticket_purchases/{purchaseId} {
+      // Users can read their own ticket purchases
+      allow read: if isAuthenticated() && 
+                 (resource.data.userId == request.auth.uid || 
+                  resource.data.artistId == request.auth.uid);
+      
+      // Authenticated users can create ticket purchases
+      allow create: if isAuthenticated() && 
+                   request.resource.data.userId == request.auth.uid;
+      
+      // Only the ticket owner or event owner can update/delete
+      allow update, delete: if isAuthenticated() && 
+                          (resource.data.userId == request.auth.uid || 
+                           resource.data.artistId == request.auth.uid);
+    }
+
+    // Ads collection - public reading for ad display, owners can manage their ads
+    match /ads/{adId} {
+      allow read: if true; // Public reading for ad display across the app
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.ownerId;
+      allow update: if request.auth != null && (
+        // Ad owner can update their own ads
+        request.auth.uid == resource.data.ownerId ||
+        // Admin can update any ad (for approval status changes)
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.ownerId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Ad payments collection - restricted to payer and admins
+    match /ad_payments/{paymentId} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.payerId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if request.auth != null && 
+                    request.auth.uid == request.resource.data.payerId;
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.payerId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Ad approvals collection - admin-only write, ad owners can read their approvals
+    match /ad_approvals/{approvalId} {
+      allow read: if request.auth != null && (
+        // Ad owner can read approval status for their ads
+        request.auth.uid == resource.data.adOwnerId ||
+        // Admin can read all approvals
+        isAdmin(request.auth.uid)
+      );
+      allow create, update, delete: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // Gallery invitations collection - for artist-gallery relationships
+    match /gallery_invitations/{invitationId} {
+      allow read: if request.auth != null && (
+                    // Artist can read invitations sent to them
+                    request.auth.uid == resource.data.artistUserId ||
+                    // Gallery can read invitations they sent
+                    request.auth.uid == resource.data.galleryUserId ||
+                    // Admin can read all invitations
+                    isAdmin(request.auth.uid)
+                  );
+      allow create: if request.auth != null && (
+                    // Gallery can create invitations for artists
+                    (isGallery(request.auth.uid) && request.auth.uid == request.resource.data.galleryUserId) ||
+                    // Admin can create any invitation
+                    isAdmin(request.auth.uid)
+                  );
+      allow update: if request.auth != null && (
+                    // Artist can update invitations (accept/decline)
+                    request.auth.uid == resource.data.artistUserId ||
+                    // Gallery can update their invitations
+                    request.auth.uid == resource.data.galleryUserId ||
+                    // Admin can update any invitation
+                    isAdmin(request.auth.uid)
+                  );
+      allow delete: if request.auth != null && (
+                    // Gallery can delete their invitations
+                    request.auth.uid == resource.data.galleryUserId ||
+                    // Admin can delete any invitation
+                    isAdmin(request.auth.uid)
+                  );
+    }
+
+    // Artwork likes collection (for artwork interaction tracking)
+    match /artwork_likes/{likeId} {
+      allow read: if true; // Public reading for like counts
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
 
     // Fallback: deny all other access

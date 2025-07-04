@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class QuietModeScreen extends StatefulWidget {
   const QuietModeScreen({super.key});
@@ -50,7 +51,7 @@ class _QuietModeScreenState extends State<QuietModeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Quiet Mode')),
+      appBar: const UniversalHeader(title: 'Quiet Mode', showLogo: false),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

@@ -171,6 +171,35 @@ class ArtbeatDrawerItems {
     route: '/feedback',
   );
 
+  // Admin Section
+  static const adminDashboard = ArtbeatDrawerItem(
+    title: 'Admin Dashboard',
+    icon: Icons.admin_panel_settings,
+    route: '/admin/dashboard',
+    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const userManagement = ArtbeatDrawerItem(
+    title: 'User Management',
+    icon: Icons.people_alt_outlined,
+    route: '/admin/users',
+    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const contentModeration = ArtbeatDrawerItem(
+    title: 'Content Moderation',
+    icon: Icons.gavel_outlined,
+    route: '/admin/moderation',
+    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const systemSettings = ArtbeatDrawerItem(
+    title: 'System Settings',
+    icon: Icons.settings_applications_outlined,
+    route: '/admin/settings',
+    color: ArtbeatColors.primaryPurple,
+  );
+
   // Logout
   static const signOut = ArtbeatDrawerItem(
     title: 'Sign Out',
@@ -178,6 +207,14 @@ class ArtbeatDrawerItems {
     route: '/login',
     color: ArtbeatColors.error,
   );
+
+  // Admin items getter
+  static List<ArtbeatDrawerItem> get adminItemsSection => [
+    adminDashboard,
+    userManagement,
+    contentModeration,
+    systemSettings,
+  ];
 
   // Grouped items for drawer sections
   static List<ArtbeatDrawerItem> get userItems => [
@@ -219,4 +256,6 @@ class ArtbeatDrawerItems {
     help,
     feedback,
   ];
+
+  static List<ArtbeatDrawerItem> get adminItems => adminItemsSection;
 }

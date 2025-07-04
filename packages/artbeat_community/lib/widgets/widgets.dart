@@ -5,3 +5,4 @@ export 'avatar_widget.dart';
 export 'canvas_feed.dart';
 export 'feedback_thread_widget.dart';
 export 'gift_card_widget.dart';
+export 'art_critique_slider.dart';

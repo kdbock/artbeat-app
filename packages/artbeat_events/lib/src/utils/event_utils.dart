@@ -169,113 +169,59 @@ class EventUtils {
   static String generateShareText(ArtbeatEvent event) {
     final buffer = StringBuffer();
 
+    // Event title and basic info
     buffer.writeln('🎨 ${event.title}');
     buffer.writeln('📅 ${formatEventDateTime(event.dateTime)}');
     buffer.writeln('📍 ${event.location}');
 
+    // Ticket information
     final priceRange = getTicketPriceRange(event.ticketTypes);
     buffer.writeln('🎫 $priceRange');
 
+    // Show remaining tickets if limited
+    if (event.maxAttendees > 0) {
+      final remaining = event.totalAvailableTickets - event.totalTicketsSold;
+      if (remaining < event.totalAvailableTickets * 0.2) { // Less than 20% left
+        buffer.writeln('⚠️ Only $remaining tickets remaining!');
+      }
+    }
+
+    // Categories and tags
     if (event.tags.isNotEmpty) {
       buffer.writeln('🏷️ ${event.tags.take(3).join(' • ')}');
     }
 
-    buffer.writeln('\n${event.description}');
-    buffer.writeln('\nGet your tickets on ARTbeat!');
+    // Event description (truncated)
+    final description = event.description.length > 200
+        ? '${event.description.substring(0, 197)}...'
+        : event.description;
+    buffer.writeln('\n$description');
+
+    // Call to action
+    buffer.writeln('\nGet your tickets now at:');
+    buffer.writeln('artbeat://events/${event.id}');
 
     return buffer.toString();
   }
 
-  /// Get event category from tags
-  static String getEventCategory(List<String> tags) {
-    if (tags.isEmpty) return 'General';
-
-    // Priority categories
-    const priorityCategories = [
-      'Art Exhibition',
-      'Gallery Opening',
-      'Workshop',
-      'Artist Talk',
-      'Live Performance',
-    ];
-
-    for (final category in priorityCategories) {
-      if (tags.contains(category)) {
-        return category;
-      }
-    }
-
-    return tags.first;
+  /// Get calendar event details
+  static Map<String, dynamic> getCalendarEventDetails(ArtbeatEvent event) {
+    return {
+      'title': event.title,
+      'description': '${event.description}\n\nLocation: ${event.location}\n'
+          'Tickets: ${getTicketPriceRange(event.ticketTypes)}',
+      'start': event.dateTime,
+      'end': event.dateTime.add(const Duration(hours: 2)), // Default 2 hour duration
+      'location': event.location,
+      'url': 'artbeat://events/${event.id}',
+      'reminders': [
+        const Duration(days: 1),
+        const Duration(hours: 1),
+      ],
+    };
   }
 
-  /// Calculate event popularity score
-  static double calculatePopularityScore(ArtbeatEvent event) {
-    double score = 0.0;
-
-    // Base score from attendees
-    final attendeeRatio = event.attendeeIds.length / event.maxAttendees;
-    score += attendeeRatio * 50;
-
-    // Bonus for ticket sales
-    final salesRatio = event.totalTicketsSold / event.totalAvailableTickets;
-    score += salesRatio * 30;
-
-    // Bonus for being public
-    if (event.isPublic) {
-      score += 10;
-    }
-
-    // Bonus for having tags
-    score += event.tags.length * 2;
-
-    // Time penalty for older events
-    final daysSinceCreated = DateTime.now().difference(event.createdAt).inDays;
-    score *= (1 - (daysSinceCreated * 0.01)).clamp(0.5, 1.0);
-
-    return score.clamp(0.0, 100.0);
-  }
-
-  /// Sort events by relevance
-  static List<ArtbeatEvent> sortEventsByRelevance(
-    List<ArtbeatEvent> events, {
-    List<String>? userInterests,
-    DateTime? referenceDate,
-  }) {
-    final reference = referenceDate ?? DateTime.now();
-
-    events.sort((a, b) {
-      double scoreA = 0.0;
-      double scoreB = 0.0;
-
-      // Time relevance (upcoming events are more relevant)
-      final daysUntilA = a.dateTime.difference(reference).inDays;
-      final daysUntilB = b.dateTime.difference(reference).inDays;
-
-      if (daysUntilA >= 0 && daysUntilA <= 7) scoreA += 10;
-      if (daysUntilB >= 0 && daysUntilB <= 7) scoreB += 10;
-
-      // Interest matching
-      if (userInterests != null) {
-        final matchingTagsA =
-            a.tags.where((tag) => userInterests.contains(tag)).length;
-        final matchingTagsB =
-            b.tags.where((tag) => userInterests.contains(tag)).length;
-
-        scoreA += matchingTagsA * 5;
-        scoreB += matchingTagsB * 5;
-      }
-
-      // Popularity
-      scoreA += calculatePopularityScore(a) * 0.1;
-      scoreB += calculatePopularityScore(b) * 0.1;
-
-      return scoreB.compareTo(scoreA);
-    });
-
-    return events;
-  }
-
-  /// Generate QR code data for event
+  /// Generate event QR code
   static String generateEventQrCode(ArtbeatEvent event) {
     return 'artbeat://event/${event.id}';
   }

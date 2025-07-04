@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class ChatSettingsScreen extends StatefulWidget {
   const ChatSettingsScreen({super.key});
@@ -17,7 +18,10 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Chat Settings')),
+      appBar: const UniversalHeader(
+        title: 'Chat Settings',
+        showLogo: false,
+      ),
       body: ListView(
         children: [
           const SizedBox(height: 16),

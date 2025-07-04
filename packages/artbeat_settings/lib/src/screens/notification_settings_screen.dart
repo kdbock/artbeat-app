@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
   const NotificationSettingsScreen({super.key});
@@ -6,12 +7,11 @@ class NotificationSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notification Settings'),
+      appBar: const UniversalHeader(
+        title: 'Notification Settings',
+        showLogo: false,
       ),
-      body: const Center(
-        child: Text('Notification Settings Screen'),
-      ),
+      body: const Center(child: Text('Notification Settings Screen')),
     );
   }
 }

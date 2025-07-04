@@ -88,6 +88,21 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     }
   }
 
+  Future<void> _editArtWalk(ArtWalkModel walk) async {
+    final result = await Navigator.pushNamed(
+      context,
+      '/art-walk/edit',
+      arguments: {
+        'walkId': walk.id,
+        'artWalk': walk,
+      },
+    );
+
+    if (result == true && mounted) {
+      _loadArtWalks(); // Refresh the list after editing
+    }
+  }
+
   Future<void> _deleteArtWalk(ArtWalkModel walk) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -461,23 +476,32 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
               ),
               TextButton.icon(
                 onPressed: () async {
-                  // Added async
                   await Navigator.push(
-                    // Added await
                     context,
                     MaterialPageRoute<void>(
                       builder: (_) => ArtWalkDetailScreen(walkId: walk.id),
                     ),
                   );
                   if (mounted) {
-                    // Added mounted check
                     _loadArtWalks(); // Refresh after viewing details, in case of changes
                   }
                 },
                 icon: const Icon(Icons.visibility, size: 18),
                 label: const Text('View'),
               ),
-              if (isMyWalk)
+              if (isMyWalk) ...[
+                TextButton.icon(
+                  onPressed: () => _editArtWalk(walk),
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    color: Colors.blue,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    'Edit',
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
                 TextButton.icon(
                   onPressed: () => _deleteArtWalk(walk),
                   icon: const Icon(
@@ -490,6 +514,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
+              ],
             ],
           ),
         ],

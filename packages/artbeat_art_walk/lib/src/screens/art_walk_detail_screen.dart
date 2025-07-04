@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:logger/logger.dart';
+import 'dart:math';
 
 final Logger _logger = Logger();
 
@@ -208,6 +210,78 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     }
   }
 
+  Widget _buildDetailBackground() {
+    // Try to show cover image first
+    if (_walk!.coverImageUrl != null && _walk!.coverImageUrl!.isNotEmpty) {
+      return Image.network(
+        _walk!.coverImageUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildFallbackBackground(),
+      );
+    }
+
+    // Try to show first image from imageUrls
+    if (_walk!.imageUrls.isNotEmpty) {
+      return Image.network(
+        _walk!.imageUrls.first,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildFallbackBackground(),
+      );
+    }
+
+    // Show fallback background
+    return _buildFallbackBackground();
+  }
+
+  Widget _buildFallbackBackground() {
+    return Container(
+      color: Colors.grey.shade300,
+      child: const Center(
+        child: Icon(Icons.map, size: 60, color: Colors.white),
+      ),
+    );
+  }
+
+  /// Calculate total distance for the walk
+  double _calculateTotalDistance() {
+    if (_artPieces.isEmpty) return 0.0;
+
+    double totalDistance = 0.0;
+    for (int i = 0; i < _artPieces.length - 1; i++) {
+      final art1 = _artPieces[i];
+      final art2 = _artPieces[i + 1];
+      totalDistance += _calculateDistance(
+        art1.location.latitude,
+        art1.location.longitude,
+        art2.location.latitude,
+        art2.location.longitude,
+      );
+    }
+    return totalDistance;
+  }
+
+  /// Calculate distance between two points in miles
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const double earthRadius = 3959.0; // miles
+    final dLat = (lat2 - lat1) * (pi / 180.0);
+    final dLon = (lon2 - lon1) * (pi / 180.0);
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * pi / 180.0) *
+            cos(lat2 * pi / 180.0) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return earthRadius * c;
+  }
+
   void _startNavigation() {
     if (_walk == null) return;
 
@@ -284,7 +358,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
               label: 'View All',
               onPressed: () {
                 if (!mounted) return;
-                Navigator.pushNamed(context, '/profile/achievements');
+                Navigator.pushNamed(context, '/achievements');
               },
             ),
             duration: const Duration(seconds: 5),
@@ -307,7 +381,10 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_isLoading) {
       return Scaffold(
         key: const ValueKey('loading'),
-        appBar: AppBar(title: const Text('Art Walk Details')),
+        appBar: const UniversalHeader(
+          title: 'Art Walk Details',
+          showLogo: false,
+        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -315,7 +392,10 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null) {
       return Scaffold(
         key: const ValueKey('not_found'),
-        appBar: AppBar(title: const Text('Art Walk Details')),
+        appBar: const UniversalHeader(
+          title: 'Art Walk Details',
+          showLogo: false,
+        ),
         body: const Center(child: Text('Art walk not found')),
       );
     }
@@ -331,36 +411,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(_walk!.title),
-              background:
-                  _walk!
-                      .imageUrls
-                      .isNotEmpty // Use imageUrls list
-                  ? Image.network(
-                      _walk!.imageUrls.first, // Display the first image
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade300,
-                          child: const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              size: 60,
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      },
-                    )
-                  : Container(
-                      color: Colors.grey.shade300,
-                      child: const Center(
-                        child: Icon(
-                          Icons.map, // Default icon if no image
-                          size: 60,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+              background: _buildDetailBackground(),
             ),
             actions: [
               IconButton(
@@ -398,22 +449,79 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                               '${_artPieces.length}',
                               'Artworks',
                             ),
-                            // Conditionally display distance and time if data can be derived/fetched elsewhere
-                            // As distanceKm and estimatedMinutes are removed from ArtWalkModel,
-                            // these stats are currently not displayed.
-                            // if (_walk!.distanceKm != null) // Removed
-                            //   _buildStat(
-                            //     Icons.straighten,
-                            //     '${_walk!.distanceKm!.toStringAsFixed(1)} km',
-                            //     'Distance',
-                            //   ),
-                            // if (_walk!.estimatedMinutes != null) // Removed
-                            //   _buildStat(
-                            //     Icons.access_time,
-                            //     '${_walk!.estimatedMinutes} min',
-                            //     'Time',
-                            //   ),
+                            if (_artPieces.length > 1)
+                              _buildStat(
+                                Icons.straighten,
+                                '${_calculateTotalDistance().toStringAsFixed(1)} mi',
+                                'Distance',
+                              ),
+                            if (_walk!.estimatedDuration != null)
+                              _buildStat(
+                                Icons.access_time,
+                                '${_walk!.estimatedDuration!.round()} min',
+                                'Duration',
+                              )
+                            else if (_artPieces.length > 1)
+                              _buildStat(
+                                Icons.access_time,
+                                '${(_calculateTotalDistance() * 19).round()} min',
+                                'Est. Time',
+                              ),
                           ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Starting point information
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue[200]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.my_location,
+                                    color: Colors.blue[600],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Starting Point',
+                                    style: TextStyle(
+                                      color: Colors.blue[600],
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Your current location will be used as the starting point. The app will guide you through each art piece in order.',
+                                style: TextStyle(
+                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              if (_artPieces.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  'First stop: ${_artPieces.first.title}',
+                                  style: TextStyle(
+                                    color: Colors.blue[700],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
 
                         const SizedBox(height: 16),

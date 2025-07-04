@@ -12,6 +12,13 @@ class ArtWalkModel {
   final int viewCount;
   final List<String> imageUrls; // Added for map preview and list view
   final String? zipCode; // Added for NC Region filtering
+  final double? estimatedDuration; // Duration in minutes
+  final double? estimatedDistance; // Distance in miles
+  final String? coverImageUrl; // Cover image URL
+  final String? routeData; // Encoded route data for map display
+  final List<String>? tags; // Tags for categorization
+  final String? difficulty; // Difficulty level (Easy, Medium, Hard)
+  final bool? isAccessible; // Accessibility information
 
   ArtWalkModel({
     required this.id,
@@ -24,6 +31,13 @@ class ArtWalkModel {
     this.viewCount = 0,
     this.imageUrls = const [],
     this.zipCode, // Added
+    this.estimatedDuration,
+    this.estimatedDistance,
+    this.coverImageUrl,
+    this.routeData,
+    this.tags,
+    this.difficulty,
+    this.isAccessible,
   });
 
   factory ArtWalkModel.fromFirestore(DocumentSnapshot doc) {
@@ -39,6 +53,9 @@ class ArtWalkModel {
       viewCount: data['viewCount'] as int? ?? 0,
       imageUrls: List<String>.from(data['imageUrls'] as List<dynamic>? ?? []),
       zipCode: data['zipCode'] as String?, // Added
+      estimatedDuration: data['estimatedDuration'] as double?,
+      estimatedDistance: data['estimatedDistance'] as double?,
+      coverImageUrl: data['coverImageUrl'] as String?,
     );
   }
 
@@ -53,6 +70,9 @@ class ArtWalkModel {
       'viewCount': viewCount,
       'imageUrls': imageUrls,
       'zipCode': zipCode, // Added
+      'estimatedDuration': estimatedDuration,
+      'estimatedDistance': estimatedDistance,
+      'coverImageUrl': coverImageUrl,
     };
   }
 
@@ -67,6 +87,9 @@ class ArtWalkModel {
     int? viewCount,
     List<String>? imageUrls,
     String? zipCode, // Added
+    double? estimatedDuration,
+    double? estimatedDistance,
+    String? coverImageUrl,
   }) {
     return ArtWalkModel(
       id: id ?? this.id,
@@ -79,6 +102,9 @@ class ArtWalkModel {
       viewCount: viewCount ?? this.viewCount,
       imageUrls: imageUrls ?? this.imageUrls,
       zipCode: zipCode ?? this.zipCode, // Added
+      estimatedDuration: estimatedDuration ?? this.estimatedDuration,
+      estimatedDistance: estimatedDistance ?? this.estimatedDistance,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
     );
   }
 

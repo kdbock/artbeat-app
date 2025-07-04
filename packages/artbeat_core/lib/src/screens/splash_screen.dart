@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../utils/user_sync_helper.dart';
@@ -22,6 +23,10 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    // Reset UserSyncHelper state in debug mode to handle hot reload
+    if (kDebugMode) {
+      UserSyncHelper.resetState();
+    }
     _setupHeartbeatAnimation();
     _checkAuthAndNavigate();
   }

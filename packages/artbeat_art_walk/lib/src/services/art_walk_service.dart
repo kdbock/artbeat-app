@@ -1,15 +1,25 @@
 import 'dart:io';
-import 'dart:math' show pi, sin, cos, sqrt, atan2;
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
+import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+
+// Core package imports with prefix
+import 'package:artbeat_core/src/services/achievement_service.dart' as core;
+import 'package:artbeat_core/src/models/achievement_type.dart' as core;
+
+// Local imports
+import '../models/capture_model.dart';
+import '../models/public_art_model.dart';
+import '../models/art_walk_model.dart';
 import '../models/comment_model.dart';
+import '../services/art_walk_cache_service.dart';
+import '../services/rewards_service.dart';
 
 /// Service for managing Art Walks and Public Art
 class ArtWalkService {
@@ -31,6 +41,9 @@ class ArtWalkService {
 
   /// Instance of RewardsService for XP and achievements
   final RewardsService _rewardsService = RewardsService();
+
+  /// Instance of achievement service from core package
+  final core.AchievementService _achievementService = core.AchievementService();
 
   /// Collection reference for captured art
   final CollectionReference _capturesCollection = FirebaseFirestore.instance
@@ -783,6 +796,88 @@ class ArtWalkService {
     }
   }
 
+  /// Update an existing art walk
+  Future<void> updateArtWalk({
+    required String walkId,
+    String? title,
+    String? description,
+    File? coverImageFile,
+    List<String>? artworkIds,
+    bool? isPublic,
+    String? zipCode,
+    double? estimatedDuration,
+    double? estimatedDistance,
+  }) async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      // Verify ownership
+      final walkDoc = await _artWalksCollection.doc(walkId).get();
+      if (!walkDoc.exists) {
+        throw Exception('Art walk not found');
+      }
+
+      final walkData = walkDoc.data() as Map<String, dynamic>;
+      if (walkData['userId'] != userId) {
+        throw Exception('Not authorized to update this art walk');
+      }
+
+      // Create update data
+      final Map<String, dynamic> updates = {
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (title != null) updates['title'] = title;
+      if (description != null) updates['description'] = description;
+      if (artworkIds != null) updates['artworkIds'] = artworkIds;
+      if (isPublic != null) updates['isPublic'] = isPublic;
+      if (zipCode != null) updates['zipCode'] = zipCode;
+      if (estimatedDuration != null)
+        updates['estimatedDuration'] = estimatedDuration;
+      if (estimatedDistance != null)
+        updates['estimatedDistance'] = estimatedDistance;
+
+      // Handle cover image update
+      if (coverImageFile != null) {
+        final imageUrl = await _uploadCoverImage(coverImageFile, walkId);
+        updates['coverImageUrl'] = imageUrl;
+      }
+
+      // Update the art walk document
+      await _artWalksCollection.doc(walkId).update(updates);
+
+      _logger.i('Successfully updated art walk: $walkId');
+    } catch (e) {
+      _logger.e('Error updating art walk: $e');
+      throw Exception('Failed to update art walk: $e');
+    }
+  }
+
+  /// Upload cover image for art walk
+  Future<String> _uploadCoverImage(File imageFile, String walkId) async {
+    try {
+      final userId = getCurrentUserId();
+      if (userId == null) throw Exception('User not authenticated');
+
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
+      final ref = _storage
+          .ref()
+          .child('art_walk_covers')
+          .child(userId)
+          .child(walkId)
+          .child(fileName);
+
+      final uploadTask = await ref.putFile(imageFile);
+      return await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      _logger.e('Error uploading cover image: $e');
+      throw Exception('Failed to upload cover image: $e');
+    }
+  }
+
   /// Delete an art walk
   Future<void> deleteArtWalk(String walkId) async {
     final userId = getCurrentUserId();
@@ -1003,7 +1098,7 @@ class ArtWalkService {
 
     try {
       // Upload cover image if provided
-      List<String> imageUrls = [];
+      final List<String> imageUrls = [];
       if (coverImageFile != null) {
         final String imageUrl = await _uploadImageToStorage(
           coverImageFile,
@@ -1038,6 +1133,15 @@ class ArtWalkService {
         'completionCount': 0,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      // Award XP for creating an art walk
+      try {
+        await _rewardsService.awardXP('art_walk_creation');
+        _logger.i('Awarded XP for art walk creation to user: $userId');
+      } catch (e) {
+        _logger.w('Failed to award XP for art walk creation: $e');
+        // Continue even if XP awarding fails
+      }
 
       return docRef.id;
     } catch (e) {
@@ -1121,6 +1225,15 @@ class ArtWalkService {
           .get();
 
       return snapshot.docs.map((doc) => doc.data()['artId'] as String).toList();
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        _logger.w(
+          'Permission denied accessing visits. This is expected if the art walk was just created.',
+        );
+        return [];
+      }
+      _logger.e('Firebase error getting user visited art: ${e.message}');
+      return [];
     } catch (e) {
       _logger.e('Error getting user visited art: $e');
       return [];
@@ -1130,46 +1243,49 @@ class ArtWalkService {
   /// Update user achievements based on art walk completions
   Future<void> _updateUserAchievements(String userId) async {
     try {
-      // Get all completed art walks for user
+      // Get completed walks from user's subcollection
       final completedWalks = await _firestore
-          .collectionGroup('completions')
-          .where('userId', isEqualTo: userId)
+          .collection('users')
+          .doc(userId)
+          .collection('completedWalks')
           .get();
 
       final completionCount = completedWalks.size;
 
-      // Update user achievements based on completion count
-      final userRef = _firestore.collection('users').doc(userId);
-
-      await _firestore.runTransaction((transaction) async {
-        final userDoc = await transaction.get(userRef);
-
-        if (!userDoc.exists) {
-          return;
-        }
-
-        final achievements = List<String>.from(
-          (userDoc.data()?['achievements'] as List<dynamic>?) ?? <String>[],
+      // Check achievements
+      if (completionCount >= 1) {
+        await _achievementService.awardAchievement(
+          core.AchievementType.firstWalk,
+          'First Art Walk',
+          'Completed your first art walk!',
         );
+      }
 
-        // Add achievements based on completion count
-        if (completionCount >= 1 && !achievements.contains('first_art_walk')) {
-          achievements.add('first_art_walk');
-        }
-        if (completionCount >= 5 && !achievements.contains('art_explorer')) {
-          achievements.add('art_explorer');
-        }
-        if (completionCount >= 10 && !achievements.contains('art_enthusiast')) {
-          achievements.add('art_enthusiast');
-        }
-        if (completionCount >= 25 && !achievements.contains('art_aficionado')) {
-          achievements.add('art_aficionado');
-        }
+      if (completionCount >= 5) {
+        await _achievementService.awardAchievement(
+          core.AchievementType.explorer,
+          'Art Walk Explorer',
+          'Completed 5 different art walks',
+        );
+      }
 
-        transaction.update(userRef, {'achievements': achievements});
-      });
+      if (completionCount >= 10) {
+        await _achievementService.awardAchievement(
+          core.AchievementType.master,
+          'Art Walk Master',
+          'Completed 10 different art walks',
+        );
+      }
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        _logger.w(
+          'Permission denied accessing achievements. Please check if user is authenticated.',
+        );
+      } else {
+        _logger.e('Firebase error updating achievements: ${e.message}');
+      }
     } catch (e) {
-      _logger.e('Error updating user achievements: $e');
+      _logger.e('Error updating achievements: $e');
     }
   }
 

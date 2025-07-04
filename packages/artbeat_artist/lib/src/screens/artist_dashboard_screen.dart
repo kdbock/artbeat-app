@@ -406,7 +406,10 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
 
     if (_artistProfile == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Artist Dashboard')),
+        appBar: const core.UniversalHeader(
+          title: 'Artist Dashboard',
+          showLogo: false,
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),

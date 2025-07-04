@@ -11,11 +11,11 @@ import '../utils/event_utils.dart';
 
 /// Screen for displaying detailed event information
 class EventDetailsScreen extends StatefulWidget {
-  final ArtbeatEvent event;
+  final String eventId;
 
   const EventDetailsScreen({
     super.key,
-    required this.event,
+    required this.eventId,
   });
 
   @override
@@ -24,19 +24,42 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
   final EventService _eventService = EventService();
-  final CalendarIntegrationService _calendarService =
-      CalendarIntegrationService();
-  final EventNotificationService _notificationService =
-      EventNotificationService();
+  final CalendarIntegrationService _calendarService = CalendarIntegrationService();
+  final EventNotificationService _notificationService = EventNotificationService();
+  final UserService _userService = UserService();
 
-  late ArtbeatEvent _event;
+  ArtbeatEvent? _event;
+  bool _isLoading = true;
+  String? _error;
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _ticketsSectionKey = GlobalKey();
+  bool _isProcessingAction = false;
 
   @override
   void initState() {
     super.initState();
-    _event = widget.event;
+    _loadEvent();
+  }
+
+  Future<void> _loadEvent() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+      
+      final event = await _eventService.getEventById(widget.eventId);
+      
+      setState(() {
+        _event = event;
+        _isLoading = false;
+      });
+    } on Exception catch (e) {
+      setState(() {
+        _error = 'Failed to load event: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -45,76 +68,104 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       currentIndex: 3, // Events tab
       child: Scaffold(
         appBar: UniversalHeader(
-          title: _event.title,
+          title: _event?.title ?? 'Event Details',
           showLogo: false,
           actions: [
-            IconButton(
-              onPressed: _shareEvent,
-              icon: const Icon(Icons.share),
-            ),
-            PopupMenuButton<String>(
-              onSelected: _handleMenuAction,
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'add_to_calendar',
-                  child: ListTile(
-                    leading: Icon(Icons.calendar_today),
-                    title: Text('Add to Calendar'),
-                    contentPadding: EdgeInsets.zero,
+            if (_event != null) ...[
+              IconButton(
+                onPressed: _shareEvent,
+                icon: const Icon(Icons.share),
+              ),
+              PopupMenuButton<String>(
+                onSelected: _handleMenuAction,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'add_to_calendar',
+                    child: ListTile(
+                      leading: Icon(Icons.calendar_today),
+                      title: Text('Add to Calendar'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'set_reminder',
-                  child: ListTile(
-                    leading: Icon(Icons.notifications),
-                    title: Text('Set Reminder'),
-                    contentPadding: EdgeInsets.zero,
+                  const PopupMenuItem(
+                    value: 'set_reminder',
+                    child: ListTile(
+                      leading: Icon(Icons.notifications),
+                      title: Text('Set Reminder'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
-                ),
-                const PopupMenuItem(
-                  value: 'report',
-                  child: ListTile(
-                    leading: Icon(Icons.flag),
-                    title: Text('Report Event'),
-                    contentPadding: EdgeInsets.zero,
+                  const PopupMenuItem(
+                    value: 'report',
+                    child: ListTile(
+                      leading: Icon(Icons.flag),
+                      title: Text('Report Event'),
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ],
+          ],
+        ),
+        body: _buildBody(),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(_error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadEvent,
+              child: const Text('Retry'),
             ),
           ],
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withAlpha(25),
-                ArtbeatColors.backgroundPrimary,
-                ArtbeatColors.primaryGreen.withAlpha(25),
-              ],
-            ),
-          ),
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildEventBanner(),
-                _buildEventHeader(),
-                _buildEventInfo(),
-                _buildEventDescription(),
-                _buildTicketTypes(),
-                _buildEventTags(),
-                _buildRefundPolicy(),
-                _buildContactInfo(),
-                const SizedBox(height: 100), // Space for floating action button
-              ],
-            ),
-          ),
+      );
+    }
+
+    if (_event == null) {
+      return const Center(child: Text('Event not found'));
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ArtbeatColors.primaryPurple.withAlpha(25),
+            ArtbeatColors.backgroundPrimary,
+            ArtbeatColors.primaryGreen.withAlpha(25),
+          ],
         ),
-        floatingActionButton: _buildActionButtons(),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildEventBanner(),
+            _buildEventHeader(),
+            _buildEventInfo(),
+            _buildEventDescription(),
+            _buildTicketTypes(),
+            _buildEventTags(),
+            _buildRefundPolicy(),
+            _buildContactInfo(),
+            const SizedBox(height: 100), // Space for floating action button
+          ],
+        ),
       ),
     );
   }
@@ -123,9 +174,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return SizedBox(
       height: 250,
       width: double.infinity,
-      child: _event.eventBannerUrl.isNotEmpty
+      child: _event!.eventBannerUrl.isNotEmpty
           ? Image.network(
-              _event.eventBannerUrl,
+              _event!.eventBannerUrl,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
                   _buildPlaceholderBanner(),
@@ -165,7 +216,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            _event.title,
+            _event!.title,
             style: const TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -183,7 +234,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   border: Border.all(color: _getStatusColor()),
                 ),
                 child: Text(
-                  EventUtils.getEventStatus(_event),
+                  EventUtils.getEventStatus(_event!),
                   style: TextStyle(
                     color: _getStatusColor(),
                     fontWeight: FontWeight.bold,
@@ -193,7 +244,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               ),
               const SizedBox(width: 12),
               Text(
-                EventUtils.getTimeUntilEvent(_event.dateTime),
+                EventUtils.getTimeUntilEvent(_event!.dateTime),
                 style: const TextStyle(
                   color: ArtbeatColors.textSecondary,
                   fontSize: 14,
@@ -227,25 +278,25 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           _buildInfoRow(
             Icons.calendar_today,
             'Date',
-            EventUtils.formatEventDate(_event.dateTime),
+            EventUtils.formatEventDate(_event!.dateTime),
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             Icons.access_time,
             'Time',
-            EventUtils.formatEventTime(_event.dateTime),
+            EventUtils.formatEventTime(_event!.dateTime),
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             Icons.location_on,
             'Location',
-            _event.location,
+            _event!.location,
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             Icons.people,
             'Capacity',
-            '${_event.attendeeIds.length} / ${_event.maxAttendees} attendees',
+            '${_event!.attendeeIds.length} / ${_event!.maxAttendees} attendees',
           ),
         ],
       ),
@@ -300,7 +351,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            _event.description,
+            _event!.description,
             style: const TextStyle(
               fontSize: 16,
               height: 1.5,
@@ -312,7 +363,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildTicketTypes() {
-    if (_event.ticketTypes.isEmpty) return const SizedBox.shrink();
+    if (_event!.ticketTypes.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       key: _ticketsSectionKey,
@@ -328,7 +379,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          ..._event.ticketTypes.map(_buildTicketTypeCard),
+          ..._event!.ticketTypes.map(_buildTicketTypeCard),
         ],
       ),
     );
@@ -446,7 +497,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   Widget _buildEventTags() {
-    if (_event.tags.isEmpty) return const SizedBox.shrink();
+    if (_event!.tags.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -464,7 +515,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _event.tags.map((tag) {
+            children: _event!.tags.map((tag) {
               return Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -513,7 +564,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                _event.refundPolicy.fullDescription,
+                _event!.refundPolicy.fullDescription,
                 style: TextStyle(
                   color: Colors.grey.shade700,
                   fontSize: 14,
@@ -543,11 +594,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              _buildContactRow(Icons.email, _event.contactEmail),
-              if (_event.contactPhone != null &&
-                  _event.contactPhone!.isNotEmpty) ...[
+              _buildContactRow(Icons.email, _event!.contactEmail),
+              if (_event!.contactPhone != null &&
+                  _event!.contactPhone!.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                _buildContactRow(Icons.phone, _event.contactPhone!),
+                _buildContactRow(Icons.phone, _event!.contactPhone!),
               ],
             ],
           ),
@@ -569,22 +620,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
   }
 
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        FloatingActionButton.extended(
-          onPressed: _showAllTicketTypes,
-          heroTag: 'tickets',
-          icon: const Icon(Icons.confirmation_number),
-          label: const Text('Get Tickets'),
-        ),
-      ],
-    );
-  }
-
   Color _getStatusColor() {
-    final status = EventUtils.getEventStatus(_event);
+    final status = EventUtils.getEventStatus(_event!);
     switch (status) {
       case 'Ended':
         return Colors.grey;
@@ -598,109 +635,133 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   void _shareEvent() {
-    final eventUrl = 'https://artbeat.app/events/${_event.id}';
+    final eventUrl = 'https://artbeat.app/events/${_event!.id}';
     SharePlus.instance.share(
       ShareParams(text: 'Check out this event on ARTbeat! $eventUrl'),
     );
   }
 
-  void _handleMenuAction(String action) {
-    switch (action) {
-      case 'add_to_calendar':
-        _addToCalendar();
-        break;
-      case 'set_reminder':
-        _setReminder();
-        break;
-      case 'report':
-        _reportEvent();
-        break;
-    }
-  }
+  Future<void> _handleMenuAction(String action) async {
+    if (_isProcessingAction) return;
 
-  Future<void> _addToCalendar() async {
+    setState(() => _isProcessingAction = true);
+
     try {
-      final success = await _calendarService.addEventToCalendar(_event);
+      switch (action) {
+        case 'add_to_calendar':
+          await _calendarService.addEventToCalendar(_event!);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Added to calendar')),
+            );
+          }
+          break;
+          
+        case 'set_reminder':
+          await _notificationService.scheduleEventReminders(_event!);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Reminders set')),
+            );
+          }
+          break;
+
+        case 'report':
+          _showReportDialog();
+          break;
+      }
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              success
-                  ? 'Event added to calendar!'
-                  : 'Failed to add event to calendar',
-            ),
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
-    } on Exception catch (e) {
+    } finally {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        setState(() => _isProcessingAction = false);
       }
     }
-  }
-
-  Future<void> _setReminder() async {
-    try {
-      await _notificationService.scheduleEventReminders(_event);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reminder set!')),
-        );
-      }
-    } on Exception catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error setting reminder: $e')),
-        );
-      }
-    }
-  }
-
-  void _reportEvent() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Report Event'),
-        content: const Text('Are you sure you want to report this event?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Event reported')),
-              );
-            },
-            child: const Text('Report'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showTicketPurchaseSheet(TicketType ticket) {
+    final currentUser = _userService.currentUser;
+    
+    if (currentUser == null) {
+      // Show login prompt if not authenticated
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Login Required'),
+          content: const Text('Please log in to purchase tickets.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/login');
+              },
+              child: const Text('Login'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (context) => TicketPurchaseSheet(
-        event: _event,
+        event: _event!,
         ticketType: ticket,
         onPurchaseComplete: () {
           Navigator.pop(context);
           _refreshEvent();
+          
+          // Show success dialog
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('🎫 Tickets Purchased!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Your tickets have been purchased successfully.'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(
+                        context,
+                        '/events/my-tickets',
+                      );
+                    },
+                    child: const Text('View My Tickets'),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
   }
 
   void _showAllTicketTypes() {
-    if (_event.ticketTypes.length == 1) {
-      _showTicketPurchaseSheet(_event.ticketTypes.first);
+    if (_event!.ticketTypes.length == 1) {
+      _showTicketPurchaseSheet(_event!.ticketTypes.first);
     } else {
       // Scroll to tickets section
       final context = _ticketsSectionKey.currentContext;
@@ -716,7 +777,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   Future<void> _refreshEvent() async {
     try {
-      final updatedEvent = await _eventService.getEvent(_event.id);
+      final updatedEvent = await _eventService.getEvent(_event!.id);
       if (updatedEvent != null && mounted) {
         setState(() {
           _event = updatedEvent;
@@ -725,6 +786,51 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     } on Exception {
       // Handle error silently or show a subtle message
     }
+  }
+
+  void _showReportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report Event'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Please select a reason for reporting:'),
+            const SizedBox(height: 16),
+            _buildReportOption('Inappropriate content'),
+            _buildReportOption('Misleading information'),
+            _buildReportOption('Potential scam'),
+            _buildReportOption('Other'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReportOption(String reason) {
+    return ListTile(
+      title: Text(reason),
+      onTap: () {
+        Navigator.pop(context);
+        _submitReport(reason);
+      },
+    );
+  }
+
+  void _submitReport(String reason) {
+    // TODO: Implement report submission
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Report submitted. Thank you for helping keep ARTbeat safe.'),
+      ),
+    );
   }
 
   @override

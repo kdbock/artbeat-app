@@ -17,8 +17,17 @@ class ArtworkModel {
   /// Detailed description of the artwork
   final String description;
 
-  /// URL to the artwork's image in Firebase Storage
+  /// URL to the artwork's main image in Firebase Storage
   final String imageUrl;
+
+  /// List of additional image URLs for multiple photos
+  final List<String> additionalImageUrls;
+
+  /// List of video URLs for the artwork
+  final List<String> videoUrls;
+
+  /// List of audio file URLs for the artwork
+  final List<String> audioUrls;
 
   /// Primary art medium used (e.g., "Oil Paint", "Digital", etc.)
   final String medium;
@@ -37,6 +46,12 @@ class ArtworkModel {
 
   /// Custom tags for searching and categorization
   final List<String>? tags;
+
+  /// Hashtags for social media integration
+  final List<String>? hashtags;
+
+  /// Keywords for enhanced search functionality
+  final List<String>? keywords;
 
   /// Price of the artwork in the default currency (USD)
   final double? price;
@@ -84,12 +99,17 @@ class ArtworkModel {
     required this.title,
     required this.description,
     required this.imageUrl,
+    this.additionalImageUrls = const [],
+    this.videoUrls = const [],
+    this.audioUrls = const [],
     required this.medium,
     required this.styles,
     this.dimensions,
     this.materials,
     this.location,
     this.tags,
+    this.hashtags,
+    this.keywords,
     this.price,
     required this.isForSale,
     this.isSold = false,
@@ -118,6 +138,9 @@ class ArtworkModel {
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
       imageUrl: data['imageUrl'] as String? ?? '',
+      additionalImageUrls: (data['additionalImageUrls'] as List<dynamic>? ?? []).cast<String>(),
+      videoUrls: (data['videoUrls'] as List<dynamic>? ?? []).cast<String>(),
+      audioUrls: (data['audioUrls'] as List<dynamic>? ?? []).cast<String>(),
       medium: data['medium'] as String? ?? '',
       styles: (data['styles'] as List<dynamic>? ?? []).cast<String>(),
       dimensions: data['dimensions'] as String?,
@@ -125,6 +148,12 @@ class ArtworkModel {
       location: data['location'] as String?,
       tags: data['tags'] != null
           ? (data['tags'] as List<dynamic>).cast<String>()
+          : null,
+      hashtags: data['hashtags'] != null
+          ? (data['hashtags'] as List<dynamic>).cast<String>()
+          : null,
+      keywords: data['keywords'] != null
+          ? (data['keywords'] as List<dynamic>).cast<String>()
           : null,
       price: data['price'] != null ? (data['price'] as num).toDouble() : null,
       isForSale: data['isForSale'] as bool? ?? false,
@@ -152,12 +181,17 @@ class ArtworkModel {
       'title': title,
       'description': description,
       'imageUrl': imageUrl,
+      'additionalImageUrls': additionalImageUrls,
+      'videoUrls': videoUrls,
+      'audioUrls': audioUrls,
       'medium': medium,
       'styles': styles,
       'dimensions': dimensions,
       'materials': materials,
       'location': location,
       'tags': tags,
+      'hashtags': hashtags,
+      'keywords': keywords,
       'price': price,
       'isForSale': isForSale,
       'isSold': isSold,
@@ -182,12 +216,17 @@ class ArtworkModel {
     String? title,
     String? description,
     String? imageUrl,
+    List<String>? additionalImageUrls,
+    List<String>? videoUrls,
+    List<String>? audioUrls,
     String? medium,
     List<String>? styles,
     String? dimensions,
     String? materials,
     String? location,
     List<String>? tags,
+    List<String>? hashtags,
+    List<String>? keywords,
     double? price,
     bool? isForSale,
     bool? isSold,
@@ -209,12 +248,17 @@ class ArtworkModel {
       title: title ?? this.title,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
+      additionalImageUrls: additionalImageUrls ?? this.additionalImageUrls,
+      videoUrls: videoUrls ?? this.videoUrls,
+      audioUrls: audioUrls ?? this.audioUrls,
       medium: medium ?? this.medium,
       styles: styles ?? this.styles,
       dimensions: dimensions ?? this.dimensions,
       materials: materials ?? this.materials,
       location: location ?? this.location,
       tags: tags ?? this.tags,
+      hashtags: hashtags ?? this.hashtags,
+      keywords: keywords ?? this.keywords,
       price: price ?? this.price,
       isForSale: isForSale ?? this.isForSale,
       isSold: isSold ?? this.isSold,

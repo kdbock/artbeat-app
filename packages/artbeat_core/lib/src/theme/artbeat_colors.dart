@@ -8,6 +8,9 @@ class ArtbeatColors {
   static const Color accentYellow = Color(0xFFFFD700);
   static const Color white = Colors.white;
   static const Color black = Colors.black;
+  
+  // Primary color getter (defaults to primaryPurple)
+  static const Color primary = primaryPurple;
 
   // Accent Colors
   static const Color accent1 = Color(0xFF6C63FF);

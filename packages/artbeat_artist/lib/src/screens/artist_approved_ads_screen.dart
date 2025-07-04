@@ -15,7 +15,10 @@ class _ArtistApprovedAdsScreenState extends State<ArtistApprovedAdsScreen> {
     return MainLayout(
       currentIndex: -1, // Not a main navigation item
       child: Scaffold(
-        appBar: const ArtbeatAppHeader(showDrawerIcon: true),
+        appBar: const UniversalHeader(
+          title: 'Artist Approved Ads',
+          showLogo: false,
+        ),
         drawer: const ArtbeatDrawer(),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
