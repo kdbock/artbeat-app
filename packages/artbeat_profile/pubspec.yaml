@@ -29,6 +29,8 @@ dependencies:
     path: ../artbeat_artist
   artbeat_community:
     path: ../artbeat_community
+  artbeat_ads:
+    path: ../artbeat_ads
   cloud_firestore: ^5.6.9
   geolocator: ^14.0.1
   intl: ^0.20.2

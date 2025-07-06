@@ -356,7 +356,7 @@ class AdminService {
               user.fullName.toLowerCase().contains(lowerQuery) ||
               user.email.toLowerCase().contains(lowerQuery) ||
               (user.username?.toLowerCase().contains(lowerQuery) ?? false) ||
-              user.userType.name.toLowerCase().contains(lowerQuery))
+              user.userType.toString().toLowerCase().contains(lowerQuery))
           .toList();
     } catch (e) {
       throw Exception('Failed to search users: $e');

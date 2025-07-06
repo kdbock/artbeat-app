@@ -4,10 +4,12 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:artbeat_core/artbeat_core.dart' show EnhancedStorageService;
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
+import 'package:artbeat_core/artbeat_core.dart' show EnhancedStorageService;
 
 // Core package imports with prefix
 import 'package:artbeat_core/src/services/achievement_service.dart' as core;
@@ -856,22 +858,22 @@ class ArtWalkService {
     }
   }
 
+  final EnhancedStorageService _enhancedStorage = EnhancedStorageService();
+
   /// Upload cover image for art walk
   Future<String> _uploadCoverImage(File imageFile, String walkId) async {
     try {
       final userId = getCurrentUserId();
       if (userId == null) throw Exception('User not authenticated');
 
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
-      final ref = _storage
-          .ref()
-          .child('art_walk_covers')
-          .child(userId)
-          .child(walkId)
-          .child(fileName);
+      debugPrint('📸 ArtWalkService: Starting cover image upload');
+      final result = await _enhancedStorage.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'art_walk_covers/$userId/$walkId',
+      );
 
-      final uploadTask = await ref.putFile(imageFile);
-      return await uploadTask.ref.getDownloadURL();
+      debugPrint('✅ ArtWalkService: Cover image uploaded successfully');
+      return result['imageUrl']!;
     } catch (e) {
       _logger.e('Error uploading cover image: $e');
       throw Exception('Failed to upload cover image: $e');

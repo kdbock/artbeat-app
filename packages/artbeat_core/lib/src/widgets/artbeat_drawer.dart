@@ -10,6 +10,19 @@ import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
 
 class ArtbeatDrawer extends StatelessWidget {
+  // Cache main routes as a static set for better performance
+  static final Set<String> mainRoutes = {
+    '/dashboard',
+    '/art-walk/dashboard',
+    '/community/dashboard',
+    '/events/dashboard',
+    '/artist/dashboard',
+    '/gallery/dashboard',
+    '/profile',
+    '/captures',
+    '/admin/dashboard',
+  };
+
   const ArtbeatDrawer({super.key});
 
   @override
@@ -237,62 +250,69 @@ class ArtbeatDrawer extends StatelessWidget {
   Widget _buildDrawerItem(BuildContext context, ArtbeatDrawerItem item) {
     final currentRoute = ModalRoute.of(context)?.settings.name;
     final bool isCurrentRoute = currentRoute == item.route;
-    final bool isMainNavigationRoute = [
-      '/dashboard',
-      '/art-walk/dashboard',
-      '/community/dashboard',
-      '/events/dashboard',
-    ].contains(item.route);
+    final bool isMainNavigationRoute = mainRoutes.contains(item.route);
 
-    return ListTile(
-      leading: Icon(
-        item.icon,
-        color: isCurrentRoute
-            ? ArtbeatColors.primaryGreen
-            : (item.color ?? ArtbeatColors.primaryPurple),
-      ),
-      title: Text(
-        item.title,
-        style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
-          fontWeight: isCurrentRoute ? FontWeight.w600 : FontWeight.w500,
-          color: isCurrentRoute ? ArtbeatColors.primaryGreen : item.color,
+    // Check if we're navigating within the same section
+    final bool isWithinSameSection =
+        currentRoute != null &&
+        item.route.split('/')[1] == currentRoute.split('/')[1];
+
+    // Wrap ListTile in Builder to ensure correct Scaffold context for SnackBar
+    return Builder(
+      builder: (snackBarContext) => ListTile(
+        leading: Icon(
+          item.icon,
+          color: isCurrentRoute
+              ? ArtbeatColors.primaryGreen
+              : (item.color ?? ArtbeatColors.primaryPurple),
         ),
-      ),
-      selected: isCurrentRoute,
-      onTap: () {
-        if (isCurrentRoute) {
-          Navigator.pop(
-            context,
-          ); // Just close drawer if we're already on this route
-          return;
-        }
+        title: Text(
+          item.title,
+          style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
+            fontWeight: isCurrentRoute ? FontWeight.w600 : FontWeight.w500,
+            color: isCurrentRoute ? ArtbeatColors.primaryGreen : item.color,
+          ),
+        ),
+        selected: isCurrentRoute,
+        onTap: () {
+          // Get the current section from the route
+          final String currentSection = currentRoute?.split('/')[1] ?? '';
+          final String targetSection = item.route.split('/')[1];
 
-        Navigator.pop(context); // Close drawer first
+          if (isCurrentRoute) {
+            Navigator.pop(context);
+            return;
+          }
 
-        if (isMainNavigationRoute) {
-          // For main navigation routes, use pushReplacement to avoid stack buildup
-          Navigator.pushReplacementNamed(context, item.route);
-        } else {
-          // For secondary routes, push normally to maintain back button
-          Navigator.pushNamed(
+          Navigator.pop(context);
+
+          try {
+            if (currentSection == targetSection && !isMainNavigationRoute) {
+              // For navigation within same section, preserve back stack
+              Navigator.pushNamed(context, item.route);
+            } else if (isMainNavigationRoute) {
+              // For main navigation routes, use pushReplacement
+              Navigator.pushReplacementNamed(context, item.route);
+            } else {
+              // Cross-section navigation
+              Navigator.pushNamed(
                 context,
                 item.route,
                 arguments: {'from': 'drawer', 'showBackButton': true},
-              )
-              .then((value) {
-                if (value == null) {
-                  debugPrint(
-                    '🚫 Navigation failed or was cancelled for route: ${item.route}',
-                  );
-                }
-              })
-              .catchError((error) {
-                debugPrint(
-                  '⚠️ Navigation error for route ${item.route}: $error',
-                );
-              });
-        }
-      },
+              );
+            }
+          } catch (error) {
+            debugPrint('⚠️ Navigation error for [38;5;208m${item.route}[0m: $error');
+            ScaffoldMessenger.of(snackBarContext).showSnackBar(
+              SnackBar(
+                content: Text('Navigation error: ${error.toString()}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 }

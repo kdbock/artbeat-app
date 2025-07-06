@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
     show SubscriptionTier, ArtbeatColors, UniversalHeader, MainLayout;
@@ -213,13 +214,66 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
 
   // Pick image from gallery
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final status = await Permission.photos.request();
 
-    if (pickedFile != null) {
-      setState(() {
-        _imageFile = File(pickedFile.path);
-      });
+      if (status.isPermanentlyDenied) {
+        if (mounted) {
+          showDialog<void>(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text('Permission Required'),
+              content: const Text(
+                'Photo library access is permanently denied. Please enable it in your device settings to upload artwork.',
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                TextButton(
+                  child: const Text('Open Settings'),
+                  onPressed: () {
+                    openAppSettings();
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      if (status.isDenied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Photo library permission is required to upload artwork'),
+            ),
+          );
+        }
+        return;
+      }
+
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
     }
   }
 

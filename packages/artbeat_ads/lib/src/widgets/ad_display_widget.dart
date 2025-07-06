@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Widget to display an ad in either square or rectangle format.
 /// Accepts image, title, description, and call-to-action.
@@ -51,11 +52,13 @@ class AdDisplayWidget extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
-                child: Image.network(
-                  imageUrl,
+                child: ImageManagementService().getOptimizedImage(
+                  imageUrl: imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.broken_image, size: 48),
+                  width: size.width,
+                  height: size.height * 0.6,
+                  isThumbnail: true,
+                  errorWidget: const Icon(Icons.broken_image, size: 48),
                 ),
               ),
             ),

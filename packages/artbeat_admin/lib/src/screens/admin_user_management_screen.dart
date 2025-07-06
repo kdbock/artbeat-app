@@ -415,11 +415,12 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         onChanged: (_) => _toggleUserSelection(user),
                       ),
                       CircleAvatar(
-                        backgroundColor: _getUserTypeColor(user.userType),
-                        child: user.profileImageUrl != null
+                        backgroundColor: _getUserTypeColor(
+                            _getUserTypeFromString(user.userType)),
+                        child: user.profileImageUrl.isNotEmpty
                             ? ClipOval(
                                 child: Image.network(
-                                  user.profileImageUrl!,
+                                  user.profileImageUrl,
                                   width: 40,
                                   height: 40,
                                   fit: BoxFit.cover,
@@ -448,7 +449,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         children: [
                           _buildStatusChip(user),
                           const SizedBox(width: 8),
-                          _buildUserTypeChip(user.userType),
+                          _buildUserTypeChip(
+                              _getUserTypeFromString(user.userType)),
                         ],
                       ),
                     ],
@@ -651,7 +653,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   }
 
   void _showChangeUserTypeDialog(UserAdminModel user) {
-    UserType? selectedType = user.userType;
+    UserType? selectedType = _getUserTypeFromString(user.userType);
 
     showDialog<void>(
       context: context,
@@ -661,7 +663,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Current type: ${user.userType.name.toUpperCase()}'),
+              Text(
+                  'Current type: ${_getUserTypeFromString(user.userType).name.toUpperCase()}'),
               const SizedBox(height: 16),
               DropdownButtonFormField<UserType>(
                 value: selectedType,
@@ -689,7 +692,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: selectedType != null && selectedType != user.userType
+              onPressed: selectedType != null &&
+                      selectedType != _getUserTypeFromString(user.userType)
                   ? () async {
                       try {
                         await _adminService.updateUserType(
@@ -820,5 +824,11 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   void _showCreateUserDialog() {
     Navigator.pushNamed(context, '/admin/create-user')
         .then((_) => _loadUsers());
+  }
+
+  /// Helper method to convert String? to UserType
+  UserType _getUserTypeFromString(String? userTypeString) {
+    if (userTypeString == null) return UserType.regular;
+    return UserType.fromString(userTypeString);
   }
 }

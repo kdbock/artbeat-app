@@ -86,15 +86,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         final data = doc.data();
         return UserModel(
           id: doc.id,
-          email: data['email'] as String,
-          fullName: data['fullName'] as String,
-          username: data['username'] as String?,
-          bio: data['bio'] as String?,
-          profileImageUrl: data['profileImageUrl'] as String?,
-          coverImageUrl: data['coverImageUrl'] as String?,
-          location: data['location'] as String?,
-          zipCode: data['zipCode'] as String?,
-          gender: data['gender'] as String?,
+          email: data['email'] as String? ?? '',
+          username: data['username'] as String? ?? '',
+          fullName: data['fullName'] as String? ?? '',
+          bio: data['bio'] as String? ?? '',
+          profileImageUrl: data['profileImageUrl'] as String? ?? '',
+          location: data['location'] as String? ?? '',
           posts: List<String>.from(
             (data['posts'] ?? <dynamic>[]) as List<dynamic>,
           ),
@@ -104,22 +101,17 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           following: List<String>.from(
             (data['following'] ?? <dynamic>[]) as List<dynamic>,
           ),
-          captures: List<String>.from(
-            (data['captures'] ?? <dynamic>[]) as List<dynamic>,
-          ),
-          followersCount: (data['followersCount'] as num?)?.toInt() ?? 0,
-          followingCount: (data['followingCount'] as num?)?.toInt() ?? 0,
-          postsCount: (data['postsCount'] as num?)?.toInt() ?? 0,
-          capturesCount: (data['capturesCount'] as num?)?.toInt() ?? 0,
+          captures: (data['captures'] as List<dynamic>? ?? [])
+              .map((capture) => CaptureModel.fromJson(capture as Map<String, dynamic>))
+              .toList(),
           createdAt: (data['createdAt'] as Timestamp).toDate(),
-          updatedAt: data['updatedAt'] != null
-              ? (data['updatedAt'] as Timestamp).toDate()
+          lastActive: data['lastActive'] != null
+              ? (data['lastActive'] as Timestamp).toDate()
               : null,
-          isVerified: data['isVerified'] as bool? ?? false,
-          userType: UserType.values.firstWhere(
-            (t) => t.name == (data['userType'] as String? ?? 'regular'),
-            orElse: () => UserType.regular,
-          ),
+          userType: data['userType'] as String?,
+          preferences: data['preferences'] as Map<String, dynamic>?,
+          experiencePoints: data['experiencePoints'] as int? ?? 0,
+          level: data['level'] as int? ?? 1,
         );
       }).toList();
     } catch (e) {

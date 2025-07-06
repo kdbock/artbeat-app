@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+
 import '../theme/artbeat_colors.dart';
+import '../services/image_management_service.dart';
 
 /// A unified avatar widget for displaying user profile images across the app
 class UserAvatar extends StatelessWidget {
@@ -88,12 +89,13 @@ class UserAvatar extends StatelessWidget {
   Widget _buildAvatarContent(ThemeData theme) {
     // If we have a valid image URL, try to load it
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return CachedNetworkImage(
+      return ImageManagementService().getOptimizedImage(
         imageUrl: imageUrl!,
         width: radius * 2,
         height: radius * 2,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
+        isProfile: true,
+        placeholder: Container(
           width: radius * 2,
           height: radius * 2,
           color: backgroundColor ?? ArtbeatColors.backgroundSecondary,
@@ -110,7 +112,7 @@ class UserAvatar extends StatelessWidget {
             ),
           ),
         ),
-        errorWidget: (context, url, error) => _buildFallbackAvatar(theme),
+        errorWidget: _buildFallbackAvatar(theme),
       );
     }
 

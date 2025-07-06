@@ -3,9 +3,8 @@ import '../models/post_model.dart';
 import '../models/comment_model.dart';
 import 'applause_button.dart';
 import 'artist_avatar.dart';
-import 'package:artbeat_core/artbeat_core.dart' show ArtbeatColors;
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:cached_network_image/cached_network_image.dart';
 import '../screens/gifts/gift_modal.dart';
 import '../screens/sponsorships/sponsor_modal.dart';
 
@@ -98,11 +97,11 @@ class CritiqueCard extends StatelessWidget {
                     ),
                   );
                 }
-                return CachedNetworkImage(
+                return ImageManagementService().getOptimizedImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  placeholder: (context, url) => Container(
+                  placeholder: Container(
                     color: ArtbeatColors.backgroundSecondary,
                     child: const Center(
                       child: CircularProgressIndicator(
@@ -110,7 +109,7 @@ class CritiqueCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  errorWidget: (context, url, error) => Container(
+                  errorWidget: Container(
                     color: ArtbeatColors.error.withAlpha(25),
                     child: const Center(
                       child: Icon(

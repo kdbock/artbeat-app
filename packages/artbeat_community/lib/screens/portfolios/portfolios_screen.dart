@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class PortfoliosScreen extends StatefulWidget {
   const PortfoliosScreen({super.key});
@@ -90,17 +91,16 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
                           AspectRatio(
                             aspectRatio: 1.0,
                             child: portfolio['coverImageUrl'] != null
-                                ? Image.network(
-                                    portfolio['coverImageUrl'] as String,
+                                ? ImageManagementService().getOptimizedImage(
+                                    imageUrl: portfolio['coverImageUrl'] as String,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Container(
-                                              color: Colors.grey[200],
-                                              child: const Icon(
-                                                Icons.broken_image,
-                                              ),
-                                            ),
+                                    isThumbnail: true,
+                                    errorWidget: Container(
+                                      color: Colors.grey[200],
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                      ),
+                                    ),
                                   )
                                 : Container(
                                     color: Colors.grey[200],

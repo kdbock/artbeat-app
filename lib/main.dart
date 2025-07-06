@@ -3,14 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 import 'config/maps_config.dart';
 import 'app.dart';
+import 'src/managers/app_lifecycle_manager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize app lifecycle manager
+    AppLifecycleManager().initialize();
+    if (kDebugMode) {
+      print('✅ AppLifecycleManager initialized');
+    }
+
     // Initialize config service first
     await ConfigService.instance.initialize();
     if (kDebugMode) {
@@ -40,6 +47,18 @@ Future<void> main() async {
 
     if (kDebugMode) {
       print('✅ Firebase initialization completed successfully');
+    }
+
+    // Initialize image management service
+    try {
+      await ImageManagementService().initialize();
+      if (kDebugMode) {
+        print('✅ Image management service initialized');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Image management service initialization failed: $e');
+      }
     }
 
     if (kDebugMode) {

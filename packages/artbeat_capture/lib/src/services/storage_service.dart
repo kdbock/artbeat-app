@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart' show EnhancedStorageService;
 
 class StorageService {
   static final StorageService _instance = StorageService._internal();
@@ -9,7 +10,28 @@ class StorageService {
   StorageService._internal();
 
   final FirebaseStorage _storage = FirebaseStorage.instance;
+  final EnhancedStorageService _enhancedStorage = EnhancedStorageService();
 
+  /// Upload image with optimization (recommended method)
+  Future<Map<String, String>> uploadImageOptimized(File file) async {
+    try {
+      debugPrint('🔄 StorageService: Starting optimized upload...');
+      
+      final result = await _enhancedStorage.uploadImageWithOptimization(
+        imageFile: file,
+        category: 'capture',
+        generateThumbnail: true,
+      );
+
+      debugPrint('✅ StorageService: Optimized upload successful');
+      return result;
+    } catch (e) {
+      debugPrint('❌ StorageService: Optimized upload failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Legacy upload method (kept for backward compatibility)
   Future<String> uploadImage(File file) async {
     try {
       // Check if user is authenticated

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import 'dart:io';
 
 class EditProfileScreen extends StatefulWidget {
@@ -20,6 +21,8 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  // Add scaffold key for drawer
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late TextEditingController _nameController;
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
@@ -66,10 +69,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _userModel = userModel;
           if (userModel != null) {
             _nameController.text = userModel.fullName;
-            _usernameController.text = userModel.username ?? '';
+            _usernameController.text = userModel.username;
             _emailController.text = userModel.email;
-            _bioController.text = userModel.bio ?? '';
-            _locationController.text = userModel.location ?? '';
+            _bioController.text = userModel.bio;
+            _locationController.text = userModel.location;
           }
           _isLoading = false;
         });
@@ -136,7 +139,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       debugPrint('✅ Firestore profile data updated');
 
       // Upload profile image if changed
-      if (_profileImage != null) {
+      final profileImage = _profileImage;
+      if (profileImage != null) {
         try {
           debugPrint('🔧 Uploading profile image...');
 
@@ -150,7 +154,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             );
           }
 
-          await _userService.uploadAndUpdateProfilePhoto(_profileImage!);
+          await _userService.uploadAndUpdateProfilePhoto(profileImage);
           debugPrint('✅ Profile image uploaded');
 
           if (mounted) {
@@ -237,12 +241,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // Helper to get the right image provider for profile picture
   ImageProvider<Object>? _getProfileImageProvider() {
-    if (_profileImage != null) {
-      return FileImage(_profileImage!);
-    } else if (_userModel != null && _userModel!.profileImageUrl != null) {
-      return NetworkImage(_userModel!.profileImageUrl!);
-    } else if (currentUser?.photoURL != null) {
-      return NetworkImage(currentUser!.photoURL!);
+    final profileImage = _profileImage;
+    if (profileImage != null) {
+      return FileImage(profileImage);
+    }
+
+    final userModel = _userModel;
+    final profileImageUrl = userModel?.profileImageUrl;
+    if (profileImageUrl != null) {
+      return NetworkImage(profileImageUrl);
+    }
+
+    final photoURL = currentUser?.photoURL;
+    if (photoURL != null) {
+      return NetworkImage(photoURL);
     }
     return null;
   }
@@ -259,9 +271,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
+        key: _scaffoldKey,
         appBar: UniversalHeader(
           title: 'Edit Profile',
           showLogo: false,
+          showDeveloperTools: true,
+          onMenuPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
           actions: [
             TextButton(
               onPressed: _isSaving ? null : _handleSubmit,
@@ -285,6 +302,128 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
             ),
           ],
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      ArtbeatColors.primaryPurple,
+                      ArtbeatColors.primaryGreen,
+                    ],
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile header content can be added here
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.home_outlined,
+                  color: ArtbeatColors.primaryPurple,
+                ),
+                title: const Text('Home'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/');
+                },
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                child: ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  leading: const Icon(
+                    Icons.camera_alt_outlined,
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                  title: const Text('Captures'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/captures');
+                  },
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.map_outlined,
+                  color: ArtbeatColors.primaryPurple,
+                ),
+                title: const Text('Art Walks'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/art-walks');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.people_outline,
+                  color: ArtbeatColors.primaryPurple,
+                ),
+                title: const Text('Artist Community'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/community');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.front_hand,
+                  color: ArtbeatColors.accentYellow,
+                ),
+                title: const Text('Fan of'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/profile/following');
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.emoji_events_outlined,
+                  color: ArtbeatColors.accentYellow,
+                ),
+                title: const Text('Achievements'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/profile/achievements');
+                },
+              ),
+              const Divider(color: ArtbeatColors.border),
+              ListTile(
+                leading: const Icon(
+                  Icons.settings_outlined,
+                  color: ArtbeatColors.primaryPurple,
+                ),
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/settings');
+                },
+              ),
+              if (currentUser != null) ...[
+                ListTile(
+                  leading: const Icon(
+                    Icons.dashboard_outlined,
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                  title: const Text('Artist Dashboard'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/artist/dashboard');
+                  },
+                ),
+              ],
+            ],
+          ),
         ),
         body: Container(
           constraints: const BoxConstraints.expand(),
@@ -409,6 +548,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
+
+                            // Ad Space
+                            const ProfileAdWidget(
+                              showPlaceholder: true,
+                              margin: EdgeInsets.symmetric(vertical: 16),
+                            ),
                           ],
                         ),
                       ), // Form

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/artbeat_event.dart';
 
 /// Card widget for displaying event information in lists
@@ -66,11 +67,13 @@ class EventCard extends StatelessWidget {
       height: compact ? 120 : 200,
       width: double.infinity,
       child: event.eventBannerUrl.isNotEmpty
-          ? Image.network(
-              event.eventBannerUrl,
+          ? ImageManagementService().getOptimizedImage(
+              imageUrl: event.eventBannerUrl,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildPlaceholderBanner(),
+              width: double.infinity,
+              height: compact ? 120 : 200,
+              isThumbnail: compact,
+              errorWidget: _buildPlaceholderBanner(),
             )
           : _buildPlaceholderBanner(),
     );

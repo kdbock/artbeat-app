@@ -184,11 +184,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundColor: _getUserTypeColor(_currentUser.userType),
-                child: _currentUser.profileImageUrl != null
+                backgroundColor: _getUserTypeColor(
+                    _getUserTypeFromString(_currentUser.userType)),
+                child: _currentUser.profileImageUrl.isNotEmpty
                     ? ClipOval(
                         child: Image.network(
-                          _currentUser.profileImageUrl!,
+                          _currentUser.profileImageUrl,
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
@@ -237,7 +238,8 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        _buildUserTypeChip(_currentUser.userType),
+                        _buildUserTypeChip(
+                            _getUserTypeFromString(_currentUser.userType)),
                         const SizedBox(width: 8),
                         _buildStatusChip(),
                       ],
@@ -309,7 +311,11 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
         children: [
           _buildDetailSection('Personal Information', [
             _buildDetailRow('Full Name', _currentUser.fullName),
-            _buildDetailRow('Username', _currentUser.username ?? 'Not set'),
+            _buildDetailRow(
+                'Username',
+                _currentUser.username.isEmpty
+                    ? 'Not set'
+                    : _currentUser.username),
             _buildDetailRow('Email', _currentUser.email),
             _buildDetailRow('Location', _currentUser.location ?? 'Not set'),
             _buildDetailRow('Zip Code', _currentUser.zipCode ?? 'Not set'),
@@ -321,7 +327,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
           const SizedBox(height: 24),
           _buildDetailSection('Account Information', [
             _buildDetailRow(
-                'User Type', _currentUser.userType.name.toUpperCase()),
+                'User Type',
+                _getUserTypeFromString(_currentUser.userType)
+                    .name
+                    .toUpperCase()),
             _buildDetailRow('Status', _currentUser.statusText),
             _buildDetailRow('Verified', _currentUser.isVerified ? 'Yes' : 'No'),
             _buildDetailRow(
@@ -336,10 +345,10 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
               _buildDetailRow(
                   'Last Login', _formatDateTime(_currentUser.lastLoginAt!)),
           ]),
-          if (_currentUser.bio != null && _currentUser.bio!.isNotEmpty) ...[
+          if (_currentUser.bio.isNotEmpty) ...[
             const SizedBox(height: 24),
             _buildDetailSection('Biography', [
-              Text(_currentUser.bio!),
+              Text(_currentUser.bio),
             ]),
           ],
           if (_currentUser.achievements.isNotEmpty) ...[
@@ -775,6 +784,12 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
         ),
       ),
     );
+  }
+
+  /// Convert String? userType to UserType enum
+  UserType _getUserTypeFromString(String? userTypeString) {
+    if (userTypeString == null) return UserType.regular;
+    return UserType.fromString(userTypeString);
   }
 
   Color _getUserTypeColor(UserType userType) {

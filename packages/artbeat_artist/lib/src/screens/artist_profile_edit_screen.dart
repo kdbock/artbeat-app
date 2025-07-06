@@ -23,8 +23,8 @@ class ArtistProfileEditScreen extends StatefulWidget {
 class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
   final _subscriptionService = SubscriptionService();
-  final _storage = FirebaseStorage.instance;
   final _auth = FirebaseAuth.instance;
+  final _enhancedStorage = core.EnhancedStorageService();
 
   // Text controllers
   final TextEditingController _bioController = TextEditingController();
@@ -220,18 +220,24 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
     }
   }
 
-  // Upload image to Firebase Storage
+  // Upload image to Firebase Storage with optimization
   Future<String> _uploadImage(File imageFile, String type) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId';
-    final ref = _storage.ref().child('artist_images/$userId/$type/$fileName');
+    debugPrint('🎨 Uploading $type image with optimization...');
 
-    final uploadTask = ref.putFile(imageFile);
-    final snapshot = await uploadTask;
+    final result = await _enhancedStorage.uploadImageWithOptimization(
+      imageFile: imageFile,
+      category: type == 'profile' ? 'profile' : 'artwork',
+      generateThumbnail: true,
+    );
 
-    return snapshot.ref.getDownloadURL();
+    debugPrint('✅ $type image uploaded successfully');
+    debugPrint('📊 Original: ${result['originalSize']}');
+    debugPrint('📊 Compressed: ${result['compressedSize']}');
+
+    return result['imageUrl']!;
   }
 
   // Pick profile image

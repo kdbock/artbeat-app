@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/user_service.dart';
+import '../services/achievement_service.dart';
 import '../models/user_model.dart';
 import '../models/artist_profile_model.dart';
 
@@ -44,26 +45,36 @@ class _DashboardScreenState extends State<DashboardScreen>
   List<ArtbeatEvent> _upcomingEvents = [];
   bool _isLoadingEvents = false;
 
-  bool _mapsInitialized = false;
+  // Simplified map preview state
+  bool _isMapPreviewReady = false;
 
   // Achievement dropdown state
   bool _isAchievementsExpanded = false;
 
+  // Achievements state
+  List<AchievementBadgeData> _achievements = [];
+  bool _isLoadingAchievements = false;
+
   // Services
   final CaptureService _captureService = CaptureService();
   final ArtworkService _artworkService = ArtworkService();
+  final AchievementService _achievementService = AchievementService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
 
-    _initializeMaps();
-    _loadUserData();
-    _loadNearbyArtists();
-    _loadNearbyArtworks();
-    _loadNearbyCaptures();
-    _loadUpcomingEvents();
+    // Load data in parallel
+    Future.wait([
+      _loadUserData(),
+      _loadNearbyArtists(),
+      _loadNearbyArtworks(),
+      _loadNearbyCaptures(),
+      _loadUpcomingEvents(),
+      _loadAchievements(),
+      _getUserLocation(), // Get location without full maps init
+    ]);
   }
 
   @override
@@ -72,28 +83,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     super.dispose();
   }
 
-  /// Initialize Google Maps service
-  Future<void> _initializeMaps() async {
-    try {
-      // Initialize Google Maps service for iOS compatibility
-      await art_walk.GoogleMapsService().initializeMaps();
-
-      setState(() {
-        _mapsInitialized = true;
-      });
-
-      // Get user location after maps are initialized
-      await _getUserLocation();
-    } catch (e) {
-      // Still try to get location even if maps fail
-      await _getUserLocation();
-    }
-  }
-
-  /// Get user location and set up markers
+  /// Get user location without initializing full maps
   Future<void> _getUserLocation() async {
     try {
-      // Try to get actual user location first
       final position = await art_walk.LocationUtils.getCurrentPosition();
       final userLocation = LatLng(position.latitude, position.longitude);
 
@@ -101,10 +93,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         setState(() {
           _userLocation = userLocation;
           _updateMapMarkers();
+          _isMapPreviewReady = true;
         });
       }
-
-      // Location set successfully for map display
     } catch (e) {
       // Fallback to default location (Asheville, NC)
       const defaultLocation = LatLng(35.5951, -82.5515);
@@ -113,10 +104,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         setState(() {
           _userLocation = defaultLocation;
           _updateMapMarkers();
+          _isMapPreviewReady = true;
         });
       }
-
-      // Default location set for map display
     }
   }
 
@@ -295,6 +285,67 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  Future<void> _loadAchievements() async {
+    setState(() {
+      _isLoadingAchievements = true;
+    });
+
+    try {
+      // Load user achievements from Firebase
+      final userAchievements = await _achievementService.getUserAchievements();
+
+      // Create sample achievements for now (these would come from your achievement definitions)
+      final allAchievements = [
+        AchievementBadgeData(
+          title: 'First Capture',
+          description: 'Capture your first piece of art',
+          icon: Icons.photo_camera,
+          isUnlocked: userAchievements.any((a) => a['type'] == 'first_capture'),
+        ),
+        AchievementBadgeData(
+          title: 'Art Walker',
+          description: 'Complete your first art walk',
+          icon: Icons.directions_walk,
+          isUnlocked: userAchievements.any((a) => a['type'] == 'first_walk'),
+        ),
+        AchievementBadgeData(
+          title: 'Explorer',
+          description: 'Visit 5 different art locations',
+          icon: Icons.explore,
+          isUnlocked: userAchievements.any((a) => a['type'] == 'explorer'),
+        ),
+        AchievementBadgeData(
+          title: 'Art Enthusiast',
+          description: 'Capture 10 pieces of art',
+          icon: Icons.emoji_events,
+          isUnlocked: userAchievements.any(
+            (a) => a['type'] == 'art_enthusiast',
+          ),
+        ),
+        AchievementBadgeData(
+          title: 'Social Artist',
+          description: 'Follow 5 artists',
+          icon: Icons.people,
+          isUnlocked: userAchievements.any((a) => a['type'] == 'social_artist'),
+        ),
+      ];
+
+      if (mounted) {
+        setState(() {
+          _achievements = allAchievements;
+          _isLoadingAchievements = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading achievements: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingAchievements = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -322,14 +373,23 @@ class _DashboardScreenState extends State<DashboardScreen>
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
+                    color: ArtbeatColors.backgroundSecondary,
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        ArtbeatColors.primaryPurple.withAlpha(25),
-                        ArtbeatColors.primaryGreen.withAlpha(25),
+                        ArtbeatColors.primaryPurple.withOpacity(0.08),
+                        ArtbeatColors.primaryGreen.withOpacity(0.08),
                       ],
                     ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ArtbeatColors.primaryPurple.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,7 +474,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Google Map Section with Art Markers
+          // Art Walk Preview Section
           GestureDetector(
             onTap: () {
               Navigator.pushNamed(context, '/art-walk/dashboard');
@@ -428,17 +488,71 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: _mapsInitialized && _userLocation != null
-                    ? GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: _userLocation!,
-                          zoom: 14,
-                        ),
-                        markers: _markers,
-                        myLocationEnabled: true,
-                        myLocationButtonEnabled: true,
-                        zoomControlsEnabled: false,
-                        onMapCreated: (controller) {},
+                child: _isMapPreviewReady && _userLocation != null
+                    ? Stack(
+                        children: [
+                          // Static map preview
+                          GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target:
+                                  _userLocation ??
+                                  const LatLng(
+                                    35.5951,
+                                    -82.5515,
+                                  ), // Default to Asheville if no location
+                              zoom: 14,
+                            ),
+                            markers: _markers,
+                            myLocationEnabled:
+                                false, // Disable live location in preview
+                            myLocationButtonEnabled: false,
+                            zoomControlsEnabled: false,
+                            rotateGesturesEnabled:
+                                false, // Disable gestures in preview
+                            scrollGesturesEnabled: false,
+                            zoomGesturesEnabled: false,
+                            tiltGesturesEnabled: false,
+                            liteModeEnabled: true, // Use lite mode for preview
+                          ),
+                          // Overlay to indicate it's tappable
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.6),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Call to action text
+                          Positioned(
+                            left: 16,
+                            bottom: 16,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Explore Art Walk',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '${_markers.length} artworks nearby',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       )
                     : const Center(child: CircularProgressIndicator()),
               ),
@@ -1341,7 +1455,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       child: InkWell(
         onTap: () {
           // Navigate to event details
-          Navigator.pushNamed(context, '/events/detail', arguments: {'eventId': event.id});
+          Navigator.pushNamed(
+            context,
+            '/events/detail',
+            arguments: {'eventId': event.id},
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(
@@ -1514,7 +1632,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   /// Build achievements dropdown section
   Widget _buildAchievementsDropdown() {
-    final achievements = _getSampleAchievements();
+    // Use the achievements state loaded from the service
+    final achievements = _achievements;
     final unlockedCount = achievements.where((a) => a.isUnlocked).length;
 
     return Container(
@@ -1522,32 +1641,31 @@ class _DashboardScreenState extends State<DashboardScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with dropdown toggle
+          // Header with expand/collapse
           InkWell(
             onTap: () {
               setState(() {
                 _isAchievementsExpanded = !_isAchievementsExpanded;
               });
             },
-            borderRadius: BorderRadius.circular(12),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.emoji_events,
-                    color: ArtbeatColors.primaryPurple,
+                    color: ArtbeatColors.primaryGreen,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
@@ -1555,158 +1673,84 @@ class _DashboardScreenState extends State<DashboardScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Recent Achievements',
+                        Text(
+                          'Achievements',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: ArtbeatColors.textPrimary,
+                            color: Colors.grey[800],
                           ),
                         ),
                         Text(
                           '$unlockedCount/${achievements.length} unlocked',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: ArtbeatColors.textSecondary,
-                            fontWeight: FontWeight.w500,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  AnimatedRotation(
-                    turns: _isAchievementsExpanded ? 0.5 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: const Icon(
-                      Icons.expand_more,
-                      color: ArtbeatColors.textSecondary,
-                    ),
+                  Icon(
+                    _isAchievementsExpanded
+                        ? Icons.expand_less
+                        : Icons.expand_more,
+                    color: Colors.grey[600],
                   ),
                 ],
               ),
             ),
           ),
 
-          // Expandable content
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            height: _isAchievementsExpanded ? 170 : 0,
-            child: _isAchievementsExpanded
-                ? Container(
-                    decoration: BoxDecoration(
-                      border: Border(top: BorderSide(color: Colors.grey[200]!)),
+          // Expanded achievements list
+          if (_isAchievementsExpanded && achievements.isNotEmpty)
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: achievements.length,
+              itemBuilder: (context, index) {
+                final achievement = achievements[index];
+                return ListTile(
+                  leading: Icon(
+                    achievement.isUnlocked
+                        ? Icons.emoji_events
+                        : Icons.lock_outline,
+                    color: achievement.isUnlocked
+                        ? ArtbeatColors.primaryGreen
+                        : Colors.grey[400],
+                  ),
+                  title: Text(
+                    achievement.title,
+                    style: TextStyle(
+                      color: achievement.isUnlocked
+                          ? Colors.grey[800]
+                          : Colors.grey[500],
+                      fontWeight: achievement.isUnlocked
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
-                    child: achievements.isEmpty
-                        ? const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.emoji_events_outlined,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'No achievements yet',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.all(16),
-                            itemCount: achievements.length,
-                            itemBuilder: (context, index) {
-                              final achievement = achievements[index];
-                              return AchievementBadge(
-                                title: achievement.title,
-                                description: achievement.description,
-                                icon: achievement.icon,
-                                isUnlocked: achievement.isUnlocked,
-                                progress: achievement.progress,
-                                customColor: achievement.customColor,
-                                showProgress: achievement.showProgress,
-                                progressText: achievement.progressText,
-                                onTap: achievement.onTap,
-                              );
-                            },
-                          ),
-                  )
-                : null,
-          ),
+                  ),
+                  subtitle: Text(
+                    achievement.description,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                );
+              },
+            ),
+
+          // No achievements message
+          if (_isAchievementsExpanded && achievements.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: Text(
+                  'Start exploring to earn achievements!',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+              ),
+            ),
         ],
       ),
     );
-  }
-
-  /// Get sample achievements based on user data and activities
-  List<AchievementBadgeData> _getSampleAchievements() {
-    final userLevel = _currentUser?.level ?? 0;
-    final userXP = _currentUser?.experiencePoints ?? 0;
-    final capturesCount = _nearbyCaptures.length;
-    final artistsDiscovered = _nearbyArtists.length;
-
-    return [
-      AchievementBadgeData(
-        title: 'First Steps',
-        description: 'Create your first account',
-        icon: Icons.person_add,
-        isUnlocked: _currentUser != null,
-        customColor: ArtbeatColors.primaryGreen,
-      ),
-      AchievementBadgeData(
-        title: 'Art Hunter',
-        description: 'Capture 5 artworks',
-        icon: Icons.camera_alt,
-        isUnlocked: capturesCount >= 5,
-        progress: (capturesCount / 5).clamp(0.0, 1.0),
-        showProgress: capturesCount < 5,
-        progressText: '$capturesCount/5',
-        customColor: ArtbeatColors.secondaryTeal,
-      ),
-      AchievementBadgeData(
-        title: 'Art Enthusiast',
-        description: 'Reach Level 3',
-        icon: Icons.star,
-        isUnlocked: userLevel >= 3,
-        progress: userLevel < 3 ? (userLevel / 3).clamp(0.0, 1.0) : 1.0,
-        showProgress: userLevel < 3,
-        progressText: 'Level $userLevel/3',
-        customColor: ArtbeatColors.primaryPurple,
-      ),
-      AchievementBadgeData(
-        title: 'Explorer',
-        description: 'Discover 10 artists',
-        icon: Icons.explore,
-        isUnlocked: artistsDiscovered >= 10,
-        progress: (artistsDiscovered / 10).clamp(0.0, 1.0),
-        showProgress: artistsDiscovered < 10,
-        progressText: '$artistsDiscovered/10',
-        customColor: ArtbeatColors.accentYellow,
-      ),
-      AchievementBadgeData(
-        title: 'Experience Master',
-        description: 'Earn 500 XP',
-        icon: Icons.emoji_events,
-        isUnlocked: userXP >= 500,
-        progress: (userXP / 500).clamp(0.0, 1.0),
-        showProgress: userXP < 500,
-        progressText: '$userXP/500 XP',
-        customColor: ArtbeatColors.featured,
-      ),
-      AchievementBadgeData(
-        title: 'Community Member',
-        description: 'Join ARTbeat community',
-        icon: Icons.group,
-        isUnlocked: true, // Always unlocked for being in the app
-        customColor: ArtbeatColors.primaryGreen,
-      ),
-    ];
   }
 }

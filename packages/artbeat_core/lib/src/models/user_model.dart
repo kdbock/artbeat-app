@@ -1,208 +1,171 @@
 // packages/artbeat_core/lib/src/models/user_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'user_type.dart';
+import 'capture_model.dart';
 
 class UserModel {
   final String id;
   final String email;
+  final String username;
   final String fullName;
-  final String? username;
-  final String? bio;
-  final String? profileImageUrl;
-  final String? coverImageUrl;
-  final String? zipCode;
-  final String? location;
-  final DateTime? birthDate;
-  final String? gender;
-  final List<String> posts;
+  final String bio;
+  final String location;
+  final String profileImageUrl;
   final List<String> followers;
   final List<String> following;
-  final List<String> captures;
-  final int followersCount;
-  final int followingCount;
-  final int postsCount;
-  final int capturesCount;
+  final List<CaptureModel> captures;
+  final List<String> posts;
   final DateTime createdAt;
-  final DateTime? updatedAt;
-  final bool isVerified;
-  final UserType userType;
+  final DateTime? lastActive;
+  final String? userType;
+  final Map<String, dynamic>? preferences;
   final int experiencePoints;
   final int level;
-  final List<String> achievements;
+  final String? zipCode;
 
   UserModel({
     required this.id,
     required this.email,
+    required this.username,
     required this.fullName,
-    this.username,
-    this.bio,
-    this.profileImageUrl,
-    this.coverImageUrl,
-    this.zipCode,
-    this.location,
-    this.birthDate,
-    this.gender,
-    this.posts = const [],
+    this.bio = '',
+    this.location = '',
+    this.profileImageUrl = '',
     this.followers = const [],
     this.following = const [],
     this.captures = const [],
-    this.followersCount = 0,
-    this.followingCount = 0,
-    this.postsCount = 0,
-    this.capturesCount = 0,
+    this.posts = const [],
     required this.createdAt,
-    this.updatedAt,
-    this.isVerified = false,
-    this.userType = UserType.regular,
+    this.lastActive,
+    this.userType,
+    this.preferences,
     this.experiencePoints = 0,
     this.level = 1,
-    this.achievements = const [],
+    this.zipCode,
   });
 
-  factory UserModel.placeholder(String id) {
-    return UserModel(
-      id: id,
-      email: '',
-      fullName: 'WordNerd User',
-      username: 'wordnerd_user',
-      bio: 'Vocabulary enthusiast and language lover',
-      location: 'United States',
-      createdAt: DateTime.now(),
-      posts: const [],
-      followers: const [],
-      following: const [],
-    );
-  }
-
-  bool get isFollowedByCurrentUser {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    return currentUserId != null && followers.contains(currentUserId);
-  }
+  // Computed getters for counts
+  int get followersCount => followers.length;
+  int get followingCount => following.length;
+  int get postsCount => posts.length;
+  int get capturesCount => captures.length;
 
   factory UserModel.fromDocumentSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
+    return UserModel.fromJson(data)
+        .copyWith(id: doc.id); // Use the document ID
+  }
 
+  factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: doc.id,
-      email: data['email'] as String? ?? '',
-      fullName: data['fullName'] as String? ?? '',
-      username: data['username'] as String?,
-      bio: data['bio'] as String?,
-      profileImageUrl: data['profileImageUrl'] as String?,
-      coverImageUrl: data['coverImageUrl'] as String?,
-      zipCode: data['zipCode'] as String?,
-      location: data['location'] as String?,
-      birthDate: (data['birthDate'] as Timestamp?)?.toDate(),
-      gender: data['gender'] as String?,
-      posts: List<String>.from(data['posts'] as List<dynamic>? ?? []),
-      followers: List<String>.from(data['followers'] as List<dynamic>? ?? []),
-      following: List<String>.from(data['following'] as List<dynamic>? ?? []),
-      captures: List<String>.from(data['captures'] as List<dynamic>? ?? []),
-      followersCount: data['followersCount'] as int? ?? 0,
-      followingCount: data['followingCount'] as int? ?? 0,
-      postsCount: data['postsCount'] as int? ?? 0,
-      capturesCount: data['capturesCount'] as int? ?? 0,
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
-      isVerified: data['isVerified'] as bool? ?? false,
-      userType: UserType.fromString(
-        data['userType'] as String? ?? UserType.regular.name,
-      ),
-      experiencePoints: data['experiencePoints'] as int? ?? 0,
-      level: data['level'] as int? ?? 1,
-      achievements: List<String>.from(
-        data['achievements'] as List<dynamic>? ?? [],
-      ),
+      id: json['id'] as String? ?? '',
+      email: json['email'] as String? ?? '',
+      username: json['username'] as String? ?? '',
+      fullName: json['fullName'] as String? ?? '',
+      bio: json['bio'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      profileImageUrl: json['profileImageUrl'] as String? ?? '',
+      followers: List<String>.from(json['followers'] as List<dynamic>? ?? []),
+      following: List<String>.from(json['following'] as List<dynamic>? ?? []),
+      captures: (json['captures'] as List<dynamic>? ?? [])
+          .map((capture) => CaptureModel.fromJson(capture as Map<String, dynamic>))
+          .toList(),
+      posts: List<String>.from(json['posts'] as List<dynamic>? ?? []),
+      createdAt: (json['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastActive: (json['lastActive'] as Timestamp?)?.toDate(),
+      userType: json['userType'] as String?,
+      preferences: json['preferences'] as Map<String, dynamic>?,
+      experiencePoints: json['experiencePoints'] as int? ?? 0,
+      level: json['level'] as int? ?? 1,
+      zipCode: json['zipCode'] as String?,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  /// Placeholder constructor for use in UI development and testing
+  factory UserModel.placeholder([String? id]) {
+    return UserModel(
+      id: id ?? 'placeholder_id',
+      email: 'placeholder@example.com',
+      username: 'placeholder_user',
+      fullName: 'Placeholder User',
+      bio: 'This is a placeholder bio for UI development',
+      location: 'San Francisco, CA',
+      profileImageUrl: '',
+      followers: [],
+      following: [],
+      captures: [],
+      posts: [],
+      createdAt: DateTime.now(),
+      userType: UserType.regular.value,
+      preferences: {},
+      experiencePoints: 0,
+      level: 1,
+      zipCode: '94102',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'email': email,
-      'fullName': fullName,
       'username': username,
+      'fullName': fullName,
       'bio': bio,
-      'profileImageUrl': profileImageUrl,
-      'coverImageUrl': coverImageUrl,
-      'zipCode': zipCode,
       'location': location,
-      'birthDate': birthDate != null ? Timestamp.fromDate(birthDate!) : null,
-      'gender': gender,
-      'posts': posts,
+      'profileImageUrl': profileImageUrl,
       'followers': followers,
       'following': following,
-      'captures': captures,
-      'followersCount': followersCount,
-      'followingCount': followingCount,
-      'postsCount': postsCount,
-      'capturesCount': capturesCount,
+      'captures': captures.map((capture) => capture.toJson()).toList(),
+      'posts': posts,
       'createdAt': Timestamp.fromDate(createdAt),
-      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
-      'isVerified': isVerified,
-      'userType': userType.name,
+      'lastActive': lastActive != null ? Timestamp.fromDate(lastActive!) : null,
+      'userType': userType,
+      'preferences': preferences,
       'experiencePoints': experiencePoints,
       'level': level,
-      'achievements': achievements,
+      'zipCode': zipCode,
     };
   }
+
+  Map<String, dynamic> toFirestore() => toJson();
 
   UserModel copyWith({
     String? id,
     String? email,
-    String? fullName,
     String? username,
+    String? fullName,
     String? bio,
-    String? profileImageUrl,
-    String? coverImageUrl,
-    String? zipCode,
     String? location,
-    DateTime? birthDate,
-    String? gender,
-    List<String>? posts,
+    String? profileImageUrl,
     List<String>? followers,
     List<String>? following,
-    List<String>? captures,
-    int? followersCount,
-    int? followingCount,
-    int? postsCount,
-    int? capturesCount,
+    List<CaptureModel>? captures,
+    List<String>? posts,
     DateTime? createdAt,
-    DateTime? updatedAt,
-    bool? isVerified,
-    UserType? userType,
+    DateTime? lastActive,
+    String? userType,
+    Map<String, dynamic>? preferences,
     int? experiencePoints,
     int? level,
-    List<String>? achievements,
   }) {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
-      fullName: fullName ?? this.fullName,
       username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
       bio: bio ?? this.bio,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
-      zipCode: zipCode ?? this.zipCode,
       location: location ?? this.location,
-      birthDate: birthDate ?? this.birthDate,
-      gender: gender ?? this.gender,
-      posts: posts ?? this.posts,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       followers: followers ?? this.followers,
       following: following ?? this.following,
       captures: captures ?? this.captures,
-      followersCount: followersCount ?? this.followersCount,
-      followingCount: followingCount ?? this.followingCount,
-      postsCount: postsCount ?? this.postsCount,
-      capturesCount: capturesCount ?? this.capturesCount,
+      posts: posts ?? this.posts,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      isVerified: isVerified ?? this.isVerified,
+      lastActive: lastActive ?? this.lastActive,
       userType: userType ?? this.userType,
+      preferences: preferences ?? this.preferences,
       experiencePoints: experiencePoints ?? this.experiencePoints,
       level: level ?? this.level,
-      achievements: achievements ?? this.achievements,
     );
   }
 

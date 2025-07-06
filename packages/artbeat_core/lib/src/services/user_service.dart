@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
 import '../models/user_model.dart';
+import '../storage/enhanced_storage_service.dart';
 
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
@@ -93,13 +94,15 @@ class UserService extends ChangeNotifier {
       final UserModel userData = UserModel(
         id: uid,
         email: email,
+        username: displayName ?? '',
         fullName: displayName ?? '',
-        zipCode: zipCode,
         createdAt: DateTime.now(),
+        experiencePoints: 0,
+        level: 1,
       );
 
-      _log.info('Creating new document with data: ${userData.toMap()}');
-      await _usersCollection.doc(uid).set(userData.toMap());
+      _log.info('Creating new document with data: ${userData.toJson()}');
+      await _usersCollection.doc(uid).set(userData.toJson());
       _log.info('✅ User document successfully created.');
 
       // Verify document creation
@@ -229,7 +232,7 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Upload and update profile photo
+  // Upload and update profile photo with optimization
   Future<void> uploadAndUpdateProfilePhoto(File imageFile) async {
     final userId = currentUserId;
     if (userId == null) {
@@ -239,23 +242,32 @@ class UserService extends ChangeNotifier {
 
     try {
       debugPrint(
-        '📤 uploadAndUpdateProfilePhoto: Starting upload for user $userId',
+        '📤 uploadAndUpdateProfilePhoto: Starting optimized upload for user $userId',
       );
 
-      final ref = storage.ref().child('profile_images/$userId/profile.jpg');
-      debugPrint(
-        '📂 uploadAndUpdateProfilePhoto: Storage path: profile_images/$userId/profile.jpg',
+      // Use enhanced storage service for optimized upload
+      final enhancedStorage = EnhancedStorageService();
+      final result = await enhancedStorage.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'profile',
+        generateThumbnail: true,
       );
 
-      await ref.putFile(imageFile);
-      debugPrint('✅ uploadAndUpdateProfilePhoto: File uploaded to storage');
-
-      final url = await ref.getDownloadURL();
+      final url = result['imageUrl']!;
       debugPrint('🔗 uploadAndUpdateProfilePhoto: Download URL: $url');
+      debugPrint('📊 Original size: ${result['originalSize']}');
+      debugPrint('📊 Compressed size: ${result['compressedSize']}');
 
-      await _usersCollection.doc(userId).set({
-        'profileImageUrl': url,
-      }, SetOptions(merge: true));
+      // Update Firestore with both main image and thumbnail
+      final updateData = {'profileImageUrl': url};
+
+      if (result['thumbnailUrl'] != null) {
+        updateData['profileImageThumbnailUrl'] = result['thumbnailUrl']!;
+      }
+
+      await _usersCollection
+          .doc(userId)
+          .set(updateData, SetOptions(merge: true));
       debugPrint('✅ uploadAndUpdateProfilePhoto: Firestore document updated');
 
       await currentUser?.updatePhotoURL(url);
@@ -271,20 +283,46 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Upload and update cover photo
+  // Upload and update cover photo with optimization
   Future<void> uploadAndUpdateCoverPhoto(File imageFile) async {
     final userId = currentUserId;
     if (userId == null) return;
 
     try {
-      final ref = storage.ref().child('cover_photos/$userId/cover.jpg');
-      await ref.putFile(imageFile);
-      final url = await ref.getDownloadURL();
-      await _usersCollection.doc(userId).set({
-        'coverImageUrl': url,
-      }, SetOptions(merge: true));
+      debugPrint(
+        '📤 uploadAndUpdateCoverPhoto: Starting optimized upload for user $userId',
+      );
+
+      // Use enhanced storage service for optimized upload
+      final enhancedStorage = EnhancedStorageService();
+      final result = await enhancedStorage.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category:
+            'artwork', // Use artwork category for cover photos (larger dimensions)
+        generateThumbnail: true,
+      );
+
+      final url = result['imageUrl']!;
+      debugPrint('🔗 uploadAndUpdateCoverPhoto: Download URL: $url');
+      debugPrint('📊 Original size: ${result['originalSize']}');
+      debugPrint('📊 Compressed size: ${result['compressedSize']}');
+
+      // Update Firestore with both main image and thumbnail
+      final updateData = {'coverImageUrl': url};
+
+      if (result['thumbnailUrl'] != null) {
+        updateData['coverImageThumbnailUrl'] = result['thumbnailUrl']!;
+      }
+
+      await _usersCollection
+          .doc(userId)
+          .set(updateData, SetOptions(merge: true));
+      debugPrint('✅ uploadAndUpdateCoverPhoto: Firestore document updated');
+
       notifyListeners();
+      debugPrint('✅ uploadAndUpdateCoverPhoto: Listeners notified');
     } catch (e, s) {
+      debugPrint('❌ uploadAndUpdateCoverPhoto: Error occurred: $e');
       _log.severe('Error uploading cover photo', e, s);
     }
   }

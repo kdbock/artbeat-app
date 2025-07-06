@@ -7,3 +7,5 @@ export 'featured_content_row_widget.dart';
 export 'network_error_widget.dart';
 export 'universal_bottom_nav.dart';
 export 'main_layout.dart';
+export 'user_avatar.dart';
+export 'optimized_image.dart';

@@ -11,10 +11,12 @@ import 'package:artbeat_artist/artbeat_artist.dart'
     show ArtistPublicProfileScreen;
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:artbeat_art_walk/src/screens/my_captures_screen.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import 'widgets/developer_menu.dart';
+import 'src/widgets/error_boundary.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -23,38 +25,45 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        // Core providers
-        ChangeNotifierProvider<core.UserService>(
-          create: (_) => core.UserService(),
-          lazy: true, // Changed to lazy to prevent early Firebase access
+    return ErrorBoundary(
+      onError: (error, stackTrace) {
+        // Log the error and stack trace
+        debugPrint('❌ App-level error caught: $error');
+        debugPrint('❌ Stack trace: $stackTrace');
+      },
+      child: MultiProvider(
+        providers: [
+          // Core providers
+          ChangeNotifierProvider<core.UserService>(
+            create: (_) => core.UserService(),
+            lazy: true, // Changed to lazy to prevent early Firebase access
+          ),
+          Provider<AuthService>(create: (_) => AuthService(), lazy: true),
+          ChangeNotifierProvider<core.ConnectivityService>(
+            create: (_) => core.ConnectivityService(),
+            lazy: false,
+          ),
+          Provider<ThemeData>(
+            create: (_) => core.ArtbeatTheme.lightTheme,
+            lazy: false,
+          ),
+          ChangeNotifierProvider<messaging.ChatService>(
+            create: (_) => messaging.ChatService(),
+            lazy: true, // Changed to lazy to prevent early Firebase access
+          ),
+          // Community providers
+          ChangeNotifierProvider<CommunityService>(
+            create: (_) => CommunityService(),
+            lazy: true, // Changed to lazy to prevent early Firebase access
+          ),
+        ],
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          title: 'ARTbeat',
+          theme: core.ArtbeatTheme.lightTheme,
+          initialRoute: '/splash',
+          onGenerateRoute: onGenerateRoute,
         ),
-        Provider<AuthService>(create: (_) => AuthService(), lazy: true),
-        ChangeNotifierProvider<core.ConnectivityService>(
-          create: (_) => core.ConnectivityService(),
-          lazy: false,
-        ),
-        Provider<ThemeData>(
-          create: (_) => core.ArtbeatTheme.lightTheme,
-          lazy: false,
-        ),
-        ChangeNotifierProvider<messaging.ChatService>(
-          create: (_) => messaging.ChatService(),
-          lazy: true, // Changed to lazy to prevent early Firebase access
-        ),
-        // Community providers
-        ChangeNotifierProvider<CommunityService>(
-          create: (_) => CommunityService(),
-          lazy: true, // Changed to lazy to prevent early Firebase access
-        ),
-      ],
-      child: MaterialApp(
-        navigatorKey: navigatorKey,
-        title: 'ARTbeat',
-        theme: core.ArtbeatTheme.lightTheme,
-        initialRoute: '/splash',
-        onGenerateRoute: onGenerateRoute,
       ),
     );
   }
@@ -107,7 +116,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/captures':
-        return MaterialPageRoute(builder: (_) => const CaptureListScreen());
+        return MaterialPageRoute(builder: (_) => const MyCapturesScreen());
       case '/achievements':
         return MaterialPageRoute(builder: (_) => const AchievementsScreen());
       case '/following':

@@ -5,6 +5,7 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:logger/logger.dart';
 import 'dart:math';
+import 'art_walk_experience_screen.dart';
 
 final Logger _logger = Logger();
 

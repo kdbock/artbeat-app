@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show MainLayout;
+import 'package:artbeat_core/artbeat_core.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 
@@ -245,19 +244,18 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
                       padding: const EdgeInsets.only(right: 8.0),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          post.imageUrls[index],
+                        child: ImageManagementService().getOptimizedImage(
+                          imageUrl: post.imageUrls[index],
                           width: 120,
                           height: 120,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: 120,
-                              height: 120,
-                              color: Colors.grey.shade300,
-                              child: const Center(child: Icon(Icons.error)),
-                            );
-                          },
+                          isThumbnail: true,
+                          errorWidget: Container(
+                            width: 120,
+                            height: 120,
+                            color: Colors.grey.shade300,
+                            child: const Center(child: Icon(Icons.error)),
+                          ),
                         ),
                       ),
                     );

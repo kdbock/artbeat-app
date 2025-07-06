@@ -242,24 +242,24 @@ class _SubscriptionAnalyticsScreenState
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.analytics, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
+                  const Icon(Icons.analytics, size: 80, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text(
                     'Subscription Analytics',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
-                  Text(
+                  const SizedBox(height: 16),
+                  const Text(
                     'Get detailed insights about your subscription performance',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16),
                   ),
-                  SizedBox(height: 24),
-                  Text(
+                  const SizedBox(height: 24),
+                  const Text(
                     'Available with Artist Pro Plan',
                     style: TextStyle(fontSize: 18, color: Colors.deepPurple),
                   ),
-                  SizedBox(height: 32),
+                  const SizedBox(height: 32),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/artist/subscription');

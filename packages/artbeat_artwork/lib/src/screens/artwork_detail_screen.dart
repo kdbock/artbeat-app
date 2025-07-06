@@ -138,7 +138,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
             title: 'Artwork',
             showLogo: false,
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }

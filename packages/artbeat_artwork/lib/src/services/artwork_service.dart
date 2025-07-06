@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier;
+import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier, EnhancedStorageService;
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 
 /// Service for managing artwork
@@ -12,6 +12,7 @@ class ArtworkService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final SubscriptionService _subscriptionService = SubscriptionService();
+  final EnhancedStorageService _enhancedStorage = EnhancedStorageService();
 
   // Collection references
   final CollectionReference _artworkCollection =
@@ -95,15 +96,20 @@ class ArtworkService {
         throw Exception('Artist profile not found. Please create one first.');
       }
 
-      // Upload image to Firebase Storage with format: artwork/{userId}/{timestamp}_{filename}
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final filename = imageFile.path.split('/').last;
-      final storageRef =
-          _storage.ref().child('artwork/$userId/${timestamp}_$filename');
+      // Upload image using enhanced storage service with optimization
+      debugPrint('🎨 Uploading artwork image with optimization...');
+      final uploadResult = await _enhancedStorage.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'artwork',
+        generateThumbnail: true,
+      );
 
-      final uploadTask = storageRef.putFile(imageFile);
-      final snapshot = await uploadTask.whenComplete(() => null);
-      final imageUrl = await snapshot.ref.getDownloadURL();
+      final imageUrl = uploadResult['imageUrl']!;
+      final thumbnailUrl = uploadResult['thumbnailUrl'];
+      
+      debugPrint('✅ Artwork image uploaded successfully');
+      debugPrint('📊 Original: ${uploadResult['originalSize']}');
+      debugPrint('📊 Compressed: ${uploadResult['compressedSize']}');
 
       // Create artwork data
       final artworkData = {
@@ -112,6 +118,7 @@ class ArtworkService {
         'title': title,
         'description': description,
         'imageUrl': imageUrl,
+        'thumbnailUrl': thumbnailUrl,
         'medium': medium,
         'styles': styles,
         'tags': tags ?? [],

@@ -23,6 +23,8 @@ export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
 export 'src/services/feedback_service.dart' show FeedbackService;
 export 'src/services/maps_diagnostic_service.dart' show MapsDiagnosticService;
+export 'src/services/image_management_service.dart' show ImageManagementService;
+export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -50,6 +52,7 @@ export 'src/widgets/main_layout.dart';
 export 'src/widgets/universal_bottom_nav.dart';
 export 'src/widgets/universal_header.dart';
 export 'src/widgets/user_avatar.dart';
+export 'src/widgets/optimized_image.dart';
 export 'src/widgets/feedback_form.dart';
 export 'src/widgets/developer_feedback_admin_screen.dart';
 export 'src/widgets/feedback_system_info_screen.dart';

@@ -131,10 +131,10 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.grey.shade200,
-                      backgroundImage: follower.profileImageUrl != null
-                          ? NetworkImage(follower.profileImageUrl!)
-                          : null,
-                      child: follower.profileImageUrl == null
+                      backgroundImage: follower.profileImageUrl.isEmpty
+                          ? null
+                          : NetworkImage(follower.profileImageUrl),
+                      child: follower.profileImageUrl.isEmpty
                           ? Text(
                               follower.fullName[0].toUpperCase(),
                               style: const TextStyle(color: Colors.grey),
@@ -145,7 +145,7 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
                       follower.fullName,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    subtitle: Text(follower.username ?? ''),
+                    subtitle: Text(follower.username),
                     trailing: !_isCurrentUser || isCurrentUser
                         ? null
                         : FutureBuilder<bool>(

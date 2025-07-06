@@ -183,19 +183,18 @@ class _ArtCritiqueSliderState extends State<ArtCritiqueSlider> {
                     top: Radius.circular(12),
                   ),
                   child: post.imageUrls.isNotEmpty
-                      ? Image.network(
-                          post.imageUrls.first,
+                      ? ImageManagementService().getOptimizedImage(
+                          imageUrl: post.imageUrls.first,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(
-                                Icons.image_not_supported,
-                                color: Colors.grey,
-                                size: 32,
-                              ),
-                            );
-                          },
+                          isThumbnail: true,
+                          errorWidget: Container(
+                            color: Colors.grey.shade200,
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
+                          ),
                         )
                       : Container(
                           color: Colors.grey.shade200,

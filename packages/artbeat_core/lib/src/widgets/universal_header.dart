@@ -81,33 +81,31 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildTitle() {
     if (showLogo) {
-      return Flexible(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 32),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Image.asset(
-                    'assets/images/artbeat_header.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback to text logo if image not found
-                      return Text(
-                        title ?? 'ARTbeat',
-                        style: TextStyle(
-                          color: foregroundColor ?? Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
+      return Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 32),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Image.asset(
+                  'assets/images/artbeat_header.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    // Fallback to text logo if image not found
+                    return Text(
+                      title ?? 'ARTbeat',
+                      style: TextStyle(
+                        color: foregroundColor ?? Colors.black87,
+                        fontWeight: FontWeight.bold,
                         overflow: TextOverflow.ellipsis,
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       );

@@ -48,11 +48,15 @@ dependencies:
   firebase_messaging: ^15.2.7
   firebase_data_connect: ^0.1.5+1  # Added for Data Connect support
 
+  # Permissions
+  permission_handler: ^12.0.1
+
   # UI packages
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.1.0
-  # Temporarily removed due to dependency conflict
-  # cached_network_image: ^3.4.1
+  # Optimized image caching with buffer management
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   google_maps_flutter: ^2.5.3
 
   # Utils

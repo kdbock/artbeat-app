@@ -175,11 +175,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       height: 250,
       width: double.infinity,
       child: _event!.eventBannerUrl.isNotEmpty
-          ? Image.network(
-              _event!.eventBannerUrl,
+          ? ImageManagementService().getOptimizedImage(
+              imageUrl: _event!.eventBannerUrl,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  _buildPlaceholderBanner(),
+              width: double.infinity,
+              height: 250,
+              errorWidget: _buildPlaceholderBanner(),
             )
           : _buildPlaceholderBanner(),
     );

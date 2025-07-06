@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:logger/logger.dart';
+import 'dart:developer' as developer;
 import '../models/achievement_type.dart';
 
 /// Service for managing user achievements
 class AchievementService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final Logger _logger = Logger();
+  // Use dart:developer for logging
 
   /// Award an achievement to the current user
   Future<void> awardAchievement(
@@ -34,9 +34,9 @@ class AchievementService {
         'earnedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      _logger.i('Awarded achievement ${type.value} to user $userId');
+      developer.log('Awarded achievement ${type.value} to user $userId');
     } catch (e) {
-      _logger.e('Error awarding achievement: $e');
+      developer.log('Error awarding achievement: $e');
       rethrow;
     }
   }
@@ -56,7 +56,7 @@ class AchievementService {
       final doc = await docRef.get();
       return doc.exists;
     } catch (e) {
-      _logger.e('Error checking achievement: $e');
+      developer.log('Error checking achievement: $e');
       return false;
     }
   }
@@ -77,7 +77,7 @@ class AchievementService {
           .map((doc) => doc.data()..['id'] = doc.id)
           .toList();
     } catch (e) {
-      _logger.e('Error getting user achievements: $e');
+      developer.log('Error getting user achievements: $e');
       return [];
     }
   }

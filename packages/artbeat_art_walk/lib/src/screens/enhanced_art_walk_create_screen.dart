@@ -12,7 +12,6 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 
-
 /// Enhanced Art Walk Create Screen with Map View
 class EnhancedArtWalkCreateScreen extends StatefulWidget {
   static const String routeName = '/enhanced-create-art-walk';
@@ -32,7 +31,7 @@ class EnhancedArtWalkCreateScreen extends StatefulWidget {
 }
 
 class _EnhancedArtWalkCreateScreenState
-    extends State<EnhancedArtWalkCreateScreen> {
+    extends State<EnhancedArtWalkCreateScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -56,6 +55,13 @@ class _EnhancedArtWalkCreateScreenState
   bool _isPublic = true;
   bool _showMapView = true;
   double _estimatedDistance = 0.0;
+  bool _isUploading = false;
+
+  // Animation
+  late AnimationController _introAnimationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  bool _hasShownIntro = false;
 
   // Services
   final ArtWalkService _artWalkService = ArtWalkService();
@@ -66,6 +72,32 @@ class _EnhancedArtWalkCreateScreenState
   @override
   void initState() {
     super.initState();
+
+    // Initialize animation controller
+    _introAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _introAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _introAnimationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // Start with intro if not editing
+    if (widget.artWalkId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showIntroDialog();
+      });
+    }
 
     // Initialize form if editing existing art walk
     if (widget.artWalkToEdit != null) {
@@ -82,6 +114,7 @@ class _EnhancedArtWalkCreateScreenState
     _descriptionController.dispose();
     _estimatedDurationController.dispose();
     _zipCodeController.dispose();
+    _introAnimationController.dispose();
     super.dispose();
   }
 
@@ -421,7 +454,10 @@ class _EnhancedArtWalkCreateScreenState
         if (_coverImageFile != null) {
           // Upload cover image
           final coverImageUrl = await _uploadCoverImage(_coverImageFile!);
-          artWalkData['coverImageUrl'] = coverImageUrl;
+          if (coverImageUrl != null) {
+            artWalkData['coverImageUrl'] = coverImageUrl;
+            artWalkData['imageUrls'] = [coverImageUrl];
+          }
         }
 
         await _firestore.collection('art_walks').add(artWalkData);
@@ -452,89 +488,384 @@ class _EnhancedArtWalkCreateScreenState
     }
   }
 
-  Future<String> _uploadCoverImage(File imageFile) async {
-    final userId = _auth.currentUser?.uid;
-    if (userId == null) throw Exception('User not authenticated');
+  Future<String?> _uploadCoverImage(File imageFile) async {
+    try {
+      if (!mounted) return null;
 
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
-    final ref = FirebaseStorage.instance.ref().child(
-      'art_walk_covers/$userId/$fileName',
+      setState(() {
+        _isLoading = true;
+      });
+
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) throw Exception('User not authenticated');
+
+      final walkId =
+          widget.artWalkId ?? DateTime.now().millisecondsSinceEpoch.toString();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('art_walk_covers')
+          .child(userId)
+          .child(walkId)
+          .child(fileName);
+
+      final uploadTask = await ref.putFile(imageFile);
+      final imageUrl = await uploadTask.ref.getDownloadURL();
+
+      debugPrint('✅ EnhancedArtWalkCreate: Cover image uploaded: $imageUrl');
+      return imageUrl;
+    } catch (e) {
+      debugPrint('❌ EnhancedArtWalkCreate: Error uploading cover image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error uploading cover image: $e')),
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showIntroDialog() {
+    if (_hasShownIntro) return;
+    _hasShownIntro = true;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: AlertDialog(
+            title: const Text('Create Your Art Walk Journey'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.directions_walk, size: 48, color: Colors.blue),
+                const SizedBox(height: 16),
+                Text(
+                  'Ready to curate your own artistic adventure?',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Create a unique path through local art pieces, share your favorite spots, and inspire others to explore the artistic side of your city.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _introAnimationController.forward();
+                },
+                child: const Text('Let\'s Begin'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
-
-    final uploadTask = ref.putFile(imageFile);
-    final snapshot = await uploadTask;
-
-    return snapshot.ref.getDownloadURL();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.artWalkId != null
-              ? 'Edit Art Walk'
-              : 'Create Enhanced Art Walk',
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(_showMapView ? Icons.list : Icons.map),
-            onPressed: () {
-              setState(() {
-                _showMapView = !_showMapView;
-              });
-            },
+    return WillPopScope(
+      onWillPop: () async {
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Leave Art Walk Creation?'),
+            content: const Text('Your progress will be lost.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Stay'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Leave'),
+              ),
+            ],
           ),
-        ],
+        );
+        return shouldPop ?? false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk'),
+          leading: CloseButton(
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+        ),
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: _buildForm(),
+          ),
+        ),
       ),
-      body: _isLoading && _availableArtPieces.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
+    );
+  }
+
+  Widget _buildForm() {
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Map or List View Toggle
-                SizedBox(
-                  height: 300,
-                  child: _showMapView ? _buildMapView() : _buildListView(),
-                ),
-
-                // Form Section
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Basic Information
-                          _buildBasicInformation(),
-                          const SizedBox(height: 20),
-
-                          // Route Information
-                          _buildRouteInformation(),
-                          const SizedBox(height: 20),
-
-                          // Cover Image
-                          _buildCoverImageSection(),
-                          const SizedBox(height: 20),
-
-                          // Settings
-                          _buildSettingsSection(),
-                          const SizedBox(height: 20),
-
-                          // Selected Art Pieces Summary
-                          _buildSelectedArtSummary(),
-                          const SizedBox(height: 24),
-
-                          // Submit Button
-                          _buildSubmitButton(),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                _buildProgressIndicator(),
+                const SizedBox(height: 24),
+                _buildTitleField(),
+                const SizedBox(height: 16),
+                _buildDescriptionField(),
+                const SizedBox(height: 24),
+                _buildMapSection(),
+                const SizedBox(height: 24),
+                _buildArtPiecesSection(),
+                const SizedBox(height: 32),
+                _buildSubmitButton(),
               ],
             ),
+          ),
+        ),
+        if (_isUploading) // Add loading overlay
+          Container(
+            color: Colors.black54,
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildProgressIndicator() {
+    final int progress = _calculateProgress();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LinearProgressIndicator(
+          value: progress / 100,
+          backgroundColor: Colors.grey[200],
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Theme.of(context).primaryColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _getProgressMessage(progress),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).primaryColor,
+              ),
+        ),
+      ],
+    );
+  }
+
+  int _calculateProgress() {
+    int progress = 0;
+    if (_titleController.text.isNotEmpty) progress += 20;
+    if (_descriptionController.text.isNotEmpty) progress += 20;
+    if (_selectedArtPieces.isNotEmpty) progress += 30;
+    if (_routePoints.isNotEmpty) progress += 30;
+    return progress;
+  }
+
+  String _getProgressMessage(int progress) {
+    if (progress < 20) return 'Start by giving your walk a name! 🎨';
+    if (progress < 40) return 'Great title! Now describe your artistic journey ✍️';
+    if (progress < 70) return 'Add some art pieces to create your path 🗺️';
+    if (progress < 100) return 'Almost there! Finalize your route 🎯';
+    return 'Perfect! Ready to share your art walk! 🎉';
+  }
+
+  Widget _buildTitleField() {
+    return TextFormField(
+      controller: _titleController,
+      decoration: InputDecoration(
+        labelText: 'Title',
+        hintText: 'Give your art walk a creative name',
+        prefixIcon: const Icon(Icons.title),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a title';
+        }
+        return null;
+      },
+      onChanged: (_) => setState(() {}), // Update progress
+    );
+  }
+
+  Widget _buildDescriptionField() {
+    return TextFormField(
+      controller: _descriptionController,
+      decoration: InputDecoration(
+        labelText: 'Description',
+        hintText: 'Describe your art walk experience',
+        prefixIcon: const Icon(Icons.description),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      maxLines: 3,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter a description';
+        }
+        return null;
+      },
+      onChanged: (_) => setState(() {}), // Update progress
+    );
+  }
+
+  Widget _buildMapSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Map View',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+
+        // Map or List View Toggle
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _showMapView = true;
+                  });
+                },
+                child: const Text('Map View'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _showMapView = false;
+                  });
+                },
+                child: const Text('List View'),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // Map or List View
+        SizedBox(
+          height: 300,
+          child: _showMapView ? _buildMapView() : _buildListView(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildArtPiecesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Art Pieces',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+
+        // Selected Art Pieces Summary
+        _buildSelectedArtSummary(),
+
+        const SizedBox(height: 16),
+
+        // Available Art Pieces
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator())
+        else
+          _availableArtPieces.isEmpty
+              ? const Center(child: Text('No art pieces available.'))
+              : GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.0,
+                    crossAxisSpacing: 8.0,
+                    mainAxisSpacing: 8.0,
+                  ),
+                  itemCount: _availableArtPieces.length,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final art = _availableArtPieces[index];
+                    final isSelected = _selectedArtPieces.contains(art);
+
+                    return GestureDetector(
+                      onTap: () => _toggleArtPieceSelection(art),
+                      child: Card(
+                        elevation: isSelected ? 4 : 1,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(8),
+                                ),
+                                child: Image.network(
+                                  art.imageUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    art.title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    art.artistName ?? 'Unknown Artist',
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+      ],
     );
   }
 
@@ -579,183 +910,6 @@ class _EnhancedArtWalkCreateScreenState
           ),
         );
       },
-    );
-  }
-
-  Widget _buildBasicInformation() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Basic Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-
-        TextFormField(
-          controller: _titleController,
-          decoration: const InputDecoration(
-            labelText: 'Art Walk Title',
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a title';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 12),
-
-        TextFormField(
-          controller: _descriptionController,
-          decoration: const InputDecoration(
-            labelText: 'Description',
-            border: OutlineInputBorder(),
-          ),
-          maxLines: 3,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter a description';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRouteInformation() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Route Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _zipCodeController,
-                decoration: const InputDecoration(
-                  labelText: 'Zip Code',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: _estimatedDurationController,
-                decoration: const InputDecoration(
-                  labelText: 'Duration (minutes)',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                readOnly: true,
-                initialValue: _estimatedDistance > 0
-                    ? ((_estimatedDistance * 20) +
-                              (_selectedArtPieces.length * 5))
-                          .toStringAsFixed(0)
-                    : '',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-
-        if (_estimatedDistance > 0)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Estimated Distance:'),
-                      Text('${_estimatedDistance.toStringAsFixed(2)} miles'),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Art Pieces:'),
-                      Text('${_selectedArtPieces.length}'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCoverImageSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Cover Image',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-
-        GestureDetector(
-          onTap: _pickCoverImage,
-          child: Container(
-            height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: _coverImageFile != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(_coverImageFile!, fit: BoxFit.cover),
-                  )
-                : const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('Add Cover Image'),
-                      ],
-                    ),
-                  ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Settings',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-
-        SwitchListTile(
-          title: const Text('Make this Art Walk public'),
-          value: _isPublic,
-          onChanged: (value) {
-            setState(() {
-              _isPublic = value;
-            });
-          },
-        ),
-      ],
     );
   }
 
@@ -804,21 +958,22 @@ class _EnhancedArtWalkCreateScreenState
   }
 
   Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
+    final progress = _calculateProgress();
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      height: 56,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _submitForm,
+        onPressed: progress == 100 ? _submitForm : null,
         style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: progress == 100 ? 4 : 0,
         ),
-        child: _isLoading
-            ? const CircularProgressIndicator(color: Colors.white)
-            : Text(
-                widget.artWalkId != null
-                    ? 'Update Art Walk'
-                    : 'Create Art Walk',
-                style: const TextStyle(fontSize: 16),
-              ),
+        child: Text(
+          progress == 100 ? 'Share Your Art Walk' : 'Complete Your Walk',
+          style: const TextStyle(fontSize: 16),
+        ),
       ),
     );
   }

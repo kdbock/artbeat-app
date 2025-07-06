@@ -30,6 +30,12 @@ service firebase.storage {
       );
     }
 
+    function isAdmin(userId) {
+      return userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2'  // Hardcoded admin for Kristy Kelly
+        || (exists(/databases/$(database)/documents/users/$(userId)) 
+          && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin');
+    }
+
     // Base rules that apply to all paths
     match /{allPaths=**} {
       allow read: if isAuthenticated(); // Simplified for dev - just require auth
@@ -75,12 +81,17 @@ service firebase.storage {
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
-    // Capture images - more permissive for development
+    // Capture images - allow authenticated users to upload to their own folder
     match /capture_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
-      // More permissive during development - just check auth
-      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
-      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow write: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isAdmin(request.auth.uid)
+      );
     }
 
     // Legacy captures path - for backward compatibility

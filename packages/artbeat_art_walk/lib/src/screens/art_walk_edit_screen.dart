@@ -9,11 +9,7 @@ class ArtWalkEditScreen extends StatefulWidget {
   final String artWalkId;
   final ArtWalkModel? artWalk;
 
-  const ArtWalkEditScreen({
-    super.key,
-    required this.artWalkId,
-    this.artWalk,
-  });
+  const ArtWalkEditScreen({super.key, required this.artWalkId, this.artWalk});
 
   @override
   State<ArtWalkEditScreen> createState() => _ArtWalkEditScreenState();
@@ -62,24 +58,28 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
 
     try {
       // Use provided art walk or fetch from service
-      _artWalk = widget.artWalk ?? await _artWalkService.getArtWalkById(widget.artWalkId);
-      
+      _artWalk =
+          widget.artWalk ??
+          await _artWalkService.getArtWalkById(widget.artWalkId);
+
       if (_artWalk != null) {
         _titleController.text = _artWalk!.title;
         _descriptionController.text = _artWalk!.description;
         _zipCodeController.text = _artWalk!.zipCode ?? '';
-        _estimatedDurationController.text = _artWalk!.estimatedDuration?.toString() ?? '';
-        _estimatedDistanceController.text = _artWalk!.estimatedDistance?.toString() ?? '';
-        
+        _estimatedDurationController.text =
+            _artWalk!.estimatedDuration?.toString() ?? '';
+        _estimatedDistanceController.text =
+            _artWalk!.estimatedDistance?.toString() ?? '';
+
         _isPublic = _artWalk!.isPublic;
         _artworkIds = List<String>.from(_artWalk!.artworkIds);
       }
     } catch (e) {
       debugPrint('Error loading art walk: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading art walk: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading art walk: $e')));
       }
     } finally {
       if (mounted) {
@@ -95,7 +95,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      
+
       if (image != null) {
         setState(() {
           _newCoverImage = File(image.path);
@@ -104,15 +104,15 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     } catch (e) {
       debugPrint('Error picking image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
       }
     }
   }
 
-  /// Save art walk changes
-  Future<void> _saveArtWalk() async {
+  /// Save art walk changes including cover image
+  Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -120,42 +120,33 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     });
 
     try {
-      // Parse duration and distance
-      final duration = _estimatedDurationController.text.trim().isEmpty
-          ? null
-          : double.tryParse(_estimatedDurationController.text.trim());
-      
-      final distance = _estimatedDistanceController.text.trim().isEmpty
-          ? null
-          : double.tryParse(_estimatedDistanceController.text.trim());
-
-      // Update art walk
+      // Update art walk data
       await _artWalkService.updateArtWalk(
         walkId: widget.artWalkId,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        coverImageFile: _newCoverImage,
+        zipCode: _zipCodeController.text.trim(),
+        estimatedDuration: _estimatedDurationController.text.isNotEmpty
+            ? double.parse(_estimatedDurationController.text)
+            : null,
+        estimatedDistance: _estimatedDistanceController.text.isNotEmpty
+            ? double.parse(_estimatedDistanceController.text)
+            : null,
         artworkIds: _artworkIds,
         isPublic: _isPublic,
-        zipCode: _zipCodeController.text.trim().isEmpty 
-            ? null 
-            : _zipCodeController.text.trim(),
-        estimatedDuration: duration,
-        estimatedDistance: distance,
+        coverImageFile: _newCoverImage,
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Art walk updated successfully')),
-        );
-        Navigator.of(context).pop(true); // Return true to indicate success
+        Navigator.of(
+          context,
+        ).pop(true); // Return true to indicate successful save
       }
     } catch (e) {
-      debugPrint('Error updating art walk: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating art walk: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating art walk: $e')));
       }
     } finally {
       if (mounted) {
@@ -172,7 +163,9 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Art Walk'),
-        content: const Text('Are you sure you want to delete this art walk? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this art walk? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -194,7 +187,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
 
       try {
         await _artWalkService.deleteArtWalk(widget.artWalkId);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Art walk deleted successfully')),
@@ -223,15 +216,12 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const UniversalHeader(
-          title: 'Edit Art Walk',
-          showLogo: false,
-        ),
+        appBar: const UniversalHeader(title: 'Edit Art Walk', showLogo: false),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _artWalk == null
-                ? const Center(child: Text('Art walk not found'))
-                : _buildEditForm(),
+            ? const Center(child: Text('Art walk not found'))
+            : _buildEditForm(),
       ),
     );
   }
@@ -247,23 +237,23 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
             // Cover image section
             _buildCoverImageSection(),
             const SizedBox(height: 24),
-            
+
             // Basic information
             _buildBasicInfoSection(),
             const SizedBox(height: 24),
-            
+
             // Location and details
             _buildLocationAndDetailsSection(),
             const SizedBox(height: 24),
-            
+
             // Artwork selection
             _buildArtworkSection(),
             const SizedBox(height: 24),
-            
+
             // Privacy settings
             _buildPrivacySection(),
             const SizedBox(height: 32),
-            
+
             // Action buttons
             _buildActionButtons(),
           ],
@@ -291,8 +281,8 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
           child: _newCoverImage != null
               ? Image.file(_newCoverImage!, fit: BoxFit.cover)
               : _artWalk!.coverImageUrl?.isNotEmpty == true
-                  ? Image.network(_artWalk!.coverImageUrl!, fit: BoxFit.cover)
-                  : const Icon(Icons.image, size: 64, color: Colors.grey),
+              ? Image.network(_artWalk!.coverImageUrl!, fit: BoxFit.cover)
+              : const Icon(Icons.image, size: 64, color: Colors.grey),
         ),
         const SizedBox(height: 16),
         OutlinedButton.icon(
@@ -489,7 +479,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _isSaving ? null : _saveArtWalk,
+            onPressed: _isSaving ? null : _saveChanges,
             style: ElevatedButton.styleFrom(
               backgroundColor: ArtbeatColors.primary,
               foregroundColor: Colors.white,

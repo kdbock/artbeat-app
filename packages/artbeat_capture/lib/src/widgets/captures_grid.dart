@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
+import 'package:artbeat_core/artbeat_core.dart'
+    show CaptureModel, OptimizedGridImage;
 
 class CapturesGrid extends StatefulWidget {
   final String userId;
@@ -151,47 +152,48 @@ class _CapturesGridState extends State<CapturesGrid> {
           itemCount: captures.length,
           itemBuilder: (context, index) {
             final capture = captures[index];
-            return InkWell(
+            return OptimizedGridImage(
+              imageUrl: capture.imageUrl,
+              thumbnailUrl: capture.thumbnailUrl,
+              heroTag: 'capture_${capture.id}',
               onTap: () => widget.onCaptureTap?.call(capture),
-              child: Hero(
-                tag: 'capture_${capture.id}',
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    image: DecorationImage(
-                      image: NetworkImage(
-                        capture.thumbnailUrl ?? capture.imageUrl,
+              overlay: Stack(
+                children: [
+                  if (!capture.isPublic)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Icon(
+                          Icons.lock_outline,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                       ),
-                      fit: BoxFit.cover,
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      if (!capture.isPublic)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: Icon(
-                            Icons.lock_outline,
-                            size: 16,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                  if (capture.location != null)
+                    Positioned(
+                      bottom: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
                         ),
-                      if (capture.location != null)
-                        Positioned(
-                          bottom: 4,
-                          right: 4,
-                          child: Icon(
-                            Icons.location_on_outlined,
-                            size: 16,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                        child: Icon(
+                          Icons.location_on_outlined,
+                          size: 16,
+                          color: Colors.white,
                         ),
-                    ],
-                  ),
-                ),
+                      ),
+                    ),
+                ],
               ),
             );
           },

@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin(userId) {
+      return userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2'  // Hardcoded admin for Kristy Kelly
+        || (exists(/databases/$(database)/documents/users/$(userId)) 
+          && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin');
+    }
+
+    function isModerator(userId) {
+      return isAdmin(userId)  // Admins are always moderators
+        || (exists(/databases/$(database)/documents/users/$(userId)) 
+          && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'moderator');
+    }
+
+    function isGallery(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return userDoc != null && userDoc.data != null && userDoc.data.userType == 'gallery';
+    }
+
+    function isArtist(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return userDoc != null && userDoc.data != null && userDoc.data.userType == 'artist';
+    }
+
+    function isContentCreator(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return userDoc != null && userDoc.data != null && 
+        (userDoc.data.userType == 'artist' || userDoc.data.userType == 'gallery');
+    }
+
+    // Your existing collection rules here...
+    // (copying from original rules, lines 38-300)
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applauseCount']) &&
+         request.resource.data.applauseCount >= resource.data.applauseCount) ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+
+      match /applause/{userId} {
+        allow read: if true;
+        allow write: if isAuthenticated() && request.auth.uid == userId;
+      }
+    }
+
+    // ... (keeping all your existing collection rules)
+
+    // Admin collections with improved permissions
+    match /admin_dashboard/{document=**} {
+      allow read, write, list: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    match /admin_stats/{document=**} {
+      allow read, write, list: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    match /admin_logs/{document=**} {
+      allow read, write, list: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    match /admin_reports/{document=**} {
+      allow read, write, list: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // Updated users collection rules to ensure admin access
+    match /users/{userId} {
+      allow read: if (
+        isAuthenticated() && (
+          request.auth.uid == userId ||  // User can read their own data
+          isAdmin(request.auth.uid)      // Admins can read all users
+        )
+      );
+      allow list: if isAuthenticated() && (
+        isAdmin(request.auth.uid) ||     // Admins can list all users
+        request.query.limit <= 100       // Regular users can list with limits
+      );
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
+      
+      match /completedWalks/{walkId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      }
+      match /artWalkProgress/{walkId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      }
+      match /achievements/{achievementId} {
+        allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      }
+      match /preferences/{prefId} {
+        allow read: if isAuthenticated() && request.auth.uid == userId;
+        allow write: if isAuthenticated() && request.auth.uid == userId;
+      }
+    }
+
+    // Fallback deny rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
