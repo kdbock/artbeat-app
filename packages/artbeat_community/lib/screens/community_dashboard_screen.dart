@@ -34,6 +34,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
     return core.MainLayout(
       currentIndex: 2, // Community index
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         appBar: const core.UniversalHeader(
           title: 'Community Critique',
           showLogo: false,

@@ -134,15 +134,6 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
       );
     }
 
-    // Add profile/artist discovery icon
-    actionsList.add(
-      IconButton(
-        icon: const Icon(Icons.person_search),
-        tooltip: 'Find Artists',
-        onPressed: onProfilePressed ?? () => _showArtistDiscovery(context),
-      ),
-    );
-
     // Add developer tools icon if enabled
     if (showDeveloperTools) {
       actionsList.add(

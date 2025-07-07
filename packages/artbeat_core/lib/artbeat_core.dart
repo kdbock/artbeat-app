@@ -73,5 +73,8 @@ export 'src/screens/splash_screen.dart' show SplashScreen;
 export 'src/screens/dashboard_screen.dart' show DashboardScreen;
 export 'src/screens/events_dashboard_screen.dart' show EventsDashboardScreen;
 
+// Export ViewModels
+export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
+
 // Export Widgets
 export 'src/widgets/universal_bottom_nav.dart' show UniversalBottomNav;

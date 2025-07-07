@@ -591,4 +591,44 @@ class UserService extends ChangeNotifier {
       _log.severe('Error updating user profile with map', e, s);
     }
   }
+
+  // Update user experience points and level
+  Future<void> updateExperiencePoints(
+    int points, {
+    String? activityType,
+  }) async {
+    final userId = currentUserId;
+    if (userId == null) return;
+
+    try {
+      final userDoc = await _usersCollection.doc(userId).get();
+      if (!userDoc.exists) return;
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final currentXP = userData['experiencePoints'] as int? ?? 0;
+      final currentLevel = userData['level'] as int? ?? 0;
+
+      final newXP = currentXP + points;
+      int newLevel = currentLevel;
+
+      // Calculate new level (every 100 XP = 1 level)
+      final calculatedLevel = newXP ~/ 100;
+      if (calculatedLevel > currentLevel) {
+        newLevel = calculatedLevel;
+      }
+
+      await _usersCollection.doc(userId).set({
+        'experiencePoints': newXP,
+        'level': newLevel,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      debugPrint(
+        '✅ Updated XP: +$points (${activityType ?? 'unknown'}), Total: $newXP, Level: $newLevel',
+      );
+      notifyListeners();
+    } catch (e, s) {
+      _log.severe('Error updating experience points', e, s);
+    }
+  }
 }

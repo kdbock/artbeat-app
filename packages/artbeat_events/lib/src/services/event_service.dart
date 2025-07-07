@@ -503,7 +503,7 @@ class EventService {
 
       final querySnapshot = await query.get();
       return querySnapshot.docs
-          .map((doc) => ArtbeatEvent.fromFirestore(doc))
+          .map(ArtbeatEvent.fromFirestore)
           .toList();
     } catch (e) {
       _logger.e('Error fetching events: $e');

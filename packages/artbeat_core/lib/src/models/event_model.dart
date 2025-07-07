@@ -9,11 +9,13 @@ class EventModel {
   final DateTime? endDate;
   final String location;
   final String? imageUrl;
+  final String? artistProfileImageUrl;
   final String artistId; // Creator of the event
   final bool isPublic; // Whether event shows on community calendar
   final List<String> attendeeIds;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? contactEmail;
 
   const EventModel({
     required this.id,
@@ -23,11 +25,13 @@ class EventModel {
     this.endDate,
     required this.location,
     this.imageUrl,
+    this.artistProfileImageUrl,
     required this.artistId,
     required this.isPublic,
     required this.attendeeIds,
     required this.createdAt,
     required this.updatedAt,
+    this.contactEmail,
   });
 
   /// Create an EventModel from a Firestore document
@@ -37,17 +41,19 @@ class EventModel {
       id: doc.id,
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
-      startDate: (data['startDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      startDate: (data['startDate'] as Timestamp?)?.toDate() ?? 
+                 (data['dateTime'] as Timestamp?)?.toDate() ?? 
+                 DateTime.now(),
       endDate: (data['endDate'] as Timestamp?)?.toDate(),
       location: data['location'] as String? ?? '',
-      imageUrl: data['imageUrl'] as String?,
+      imageUrl: data['imageUrl'] as String? ?? data['eventBannerUrl'] as String?,
+      artistProfileImageUrl: data['artistProfileImageUrl'] as String? ?? data['artistHeadshotUrl'] as String?,
       artistId: data['artistId'] as String? ?? '',
-      isPublic: data['isPublic'] as bool? ?? false,
-      attendeeIds: List<String>.from(
-        data['attendeeIds'] as List<dynamic>? ?? [],
-      ),
+      isPublic: data['isPublic'] as bool? ?? true,
+      attendeeIds: List<String>.from(data['attendeeIds'] as List? ?? []),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      contactEmail: data['contactEmail'] as String?,
     );
   }
 
@@ -60,6 +66,7 @@ class EventModel {
       'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
       'location': location,
       'imageUrl': imageUrl,
+      'artistProfileImageUrl': artistProfileImageUrl,
       'artistId': artistId,
       'isPublic': isPublic,
       'attendeeIds': attendeeIds,
@@ -76,6 +83,7 @@ class EventModel {
     DateTime? endDate,
     String? location,
     String? imageUrl,
+    String? artistProfileImageUrl,
     String? artistId,
     bool? isPublic,
     List<String>? attendeeIds,
@@ -90,6 +98,7 @@ class EventModel {
       endDate: endDate ?? this.endDate,
       location: location ?? this.location,
       imageUrl: imageUrl ?? this.imageUrl,
+      artistProfileImageUrl: artistProfileImageUrl ?? this.artistProfileImageUrl,
       artistId: artistId ?? this.artistId,
       isPublic: isPublic ?? this.isPublic,
       attendeeIds: attendeeIds ?? this.attendeeIds,

@@ -7,8 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
-import 'package:artbeat_artist/artbeat_artist.dart'
-    show ArtistPublicProfileScreen;
+import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_art_walk/src/screens/my_captures_screen.dart';
@@ -17,6 +16,7 @@ import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import 'widgets/developer_menu.dart';
 import 'src/widgets/error_boundary.dart';
+import 'package:artbeat_artist/src/screens/subscription_comparison_screen.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -55,6 +55,11 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider<CommunityService>(
             create: (_) => CommunityService(),
             lazy: true, // Changed to lazy to prevent early Firebase access
+          ),
+          // Dashboard ViewModel
+          ChangeNotifierProvider<core.DashboardViewModel>(
+            create: (_) => core.DashboardViewModel(),
+            lazy: true,
           ),
         ],
         child: MaterialApp(
@@ -304,6 +309,32 @@ class MyApp extends StatelessWidget {
             ),
           ),
         );
+      case '/artist/onboarding':
+        return MaterialPageRoute(
+          builder: (_) => Consumer<core.UserService>(
+            builder: (context, userService, child) {
+              return FutureBuilder<core.UserModel?>(
+                future: userService.getCurrentUserModel(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  final userModel = snapshot.data;
+                  if (userModel == null) {
+                    return const LoginScreen();
+                  }
+                  return ArtistOnboardingScreen(user: userModel);
+                },
+              );
+            },
+          ),
+        );
+      case '/subscription/comparison':
+        return MaterialPageRoute(
+          builder: (_) => SubscriptionComparisonScreen(),
+        );
       case '/artist/public-profile':
         final args = settings.arguments as Map<String, dynamic>?;
         final artistId = args?['artistId'] as String?;
@@ -457,10 +488,8 @@ class MyApp extends StatelessWidget {
         );
       case '/events/all':
         return MaterialPageRoute(
-          builder: (_) => const EventsListScreen(
-            title: 'All Events',
-            showCreateButton: true,
-          ),
+          builder: (_) =>
+              EventsListScreen(title: 'All Events', showCreateButton: true),
         );
       case '/events/my-events':
         return MaterialPageRoute(
@@ -563,6 +592,10 @@ class MyApp extends StatelessWidget {
       // Developer menu
       case '/dev':
         return MaterialPageRoute(builder: (_) => const DeveloperMenu());
+
+      // Feedback submission route
+      case '/feedback':
+        return MaterialPageRoute(builder: (_) => const core.FeedbackForm());
 
       // Handle dynamic event routes
       default:

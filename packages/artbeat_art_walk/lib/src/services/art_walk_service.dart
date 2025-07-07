@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
-import 'package:artbeat_core/artbeat_core.dart' show EnhancedStorageService;
 
 // Core package imports with prefix
 import 'package:artbeat_core/src/services/achievement_service.dart' as core;

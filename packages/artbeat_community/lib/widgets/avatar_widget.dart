@@ -50,7 +50,7 @@ class _AvatarWidgetState extends State<AvatarWidget> {
 
       if (mounted &&
           userModel?.profileImageUrl != null &&
-          userModel!.profileImageUrl!.isNotEmpty) {
+          userModel!.profileImageUrl.isNotEmpty) {
         setState(() {
           _currentAvatarUrl = userModel.profileImageUrl;
         });

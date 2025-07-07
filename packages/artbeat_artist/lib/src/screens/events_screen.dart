@@ -63,6 +63,7 @@ class _EventsScreenState extends State<EventsScreen> {
           ),
         ],
       ),
+      resizeToAvoidBottomInset: true,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

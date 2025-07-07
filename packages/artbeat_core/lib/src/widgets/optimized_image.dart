@@ -78,11 +78,11 @@ class OptimizedImage extends StatelessWidget {
       width: width,
       height: height,
       color: ArtbeatColors.backgroundSecondary,
-      child: Center(
+      child: const Center(
         child: SizedBox(
           width: 20,
           height: 20,
-          child: const CircularProgressIndicator(
+          child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
               ArtbeatColors.primaryPurple,

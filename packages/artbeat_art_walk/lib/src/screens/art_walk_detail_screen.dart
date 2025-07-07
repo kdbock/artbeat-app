@@ -380,24 +380,24 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        key: const ValueKey('loading'),
-        appBar: const UniversalHeader(
+      return const Scaffold(
+        key: ValueKey('loading'),
+        appBar: UniversalHeader(
           title: 'Art Walk Details',
           showLogo: false,
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_walk == null) {
-      return Scaffold(
-        key: const ValueKey('not_found'),
-        appBar: const UniversalHeader(
+      return const Scaffold(
+        key: ValueKey('not_found'),
+        appBar: UniversalHeader(
           title: 'Art Walk Details',
           showLogo: false,
         ),
-        body: const Center(child: Text('Art walk not found')),
+        body: Center(child: Text('Art walk not found')),
       );
     }
 

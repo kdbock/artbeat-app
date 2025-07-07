@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, UniversalHeader;
+    show ArtbeatColors, UniversalHeader, ArtbeatDrawer, UniversalBottomNav;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 import '../services/camera_service.dart';
 import 'capture_upload_screen.dart';
@@ -253,6 +253,29 @@ class _CaptureScreenState extends State<CaptureScreen> {
         showLogo: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
+      ),
+      drawer: const ArtbeatDrawer(),
+      bottomNavigationBar: UniversalBottomNav(
+        currentIndex: 4, // 4 = Capture tab
+        onTap: (int index) {
+          if (index == 4) return; // Already here
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/dashboard');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/art-walk/dashboard');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/community');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/events');
+              break;
+            default:
+              break;
+          }
+        },
       ),
       body: Container(
         constraints: const BoxConstraints.expand(),

@@ -40,11 +40,17 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   }
 
   /// Calculate distance between two points in miles
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const double earthRadius = 3959.0; // miles
     final dLat = (lat2 - lat1) * (math.pi / 180.0);
     final dLon = (lon2 - lon1) * (math.pi / 180.0);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(lat1 * math.pi / 180.0) *
             math.cos(lat2 * math.pi / 180.0) *
             math.sin(dLon / 2) *
@@ -56,14 +62,14 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   /// Get distance from user's current location to an art piece
   String _getDistanceToArt(PublicArtModel art) {
     if (_currentPosition == null) return '';
-    
+
     final distance = _calculateDistance(
       _currentPosition!.latitude,
       _currentPosition!.longitude,
       art.location.latitude,
       art.location.longitude,
     );
-    
+
     if (distance < 1) {
       return '${(distance * 5280).round()}ft away';
     } else {
@@ -74,9 +80,9 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   /// Calculate total walk distance
   double _calculateTotalDistance() {
     if (_artPieces.isEmpty) return 0.0;
-    
+
     double totalDistance = 0.0;
-    
+
     // Add distance from current location to first art piece
     if (_currentPosition != null) {
       totalDistance += _calculateDistance(
@@ -86,7 +92,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
         _artPieces[0].location.longitude,
       );
     }
-    
+
     // Add distances between consecutive art pieces
     for (int i = 0; i < _artPieces.length - 1; i++) {
       totalDistance += _calculateDistance(
@@ -96,7 +102,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
         _artPieces[i + 1].location.longitude,
       );
     }
-    
+
     return totalDistance;
   }
 
@@ -176,7 +182,9 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
         ),
       );
       // Add current location to polyline to show route from start
-      polylinePoints.add(LatLng(_currentPosition!.latitude, _currentPosition!.longitude));
+      polylinePoints.add(
+        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+      );
     }
 
     // Create markers for each art piece
@@ -199,11 +207,11 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
           ),
           infoWindow: InfoWindow(
             title: '${i + 1}. ${art.title}',
-            snippet: isVisited 
-                ? 'Visited ✓' 
-                : distance.isEmpty 
-                    ? 'Tap to visit' 
-                    : '$distance • Tap to visit',
+            snippet: isVisited
+                ? 'Visited ✓'
+                : distance.isEmpty
+                ? 'Tap to visit'
+                : '$distance • Tap to visit',
           ),
           onTap: () => _showArtDetail(art),
         ),
@@ -460,7 +468,10 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
                         ),
                         if (_currentPosition != null) ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.blue[50],
                               borderRadius: BorderRadius.circular(12),
@@ -500,7 +511,10 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
                           if (_currentPosition != null) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.orange[50],
                                 borderRadius: BorderRadius.circular(8),
@@ -520,10 +534,14 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
                     ],
                     if (_isWalkCompleted) ...[
                       const SizedBox(height: 8),
-                      Row(
+                      const Row(
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 16),
-                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 16,
+                          ),
+                          SizedBox(width: 4),
                           Text(
                             'Walk Completed! 🎉',
                             style: TextStyle(

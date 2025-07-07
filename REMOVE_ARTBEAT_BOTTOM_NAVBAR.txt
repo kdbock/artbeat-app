@@ -1,0 +1,5 @@
+Removed ArtbeatBottomNavBar from:
+- lib/widgets/artbeat_bottom_nav_bar.dart
+- packages/artbeat_core/lib/widgets/artbeat_bottom_nav_bar.dart
+
+UniversalBottomNav is now the only bottom navigation used in the app.

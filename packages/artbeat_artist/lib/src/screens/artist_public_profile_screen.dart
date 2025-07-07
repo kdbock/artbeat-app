@@ -167,12 +167,12 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: const UniversalHeader(
+      return const Scaffold(
+        appBar: UniversalHeader(
           title: 'Artist Profile',
           showLogo: false,
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 

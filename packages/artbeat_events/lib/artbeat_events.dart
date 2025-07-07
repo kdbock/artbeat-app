@@ -8,7 +8,7 @@
 /// - Notifications and reminders
 /// - Calendar integration
 /// - Community feed integration
-library artbeat_events;
+library;
 
 // Models
 export 'src/models/artbeat_event.dart';

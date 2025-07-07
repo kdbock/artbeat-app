@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'developer_feedback_admin_screen.dart';
+import 'feedback_form.dart';
 
 /// Developer menu with admin upload screens only
 class DeveloperMenu extends StatelessWidget {
   const DeveloperMenu({super.key});
 
   void _navigateToScreen(BuildContext context, Widget screen) {
-    Navigator.pop(context);
-    if (context.mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute<dynamic>(builder: (context) => screen),
-      );
-    }
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute<dynamic>(builder: (context) => screen));
   }
 
   @override
@@ -36,6 +35,28 @@ class DeveloperMenu extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.feedback),
+              title: const Text('Developer Feedback Admin'),
+              onTap: () => _navigateToScreen(
+                context,
+                const DeveloperFeedbackAdminScreen(),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.rate_review),
+              title: const Text('Submit Feedback'),
+              onTap: () {
+                Navigator.of(context).pop();
+                Future.delayed(const Duration(milliseconds: 250), () {
+                  Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(
+                      builder: (context) => const FeedbackForm(),
+                    ),
+                  );
+                });
+              },
             ),
             _buildAdminSection(context),
           ],

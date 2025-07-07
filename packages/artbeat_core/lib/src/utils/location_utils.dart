@@ -117,6 +117,23 @@ class LocationUtils {
     return getZipCodeFromGeoPoint(lat, lng);
   }
 
+  /// Get location coordinates from address string
+  static Future<SimpleLatLng?> getLocationFromAddress(String address) async {
+    try {
+      final locations = await locationFromAddress(address);
+      if (locations.isNotEmpty) {
+        return SimpleLatLng(
+          locations.first.latitude,
+          locations.first.longitude,
+        );
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Error getting location from address: $e');
+      return null;
+    }
+  }
+
   /// Calculate distance between two points using Haversine formula
   /// Returns distance in miles
   static double calculateDistance(

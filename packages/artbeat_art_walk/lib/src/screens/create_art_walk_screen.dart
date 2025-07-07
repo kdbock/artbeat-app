@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for GeoPoint
+import 'package:image_cropper/image_cropper.dart';
 
 class CreateArtWalkScreen extends StatefulWidget {
   static const String routeName = '/create-art-walk';
@@ -168,9 +169,29 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       source: ImageSource.gallery,
     );
     if (pickedFile != null) {
-      setState(() {
-        _coverImageFile = File(pickedFile.path);
-      });
+      // Launch cropper for optimal visual
+      final CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Cover Image',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.ratio16x9,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Cover Image',
+            aspectRatioLockEnabled: false,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        setState(() {
+          _coverImageFile = File(croppedFile.path);
+        });
+      }
     }
   }
 

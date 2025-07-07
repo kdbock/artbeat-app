@@ -454,7 +454,12 @@ class RewardsService {
     }
   }
 
-  /// Award a badge to a user
+  /// Award a badge to a user (public method for debugging)
+  Future<void> awardBadge(String userId, String badgeId) async {
+    await _awardBadge(userId, badgeId);
+  }
+
+  /// Award a badge to a user (private method)
   Future<void> _awardBadge(String userId, String badgeId) async {
     try {
       final userRef = _firestore.collection('users').doc(userId);

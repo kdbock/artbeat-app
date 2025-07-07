@@ -39,91 +39,91 @@ packages:
       path: "packages/artbeat_admin"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_ads:
-    dependency: transitive
+    dependency: "direct main"
     description:
       path: "packages/artbeat_ads"
       relative: true
     source: path
-    version: "0.1.0"
+    version: "0.1.1"
   artbeat_art_walk:
     dependency: "direct main"
     description:
       path: "packages/artbeat_art_walk"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_artist:
     dependency: "direct main"
     description:
       path: "packages/artbeat_artist"
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.1"
   artbeat_artwork:
     dependency: "direct main"
     description:
       path: "packages/artbeat_artwork"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_auth:
     dependency: "direct main"
     description:
       path: "packages/artbeat_auth"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_capture:
     dependency: "direct main"
     description:
       path: "packages/artbeat_capture"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_community:
     dependency: "direct main"
     description:
       path: "packages/artbeat_community"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_core:
     dependency: "direct main"
     description:
       path: "packages/artbeat_core"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_events:
     dependency: "direct main"
     description:
       path: "packages/artbeat_events"
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.1"
   artbeat_messaging:
     dependency: "direct main"
     description:
       path: "packages/artbeat_messaging"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_profile:
     dependency: "direct main"
     description:
       path: "packages/artbeat_profile"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   artbeat_settings:
     dependency: "direct main"
     description:
       path: "packages/artbeat_settings"
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.0.2"
   async:
     dependency: transitive
     description:
@@ -771,6 +771,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
+  geoclue:
+    dependency: transitive
+    description:
+      name: geoclue
+      sha256: c2a998c77474fc57aa00c6baa2928e58f4b267649057a1c76738656e9dbd2a7f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   geocoding:
     dependency: "direct main"
     description:
@@ -804,13 +812,13 @@ packages:
     source: hosted
     version: "3.2.0"
   geolocator:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: geolocator
-      sha256: ee2212a3df8292ec4c90b91183b8001d3f5a800823c974b570c5f9344ca320dc
+      sha256: "79939537046c9025be47ec645f35c8090ecadb6fe98eba146a0d25e8c1357516"
       url: "https://pub.dev"
     source: hosted
-    version: "14.0.1"
+    version: "14.0.2"
   geolocator_android:
     dependency: transitive
     description:
@@ -827,6 +835,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.13"
+  geolocator_linux:
+    dependency: transitive
+    description:
+      name: geolocator_linux
+      sha256: c4e966f0a7a87e70049eac7a2617f9e16fd4c585a26e4330bdfc3a71e6a721f3
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.3"
   geolocator_platform_interface:
     dependency: transitive
     description:
@@ -923,6 +939,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.4"
+  gsettings:
+    dependency: transitive
+    description:
+      name: gsettings
+      sha256: "1b0ce661f5436d2db1e51f3c4295a49849f03d304003a7ba177d01e3a858249c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.8"
   html:
     dependency: transitive
     description:
@@ -963,6 +987,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.3.0"
+  image_cropper:
+    dependency: "direct main"
+    description:
+      name: image_cropper
+      sha256: "4e9c96c029eb5a23798da1b6af39787f964da6ffc78fd8447c140542a9f7c6fc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.1.0"
+  image_cropper_for_web:
+    dependency: transitive
+    description:
+      name: image_cropper_for_web
+      sha256: fd81ebe36f636576094377aab32673c4e5d1609b32dec16fad98d2b71f1250a9
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.0"
+  image_cropper_platform_interface:
+    dependency: transitive
+    description:
+      name: image_cropper_platform_interface
+      sha256: "6ca6b81769abff9a4dcc3bbd3d75f5dfa9de6b870ae9613c8cd237333a4283af"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.1.0"
   image_picker:
     dependency: "direct main"
     description:

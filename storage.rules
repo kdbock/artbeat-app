@@ -136,6 +136,32 @@ service firebase.storage {
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
+    // Art Walk images - allow authenticated users to upload to their own folder
+    match /art_walk_images/{userId}/{artWalkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Art Walk related paths
+    match /art_walks/{walkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        // Check if user is the owner of the art walk or an admin
+        request.auth.uid == request.resource.metadata.userId || 
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.metadata.userId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Art Walk debug uploads (for development)
+    match /art_walks_debug/{walkId}/{fileName} {
+      allow read, write: if isAuthenticated() && isDebugMode();
+    }
+
     // Debug mode bypass for testing
     match /{path=**}/{fileName} {
       allow read, write: if isDebugMode();

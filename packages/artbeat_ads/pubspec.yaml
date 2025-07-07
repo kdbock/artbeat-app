@@ -1,6 +1,6 @@
 name: artbeat_ads
 description: ARTbeat Ads module for in-app ad purchasing and management
-version: 0.1.0
+version: 0.1.1
 publish_to: 'none'
 
 environment:

@@ -1,7 +1,7 @@
 name: artbeat_community
 description: Social and community features for ARTbeat app
-version: 0.0.1
-publish_to: 'none'
+version: 0.0.2
+publish_to: "none"
 
 environment:
   sdk: ">=3.8.0 <4.0.0"
@@ -37,6 +37,8 @@ dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/default_artwork.png
 
 dev_dependencies:
   flutter_test:

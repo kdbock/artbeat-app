@@ -21,6 +21,7 @@ class DirectionsService {
     String origin,
     String destination, {
     bool useCachedData = true,
+    List<String>? waypoints,
   }) async {
     final apiKey = _apiKey ?? ConfigService.instance.googleMapsApiKey;
 
@@ -31,8 +32,9 @@ class DirectionsService {
       throw Exception('Invalid or missing API key for directions');
     }
 
-    // Create cache key based on origin and destination
-    final String cacheEntryKey = '${origin}_to_${destination}_directions';
+    // Create cache key based on origin, destination, and waypoints
+    final waypointsString = waypoints?.join('|') ?? '';
+    final String cacheEntryKey = '${origin}_to_${destination}_${waypointsString}_directions';
 
     // Try to get cached directions first if requested
     if (useCachedData) {
@@ -50,6 +52,11 @@ class DirectionsService {
       'mode': 'walking', // Always use walking mode for art walks
       'key': apiKey,
     };
+    
+    // Add waypoints if provided
+    if (waypoints != null && waypoints.isNotEmpty) {
+      queryParams['waypoints'] = waypoints.join('|');
+    }
 
     final url = Uri.https(
       'maps.googleapis.com',

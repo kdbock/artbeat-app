@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import '../services/art_walk_service.dart';
 import '../models/art_walk_model.dart';
-import '../models/public_art_model.dart';
 
 /// Fixed Art Walk Dashboard Screen - No overflow issues
 class ArtWalkDashboardScreen extends StatefulWidget {
@@ -23,17 +21,14 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
   final Set<Marker> _markers = {};
   final TextEditingController _zipSearchController = TextEditingController();
   Position? _currentPosition;
-  String? _currentZipCode;
-  List<PublicArtModel> _nearbyArt = [];
-  bool _isLoading = false;
+  List<CaptureModel> _nearbyCaptures = [];
+  bool _isLoadingWalks = true;
 
   final ArtWalkService _artWalkService = ArtWalkService();
   final UserService _userService = UserService();
   final CaptureService _captureService = CaptureService();
   List<ArtWalkModel> _myWalks = [];
   List<ArtWalkModel> _publicWalks = [];
-  List<CaptureModel> _nearbyCaptures = [];
-  bool _isLoadingWalks = true;
 
   @override
   void initState() {
@@ -97,33 +92,10 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     );
   }
 
-
-
-
-
-
-
-
-
-
-
-  // Duplicate build method removed. The correct build method is defined below.
-
-
-
-
-
-
-
-
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Art Walks'),
         bottom: TabBar(
@@ -143,23 +115,44 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         onPressed: () => Navigator.pushNamed(context, '/art-walk/create'),
         child: const Icon(Icons.add),
       ),
+      bottomNavigationBar: UniversalBottomNav(
+        currentIndex: 1, // Art Walk tab
+        onTap: (int index) {
+          final currentRoute = ModalRoute.of(context)?.settings.name;
+          switch (index) {
+            case 0:
+              if (currentRoute != '/dashboard') {
+                Navigator.pushReplacementNamed(context, '/dashboard');
+              }
+              break;
+            case 1:
+              // Already here
+              break;
+            case 2:
+              if (currentRoute != '/community') {
+                Navigator.pushReplacementNamed(context, '/community');
+              }
+              break;
+            case 3:
+              if (currentRoute != '/events') {
+                Navigator.pushReplacementNamed(context, '/events');
+              }
+              break;
+            case 4:
+              if (currentRoute != '/capture') {
+                Navigator.pushNamed(context, '/capture');
+              }
+              break;
+          }
+        },
+      ),
     );
-  }
-
-  void _handleZipSearch(String zipCode) {
-    if (zipCode.length == 5) {
-      _searchByZipLocation(zipCode);
-    }
-  }
-
-  void _navigateToArtDetails(PublicArtModel art) {
-    Navigator.pushNamed(context, '/art-walk/art-details', arguments: art.id);
   }
 
   void _updateMapPosition(double latitude, double longitude) {
     setState(() {
       _currentPosition = _createPosition(latitude, longitude);
-      _currentZipCode = ''; // Reset ZIP code on map move
+      // Reset ZIP code on map move
     });
     _updateMapMarkers();
     _loadNearbyCaptures();
@@ -203,7 +196,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
 
   Future<void> _loadNearbyCaptures() async {
     setState(() {
-      _isLoading = true;
+      _isLoadingWalks = true;
     });
 
     try {
@@ -213,36 +206,15 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
       if (mounted) {
         setState(() {
           _nearbyCaptures = captures;
-          _isLoading = false;
+          _isLoadingWalks = false;
         });
         _updateMapMarkers(); // Update map markers with captured art
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _isLoadingWalks = false;
         });
-      }
-    }
-  }
-
-  Future<void> _loadNearbyArt() async {
-    if (_currentPosition == null) return;
-
-    try {
-      setState(() => _isLoading = true);
-
-      // TODO: Implement actual art loading from service
-      setState(() {
-        _nearbyArt = [];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error loading nearby art: $e')));
       }
     }
   }
@@ -394,7 +366,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
                         label: const Text('View Details'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ArtbeatColors.primaryPurple,
-                          foregroundColor: Colors.white,
                         ),
                       ),
                     ),
@@ -418,98 +389,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
           ),
         ),
       ),
-    );
-  }
-
-  void _showSearchDialog(BuildContext context) {
-    showDialog<void>(
-      // Add explicit type argument
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Search Location'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _zipSearchController,
-              keyboardType: TextInputType.number,
-              maxLength: 5,
-              decoration: const InputDecoration(
-                labelText: 'ZIP Code',
-                hintText: 'Enter a 5-digit ZIP code',
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: _syncToCurrentLocation,
-              icon: const Icon(Icons.my_location),
-              label: const Text('Use Current Location'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _handleZipSearch(_zipSearchController.text);
-            },
-            child: const Text('Search'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildArtCard(PublicArtModel art) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        title: Text(
-          art.title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              art.artistName ?? '',
-              style: TextStyle(
-                color: Colors.black.withAlpha((0.8 * 255).toInt()),
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              art.description,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Colors.black.withAlpha((0.6 * 255).toInt()),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-        onTap: () => _navigateToArtDetails(art),
-      ),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return TabBarView(
-      controller: _tabController,
-      physics: const NeverScrollableScrollPhysics(), // Disable swipe
-      children: [_buildMapTab(), _buildMyWalksTab(), _buildDiscoverTab()],
     );
   }
 
@@ -672,62 +551,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
     );
   }
 
-  Widget _buildListTab() {
-    if (_nearbyArt.isEmpty) {
-      return Center(
-        child: Text(
-          'No public art found in this area',
-          style: TextStyle(
-            color: Colors.black.withAlpha((0.6 * 255).toInt()),
-            fontSize: 16,
-          ),
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: _nearbyArt.length,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      itemBuilder: (context, index) {
-        final art = _nearbyArt[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            title: Text(
-              art.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  art.artistName ?? '',
-                  style: TextStyle(
-                    color: Colors.black.withAlpha((0.8 * 255).toInt()),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  art.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.black.withAlpha((0.6 * 255).toInt()),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-            onTap: () => _navigateToArtDetails(art),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildWalkCard(ArtWalkModel walk, bool isOwner) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -747,8 +570,8 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
             // Image section
             Container(
               height: 160,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.vertical(
                   top: Radius.circular(12),
                 ),
                 color: ArtbeatColors.backgroundSecondary,
@@ -885,7 +708,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
 
   Widget _buildWalkImage(ArtWalkModel walk) {
     // Try to show cover image first
-    if (walk.coverImageUrl != null && walk.coverImageUrl!.isNotEmpty) {
+    if (walk.coverImageUrl?.isNotEmpty == true) {
       return Image.network(
         walk.coverImageUrl!,
         fit: BoxFit.cover,
@@ -923,130 +746,5 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen>
         ),
       ),
     );
-  }
-
-  Widget _buildCaptureCard(CaptureModel capture) {
-    return Card(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 3,
-            child: capture.imageUrl.isNotEmpty
-                ? Image.network(
-                    capture.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.image_not_supported, size: 40),
-                    ),
-                  )
-                : Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.camera_alt, size: 40),
-                  ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Text(
-                capture.title ?? 'Untitled',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _searchByZipLocation(String zipCode) async {
-    try {
-      final coordinates = await LocationUtils.getCoordinatesFromZipCode(
-        zipCode,
-      );
-      if (coordinates != null && mounted) {
-        final newPosition = CameraPosition(
-          target: LatLng(coordinates.latitude, coordinates.longitude),
-          zoom: 13,
-        );
-
-        setState(() {
-          _currentPosition = Position(
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude,
-            timestamp: DateTime.now(),
-            accuracy: 0,
-            altitude: 0,
-            altitudeAccuracy: 0,
-            heading: 0,
-            headingAccuracy: 0,
-            speed: 0,
-            speedAccuracy: 0,
-          );
-          _currentZipCode = zipCode;
-        });
-
-        if (_mapController != null) {
-          await _mapController!.animateCamera(
-            CameraUpdate.newCameraPosition(newPosition),
-          );
-        }
-
-        _updateMapMarkers();
-        _loadNearbyCaptures();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error searching location')),
-        );
-      }
-    }
-  }
-
-  Future<void> _syncToCurrentLocation() async {
-    try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permission denied.')),
-          );
-          return;
-        }
-      }
-      if (permission == LocationPermission.deniedForever) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Location permission permanently denied. Please enable it in settings.',
-            ),
-          ),
-        );
-        return;
-      }
-      final position = await Geolocator.getCurrentPosition();
-      final placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      if (placemarks.isNotEmpty) {
-        setState(() {
-          _currentPosition = position;
-          _currentZipCode = placemarks.first.postalCode;
-          _zipSearchController.text = _currentZipCode ?? '';
-        });
-        await _loadNearbyArt();
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error syncing to location: $e')));
-    }
   }
 }

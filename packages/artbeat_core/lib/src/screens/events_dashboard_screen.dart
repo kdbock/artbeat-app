@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/main_layout.dart';
-import '../widgets/artbeat_drawer.dart';
 
 /// Central events dashboard screen - entry point for events tab
 /// This is a placeholder that redirects to the comprehensive events system
@@ -11,85 +9,8 @@ class EventsDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
-
-    return MainLayout(
-      currentIndex: 3, // Events tab
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Events'),
-          elevation: 0,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          actions: [
-            IconButton(
-              onPressed: () => Navigator.pushNamed(context, '/events/all'),
-              icon: const Icon(Icons.search),
-              tooltip: 'Browse All Events',
-            ),
-            PopupMenuButton<String>(
-              onSelected: (value) => _handleMenuSelection(context, value),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'all_events',
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.event_outlined),
-                      SizedBox(width: 8),
-                      Text('All Events'),
-                    ],
-                  ),
-                ),
-                if (currentUser != null) ...[
-                  const PopupMenuItem(
-                    value: 'create_event',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add),
-                        SizedBox(width: 8),
-                        Text('Create Event'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'my_tickets',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.confirmation_number_outlined),
-                        SizedBox(width: 8),
-                        Text('My Tickets'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'my_events',
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.calendar_today_outlined),
-                        SizedBox(width: 8),
-                        Text('My Events'),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-        drawer: const ArtbeatDrawer(),
-        body: _buildEventsDashboard(context, currentUser),
-        floatingActionButton: currentUser != null
-            ? FloatingActionButton(
-                onPressed: () => Navigator.pushNamed(context, '/events/create'),
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                child: const Icon(Icons.add),
-              )
-            : null,
-      ),
-    );
+    // Only return the dashboard body, no Scaffold or MainLayout
+    return _buildEventsDashboard(context, currentUser);
   }
 
   Widget _buildEventsDashboard(BuildContext context, User? currentUser) {

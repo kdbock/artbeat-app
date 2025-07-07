@@ -1,6 +1,6 @@
 name: artbeat_art_walk
 description: Art Walk features for ARTbeat app
-version: 0.0.1
+version: 0.0.2
 publish_to: 'none'
 
 environment:
@@ -29,6 +29,7 @@ dependencies:
   http: ^1.2.0
   timeago: ^3.6.0
   device_info_plus: ^11.5.0
+  image_cropper: ^9.1.0
 
   artbeat_capture:
     path: ../artbeat_capture

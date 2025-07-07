@@ -6,7 +6,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import '../models/models.dart';
@@ -31,7 +30,8 @@ class EnhancedArtWalkCreateScreen extends StatefulWidget {
 }
 
 class _EnhancedArtWalkCreateScreenState
-    extends State<EnhancedArtWalkCreateScreen> with SingleTickerProviderStateMixin {
+    extends State<EnhancedArtWalkCreateScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -55,7 +55,7 @@ class _EnhancedArtWalkCreateScreenState
   bool _isPublic = true;
   bool _showMapView = true;
   double _estimatedDistance = 0.0;
-  bool _isUploading = false;
+  final bool _isUploading = false;
 
   // Animation
   late AnimationController _introAnimationController;
@@ -65,7 +65,6 @@ class _EnhancedArtWalkCreateScreenState
 
   // Services
   final ArtWalkService _artWalkService = ArtWalkService();
-  final ImagePicker _picker = ImagePicker();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -84,13 +83,13 @@ class _EnhancedArtWalkCreateScreenState
       curve: Curves.easeInOut,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _introAnimationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _introAnimationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     // Start with intro if not editing
     if (widget.artWalkId == null) {
@@ -362,17 +361,6 @@ class _EnhancedArtWalkCreateScreenState
     return optimized;
   }
 
-  Future<void> _pickCoverImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _coverImageFile = File(pickedFile.path);
-      });
-    }
-  }
-
   void _onMapCreated(GoogleMapController controller) {
     // Map controller initialized
   }
@@ -535,7 +523,7 @@ class _EnhancedArtWalkCreateScreenState
     if (_hasShownIntro) return;
     _hasShownIntro = true;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => FadeTransition(
@@ -577,8 +565,11 @@ class _EnhancedArtWalkCreateScreenState
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
         final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
@@ -596,11 +587,15 @@ class _EnhancedArtWalkCreateScreenState
             ],
           ),
         );
-        return shouldPop ?? false;
+        if (shouldPop == true && context.mounted) {
+          Navigator.of(context).pop();
+        }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk'),
+          title: Text(
+            widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk',
+          ),
           leading: CloseButton(
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -644,9 +639,7 @@ class _EnhancedArtWalkCreateScreenState
         if (_isUploading) // Add loading overlay
           Container(
             color: Colors.black54,
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );
@@ -668,8 +661,8 @@ class _EnhancedArtWalkCreateScreenState
         Text(
           _getProgressMessage(progress),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).primaryColor,
-              ),
+            color: Theme.of(context).primaryColor,
+          ),
         ),
       ],
     );
@@ -686,7 +679,8 @@ class _EnhancedArtWalkCreateScreenState
 
   String _getProgressMessage(int progress) {
     if (progress < 20) return 'Start by giving your walk a name! 🎨';
-    if (progress < 40) return 'Great title! Now describe your artistic journey ✍️';
+    if (progress < 40)
+      return 'Great title! Now describe your artistic journey ✍️';
     if (progress < 70) return 'Add some art pieces to create your path 🗺️';
     if (progress < 100) return 'Almost there! Finalize your route 🎯';
     return 'Perfect! Ready to share your art walk! 🎉';
@@ -699,9 +693,7 @@ class _EnhancedArtWalkCreateScreenState
         labelText: 'Title',
         hintText: 'Give your art walk a creative name',
         prefixIcon: const Icon(Icons.title),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -720,9 +712,7 @@ class _EnhancedArtWalkCreateScreenState
         labelText: 'Description',
         hintText: 'Describe your art walk experience',
         prefixIcon: const Icon(Icons.description),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
       maxLines: 3,
       validator: (value) {

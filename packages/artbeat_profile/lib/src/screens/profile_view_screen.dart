@@ -260,7 +260,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                     ),
                     Text(
                       cityState,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Color.fromARGB(204, 255, 255, 255),
                         fontSize: 14,
                       ),
@@ -695,7 +695,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                           Navigator.pushNamed(
                             context,
                             '/capture/detail',
-                            arguments: capture,
+                            arguments: capture
+                                .id, // Pass only the ID, not the whole model
                           );
                         },
                         overlay: capture.title?.isNotEmpty == true
@@ -705,7 +706,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                                 right: 0,
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
+                                  decoration: const BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.bottomCenter,
                                       end: Alignment.topCenter,

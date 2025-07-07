@@ -10,3 +10,4 @@ export 'local_art_walk_preview_widget.dart';
 export 'new_achievement_dialog.dart';
 export 'offline_art_walk_widget.dart';
 export 'offline_map_fallback.dart';
+export 'turn_by_turn_navigation_widget.dart';

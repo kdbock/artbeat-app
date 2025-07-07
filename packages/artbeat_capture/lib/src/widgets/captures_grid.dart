@@ -166,10 +166,10 @@ class _CapturesGridState extends State<CapturesGrid> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.lock_outline,
                           size: 16,
                           color: Colors.white,
@@ -183,10 +183,10 @@ class _CapturesGridState extends State<CapturesGrid> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.location_on_outlined,
                           size: 16,
                           color: Colors.white,

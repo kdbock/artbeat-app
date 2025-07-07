@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:collection';
-import 'dart:io';
-import 'dart:typed_data';
 
 /// Comprehensive image management service to prevent buffer overflow
 /// and optimize image loading across the app
@@ -15,7 +12,8 @@ class ImageManagementService {
   ImageManagementService._internal();
 
   // Configuration constants
-  static const int maxConcurrentLoads = 2; // Reduced from 3 to prevent buffer overflow
+  static const int maxConcurrentLoads =
+      2; // Reduced from 3 to prevent buffer overflow
   static const int maxCacheSize = 100; // MB
   static const int thumbnailSize = 300;
   static const int profileImageSize = 200;
@@ -70,8 +68,17 @@ class ImageManagementService {
       memCacheWidth = thumbnailSize;
       memCacheHeight = thumbnailSize;
     } else if (width != null && height != null) {
-      memCacheWidth = width.toInt();
-      memCacheHeight = height.toInt();
+      // Guard against NaN, Infinity, or negative values
+      if (width.isFinite && !width.isNaN && width > 0) {
+        memCacheWidth = width.toInt();
+      } else {
+        memCacheWidth = thumbnailSize; // fallback
+      }
+      if (height.isFinite && !height.isNaN && height > 0) {
+        memCacheHeight = height.toInt();
+      } else {
+        memCacheHeight = thumbnailSize; // fallback
+      }
     }
 
     return CachedNetworkImage(
@@ -92,9 +99,7 @@ class ImageManagementService {
       fadeOutDuration: const Duration(milliseconds: 100),
       useOldImageOnUrlChange: true,
       cacheKey: _generateCacheKey(imageUrl, memCacheWidth, memCacheHeight),
-      // Add maximum bytes per pixel to prevent excessive memory usage
-      maxWidthDiskCache: memCacheWidth ?? 800,
-      maxHeightDiskCache: memCacheHeight ?? 800,
+      // Note: maxWidthDiskCache and maxHeightDiskCache removed as they require ImageCacheManager
     );
   }
 
@@ -197,7 +202,7 @@ class ImageManagementService {
       if (!_loadingUrls.contains(url)) {
         _cacheManager.getSingleFile(url).catchError((dynamic error) {
           debugPrint('❌ Preload failed for: $url');
-          return Future<File>.value(File('')); // Return empty file on error
+          // No return needed
         });
       }
     }

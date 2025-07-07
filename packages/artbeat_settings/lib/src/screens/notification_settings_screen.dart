@@ -6,12 +6,12 @@ class NotificationSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const UniversalHeader(
+    return const Scaffold(
+      appBar: UniversalHeader(
         title: 'Notification Settings',
         showLogo: false,
       ),
-      body: const Center(child: Text('Notification Settings Screen')),
+      body: Center(child: Text('Notification Settings Screen')),
     );
   }
 }

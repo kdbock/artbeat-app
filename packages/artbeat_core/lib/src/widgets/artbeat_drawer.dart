@@ -252,11 +252,6 @@ class ArtbeatDrawer extends StatelessWidget {
     final bool isCurrentRoute = currentRoute == item.route;
     final bool isMainNavigationRoute = mainRoutes.contains(item.route);
 
-    // Check if we're navigating within the same section
-    final bool isWithinSameSection =
-        currentRoute != null &&
-        item.route.split('/')[1] == currentRoute.split('/')[1];
-
     // Wrap ListTile in Builder to ensure correct Scaffold context for SnackBar
     return Builder(
       builder: (snackBarContext) => ListTile(
@@ -302,7 +297,9 @@ class ArtbeatDrawer extends StatelessWidget {
               );
             }
           } catch (error) {
-            debugPrint('⚠️ Navigation error for [38;5;208m${item.route}[0m: $error');
+            debugPrint(
+              '⚠️ Navigation error for [38;5;208m${item.route}[0m: $error',
+            );
             ScaffoldMessenger.of(snackBarContext).showSnackBar(
               SnackBar(
                 content: Text('Navigation error: ${error.toString()}'),

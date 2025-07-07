@@ -69,8 +69,7 @@ class EventCard extends StatelessWidget {
       child: event.eventBannerUrl.isNotEmpty
           ? ImageManagementService().getOptimizedImage(
               imageUrl: event.eventBannerUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
+              width: null, // FIX: do not use double.infinity
               height: compact ? 120 : 200,
               isThumbnail: compact,
               errorWidget: _buildPlaceholderBanner(),

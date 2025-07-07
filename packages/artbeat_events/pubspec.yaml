@@ -1,6 +1,6 @@
 name: artbeat_events
 description: Event management package for ARTbeat - handles event creation, ticketing, and management
-version: 1.0.0
+version: 1.0.1
 publish_to: none  # This package is not intended for publishing
 
 environment:

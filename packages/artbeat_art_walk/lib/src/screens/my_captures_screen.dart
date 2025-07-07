@@ -392,9 +392,9 @@ class _CaptureCardState extends State<CaptureCard>
               flex: 3,
               child: Container(
                 width: double.infinity,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: ArtbeatColors.background,
-                  borderRadius: const BorderRadius.vertical(
+                  borderRadius: BorderRadius.vertical(
                     top: Radius.circular(12),
                   ),
                 ),
@@ -439,9 +439,9 @@ class _CaptureCardState extends State<CaptureCard>
                         ),
                       )
                     : Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: ArtbeatColors.background,
-                          borderRadius: const BorderRadius.vertical(
+                          borderRadius: BorderRadius.vertical(
                             top: Radius.circular(12),
                           ),
                         ),
@@ -503,7 +503,7 @@ class _CaptureCardState extends State<CaptureCard>
                         ),
                         if (!widget.capture.isProcessed) ...[
                           const SizedBox(width: 8),
-                          Icon(
+                          const Icon(
                             Icons.hourglass_empty,
                             size: 14,
                             color: ArtbeatColors.warning,

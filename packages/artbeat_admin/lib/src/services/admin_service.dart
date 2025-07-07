@@ -159,9 +159,9 @@ class AdminService {
         final lowerQuery = searchQuery.toLowerCase();
         users = users
             .where((user) =>
-                user.fullName.toLowerCase().contains(lowerQuery) ||
+                user.username.toLowerCase().contains(lowerQuery) ||
                 user.email.toLowerCase().contains(lowerQuery) ||
-                (user.username?.toLowerCase().contains(lowerQuery) ?? false))
+                user.fullName.toLowerCase().contains(lowerQuery))
             .toList();
       }
 
@@ -355,7 +355,7 @@ class AdminService {
           .where((user) =>
               user.fullName.toLowerCase().contains(lowerQuery) ||
               user.email.toLowerCase().contains(lowerQuery) ||
-              (user.username?.toLowerCase().contains(lowerQuery) ?? false) ||
+              (user.username.toLowerCase().contains(lowerQuery) ?? false) ||
               user.userType.toString().toLowerCase().contains(lowerQuery))
           .toList();
     } catch (e) {

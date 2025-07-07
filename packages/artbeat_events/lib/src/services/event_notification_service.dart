@@ -7,13 +7,15 @@ import '../models/artbeat_event.dart';
 
 /// Service for handling event-related notifications
 class EventNotificationService {
-  static final EventNotificationService _instance = EventNotificationService._();
+  static final EventNotificationService _instance =
+      EventNotificationService._();
   factory EventNotificationService() => _instance;
   EventNotificationService._();
 
   final String _channelId = 'artbeat_events';
   final Logger _logger = Logger();
-  final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   /// Initialize notification service
   Future<void> initialize() async {
@@ -35,7 +37,8 @@ class EventNotificationService {
       );
 
       // Initialize local notifications
-      const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
       const initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -160,8 +163,8 @@ class EventNotificationService {
 
       // Schedule reminders at different intervals
       final reminderTimes = [
-        eventTime.subtract(const Duration(days: 1)),    // 1 day before
-        eventTime.subtract(const Duration(hours: 2)),   // 2 hours before
+        eventTime.subtract(const Duration(days: 1)), // 1 day before
+        eventTime.subtract(const Duration(hours: 2)), // 2 hours before
         eventTime.subtract(const Duration(minutes: 30)), // 30 minutes before
       ];
 
@@ -197,7 +200,7 @@ class EventNotificationService {
   /// Get appropriate reminder title based on time until event
   String _getReminderTitle(DateTime eventTime, DateTime reminderTime) {
     final difference = eventTime.difference(reminderTime);
-    
+
     if (difference.inDays >= 1) {
       return 'Event Tomorrow: ${DateFormat('h:mm a').format(eventTime)}';
     } else if (difference.inHours >= 1) {
@@ -298,23 +301,6 @@ class EventNotificationService {
       _logger.i('Event update notification sent');
     } on Exception catch (e) {
       _logger.e('Error sending event update notification: $e');
-    }
-  }
-
-  /// Handle notification tap
-  void _onNotificationTap(NotificationResponse response) {
-    final payload = response.payload;
-    if (payload != null) {
-      _logger.i('Notification tapped with payload: $payload');
-      // For flutter_local_notifications, payload is a String
-      // We can parse it or use it directly as eventId if it contains the eventId
-      try {
-        // If the payload is just the eventId string
-        eventNotificationNavigatorKey.currentState
-            ?.pushNamed('/event/$payload');
-      } on Exception catch (e) {
-        _logger.e('Error handling notification tap: $e');
-      }
     }
   }
 

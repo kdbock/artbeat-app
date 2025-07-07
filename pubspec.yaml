@@ -1,12 +1,12 @@
 name: artbeat
 description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
-publish_to: 'none'
+publish_to: "none"
 
-version: 1.0.6+12
+version: 1.0.8+14
 
 environment:
-  sdk: '^3.8.0'
-  flutter: '>=3.32.0'
+  sdk: "^3.8.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
@@ -15,6 +15,8 @@ dependencies:
   # Local modules
   artbeat_admin:
     path: packages/artbeat_admin
+  artbeat_ads:
+    path: packages/artbeat_ads
   artbeat_art_walk:
     path: packages/artbeat_art_walk
   artbeat_artist:
@@ -46,7 +48,7 @@ dependencies:
   firebase_analytics: ^11.5.0
   firebase_app_check: ^0.3.2+7
   firebase_messaging: ^15.2.7
-  firebase_data_connect: ^0.1.5+1  # Added for Data Connect support
+  firebase_data_connect: ^0.1.5+1 # Added for Data Connect support
 
   # Permissions
   permission_handler: ^12.0.1
@@ -70,6 +72,8 @@ dependencies:
   device_info_plus: ^11.5.0
   package_info_plus: ^8.2.0
   image_picker: ^1.0.0
+  image_cropper: ^9.1.0
+  geolocator: ^14.0.2
 
 flutter:
   uses-material-design: true
@@ -81,7 +85,7 @@ flutter:
     - assets/images/artist_banner_ad.png
     - assets/images/splashTRANS_logo.png
     - packages/artbeat_core/assets/images/artbeat_splash_bg.png
-
+    - assets/default_artwork.png
 
 dev_dependencies:
   flutter_test:

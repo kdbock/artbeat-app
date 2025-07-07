@@ -74,6 +74,8 @@ class CritiqueCard extends StatelessWidget {
   }
 
   Widget _buildArtworkSection() {
+    final hasImages =
+        post.imageUrls.isNotEmpty && post.imageUrls.first.isNotEmpty;
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(maxHeight: 400, minHeight: 200),
@@ -81,71 +83,13 @@ class CritiqueCard extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         child: Stack(
           children: [
-            PageView.builder(
-              itemCount: post.imageUrls.length,
-              itemBuilder: (context, index) {
-                final imageUrl = post.imageUrls[index];
-                if (imageUrl.isEmpty) {
-                  return Container(
-                    color: ArtbeatColors.backgroundSecondary,
-                    child: const Center(
-                      child: Icon(
-                        Icons.broken_image_outlined,
-                        size: 48,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                    ),
-                  );
-                }
-                return ImageManagementService().getOptimizedImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  placeholder: Container(
-                    color: ArtbeatColors.backgroundSecondary,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: ArtbeatColors.primaryPurple,
-                      ),
-                    ),
+            hasImages
+                ? _ArtworkPageView(imageUrls: post.imageUrls)
+                : Image.asset(
+                    'assets/default_artwork.png',
+                    fit: BoxFit.cover,
+                    width: double.infinity,
                   ),
-                  errorWidget: Container(
-                    color: ArtbeatColors.error.withAlpha(25),
-                    child: const Center(
-                      child: Icon(
-                        Icons.error_outline,
-                        color: ArtbeatColors.error,
-                        size: 48,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            // Image counter indicator
-            if (post.imageUrls.length > 1)
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: ArtbeatColors.black.withAlpha(179), // 0.7 opacity
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '1/${post.imageUrls.length}',
-                    style: const TextStyle(
-                      color: ArtbeatColors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
             // Artwork status indicator
             Positioned(
               bottom: 12,
@@ -156,9 +100,7 @@ class CritiqueCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: ArtbeatColors.primaryPurple.withAlpha(
-                    230,
-                  ), // 0.9 opacity
+                  color: ArtbeatColors.primaryPurple.withAlpha(230),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Row(
@@ -189,12 +131,20 @@ class CritiqueCard extends StatelessWidget {
   }
 
   Widget _buildArtistHeader(BuildContext context, ThemeData theme) {
+    final userPhotoUrl = post.userPhotoUrl.isNotEmpty
+        ? post.userPhotoUrl
+        : 'assets/default_profile.png';
+
+    final displayName = post.userName.isNotEmpty
+        ? '@${post.userName}'
+        : 'Unknown Artist';
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           ArtistAvatar(
-            imageUrl: post.userPhotoUrl,
+            imageUrl: userPhotoUrl,
             displayName: post.userName,
             isVerified: post.isUserVerified,
             onTap: () => onUserTap(post.userId),
@@ -207,11 +157,14 @@ class CritiqueCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      post.userName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: ArtbeatColors.textPrimary,
+                    Flexible(
+                      child: Text(
+                        displayName,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (post.isUserVerified) ...[
@@ -233,7 +186,42 @@ class CritiqueCard extends StatelessWidget {
               ],
             ),
           ),
-          // Support actions (moved to top right, smaller)
+          // Show comment and applause counts
+          Column(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.comment_outlined,
+                    size: 16,
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${post.commentCount}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.emoji_emotions_outlined,
+                    size: 16,
+                    color: ArtbeatColors.accentYellow,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${post.applauseCount}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          // Support actions
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -242,7 +230,7 @@ class CritiqueCard extends StatelessWidget {
                 icon: Icons.card_giftcard_outlined,
                 label: 'Gift',
                 color: ArtbeatColors.primaryPurple,
-                onTap: () => showDialog<GiftModal>(
+                onTap: () => showDialog<void>(
                   context: context,
                   builder: (ctx) => GiftModal(recipientId: post.userId),
                 ),
@@ -253,7 +241,7 @@ class CritiqueCard extends StatelessWidget {
                 icon: Icons.volunteer_activism_outlined,
                 label: 'Sponsor',
                 color: ArtbeatColors.accentYellow,
-                onTap: () => showDialog<SponsorModal>(
+                onTap: () => showDialog<void>(
                   context: context,
                   builder: (ctx) => SponsorModal(artistId: post.userId),
                 ),
@@ -333,7 +321,7 @@ class CritiqueCard extends StatelessWidget {
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: post.tags.map((tag) {
+        children: post.tags.map<Widget>((String tag) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
@@ -516,8 +504,8 @@ class CritiqueCard extends StatelessWidget {
           const SizedBox(height: 8),
           ...comments
               .take(2)
-              .map(
-                (comment) => Padding(
+              .map<Widget>(
+                (CommentModel comment) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: _buildCommentPreview(comment, theme),
                 ),
@@ -528,11 +516,18 @@ class CritiqueCard extends StatelessWidget {
   }
 
   Widget _buildCommentPreview(CommentModel comment, ThemeData theme) {
+    // Use asset fallback if userAvatarUrl is empty or not a valid network URL
+    String avatarUrl = comment.userAvatarUrl;
+    if (avatarUrl.isEmpty ||
+        avatarUrl == 'placeholder_headshot_url' ||
+        !(avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'))) {
+      avatarUrl = 'assets/default_profile.png';
+    }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ArtistAvatar(
-          imageUrl: comment.userAvatarUrl,
+          imageUrl: avatarUrl,
           displayName: comment.userName,
           isVerified: false, // CommentModel doesn't have isVerified field
           onTap: () => onUserTap(comment.userId),
@@ -562,6 +557,73 @@ class CritiqueCard extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+// Top-level widget for artwork page view with fallback and counter
+class _ArtworkPageView extends StatefulWidget {
+  final List<String> imageUrls;
+  const _ArtworkPageView({required this.imageUrls});
+
+  @override
+  State<_ArtworkPageView> createState() => _ArtworkPageViewState();
+}
+
+class _ArtworkPageViewState extends State<_ArtworkPageView> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        PageView.builder(
+          itemCount: widget.imageUrls.length,
+          onPageChanged: (i) => setState(() => _currentIndex = i),
+          itemBuilder: (context, index) {
+            final imageUrl = widget.imageUrls[index];
+            if (imageUrl.isEmpty) {
+              return Image.asset(
+                'assets/default_artwork.png',
+                fit: BoxFit.cover,
+                width: double.infinity,
+              );
+            }
+            return ImageManagementService().getOptimizedImage(
+              imageUrl: imageUrl,
+              fit: BoxFit.cover,
+              placeholder: Image.asset(
+                'assets/default_artwork.png',
+                fit: BoxFit.cover,
+              ),
+              errorWidget: Image.asset(
+                'assets/default_artwork.png',
+                fit: BoxFit.cover,
+              ),
+            );
+          },
+        ),
+        if (widget.imageUrls.length > 1)
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: ArtbeatColors.black.withAlpha(179),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${_currentIndex + 1}/${widget.imageUrls.length}',
+                style: const TextStyle(
+                  color: ArtbeatColors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -24,8 +24,10 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
   final EventService _eventService = EventService();
-  final CalendarIntegrationService _calendarService = CalendarIntegrationService();
-  final EventNotificationService _notificationService = EventNotificationService();
+  final CalendarIntegrationService _calendarService =
+      CalendarIntegrationService();
+  final EventNotificationService _notificationService =
+      EventNotificationService();
   final UserService _userService = UserService();
 
   ArtbeatEvent? _event;
@@ -47,9 +49,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         _isLoading = true;
         _error = null;
       });
-      
+
       final event = await _eventService.getEventById(widget.eventId);
-      
+
       setState(() {
         _event = event;
         _isLoading = false;
@@ -177,7 +179,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       child: _event!.eventBannerUrl.isNotEmpty
           ? ImageManagementService().getOptimizedImage(
               imageUrl: _event!.eventBannerUrl,
-              fit: BoxFit.cover,
               width: double.infinity,
               height: 250,
               errorWidget: _buildPlaceholderBanner(),
@@ -657,7 +658,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             );
           }
           break;
-          
+
         case 'set_reminder':
           await _notificationService.scheduleEventReminders(_event!);
           if (mounted) {
@@ -689,7 +690,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   void _showTicketPurchaseSheet(TicketType ticket) {
     final currentUser = _userService.currentUser;
-    
+
     if (currentUser == null) {
       // Show login prompt if not authenticated
       showDialog(
@@ -724,7 +725,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         onPurchaseComplete: () {
           Navigator.pop(context);
           _refreshEvent();
-          
+
           // Show success dialog
           showDialog(
             context: context,
@@ -758,22 +759,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         },
       ),
     );
-  }
-
-  void _showAllTicketTypes() {
-    if (_event!.ticketTypes.length == 1) {
-      _showTicketPurchaseSheet(_event!.ticketTypes.first);
-    } else {
-      // Scroll to tickets section
-      final context = _ticketsSectionKey.currentContext;
-      if (context != null) {
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        );
-      }
-    }
   }
 
   Future<void> _refreshEvent() async {
@@ -829,7 +814,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     // TODO: Implement report submission
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Report submitted. Thank you for helping keep ARTbeat safe.'),
+        content:
+            Text('Report submitted. Thank you for helping keep ARTbeat safe.'),
       ),
     );
   }

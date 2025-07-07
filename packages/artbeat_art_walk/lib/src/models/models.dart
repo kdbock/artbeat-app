@@ -4,4 +4,6 @@
 export 'achievement_model.dart';
 export 'art_walk_model.dart';
 export 'art_walk_comment_model.dart';
+export 'art_walk_route_model.dart';
+export 'navigation_step_model.dart';
 export 'public_art_model.dart';

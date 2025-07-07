@@ -4,7 +4,6 @@ import 'package:artbeat_core/artbeat_core.dart';
 import '../models/ad_model.dart';
 import '../models/ad_location.dart';
 import '../services/ad_service.dart';
-import 'ad_display_widget.dart';
 
 /// A widget that displays ads specifically for the profile screen
 class ProfileAdWidget extends StatefulWidget {
@@ -258,14 +257,14 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
-                        Row(
+                        const Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.touch_app_outlined,
                               size: 14,
                               color: ArtbeatColors.primaryPurple,
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Text(
                               'Learn More',
                               style: TextStyle(
