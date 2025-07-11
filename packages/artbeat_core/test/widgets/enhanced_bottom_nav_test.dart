@@ -7,17 +7,13 @@ void main() {
     testWidgets('should display correct number of navigation items', (
       tester,
     ) async {
-      int tappedIndex = -1;
-
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Container(),
             bottomNavigationBar: EnhancedBottomNav(
               currentIndex: 0,
-              onTap: (index) {
-                tappedIndex = index;
-              },
+              onTap: (index) {},
             ),
           ),
         ),

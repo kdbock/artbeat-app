@@ -89,67 +89,6 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
     });
   }
 
-  Future<void> _bulkAction(String action) async {
-    if (_selectedUsers.isEmpty) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm $action'),
-        content: Text(
-          'Are you sure you want to $action ${_selectedUsers.length} selected users?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    try {
-      final userIds = _selectedUsers.map((user) => user.id).toList();
-
-      switch (action) {
-        case 'suspend':
-          for (final userId in userIds) {
-            await _adminService.suspendUser(userId, 'Bulk suspension', 'admin');
-          }
-          break;
-        case 'verify':
-          for (final userId in userIds) {
-            await _adminService.verifyUser(userId);
-          }
-          break;
-        case 'delete':
-          for (final userId in userIds) {
-            await _adminService.deleteUser(userId);
-          }
-          break;
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Successfully ${action}ed ${userIds.length} users')),
-      );
-
-      _loadUsers();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error performing bulk action: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -764,11 +703,6 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
         ],
       ),
     );
-  }
-
-  void _showCreateUserDialog() {
-    Navigator.pushNamed(context, '/admin/create-user')
-        .then((_) => _loadUsers());
   }
 
   /// Helper method to convert String? to UserType

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_admin_model.dart';
-import '../services/admin_service.dart';
 
 /// Detailed view of a user for admin management
 class AdminUserDetailScreen extends StatefulWidget {
@@ -19,10 +18,9 @@ class AdminUserDetailScreen extends StatefulWidget {
 
 class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     with SingleTickerProviderStateMixin {
-  final AdminService _adminService = AdminService();
   late TabController _tabController;
   late UserAdminModel _currentUser;
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   void initState() {
@@ -35,33 +33,6 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  Future<void> _refreshUser() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final user = await _adminService.getUserById(_currentUser.id);
-      if (user != null && mounted) {
-        setState(() {
-          _currentUser = user;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error refreshing user: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   @override
@@ -247,7 +218,7 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     ? 'Not set'
                     : _currentUser.username),
             _buildDetailRow('Email', _currentUser.email),
-            _buildDetailRow('Location', _currentUser.location ?? 'Not set'),
+            _buildDetailRow('Location', _currentUser.location),
             _buildDetailRow('Zip Code', _currentUser.zipCode ?? 'Not set'),
             _buildDetailRow('Gender', _currentUser.gender ?? 'Not set'),
             if (_currentUser.birthDate != null)
@@ -376,11 +347,9 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             'Admin Information',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 16),
           if (_currentUser.isSuspended) ...[
@@ -500,10 +469,6 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                             const SizedBox(height: 4),
                             Text(
                               'By: ${noteData['addedBy'] ?? 'Unknown'} • ${noteData['addedAt'] != null ? _formatDateTime((noteData['addedAt'] as Timestamp).toDate()) : 'Unknown time'}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
                             ),
                           ],
                         ),
@@ -580,7 +545,6 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
             child: Text(
               label,
               style: TextStyle(
-                fontWeight: FontWeight.w500,
                 color: Colors.grey.shade600,
               ),
             ),
@@ -754,11 +718,5 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
-  }
-
-  Future<void> _handleAction(String action) async {
-    // Implementation for handling actions would go here
-    // Similar to the user management screen actions
-    debugPrint('Handling action: $action for user: ${_currentUser.id}');
   }
 }

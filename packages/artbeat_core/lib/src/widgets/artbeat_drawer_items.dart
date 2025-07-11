@@ -170,7 +170,18 @@ class ArtbeatDrawerItems {
     title: 'Admin Dashboard',
     icon: Icons.admin_panel_settings,
     route: '/admin/dashboard',
-    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const adminCreateAd = ArtbeatDrawerItem(
+    title: 'Create Ad',
+    icon: Icons.add_box_outlined,
+    route: '/admin/ad-create',
+  );
+
+  static const adminReviewAds = ArtbeatDrawerItem(
+    title: 'Review Ads',
+    icon: Icons.rate_review_outlined,
+    route: '/admin/ad-review',
   );
 
   static const userManagement = ArtbeatDrawerItem(
@@ -205,6 +216,8 @@ class ArtbeatDrawerItems {
   // Admin items getter
   static List<ArtbeatDrawerItem> get adminItemsSection => [
     adminDashboard,
+    adminCreateAd,
+    adminReviewAds,
     userManagement,
     contentModeration,
     systemSettings,

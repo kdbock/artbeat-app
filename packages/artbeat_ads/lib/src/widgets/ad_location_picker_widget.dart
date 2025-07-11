@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/ad_location.dart' as model;
 
-/// Widget to pick ad display location (industry standard: e.g., Home, Discover, Profile, etc.)
 class AdLocationPickerWidget extends StatelessWidget {
-  final String selectedLocation;
-  final List<String> availableLocations;
-  final ValueChanged<String> onChanged;
+  final model.AdLocation selectedLocation;
+  final List<model.AdLocation> availableLocations;
+  final ValueChanged<model.AdLocation> onChanged;
 
   const AdLocationPickerWidget({
     super.key,
@@ -19,10 +19,13 @@ class AdLocationPickerWidget extends StatelessWidget {
       children: [
         const Text('Location:'),
         const SizedBox(width: 8),
-        DropdownButton<String>(
+        DropdownButton<model.AdLocation>(
           value: selectedLocation,
           items: availableLocations
-              .map((loc) => DropdownMenuItem(value: loc, child: Text(loc)))
+              .map(
+                (model.AdLocation loc) =>
+                    DropdownMenuItem(value: loc, child: Text(loc.name)),
+              )
               .toList(),
           onChanged: (val) {
             if (val != null) onChanged(val);

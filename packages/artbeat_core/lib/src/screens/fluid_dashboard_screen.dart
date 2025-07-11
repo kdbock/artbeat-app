@@ -395,9 +395,9 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             ),
           ],
         ),
-        child: Column(
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Welcome to ARTbeat!',
               style: TextStyle(
@@ -585,13 +585,13 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                   onPressed: () =>
                       Navigator.pushNamed(context, '/art-walk/dashboard'),
                   style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     backgroundColor: ArtbeatColors.primaryPurple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Art Walks Near You',
                     style: TextStyle(
                       color: Colors.white,

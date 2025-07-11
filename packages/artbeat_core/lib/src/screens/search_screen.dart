@@ -96,10 +96,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.search, size: 48, color: ArtbeatColors.textSecondary),
           SizedBox(height: 16),
           Text(

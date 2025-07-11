@@ -8,7 +8,7 @@ class SearchResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: EnhancedUniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Search Results',
         showLogo: false,
         showBackButton: true,

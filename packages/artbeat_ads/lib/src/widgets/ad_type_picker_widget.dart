@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-
-/// Widget to pick ad type (square or rectangle, industry standard sizes)
-enum AdType { square, rectangle }
+import '../models/ad_type.dart' as model;
 
 class AdTypePickerWidget extends StatelessWidget {
-  final AdType selectedType;
-  final ValueChanged<AdType> onChanged;
+  final model.AdType selectedType;
+  final ValueChanged<model.AdType> onChanged;
 
   const AdTypePickerWidget({
     super.key,
@@ -19,12 +17,15 @@ class AdTypePickerWidget extends StatelessWidget {
       children: [
         const Text('Ad Type:'),
         const SizedBox(width: 8),
-        DropdownButton<AdType>(
+        DropdownButton<model.AdType>(
           value: selectedType,
           items: const [
-            DropdownMenuItem(value: AdType.square, child: Text('Square (1:1)')),
             DropdownMenuItem(
-              value: AdType.rectangle,
+              value: model.AdType.square,
+              child: Text('Square (1:1)'),
+            ),
+            DropdownMenuItem(
+              value: model.AdType.rectangle,
               child: Text('Rectangle (2:1)'),
             ),
           ],

@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show
-        ArtbeatColors,
-        EnhancedUniversalHeader,
-        OptimizedImage,
-        MainLayout,
-        ArtbeatDrawer;
+    show ArtbeatColors, EnhancedUniversalHeader, OptimizedImage, MainLayout;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Screen to display user's captured art
