@@ -3,13 +3,14 @@ import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_events/artbeat_events.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
-import 'package:artbeat_capture/artbeat_capture.dart'
-    show EnhancedCaptureDashboardScreen, CaptureScreen, CaptureDetailScreen;
+import 'package:artbeat_ads/artbeat_ads.dart' as ads;
+import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_art_walk/src/screens/my_captures_screen.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
@@ -75,6 +76,20 @@ class MyApp extends StatelessWidget {
 
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case '/gallery/artists-management':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: GalleryArtistsManagementScreen(),
+          ),
+        );
+      case '/gallery/analytics':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: GalleryAnalyticsDashboardScreen(),
+          ),
+        );
       // Core routes
       case '/splash':
         return MaterialPageRoute(builder: (_) => const core.SplashScreen());
@@ -85,261 +100,212 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.FluidDashboardScreen(),
         );
 
-      // Auth routes
-      case '/login':
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
-      case '/register':
-        return MaterialPageRoute(builder: (_) => const RegisterScreen());
-      case '/forgot-password':
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordScreen());
-
       // Profile routes
       case '/profile':
         return MaterialPageRoute(
-          builder: (_) => Consumer<core.UserService>(
-            builder: (context, userService, child) =>
-                ProfileViewScreen(userId: userService.currentUser?.uid ?? ''),
-          ),
-        );
-      case '/profile/public':
-        return MaterialPageRoute(
-          builder: (_) => Consumer<core.UserService>(
-            builder: (context, userService, child) =>
-                ProfileViewScreen(userId: userService.currentUser?.uid ?? ''),
-          ),
+          builder: (_) {
+            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+            if (currentUserId == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Scaffold(
+                  body: Center(
+                    child: Text('Please log in to view your profile'),
+                  ),
+                ),
+              );
+            }
+            return ProfileViewScreen(
+              userId: currentUserId,
+              isCurrentUser: true,
+            );
+          },
         );
       case '/profile/edit':
         return MaterialPageRoute(
-          builder: (_) => Consumer<core.UserService>(
-            builder: (context, userService, child) =>
-                EditProfileScreen(userId: userService.currentUser?.uid ?? ''),
-          ),
+          builder: (_) {
+            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+            if (currentUserId == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Scaffold(
+                  body: Center(
+                    child: Text('Please log in to edit your profile'),
+                  ),
+                ),
+              );
+            }
+            return EditProfileScreen(userId: currentUserId);
+          },
         );
       case '/favorites':
         return MaterialPageRoute(
-          builder: (_) => Consumer<core.UserService>(
-            builder: (context, userService, child) =>
-                FavoritesScreen(userId: userService.currentUser?.uid ?? ''),
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Fan Club',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Fan Club coming soon')),
+            ),
+          ),
+        );
+
+      // Auth routes
+      case '/login':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: LoginScreen()),
+        );
+      case '/register':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: RegisterScreen()),
+        );
+      case '/forgot-password':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ForgotPasswordScreen(),
           ),
         );
       case '/captures':
         return MaterialPageRoute(builder: (_) => const MyCapturesScreen());
       case '/achievements':
-        return MaterialPageRoute(builder: (_) => const AchievementsScreen());
-      case '/following':
         return MaterialPageRoute(
-          builder: (_) => Consumer<core.UserService>(
-            builder: (context, userService, child) =>
-                FollowingListScreen(userId: userService.currentUser?.uid ?? ''),
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: AchievementsScreen(),
           ),
         );
-
-      // Capture routes
-      case '/capture/dashboard':
-        return MaterialPageRoute(
-          builder: (_) => const EnhancedCaptureDashboardScreen(),
-        );
       case '/capture/camera':
-        return MaterialPageRoute(builder: (_) => const CaptureScreen());
-      case '/capture/detail':
-        final captureId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (_) => CaptureDetailScreen(captureId: captureId),
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: CaptureScreen()),
         );
-
-      // Community routes
       case '/community/feed':
-        return MaterialPageRoute(builder: (_) => const UnifiedCommunityFeed());
-      case '/community/dashboard':
         return MaterialPageRoute(
-          builder: (_) => const CommunityDashboardScreen(),
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: UnifiedCommunityFeed(),
+          ),
         );
-
-      // Art Walk routes
       case '/art-walk/map':
-        return MaterialPageRoute(builder: (_) => const ArtWalkMapScreen());
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ArtWalkMapScreen(),
+          ),
+        );
+      case '/art-walk/list':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ArtWalkListScreen(),
+          ),
+        );
+      case '/art-walk/create':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: CreateArtWalkScreen(),
+          ),
+        );
+      case '/events/dashboard':
+        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/art-walk/dashboard':
         return MaterialPageRoute(
           builder: (_) => const ArtWalkDashboardScreen(),
         );
-      case '/art-walk/list':
-        return MaterialPageRoute(builder: (_) => const ArtWalkListScreen());
-      case '/art-walk/detail':
-        final walkId = settings.arguments as String?;
-        if (walkId == null) {
-          return MaterialPageRoute(
-            builder: (_) => const ArtWalkDashboardScreen(),
-          );
-        }
+      case '/capture/dashboard':
         return MaterialPageRoute(
-          builder: (_) => ArtWalkDetailScreen(walkId: walkId),
+          builder: (_) => const CaptureDashboardScreen(),
         );
-      case '/art-walk/create':
-        return MaterialPageRoute(builder: (_) => const CreateArtWalkScreen());
-      case '/art-walk/edit':
-        final args = settings.arguments as Map<String, dynamic>?;
-        final walkId = args?['walkId'] as String?;
-        final artWalk = args?['artWalk'] as ArtWalkModel?;
-        if (walkId == null) {
-          return MaterialPageRoute(
-            builder: (_) => const ArtWalkDashboardScreen(),
-          );
-        }
+      case '/community/dashboard':
+        return MaterialPageRoute(
+          builder: (_) => const CommunityDashboardScreen(),
+        );
+      case '/dev':
         return MaterialPageRoute(
           builder: (_) =>
-              ArtWalkEditScreen(artWalkId: walkId, artWalk: artWalk),
+              const core.MainLayout(currentIndex: -1, child: DeveloperMenu()),
+        );
+      case '/feedback':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: core.FeedbackForm(),
+          ),
+        );
+      case '/artist/artwork':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: MyArtworkScreen()),
+        );
+      case '/artwork/upload':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: artwork.ArtworkUploadScreen(),
+          ),
+        );
+      // ...existing code...
+
+      // Subscription routes
+      case '/subscription/comparison':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: SubscriptionComparisonScreen(),
+          ),
         );
 
       // Artist routes
-      case '/artist/search':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Search Artists',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Artist search coming soon')),
-            ),
-          ),
-        );
-      case '/artist/featured':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Featured Artists',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Featured artists coming soon')),
-            ),
-          ),
-        );
-      case '/artist/local':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Local Artists',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Local artists coming soon')),
-            ),
-          ),
-        );
-      case '/artist/categories':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Browse Categories',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Artist categories coming soon')),
-            ),
-          ),
-        );
       case '/artist/dashboard':
-        return MaterialPageRoute(builder: (_) => const ArtistDashboardScreen());
-      case '/artist/subscription':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ArtistDashboardScreen(),
+          ),
+        );
+      case '/artist/profile-edit':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ArtistProfileEditScreen(),
+          ),
+        );
+      case '/artist/analytics':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: AnalyticsDashboardScreen(),
+          ),
+        );
+      case '/artist/approved-ads':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
               appBar: core.EnhancedUniversalHeader(
-                title: 'Subscription',
+                title: 'Approved Ads',
                 showLogo: false,
               ),
-              body: Center(child: Text('Subscription coming soon')),
+              body: Center(child: Text('Approved ads coming soon')),
             ),
           ),
         );
-      case '/artist/commissions':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Commissions',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Commissions coming soon')),
-            ),
-          ),
-        );
-      case '/artist/events':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Events',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Events coming soon')),
-            ),
-          ),
-        );
-      case '/artist/create-profile':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Create Artist Profile',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Create artist profile coming soon')),
-            ),
-          ),
-        );
-      case '/artist/activity':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Activity',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Activity coming soon')),
-            ),
-          ),
-        );
-      case '/artist/onboarding':
-        return MaterialPageRoute(
-          builder: (_) => Consumer<core.UserService>(
-            builder: (context, userService, child) {
-              return FutureBuilder<core.UserModel?>(
-                future: userService.getCurrentUserModel(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-                  final userModel = snapshot.data;
-                  if (userModel == null) {
-                    return const LoginScreen();
-                  }
-                  return ArtistOnboardingScreen(user: userModel);
-                },
-              );
-            },
-          ),
-        );
-      case '/subscription/comparison':
-        return MaterialPageRoute(
-          builder: (_) => const SubscriptionComparisonScreen(),
-        );
+
       case '/artist/public-profile':
         final args = settings.arguments as Map<String, dynamic>?;
         final artistId = args?['artistId'] as String?;
-        if (artistId == null) {
+        final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+
+        // If no artistId is provided, use the current user's ID
+        final targetUserId = artistId ?? currentUserId;
+
+        if (targetUserId == null) {
           return MaterialPageRoute(
             builder: (_) => const core.MainLayout(
               currentIndex: -1,
@@ -348,13 +314,16 @@ class MyApp extends StatelessWidget {
                   title: 'Artist Profile',
                   showLogo: false,
                 ),
-                body: Center(child: Text('Artist not found')),
+                body: Center(child: Text('Please log in to view your profile')),
               ),
             ),
           );
         }
         return MaterialPageRoute(
-          builder: (_) => ArtistPublicProfileScreen(userId: artistId),
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: ArtistPublicProfileScreen(userId: targetUserId),
+          ),
         );
       case '/artist/artwork-detail':
         final args = settings.arguments as Map<String, dynamic>?;
@@ -455,9 +424,7 @@ class MyApp extends StatelessWidget {
           ),
         );
 
-      // Event routes
-      case '/events/dashboard':
-        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
+      // Event routes (continued)
       case '/events/detail':
         final args = settings.arguments as Map<String, dynamic>?;
         final eventId = args?['eventId'] as String?;
@@ -500,6 +467,36 @@ class MyApp extends StatelessWidget {
               artistId: userService.currentUser?.uid,
               showCreateButton: true,
             ),
+          ),
+        );
+      case '/events/my-tickets':
+        return MaterialPageRoute(
+          builder: (_) => Consumer<core.UserService>(
+            builder: (context, userService, child) {
+              final userId = userService.currentUser?.uid;
+              if (userId == null) {
+                return const core.MainLayout(
+                  currentIndex: -1,
+                  child: Scaffold(
+                    appBar: core.EnhancedUniversalHeader(
+                      title: 'My Tickets',
+                      showLogo: false,
+                    ),
+                    body: Center(
+                      child: Text('Please log in to view your tickets'),
+                    ),
+                  ),
+                );
+              }
+              return MyTicketsScreen(userId: userId);
+            },
+          ),
+        );
+      case '/events/create':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: CreateEventScreen(),
           ),
         );
 
@@ -556,6 +553,32 @@ class MyApp extends StatelessWidget {
             ),
           ),
         );
+      case '/settings/security':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Security Settings',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Security settings coming soon')),
+            ),
+          ),
+        );
+      case '/support':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Help & Support',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Help & Support coming soon')),
+            ),
+          ),
+        );
 
       // Admin routes
       case '/admin/dashboard':
@@ -592,36 +615,95 @@ class MyApp extends StatelessWidget {
             ),
           ),
         );
+      case '/admin/ad-review':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.AdminAdReviewScreen(),
+          ),
+        );
 
-      // Developer menu
-      case '/dev':
-        return MaterialPageRoute(builder: (_) => const DeveloperMenu());
+      // Developer menu (already handled above)
 
-      // Feedback submission route
-      case '/feedback':
-        return MaterialPageRoute(builder: (_) => const core.FeedbackForm());
+      // Feedback submission route (already handled above)
       case '/developer-feedback-admin':
         return MaterialPageRoute(
           builder: (_) => const core.DeveloperFeedbackAdminScreen(),
         );
       case '/search/results':
-        final args = settings.arguments as Map<String, dynamic>;
-        final query = args['query'] as String;
+        final searchArgs = settings.arguments as Map<String, dynamic>;
+        final searchQuery = searchArgs['query'] as String;
         return MaterialPageRoute(
-          builder: (_) => core.SearchResultsScreen(query: query),
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: core.SearchResultsScreen(query: searchQuery),
+          ),
         );
 
-      // Handle dynamic event routes
-      default:
-        if (settings.name?.startsWith('/event/') ?? false) {
-          final eventId = settings.name!.replaceFirst('/event/', '');
-          return MaterialPageRoute(
-            builder: (_) => EventDetailsScreen(eventId: eventId),
-          );
-        }
+      // Ad Creation Routes
+      case '/ad-create/user':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.UserAdCreateScreen(),
+          ),
+        );
+      case '/ad-create/artist':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.ArtistAdCreateScreen(),
+          ),
+        );
+      case '/ad-create/gallery':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.GalleryAdCreateScreen(),
+          ),
+        );
+      case '/ad-create/admin':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.AdminAdCreateScreen(),
+          ),
+        );
 
-        // Return to splash screen for unknown routes
-        return MaterialPageRoute(builder: (_) => const core.SplashScreen());
+      // Ad Review Routes
+      case '/ad-review/user':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.UserAdReviewScreen(),
+          ),
+        );
+      case '/ad-status/artist':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.ArtistAdStatusScreen(),
+          ),
+        );
+      case '/ad-status/gallery':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.GalleryAdStatusScreen(),
+          ),
+        );
+      case '/ad-review/admin':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.AdminAdReviewScreen(),
+          ),
+        );
     }
+    // Fallback: return splash screen if no route matched
+    return MaterialPageRoute(
+      builder: (_) =>
+          const core.MainLayout(currentIndex: -1, child: core.SplashScreen()),
+    );
   }
 }

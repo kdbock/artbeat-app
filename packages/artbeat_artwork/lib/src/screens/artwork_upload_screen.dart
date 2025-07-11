@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader, MainLayout;
+    show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
@@ -414,352 +414,343 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          appBar: EnhancedUniversalHeader(
-            title: 'Upload Artwork',
-            showLogo: false,
-          ),
-          body: Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: 'Upload Artwork',
+          showLogo: false,
         ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     // Show upgrade prompt if user can't upload more artwork
     if (!_canUpload && widget.artworkId == null) {
-      return MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          appBar: const EnhancedUniversalHeader(
-            title: 'Upload Artwork',
-            showLogo: false,
-          ),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lock, size: 72, color: Colors.grey),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Free Plan Artwork Limit Reached',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+      return Scaffold(
+        appBar: const EnhancedUniversalHeader(
+          title: 'Upload Artwork',
+          showLogo: false,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.lock, size: 72, color: Colors.grey),
+                const SizedBox(height: 24),
+                const Text(
+                  'Free Plan Artwork Limit Reached',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
+                  'Upgrade to Artist Pro for unlimited artwork uploads.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(
+                        context, '/artist/subscription');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
-                    'Upgrade to Artist Pro for unlimited artwork uploads.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(
-                          context, '/artist/subscription');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                    ),
-                    child: const Text('Upgrade Now'),
-                  ),
-                ],
-              ),
+                  child: const Text('Upgrade Now'),
+                ),
+              ],
             ),
           ),
         ),
       );
     }
 
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
-          showLogo: false,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Artwork Image
-                Center(
-                  child: GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      width: double.infinity,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                        image: _imageFile != null
-                            ? DecorationImage(
-                                image: FileImage(_imageFile!),
-                                fit: BoxFit.cover,
-                              )
-                            : _imageUrl != null
-                                ? DecorationImage(
-                                    image: NetworkImage(_imageUrl!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                      ),
-                      child: _imageFile == null && _imageUrl == null
-                          ? const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.add_photo_alternate, size: 64),
-                                SizedBox(height: 8),
-                                Text('Select Image'),
-                              ],
+    return Scaffold(
+      appBar: EnhancedUniversalHeader(
+        title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
+        showLogo: false,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Artwork Image
+              Center(
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: double.infinity,
+                    height: 240,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                      image: _imageFile != null
+                          ? DecorationImage(
+                              image: FileImage(_imageFile!),
+                              fit: BoxFit.cover,
                             )
-                          : null,
+                          : _imageUrl != null
+                              ? DecorationImage(
+                                  image: NetworkImage(_imageUrl!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
                     ),
+                    child: _imageFile == null && _imageUrl == null
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate, size: 64),
+                              SizedBox(height: 8),
+                              Text('Select Image'),
+                            ],
+                          )
+                        : null,
                   ),
                 ),
-                const SizedBox(height: 24),
+              ),
+              const SizedBox(height: 24),
 
-                // Title
-                TextFormField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
+              // Title
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 16),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a title';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                // Description
-                TextFormField(
-                  controller: _descriptionController,
-                  maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
+              // Description
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                  alignLabelWithHint: true,
                 ),
-                const SizedBox(height: 16),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a description';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                // Year
-                TextFormField(
-                  controller: _yearController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Year',
-                    border: OutlineInputBorder(),
-                  ),
+              // Year
+              TextFormField(
+                controller: _yearController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Year',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 16),
 
-                // Medium dropdown
-                DropdownButtonFormField<String>(
-                  value: _medium.isEmpty ? null : _medium,
-                  decoration: const InputDecoration(
-                    labelText: 'Medium',
-                    filled: true,
-                    fillColor:
-                        ArtbeatColors.backgroundPrimary, // match login_screen
-                    border: OutlineInputBorder(),
-                  ),
-                  dropdownColor:
+              // Medium dropdown
+              DropdownButtonFormField<String>(
+                value: _medium.isEmpty ? null : _medium,
+                decoration: const InputDecoration(
+                  labelText: 'Medium',
+                  filled: true,
+                  fillColor:
                       ArtbeatColors.backgroundPrimary, // match login_screen
-                  style: const TextStyle(color: Colors.black),
-                  items: _availableMediums.map((medium) {
-                    return DropdownMenuItem<String>(
-                      value: medium,
-                      child: Text(medium,
-                          style: const TextStyle(color: Colors.black)),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _medium = value;
-                      });
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a medium';
-                    }
-                    return null;
-                  },
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 16),
-
-                // Materials
-                TextFormField(
-                  controller: _materialsController,
-                  decoration: const InputDecoration(
-                    labelText: 'Materials Used',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Location
-                TextFormField(
-                  controller: _locationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Location',
-                    border: OutlineInputBorder(),
-                    hintText: 'Where is this artwork displayed/stored?',
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Styles Multi-Select
-                const Text(
-                  'Styles',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _availableStyles.map((style) {
-                    final isSelected = _styles.contains(style);
-                    return FilterChip(
-                      label: Text(style),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            _styles.add(style);
-                          } else {
-                            _styles.remove(style);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-
-                // For Sale switch
-                SwitchListTile(
-                  title: const Text('Available for sale'),
-                  value: _isForSale,
-                  onChanged: (value) {
+                dropdownColor:
+                    ArtbeatColors.backgroundPrimary, // match login_screen
+                style: const TextStyle(color: Colors.black),
+                items: _availableMediums.map((medium) {
+                  return DropdownMenuItem<String>(
+                    value: medium,
+                    child: Text(medium,
+                        style: const TextStyle(color: Colors.black)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
                     setState(() {
-                      _isForSale = value;
+                      _medium = value;
                     });
-                  },
-                ),
+                  }
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a medium';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                // Price if for sale
-                if (_isForSale)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: TextFormField(
-                      controller: _priceController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Price (USD)',
-                        border: OutlineInputBorder(),
-                        prefixText: '\$ ',
-                      ),
-                      validator: (value) {
-                        if (_isForSale && (value == null || value.isEmpty)) {
-                          return 'Please enter a price';
+              // Materials
+              TextFormField(
+                controller: _materialsController,
+                decoration: const InputDecoration(
+                  labelText: 'Materials Used',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Location
+              TextFormField(
+                controller: _locationController,
+                decoration: const InputDecoration(
+                  labelText: 'Location',
+                  border: OutlineInputBorder(),
+                  hintText: 'Where is this artwork displayed/stored?',
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Styles Multi-Select
+              const Text(
+                'Styles',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _availableStyles.map((style) {
+                  final isSelected = _styles.contains(style);
+                  return FilterChip(
+                    label: Text(style),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _styles.add(style);
+                        } else {
+                          _styles.remove(style);
                         }
-                        return null;
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 16),
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
 
-                // Tags section
-                const Text(
-                  'Tags',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              // For Sale switch
+              SwitchListTile(
+                title: const Text('Available for sale'),
+                value: _isForSale,
+                onChanged: (value) {
+                  setState(() {
+                    _isForSale = value;
+                  });
+                },
+              ),
+
+              // Price if for sale
+              if (_isForSale)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: TextFormField(
+                    controller: _priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Price (USD)',
+                      border: OutlineInputBorder(),
+                      prefixText: '\$ ',
+                    ),
+                    validator: (value) {
+                      if (_isForSale && (value == null || value.isEmpty)) {
+                        return 'Please enter a price';
+                      }
+                      return null;
+                    },
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _tagController,
-                        decoration: const InputDecoration(
-                          labelText: 'Add tags',
-                          border: OutlineInputBorder(),
-                          hintText: 'e.g. landscape, nature',
-                        ),
-                        onEditingComplete: _addTag,
+              const SizedBox(height: 16),
+
+              // Tags section
+              const Text(
+                'Tags',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _tagController,
+                      decoration: const InputDecoration(
+                        labelText: 'Add tags',
+                        border: OutlineInputBorder(),
+                        hintText: 'e.g. landscape, nature',
                       ),
+                      onEditingComplete: _addTag,
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: _addTag,
-                      icon: const Icon(Icons.add),
-                      tooltip: 'Add tag',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: _tags.map((tag) {
-                    return Chip(
-                      label: Text(tag),
-                      onDeleted: () => _removeTag(tag),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 32),
-
-                // Save button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _saveArtwork,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: _isSaving
-                        ? const CircularProgressIndicator()
-                        : Text(
-                            widget.artworkId == null
-                                ? 'Upload Artwork'
-                                : 'Save Changes',
-                            style: const TextStyle(fontSize: 16),
-                          ),
                   ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _addTag,
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Add tag',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: _tags.map((tag) {
+                  return Chip(
+                    label: Text(tag),
+                    onDeleted: () => _removeTag(tag),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 32),
+
+              // Save button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _saveArtwork,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: _isSaving
+                      ? const CircularProgressIndicator()
+                      : Text(
+                          widget.artworkId == null
+                              ? 'Upload Artwork'
+                              : 'Save Changes',
+                          style: const TextStyle(fontSize: 16),
+                        ),
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
       ),

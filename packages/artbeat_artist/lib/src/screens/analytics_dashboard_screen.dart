@@ -125,10 +125,9 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
+    return Column(
+      children: <Widget>[
+        EnhancedUniversalHeader(
           title: 'Analytics Dashboard',
           showLogo: false,
           actions: <Widget>[
@@ -138,34 +137,36 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
             ),
           ],
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _loadData,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      _buildDateRangeSelector(),
-                      const SizedBox(height: 16),
-                      _buildOverviewMetrics(),
-                      const SizedBox(height: 24),
-                      _buildVisitorsChart(),
-                      const SizedBox(height: 24),
-                      if (_hasProAccess) ...<Widget>[
-                        _buildLocationBreakdown(),
+        Expanded(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _loadData,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        _buildDateRangeSelector(),
+                        const SizedBox(height: 16),
+                        _buildOverviewMetrics(),
                         const SizedBox(height: 24),
-                        _buildTopArtworks(),
+                        _buildVisitorsChart(),
                         const SizedBox(height: 24),
-                        _buildReferralSources(),
+                        if (_hasProAccess) ...<Widget>[
+                          _buildLocationBreakdown(),
+                          const SizedBox(height: 24),
+                          _buildTopArtworks(),
+                          const SizedBox(height: 24),
+                          _buildReferralSources(),
+                        ],
+                        if (!_hasProAccess) _buildSubscriptionUpgradeCard(),
                       ],
-                      if (!_hasProAccess) _buildSubscriptionUpgradeCard(),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-      ),
+        ),
+      ],
     );
   }
 

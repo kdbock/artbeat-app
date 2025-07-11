@@ -12,84 +12,86 @@ class ArtistApprovedAdsScreen extends StatefulWidget {
 class _ArtistApprovedAdsScreenState extends State<ArtistApprovedAdsScreen> {
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1, // Not a main navigation item
-      child: Scaffold(
-        appBar: const EnhancedUniversalHeader(
+    return Column(
+      children: [
+        const EnhancedUniversalHeader(
           title: 'Artist Approved Ads',
           showLogo: false,
         ),
-        drawer: const ArtbeatDrawer(),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Artist Approved Ads',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.ads_click_outlined,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Ad Management Coming Soon',
-                        style: Theme.of(context).textTheme.titleLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Manage your approved advertisements and promotional content here. This feature is currently under development.',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Artist Approved Ads',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Features Coming Soon:',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.ads_click_outlined,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Ad Management Coming Soon',
+                            style: Theme.of(context).textTheme.titleLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Manage your approved advertisements and promotional content here. This feature is currently under development.',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Features Coming Soon:',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  const _FeatureItem(
+                    icon: Icons.campaign_outlined,
+                    title: 'Ad Campaign Management',
+                    description: 'Create and manage your advertising campaigns',
+                  ),
+                  const _FeatureItem(
+                    icon: Icons.analytics_outlined,
+                    title: 'Ad Performance Analytics',
+                    description: 'Track the performance of your advertisements',
+                  ),
+                  const _FeatureItem(
+                    icon: Icons.approval_outlined,
+                    title: 'Approval Status Tracking',
+                    description: 'Monitor the approval status of your ads',
+                  ),
+                  const _FeatureItem(
+                    icon: Icons.payment_outlined,
+                    title: 'Revenue Tracking',
+                    description: 'Track earnings from approved advertisements',
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              const _FeatureItem(
-                icon: Icons.campaign_outlined,
-                title: 'Ad Campaign Management',
-                description: 'Create and manage your advertising campaigns',
-              ),
-              const _FeatureItem(
-                icon: Icons.analytics_outlined,
-                title: 'Ad Performance Analytics',
-                description: 'Track the performance of your advertisements',
-              ),
-              const _FeatureItem(
-                icon: Icons.approval_outlined,
-                title: 'Approval Status Tracking',
-                description: 'Monitor the approval status of your ads',
-              ),
-              const _FeatureItem(
-                icon: Icons.payment_outlined,
-                title: 'Revenue Tracking',
-                description: 'Track earnings from approved advertisements',
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -48,6 +48,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
     super.dispose();
   }
 
+  // Profile data getters
   String get username => _userModel?.username ?? "artbeat_user";
   String get name => _userModel?.fullName ?? "ARTbeat User";
   String get bio => _userModel?.bio ?? "Art enthusiast and creative explorer";
@@ -98,51 +99,17 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
         // Try to reload user data from authentication
         try {
-          final authUser = FirebaseAuth.instance.currentUser;
-          if (authUser != null) {
-            debugPrint('🔄 Creating user document for: ${authUser.uid}');
-            debugPrint('📧 Email: ${authUser.email}');
-            debugPrint('👤 Display Name: ${authUser.displayName}');
-
-            await _userService.createNewUser(
-              uid: authUser.uid,
-              email: authUser.email ?? '',
-              displayName: authUser.displayName ?? 'ARTbeat User',
+          final currentUser = FirebaseAuth.instance.currentUser;
+          if (currentUser != null) {
+            userModel = userModel.copyWith(
+              email: currentUser.email,
+              fullName: currentUser.displayName ?? 'ARTbeat User',
+              profileImageUrl: currentUser.photoURL,
             );
-
-            debugPrint('✅ User document creation completed');
-
-            // Try to get the user again
-            userModel = await _userService.getUserById(widget.userId);
-
-            if (userModel != null) {
-              debugPrint(
-                '✅ User document retrieved successfully after creation',
-              );
-            } else {
-              debugPrint(
-                '❌ User document still not found after creation attempt',
-              );
-            }
-          } else {
-            debugPrint('❌ No authenticated user found');
           }
-        } catch (reloadError) {
-          debugPrint('❌ Failed to reload user data: $reloadError');
-          debugPrint('❌ Error details: ${reloadError.toString()}');
+        } catch (e) {
+          debugPrint('⚠️ ProfileViewScreen: Error loading auth data: $e');
         }
-      }
-
-      // If still no user model, we have a real problem
-      if (userModel == null) {
-        debugPrint('❌ ProfileViewScreen: Could not load user profile');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User profile not found')),
-          );
-        }
-      } else {
-        debugPrint('✅ ProfileViewScreen: User profile loaded successfully');
       }
 
       if (mounted) {
@@ -151,6 +118,20 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           _isLoading = false;
         });
       }
+
+      if (userModel == null) {
+        debugPrint('❌ ProfileViewScreen: Could not load user profile');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User profile not found')),
+          );
+        }
+        return;
+      }
+
+      debugPrint(
+        '✅ ProfileViewScreen: Successfully loaded profile for ${userModel.fullName}',
+      );
     } catch (e) {
       debugPrint('❌ ProfileViewScreen: Error loading profile: $e');
       if (mounted) {
@@ -159,9 +140,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         );
 
         setState(() {
-          _userModel = widget.isCurrentUser
-              ? UserModel.placeholder(widget.userId)
-              : null;
           _isLoading = false;
         });
       }
@@ -169,20 +147,17 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   }
 
   Future<void> _loadUserCaptures() async {
-    if (mounted) {
-      setState(() {
-        _isLoadingCaptures = true;
-      });
-    }
-
     try {
       debugPrint(
         '🔄 ProfileViewScreen: Loading captures for user ID: ${widget.userId}',
       );
 
-      final captures = await _captureService.getCapturesForUser(widget.userId);
+      if (widget.userId.isEmpty) {
+        debugPrint('❌ ProfileViewScreen: Empty userId for captures');
+        return;
+      }
 
-      debugPrint('✅ ProfileViewScreen: Found ${captures.length} captures');
+      final captures = await _captureService.getCapturesForUser(widget.userId);
 
       if (mounted) {
         setState(() {
@@ -190,11 +165,14 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           _isLoadingCaptures = false;
         });
       }
+
+      debugPrint(
+        '✅ ProfileViewScreen: Successfully loaded ${captures.length} captures',
+      );
     } catch (e) {
       debugPrint('❌ ProfileViewScreen: Error loading captures: $e');
       if (mounted) {
         setState(() {
-          _userCaptures = [];
           _isLoadingCaptures = false;
         });
       }
@@ -211,440 +189,211 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       currentIndex: -1,
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: EnhancedUniversalHeader(
-          title: 'Profile',
-          showLogo: false,
-          showDeveloperTools: true,
-          onMenuPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-          onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ArtbeatColors.primaryPurple,
-                      Color.fromARGB(
-                        (0.8 * 255).round(),
-                        (ArtbeatColors.primaryPurple.r * 255).round(),
-                        (ArtbeatColors.primaryPurple.g * 255).round(),
-                        (ArtbeatColors.primaryPurple.b * 255).round(),
-                      ),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    OptimizedAvatar(
-                      imageUrl: profileImageUrl,
-                      displayName: name,
-                      radius: 30,
-                      isVerified: false,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      cityState,
-                      style: const TextStyle(
-                        color: Color.fromARGB(204, 255, 255, 255),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.home_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Home'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/');
-                },
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt_outlined,
-                      color: ArtbeatColors.primaryPurple,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text(
-                    'My Captures',
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
-                  ),
-                  subtitle: const Text(
-                    'View your art collection',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: ArtbeatColors.textSecondary,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/captures');
-                  },
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.map_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Art Walks'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/art-walks');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.people_outline,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Artist Community'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/community');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.front_hand,
-                  color: ArtbeatColors.accentYellow,
-                ),
-                title: const Text('Fan of'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/profile/following');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.emoji_events_outlined,
-                  color: ArtbeatColors.accentYellow,
-                ),
-                title: const Text('Achievements'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/profile/achievements');
-                },
-              ),
-              const Divider(color: ArtbeatColors.border),
-              // Are you an artist? section
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(
-                    25,
-                    (ArtbeatColors.primaryPurple.r * 255).round(),
-                    (ArtbeatColors.primaryPurple.g * 255).round(),
-                    (ArtbeatColors.primaryPurple.b * 255).round(),
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Color.fromARGB(
-                      76,
-                      (ArtbeatColors.primaryPurple.r * 255).round(),
-                      (ArtbeatColors.primaryPurple.g * 255).round(),
-                      (ArtbeatColors.primaryPurple.b * 255).round(),
-                    ),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(
-                          Icons.palette_outlined,
-                          color: ArtbeatColors.primaryPurple,
-                          size: 20,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Are you an artist?',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: ArtbeatColors.primaryPurple,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Share your art with the community and grow your audience.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/artist/register');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ArtbeatColors.primaryPurple,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text('Get Started'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(color: ArtbeatColors.border),
-              ListTile(
-                leading: const Icon(
-                  Icons.settings_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Settings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/settings');
-                },
-              ),
-              if (widget.isCurrentUser) ...[
-                ListTile(
-                  leading: const Icon(
-                    Icons.dashboard_outlined,
-                    color: ArtbeatColors.primaryPurple,
-                  ),
-                  title: const Text('Artist Dashboard'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/artist/dashboard');
-                  },
-                ),
-              ],
-            ],
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        drawer: const ArtbeatDrawer(),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: ArtbeatGradientBackground(
+            addShadow: true,
+            child: EnhancedUniversalHeader(
+              title: 'Profile',
+              showLogo: false,
+              showSearch: true,
+              showDeveloperTools: true,
+              onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+              onMenuPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              backgroundColor: Colors.transparent,
+              foregroundColor: ArtbeatColors.textPrimary,
+              elevation: 0,
+            ),
           ),
         ),
         body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withAlpha(13),
-                Colors.white,
-                ArtbeatColors.primaryGreen.withAlpha(13),
-              ],
-            ),
-          ),
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await _loadUserProfile();
-              await _loadUserCaptures();
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  // Profile Header
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    margin: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: ArtbeatColors.border.withAlpha(128),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        // Profile Image and Edit Button
-                        Row(
-                          children: [
-                            OptimizedAvatar(
-                              imageUrl: profileImageUrl,
-                              displayName: name,
-                              radius: 40,
-                              isVerified:
-                                  false, // TODO: Add verification status
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    cityState,
-                                    style: const TextStyle(
-                                      color: ArtbeatColors.textSecondary,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  if (widget.isCurrentUser) ...[
-                                    const SizedBox(height: 8),
-                                    ElevatedButton.icon(
-                                      onPressed: () {
-                                        Navigator.pushNamed(
-                                          context,
-                                          '/profile/edit',
-                                        );
-                                      },
-                                      icon: const Icon(Icons.edit, size: 18),
-                                      label: const Text('Edit Profile'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            ArtbeatColors.primaryPurple,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Stats Row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildStat(
-                              'Captures',
-                              capturesCount,
-                              ArtbeatColors.primaryPurple,
-                            ),
-                            _buildStat(
-                              'Fan of',
-                              followersCount,
-                              ArtbeatColors.accentYellow,
-                            ),
-                            _buildStat(
-                              'Artwalks Completed',
-                              artwalksCompleted,
-                              ArtbeatColors.primaryGreen,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Tabs
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: ArtbeatColors.primaryPurple,
-                    unselectedLabelColor: ArtbeatColors.textSecondary,
-                    tabs: const [
-                      Tab(text: 'Captures'),
-                      Tab(text: 'Fan of'),
-                      Tab(text: 'Achievements'),
-                    ],
-                  ),
-
-                  // Tab Content
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.5,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildCapturesTab(),
-                        _buildFanOfTab(),
-                        _buildAchievementsTab(),
-                      ],
-                    ),
-                  ),
-
-                  // Ad Space
-                  const ProfileAdWidget(
-                    margin: EdgeInsets.all(16),
-                    height: 100,
-                    showPlaceholder: true,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          decoration: _buildArtisticBackground(),
+          child: SafeArea(child: _buildProfileContent()),
         ),
       ),
     );
   }
 
-  Widget _buildStat(String label, int value, Color color) {
-    return Column(
+  BoxDecoration _buildArtisticBackground() {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFFE3F2FD), // Light blue
+          Color(0xFFF8FBFF), // Very light blue/white
+          Color(0xFFE1F5FE), // Light cyan blue
+          Color(0xFFBBDEFB), // Slightly darker blue (darkest corner)
+        ],
+        stops: [0.0, 0.3, 0.7, 1.0],
+      ),
+    );
+  }
+
+  Widget _buildProfileContent() {
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
       children: [
+        // Profile Header
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: color.withAlpha(25),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: color.withAlpha(77)),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                ArtbeatColors.primaryPurple,
+                ArtbeatColors.primaryPurple.withValues(alpha: 0.8),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            label == 'Captures'
-                ? Icons.camera_alt_outlined
-                : label == 'Fan of'
-                ? Icons.front_hand
-                : label == 'Artwalks Completed'
-                ? Icons.map_outlined
-                : Icons.people_outline,
-            color: color,
-            size: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  OptimizedAvatar(
+                    imageUrl: profileImageUrl,
+                    displayName: name,
+                    radius: 40,
+                    isVerified: false,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '@$username',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          cityState,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                bio,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatColumn('Posts', postsCount),
+                  _buildStatColumn('Followers', followersCount),
+                  _buildStatColumn('Following', followingCount),
+                  _buildStatColumn('Captures', capturesCount),
+                ],
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 20),
+        // Actions Row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/profile/edit');
+              },
+              icon: const Icon(Icons.edit, size: 18),
+              label: const Text('Edit Profile'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtbeatColors.primaryPurple,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pushNamed(context, '/captures');
+              },
+              icon: const Icon(Icons.camera_alt, size: 18),
+              label: const Text('View Captures'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtbeatColors.primaryGreen,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        // Tabs
+        TabBar(
+          controller: _tabController,
+          labelColor: ArtbeatColors.primaryPurple,
+          unselectedLabelColor: ArtbeatColors.textSecondary,
+          tabs: const [
+            Tab(text: 'Captures'),
+            Tab(text: 'Fan of'),
+            Tab(text: 'Achievements'),
+          ],
+        ),
+        // Tab Content
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildCapturesTab(),
+              _buildFanOfTab(),
+              _buildAchievementsTab(),
+            ],
+          ),
+        ),
+        // Ad Space
+        const ProfileAdWidget(
+          margin: EdgeInsets.all(16),
+          height: 100,
+          showPlaceholder: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatColumn(String label, int value) {
+    return Column(
+      children: [
         Text(
           value.toString(),
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: ArtbeatColors.textPrimary,
+            color: Colors.white,
           ),
         ),
+        const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: ArtbeatColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 12, color: Colors.white70),
         ),
       ],
     );
@@ -663,7 +412,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
               ),
               SizedBox(width: 8),
               Text(
-                'Art Captures',
+                'My Captures',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -680,63 +429,74 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                 ? GridView.builder(
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                          crossAxisCount: 2,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
+                          childAspectRatio: 0.8,
                         ),
                     itemCount: _userCaptures.length,
                     itemBuilder: (context, index) {
                       final capture = _userCaptures[index];
-                      return OptimizedGridImage(
-                        imageUrl: capture.imageUrl,
-                        thumbnailUrl: capture.thumbnailUrl,
-                        heroTag: 'profile_capture_${capture.id}',
+                      return GestureDetector(
                         onTap: () {
                           Navigator.pushNamed(
                             context,
                             '/capture/detail',
-                            arguments: capture
-                                .id, // Pass only the ID, not the whole model
+                            arguments: {'captureId': capture.id},
                           );
                         },
-                        overlay: capture.title?.isNotEmpty == true
-                            ? Positioned(
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
+                        child: Card(
+                          elevation: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
                                 child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.bottomCenter,
-                                      end: Alignment.topCenter,
-                                      colors: [
-                                        Color.fromARGB(178, 0, 0, 0),
-                                        Colors.transparent,
-                                      ],
+                                  decoration: BoxDecoration(
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(12),
                                     ),
+                                    image: capture.imageUrl.isNotEmpty
+                                        ? DecorationImage(
+                                            image: NetworkImage(
+                                              capture.imageUrl,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
                                   ),
-                                  child: Text(
-                                    capture.title!,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                  ),
+                                  child: capture.imageUrl.isEmpty
+                                      ? const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported,
+                                            size: 48,
+                                            color: Colors.grey,
+                                          ),
+                                        )
+                                      : null,
                                 ),
-                              )
-                            : null,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  capture.title ?? 'Untitled',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   )
                 : const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.camera_alt_outlined,
@@ -922,11 +682,13 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isUnlocked
-            ? color.withAlpha(25)
+            ? color.withValues(alpha: 0.1)
             : ArtbeatColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isUnlocked ? color.withAlpha(77) : ArtbeatColors.border,
+          color: isUnlocked
+              ? color.withValues(alpha: 0.3)
+              : ArtbeatColors.border,
         ),
       ),
       child: Column(

@@ -6,19 +6,18 @@ import '../theme/artbeat_colors.dart';
 import '../theme/artbeat_typography.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
-import '../models/user_type.dart';
 import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
 
 // Define main navigation routes that should use pushReplacement
 const Set<String> mainRoutes = {
-  '/home',
+  '/dashboard',
+  '/community/feed',
+  '/art-walk/map',
+  '/events/dashboard',
   '/profile',
   '/captures',
-  '/achievements',
-  '/favorites',
   '/artist/dashboard',
-  '/events/all',
   '/gallery/artists-management',
   '/admin/dashboard',
 };
@@ -70,6 +69,33 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       }
     } catch (error) {
       debugPrint('Error loading user model: $error');
+    }
+  }
+
+  void _handleNavigation(
+    BuildContext context,
+    BuildContext snackBarContext,
+    String route,
+    bool isMainRoute,
+  ) {
+    try {
+      debugPrint('🔄 Navigating to: $route (isMainRoute: $isMainRoute)');
+      if (isMainRoute) {
+        Navigator.pushReplacementNamed(context, route);
+      } else {
+        Navigator.pushNamed(context, route);
+      }
+    } catch (error) {
+      debugPrint('⚠️ Navigation error for route $route: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(snackBarContext).showSnackBar(
+          SnackBar(
+            content: Text('Navigation error: ${error.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -234,15 +260,12 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
               ),
               const Divider(),
 
-              // Artist Section - only show for artists and galleries
-              if (_cachedUserModel?.userType == UserType.artist ||
-                  _cachedUserModel?.userType == UserType.gallery) ...[
-                _buildSectionHeader('Artist'),
-                ...ArtbeatDrawerItems.artistItems.map(
-                  (item) => _buildDrawerItem(context, item),
-                ),
-                const Divider(),
-              ],
+              // Artist Section
+              _buildSectionHeader('Artist'),
+              ...ArtbeatDrawerItems.artistItems.map(
+                (item) => _buildDrawerItem(context, item),
+              ),
+              const Divider(),
 
               // Events Section
               _buildSectionHeader('Events'),
@@ -251,14 +274,12 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
               ),
               const Divider(),
 
-              // Gallery Section - only show for gallery users
-              if (_cachedUserModel?.userType == UserType.gallery) ...[
-                _buildSectionHeader('Gallery'),
-                ...ArtbeatDrawerItems.galleryItems.map(
-                  (item) => _buildDrawerItem(context, item),
-                ),
-                const Divider(),
-              ],
+              // Gallery Section
+              _buildSectionHeader('Gallery'),
+              ...ArtbeatDrawerItems.galleryItems.map(
+                (item) => _buildDrawerItem(context, item),
+              ),
+              const Divider(),
 
               // Settings Section
               _buildSectionHeader('Settings'),
@@ -267,24 +288,19 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
               ),
               const Divider(),
 
-              // Ad Section - only show for artists and galleries
-              if (_cachedUserModel?.userType == UserType.artist ||
-                  _cachedUserModel?.userType == UserType.gallery) ...[
-                _buildSectionHeader('Ads'),
-                ...ArtbeatDrawerItems.adminItems
-                    .where((item) => item.route.contains('/ad-'))
-                    .map((item) => _buildDrawerItem(context, item)),
-                const Divider(),
-              ],
+              // Ads Section
+              _buildSectionHeader('Ads'),
+              ...ArtbeatDrawerItems.adItems.map(
+                (item) => _buildDrawerItem(context, item),
+              ),
+              const Divider(),
 
-              // Admin Section (only visible to admins)
-              if (_cachedUserModel?.userType == UserType.admin) ...[
-                _buildSectionHeader('Admin'),
-                ...ArtbeatDrawerItems.adminItems
-                    .where((item) => !item.route.contains('/ad-'))
-                    .map((item) => _buildDrawerItem(context, item)),
-                const Divider(),
-              ],
+              // Admin Section
+              _buildSectionHeader('Admin'),
+              ...ArtbeatDrawerItems.adminItems
+                  .where((item) => !item.route.contains('/ad-'))
+                  .map((item) => _buildDrawerItem(context, item)),
+              const Divider(),
 
               ListTile(
                 leading: Icon(
@@ -334,9 +350,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
     final currentRoute = ModalRoute.of(context)?.settings.name;
     final bool isCurrentRoute = currentRoute == item.route;
     final bool isMainNavigationRoute = mainRoutes.contains(item.route);
-    final String targetRoute = item.route;
 
-    // Wrap ListTile in Builder to ensure correct Scaffold context for SnackBar
     return Builder(
       builder: (snackBarContext) => ListTile(
         leading: Icon(
@@ -353,33 +367,17 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
           ),
         ),
         selected: isCurrentRoute,
-        onTap: () {
-          // Close drawer first
-          Navigator.pop(context);
-
-          // Don't navigate if we're already on the route
+        onTap: () async {
+          Navigator.pop(context); // Close drawer first
           if (!isCurrentRoute) {
-            try {
-              // Handle navigation based on route type
-              if (isMainNavigationRoute) {
-                // Main navigation routes replace the current route
-                Navigator.pushReplacementNamed(context, targetRoute);
-              } else {
-                // Sub-routes are pushed on top with back button
-                Navigator.pushNamed(
-                  context,
-                  targetRoute,
-                  arguments: {'from': 'drawer', 'showBackButton': true},
-                );
-              }
-            } catch (error) {
-              debugPrint('⚠️ Navigation error for route $targetRoute: $error');
-              ScaffoldMessenger.of(snackBarContext).showSnackBar(
-                SnackBar(
-                  content: Text('Navigation error: ${error.toString()}'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 3),
-                ),
+            // Add a small delay to ensure drawer is fully closed
+            await Future<void>.delayed(const Duration(milliseconds: 250));
+            if (mounted) {
+              _handleNavigation(
+                context,
+                snackBarContext,
+                item.route,
+                isMainNavigationRoute,
               );
             }
           }

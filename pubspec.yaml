@@ -86,6 +86,10 @@ flutter:
     - assets/images/splashTRANS_logo.png
     - packages/artbeat_core/assets/images/artbeat_splash_bg.png
     - assets/default_artwork.png
+    - assets/default_profile.png
+    - assets/event_placeholder.png
+    - assets/logo.png
+    - assets/triangle.png
 
 dev_dependencies:
   flutter_test:

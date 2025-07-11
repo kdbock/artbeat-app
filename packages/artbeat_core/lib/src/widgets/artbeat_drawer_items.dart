@@ -94,7 +94,7 @@ class ArtbeatDrawerItems {
   static const allEvents = ArtbeatDrawerItem(
     title: 'All Events',
     icon: Icons.event_outlined,
-    route: '/events/all',
+    route: '/events/dashboard',
   );
 
   static const myTickets = ArtbeatDrawerItem(
@@ -172,12 +172,6 @@ class ArtbeatDrawerItems {
     route: '/admin/dashboard',
   );
 
-  static const adminCreateAd = ArtbeatDrawerItem(
-    title: 'Create Ad',
-    icon: Icons.add_box_outlined,
-    route: '/admin/ad-create',
-  );
-
   static const adminReviewAds = ArtbeatDrawerItem(
     title: 'Review Ads',
     icon: Icons.rate_review_outlined,
@@ -212,6 +206,43 @@ class ArtbeatDrawerItems {
     route: '/login',
     color: ArtbeatColors.error,
   );
+
+  // Ad Creation Items
+  static const userCreateAd = ArtbeatDrawerItem(
+    title: 'Create User Ad',
+    icon: Icons.post_add,
+    route: '/ad-create/user',
+    color: ArtbeatColors.textPrimary,
+  );
+
+  static const artistCreateAd = ArtbeatDrawerItem(
+    title: 'Create Artist Ad',
+    icon: Icons.brush_outlined,
+    route: '/ad-create/artist',
+    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const galleryCreateAd = ArtbeatDrawerItem(
+    title: 'Create Gallery Ad',
+    icon: Icons.store_outlined,
+    route: '/ad-create/gallery',
+    color: ArtbeatColors.primaryGreen,
+  );
+
+  static const adminCreateAd = ArtbeatDrawerItem(
+    title: 'Create Admin Ad',
+    icon: Icons.campaign_outlined,
+    route: '/ad-create/admin',
+    color: Colors.red,
+  );
+
+  // Ad Management Items
+  static final adItems = [
+    userCreateAd,
+    artistCreateAd,
+    galleryCreateAd,
+    adminCreateAd,
+  ];
 
   // Admin items getter
   static List<ArtbeatDrawerItem> get adminItemsSection => [
@@ -263,5 +294,12 @@ class ArtbeatDrawerItems {
     feedback,
   ];
 
-  static List<ArtbeatDrawerItem> get adminItems => adminItemsSection;
+  static List<ArtbeatDrawerItem> get adminItems => [
+    adminDashboard,
+    adminCreateAd,
+    adminReviewAds,
+    userManagement,
+    contentModeration,
+    systemSettings,
+  ];
 }

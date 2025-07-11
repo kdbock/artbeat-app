@@ -47,29 +47,6 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     _initializeMapsAndLocation();
   }
 
-  void _onBottomNavTap(int index) {
-    switch (index) {
-      case 0: // Home - Dashboard
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/dashboard',
-          (route) => false,
-        );
-        break;
-      case 1: // Art Walk - Stay here
-        break;
-      case 2: // Community
-        Navigator.pushNamed(context, '/community/dashboard');
-        break;
-      case 3: // Events
-        Navigator.pushNamed(context, '/events/dashboard');
-        break;
-      case 4: // Capture (Camera button) - Open as modal
-        _openCaptureModal();
-        break;
-    }
-  }
-
   void _openCaptureModal() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -665,127 +642,126 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: EnhancedUniversalHeader(
-        title: 'Art Walk Map',
-        showDeveloperTools: false,
-        onSearchPressed: () {
-          // Handle search action - could open a search overlay
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Search functionality coming soon!'),
-              duration: Duration(seconds: 2),
+    return MainLayout(
+      currentIndex: 1, // Art Walk is index 1
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: EnhancedUniversalHeader(
+          title: 'Art Walk Map',
+          showDeveloperTools: false,
+          onSearchPressed: () {
+            // Handle search action - could open a search overlay
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Search functionality coming soon!'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
+        ),
+        drawer: const ArtbeatDrawer(),
+        body: Stack(
+          children: [
+            GoogleMap(
+              initialCameraPosition: _defaultLocation,
+              onMapCreated: _onMapCreated,
+              markers: _markers,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              mapType: MapType.normal,
+              zoomControlsEnabled: false,
+              compassEnabled: true,
+              trafficEnabled: false,
+              buildingsEnabled: true,
+              indoorViewEnabled: false,
+              // Add error handling for API key issues
+              onTap: (LatLng position) {
+                debugPrint('🗺️ Map tapped at: $position');
+              },
             ),
-          );
-        },
-      ),
-      drawer: const ArtbeatDrawer(),
-      body: Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: _defaultLocation,
-            onMapCreated: _onMapCreated,
-            markers: _markers,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            mapType: MapType.normal,
-            zoomControlsEnabled: false,
-            compassEnabled: true,
-            trafficEnabled: false,
-            buildingsEnabled: true,
-            indoorViewEnabled: false,
-            // Add error handling for API key issues
-            onTap: (LatLng position) {
-              debugPrint('🗺️ Map tapped at: $position');
-            },
-          ),
-          Positioned(
-            right: 16,
-            top:
-                MediaQuery.of(context).padding.top +
-                120, // Increased to account for app bar
-            child: Column(
-              children: [
-                FloatingActionButton.small(
-                  heroTag: 'artFilter',
-                  onPressed: _showFilterDialog,
-                  child: const Icon(Icons.filter_list),
-                ),
-                const SizedBox(height: 8),
-                FloatingActionButton.small(
-                  heroTag: 'myLocation',
-                  onPressed: () async {
-                    if (_currentPosition != null && _mapController != null) {
-                      await _mapController!.animateCamera(
-                        CameraUpdate.newLatLng(
-                          LatLng(
-                            _currentPosition!.latitude,
-                            _currentPosition!.longitude,
+            Positioned(
+              right: 16,
+              top:
+                  MediaQuery.of(context).padding.top +
+                  120, // Increased to account for app bar
+              child: Column(
+                children: [
+                  FloatingActionButton.small(
+                    heroTag: 'artFilter',
+                    onPressed: _showFilterDialog,
+                    child: const Icon(Icons.filter_list),
+                  ),
+                  const SizedBox(height: 8),
+                  FloatingActionButton.small(
+                    heroTag: 'myLocation',
+                    onPressed: () async {
+                      if (_currentPosition != null && _mapController != null) {
+                        await _mapController!.animateCamera(
+                          CameraUpdate.newLatLng(
+                            LatLng(
+                              _currentPosition!.latitude,
+                              _currentPosition!.longitude,
+                            ),
                           ),
-                        ),
-                      );
-                    }
-                  },
-                  child: const Icon(Icons.my_location),
-                ),
-              ],
-            ),
-          ),
-          if (_isLoading || _isSearchingZip)
-            const Center(child: CircularProgressIndicator()),
-          if (_hasMapError)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _mapErrorMessage,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _initializeMapsAndLocation,
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
+                        );
+                      }
+                    },
+                    child: const Icon(Icons.my_location),
+                  ),
+                ],
               ),
             ),
-          Positioned(
-            top:
-                MediaQuery.of(context).padding.top +
-                80, // Increased to account for app bar
-            left: 16,
-            right: 16,
-            child: ZipCodeSearchBox(
-              initialValue: _currentZipCode,
-              onZipCodeSubmitted: _handleZipCodeSearch,
-            ),
-          ),
-          if (_showInfoCard)
+            if (_isLoading || _isSearchingZip)
+              const Center(child: CircularProgressIndicator()),
+            if (_hasMapError)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 48,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _mapErrorMessage,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _initializeMapsAndLocation,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             Positioned(
-              bottom: 100, // Increased to account for bottom navigation
+              top:
+                  MediaQuery.of(context).padding.top +
+                  80, // Increased to account for app bar
               left: 16,
               right: 16,
-              child: ArtWalkInfoCard(
-                onDismiss: () => setState(() => _showInfoCard = false),
+              child: ZipCodeSearchBox(
+                initialValue: _currentZipCode,
+                onZipCodeSubmitted: _handleZipCodeSearch,
               ),
             ),
-        ],
-      ),
-      bottomNavigationBar: EnhancedBottomNav(
-        currentIndex: 1, // Art Walk is index 1
-        onTap: _onBottomNavTap,
+            if (_showInfoCard)
+              Positioned(
+                bottom: 100, // Increased to account for bottom navigation
+                left: 16,
+                right: 16,
+                child: ArtWalkInfoCard(
+                  onDismiss: () => setState(() => _showInfoCard = false),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

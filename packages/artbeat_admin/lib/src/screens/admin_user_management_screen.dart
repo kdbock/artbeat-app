@@ -16,6 +16,7 @@ class AdminUserManagementScreen extends StatefulWidget {
 class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   final AdminService _adminService = AdminService();
   final TextEditingController _searchController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<UserAdminModel> _users = [];
   List<UserAdminModel> _selectedUsers = [];
@@ -92,18 +93,57 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 2,
-      child: Column(
-        children: [
-          _buildFilters(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? _buildErrorState()
-                    : _buildUsersList(),
+      currentIndex: 0,
+      child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        drawer: const ArtbeatDrawer(),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: ArtbeatGradientBackground(
+            addShadow: true,
+            child: EnhancedUniversalHeader(
+              title: 'User Management',
+              showLogo: false,
+              showSearch: false,
+              showDeveloperTools: true,
+              onProfilePressed: () => Navigator.pushNamed(context, '/admin/profile'),
+              onMenuPressed: () {
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              backgroundColor: Colors.transparent,
+              foregroundColor: ArtbeatColors.textPrimary,
+              elevation: 0,
+            ),
           ),
-        ],
+        ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context).colorScheme.surface.withOpacity(0.8),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildFilters(),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                          ? _buildErrorState()
+                          : _buildUsersList(),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

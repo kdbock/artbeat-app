@@ -235,73 +235,68 @@ class _AchievementsScreenState extends State<AchievementsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1, // No specific index for this screen
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Achievements'),
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            labelColor: ArtbeatColors.primaryPurple,
-            unselectedLabelColor: ArtbeatColors.textSecondary,
-            indicatorColor: ArtbeatColors.primaryPurple,
-            tabs: const [
-              Tab(text: 'All'),
-              Tab(text: 'Art Walks'),
-              Tab(text: 'Art Discovery'),
-              Tab(text: 'Social'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Achievements'),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: ArtbeatColors.primaryPurple,
+          unselectedLabelColor: ArtbeatColors.textSecondary,
+          indicatorColor: ArtbeatColors.primaryPurple,
+          tabs: const [
+            Tab(text: 'All'),
+            Tab(text: 'Art Walks'),
+            Tab(text: 'Art Discovery'),
+            Tab(text: 'Social'),
+          ],
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
+              Colors.white,
+              ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
             ],
           ),
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
-                Colors.white,
-                ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: ArtbeatColors.primaryPurple,
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: ArtbeatColors.primaryPurple,
+                ),
+              )
+            : RefreshIndicator(
+                color: ArtbeatColors.primaryPurple,
+                onRefresh: _loadAchievements,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // All achievements
+                    _buildAchievementsTab(_achievements),
+
+                    // Art Walks tab
+                    _buildAchievementsTab(
+                      _categorizedAchievements['Art Walks'] ?? [],
                     ),
-                  )
-                : RefreshIndicator(
-                    color: ArtbeatColors.primaryPurple,
-                    onRefresh: _loadAchievements,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        // All achievements
-                        _buildAchievementsTab(_achievements),
 
-                        // Art Walks tab
-                        _buildAchievementsTab(
-                          _categorizedAchievements['Art Walks'] ?? [],
-                        ),
-
-                        // Art Discovery tab
-                        _buildAchievementsTab(
-                          _categorizedAchievements['Art Discovery'] ?? [],
-                        ),
-
-                        // Social tab
-                        _buildAchievementsTab([
-                          ...(_categorizedAchievements['Social'] ?? []),
-                          ...(_categorizedAchievements['Contributions'] ?? []),
-                        ]),
-                      ],
+                    // Art Discovery tab
+                    _buildAchievementsTab(
+                      _categorizedAchievements['Art Discovery'] ?? [],
                     ),
-                  ),
-          ),
-        ),
+
+                    // Social tab
+                    _buildAchievementsTab([
+                      ...(_categorizedAchievements['Social'] ?? []),
+                      ...(_categorizedAchievements['Contributions'] ?? []),
+                    ]),
+                  ],
+                ),
+              ),
       ),
     );
   }

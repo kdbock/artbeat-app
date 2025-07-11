@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, EnhancedUniversalHeader, OptimizedImage, MainLayout;
+    show
+        ArtbeatColors,
+        EnhancedUniversalHeader,
+        OptimizedImage,
+        MainLayout,
+        ArtbeatDrawer;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Screen to display user's captured art
@@ -82,61 +87,60 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     return MainLayout(
-      currentIndex: 2, // Set to 2 for Captures tab
-      child: Builder(
-        builder: (context) {
-          return Column(
-            children: [
-              EnhancedUniversalHeader(
-                title: 'My Captures',
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                showLogo: false,
-                showDeveloperTools: true,
-                onMenuPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      _loadCaptures();
-                    },
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        ArtbeatColors.primaryPurple.withAlphaValue(0.05),
-                        ArtbeatColors.white,
-                        ArtbeatColors.primaryGreen.withAlphaValue(0.05),
-                      ],
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              ArtbeatColors.primaryPurple,
-                            ),
-                          ),
-                        )
-                      : _captures.isEmpty
-                          ? _buildEmptyState()
-                          : _buildCapturesList(),
+      currentIndex: 2, // Capture tab index
+      child: Scaffold(
+        drawer: const ArtbeatDrawer(),
+        body: Column(
+          children: [
+            EnhancedUniversalHeader(
+              title: 'My Captures',
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              showLogo: false,
+              showDeveloperTools: true,
+              onMenuPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    _loadCaptures();
+                  },
                 ),
+              ],
+            ),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      ArtbeatColors.primaryPurple.withAlphaValue(0.05),
+                      ArtbeatColors.white,
+                      ArtbeatColors.primaryGreen.withAlphaValue(0.05),
+                    ],
+                  ),
+                ),
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            ArtbeatColors.primaryPurple,
+                          ),
+                        ),
+                      )
+                    : _captures.isEmpty
+                    ? _buildEmptyState()
+                    : _buildCapturesList(),
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }

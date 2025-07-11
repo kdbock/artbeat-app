@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../theme/artbeat_colors.dart';
-import '../services/image_management_service.dart';
 
 /// A unified avatar widget for displaying user profile images across the app
 class UserAvatar extends StatelessWidget {
@@ -50,107 +49,87 @@ class UserAvatar extends StatelessWidget {
       '  - will show fallback: ${imageUrl == null || imageUrl!.isEmpty}',
     );
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Stack(
-        children: [
-          Container(
+    Widget avatar;
+    // Only use NetworkImage if imageUrl is a valid HTTP(S) URL
+    final isValidNetworkUrl =
+        imageUrl != null &&
+        imageUrl!.isNotEmpty &&
+        (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://'));
+
+    if (isValidNetworkUrl) {
+      avatar = CircleAvatar(
+        radius: radius,
+        backgroundColor: backgroundColor ?? theme.primaryColor,
+        child: ClipOval(
+          child: Image.network(
+            imageUrl!,
             width: radius * 2,
             height: radius * 2,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: backgroundColor ?? ArtbeatColors.backgroundSecondary,
-            ),
-            child: ClipOval(child: _buildAvatarContent(theme)),
-          ),
-          if (isVerified)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: ArtbeatColors.success,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                padding: const EdgeInsets.all(2),
-                child: Icon(
-                  Icons.check,
-                  size: radius * 0.6,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAvatarContent(ThemeData theme) {
-    // If we have a valid image URL, try to load it
-    if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return ImageManagementService().getOptimizedImage(
-        imageUrl: imageUrl!,
-        width: radius * 2,
-        height: radius * 2,
-        fit: BoxFit.cover,
-        isProfile: true,
-        placeholder: Container(
-          width: radius * 2,
-          height: radius * 2,
-          color: backgroundColor ?? ArtbeatColors.backgroundSecondary,
-          child: Center(
-            child: SizedBox(
-              width: radius * 0.5,
-              height: radius * 0.5,
-              child: const CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  ArtbeatColors.primaryPurple,
-                ),
-              ),
-            ),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              debugPrint('❌ Error loading avatar image: $error');
+              return _buildFallbackAvatar(theme);
+            },
           ),
         ),
-        errorWidget: _buildFallbackAvatar(theme),
+      );
+    } else {
+      avatar = _buildFallbackAvatar(theme);
+    }
+
+    // Add verification badge if needed
+    if (isVerified) {
+      avatar = Stack(
+        children: [
+          avatar,
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                Icons.verified,
+                color: ArtbeatColors.primaryPurple,
+                size: radius * 0.7,
+              ),
+            ),
+          ),
+        ],
       );
     }
 
-    // If no image URL, show fallback
-    return _buildFallbackAvatar(theme);
+    // Wrap in gesture detector if onTap is provided
+    if (onTap != null) {
+      avatar = GestureDetector(onTap: onTap, child: avatar);
+    }
+
+    return avatar;
   }
 
   Widget _buildFallbackAvatar(ThemeData theme) {
-    return Container(
-      width: radius * 2,
-      height: radius * 2,
-      decoration: BoxDecoration(
-        color: backgroundColor ?? ArtbeatColors.primaryPurple,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          _getInitials(displayName),
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontSize: radius * 0.8,
-            color: textColor ?? Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: backgroundColor ?? theme.primaryColor,
+      child: Text(
+        _getInitials(),
+        style: TextStyle(
+          color: textColor ?? Colors.white,
+          fontSize: radius * 0.7,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
   }
 
-  String _getInitials(String name) {
-    if (name.isEmpty) return '?';
-
-    final words = name.trim().split(' ');
-    if (words.length == 1) {
-      return words[0][0].toUpperCase();
-    } else if (words.length >= 2) {
-      return '${words[0][0]}${words[1][0]}'.toUpperCase();
+  String _getInitials() {
+    final nameParts = displayName.trim().split(' ');
+    if (nameParts.length >= 2) {
+      return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
     }
-
-    return name[0].toUpperCase();
+    return displayName.substring(0, 1).toUpperCase();
   }
 }

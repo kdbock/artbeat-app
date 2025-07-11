@@ -13,6 +13,7 @@ import '../storage/enhanced_storage_service.dart';
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
   final _log = Logger('UserService');
+  bool _disposed = false;
 
   factory UserService() {
     return _instance;
@@ -26,6 +27,19 @@ class UserService extends ChangeNotifier {
   UserService._internal() {
     // Don't initialize Firebase instances immediately
     // Let them be initialized lazily when first accessed
+  }
+
+  @override
+  void dispose() {
+    // Don't dispose the singleton instance
+    _disposed = true;
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
   }
 
   void _initializeFirebase() {

@@ -18,7 +18,7 @@ class AdminService {
       final monthAgo = DateTime(now.year, now.month - 1, now.day);
 
       // Get all users
-      final usersSnapshot = await _firestore.collection('user').get();
+      final usersSnapshot = await _firestore.collection('users').get();
       final users = usersSnapshot.docs;
 
       // Calculate user type counts
@@ -87,7 +87,7 @@ class AdminService {
       }
 
       // Get artwork count
-      final artworksSnapshot = await _firestore.collection('artworks').get();
+      final artworksSnapshot = await _firestore.collection('artwork').get();
       final totalArtworks = artworksSnapshot.docs.length;
 
       // Get captures count
@@ -129,7 +129,7 @@ class AdminService {
     String? searchQuery,
   }) async {
     try {
-      Query query = _firestore.collection('user');
+      Query query = _firestore.collection('users');
 
       // Apply filters
       if (filterByType != null) {
@@ -174,7 +174,7 @@ class AdminService {
   /// Update user type
   Future<void> updateUserType(String userId, UserType newType) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'userType': newType.name,
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -187,7 +187,7 @@ class AdminService {
   Future<void> suspendUser(
       String userId, String reason, String suspendedBy) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'isSuspended': true,
         'suspensionReason': reason,
         'suspendedAt': FieldValue.serverTimestamp(),
@@ -202,7 +202,7 @@ class AdminService {
   /// Unsuspend user
   Future<void> unsuspendUser(String userId) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'isSuspended': false,
         'suspensionReason': null,
         'suspendedAt': null,
@@ -217,7 +217,7 @@ class AdminService {
   /// Verify user
   Future<void> verifyUser(String userId) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'isVerified': true,
         'emailVerifiedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -230,7 +230,7 @@ class AdminService {
   /// Unverify user
   Future<void> unverifyUser(String userId) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'isVerified': false,
         'emailVerifiedAt': null,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -243,7 +243,7 @@ class AdminService {
   /// Delete user (soft delete)
   Future<void> deleteUser(String userId) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'isDeleted': true,
         'deletedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
@@ -256,7 +256,7 @@ class AdminService {
   /// Restore deleted user
   Future<void> restoreUser(String userId) async {
     try {
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'isDeleted': false,
         'deletedAt': null,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -270,7 +270,7 @@ class AdminService {
   Future<void> addAdminNote(String userId, String note, String addedBy) async {
     try {
       final noteId = DateTime.now().millisecondsSinceEpoch.toString();
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'adminNotes.$noteId': {
           'note': note,
           'addedBy': addedBy,
@@ -287,7 +287,7 @@ class AdminService {
   Future<void> updateUserExperience(String userId, int experiencePoints) async {
     try {
       final level = _calculateLevel(experiencePoints);
-      await _firestore.collection('user').doc(userId).update({
+      await _firestore.collection('users').doc(userId).update({
         'experiencePoints': experiencePoints,
         'level': level,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -315,7 +315,7 @@ class AdminService {
   /// Get user by ID
   Future<UserAdminModel?> getUserById(String userId) async {
     try {
-      final doc = await _firestore.collection('user').doc(userId).get();
+      final doc = await _firestore.collection('users').doc(userId).get();
       if (doc.exists) {
         return UserAdminModel.fromDocumentSnapshot(doc);
       }
@@ -332,7 +332,7 @@ class AdminService {
       final batch = _firestore.batch();
 
       for (final userId in userIds) {
-        final docRef = _firestore.collection('user').doc(userId);
+        final docRef = _firestore.collection('users').doc(userId);
         batch.update(docRef, {
           ...updates,
           'updatedAt': FieldValue.serverTimestamp(),
@@ -367,7 +367,7 @@ class AdminService {
   Future<bool> hasAdminPrivileges() async {
     final user = _auth.currentUser;
     if (user == null) return false;
-    final doc = await _firestore.collection('user').doc(user.uid).get();
+    final doc = await _firestore.collection('users').doc(user.uid).get();
     return doc.exists && (doc.data()?['userType'] == 'admin');
   }
 }

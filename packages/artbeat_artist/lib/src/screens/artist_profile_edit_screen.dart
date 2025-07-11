@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:artbeat_artist/artbeat_artist.dart';
+import '../services/subscription_service.dart' as artist_service;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
@@ -21,7 +21,7 @@ class ArtistProfileEditScreen extends StatefulWidget {
 
 class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _subscriptionService = SubscriptionService();
+  final _subscriptionService = artist_service.SubscriptionService();
   final _auth = FirebaseAuth.instance;
   final _enhancedStorage = core.EnhancedStorageService();
 

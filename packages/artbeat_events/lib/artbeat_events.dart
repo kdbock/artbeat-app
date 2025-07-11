@@ -21,6 +21,7 @@ export 'src/screens/event_details_screen.dart';
 export 'src/screens/events_list_screen.dart';
 export 'src/screens/create_event_screen.dart';
 export 'src/screens/events_dashboard_screen.dart';
+export 'src/screens/my_tickets_screen.dart';
 
 // Forms
 export 'src/forms/event_form_builder.dart';
