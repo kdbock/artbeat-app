@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout;
 
 class ProfilePictureViewerScreen extends StatefulWidget {
   final String imageUrl;
@@ -52,7 +52,7 @@ class _ProfilePictureViewerScreenState
         backgroundColor: Colors.black,
         appBar: _isFullScreen
             ? null
-            : UniversalHeader(
+            : EnhancedUniversalHeader(
                 title: 'Profile Photo',
                 showLogo: false,
                 backgroundColor: Colors.black,

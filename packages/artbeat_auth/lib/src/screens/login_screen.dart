@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput, UserService, UniversalHeader;
+    show ArtbeatColors, ArtbeatInput, UserService, EnhancedUniversalHeader;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Login screen with email/password authentication
@@ -111,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Login',
         showLogo: false,
         backgroundColor: Colors.transparent,

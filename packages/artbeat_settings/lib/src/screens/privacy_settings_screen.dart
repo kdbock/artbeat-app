@@ -7,7 +7,7 @@ class PrivacySettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: UniversalHeader(
+      appBar: EnhancedUniversalHeader(
         title: 'Privacy Settings',
         showLogo: false,
       ),

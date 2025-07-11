@@ -211,7 +211,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       currentIndex: -1,
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Profile',
           showLogo: false,
           showDeveloperTools: true,

@@ -36,113 +36,169 @@ class ArtbeatDrawer extends StatelessWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    ArtbeatColors.primaryPurple,
-                    ArtbeatColors.primaryGreen,
+                    Colors.white,
+                    ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
+                    const Color(
+                      0xFF4A90E2,
+                    ).withValues(alpha: 0.2), // Blue accent
+                    Colors.white.withValues(alpha: 0.95),
+                    ArtbeatColors.primaryGreen.withValues(alpha: 0.12),
+                    Colors.white,
                   ],
+                  stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    blurRadius: 4,
+                    offset: const Offset(-1, -1),
+                  ),
+                  BoxShadow(
+                    color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(1, 1),
+                  ),
+                ],
               ),
-              child: StreamBuilder<User?>(
-                stream: FirebaseAuth.instance.userChanges(),
-                builder: (context, snapshot) {
-                  final user = snapshot.data;
-                  if (user == null) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const UserAvatar(displayName: 'Guest', radius: 30),
-                        const SizedBox(height: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Guest User',
-                              style: ArtbeatTypography.textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Not signed in',
-                              style: ArtbeatTypography.textTheme.bodyMedium
-                                  ?.copyWith(color: const Color(0xE6FFFFFF)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  }
-
-                  // Single FutureBuilder for both avatar and text to prevent state conflicts
-                  return FutureBuilder<UserModel?>(
-                    future: Provider.of<UserService>(
-                      context,
-                      listen: false,
-                    ).getUserById(user.uid),
-                    builder: (context, userModelSnapshot) {
-                      final userModel = userModelSnapshot.data;
-                      final isLoading =
-                          userModelSnapshot.connectionState ==
-                          ConnectionState.waiting;
-
-                      // Use cached data or fallback during loading
-                      final displayName =
-                          userModel?.fullName ?? user.displayName ?? 'User';
-                      final profileImageUrl = userModel?.profileImageUrl;
-
-                      // Debug logging for drawer avatar
-                      debugPrint('🗂️ Drawer UserAvatar data:');
-                      debugPrint(
-                        '  - userModel: ${userModel != null ? 'loaded' : (isLoading ? 'loading' : 'null')}',
-                      );
-                      debugPrint(
-                        '  - profileImageUrl: "${profileImageUrl ?? 'null'}"',
-                      );
-                      debugPrint(
-                        '  - fullName: "${userModel?.fullName ?? 'null'}"',
-                      );
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          UserAvatar(
-                            imageUrl: profileImageUrl,
-                            displayName: displayName,
-                            radius: 30,
-                          ),
-                          const SizedBox(height: 12),
-                          Column(
+              child: Stack(
+                children: [
+                  // Logo on the right side
+                  Positioned(
+                    right: 16,
+                    top: 16,
+                    child: Opacity(
+                      opacity: 0.25,
+                      child: Image.asset(
+                        'assets/images/artbeat_logo.png',
+                        width: 70,
+                        height: 70,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  // User info
+                  StreamBuilder<User?>(
+                    stream: FirebaseAuth.instance.userChanges(),
+                    builder: (context, snapshot) {
+                      final user = snapshot.data;
+                      if (user == null) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 100),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                displayName,
-                                style: ArtbeatTypography.textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                              const UserAvatar(
+                                displayName: 'Guest',
+                                radius: 30,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                user.email ?? '',
-                                style: ArtbeatTypography.textTheme.bodyMedium
-                                    ?.copyWith(color: const Color(0xE6FFFFFF)),
+                              const SizedBox(height: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Guest User',
+                                    style: ArtbeatTypography
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
+                                          color: ArtbeatColors.textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Not signed in',
+                                    style: ArtbeatTypography
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: ArtbeatColors.textSecondary,
+                                        ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        );
+                      }
+
+                      // Single FutureBuilder for both avatar and text to prevent state conflicts
+                      return FutureBuilder<UserModel?>(
+                        future: Provider.of<UserService>(
+                          context,
+                          listen: false,
+                        ).getUserById(user.uid),
+                        builder: (context, userModelSnapshot) {
+                          final userModel = userModelSnapshot.data;
+                          final isLoading =
+                              userModelSnapshot.connectionState ==
+                              ConnectionState.waiting;
+
+                          // Use cached data or fallback during loading
+                          final displayName =
+                              userModel?.fullName ?? user.displayName ?? 'User';
+                          final profileImageUrl = userModel?.profileImageUrl;
+
+                          // Debug logging for drawer avatar
+                          debugPrint('🗂️ Drawer UserAvatar data:');
+                          debugPrint(
+                            '  - userModel: ${userModel != null ? 'loaded' : (isLoading ? 'loading' : 'null')}',
+                          );
+                          debugPrint(
+                            '  - profileImageUrl: "${profileImageUrl ?? 'null'}"',
+                          );
+                          debugPrint(
+                            '  - fullName: "${userModel?.fullName ?? 'null'}"',
+                          );
+
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              left: 16,
+                              right: 100,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                UserAvatar(
+                                  imageUrl: profileImageUrl,
+                                  displayName: displayName,
+                                  radius: 28,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  displayName,
+                                  style: ArtbeatTypography.textTheme.titleMedium
+                                      ?.copyWith(
+                                        color: ArtbeatColors.textPrimary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  user.email ?? '',
+                                  style: ArtbeatTypography.textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: ArtbeatColors.textSecondary,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
-            ),
+            ), // <-- closes DrawerHeader
             // User Section
             _buildSectionHeader('User'),
             ...ArtbeatDrawerItems.userItems.map(
@@ -251,6 +307,7 @@ class ArtbeatDrawer extends StatelessWidget {
     final currentRoute = ModalRoute.of(context)?.settings.name;
     final bool isCurrentRoute = currentRoute == item.route;
     final bool isMainNavigationRoute = mainRoutes.contains(item.route);
+    final String targetRoute = item.route;
 
     // Wrap ListTile in Builder to ensure correct Scaffold context for SnackBar
     return Builder(
@@ -270,35 +327,28 @@ class ArtbeatDrawer extends StatelessWidget {
         ),
         selected: isCurrentRoute,
         onTap: () {
-          // Get the current section from the route
           final String currentSection = currentRoute?.split('/')[1] ?? '';
-          final String targetSection = item.route.split('/')[1];
-
+          final String targetSection = targetRoute.split('/')[1];
           if (isCurrentRoute) {
             Navigator.pop(context);
             return;
           }
-
           Navigator.pop(context);
-
           try {
             if (currentSection == targetSection && !isMainNavigationRoute) {
-              // For navigation within same section, preserve back stack
-              Navigator.pushNamed(context, item.route);
+              Navigator.pushNamed(context, targetRoute);
             } else if (isMainNavigationRoute) {
-              // For main navigation routes, use pushReplacement
-              Navigator.pushReplacementNamed(context, item.route);
+              Navigator.pushReplacementNamed(context, targetRoute);
             } else {
-              // Cross-section navigation
               Navigator.pushNamed(
                 context,
-                item.route,
+                targetRoute,
                 arguments: {'from': 'drawer', 'showBackButton': true},
               );
             }
           } catch (error) {
             debugPrint(
-              '⚠️ Navigation error for [38;5;208m${item.route}[0m: $error',
+              '⚠️ Navigation error for \u001b[38;5;208m${targetRoute}\u001b[0m: $error',
             );
             ScaffoldMessenger.of(snackBarContext).showSnackBar(
               SnackBar(

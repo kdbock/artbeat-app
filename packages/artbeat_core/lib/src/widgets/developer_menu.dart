@@ -51,7 +51,7 @@ class DeveloperMenu extends StatelessWidget {
                 Navigator.of(context).pop();
                 Future.delayed(const Duration(milliseconds: 250), () {
                   Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (context) => const FeedbackForm(),
                     ),
                   );

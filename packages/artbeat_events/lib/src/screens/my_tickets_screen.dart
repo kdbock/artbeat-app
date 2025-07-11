@@ -146,7 +146,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     return MainLayout(
       currentIndex: 3, // Events tab
       child: Scaffold(
-        appBar: const UniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'My Tickets',
           showLogo: false,
         ),

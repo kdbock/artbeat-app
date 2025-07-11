@@ -191,7 +191,7 @@ class CritiqueCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.comment_outlined,
                     size: 16,
                     color: ArtbeatColors.primaryPurple,
@@ -206,7 +206,7 @@ class CritiqueCard extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.emoji_emotions_outlined,
                     size: 16,
                     color: ArtbeatColors.accentYellow,

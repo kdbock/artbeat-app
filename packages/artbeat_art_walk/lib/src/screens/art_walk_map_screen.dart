@@ -667,7 +667,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: UniversalHeader(
+      appBar: EnhancedUniversalHeader(
         title: 'Art Walk Map',
         showDeveloperTools: false,
         onSearchPressed: () {
@@ -783,7 +783,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             ),
         ],
       ),
-      bottomNavigationBar: UniversalBottomNav(
+      bottomNavigationBar: EnhancedBottomNav(
         currentIndex: 1, // Art Walk is index 1
         onTap: _onBottomNavTap,
       ),

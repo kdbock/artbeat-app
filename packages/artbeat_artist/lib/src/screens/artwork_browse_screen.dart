@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout;
 
 /// Screen for browsing all artwork, with filtering options
 class ArtworkBrowseScreen extends StatefulWidget {
@@ -65,7 +65,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const UniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Browse Artwork',
           showLogo: false,
         ),

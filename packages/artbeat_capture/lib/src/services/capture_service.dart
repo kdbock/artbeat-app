@@ -227,4 +227,100 @@ class CaptureService {
       }
     }
   }
+
+  /// Get user captures with limit
+  Future<List<CaptureModel>> getUserCaptures({
+    required String userId,
+    int limit = 10,
+  }) async {
+    try {
+      final querySnapshot = await _capturesRef
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs
+          .map(
+            (doc) => CaptureModel.fromJson({
+              ...doc.data() as Map<String, dynamic>,
+              'id': doc.id,
+            }),
+          )
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching user captures: $e');
+      
+      // Fallback without orderBy
+      try {
+        final fallbackQuery = await _capturesRef
+            .where('userId', isEqualTo: userId)
+            .limit(limit)
+            .get();
+
+        final captures = fallbackQuery.docs
+            .map(
+              (doc) => CaptureModel.fromJson({
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              }),
+            )
+            .toList();
+
+        // Sort manually by createdAt
+        captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return captures;
+      } catch (fallbackError) {
+        debugPrint('❌ Fallback user captures query also failed: $fallbackError');
+        return [];
+      }
+    }
+  }
+
+  /// Get user capture count
+  Future<int> getUserCaptureCount(String userId) async {
+    try {
+      final querySnapshot = await _capturesRef
+          .where('userId', isEqualTo: userId)
+          .count()
+          .get();
+
+      return querySnapshot.count ?? 0;
+    } catch (e) {
+      debugPrint('Error getting user capture count: $e');
+      
+      // Fallback: get all documents and count manually
+      try {
+        final querySnapshot = await _capturesRef
+            .where('userId', isEqualTo: userId)
+            .get();
+        
+        return querySnapshot.docs.length;
+      } catch (fallbackError) {
+        debugPrint('❌ Fallback capture count query also failed: $fallbackError');
+        return 0;
+      }
+    }
+  }
+
+  /// Get user capture views (total views across all user's captures)
+  Future<int> getUserCaptureViews(String userId) async {
+    try {
+      final querySnapshot = await _capturesRef
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      int totalViews = 0;
+      for (final doc in querySnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        final views = data['views'] as int? ?? 0;
+        totalViews += views;
+      }
+
+      return totalViews;
+    } catch (e) {
+      debugPrint('Error getting user capture views: $e');
+      return 0;
+    }
+  }
 }

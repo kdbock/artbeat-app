@@ -11,6 +11,20 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 
+// Enhanced Create Art Walk specific colors
+class EnhancedCreateColors {
+  static const Color primaryIndigo = Color(0xFF3F51B5);
+  static const Color primaryIndigoLight = Color(0xFF5C6BC0);
+  static const Color primaryIndigoDark = Color(0xFF303F9F);
+  static const Color accentCyan = Color(0xFF00BCD4);
+  static const Color accentCyanLight = Color(0xFF4DD0E1);
+  static const Color backgroundGradientStart = Color(0xFFE8EAF6);
+  static const Color backgroundGradientEnd = Color(0xFFE0F2F1);
+  static const Color cardBackground = Color(0xFFFAFAFA);
+  static const Color textPrimary = Color(0xFF1A237E);
+  static const Color textSecondary = Color(0xFF3F51B5);
+}
+
 /// Enhanced Art Walk Create Screen with Map View
 class EnhancedArtWalkCreateScreen extends StatefulWidget {
   static const String routeName = '/enhanced-create-art-walk';
@@ -596,6 +610,9 @@ class _EnhancedArtWalkCreateScreenState
           title: Text(
             widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk',
           ),
+          backgroundColor: EnhancedCreateColors.primaryIndigo,
+          foregroundColor: Colors.white,
+          elevation: 0,
           leading: CloseButton(
             onPressed: () => Navigator.of(context).maybePop(),
           ),

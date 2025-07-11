@@ -197,7 +197,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       debugPrint('📝 About to create post with:');
       debugPrint('  - User ID: ${user.uid}');
       debugPrint('  - User Name: ${userModel.fullName}');
-      debugPrint('  - User Photo URL: "${userModel.profileImageUrl ?? ''}"');
+      debugPrint('  - User Photo URL: "${userModel.profileImageUrl}"');
       debugPrint('  - Content: ${_contentController.text}');
       debugPrint('  - Image URLs: $imageUrls');
       debugPrint('  - Tags: $tags');
@@ -207,7 +207,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       final postId = await communityService.createPost(
         userId: user.uid,
         userName: userModel.fullName,
-        userPhotoUrl: userModel.profileImageUrl ?? '',
+        userPhotoUrl: userModel.profileImageUrl,
         content: _contentController.text,
         imageUrls: imageUrls,
         tags: tags,

@@ -8,6 +8,20 @@ import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for GeoPoint
 import 'package:image_cropper/image_cropper.dart';
 
+// Create Art Walk specific colors
+class CreateArtWalkColors {
+  static const Color primaryViolet = Color(0xFF7B1FA2);
+  static const Color primaryVioletLight = Color(0xFF9C27B0);
+  static const Color primaryVioletDark = Color(0xFF4A148C);
+  static const Color accentGold = Color(0xFFFFB300);
+  static const Color accentGoldLight = Color(0xFFFFC107);
+  static const Color backgroundGradientStart = Color(0xFFF3E5F5);
+  static const Color backgroundGradientEnd = Color(0xFFE8EAF6);
+  static const Color cardBackground = Color(0xFFFFFFFF);
+  static const Color textPrimary = Color(0xFF2E0B47);
+  static const Color textSecondary = Color(0xFF673AB7);
+}
+
 class CreateArtWalkScreen extends StatefulWidget {
   static const String routeName = '/create-art-walk';
 
@@ -291,6 +305,9 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         title: Text(
           widget.artWalkId != null ? 'Edit Art Walk' : 'Create New Art Walk',
         ),
+        backgroundColor: CreateArtWalkColors.primaryViolet,
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
@@ -307,10 +324,21 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
           ),
         ],
       ),
-      body: _isLoading && _availablePublicArt.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              CreateArtWalkColors.backgroundGradientStart,
+              CreateArtWalkColors.backgroundGradientEnd,
+            ],
+          ),
+        ),
+        child: _isLoading && _availablePublicArt.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -356,6 +384,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                               _isPublic = value;
                             });
                           },
+                          activeColor: CreateArtWalkColors.accentGold,
                         ),
                       ],
                     ),
@@ -373,15 +402,28 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                       onPressed: _isLoading ? null : _submitForm,
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: CreateArtWalkColors.accentGold,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 4,
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Create Art Walk'),
+                          : const Text(
+                              'Create Art Walk',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ],
                 ),
               ),
             ),
+      ),
     );
   }
 

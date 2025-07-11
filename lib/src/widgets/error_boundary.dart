@@ -36,8 +36,14 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
       if (widget.onError != null) {
         widget.onError!(details.exception, details.stack ?? StackTrace.current);
       }
+
+      // Don't show error UI for render overflow errors in production
+      final isRenderOverflowError = details.exception.toString().contains(
+        'RenderFlex overflowed',
+      );
+
       // Defer setState until after build phase
-      if (mounted && !_hasError) {
+      if (mounted && !_hasError && (!isRenderOverflowError || kDebugMode)) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {

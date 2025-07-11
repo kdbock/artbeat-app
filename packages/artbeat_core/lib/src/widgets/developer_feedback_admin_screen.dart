@@ -52,6 +52,7 @@ class _DeveloperFeedbackAdminScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const Icon(Icons.developer_mode),
         title: const Text('Developer Feedback Admin'),
         backgroundColor: ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,

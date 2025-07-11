@@ -1,6 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter/material.dart';
-import '../routes.dart';
 import '../services/artist_profile_service.dart';
 
 class ArtistOnboardingScreen extends StatefulWidget {
@@ -114,7 +113,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
     return core.MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const core.UniversalHeader(
+        appBar: const core.EnhancedUniversalHeader(
           title: 'Become an Artist',
           showLogo: false,
         ),

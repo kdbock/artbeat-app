@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../utils/user_sync_helper.dart';
 import '../theme/artbeat_colors.dart';
-import '../utils/color_extensions.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
@@ -118,11 +117,27 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              ArtbeatColors.primaryPurple.withAlphaValue(0.05),
               Colors.white,
-              ArtbeatColors.primaryGreen.withAlphaValue(0.05),
+              ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
+              const Color(0xFF4A90E2).withValues(alpha: 0.2), // Blue accent
+              Colors.white.withValues(alpha: 0.95),
+              ArtbeatColors.primaryGreen.withValues(alpha: 0.12),
+              Colors.white,
             ],
+            stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.8),
+              blurRadius: 4,
+              offset: const Offset(-1, -1),
+            ),
+            BoxShadow(
+              color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(1, 1),
+            ),
+          ],
         ),
         child: Center(
           child: ScaleTransition(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout;
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
 import '../services/chat_service.dart';
@@ -119,7 +119,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return MainLayout(
       currentIndex: -1, // Chat is a detail screen
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: _chatName,
           showLogo: false,
           actions: [

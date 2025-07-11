@@ -10,7 +10,7 @@ class BecomeArtistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Become an Artist',
         showLogo: false,
       ),

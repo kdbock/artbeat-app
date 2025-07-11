@@ -4,6 +4,8 @@ library artbeat_capture;
 export 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 
 // Screens and services
+export 'src/screens/capture_dashboard_screen.dart';
+export 'src/screens/enhanced_capture_dashboard_screen.dart';
 export 'src/screens/capture_screen.dart';
 export 'src/screens/capture_upload_screen.dart';
 export 'src/screens/capture_detail_screen.dart';

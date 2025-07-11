@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout;
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
 import '../widgets/chat_list_tile.dart';
@@ -21,7 +21,7 @@ class ChatListScreen extends StatelessWidget {
     return MainLayout(
       currentIndex: 4, // Messages tab
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Messages',
           showLogo: false,
           actions: [

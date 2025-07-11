@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout;
 import '../models/ticket_purchase.dart';
 import '../models/artbeat_event.dart';
 import '../utils/event_utils.dart';
@@ -25,7 +25,7 @@ class QRCodeTicketWidget extends StatelessWidget {
       currentIndex: -1,
       child: Scaffold(
         backgroundColor: Colors.black,
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Event Ticket',
           showLogo: false,
           backgroundColor: Colors.transparent,

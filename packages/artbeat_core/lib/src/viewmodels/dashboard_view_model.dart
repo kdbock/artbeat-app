@@ -120,8 +120,12 @@ class DashboardViewModel extends ChangeNotifier {
 
   /// Initialize the dashboard by loading all necessary data
   Future<void> initialize() async {
+    if (_isDisposed) return;
+
     // First load user data since other operations depend on it
     await loadUserData();
+
+    if (_isDisposed) return;
 
     // Then load other data in parallel
     await Future.wait([
@@ -133,8 +137,15 @@ class DashboardViewModel extends ChangeNotifier {
       loadAchievements(),
     ]);
 
+    if (_isDisposed) return;
+
     // Award missing experience points for existing captures
     await _awardMissingCaptureExperience();
+  }
+
+  /// Refresh all dashboard data
+  Future<void> refresh() async {
+    await initialize();
   }
 
   /// Load current user data
@@ -143,23 +154,18 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('👤 Loading user data...');
       final user = await _userService.getCurrentUserModel();
       _currentUser = user;
-      debugPrint('👤 User data loaded: ${user?.id ?? 'null'}');
 
       // Once user is loaded, reload captures with user context
       if (_currentUser != null) {
-        debugPrint('👤 User found, loading captures...');
         await loadCaptures();
-      } else {
-        debugPrint('❌ No user found after loading user data');
       }
     } catch (e) {
-      debugPrint('❌ Error loading user data: $e');
+      debugPrint('Error loading user data: $e');
     } finally {
       _isLoadingUser = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -176,15 +182,13 @@ class DashboardViewModel extends ChangeNotifier {
         return;
       }
 
-      debugPrint('🔍 Loading captures for userId: $userId');
       final captures = await _captureService.getCapturesForUser(userId);
 
       _captures = captures;
       _updateMapMarkers();
-      debugPrint('✅ Loaded ${captures.length} captures');
     } catch (e) {
       _capturesError = e.toString();
-      debugPrint('❌ Error loading captures: $e');
+      debugPrint('Error loading captures: $e');
     } finally {
       _isLoadingCaptures = false;
       notifyListeners();
@@ -218,10 +222,9 @@ class DashboardViewModel extends ChangeNotifier {
       // Sort by most recently updated
       allArtists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       _artists = allArtists;
-      debugPrint('✅ Loaded ${allArtists.length} artists');
     } catch (e) {
       _artistsError = e.toString();
-      debugPrint('❌ Error loading artists: $e');
+      debugPrint('Error loading artists: $e');
     } finally {
       _isLoadingArtists = false;
       notifyListeners();
@@ -237,10 +240,9 @@ class DashboardViewModel extends ChangeNotifier {
     try {
       final artworks = await _artworkService.getAllArtwork(limit: 50);
       _artworks = artworks;
-      debugPrint('✅ Loaded ${artworks.length} artworks');
     } catch (e) {
       _artworksError = e.toString();
-      debugPrint('❌ Error loading artworks: $e');
+      debugPrint('Error loading artworks: $e');
     } finally {
       _isLoadingArtworks = false;
       notifyListeners();
@@ -276,7 +278,7 @@ class DashboardViewModel extends ChangeNotifier {
       } catch (e) {
         // Fallback to single filter if composite index not available
         debugPrint(
-          '⚠️ Composite index not available, falling back to single filter',
+          'Composite index not available, falling back to single filter',
         );
         snapshots = await FirebaseFirestore.instance
             .collection('events')
@@ -319,34 +321,47 @@ class DashboardViewModel extends ChangeNotifier {
         }
       }
       _events = filteredEvents;
-      debugPrint('✅ Loaded ${_events.length} events');
     } catch (e) {
       _eventsError = e.toString();
-      debugPrint('❌ Error loading events: $e');
+      debugPrint('Error loading events: $e');
     } finally {
       _isLoadingEvents = false;
       notifyListeners();
     }
   }
 
+  /// Load community posts
+  Future<void> loadPosts() async {
+    _isLoadingPosts = true;
+    _postsError = null;
+    notifyListeners();
+
+    try {
+      final posts = await _communityService.getPosts(limit: 10);
+      _posts = posts;
+    } catch (e) {
+      _postsError = e.toString();
+      debugPrint('Error loading posts: $e');
+    } finally {
+      _isLoadingPosts = false;
+      notifyListeners();
+    }
+  }
+
   /// Load user achievements/badges
   Future<void> loadAchievements() async {
-    debugPrint('🏆 Starting to load achievements...');
     _isLoadingAchievements = true;
     notifyListeners();
 
     try {
       final userId = _currentUser?.id;
-      debugPrint('🏆 Current user ID: ${userId ?? 'null'}');
 
       if (userId == null) {
         _achievements = [];
-        debugPrint('❌ No user ID available for loading achievements');
         return;
       }
 
       // Load badges from RewardsService
-      debugPrint('🏆 Loading badges for user: $userId');
       final userBadges = await _rewardsService.getUserBadges(userId);
 
       // Convert badges to AchievementBadgeData
@@ -373,9 +388,8 @@ class DashboardViewModel extends ChangeNotifier {
       }
 
       _achievements = badgeData;
-      debugPrint('✅ Loaded ${badgeData.length} achievements/badges');
     } catch (e) {
-      debugPrint('❌ Error loading achievements: $e');
+      debugPrint('Error loading achievements: $e');
     } finally {
       _isLoadingAchievements = false;
       notifyListeners();
@@ -387,11 +401,9 @@ class DashboardViewModel extends ChangeNotifier {
     try {
       final userId = _currentUser?.id;
       if (userId == null) {
-        debugPrint('❌ No user logged in, cannot award badges');
+        debugPrint('No user logged in, cannot award badges');
         return;
       }
-
-      debugPrint('🎯 Awarding test badges for user: $userId');
 
       // Award some test badges using RewardsService
       const testBadges = [
@@ -403,13 +415,12 @@ class DashboardViewModel extends ChangeNotifier {
 
       for (final badgeId in testBadges) {
         await _rewardsService.awardBadge(userId, badgeId);
-        debugPrint('✅ Awarded badge: $badgeId');
       }
 
       // Reload achievements to see the new ones
       await loadAchievements();
     } catch (e) {
-      debugPrint('❌ Error awarding test achievements: $e');
+      debugPrint('Error awarding test achievements: $e');
     }
   }
 
@@ -494,25 +505,6 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
-  /// Load community posts
-  Future<void> loadPosts() async {
-    _isLoadingPosts = true;
-    _postsError = null;
-    notifyListeners();
-
-    try {
-      final posts = await _communityService.getPosts(limit: 10);
-      _posts = posts;
-      debugPrint('✅ Loaded ${posts.length} posts');
-    } catch (e) {
-      _postsError = e.toString();
-      debugPrint('❌ Error loading posts: $e');
-    } finally {
-      _isLoadingPosts = false;
-      notifyListeners();
-    }
-  }
-
   // Map initialization callback
   void onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
@@ -541,7 +533,7 @@ class DashboardViewModel extends ChangeNotifier {
       _updateMapMarkers();
       loadEvents(); // Reload events with new location
     } catch (e) {
-      debugPrint('❌ Error getting location: $e');
+      debugPrint('Error getting location: $e');
     } finally {
       _isLoadingMap = false;
       notifyListeners();
@@ -573,6 +565,37 @@ class DashboardViewModel extends ChangeNotifier {
 
     _markers = newMarkers;
     notifyListeners();
+  }
+
+  /// Centers the dashboard map on the user's current location
+  Future<void> centerMapOnUserLocation() async {
+    try {
+      // Request location permission if needed
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          // Permission denied, show error or fallback
+          return;
+        }
+      }
+      // Get current position using locationSettings
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      // Animate map camera to user location
+      if (_mapController != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)),
+        );
+      }
+    } catch (e) {
+      // Handle error (e.g., show a snackbar or log)
+    }
   }
 
   /// Toggle achievements expansion
@@ -624,11 +647,6 @@ class DashboardViewModel extends ChangeNotifier {
     return levelTitles[level] ?? 'Unknown Level';
   }
 
-  /// Refresh all dashboard data
-  Future<void> refresh() async {
-    await initialize();
-  }
-
   /// Award experience points for existing captures if not already awarded
   Future<void> _awardMissingCaptureExperience() async {
     if (_currentUser == null || _captures.isEmpty) return;
@@ -655,6 +673,13 @@ class DashboardViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('❌ Error awarding missing capture experience: $e');
+    }
+  }
+
+  /// Safe notify listeners that checks disposal state
+  void _safeNotifyListeners() {
+    if (!_isDisposed) {
+      notifyListeners();
     }
   }
 

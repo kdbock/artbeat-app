@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, UniversalHeader, OptimizedImage, MainLayout;
+    show
+        ArtbeatColors,
+        EnhancedUniversalHeader,
+        OptimizedImage,
+        MainLayout,
+        ArtbeatDrawer;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Screen to display user's captured art
@@ -20,7 +25,6 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
   final CaptureService _captureService = CaptureService();
   List<CaptureModel> _captures = [];
   bool _isLoading = true;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   bool get wantKeepAlive => true;
@@ -84,175 +88,60 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     return MainLayout(
       currentIndex: 2, // Set to 2 for Captures tab
-      child: Scaffold(
-        key: _scaffoldKey,
-        appBar: UniversalHeader(
-          title: 'My Captures',
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          showLogo: false,
-          showDeveloperTools: true,
-          onMenuPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: () {
-                setState(() {
-                  _isLoading = true;
-                });
-                _loadCaptures();
-              },
-            ),
-          ],
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
+      child: Builder(
+        builder: (context) {
+          return Column(
             children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ArtbeatColors.primaryPurple,
-                      ArtbeatColors.primaryGreen,
-                    ],
+              EnhancedUniversalHeader(
+                title: 'My Captures',
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                showLogo: false,
+                showDeveloperTools: true,
+                onMenuPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      _loadCaptures();
+                    },
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile header content
-                  ],
-                ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.home_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Home'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/');
-                },
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  leading: const Icon(
-                    Icons.camera_alt_outlined,
-                    color: ArtbeatColors.primaryPurple,
-                  ),
-                  title: const Text('Captures'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/captures');
-                  },
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.map_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Art Walks'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/art-walks');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.people_outline,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Artist Community'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/community');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.front_hand,
-                  color: ArtbeatColors.accentYellow,
-                ),
-                title: const Text('Fan of'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/profile/following');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.emoji_events_outlined,
-                  color: ArtbeatColors.accentYellow,
-                ),
-                title: const Text('Achievements'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/profile/achievements');
-                },
-              ),
-              const Divider(color: ArtbeatColors.border),
-              ListTile(
-                leading: const Icon(
-                  Icons.settings_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Settings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/settings');
-                },
-              ),
-              if (FirebaseAuth.instance.currentUser != null) ...[
-                ListTile(
-                  leading: const Icon(
-                    Icons.dashboard_outlined,
-                    color: ArtbeatColors.primaryPurple,
-                  ),
-                  title: const Text('Artist Dashboard'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/artist/dashboard');
-                  },
-                ),
-              ],
-            ],
-          ),
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withAlphaValue(0.05),
-                ArtbeatColors.white,
-                ArtbeatColors.primaryGreen.withAlphaValue(0.05),
-              ],
-            ),
-          ),
-          child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      ArtbeatColors.primaryPurple,
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        ArtbeatColors.primaryPurple.withAlphaValue(0.05),
+                        ArtbeatColors.white,
+                        ArtbeatColors.primaryGreen.withAlphaValue(0.05),
+                      ],
                     ),
                   ),
-                )
-              : _captures.isEmpty
-              ? _buildEmptyState()
-              : _buildCapturesList(),
-        ),
+                  child: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              ArtbeatColors.primaryPurple,
+                            ),
+                          ),
+                        )
+                      : _captures.isEmpty
+                          ? _buildEmptyState()
+                          : _buildCapturesList(),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -394,9 +283,7 @@ class _CaptureCardState extends State<CaptureCard>
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: ArtbeatColors.background,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                 ),
                 child: widget.capture.imageUrl.isNotEmpty
                     ? ClipRRect(
@@ -481,44 +368,49 @@ class _CaptureCardState extends State<CaptureCard>
                       ),
                     ],
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          widget.capture.isPublic ? Icons.public : Icons.lock,
-                          size: 14,
-                          color: widget.capture.isPublic
-                              ? ArtbeatColors.primaryGreen
-                              : ArtbeatColors.textSecondary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.capture.isPublic ? 'Public' : 'Private',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: widget.capture.isPublic
-                                    ? ArtbeatColors.primaryGreen
-                                    : ArtbeatColors.textSecondary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
-                        if (!widget.capture.isProcessed) ...[
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.hourglass_empty,
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Icon(
+                            widget.capture.isPublic ? Icons.public : Icons.lock,
                             size: 14,
-                            color: ArtbeatColors.warning,
+                            color: widget.capture.isPublic
+                                ? ArtbeatColors.primaryGreen
+                                : ArtbeatColors.textSecondary,
                           ),
-                          const SizedBox(width: 2),
+                          const SizedBox(width: 4),
                           Text(
-                            'Processing',
+                            widget.capture.isPublic ? 'Public' : 'Private',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color: ArtbeatColors.warning,
+                                  color: widget.capture.isPublic
+                                      ? ArtbeatColors.primaryGreen
+                                      : ArtbeatColors.textSecondary,
                                   fontWeight: FontWeight.w500,
                                 ),
                           ),
+                          if (!widget.capture.isProcessed) ...[
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.hourglass_empty,
+                              size: 14,
+                              color: ArtbeatColors.warning,
+                            ),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(
+                                'Processing',
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: ArtbeatColors.warning,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ],
                 ),

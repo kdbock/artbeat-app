@@ -15,14 +15,14 @@ class EventFormBuilder extends StatefulWidget {
   final ArtbeatEvent? initialEvent;
   final Function(ArtbeatEvent) onEventCreated;
   final VoidCallback? onCancel;
-  final bool useUniversalHeader;
+  final bool useEnhancedUniversalHeader;
 
   const EventFormBuilder({
     super.key,
     this.initialEvent,
     required this.onEventCreated,
     this.onCancel,
-    this.useUniversalHeader = false,
+    this.useEnhancedUniversalHeader = false,
   });
 
   @override
@@ -112,18 +112,11 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.useUniversalHeader
-          ? UniversalHeader(
-              title:
-                  widget.initialEvent == null ? 'Create Event' : 'Edit Event',
+      appBar: widget.useEnhancedUniversalHeader
+          ? const EnhancedUniversalHeader(
+              title: 'Create Event',
               showLogo: false,
-              actions: [
-                TextButton(
-                  onPressed: _submitForm,
-                  child: const Text('Save'),
-                ),
-              ],
-            )
+            ) as PreferredSizeWidget
           : AppBar(
               title: Text(
                   widget.initialEvent == null ? 'Create Event' : 'Edit Event'),
@@ -135,7 +128,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
               ],
             ),
       body: Container(
-        decoration: widget.useUniversalHeader
+        decoration: widget.useEnhancedUniversalHeader
             ? BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,

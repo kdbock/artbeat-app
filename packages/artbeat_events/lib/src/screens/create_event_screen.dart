@@ -42,7 +42,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               initialEvent: widget.editEvent,
               onEventCreated: _handleEventCreated,
               onCancel: () => Navigator.pop(context),
-              useUniversalHeader:
+              useEnhancedUniversalHeader:
                   true, // Tell the form builder to use universal header
             ),
             if (_isLoading) _buildLoadingOverlay(),

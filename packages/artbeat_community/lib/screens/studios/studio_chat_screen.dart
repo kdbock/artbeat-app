@@ -44,7 +44,7 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Studio Chat',
         showLogo: false,
       ),

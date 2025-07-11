@@ -6,3 +6,4 @@ export 'src/widgets/artbeat_drawer.dart';
 
 export 'src/widgets/art_capture_warning_dialog.dart';
 export 'src/widgets/developer_menu.dart';
+export 'src/widgets/artbeat_bottom_navigation.dart';

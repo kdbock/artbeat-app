@@ -409,7 +409,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return core.MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: core.UniversalHeader(
+        appBar: core.EnhancedUniversalHeader(
           title: 'Artist Subscriptions',
           showLogo: false,
           actions: [

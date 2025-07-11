@@ -49,8 +49,10 @@ export 'src/widgets/profile_tab_interface.dart';
 export 'src/widgets/featured_content_row_widget.dart';
 export 'src/widgets/network_error_widget.dart';
 export 'src/widgets/main_layout.dart';
-export 'src/widgets/universal_bottom_nav.dart';
-export 'src/widgets/universal_header.dart';
+export 'src/widgets/enhanced_universal_header.dart';
+export 'src/widgets/enhanced_bottom_nav.dart';
+export 'src/widgets/artbeat_gradient_background.dart';
+
 export 'src/widgets/user_avatar.dart';
 export 'src/widgets/optimized_image.dart';
 export 'src/widgets/feedback_form.dart';
@@ -70,11 +72,10 @@ export 'src/utils/location_utils.dart' show LocationUtils;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
-export 'src/screens/dashboard_screen.dart' show DashboardScreen;
-export 'src/screens/events_dashboard_screen.dart' show EventsDashboardScreen;
+export 'src/screens/fluid_dashboard_screen.dart' show FluidDashboardScreen;
+export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
 
 // Export Widgets
-export 'src/widgets/universal_bottom_nav.dart' show UniversalBottomNav;

@@ -51,7 +51,7 @@ class _QuietModeScreenState extends State<QuietModeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UniversalHeader(title: 'Quiet Mode', showLogo: false),
+      appBar: const EnhancedUniversalHeader(title: 'Quiet Mode', showLogo: false),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

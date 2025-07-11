@@ -123,25 +123,59 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
 
   Widget _buildStatCard(String title, String value, IconData icon) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              core.ArtbeatColors.primaryPurple.withValues(alpha: 0.02),
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color:
+                      core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: core.ArtbeatColors.primaryPurple,
+                  size: 20,
+                ),
               ),
-            ),
-            Text(
-              title,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: core.ArtbeatColors.textPrimary,
+                ),
+              ),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: core.ArtbeatColors.textSecondary,
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -387,223 +421,736 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
     );
   }
 
+  void _showSearchModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Search Artists & Artwork',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: core.ArtbeatColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildSearchOption(
+                      'Find Artists',
+                      'Search for artists by name or specialty',
+                      Icons.person_search,
+                      core.ArtbeatColors.primaryPurple,
+                      () => Navigator.pushNamed(context, '/artist/search'),
+                    ),
+                    _buildSearchOption(
+                      'Browse Artwork',
+                      'Explore art collections and galleries',
+                      Icons.palette,
+                      core.ArtbeatColors.primaryGreen,
+                      () => Navigator.pushNamed(context, '/artwork/browse'),
+                    ),
+                    _buildSearchOption(
+                      'Gallery Search',
+                      'Find galleries and exhibition spaces',
+                      Icons.business,
+                      core.ArtbeatColors.warning,
+                      () => Navigator.pushNamed(context, '/gallery/search'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchOption(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.pop(context);
+            onTap();
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: core.ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: core.ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showProfileMenu(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.8,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.palette,
+                      color: core.ArtbeatColors.primaryPurple,
+                      size: 24,
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Artist Tools',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: core.ArtbeatColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Manage your art, profile, and gallery connections',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: core.ArtbeatColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildProfileMenuTile(
+                      icon: Icons.person,
+                      title: 'My Profile',
+                      subtitle: 'Edit your artist profile and bio',
+                      color: core.ArtbeatColors.primaryPurple,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/profile');
+                      },
+                    ),
+                    _buildProfileMenuTile(
+                      icon: Icons.image,
+                      title: 'My Artwork',
+                      subtitle: 'Manage your art portfolio',
+                      color: core.ArtbeatColors.primaryGreen,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/artwork');
+                      },
+                    ),
+                    _buildProfileMenuTile(
+                      icon: Icons.business,
+                      title: 'Gallery Relations',
+                      subtitle: 'View partnerships and commissions',
+                      color: core.ArtbeatColors.warning,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/galleries');
+                      },
+                    ),
+                    _buildProfileMenuTile(
+                      icon: Icons.analytics,
+                      title: 'Analytics',
+                      subtitle: 'Track your art views and engagement',
+                      color: core.ArtbeatColors.info,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/artist/analytics');
+                      },
+                    ),
+                    _buildProfileMenuTile(
+                      icon: Icons.settings,
+                      title: 'Settings',
+                      subtitle: 'Account and notification settings',
+                      color: core.ArtbeatColors.textSecondary,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/settings');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileMenuTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: core.ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: core.ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  BoxDecoration _buildArtisticBackground() {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFFFAFAFA),
+          Color(0xFFF5F5F5),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Loading...'),
-            ],
+      return core.MainLayout(
+        currentIndex: 0, // Artist dashboard could be index 0 or a custom index
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            decoration: _buildArtisticBackground(),
+            child: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      core.ArtbeatColors.primaryPurple,
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Loading...',
+                    style: TextStyle(
+                      color: core.ArtbeatColors.textPrimary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       );
     }
 
     if (_artistProfile == null) {
-      return Scaffold(
-        appBar: const core.UniversalHeader(
-          title: 'Artist Dashboard',
-          showLogo: false,
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.person_outline, size: 64),
-                const SizedBox(height: 16),
-                const Text(
-                  'Create Artist Profile',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      return core.MainLayout(
+        currentIndex: 0,
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          extendBodyBehindAppBar: true,
+          appBar: const PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight + 4),
+            child: core.ArtbeatGradientBackground(
+              addShadow: true,
+              child: core.EnhancedUniversalHeader(
+                title: 'Artist Dashboard',
+                showLogo: false,
+                showSearch: false,
+                showDeveloperTools: false,
+                backgroundColor: Colors.transparent,
+                foregroundColor: core.ArtbeatColors.textPrimary,
+                elevation: 0,
+              ),
+            ),
+          ),
+          body: Container(
+            decoration: _buildArtisticBackground(),
+            child: SafeArea(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: core.ArtbeatColors.primaryPurple
+                              .withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.palette,
+                          size: 64,
+                          color: core.ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Create Artist Profile',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: core.ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Set up your profile to start sharing artwork and connecting with galleries.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: core.ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/artist/create-profile')
+                              .then((_) => _loadArtistData());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: core.ArtbeatColors.primaryPurple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Create Profile'),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Set up your profile to start sharing artwork and connecting with galleries.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/artist/create-profile')
-                        .then((_) => _loadArtistData());
-                  },
-                  child: const Text('Create Profile'),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Artist Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.pushNamed(context, '/settings'),
+    return core.MainLayout(
+      currentIndex: 0,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        extendBodyBehindAppBar: true,
+        drawer: const core.ArtbeatDrawer(),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: core.ArtbeatGradientBackground(
+            addShadow: true,
+            child: core.EnhancedUniversalHeader(
+              title: 'Artist Dashboard',
+              showLogo: false,
+              showSearch: true,
+              showDeveloperTools: false,
+              onSearchPressed: () => _showSearchModal(context),
+              onProfilePressed: () => _showProfileMenu(context),
+              backgroundColor: Colors.transparent,
+              foregroundColor: core.ArtbeatColors.textPrimary,
+              elevation: 0,
+            ),
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadArtistData,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Profile Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: _artistProfile?.profileImageUrl != null
-                          ? NetworkImage(_artistProfile!.profileImageUrl!)
-                          : null,
-                      child: _artistProfile?.profileImageUrl == null
-                          ? const Icon(Icons.person, size: 40)
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _artistProfile?.displayName ?? '',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+        ),
+        body: Container(
+          decoration: _buildArtisticBackground(),
+          child: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: _loadArtistData,
+              color: core.ArtbeatColors.primaryPurple,
+              backgroundColor: Colors.white,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
+                slivers: [
+                  // Profile Card
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                core.ArtbeatColors.primaryPurple
+                                    .withValues(alpha: 0.05),
+                                core.ArtbeatColors.primaryGreen
+                                    .withValues(alpha: 0.05),
+                              ],
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                CircleAvatar(
+                                  radius: 40,
+                                  backgroundColor: core
+                                      .ArtbeatColors.primaryPurple
+                                      .withValues(alpha: 0.1),
+                                  backgroundImage:
+                                      _artistProfile?.profileImageUrl != null
+                                          ? NetworkImage(
+                                              _artistProfile!.profileImageUrl!)
+                                          : null,
+                                  child: _artistProfile?.profileImageUrl == null
+                                      ? const Icon(
+                                          Icons.person,
+                                          size: 40,
+                                          color:
+                                              core.ArtbeatColors.primaryPurple,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _artistProfile?.displayName ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: core.ArtbeatColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _tierName,
+                                  style: const TextStyle(
+                                    color: core.ArtbeatColors.primaryPurple,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    Text(
-                      _tierName,
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
+                  ),
+
+                  // Stats Grid
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        children: [
+                          _buildStatCard(
+                            'Profile Views',
+                            _quickStats['profileViews']?.toString() ?? '0',
+                            Icons.visibility,
+                          ),
+                          _buildStatCard(
+                            'Artwork Views',
+                            _quickStats['artworkViews']?.toString() ?? '0',
+                            Icons.image,
+                          ),
+                          _buildStatCard(
+                            'Total Likes',
+                            _quickStats['totalLikes']?.toString() ?? '0',
+                            Icons.favorite,
+                          ),
+                          _buildStatCard(
+                            'Comments',
+                            _quickStats['totalComments']?.toString() ?? '0',
+                            Icons.comment,
+                          ),
+                          _buildStatCard(
+                            'Total Gift Value',
+                            '\$${_quickStats['totalGiftValue']?.toString() ?? '0.00'}',
+                            Icons.card_giftcard,
+                          ),
+                          _buildStatCard(
+                            'Sponsorships',
+                            '\$${_quickStats['sponsorshipsValue']?.toString() ?? '0.00'}',
+                            Icons.business_center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Recent Activity
+                  if (_recentActivities.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Recent Activity',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: core.ArtbeatColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...(_recentActivities.take(5).map((activity) {
+                              final timeAgo = _getTimeAgo(
+                                  (activity['timestamp'] as Timestamp)
+                                      .toDate());
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  leading: Icon(
+                                    _getActivityIcon(
+                                        activity['type'] as String),
+                                    color: core.ArtbeatColors.primaryPurple,
+                                  ),
+                                  title: Text(_getActivityTitle(activity)),
+                                  subtitle: Text(timeAgo),
+                                  onTap: () => _onActivityTap(activity),
+                                ),
+                              );
+                            })),
+                            Center(
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/artist/activity');
+                                },
+                                child: const Text('View All Activity'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
-                ),
+
+                  // Commission Summary
+                  if (_subscription?.tier == core.SubscriptionTier.artistPro ||
+                      _subscription?.tier == core.SubscriptionTier.gallery)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: _buildCommissionSummary(),
+                      ),
+                    ),
+
+                  // Upcoming Events
+                  if (_upcomingEvents.isNotEmpty) ...[
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Upcoming Events',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: core.ArtbeatColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...(_upcomingEvents.take(3).map((event) => Card(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.event,
+                                      color: core.ArtbeatColors.primaryGreen,
+                                    ),
+                                    title: Text(event.title),
+                                    subtitle:
+                                        Text(_formatEventDate(event.startDate)),
+                                    onTap: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/event/details',
+                                        arguments: {'id': event.id},
+                                      );
+                                    },
+                                  ),
+                                ))),
+                            Center(
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/artist/events');
+                                },
+                                child: const Text('View All Events'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // Bottom padding for navigation
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            // Stats Grid
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              children: [
-                _buildStatCard(
-                  'Profile Views',
-                  _quickStats['profileViews']?.toString() ?? '0',
-                  Icons.visibility,
-                ),
-                _buildStatCard(
-                  'Artwork Views',
-                  _quickStats['artworkViews']?.toString() ?? '0',
-                  Icons.image,
-                ),
-                _buildStatCard(
-                  'Total Likes',
-                  _quickStats['totalLikes']?.toString() ?? '0',
-                  Icons.favorite,
-                ),
-                _buildStatCard(
-                  'Comments',
-                  _quickStats['totalComments']?.toString() ?? '0',
-                  Icons.comment,
-                ),
-              ],
-            ),
-
-            // Recent Activity
-            if (_recentActivities.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              const Text(
-                'Recent Activity',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...(_recentActivities.take(5).map((activity) {
-                final timeAgo =
-                    _getTimeAgo((activity['timestamp'] as Timestamp).toDate());
-                return Card(
-                  child: ListTile(
-                    leading: Icon(
-                      _getActivityIcon(activity['type'] as String),
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    title: Text(_getActivityTitle(activity)),
-                    subtitle: Text(timeAgo),
-                    onTap: () => _onActivityTap(activity),
-                  ),
-                );
-              })),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/artist/activity');
-                  },
-                  child: const Text('View All Activity'),
-                ),
-              ),
-            ],
-
-            // Commission Summary
-            if (_subscription?.tier == core.SubscriptionTier.artistPro ||
-                _subscription?.tier == core.SubscriptionTier.gallery)
-              _buildCommissionSummary(),
-
-            // Upcoming Events
-            if (_upcomingEvents.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              const Text(
-                'Upcoming Events',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...(_upcomingEvents.take(3).map((event) => Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.event),
-                      title: Text(event.title),
-                      subtitle: Text(_formatEventDate(event.startDate)),
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/event/details',
-                          arguments: {'id': event.id},
-                        );
-                      },
-                    ),
-                  ))),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/artist/events');
-                  },
-                  child: const Text('View All Events'),
-                ),
-              ),
-            ],
-
-            // Commission Summary
-            if (_subscription?.tier == core.SubscriptionTier.artistPro ||
-                _subscription?.tier == core.SubscriptionTier.gallery)
-              _buildCommissionSummary(),
-          ],
+          ),
         ),
       ),
     );

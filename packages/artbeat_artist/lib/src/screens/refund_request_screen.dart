@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show PaymentService, UniversalHeader, MainLayout;
+    show PaymentService, EnhancedUniversalHeader, MainLayout;
 
 /// Screen for handling subscription refund requests
 class RefundRequestScreen extends StatefulWidget {
@@ -108,7 +108,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const UniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Request Refund',
           showLogo: false,
         ),

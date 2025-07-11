@@ -220,7 +220,7 @@ class _SubscriptionAnalyticsScreenState
       return const core.MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: core.UniversalHeader(
+          appBar: core.EnhancedUniversalHeader(
             title: 'Subscription Analytics',
             showLogo: false,
           ),
@@ -234,7 +234,7 @@ class _SubscriptionAnalyticsScreenState
       return core.MainLayout(
           currentIndex: -1,
           child: Scaffold(
-            appBar: const core.UniversalHeader(
+            appBar: const core.EnhancedUniversalHeader(
               title: 'Subscription Analytics',
               showLogo: false,
             ),
@@ -281,7 +281,7 @@ class _SubscriptionAnalyticsScreenState
     return core.MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: core.UniversalHeader(
+          appBar: core.EnhancedUniversalHeader(
             title: 'Subscription Analytics',
             showLogo: false,
             actions: [

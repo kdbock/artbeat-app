@@ -8,7 +8,8 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
-import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_capture/artbeat_capture.dart'
+    show EnhancedCaptureDashboardScreen, CaptureScreen, CaptureDetailScreen;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_art_walk/src/screens/my_captures_screen.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
@@ -16,7 +17,6 @@ import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import 'widgets/developer_menu.dart';
 import 'src/widgets/error_boundary.dart';
-import 'package:artbeat_artist/src/screens/subscription_comparison_screen.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -81,7 +81,9 @@ class MyApp extends StatelessWidget {
 
       // Main dashboard route
       case '/dashboard':
-        return MaterialPageRoute(builder: (_) => const core.DashboardScreen());
+        return MaterialPageRoute(
+          builder: (_) => const core.FluidDashboardScreen(),
+        );
 
       // Auth routes
       case '/login':
@@ -133,6 +135,10 @@ class MyApp extends StatelessWidget {
         );
 
       // Capture routes
+      case '/capture/dashboard':
+        return MaterialPageRoute(
+          builder: (_) => const EnhancedCaptureDashboardScreen(),
+        );
       case '/capture/camera':
         return MaterialPageRoute(builder: (_) => const CaptureScreen());
       case '/capture/detail':
@@ -190,7 +196,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Search Artists',
                 showLogo: false,
               ),
@@ -203,7 +209,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Featured Artists',
                 showLogo: false,
               ),
@@ -216,7 +222,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Local Artists',
                 showLogo: false,
               ),
@@ -229,7 +235,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Browse Categories',
                 showLogo: false,
               ),
@@ -238,24 +244,13 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/artist/dashboard':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.UniversalHeader(
-                title: 'Artist Dashboard',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Artist dashboard coming soon')),
-            ),
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const ArtistDashboardScreen());
       case '/artist/subscription':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Subscription',
                 showLogo: false,
               ),
@@ -268,7 +263,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Commissions',
                 showLogo: false,
               ),
@@ -281,7 +276,10 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(title: 'Events', showLogo: false),
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Events',
+                showLogo: false,
+              ),
               body: Center(child: Text('Events coming soon')),
             ),
           ),
@@ -291,7 +289,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Create Artist Profile',
                 showLogo: false,
               ),
@@ -304,7 +302,10 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(title: 'Activity', showLogo: false),
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Activity',
+                showLogo: false,
+              ),
               body: Center(child: Text('Activity coming soon')),
             ),
           ),
@@ -333,7 +334,7 @@ class MyApp extends StatelessWidget {
         );
       case '/subscription/comparison':
         return MaterialPageRoute(
-          builder: (_) => SubscriptionComparisonScreen(),
+          builder: (_) => const SubscriptionComparisonScreen(),
         );
       case '/artist/public-profile':
         final args = settings.arguments as Map<String, dynamic>?;
@@ -343,7 +344,7 @@ class MyApp extends StatelessWidget {
             builder: (_) => const core.MainLayout(
               currentIndex: -1,
               child: Scaffold(
-                appBar: core.UniversalHeader(
+                appBar: core.EnhancedUniversalHeader(
                   title: 'Artist Profile',
                   showLogo: false,
                 ),
@@ -363,7 +364,7 @@ class MyApp extends StatelessWidget {
             builder: (_) => const core.MainLayout(
               currentIndex: -1,
               child: Scaffold(
-                appBar: core.UniversalHeader(
+                appBar: core.EnhancedUniversalHeader(
                   title: 'Artwork Detail',
                   showLogo: false,
                 ),
@@ -382,7 +383,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Search Artwork',
                 showLogo: false,
               ),
@@ -395,7 +396,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Featured Artwork',
                 showLogo: false,
               ),
@@ -408,7 +409,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Recent Artwork',
                 showLogo: false,
               ),
@@ -421,7 +422,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Trending Artwork',
                 showLogo: false,
               ),
@@ -438,7 +439,7 @@ class MyApp extends StatelessWidget {
             builder: (_) => const core.MainLayout(
               currentIndex: -1,
               child: Scaffold(
-                appBar: core.UniversalHeader(
+                appBar: core.EnhancedUniversalHeader(
                   title: 'Edit Artwork',
                   showLogo: false,
                 ),
@@ -456,9 +457,7 @@ class MyApp extends StatelessWidget {
 
       // Event routes
       case '/events/dashboard':
-        return MaterialPageRoute(
-          builder: (_) => const core.EventsDashboardScreen(),
-        );
+        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/events/detail':
         final args = settings.arguments as Map<String, dynamic>?;
         final eventId = args?['eventId'] as String?;
@@ -467,7 +466,7 @@ class MyApp extends StatelessWidget {
             builder: (_) => const core.MainLayout(
               currentIndex: -1,
               child: Scaffold(
-                appBar: core.UniversalHeader(
+                appBar: core.EnhancedUniversalHeader(
                   title: 'Event Details',
                   showLogo: false,
                 ),
@@ -488,8 +487,10 @@ class MyApp extends StatelessWidget {
         );
       case '/events/all':
         return MaterialPageRoute(
-          builder: (_) =>
-              EventsListScreen(title: 'All Events', showCreateButton: true),
+          builder: (_) => const EventsListScreen(
+            title: 'All Events',
+            showCreateButton: true,
+          ),
         );
       case '/events/my-events':
         return MaterialPageRoute(
@@ -508,7 +509,10 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(title: 'Settings', showLogo: false),
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Settings',
+                showLogo: false,
+              ),
               body: Center(child: Text('Settings coming soon')),
             ),
           ),
@@ -518,7 +522,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Account Settings',
                 showLogo: false,
               ),
@@ -531,7 +535,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Privacy Settings',
                 showLogo: false,
               ),
@@ -544,7 +548,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Notification Settings',
                 showLogo: false,
               ),
@@ -567,7 +571,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'Content Moderation',
                 showLogo: false,
               ),
@@ -580,7 +584,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: Scaffold(
-              appBar: core.UniversalHeader(
+              appBar: core.EnhancedUniversalHeader(
                 title: 'System Settings',
                 showLogo: false,
               ),
@@ -596,6 +600,16 @@ class MyApp extends StatelessWidget {
       // Feedback submission route
       case '/feedback':
         return MaterialPageRoute(builder: (_) => const core.FeedbackForm());
+      case '/developer-feedback-admin':
+        return MaterialPageRoute(
+          builder: (_) => const core.DeveloperFeedbackAdminScreen(),
+        );
+      case '/search/results':
+        final args = settings.arguments as Map<String, dynamic>;
+        final query = args['query'] as String;
+        return MaterialPageRoute(
+          builder: (_) => core.SearchResultsScreen(query: query),
+        );
 
       // Handle dynamic event routes
       default:

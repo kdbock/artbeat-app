@@ -112,7 +112,7 @@ class _FollowersListScreenState extends State<FollowersListScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Followers ${_isLoading ? '' : '(${_followers.length})'}',
           showLogo: false,
         ),

@@ -272,7 +272,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       currentIndex: -1,
       child: Scaffold(
         key: _scaffoldKey,
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Edit Profile',
           showLogo: false,
           showDeveloperTools: true,

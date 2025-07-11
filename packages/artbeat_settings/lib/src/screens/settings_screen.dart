@@ -7,7 +7,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: UniversalHeader(
+      appBar: EnhancedUniversalHeader(
         title: 'Settings',
         showLogo: false,
       ),

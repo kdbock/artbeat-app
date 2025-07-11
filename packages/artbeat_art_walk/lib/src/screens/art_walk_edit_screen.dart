@@ -216,7 +216,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const UniversalHeader(title: 'Edit Art Walk', showLogo: false),
+        appBar: const EnhancedUniversalHeader(title: 'Edit Art Walk', showLogo: false),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _artWalk == null

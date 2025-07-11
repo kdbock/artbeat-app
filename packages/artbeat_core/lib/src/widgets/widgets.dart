@@ -5,7 +5,8 @@ export 'achievement_badge.dart';
 export 'achievement_runner.dart';
 export 'featured_content_row_widget.dart';
 export 'network_error_widget.dart';
-export 'universal_bottom_nav.dart';
+export 'user_experience_card.dart';
+
 export 'main_layout.dart';
-export 'user_avatar.dart';
+
 export 'optimized_image.dart';

@@ -5,7 +5,6 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:logger/logger.dart';
 import 'dart:math';
-import 'art_walk_experience_screen.dart';
 
 final Logger _logger = Logger();
 
@@ -382,7 +381,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_isLoading) {
       return const Scaffold(
         key: ValueKey('loading'),
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Art Walk Details',
           showLogo: false,
         ),
@@ -393,7 +392,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null) {
       return const Scaffold(
         key: ValueKey('not_found'),
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Art Walk Details',
           showLogo: false,
         ),

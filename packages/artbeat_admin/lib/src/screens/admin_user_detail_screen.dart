@@ -66,110 +66,40 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_currentUser.fullName),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshUser,
-          ),
-          PopupMenuButton<String>(
-            onSelected: _handleAction,
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: _currentUser.isVerified ? 'unverify' : 'verify',
-                child: Row(
-                  children: [
-                    Icon(_currentUser.isVerified
-                        ? Icons.cancel
-                        : Icons.verified),
-                    const SizedBox(width: 8),
-                    Text(_currentUser.isVerified ? 'Unverify' : 'Verify'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: _currentUser.isSuspended ? 'unsuspend' : 'suspend',
-                child: Row(
-                  children: [
-                    Icon(_currentUser.isSuspended
-                        ? Icons.check_circle
-                        : Icons.block),
-                    const SizedBox(width: 8),
-                    Text(_currentUser.isSuspended ? 'Unsuspend' : 'Suspend'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'edit_type',
-                child: Row(
-                  children: [
-                    Icon(Icons.edit),
-                    SizedBox(width: 8),
-                    Text('Change Type'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'edit_experience',
-                child: Row(
-                  children: [
-                    Icon(Icons.star),
-                    SizedBox(width: 8),
-                    Text('Edit Experience'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'add_note',
-                child: Row(
-                  children: [
-                    Icon(Icons.note_add),
-                    SizedBox(width: 8),
-                    Text('Add Note'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(Icons.delete, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Delete User', style: TextStyle(color: Colors.red)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Overview', icon: Icon(Icons.person)),
-            Tab(text: 'Details', icon: Icon(Icons.info)),
-            Tab(text: 'Activity', icon: Icon(Icons.history)),
-            Tab(text: 'Admin', icon: Icon(Icons.admin_panel_settings)),
-          ],
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
+    return MainLayout(
+      currentIndex: 1,
+      child: Column(
+        children: [
+          Material(
+            color: Colors.deepPurple,
+            child: TabBar(
               controller: _tabController,
-              children: [
-                _buildOverviewTab(),
-                _buildDetailsTab(),
-                _buildActivityTab(),
-                _buildAdminTab(),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              indicatorColor: Colors.white,
+              tabs: const [
+                Tab(text: 'Overview', icon: Icon(Icons.person)),
+                Tab(text: 'Details', icon: Icon(Icons.info)),
+                Tab(text: 'Activity', icon: Icon(Icons.history)),
+                Tab(text: 'Admin', icon: Icon(Icons.admin_panel_settings)),
               ],
             ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildOverviewTab(),
+                      _buildDetailsTab(),
+                      _buildActivityTab(),
+                      _buildAdminTab(),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

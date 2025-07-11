@@ -91,7 +91,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
     return core.MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: core.UniversalHeader(
+        appBar: core.EnhancedUniversalHeader(
           title: 'Discover Artists',
           showLogo: false,
           actions: [

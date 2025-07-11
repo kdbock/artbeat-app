@@ -228,7 +228,7 @@ class _EventsListScreenState extends State<EventsListScreen>
     return MainLayout(
       currentIndex: 3, // Events tab
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: _getTitle(),
           showLogo: false,
           showBackButton: widget.showBackButton,

@@ -15,7 +15,7 @@ class _ArtistApprovedAdsScreenState extends State<ArtistApprovedAdsScreen> {
     return MainLayout(
       currentIndex: -1, // Not a main navigation item
       child: Scaffold(
-        appBar: const UniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Artist Approved Ads',
           showLogo: false,
         ),

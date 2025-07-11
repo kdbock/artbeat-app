@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtistProfileModel, UserAvatar, UniversalHeader, MainLayout;
+    show ArtistProfileModel, UserAvatar, EnhancedUniversalHeader, MainLayout;
 import 'package:share_plus/share_plus.dart';
 
 /// Screen for viewing artwork details
@@ -134,7 +134,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       return const MainLayout(
         currentIndex: -1, // No navigation highlight for detail screens
         child: Scaffold(
-          appBar: UniversalHeader(
+          appBar: EnhancedUniversalHeader(
             title: 'Artwork',
             showLogo: false,
           ),

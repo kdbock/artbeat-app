@@ -12,7 +12,8 @@ import '../theme/artbeat_colors.dart';
 /// - Better mobile-first design approach
 /// - Enhanced search experience
 /// - Streamlined developer tools
-class EnhancedUniversalHeader extends StatefulWidget implements PreferredSizeWidget {
+class EnhancedUniversalHeader extends StatefulWidget
+    implements PreferredSizeWidget {
   final String? title;
   final bool showLogo;
   final bool showSearch;
@@ -51,7 +52,8 @@ class EnhancedUniversalHeader extends StatefulWidget implements PreferredSizeWid
   });
 
   @override
-  State<EnhancedUniversalHeader> createState() => _EnhancedUniversalHeaderState();
+  State<EnhancedUniversalHeader> createState() =>
+      _EnhancedUniversalHeaderState();
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight + 4);
@@ -72,13 +74,9 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -93,7 +91,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     setState(() {
       _isSearchActive = !_isSearchActive;
     });
-    
+
     if (_isSearchActive) {
       _animationController.forward();
       _searchFocusNode.requestFocus();
@@ -108,22 +106,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [
-            widget.backgroundColor ?? ArtbeatColors.backgroundPrimary,
-            (widget.backgroundColor ?? ArtbeatColors.backgroundPrimary)
-                .withValues(alpha: 0.95),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: ArtbeatColors.primaryPurple.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: widget.backgroundColor ?? Colors.transparent,
       ),
       child: SafeArea(
         bottom: false,
@@ -144,12 +127,10 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       children: [
         // Leading: Menu or Back Button
         _buildLeadingButton(),
-        
+
         // Title/Logo Section
-        Expanded(
-          child: _buildTitleSection(),
-        ),
-        
+        Expanded(child: _buildTitleSection()),
+
         // Actions Section
         ..._buildActionButtons(),
       ],
@@ -161,11 +142,14 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       children: [
         // Back button from search
         IconButton(
-          icon: const Icon(Icons.arrow_back, color: ArtbeatColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+          ),
           onPressed: _toggleSearch,
           tooltip: 'Close search',
         ),
-        
+
         // Search input
         Expanded(
           child: FadeTransition(
@@ -182,7 +166,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Search artists, artwork, events...',
                   hintStyle: TextStyle(
                     color: ArtbeatColors.textSecondary,
@@ -194,7 +178,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                     size: 20,
                   ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
+                  contentPadding: EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 10,
                   ),
@@ -205,7 +189,12 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                 ),
                 onSubmitted: (query) {
                   if (query.isNotEmpty) {
-                    widget.onSearchPressed?.call();
+                    // Navigate to search results page with query
+                    Navigator.pushNamed(
+                      context,
+                      '/search/results',
+                      arguments: {'query': query},
+                    );
                     _toggleSearch();
                   }
                 },
@@ -213,9 +202,9 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
             ),
           ),
         ),
-        
+
         const SizedBox(width: 8),
-        
+
         // Clear/Search button
         IconButton(
           icon: Icon(
@@ -242,12 +231,19 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       margin: const EdgeInsets.only(left: 8),
       child: widget.showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: ArtbeatColors.textPrimary),
-              onPressed: widget.onBackPressed ?? () => Navigator.maybePop(context),
+              icon: Icon(
+                Icons.arrow_back,
+                color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+              ),
+              onPressed:
+                  widget.onBackPressed ?? () => Navigator.maybePop(context),
               tooltip: 'Back',
             )
           : IconButton(
-              icon: const Icon(Icons.menu, color: ArtbeatColors.textPrimary),
+              icon: Icon(
+                Icons.menu,
+                color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+              ),
               onPressed: widget.onMenuPressed ?? () => _openDrawer(),
               tooltip: 'Menu',
             ),
@@ -284,9 +280,16 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
           widget.title!,
           style: TextStyle(
             color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            letterSpacing: 0.5,
+            fontWeight: FontWeight.w900,
+            fontSize: 24,
+            letterSpacing: 1.2,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                offset: const Offset(1, 1),
+                blurRadius: 2,
+              ),
+            ],
           ),
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
@@ -304,7 +307,10 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     if (widget.showSearch) {
       actions.add(
         IconButton(
-          icon: const Icon(Icons.search, color: ArtbeatColors.textPrimary),
+          icon: Icon(
+            Icons.search,
+            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+          ),
           onPressed: _toggleSearch,
           tooltip: 'Search',
         ),
@@ -316,7 +322,10 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       Stack(
         children: [
           IconButton(
-            icon: const Icon(Icons.person_outline, color: ArtbeatColors.textPrimary),
+            icon: Icon(
+              Icons.person_outline,
+              color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+            ),
             onPressed: widget.onProfilePressed ?? () => _showProfileMenu(),
             tooltip: 'Profile & Discovery',
           ),
@@ -330,12 +339,11 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                   color: ArtbeatColors.error,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                constraints: const BoxConstraints(
-                  minWidth: 16,
-                  minHeight: 16,
-                ),
+                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                 child: Text(
-                  widget.notificationCount > 99 ? '99+' : widget.notificationCount.toString(),
+                  widget.notificationCount > 99
+                      ? '99+'
+                      : widget.notificationCount.toString(),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
@@ -353,7 +361,10 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     if (widget.showDeveloperTools) {
       actions.add(
         IconButton(
-          icon: const Icon(Icons.developer_mode, color: ArtbeatColors.textSecondary),
+          icon: Icon(
+            Icons.developer_mode,
+            color: widget.foregroundColor ?? ArtbeatColors.textSecondary,
+          ),
           onPressed: widget.onDeveloperPressed ?? () => _showDeveloperTools(),
           tooltip: 'Developer Tools',
         ),
@@ -410,7 +421,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // Header
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -540,9 +551,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: color.withValues(alpha: 0.2),
-              ),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
@@ -578,7 +587,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                     ],
                   ),
                 ),
-                Icon(
+                const Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
                   color: ArtbeatColors.textSecondary,
@@ -613,7 +622,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               ),
             ),
             const SizedBox(height: 20),
-            
+
             Row(
               children: [
                 Container(
@@ -622,11 +631,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                     color: Colors.orange.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.code,
-                    color: Colors.orange,
-                    size: 24,
-                  ),
+                  child: const Icon(Icons.code, color: Colors.orange, size: 24),
                 ),
                 const SizedBox(width: 12),
                 const Text(
@@ -639,9 +644,9 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             _buildDeveloperTile(
               icon: Icons.feedback,
               title: 'Submit Feedback',
@@ -651,7 +656,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                 Navigator.pushNamed(context, '/feedback');
               },
             ),
-            
+
             _buildDeveloperTile(
               icon: Icons.admin_panel_settings,
               title: 'Admin Panel',
@@ -661,7 +666,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                 // Navigate to admin panel
               },
             ),
-            
+
             _buildDeveloperTile(
               icon: Icons.info,
               title: 'System Info',

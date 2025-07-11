@@ -22,7 +22,7 @@ class CaptureDetailScreen extends StatelessWidget {
     return MainLayout(
       currentIndex: -1, // No navigation highlight for detail screens
       child: Scaffold(
-        appBar: const UniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Capture Details',
           showLogo: false,
         ),

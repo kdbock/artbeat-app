@@ -41,16 +41,10 @@ class ArtbeatDrawerItems {
     route: '/achievements',
   );
 
-  static const applause = ArtbeatDrawerItem(
-    title: 'Applause',
-    icon: Icons.favorite_outline,
+  static const fanClub = ArtbeatDrawerItem(
+    title: 'Fan Club',
+    icon: Icons.front_hand_outlined,
     route: '/favorites',
-  );
-
-  static const following = ArtbeatDrawerItem(
-    title: 'Following',
-    icon: Icons.people_outline,
-    route: '/following',
   );
 
   // Artist Section
@@ -63,13 +57,13 @@ class ArtbeatDrawerItems {
   static const editArtistProfile = ArtbeatDrawerItem(
     title: 'Edit Artist Profile',
     icon: Icons.palette_outlined,
-    route: '/artist/profile/edit',
+    route: '/artist/profile-edit',
   );
 
   static const viewPublicProfile = ArtbeatDrawerItem(
     title: 'View Public Profile',
     icon: Icons.public_outlined,
-    route: '/artist/profile/public',
+    route: '/artist/public-profile',
   );
 
   static const artistAnalytics = ArtbeatDrawerItem(
@@ -93,7 +87,7 @@ class ArtbeatDrawerItems {
   static const uploadArtwork = ArtbeatDrawerItem(
     title: 'Upload Artwork',
     icon: Icons.add_photo_alternate_outlined,
-    route: '/artist/artwork/upload',
+    route: '/artwork/upload',
   );
 
   // Events Section
@@ -222,8 +216,7 @@ class ArtbeatDrawerItems {
     editProfile,
     captures,
     achievements,
-    applause,
-    following,
+    fanClub,
   ];
 
   static List<ArtbeatDrawerItem> get artistItems => [

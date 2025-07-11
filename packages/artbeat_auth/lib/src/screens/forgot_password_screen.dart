@@ -7,7 +7,7 @@ import 'package:artbeat_core/artbeat_core.dart'
         ArtbeatInput,
         ArtbeatButton,
         ButtonVariant,
-        UniversalHeader;
+        EnhancedUniversalHeader;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Forgot password screen with email reset functionality
@@ -80,7 +80,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Reset Password',
         showLogo: false,
         backgroundColor: Colors.transparent,

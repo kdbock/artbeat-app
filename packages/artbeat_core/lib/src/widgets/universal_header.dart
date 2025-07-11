@@ -13,14 +13,14 @@ import 'feedback_system_info_screen.dart';
 ///
 /// Example usage:
 /// ```dart
-/// UniversalHeader(
+/// EnhancedUniversalHeader(
 ///   onSearchPressed: () => Navigator.pushNamed(context, '/search'),
 ///   title: 'Custom Title', // Optional, will show logo by default
 ///   showLogo: false, // Set to false to show title instead of logo
 ///   showDeveloperTools: true, // Show developer icon
 /// )
 /// ```
-class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
+class EnhancedUniversalHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final bool showLogo;
   final bool showDeveloperTools;
@@ -35,7 +35,7 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
   final Color? foregroundColor;
   final double? elevation;
 
-  const UniversalHeader({
+  const EnhancedUniversalHeader({
     super.key,
     this.title,
     this.showLogo = true,
@@ -127,12 +127,13 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
   List<Widget> _buildActions(BuildContext context) {
     final actionsList = <Widget>[];
 
-    // Add search icon if callback provided
-    if (onSearchPressed != null) {
-      actionsList.add(
-        IconButton(icon: const Icon(Icons.search), onPressed: onSearchPressed),
-      );
-    }
+    // Always add search icon, use provided callback or fallback to search modal
+    actionsList.add(
+      IconButton(
+        icon: const Icon(Icons.search),
+        onPressed: onSearchPressed ?? () => _showSearchModal(context),
+      ),
+    );
 
     // Add developer tools icon if enabled
     if (showDeveloperTools) {
@@ -166,94 +167,6 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
         ),
       );
     }
-  }
-
-  void _showArtistDiscovery(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.9,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Discover Artists',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.search, color: Colors.blue),
-                      title: const Text('Search Artists'),
-                      subtitle: const Text('Find artists by name or style'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artist/search');
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(
-                        Icons.trending_up,
-                        color: Colors.green,
-                      ),
-                      title: const Text('Featured Artists'),
-                      subtitle: const Text(
-                        'Explore trending and featured artists',
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artist/featured');
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.location_on, color: Colors.red),
-                      title: const Text('Local Artists'),
-                      subtitle: const Text('Discover artists in your area'),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artist/local');
-                      },
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.category, color: Colors.purple),
-                      title: const Text('Browse by Category'),
-                      subtitle: const Text(
-                        'Explore different art styles and mediums',
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artist/categories');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   void _showDeveloperTools(BuildContext context) {
@@ -327,6 +240,40 @@ class UniversalHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
             const SizedBox(height: 16),
           ],
+        ),
+      ),
+    );
+  }
+
+  // Add default search modal
+  void _showSearchModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                autofocus: true,
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search),
+                  hintText: 'Search ARTbeat',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (query) {
+                  // TODO: implement search logic
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

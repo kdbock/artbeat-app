@@ -93,7 +93,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Following ${_isLoading ? '' : '(${_following.length})'}',
           showLogo: false,
         ),

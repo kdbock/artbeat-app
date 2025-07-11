@@ -152,59 +152,9 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Management'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        actions: [
-          if (_selectedUsers.isNotEmpty)
-            PopupMenuButton<String>(
-              icon: Badge(
-                label: Text(_selectedUsers.length.toString()),
-                child: const Icon(Icons.more_vert),
-              ),
-              onSelected: _bulkAction,
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'verify',
-                  child: Row(
-                    children: [
-                      Icon(Icons.verified, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text('Bulk Verify'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'suspend',
-                  child: Row(
-                    children: [
-                      Icon(Icons.block, color: Colors.orange),
-                      SizedBox(width: 8),
-                      Text('Bulk Suspend'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Bulk Delete'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadUsers,
-          ),
-        ],
-      ),
-      body: Column(
+    return MainLayout(
+      currentIndex: 2,
+      child: Column(
         children: [
           _buildFilters(),
           Expanded(
@@ -215,11 +165,6 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                     : _buildUsersList(),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateUserDialog(),
-        backgroundColor: Colors.deepPurple,
-        child: const Icon(Icons.person_add, color: Colors.white),
       ),
     );
   }

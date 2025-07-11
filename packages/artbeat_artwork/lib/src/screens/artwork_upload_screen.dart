@@ -8,7 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, UniversalHeader, MainLayout;
+    show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader, MainLayout;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
@@ -417,7 +417,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
       return const MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: UniversalHeader(
+          appBar: EnhancedUniversalHeader(
             title: 'Upload Artwork',
             showLogo: false,
           ),
@@ -431,7 +431,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
       return MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: const UniversalHeader(
+          appBar: const EnhancedUniversalHeader(
             title: 'Upload Artwork',
             showLogo: false,
           ),
@@ -482,7 +482,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
           showLogo: false,
         ),

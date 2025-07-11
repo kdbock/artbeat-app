@@ -54,7 +54,7 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
       return const MainLayout(
         currentIndex: 3, // Events tab
         child: Scaffold(
-          appBar: UniversalHeader(
+          appBar: EnhancedUniversalHeader(
             title: 'Loading Event...',
             showLogo: false,
           ),
@@ -69,7 +69,7 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
       return MainLayout(
         currentIndex: 3, // Events tab
         child: Scaffold(
-          appBar: const UniversalHeader(
+          appBar: const EnhancedUniversalHeader(
             title: 'Event Not Found',
             showLogo: false,
           ),
@@ -104,7 +104,7 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
       return MainLayout(
         currentIndex: 3, // Events tab
         child: Scaffold(
-          appBar: const UniversalHeader(
+          appBar: const EnhancedUniversalHeader(
             title: 'Event Not Found',
             showLogo: false,
           ),

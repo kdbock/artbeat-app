@@ -118,7 +118,7 @@ class NavigationStepModel {
         shift += 5;
       } while (byte >= 0x20);
 
-      int deltaLat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      final int deltaLat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lat += deltaLat;
 
       shift = 0;
@@ -130,7 +130,7 @@ class NavigationStepModel {
         shift += 5;
       } while (byte >= 0x20);
 
-      int deltaLng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      final int deltaLng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
       lng += deltaLng;
 
       coordinates.add(LatLng(lat / 1E5, lng / 1E5));

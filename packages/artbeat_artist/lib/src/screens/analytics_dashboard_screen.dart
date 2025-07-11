@@ -10,7 +10,7 @@ import 'package:artbeat_artist/src/models/artwork_model.dart';
 import 'package:artbeat_artist/src/services/subscription_service.dart'
     as artist_subscription;
 import 'package:artbeat_core/artbeat_core.dart'
-    show UniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout;
 // Import provider for subscriptions
 
 /// Analytics Dashboard Screen for Artists with Pro and Gallery plans
@@ -128,7 +128,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Analytics Dashboard',
           showLogo: false,
           actions: <Widget>[

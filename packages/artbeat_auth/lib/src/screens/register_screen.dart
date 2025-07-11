@@ -3,7 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart'; // Only import local AuthService
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput, ArtbeatButton, UniversalHeader;
+    show ArtbeatColors, ArtbeatInput, ArtbeatButton, EnhancedUniversalHeader;
 import 'package:artbeat_core/src/utils/location_utils.dart' show LocationUtils;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 import 'package:artbeat_core/artbeat_core.dart' show UserService;
@@ -357,7 +357,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const UniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Create Account',
         showLogo: false,
         backgroundColor: Colors.transparent,

@@ -28,7 +28,7 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
     final chatService = Provider.of<ChatService>(context);
 
     return Scaffold(
-      appBar: const UniversalHeader(title: 'New Message', showLogo: false),
+      appBar: const EnhancedUniversalHeader(title: 'New Message', showLogo: false),
       body: Column(
         children: [
           Padding(

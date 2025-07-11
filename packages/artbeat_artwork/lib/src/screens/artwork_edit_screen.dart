@@ -285,7 +285,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const UniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Edit Artwork',
           showLogo: false,
         ),

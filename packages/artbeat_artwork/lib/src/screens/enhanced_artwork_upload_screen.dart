@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, UniversalHeader, MainLayout;
+    show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader, MainLayout;
 
 /// Enhanced artwork upload screen with support for multiple media types
 class EnhancedArtworkUploadScreen extends StatefulWidget {
@@ -537,7 +537,7 @@ class _EnhancedArtworkUploadScreenState
       return const MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: UniversalHeader(
+          appBar: EnhancedUniversalHeader(
             title: 'Enhanced Artwork Upload',
             showLogo: false,
           ),
@@ -551,7 +551,7 @@ class _EnhancedArtworkUploadScreenState
       return MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: const UniversalHeader(
+          appBar: const EnhancedUniversalHeader(
             title: 'Enhanced Artwork Upload',
             showLogo: false,
           ),
@@ -602,7 +602,7 @@ class _EnhancedArtworkUploadScreenState
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: widget.artworkId == null
               ? 'Enhanced Artwork Upload'
               : 'Edit Artwork',

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
-import 'package:artbeat_capture/artbeat_capture.dart';
 
 class FavoritesScreen extends StatefulWidget {
   final String userId;
@@ -60,63 +59,36 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return core.MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const core.UniversalHeader(
+        appBar: const core.EnhancedUniversalHeader(
           title: 'Fan of',
           showLogo: false,
         ),
         body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              core.ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
-              Colors.white,
-              core.ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
-            ],
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                core.ArtbeatColors.primaryPurple.withAlpha(13), // 0.05 opacity
+                Colors.white,
+                core.ArtbeatColors.primaryGreen.withAlpha(13), // 0.05 opacity
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: core.ArtbeatColors.primaryPurple,
+                    ),
+                  )
+                : _favorites.isEmpty
+                ? _buildEmptyState()
+                : _buildFavoritesList(),
           ),
         ),
-        child: SafeArea(
-          child: _isLoading
-              ? const Center(
-                  child: CircularProgressIndicator(
-                    color: core.ArtbeatColors.primaryPurple,
-                  ),
-                )
-              : _favorites.isEmpty
-              ? _buildEmptyState()
-              : _buildFavoritesList(),
-        ),
       ),
-      bottomNavigationBar: core.UniversalBottomNav(
-        currentIndex: -1, // No specific index for this screen
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacementNamed(context, '/dashboard');
-              break;
-            case 1:
-              Navigator.pushReplacementNamed(context, '/art-walk/dashboard');
-              break;
-            case 2:
-              Navigator.pushReplacementNamed(context, '/community/dashboard');
-              break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/events/dashboard');
-              break;
-            case 4:
-              // Open capture as modal instead of navigation
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) => const CaptureScreen(),
-                  fullscreenDialog: true,
-                ),
-              );
-              break;
-          }
-        },
-      ),
-    ));
+    );
   }
 
   Widget _buildEmptyState() {

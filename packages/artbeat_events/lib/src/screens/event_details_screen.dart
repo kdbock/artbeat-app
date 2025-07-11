@@ -69,7 +69,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return MainLayout(
       currentIndex: 3, // Events tab
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: _event?.title ?? 'Event Details',
           showLogo: false,
           actions: [

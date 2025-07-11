@@ -18,7 +18,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const UniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Chat Settings',
         showLogo: false,
       ),

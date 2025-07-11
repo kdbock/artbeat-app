@@ -417,87 +417,23 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
       backgroundColor: ArtbeatColors.backgroundSecondary,
       body: Column(
         children: [
-          // Custom header with critique focus
+          // Submit artwork button section (moved to proper position)
           Container(
-            decoration: const BoxDecoration(
-              color: ArtbeatColors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x0A000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: ArtbeatColors.primaryPurple.withAlpha(25),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.palette,
-                            color: ArtbeatColors.primaryPurple,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Critique Gallery',
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: ArtbeatColors.textPrimary,
-                                ),
-                              ),
-                              Text(
-                                'Share your art for constructive feedback',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: ArtbeatColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: _loadPosts,
-                          tooltip: 'Refresh',
-                          color: ArtbeatColors.textSecondary,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // Submit artwork button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _navigateToCreatePost,
-                        icon: const Icon(Icons.add_photo_alternate_outlined),
-                        label: const Text('Submit Artwork for Critique'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ArtbeatColors.primaryPurple,
-                          foregroundColor: ArtbeatColors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+            color: ArtbeatColors.white,
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _navigateToCreatePost,
+                icon: const Icon(Icons.add_photo_alternate_outlined),
+                label: const Text('Submit Artwork for Critique'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryPurple,
+                  foregroundColor: ArtbeatColors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),

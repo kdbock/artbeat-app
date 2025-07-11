@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'universal_bottom_nav.dart';
-import 'package:artbeat_capture/artbeat_capture.dart';
+import 'enhanced_bottom_nav.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
@@ -32,33 +31,26 @@ class _MainLayoutState extends State<MainLayout> {
           Navigator.of(context).pushReplacementNamed('/art-walk/dashboard');
           break;
         case 2:
-          Navigator.of(context).pushReplacementNamed('/community/dashboard');
+          Navigator.of(context).pushReplacementNamed('/capture/dashboard');
           break;
         case 3:
-          Navigator.of(context).pushReplacementNamed('/events/dashboard');
+          Navigator.of(context).pushReplacementNamed('/community/dashboard');
           break;
         case 4:
-          // Open capture as a modal instead of navigation
-          _openCaptureModal();
+          Navigator.of(context).pushReplacementNamed('/events/dashboard');
+          break;
+        default:
+          // Handle any other indices gracefully
           break;
       }
     }
-  }
-
-  void _openCaptureModal() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const CaptureScreen(),
-        fullscreenDialog: true,
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: UniversalBottomNav(
+      bottomNavigationBar: EnhancedBottomNav(
         currentIndex: widget.currentIndex,
         onTap: _handleNavigation,
       ),

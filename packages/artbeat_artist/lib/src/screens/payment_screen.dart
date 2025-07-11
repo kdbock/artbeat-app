@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show PaymentService, SubscriptionTier, UniversalHeader, MainLayout;
+    show PaymentService, SubscriptionTier, EnhancedUniversalHeader, MainLayout;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -29,7 +29,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: UniversalHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Subscribe to ${_getTierName(widget.tier)}',
           showLogo: false,
         ),

@@ -1,109 +1,9 @@
-Performing hot restart...                                               
-Restarted application in 623ms.
-flutter: 🔄 AppLifecycleManager initialized
-flutter: ✅ AppLifecycleManager initialized
-flutter: ConfigService initialized successfully
-flutter: ✅ ConfigService initialized
-flutter: ✅ Maps configuration initialized
-flutter: 🔄 SecureFirebaseConfig initialization state reset
-flutter: 🔥 Ensuring Firebase initialization...
-flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
-flutter: 🔥 Initializing Firebase with options...
-flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
-flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
-flutter: 🔐 Initializing App Check...
-flutter: 🔐 Debug mode: true
-flutter: 🔐 Team ID: H49R32NPY6
-flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-flutter: ⚠️ This may be expected in debug mode
-flutter: ✅ Firebase initialization completed successfully
-flutter: 🖼️ ImageManagementService initialized
-flutter: 📊 Max concurrent loads: 2
-flutter: 💾 Cache duration: 7 days
-flutter: ✅ Image management service initialized
-flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
-flutter: 🔍 Firebase apps count: 1
-flutter: 🔍 Firebase app names: [[DEFAULT]]
-flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: Loading community feed posts...
-flutter: 👤 Loading user data...
-flutter: ✅ UserSyncHelper: User document already exists
-flutter: ⏸️ UserSyncHelper: Skipping recent check for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 Loading user data...
-flutter: 👤 User data loaded: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 User found, loading captures...
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 User data loaded: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 User found, loading captures...
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ✅ Loaded 3 captures
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Starting to load achievements...
-flutter: 🏆 Current user ID: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Loading badges for user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ✅ Loaded 3 captures
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Starting to load achievements...
-flutter: 🏆 Current user ID: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Loading badges for user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: Loading community feed posts...
-flutter: Loading community feed posts...
-flutter: ✅ Loaded 3 captures
-flutter: ✅ Loaded 3 captures
-flutter: ✅ Loaded 5 achievements/badges
-flutter: ✅ Loaded 5 achievements/badges
-flutter: ✅ Loaded 3 posts
-flutter: ✅ Loaded 3 posts
-flutter: ✅ Loaded 2 artworks
-flutter: ✅ Loaded 2 artworks
-flutter: ✅ Loaded 3 artists
-flutter: ✅ Loaded 3 artists
-flutter: Loaded 3 posts
-flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
-flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
-flutter: Loaded 3 posts
-flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
-flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
-flutter: ✅ Loaded 1 events
-flutter: ✅ Loaded 1 events
-flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
-flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
-flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
-flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
-flutter: ✅ Loaded 1 events
-flutter: ✅ Loaded 1 events
-flutter: ArtistAvatar build - displayName: "Kristy Kelly", imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: ArtistAvatar build - displayName: "Danny Perez", imageUrl: "assets/default_profile.png"
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Danny Perez"
-flutter:   - imageUrl: "assets/default_profile.png"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
+ *  Executing task: flutter run 
 
-Performing hot restart...                                               
-Restarted application in 1,049ms.
+Launching lib/main.dart on iPhone 16 Pro Max in debug mode...
+Running Xcode build...                                                  
+ └─Compiling, linking and signing...                         9.6s
+Xcode build done.                                           30.8s
 flutter: 🔄 AppLifecycleManager initialized
 flutter: ✅ AppLifecycleManager initialized
 flutter: ConfigService initialized successfully
@@ -118,16 +18,7 @@ flutter: 🔥 Firebase already initialized (caught duplicate app error), using e
 flutter: 🔐 Initializing App Check...
 flutter: 🔐 Debug mode: true
 flutter: 🔐 Team ID: H49R32NPY6
-flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
+flutter: ⚠️ App Check initialization error: [firebase_app_check/code-unsupported] The operation couldn’t be completed. The attestation provider DeviceCheckProvider is not supported on current platform and OS version.
 flutter: ⚠️ This may be expected in debug mode
 flutter: ✅ Firebase initialization completed successfully
 flutter: 🖼️ ImageManagementService initialized
@@ -137,35 +28,336 @@ flutter: ✅ Image management service initialized
 flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
 flutter: 🔍 Firebase apps count: 1
 flutter: 🔍 Firebase app names: [[DEFAULT]]
+Syncing files to device iPhone 16 Pro Max...                       274ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on iPhone 16 Pro Max is available at: http://127.0.0.1:56290/X1wxniL64Z4=/
+The Flutter DevTools debugger and profiler on iPhone 16 Pro Max is available at:
+http://127.0.0.1:9101?uri=http://127.0.0.1:56290/X1wxniL64Z4=/
 flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: Loading community feed posts...
-flutter: 👤 Loading user data...
-flutter: 👤 Loading user data...
 flutter: ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
 flutter: ✅ UserSyncHelper: User document already exists
-flutter: 👤 User data loaded: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 User found, loading captures...
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 User data loaded: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 User found, loading captures...
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ✅ Loaded 3 captures
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Starting to load achievements...
-flutter: 🏆 Current user ID: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Loading badges for user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ✅ Loaded 3 captures
-flutter: 🔍 Loading captures for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Starting to load achievements...
-flutter: 🏆 Current user ID: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏆 Loading badges for user: ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: ✅ UserSyncHelper: User document already exists
+
+Performing hot reload...                                                
+Reloaded 153 of 3227 libraries in 903ms (compile: 413 ms, reload: 193 ms, reassemble: 177 ms).
+
+Performing hot reload...                                                
+Reloaded 154 of 3227 libraries in 821ms (compile: 376 ms, reload: 177 ms, reassemble: 147 ms).
+
+
+Performing hot reload...                                                
+Reloaded 1 of 3227 libraries in 458ms (compile: 64 ms, reload: 157 ms, reassemble: 168 ms).
+
+Performing hot reload...                                                
+Reloaded 2 of 3227 libraries in 409ms (compile: 77 ms, reload: 125 ms, reassemble: 163 ms).
+
+Performing hot reload...                                                
+Reloaded 1 of 3227 libraries in 432ms (compile: 55 ms, reload: 165 ms, reassemble: 151 ms).
+
+Performing hot reload...                                                
+Reloaded 1 of 3227 libraries in 419ms (compile: 56 ms, reload: 168 ms, reassemble: 153 ms).
+
+Performing hot reload...                                                
+Reloaded 1 of 3227 libraries in 411ms (compile: 49 ms, reload: 157 ms, reassemble: 126 ms).
+
+Performing hot reload...                                                
+Reloaded 1 of 3227 libraries in 378ms (compile: 39 ms, reload: 121 ms, reassemble: 155 ms).
+
+Performing hot reload...                                                
+Reloaded 1 of 3227 libraries in 374ms (compile: 29 ms, reload: 153 ms, reassemble: 154 ms).
+
+Performing hot reload...                                                
+Reloaded 155 of 3228 libraries in 924ms (compile: 516 ms, reload: 183 ms, reassemble: 178 ms).
+
+Performing hot restart...                                               
+Restarted application in 1,474ms.
+flutter: 🔄 AppLifecycleManager initialized
+flutter: ✅ AppLifecycleManager initialized
+flutter: ConfigService initialized successfully
+flutter: ✅ ConfigService initialized
+flutter: ✅ Maps configuration initialized
+flutter: 🔄 SecureFirebaseConfig initialization state reset
+flutter: 🔥 Ensuring Firebase initialization...
+flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
+flutter: 🔥 Initializing Firebase with options...
+flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
+flutter: 🔐 Initializing App Check...
+flutter: 🔐 Debug mode: true
+flutter: 🔐 Team ID: H49R32NPY6
+flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
+ - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
+ - HTTP status code: 403 
+ - Response body: {
+  "error": {
+    "code": 403,
+    "message": "App attestation failed.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+flutter: ⚠️ This may be expected in debug mode
+flutter: ✅ Firebase initialization completed successfully
+flutter: 🖼️ ImageManagementService initialized
+flutter: 📊 Max concurrent loads: 2
+flutter: 💾 Cache duration: 7 days
+flutter: ✅ Image management service initialized
+flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
+flutter: 🔍 Firebase apps count: 1
+flutter: 🔍 Firebase app names: [[DEFAULT]]
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#b159d]
+flutter: ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#8e2a8]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: Menu button pressed
+flutter: Attempting to open drawer...
+flutter: Opening drawer using GlobalKey...
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Guest"
+flutter:   - imageUrl: "null"
+flutter:   - imageUrl isEmpty: N/A
+flutter:   - will show fallback: true
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loading
+flutter:   - profileImageUrl: "null"
+flutter:   - fullName: "null"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "null"
+flutter:   - imageUrl isEmpty: N/A
+flutter:   - will show fallback: true
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+
+flutter: Building FluidDashboardScreen...
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+Performing hot reload...                                                
+Reloaded 0 libraries in 259ms (compile: 25 ms, reload: 0 ms, reassemble: 111 ms).
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+
+Performing hot restart...                                               
+Restarted application in 656ms.
+flutter: 🔄 AppLifecycleManager initialized
+flutter: ✅ AppLifecycleManager initialized
+flutter: ConfigService initialized successfully
+flutter: ✅ ConfigService initialized
+flutter: ✅ Maps configuration initialized
+flutter: 🔄 SecureFirebaseConfig initialization state reset
+flutter: 🔥 Ensuring Firebase initialization...
+flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
+flutter: 🔥 Initializing Firebase with options...
+flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
+flutter: 🔐 Initializing App Check...
+flutter: 🔐 Debug mode: true
+flutter: 🔐 Team ID: H49R32NPY6
+flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
+ - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
+ - HTTP status code: 403 
+ - Response body: {
+  "error": {
+    "code": 403,
+    "message": "App attestation failed.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+flutter: ⚠️ This may be expected in debug mode
+flutter: ✅ Firebase initialization completed successfully
+flutter: 🖼️ ImageManagementService initialized
+flutter: 📊 Max concurrent loads: 2
+flutter: 💾 Cache duration: 7 days
+flutter: ✅ Image management service initialized
+flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
+flutter: 🔍 Firebase apps count: 1
+flutter: 🔍 Firebase app names: [[DEFAULT]]
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#839b7]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: ⏸️ UserSyncHelper: Skipping recent check for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#ae1db]
+
+Performing hot restart...                                               
+Restarted application in 1,050ms.
+flutter: 🔄 AppLifecycleManager initialized
+flutter: ✅ AppLifecycleManager initialized
+flutter: ConfigService initialized successfully
+flutter: ✅ ConfigService initialized
+flutter: ✅ Maps configuration initialized
+flutter: 🔄 SecureFirebaseConfig initialization state reset
+flutter: 🔥 Ensuring Firebase initialization...
+flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
+flutter: 🔥 Initializing Firebase with options...
+flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
+flutter: 🔐 Initializing App Check...
+flutter: 🔐 Debug mode: true
+flutter: 🔐 Team ID: H49R32NPY6
+flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
+ - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
+ - HTTP status code: 403 
+ - Response body: {
+  "error": {
+    "code": 403,
+    "message": "App attestation failed.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+flutter: ⚠️ This may be expected in debug mode
+flutter: ✅ Firebase initialization completed successfully
+flutter: 🖼️ ImageManagementService initialized
+flutter: 📊 Max concurrent loads: 2
+flutter: 💾 Cache duration: 7 days
+flutter: ✅ Image management service initialized
+flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
+flutter: 🔍 Firebase apps count: 1
+flutter: 🔍 Firebase app names: [[DEFAULT]]
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#44cac]
+flutter: ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#79cdc]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#64558]
+flutter: ✅ UserSyncHelper: User document already exists
+[ERROR:flutter/runtime/dart_vm_initializer.cc(40)] Unhandled Exception: PlatformException(unknown_view, trying to dispose an unknown, view id: '0', null)
+#0      StandardMethodCodec.decodeEnvelope (package:flutter/src/services/message_codecs.dart:652:7)
+#1      MethodChannel._invokeMethod (package:flutter/src/services/platform_channel.dart:370:18)
+<asynchronous suspension>
+#2      DarwinPlatformViewController.dispose (package:flutter/src/services/platform_views.dart:1553:5)
+<asynchronous suspension>
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#04a8b]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: CameraService: Running on emulator, checking camera availability
+flutter: CameraService: Found 0 cameras
+flutter: CameraService: Camera available: false
+
+Performing hot restart...                                               
+Restarted application in 1,116ms.
+flutter: 🔄 AppLifecycleManager initialized
+flutter: ✅ AppLifecycleManager initialized
+flutter: ConfigService initialized successfully
+flutter: ✅ ConfigService initialized
+flutter: ✅ Maps configuration initialized
+flutter: 🔄 SecureFirebaseConfig initialization state reset
+flutter: 🔥 Ensuring Firebase initialization...
+flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
+flutter: 🔥 Initializing Firebase with options...
+flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
+flutter: 🔐 Initializing App Check...
+flutter: 🔐 Debug mode: true
+flutter: 🔐 Team ID: H49R32NPY6
+flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
+ - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
+ - HTTP status code: 403 
+ - Response body: {
+  "error": {
+    "code": 403,
+    "message": "App attestation failed.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+flutter: ⚠️ This may be expected in debug mode
+flutter: ✅ Firebase initialization completed successfully
+flutter: 🖼️ ImageManagementService initialized
+flutter: 📊 Max concurrent loads: 2
+flutter: 💾 Cache duration: 7 days
+flutter: ✅ Image management service initialized
+flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
+flutter: 🔍 Firebase apps count: 1
+flutter: 🔍 Firebase app names: [[DEFAULT]]
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#7837e]
+flutter: ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#bbc2f]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#89900]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#8d7cb]
+flutter: ✅ UserSyncHelper: User document already exists
 flutter: Loading community feed posts...
-flutter: ✅ Loaded 3 captures
-flutter: ✅ Loaded 3 captures
-flutter: ✅ Loaded 5 achievements/badges
-flutter: ✅ Loaded 5 achievements/badges
-flutter: ✅ Loaded 3 posts
-flutter: ✅ Loaded 3 posts
 flutter: Loaded 3 posts
 flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
 flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
@@ -173,16 +365,8 @@ flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "h
 flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
 flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
 flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
-flutter: ✅ Loaded 2 artworks
-flutter: ✅ Loaded 2 artworks
-flutter: ✅ Loaded 3 artists
-flutter: ✅ Loaded 3 artists
-flutter: ✅ Loaded 1 events
-flutter: ✅ Loaded 1 events
 flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
 flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
-flutter: ✅ Loaded 1 events
-flutter: ✅ Loaded 1 events
 flutter: ArtistAvatar build - displayName: "Kristy Kelly", imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
 flutter: 🔍 UserAvatar build:
 flutter:   - displayName: "Kristy Kelly"
@@ -195,54 +379,468 @@ flutter:   - displayName: "Danny Perez"
 flutter:   - imageUrl: "assets/default_profile.png"
 flutter:   - imageUrl isEmpty: false
 flutter:   - will show fallback: false
-flutter: ❌ Flutter Error caught by ErrorBoundary: 'package:cached_network_image/src/image_provider/_image_loader.dart': Failed assertion: line 90 pos 11: 'cacheManager is ImageCacheManager ||
-              (maxWidth == null && maxHeight == null)': To resize the image with a CacheManager the CacheManager needs to be an ImageCacheManager. maxWidth and maxHeight will be ignored when a normal CacheManager is used.
-flutter: ❌ Stack trace: #0      _AssertionError._doThrowNew (dart:core-patch/errors_patch.dart:67:4)
-#1      _AssertionError._throwNew (dart:core-patch/errors_patch.dart:49:5)
-#2      ImageLoader._load (package:cached_network_image/src/image_provider/_image_loader.dart:90:11)
-<asynchronous suspension>
-#3      new MultiImageStreamCompleter.<anonymous closure> (package:cached_network_image/src/image_provider/multi_image_stream_completer.dart:26:7)
-<asynchronous suspension>
-flutter: ❌ App-level error caught: 'package:cached_network_image/src/image_provider/_image_loader.dart': Failed assertion: line 90 pos 11: 'cacheManager is ImageCacheManager ||
-flutter:               (maxWidth == null && maxHeight == null)': To resize the image with a CacheManager the CacheManager needs to be an ImageCacheManager. maxWidth and maxHeight will be ignored when a normal CacheManager is used.
-flutter: ❌ Stack trace: #0      _AssertionError._doThrowNew (dart:core-patch/errors_patch.dart:67:4)
-flutter: #1      _AssertionError._throwNew (dart:core-patch/errors_patch.dart:49:5)
-flutter: #2      ImageLoader._load (package:cached_network_image/src/image_provider/_image_loader.dart:90:11)
-flutter: <asynchronous suspension>
-flutter: #3      new MultiImageStreamCompleter.<anonymous closure> (package:cached_network_image/src/image_provider/multi_image_stream_completer.dart:26:7)
-flutter: <asynchronous suspension>
-flutter:
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#4ee4f]
+flutter: Menu button pressed
+flutter: Attempting to open drawer...
+flutter: Opening drawer using GlobalKey...
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Guest"
+flutter:   - imageUrl: "null"
+flutter:   - imageUrl isEmpty: N/A
+flutter:   - will show fallback: true
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loading
+flutter:   - profileImageUrl: "null"
+flutter:   - fullName: "null"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "null"
+flutter:   - imageUrl isEmpty: N/A
+flutter:   - will show fallback: true
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
 
-══╡ EXCEPTION CAUGHT BY IMAGE RESOURCE SERVICE
-╞════════════════════════════════════════════════════
-The following assertion was thrown resolving an image codec:
-To resize the image with a CacheManager the CacheManager needs to be an
-ImageCacheManager. maxWidth
-and maxHeight will be ignored when a normal CacheManager is used.
-'package:cached_network_image/src/image_provider/_image_loader.dart':
-Failed assertion: line 90 pos 11: 'cacheManager is ImageCacheManager ||
-              (maxWidth == null && maxHeight == null)'
+Performing hot restart...                                               
+Restarted application in 1,133ms.
+flutter: 🔄 AppLifecycleManager initialized
+flutter: ✅ AppLifecycleManager initialized
+flutter: ConfigService initialized successfully
+flutter: ✅ ConfigService initialized
+flutter: ✅ Maps configuration initialized
+flutter: 🔄 SecureFirebaseConfig initialization state reset
+flutter: 🔥 Ensuring Firebase initialization...
+flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
+flutter: 🔥 Initializing Firebase with options...
+flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
+flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
+flutter: 🔐 Initializing App Check...
+flutter: 🔐 Debug mode: true
+flutter: 🔐 Team ID: H49R32NPY6
+flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
+ - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
+ - HTTP status code: 403 
+ - Response body: {
+  "error": {
+    "code": 403,
+    "message": "App attestation failed.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+flutter: ⚠️ This may be expected in debug mode
+flutter: ✅ Firebase initialization completed successfully
+flutter: 🖼️ ImageManagementService initialized
+flutter: 📊 Max concurrent loads: 2
+flutter: 💾 Cache duration: 7 days
+flutter: ✅ Image management service initialized
+flutter: 🔍 Firebase Status: {initialized: true, appCheckInitialized: true, appsCount: 1, debug: true, teamId: H49R32NPY6, tokenTTL: null, hasCurrentApp: true, appNames: [[DEFAULT]]}
+flutter: 🔍 Firebase apps count: 1
+flutter: 🔍 Firebase app names: [[DEFAULT]]
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#2bbb9]
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#9f227]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#95393]
+flutter: Error getting location: PlatformException(channel-error, Unable to establish connection on channel: "dev.flutter.pigeon.google_maps_flutter_ios.MapsApi.animateCamera.3"., null, null)
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#f04cd]
+flutter: Loading community feed posts...
+flutter: Loaded 3 posts
+flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
+flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
+flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
+flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
+flutter: ArtistAvatar build - displayName: "Kristy Kelly", imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: ArtistAvatar build - displayName: "Danny Perez", imageUrl: "assets/default_profile.png"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Danny Perez"
+flutter:   - imageUrl: "assets/default_profile.png"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#2fabb]
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#5e096]
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#0dab7]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: Loading community feed posts...
+flutter: Loaded 3 posts
+flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
+flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
+flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
+flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
+flutter: ArtistAvatar build - displayName: "Kristy Kelly", imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: ArtistAvatar build - displayName: "Danny Perez", imageUrl: "assets/default_profile.png"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Danny Perez"
+flutter:   - imageUrl: "assets/default_profile.png"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#21e71]
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#23e3a]
+flutter: ✅ UserSyncHelper: User document already exists
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#3d75a]
+flutter: Loading community feed posts...
+flutter: Loaded 3 posts
+flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
+flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
+flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
+flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
+flutter: ArtistAvatar build - displayName: "Kristy Kelly", imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: ArtistAvatar build - displayName: "Danny Perez", imageUrl: "assets/default_profile.png"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Danny Perez"
+flutter:   - imageUrl: "assets/default_profile.png"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#cd0e8]
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#2fef0]
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: Building FluidDashboardScreen...
+flutter: FluidDashboardScreen initialized
+flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#5e8c5]
+flutter: Error getting location: PlatformException(channel-error, Unable to establish connection on channel: "dev.flutter.pigeon.google_maps_flutter_ios.MapsApi.animateCamera.26"., null, null)
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: 🚀 CaptureService.getAllCaptures() called with limit: 50
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: ✅ CaptureService.getAllCaptures() found 4 captures
+flutter: CameraService: Running on emulator, checking camera availability
+flutter: CameraService: Found 0 cameras
+flutter: CameraService: Camera available: false
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Guest"
+flutter:   - imageUrl: "null"
+flutter:   - imageUrl isEmpty: N/A
+flutter:   - will show fallback: true
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loading
+flutter:   - profileImageUrl: "null"
+flutter:   - fullName: "null"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "null"
+flutter:   - imageUrl isEmpty: N/A
+flutter:   - will show fallback: true
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: 🔄 ProfileViewScreen: Loading profile for user ID: ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: 🔄 ProfileViewScreen: Loading captures for user ID: ARFuyX0C44PbYlHSUSlQx55b9vt2
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: ✅ ProfileViewScreen: User profile loaded successfully
+flutter: ❌ Flutter Error caught by ErrorBoundary: RangeError (length): Invalid value: Not in inclusive range 0..4: -1
+flutter: ❌ Stack trace: #0      List.[] (dart:core-patch/growable_array.dart)
+#1      _EnhancedBottomNavState._initializeAnimations (package:artbeat_core/src/widgets/enhanced_bottom_nav.dart:71:19)
+#2      _EnhancedBottomNavState.initState (package:artbeat_core/src/widgets/enhanced_bottom_nav.dart:49:5)
+#3      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5842:55)
+#4      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#5      Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#6      Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+#7      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#8      Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#9      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+#11     Element.inflateWi<…>
+flutter: ❌ App-level error caught: RangeError (length): Invalid value: Not in inclusive range 0..4: -1
+flutter: ❌ Stack trace: #0      List.[] (dart:core-patch/growable_array.dart)
+flutter: #1      _EnhancedBottomNavState._initializeAnimations (package:artbeat_core/src/widgets/enhanced_bottom_nav.dart:71:19)
+flutter: #2      _EnhancedBottomNavState.initState (package:artbeat_core/src/widgets/enhanced_bottom_nav.dart:49:5)
+flutter: #3      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5842:55)
+flutter: #4      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #5      Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #6      Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #7      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #8      Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #9      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #11     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #12     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #13     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #14     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #15     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #16     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #17     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #18     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7159:36)
+flutter: #19     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7175:32)
+flutter: #20     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #21     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #22     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #23     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #24     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #25     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #26     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #27     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #28     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #29     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #30     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #31     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #32     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #33     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #34     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #35     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #36     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #37     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #38     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #39     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #40     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #41     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #42     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #43     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #44     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #45     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #46     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #47     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #48     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #49     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #50     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #51     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #52     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #53     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #54     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #55     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #56     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #57     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #58     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+flutter: #59     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #60     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #61     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #62     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #63     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #64     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #65     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #66     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #67     SingleChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7008:14)
+flutter: #68     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #69     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #70     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #71     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #72     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #73     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #74     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #75     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #76     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #77     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #78     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #79     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #80     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #81     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #82     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #83     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #84     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #85     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #86     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #87     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #88     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #89     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #90     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #91     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #92     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #93     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #94     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #95     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #96     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #97     Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #98     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #99     Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #100    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #101    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #102    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #103    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #104    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #105    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #106    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #107    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #108    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #109    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #110    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #111    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #112    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #113    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #114    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #115    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #116    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #117    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #118    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #119    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #120    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #121    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #122    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #123    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #124    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #125    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+flutter: #126    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #127    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following RangeError was thrown building MediaQuery(MediaQueryData(size: Size(440.0, 956.0),
+devicePixelRatio: 3.0, textScaler: no scaling, platformBrightness: Brightness.light, padding:
+EdgeInsets(0.0, 0.0, 0.0, 34.0), viewPadding: EdgeInsets(0.0, 0.0, 0.0, 34.0), viewInsets:
+EdgeInsets.zero, systemGestureInsets: EdgeInsets.zero, alwaysUse24HourFormat: false,
+accessibleNavigation: false, highContrast: false, onOffSwitchLabels: false, disableAnimations:
+false, invertColors: false, boldText: false, navigationMode: traditional, gestureSettings:
+DeviceGestureSettings(touchSlop: null), displayFeatures: [], supportsShowingSystemContextMenu:
+true)):
+RangeError (length): Invalid value: Not in inclusive range 0..4: -1
+
+The relevant error-causing widget was:
+  Scaffold
+  Scaffold:file:///Users/kristybock/artbeat/packages/artbeat_core/lib/src/widgets/main_layout.dart:51:12
 
 When the exception was thrown, this was the stack:
-#2      ImageLoader._load
-(package:cached_network_image/src/image_provider/_image_loader.dart:90:11)
-<asynchronous suspension>
-#3      new MultiImageStreamCompleter.<anonymous closure>
-(package:cached_network_image/src/image_provider/multi_image_stream_completer.dart:
-26:7)
-<asynchronous suspension>
-(elided 2 frames from class _AssertionError)
+#0      List.[] (dart:core-patch/growable_array.dart)
+#1      _EnhancedBottomNavState._initializeAnimations (package:artbeat_core/src/widgets/enhanced_bottom_nav.dart:71:19)
+#2      _EnhancedBottomNavState.initState (package:artbeat_core/src/widgets/enhanced_bottom_nav.dart:49:5)
+#3      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5842:55)
+#4      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+...     Normal element mounting (13 frames)
+#17     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#18     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7159:36)
+#19     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7175:32)
+...     Normal element mounting (113 frames)
+#132    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+#133    Element.updateChild (package:flutter/src/widgets/framework.dart:3998:20)
+#134    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+#135    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+#136    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+#137    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2694:15)
+#138    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
+#139    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
+#140    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1240:21)
+#141    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#142    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+#143    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+#144    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+#145    _invoke (dart:ui/hooks.dart:331:13)
+#146    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+#147    _drawFrame (dart:ui/hooks.dart:303:31)
 
-Image provider:
-  CachedNetworkImageProvider("https://firebasestorage.googleapis.com/v0/b/wordnerd-
-  artbeat.firebasestorage.app/o/post_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fpost_1
-  750782030597_0.jpg?alt=media&token=f36a3dd6-f7f3-4390-a5b7-8e5523353f3a",
-  scale: 1.0)
-Image key:
-  CachedNetworkImageProvider("https://firebasestorage.googleapis.com/v0/b/wordnerd-
-  artbeat.firebasestorage.app/o/post_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fpost_1
-  750782030597_0.jpg?alt=media&token=f36a3dd6-f7f3-4390-a5b7-8e5523353f3a",
-  scale: 1.0)
-═══════════════════════════════════════════════════════════════════════════════════
-═════════════════
+════════════════════════════════════════════════════════════════════════════════════════════════════
 
+flutter: #128    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #129    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5697:5)
+flutter: #130    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5865:11)
+flutter: #131    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5691:5)
+flutter: #132    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4539:16)
+flutter: #133    Element.updateChild (package:flutter/src/widgets/framework.dart:3998:20)
+flutter: #134    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5738:16)
+flutter: #135    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5874:11)
+flutter: #136    Element.rebuild (package:flutter/src/widgets/framework.dart:5427:7)
+flutter: #137    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2694:15)
+flutter: #138    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
+flutter: #139    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
+flutter: #140    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1240:21)
+flutter: #141    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+flutter: #142    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+flutter: #143    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+flutter: #144    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+flutter: #145    _invoke (dart:ui/hooks.dart:331:13)
+flutter: #146    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+flutter: #147    _drawFrame (dart:ui/hooks.dart:303:31)
+flutter:
+flutter: 🗂️ Drawer UserAvatar data:
+flutter:   - userModel: loaded
+flutter:   - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - fullName: "Kristy Kelly"
+flutter: 🔍 UserAvatar build:
+flutter:   - displayName: "Kristy Kelly"
+flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
+flutter:   - imageUrl isEmpty: false
+flutter:   - will show fallback: false
+flutter: ✅ ProfileViewScreen: Found 3 captures
