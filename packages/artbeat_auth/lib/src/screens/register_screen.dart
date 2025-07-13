@@ -10,7 +10,9 @@ import 'package:artbeat_core/artbeat_core.dart' show UserService;
 
 /// Registration screen with email/password account creation
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final AuthService? authService; // Optional for testing
+
+  const RegisterScreen({super.key, this.authService});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -25,9 +27,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  final _authService = AuthService();
+  late final AuthService _authService;
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
+
   bool _obscureConfirmPassword = true;
   String? _errorMessage;
   bool _agreedToTerms = false;

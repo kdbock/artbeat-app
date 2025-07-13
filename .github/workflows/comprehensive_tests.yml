@@ -1,0 +1,421 @@
+name: Comprehensive Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  # Pre-flight checks
+  pre_flight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_run_tests: ${{ steps.changes.outputs.should_run }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for relevant changes
+        id: changes
+        run: |
+          if git diff --name-only HEAD~1 | grep -E '\.(dart|yaml|yml)$' > /dev/null; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Code quality checks
+  code_quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    needs: pre_flight
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Verify Flutter installation
+        run: |
+          flutter --version
+          flutter doctor -v
+
+      - name: Get dependencies (main app)
+        run: flutter pub get
+
+      - name: Check code formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze code (main app)
+        run: flutter analyze --no-pub
+
+      - name: Check for unused dependencies
+        run: |
+          flutter pub deps
+          # Add additional checks for unused dependencies if needed
+
+      - name: Analyze packages
+        run: |
+          for package_dir in packages/*/; do
+            if [ -d "$package_dir" ]; then
+              package_name=$(basename "$package_dir")
+              echo "Analyzing $package_name..."
+              cd "$package_dir"
+              
+              if [ -f "pubspec.yaml" ]; then
+                flutter pub get
+                flutter analyze --no-pub
+              fi
+              
+              cd - > /dev/null
+            fi
+          done
+
+  # Unit tests for main app
+  main_app_tests:
+    name: Main App Tests
+    runs-on: ubuntu-latest
+    needs: [pre_flight, code_quality]
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test --coverage --reporter expanded
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: main_app
+          name: main-app-coverage
+
+  # Package tests matrix
+  package_tests:
+    name: Package Tests
+    runs-on: ubuntu-latest
+    needs: [pre_flight, code_quality]
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - artbeat_core
+          - artbeat_auth
+          - artbeat_profile
+          - artbeat_artwork
+          - artbeat_art_walk
+          - artbeat_artist
+          - artbeat_messaging
+          - artbeat_events
+          - artbeat_community
+          - artbeat_capture
+          - artbeat_settings
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Test ${{ matrix.package }}
+        run: |
+          package_dir="packages/${{ matrix.package }}"
+
+          if [ ! -d "$package_dir" ]; then
+            echo "Package directory $package_dir does not exist"
+            exit 1
+          fi
+
+          cd "$package_dir"
+
+          # Check if pubspec.yaml exists
+          if [ ! -f "pubspec.yaml" ]; then
+            echo "No pubspec.yaml found for ${{ matrix.package }}"
+            exit 1
+          fi
+
+          # Get dependencies
+          flutter pub get
+
+          # Check if test directory exists
+          if [ ! -d "test" ]; then
+            echo "No test directory found for ${{ matrix.package }}"
+            exit 0
+          fi
+
+          # Check if there are test files
+          if [ -z "$(find test -name '*.dart' -type f)" ]; then
+            echo "No test files found for ${{ matrix.package }}"
+            exit 0
+          fi
+
+          # Run tests
+          flutter test --coverage --reporter expanded
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: packages/${{ matrix.package }}/coverage/lcov.info
+          flags: ${{ matrix.package }}
+          name: ${{ matrix.package }}-coverage
+        if: hashFiles(format('packages/{0}/coverage/lcov.info', matrix.package)) != ''
+
+  # Integration tests
+  integration_tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [pre_flight, code_quality, main_app_tests]
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: |
+          if [ -d "test/integration" ]; then
+            flutter test test/integration/ --reporter expanded
+          else
+            echo "No integration tests found"
+          fi
+
+  # Build tests
+  build_tests:
+    name: Build Tests
+    runs-on: ubuntu-latest
+    needs: [pre_flight, code_quality]
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    strategy:
+      matrix:
+        platform: [android, web]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Setup Android SDK (for Android builds)
+        if: matrix.platform == 'android'
+        uses: android-actions/setup-android@v3
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build for ${{ matrix.platform }}
+        run: |
+          case "${{ matrix.platform }}" in
+            android)
+              flutter build apk --debug --no-pub
+              ;;
+            web)
+              flutter build web --no-pub
+              ;;
+          esac
+
+  # Security and dependency checks
+  security_checks:
+    name: Security Checks
+    runs-on: ubuntu-latest
+    needs: pre_flight
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run dependency vulnerability check
+        run: |
+          # Check for known vulnerabilities in dependencies
+          flutter pub deps --style=list > dependencies.txt
+
+          # Basic check for common vulnerable packages (extend as needed)
+          if grep -q "vulnerable_package" dependencies.txt; then
+            echo "Warning: Potentially vulnerable dependencies found"
+          fi
+
+      - name: Check for secrets in code
+        run: |
+          # Basic check for potential secrets (API keys, tokens, etc.)
+          if grep -r -E "(api_key|secret|token|password)" --include="*.dart" . | grep -v test | grep -v "// TODO" | grep -v "example"; then
+            echo "Warning: Potential secrets found in code"
+            exit 1
+          fi
+
+  # Performance tests
+  performance_tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: [pre_flight, code_quality]
+    if: needs.pre_flight.outputs.should_run_tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run performance tests
+        run: |
+          # Check for performance test files
+          if find test -name "*_performance_test.dart" -type f | grep -q .; then
+            flutter test test/*_performance_test.dart --reporter expanded
+          else
+            echo "No performance tests found"
+          fi
+
+      - name: Analyze bundle size
+        run: |
+          flutter build web --no-pub
+          web_size=$(du -sh build/web | cut -f1)
+          echo "Web bundle size: $web_size"
+
+          # You can add bundle size limits here
+          # if [[ "$web_size" > "50M" ]]; then
+          #   echo "Warning: Web bundle size is too large"
+          # fi
+
+  # Test result summary
+  test_summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs:
+      [
+        main_app_tests,
+        package_tests,
+        integration_tests,
+        build_tests,
+        security_checks,
+      ]
+    if: always() && needs.pre_flight.outputs.should_run_tests == 'true'
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "Test Results Summary:"
+          echo "===================="
+
+          # Check if any required jobs failed
+          if [[ "${{ needs.main_app_tests.result }}" == "failure" ]]; then
+            echo "❌ Main app tests failed"
+            exit 1
+          elif [[ "${{ needs.main_app_tests.result }}" == "success" ]]; then
+            echo "✅ Main app tests passed"
+          fi
+
+          if [[ "${{ needs.package_tests.result }}" == "failure" ]]; then
+            echo "❌ Some package tests failed"
+            exit 1
+          elif [[ "${{ needs.package_tests.result }}" == "success" ]]; then
+            echo "✅ Package tests passed"
+          fi
+
+          if [[ "${{ needs.integration_tests.result }}" == "failure" ]]; then
+            echo "❌ Integration tests failed"
+            exit 1
+          elif [[ "${{ needs.integration_tests.result }}" == "success" ]]; then
+            echo "✅ Integration tests passed"
+          fi
+
+          if [[ "${{ needs.build_tests.result }}" == "failure" ]]; then
+            echo "❌ Build tests failed"
+            exit 1
+          elif [[ "${{ needs.build_tests.result }}" == "success" ]]; then
+            echo "✅ Build tests passed"
+          fi
+
+          if [[ "${{ needs.security_checks.result }}" == "failure" ]]; then
+            echo "❌ Security checks failed"
+            exit 1
+          elif [[ "${{ needs.security_checks.result }}" == "success" ]]; then
+            echo "✅ Security checks passed"
+          fi
+
+          echo ""
+          echo "🎉 All tests passed successfully!"
+
+  # Cleanup and notifications (optional)
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [test_summary]
+    if: always()
+
+    steps:
+      - name: Clean up temporary files
+        run: |
+          echo "Cleaning up temporary files..."
+          # Add cleanup commands if needed
+
+      - name: Notify on failure (optional)
+        if: failure()
+        run: |
+          echo "Tests failed. Consider setting up notifications here."
+          # You can add Slack, Discord, or email notifications here

@@ -5,14 +5,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'package:logging/logging.dart';
 
 import '../models/user_model.dart';
+import '../models/user_type.dart';
 import '../storage/enhanced_storage_service.dart';
 
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
-  final _log = Logger('UserService');
   bool _disposed = false;
 
   factory UserService() {
@@ -25,14 +24,23 @@ class UserService extends ChangeNotifier {
   bool _firebaseInitialized = false;
 
   UserService._internal() {
-    // Don't initialize Firebase instances immediately
-    // Let them be initialized lazily when first accessed
+    _logDebug('Initializing UserService');
+  }
+
+  void _logDebug(String message) {
+    debugPrint('👤 UserService: $message');
+  }
+
+  void _logError(String message, [Object? error, StackTrace? stackTrace]) {
+    debugPrint('❌ UserService Error: $message');
+    if (error != null) debugPrint('Error details: $error');
+    if (stackTrace != null) debugPrint('Stack trace: $stackTrace');
   }
 
   @override
   void dispose() {
-    // Don't dispose the singleton instance
     _disposed = true;
+    super.dispose();
   }
 
   @override
@@ -42,6 +50,7 @@ class UserService extends ChangeNotifier {
     }
   }
 
+  // Firebase initialization
   void _initializeFirebase() {
     if (_firebaseInitialized) return;
 
@@ -50,12 +59,13 @@ class UserService extends ChangeNotifier {
       _firestore = FirebaseFirestore.instance;
       _storage = FirebaseStorage.instance;
       _firebaseInitialized = true;
+      _logDebug('Firebase initialized successfully');
     } catch (e, s) {
-      _log.severe('Error initializing Firebase in UserService', e, s);
+      _logError('Error initializing Firebase', e, s);
     }
   }
 
-  // Lazy getters that initialize Firebase when first accessed
+  // Getters
   FirebaseAuth get auth {
     _initializeFirebase();
     return _auth;
@@ -79,61 +89,9 @@ class UserService extends ChangeNotifier {
 
   User? get currentUser => auth.currentUser;
   String? get currentUserId => currentUser?.uid;
-
   Stream<User?> get authStateChanges => auth.authStateChanges();
 
-  Future<void> createNewUser({
-    required String uid,
-    required String email,
-    String? displayName,
-    String? zipCode,
-  }) async {
-    try {
-      _log.info('Creating new user document for UID: $uid, email: $email');
-
-      // Check if user document already exists
-      final userDoc = await _usersCollection.doc(uid).get();
-      if (userDoc.exists) {
-        _log.info('User document already exists for UID: $uid. Updating...');
-        // Update any missing fields
-        await _usersCollection.doc(uid).set({
-          'email': email,
-          'fullName': displayName ?? '',
-          if (zipCode != null) 'zipCode': zipCode,
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        return;
-      }
-
-      final UserModel userData = UserModel(
-        id: uid,
-        email: email,
-        username: displayName ?? '',
-        fullName: displayName ?? '',
-        createdAt: DateTime.now(),
-        experiencePoints: 0,
-        level: 1,
-      );
-
-      _log.info('Creating new document with data: ${userData.toJson()}');
-      await _usersCollection.doc(uid).set(userData.toJson());
-      _log.info('✅ User document successfully created.');
-
-      // Verify document creation
-      final verifyDoc = await _usersCollection.doc(uid).get();
-      if (verifyDoc.exists) {
-        _log.info('✅ Document verification successful');
-      } else {
-        _log.severe(
-          '❌ Document verification failed - document not found after creation',
-        );
-      }
-    } catch (e, s) {
-      _log.severe('Error creating new user', e, s);
-    }
-  }
-
-  // Get current user
+  // User operations
   Future<UserModel?> getCurrentUserModel() async {
     final user = currentUser;
     if (user == null) return null;
@@ -145,12 +103,11 @@ class UserService extends ChangeNotifier {
       }
       return null;
     } catch (e, s) {
-      _log.severe('Error getting current user model', e, s);
+      _logError('Error getting current user model', e, s);
       return null;
     }
   }
 
-  // Get user by ID
   Future<UserModel?> getUserById(String userId) async {
     try {
       final doc = await _usersCollection.doc(userId).get();
@@ -159,12 +116,11 @@ class UserService extends ChangeNotifier {
       }
       return null;
     } catch (e, s) {
-      _log.severe('Error getting user by ID', e, s);
+      _logError('Error getting user by ID', e, s);
       return null;
     }
   }
 
-  /// Refresh current user data from Firestore
   Future<void> refreshUserData() async {
     try {
       final user = currentUser;
@@ -173,25 +129,25 @@ class UserService extends ChangeNotifier {
       }
       notifyListeners();
     } catch (e, s) {
-      _log.warning('Error refreshing user data', e, s);
+      _logError('Error refreshing user data', e, s);
     }
   }
 
-  /// Get user profile data
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     try {
       final doc = await _usersCollection.doc(userId).get();
       return doc.data() as Map<String, dynamic>?;
     } catch (e, s) {
-      _log.severe('Error getting user profile', e, s);
+      _logError('Error getting user profile', e, s);
       return null;
     }
   }
 
-  // Update display name
+  // Profile updates
   Future<void> updateDisplayName(String displayName) async {
     final userId = currentUserId;
     if (userId == null) return;
+
     try {
       await _usersCollection.doc(userId).set({
         'fullName': displayName,
@@ -199,11 +155,10 @@ class UserService extends ChangeNotifier {
       await currentUser?.updateDisplayName(displayName);
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error updating display name', e, s);
+      _logError('Error updating display name', e, s);
     }
   }
 
-  // Update user profile
   Future<void> updateUserProfile({
     String? fullName,
     String? bio,
@@ -225,7 +180,7 @@ class UserService extends ChangeNotifier {
       await _usersCollection.doc(userId).set(updates, SetOptions(merge: true));
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error updating user profile', e, s);
+      _logError('Error updating user profile', e, s);
     }
   }
 
@@ -242,22 +197,20 @@ class UserService extends ChangeNotifier {
       notifyListeners();
       debugPrint('✅ Updated user ZIP code to: $zipCode');
     } catch (e, s) {
-      _log.severe('Error updating user ZIP code', e, s);
+      _logError('Error updating user ZIP code', e, s);
     }
   }
 
-  // Upload and update profile photo with optimization
+  // Upload photo methods
   Future<void> uploadAndUpdateProfilePhoto(File imageFile) async {
     final userId = currentUserId;
     if (userId == null) {
-      debugPrint('❌ uploadAndUpdateProfilePhoto: No current user ID');
+      _logError('No current user ID');
       return;
     }
 
     try {
-      debugPrint(
-        '📤 uploadAndUpdateProfilePhoto: Starting optimized upload for user $userId',
-      );
+      _logDebug('Starting optimized profile photo upload for user $userId');
 
       // Use enhanced storage service for optimized upload
       final enhancedStorage = EnhancedStorageService();
@@ -268,9 +221,9 @@ class UserService extends ChangeNotifier {
       );
 
       final url = result['imageUrl']!;
-      debugPrint('🔗 uploadAndUpdateProfilePhoto: Download URL: $url');
-      debugPrint('📊 Original size: ${result['originalSize']}');
-      debugPrint('📊 Compressed size: ${result['compressedSize']}');
+      _logDebug('Download URL: $url');
+      _logDebug('Original size: ${result['originalSize']}');
+      _logDebug('Compressed size: ${result['compressedSize']}');
 
       // Update Firestore with both main image and thumbnail
       final updateData = {'profileImageUrl': url};
@@ -282,48 +235,38 @@ class UserService extends ChangeNotifier {
       await _usersCollection
           .doc(userId)
           .set(updateData, SetOptions(merge: true));
-      debugPrint('✅ uploadAndUpdateProfilePhoto: Firestore document updated');
+      _logDebug('Firestore document updated');
 
       await currentUser?.updatePhotoURL(url);
-      debugPrint(
-        '✅ uploadAndUpdateProfilePhoto: Firebase Auth profile updated',
-      );
+      _logDebug('Firebase Auth profile updated');
 
       notifyListeners();
-      debugPrint('✅ uploadAndUpdateProfilePhoto: Listeners notified');
+      _logDebug('Listeners notified');
     } catch (e, s) {
-      debugPrint('❌ uploadAndUpdateProfilePhoto: Error occurred: $e');
-      _log.severe('Error uploading profile photo', e, s);
+      _logError('Error uploading profile photo', e, s);
     }
   }
 
-  // Upload and update cover photo with optimization
   Future<void> uploadAndUpdateCoverPhoto(File imageFile) async {
     final userId = currentUserId;
     if (userId == null) return;
 
     try {
-      debugPrint(
-        '📤 uploadAndUpdateCoverPhoto: Starting optimized upload for user $userId',
-      );
+      _logDebug('Starting optimized cover photo upload for user $userId');
 
-      // Use enhanced storage service for optimized upload
       final enhancedStorage = EnhancedStorageService();
       final result = await enhancedStorage.uploadImageWithOptimization(
         imageFile: imageFile,
-        category:
-            'artwork', // Use artwork category for cover photos (larger dimensions)
+        category: 'artwork',
         generateThumbnail: true,
       );
 
       final url = result['imageUrl']!;
-      debugPrint('🔗 uploadAndUpdateCoverPhoto: Download URL: $url');
-      debugPrint('📊 Original size: ${result['originalSize']}');
-      debugPrint('📊 Compressed size: ${result['compressedSize']}');
+      _logDebug('Download URL: $url');
+      _logDebug('Original size: ${result['originalSize']}');
+      _logDebug('Compressed size: ${result['compressedSize']}');
 
-      // Update Firestore with both main image and thumbnail
       final updateData = {'coverImageUrl': url};
-
       if (result['thumbnailUrl'] != null) {
         updateData['coverImageThumbnailUrl'] = result['thumbnailUrl']!;
       }
@@ -331,13 +274,12 @@ class UserService extends ChangeNotifier {
       await _usersCollection
           .doc(userId)
           .set(updateData, SetOptions(merge: true));
-      debugPrint('✅ uploadAndUpdateCoverPhoto: Firestore document updated');
+      _logDebug('Firestore document updated');
 
       notifyListeners();
-      debugPrint('✅ uploadAndUpdateCoverPhoto: Listeners notified');
+      _logDebug('Listeners notified');
     } catch (e, s) {
-      debugPrint('❌ uploadAndUpdateCoverPhoto: Error occurred: $e');
-      _log.severe('Error uploading cover photo', e, s);
+      _logError('Error uploading cover photo', e, s);
     }
   }
 
@@ -347,29 +289,36 @@ class UserService extends ChangeNotifier {
     if (userId == null || userId == targetUserId) return;
 
     try {
+      _logDebug('Following user: $targetUserId');
       final batch = firestore.batch();
+
       // Add to following list of current user
       batch.set(
         _followingCollection.doc(userId).collection('users').doc(targetUserId),
         {'timestamp': FieldValue.serverTimestamp()},
       );
+
       // Add to followers list of target user
       batch.set(
         _followersCollection.doc(targetUserId).collection('users').doc(userId),
         {'timestamp': FieldValue.serverTimestamp()},
       );
+
       // Increment following count for current user
       batch.update(_usersCollection.doc(userId), {
         'followingCount': FieldValue.increment(1),
       });
+
       // Increment followers count for target user
       batch.update(_usersCollection.doc(targetUserId), {
         'followersCount': FieldValue.increment(1),
       });
+
       await batch.commit();
+      _logDebug('Successfully followed user: $targetUserId');
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error following user', e, s);
+      _logError('Error following user', e, s);
     }
   }
 
@@ -379,27 +328,34 @@ class UserService extends ChangeNotifier {
     if (userId == null) return;
 
     try {
+      _logDebug('Unfollowing user: $targetUserId');
       final batch = firestore.batch();
+
       // Remove from following list of current user
       batch.delete(
         _followingCollection.doc(userId).collection('users').doc(targetUserId),
       );
+
       // Remove from followers list of target user
       batch.delete(
         _followersCollection.doc(targetUserId).collection('users').doc(userId),
       );
+
       // Decrement following count for current user
       batch.update(_usersCollection.doc(userId), {
         'followingCount': FieldValue.increment(-1),
       });
+
       // Decrement followers count for target user
       batch.update(_usersCollection.doc(targetUserId), {
         'followersCount': FieldValue.increment(-1),
       });
+
       await batch.commit();
+      _logDebug('Successfully unfollowed user: $targetUserId');
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error unfollowing user', e, s);
+      _logError('Error unfollowing user', e, s);
     }
   }
 
@@ -419,7 +375,7 @@ class UserService extends ChangeNotifier {
           .map((doc) => UserModel.fromDocumentSnapshot(doc))
           .toList();
     } catch (e, s) {
-      _log.severe('Error getting followers', e, s);
+      _logError('Error getting followers', e, s);
       return [];
     }
   }
@@ -440,7 +396,7 @@ class UserService extends ChangeNotifier {
           .map((doc) => UserModel.fromDocumentSnapshot(doc))
           .toList();
     } catch (e, s) {
-      _log.severe('Error getting following', e, s);
+      _logError('Error getting following', e, s);
       return [];
     }
   }
@@ -458,7 +414,7 @@ class UserService extends ChangeNotifier {
           .get();
       return doc.exists;
     } catch (e, s) {
-      _log.severe('Error checking if following', e, s);
+      _logError('Error checking if following', e, s);
       return false;
     }
   }
@@ -476,7 +432,7 @@ class UserService extends ChangeNotifier {
           .map((doc) => UserModel.fromDocumentSnapshot(doc))
           .toList();
     } catch (e, s) {
-      _log.severe('Error searching users', e, s);
+      _logError('Error searching users', e, s);
       return [];
     }
   }
@@ -490,7 +446,7 @@ class UserService extends ChangeNotifier {
           .map((doc) => UserModel.fromDocumentSnapshot(doc))
           .toList();
     } catch (e, s) {
-      _log.severe('Error getting suggested users', e, s);
+      _logError('Error getting suggested users', e, s);
       return [];
     }
   }
@@ -511,7 +467,7 @@ class UserService extends ChangeNotifier {
         return data;
       }).toList();
     } catch (e, s) {
-      _log.severe('Error getting user favorites', e, s);
+      _logError('Error getting user favorites', e, s);
       return [];
     }
   }
@@ -533,7 +489,7 @@ class UserService extends ChangeNotifier {
       });
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error adding to favorites', e, s);
+      _logError('Error adding to favorites', e, s);
     }
   }
 
@@ -549,7 +505,7 @@ class UserService extends ChangeNotifier {
           .delete();
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error removing from favorites', e, s);
+      _logError('Error removing from favorites', e, s);
     }
   }
 
@@ -570,7 +526,7 @@ class UserService extends ChangeNotifier {
       }
       return null;
     } catch (e, s) {
-      _log.severe('Error getting favorite by ID', e, s);
+      _logError('Error getting favorite by ID', e, s);
       return null;
     }
   }
@@ -589,7 +545,7 @@ class UserService extends ChangeNotifier {
           .get();
       return snapshot.docs.isNotEmpty;
     } catch (e, s) {
-      _log.severe('Error checking if favorited', e, s);
+      _logError('Error checking if favorited', e, s);
       return false;
     }
   }
@@ -602,7 +558,7 @@ class UserService extends ChangeNotifier {
       await _usersCollection.doc(userId).update(updates);
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error updating user profile with map', e, s);
+      _logError('Error updating user profile with map', e, s);
     }
   }
 
@@ -629,6 +585,7 @@ class UserService extends ChangeNotifier {
       final calculatedLevel = newXP ~/ 100;
       if (calculatedLevel > currentLevel) {
         newLevel = calculatedLevel;
+        _logDebug('Level up! New level: $newLevel');
       }
 
       await _usersCollection.doc(userId).set({
@@ -637,12 +594,49 @@ class UserService extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      debugPrint(
-        '✅ Updated XP: +$points (${activityType ?? 'unknown'}), Total: $newXP, Level: $newLevel',
+      _logDebug(
+        'Updated XP: +$points (${activityType ?? 'unknown'}), Total: $newXP, Level: $newLevel',
       );
       notifyListeners();
     } catch (e, s) {
-      _log.severe('Error updating experience points', e, s);
+      _logError('Error updating experience points', e, s);
+    }
+  }
+
+  // Create a new user document in Firestore
+  Future<UserModel?> createNewUser({
+    required String uid,
+    required String email,
+    required String displayName,
+    String? zipCode,
+  }) async {
+    try {
+      final username = email
+          .split('@')[0]
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+      final newUser = UserModel(
+        id: uid,
+        email: email,
+        username: username, // Create sanitized username from email
+        fullName: displayName,
+        createdAt: DateTime.now(),
+        userType: UserType.regular.value,
+        zipCode: zipCode,
+      );
+
+      await _usersCollection
+          .doc(uid)
+          .set(newUser.toMap(), SetOptions(merge: true));
+
+      _logDebug('Successfully created new user document for uid: $uid');
+      notifyListeners();
+
+      return newUser;
+    } catch (e, s) {
+      _logError('Error creating new user', e, s);
+      return null;
     }
   }
 }

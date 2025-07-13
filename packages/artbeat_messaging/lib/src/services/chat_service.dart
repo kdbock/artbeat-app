@@ -144,9 +144,7 @@ class ChatService extends ChangeNotifier {
           }
 
           final data = snapshot.data()!;
-          return Map<String, bool>.fromEntries(
-            data.entries.map((e) => MapEntry(e.key, e.value == true)),
-          );
+          return Map<String, bool>.from(data);
         });
   }
 
@@ -200,23 +198,57 @@ class ChatService extends ChangeNotifier {
     }
   }
 
+  Future<String?> getUserDisplayName(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userData = userDoc.data();
+      return userData?['displayName'] as String?;
+    } catch (e) {
+      debugPrint('Error getting user display name: $e');
+      return null;
+    }
+  }
+
+  Future<String?> getUserPhotoUrl(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userData = userDoc.data();
+      return userData?['photoUrl'] as String?;
+    } catch (e) {
+      debugPrint('Error getting user photo URL: $e');
+      return null;
+    }
+  }
+
   Future<List<ChatModel>> searchChats(String query) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
     query = query.toLowerCase();
     final chats = await getChats();
+    final filteredChats = <ChatModel>[];
 
-    return chats.where((chat) {
+    for (final chat in chats) {
       if (chat.isGroup && chat.groupName != null) {
-        return chat.groupName!.toLowerCase().contains(query);
+        if (chat.groupName!.toLowerCase().contains(query)) {
+          filteredChats.add(chat);
+        }
+        continue;
       }
 
       // Search participant names
-      return chat.participants
-          .where((p) => p.id != userId) // Exclude current user
-          .any((p) => p.displayName.toLowerCase().contains(query));
-    }).toList();
+      for (final participantId in chat.participantIds.where(
+        (id) => id != userId,
+      )) {
+        final name = await getUserDisplayName(participantId);
+        if (name?.toLowerCase().contains(query) ?? false) {
+          filteredChats.add(chat);
+          break;
+        }
+      }
+    }
+
+    return filteredChats;
   }
 
   Future<List<UserModel>> searchUsers(String query) async {
@@ -335,5 +367,41 @@ class ChatService extends ChangeNotifier {
       debugPrint('Error creating group chat: $e');
       throw Exception('Failed to create group chat');
     }
+  }
+
+  /// Refreshes the chat list by clearing any cached data and triggering a reload
+  Future<void> refresh() async {
+    notifyListeners();
+  }
+
+  /// Marks a chat as read for the current user
+  Future<void> markChatAsRead(String chatId) async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('messageStats')
+        .doc('chatStats')
+        .collection('unreadCounts')
+        .doc(chatId)
+        .set({'count': 0}, SetOptions(merge: true));
+  }
+
+  /// Gets a stream of typing status updates for a chat
+  Stream<Map<String, bool>> getTypingStatusStream(String chatId) {
+    return _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('typingStatus')
+        .snapshots()
+        .map((snapshot) {
+          final data = <String, dynamic>{};
+          for (var doc in snapshot.docs) {
+            data[doc.id] = doc.data()['isTyping'] ?? false;
+          }
+          return data.cast<String, bool>();
+        });
   }
 }

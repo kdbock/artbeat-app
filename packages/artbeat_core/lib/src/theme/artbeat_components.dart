@@ -129,7 +129,7 @@ class ArtbeatComponents {
       color: ArtbeatColors.textPrimary,
       fontSize: 20,
       fontWeight: FontWeight.w600,
-      fontFamily: 'FallingSky',
+      fontFamily: 'Roboto',
     ),
   );
 

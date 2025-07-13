@@ -6,3 +6,5 @@ export 'src/services/services.dart';
 export 'src/screens/screens.dart';
 export 'src/widgets/widgets.dart';
 export 'src/utils/utils.dart';
+export 'src/constants/routes.dart';
+export 'src/routes/art_walk_route_config.dart';

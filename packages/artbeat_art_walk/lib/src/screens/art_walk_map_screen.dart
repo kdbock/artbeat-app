@@ -50,7 +50,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   void _openCaptureModal() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => const CaptureScreen(),
+        builder: (context) => const BasicCaptureScreen(),
         fullscreenDialog: true,
       ),
     );

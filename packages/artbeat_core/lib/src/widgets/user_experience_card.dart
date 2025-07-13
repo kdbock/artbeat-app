@@ -34,7 +34,7 @@ class _UserExperienceCardState extends State<UserExperienceCard>
   final RewardsService _rewardsService = RewardsService();
   late AnimationController _expandController;
   late Animation<double> _expandAnimation;
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   List<AchievementBadgeData> get _recentAchievements =>
       widget.achievements.where((a) => a.isUnlocked).take(3).toList();
@@ -54,8 +54,8 @@ class _UserExperienceCardState extends State<UserExperienceCard>
       curve: Curves.easeInOut,
     );
 
-    // Start expanded
-    _expandController.forward();
+    // Start collapsed
+    _expandController.value = 0.0;
   }
 
   @override

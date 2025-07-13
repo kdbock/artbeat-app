@@ -285,22 +285,18 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   void _startNavigation() {
     if (_walk == null) return;
 
-    // Navigate to the art walk experience screen
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute<bool>(
-            builder: (context) =>
-                ArtWalkExperienceScreen(artWalkId: _walk!.id, artWalk: _walk!),
-          ),
-        )
-        .then((completed) {
-          // If the walk was completed, refresh the state
-          if (completed == true) {
-            setState(() {
-              _hasCompletedWalk = true;
-            });
-          }
+    Navigator.pushNamed(
+      context,
+      '/art-walk/experience',
+      arguments: {'artWalkId': _walk!.id, 'artWalk': _walk!},
+    ).then((completed) {
+      // If the walk was completed, refresh the state
+      if (completed == true) {
+        setState(() {
+          _hasCompletedWalk = true;
         });
+      }
+    });
   }
 
   Future<void> _completeArtWalk() async {

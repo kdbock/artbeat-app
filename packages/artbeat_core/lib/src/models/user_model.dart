@@ -53,8 +53,7 @@ class UserModel {
 
   factory UserModel.fromDocumentSnapshot(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
-    return UserModel.fromJson(data)
-        .copyWith(id: doc.id); // Use the document ID
+    return UserModel.fromJson(data).copyWith(id: doc.id); // Use the document ID
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -69,7 +68,9 @@ class UserModel {
       followers: List<String>.from(json['followers'] as List<dynamic>? ?? []),
       following: List<String>.from(json['following'] as List<dynamic>? ?? []),
       captures: (json['captures'] as List<dynamic>? ?? [])
-          .map((capture) => CaptureModel.fromJson(capture as Map<String, dynamic>))
+          .map(
+            (capture) => CaptureModel.fromJson(capture as Map<String, dynamic>),
+          )
           .toList(),
       posts: List<String>.from(json['posts'] as List<dynamic>? ?? []),
       createdAt: (json['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -129,6 +130,29 @@ class UserModel {
 
   Map<String, dynamic> toFirestore() => toJson();
 
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'email': email,
+      'username': username,
+      'fullName': fullName,
+      'bio': bio,
+      'location': location,
+      'profileImageUrl': profileImageUrl,
+      'followers': followers,
+      'following': following,
+      'captures': captures.map((capture) => capture.toJson()).toList(),
+      'posts': posts,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'lastActive': lastActive != null ? Timestamp.fromDate(lastActive!) : null,
+      'userType': userType,
+      'preferences': preferences,
+      'experiencePoints': experiencePoints,
+      'level': level,
+      'zipCode': zipCode,
+    };
+  }
+
   UserModel copyWith({
     String? id,
     String? email,
@@ -170,17 +194,17 @@ class UserModel {
   }
 
   /// Check if user is an artist
-  bool get isArtist => userType == UserType.artist;
+  bool get isArtist => userType == UserType.artist.value;
 
   /// Check if user is a gallery
-  bool get isGallery => userType == UserType.gallery;
+  bool get isGallery => userType == UserType.gallery.value;
 
   /// Check if user is a moderator
-  bool get isModerator => userType == UserType.moderator;
+  bool get isModerator => userType == UserType.moderator.value;
 
   /// Check if user is an admin
-  bool get isAdmin => userType == UserType.admin;
+  bool get isAdmin => userType == UserType.admin.value;
 
   /// Check if user is a basic user
-  bool get isRegularUser => userType == UserType.regular;
+  bool get isRegularUser => userType == UserType.regular.value;
 }

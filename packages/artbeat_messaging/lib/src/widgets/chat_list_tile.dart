@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart' show ArtbeatColors;
 import '../models/chat_model.dart';
+import '../services/chat_service.dart';
 
 class ChatListTile extends StatelessWidget {
   final ChatModel chat;
@@ -8,81 +11,281 @@ class ChatListTile extends StatelessWidget {
 
   const ChatListTile({super.key, required this.chat, required this.onTap});
 
+  void _navigateToChat(BuildContext context) {
+    Navigator.pushNamed(context, '/messaging/chat', arguments: {'chat': chat});
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final lastMessage = chat.lastMessage;
     final dateFormat = DateFormat.jm();
 
-    return ListTile(
-      onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: theme.colorScheme.primary,
-        radius: 24,
-        child: Text(
-          _getInitials(),
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.colorScheme.onPrimary,
+    return Hero(
+      tag: 'chat_${chat.id}',
+      child: Card(
+        elevation: chat.unreadCount > 0 ? 3 : 1,
+        shadowColor: chat.unreadCount > 0
+            ? ArtbeatColors.primaryPurple.withValues(alpha: 0.3)
+            : Colors.black12,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: chat.unreadCount > 0
+                ? ArtbeatColors.primaryPurple.withValues(alpha: 0.2)
+                : Colors.transparent,
+            width: 1,
           ),
         ),
-      ),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              chat.isGroup
-                  ? chat.groupName ?? 'Group Chat'
-                  : chat.participants.first.displayName,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight: lastMessage?.isRead == false
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-              ),
-            ),
-          ),
-          if (lastMessage != null)
-            Text(
-              dateFormat.format(lastMessage.timestamp),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-        ],
-      ),
-      subtitle: Row(
-        children: [
-          Expanded(
-            child: Text(
-              lastMessage?.content ?? 'No messages yet',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (lastMessage?.isRead == false)
-            Container(
-              margin: const EdgeInsets.only(left: 8),
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                shape: BoxShape.circle,
-              ),
-            ),
-        ],
+        child: InkWell(
+          onTap: () => _navigateToChat(context),
+          borderRadius: BorderRadius.circular(16),
+          child: _buildListTile(context, theme, dateFormat),
+        ),
       ),
     );
   }
 
-  String _getInitials() {
+  Widget _buildListTile(
+    BuildContext context,
+    ThemeData theme,
+    DateFormat dateFormat,
+  ) {
+    final chatService = Provider.of<ChatService>(context, listen: false);
+
+    return FutureBuilder<String?>(
+      future: _getChatName(chatService),
+      builder: (context, snapshot) {
+        final chatName = snapshot.data ?? 'Loading...';
+        final hasUnread = chat.unreadCount > 0;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: Row(
+            children: [
+              const SizedBox(width: 12),
+              _buildAvatar(chatName, hasUnread),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            chatName,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: hasUnread
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: hasUnread
+                                  ? ArtbeatColors.textPrimary
+                                  : ArtbeatColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (chat.lastMessage != null)
+                          Text(
+                            dateFormat.format(chat.lastMessage!.timestamp),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: hasUnread
+                                  ? ArtbeatColors.primaryPurple
+                                  : theme.colorScheme.onSurfaceVariant,
+                              fontWeight: hasUnread
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        const SizedBox(width: 12),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            chat.lastMessage?.content ?? 'No messages yet',
+                            style: TextStyle(
+                              color: hasUnread
+                                  ? ArtbeatColors.textPrimary
+                                  : Colors.grey.shade600,
+                              fontSize: 14,
+                              fontWeight: hasUnread
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (hasUnread)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ArtbeatColors.primaryPurple,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: ArtbeatColors.primaryPurple
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              chat.unreadCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        const SizedBox(width: 12),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAvatar(String chatName, bool hasUnread) {
+    return FutureBuilder<String?>(
+      future: _getChatImage(),
+      builder: (context, snapshot) {
+        final imageUrl = snapshot.data;
+
+        return Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: hasUnread
+                        ? ArtbeatColors.primaryPurple.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                backgroundColor: _getAvatarColor(chatName),
+                radius: 28,
+                backgroundImage: imageUrl != null && imageUrl.isNotEmpty
+                    ? NetworkImage(imageUrl)
+                    : null,
+                child: imageUrl == null || imageUrl.isEmpty
+                    ? Text(
+                        _getInitials(chatName),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      )
+                    : null,
+              ),
+            ),
+            if (chat.isGroup)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.primaryGreen,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(Icons.group, color: Colors.white, size: 12),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Color _getAvatarColor(String name) {
+    final colors = [
+      ArtbeatColors.primaryPurple,
+      ArtbeatColors.primaryGreen,
+      ArtbeatColors.secondaryTeal,
+      ArtbeatColors.accentYellow,
+      ArtbeatColors.error,
+      ArtbeatColors.info,
+      ArtbeatColors.warning,
+    ];
+
+    // Generate a consistent color based on the name
+    final index = name.isNotEmpty
+        ? name.codeUnits.reduce((a, b) => a + b) % colors.length
+        : 0;
+
+    return colors[index];
+  }
+
+  Future<String> _getChatName(ChatService chatService) async {
     if (chat.isGroup) {
-      return 'G';
+      return chat.groupName ?? 'Group Chat';
     }
-    final name = chat.participants.first.displayName;
-    final parts = name.split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    final otherParticipantId = chat.participantIds.firstWhere(
+      (id) => id != chatService.currentUserId,
+      orElse: () => chat.participantIds.first,
+    );
+    return await chatService.getUserDisplayName(otherParticipantId) ??
+        'Unknown User';
+  }
+
+  Future<String?> _getChatImage() async {
+    final chatService = Provider.of<ChatService>(
+      navigatorKey.currentContext!,
+      listen: false,
+    );
+
+    if (chat.isGroup) {
+      return chat.groupImage;
     }
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+
+    final otherParticipantId = chat.participantIds.firstWhere(
+      (id) => id != chatService.currentUserId,
+      orElse: () => chat.participantIds.first,
+    );
+
+    return chatService.getUserPhotoUrl(otherParticipantId);
+  }
+
+  String _getInitials(String name) {
+    if (chat.isGroup) {
+      return chat.groupName?.isNotEmpty == true
+          ? chat.groupName![0].toUpperCase()
+          : 'G';
+    }
+
+    if (name.isEmpty) return '?';
+
+    final nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
+    }
+
+    return name[0].toUpperCase();
   }
 }
+
+// Global navigator key for accessing context
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

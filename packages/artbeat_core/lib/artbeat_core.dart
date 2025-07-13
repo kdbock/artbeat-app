@@ -30,7 +30,8 @@ export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
 export 'src/models/index.dart'; // This will export all models through the barrel file
 export 'src/models/types/index.dart'; // Export all type definitions
 export 'src/models/event_model.dart' show EventModel;
-export 'src/models/capture_model.dart' show CaptureModel;
+export 'src/models/capture_model.dart'
+    show CaptureModel, CaptureStatus, CaptureStatusExtension;
 export 'src/models/user_type.dart' show UserType;
 export 'src/models/subscription_tier.dart' show SubscriptionTier;
 export 'src/models/payment_method_model.dart' show PaymentMethodModel;

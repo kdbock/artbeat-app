@@ -92,10 +92,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     final result = await Navigator.pushNamed(
       context,
       '/art-walk/edit',
-      arguments: {
-        'walkId': walk.id,
-        'artWalk': walk,
-      },
+      arguments: {'walkId': walk.id, 'artWalk': walk},
     );
 
     if (result == true && mounted) {
@@ -238,6 +235,17 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
         ),
       ),
     );
+  }
+
+  void _onArtWalkTapped(ArtWalkModel walk) {
+    Navigator.pushNamed(
+      context,
+      '/art-walk/detail',
+      arguments: {'walkId': walk.id, 'artWalk': walk},
+    ).then((_) {
+      // Refresh the list when returning from detail view
+      _loadArtWalks();
+    });
   }
 
   @override

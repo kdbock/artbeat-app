@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // Core imports
 import '../models/user_model.dart';
@@ -9,7 +10,8 @@ import '../models/artist_profile_model.dart';
 import '../models/event_model.dart';
 import '../models/capture_model.dart';
 import '../services/user_service.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart' show RewardsService;
+import 'package:artbeat_art_walk/artbeat_art_walk.dart'
+    show RewardsService, ArtWalkModel, ArtWalkService;
 
 // External package imports
 import 'package:artbeat_capture/artbeat_capture.dart' show CaptureService;
@@ -21,126 +23,152 @@ import 'package:artbeat_community/artbeat_community.dart'
 import '../widgets/achievement_badge.dart' show AchievementBadgeData;
 
 /// ViewModel for managing dashboard state and business logic
-class DashboardViewModel extends ChangeNotifier {
+class DashboardViewModel with ChangeNotifier {
+  // Disposal state
+  bool _disposed = false;
+
   // Services
   final UserService _userService = UserService();
+  final ArtWalkService _artWalkService = ArtWalkService();
   final CaptureService _captureService = CaptureService();
   final RewardsService _rewardsService = RewardsService();
   final ArtworkService _artworkService = ArtworkService();
   final CommunityService _communityService = CommunityService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Disposal state
-  bool _isDisposed = false;
+  // Authentication state
+  bool get _isAuthenticated => _auth.currentUser != null;
 
-  // User state
+  // Rest of state
+  int _unreadMessageCount = 0;
+  bool _hasUnreadMessages = false;
+  int _bottomNavIndex = 0;
+  bool _isAchievementsExpanded = false;
+  GoogleMapController? _mapController;
+  bool _isLoadingMap = false;
   UserModel? _currentUser;
   bool _isLoadingUser = false;
-
-  // Captures state
   List<CaptureModel> _captures = [];
   bool _isLoadingCaptures = false;
   String? _capturesError;
-
-  // Artists state
   List<ArtistProfileModel> _artists = [];
   bool _isLoadingArtists = false;
   String? _artistsError;
-
-  // Artworks state
+  List<ArtistProfileModel> _featuredArtists = [];
+  bool _isLoadingFeaturedArtists = false;
+  String? _featuredArtistsError;
   List<ArtworkModel> _artworks = [];
   bool _isLoadingArtworks = false;
   String? _artworksError;
-
-  // Events state (for future implementation)
   List<EventModel> _events = [];
   bool _isLoadingEvents = false;
   String? _eventsError;
-
-  // Posts state
   List<PostModel> _posts = [];
   bool _isLoadingPosts = false;
   String? _postsError;
-
-  // Achievements state
   List<AchievementBadgeData> _achievements = [];
   bool _isLoadingAchievements = false;
-  bool _isAchievementsExpanded = false;
-
-  // Location and map state
   bool _isMapPreviewReady = false;
-  bool _isLoadingMap = true;
   LatLng? _currentLocation;
   Set<Marker> _markers = {};
+  List<ArtWalkModel> _userArtWalks = [];
+  bool _isLoadingUserArtWalks = false;
+  String? _userArtWalksError;
+
   CameraPosition _initialCameraPosition = const CameraPosition(
     target: LatLng(35.7796, -78.6382), // Default to Raleigh, NC
     zoom: 12,
   );
 
-  // Navigation state
-  int _bottomNavIndex = 0;
-
-  // Private fields
-  GoogleMapController? _mapController;
-
   // Getters
+  int get unreadMessageCount => _unreadMessageCount;
+  bool get hasUnreadMessages => _hasUnreadMessages;
+  bool get isLoadingMap => _isLoadingMap;
   UserModel? get currentUser => _currentUser;
   bool get isLoadingUser => _isLoadingUser;
-
   List<CaptureModel> get captures => _captures;
   bool get isLoadingCaptures => _isLoadingCaptures;
   String? get capturesError => _capturesError;
-
   List<ArtistProfileModel> get artists => _artists;
   bool get isLoadingArtists => _isLoadingArtists;
   String? get artistsError => _artistsError;
-
+  List<ArtistProfileModel> get featuredArtists => _featuredArtists;
+  bool get isLoadingFeaturedArtists => _isLoadingFeaturedArtists;
+  String? get featuredArtistsError => _featuredArtistsError;
   List<ArtworkModel> get artworks => _artworks;
   bool get isLoadingArtworks => _isLoadingArtworks;
   String? get artworksError => _artworksError;
-
   List<EventModel> get events => _events;
   bool get isLoadingEvents => _isLoadingEvents;
   String? get eventsError => _eventsError;
-
   List<PostModel> get posts => _posts;
   bool get isLoadingPosts => _isLoadingPosts;
   String? get postsError => _postsError;
-
   List<AchievementBadgeData> get achievements => _achievements;
   bool get isLoadingAchievements => _isLoadingAchievements;
   bool get isAchievementsExpanded => _isAchievementsExpanded;
-
   bool get isMapPreviewReady => _isMapPreviewReady;
-  bool get isLoadingMap => _isLoadingMap;
   LatLng? get currentLocation => _currentLocation;
   Set<Marker> get markers => _markers;
   CameraPosition get initialCameraPosition => _initialCameraPosition;
-
+  List<ArtWalkModel> get userArtWalks => _userArtWalks;
+  bool get isLoadingUserArtWalks => _isLoadingUserArtWalks;
+  String? get userArtWalksError => _userArtWalksError;
   int get bottomNavIndex => _bottomNavIndex;
 
-  /// Initialize the dashboard by loading all necessary data
+  /// Initialize the view model
   Future<void> initialize() async {
-    if (_isDisposed) return;
+    _isLoadingUser = true;
+    notifyListeners();
 
-    // First load user data since other operations depend on it
-    await loadUserData();
+    try {
+      if (_isAuthenticated) {
+        _currentUser = await _userService.getCurrentUserModel();
+        await updateUnreadMessageCount();
+      }
+    } catch (e) {
+      debugPrint('Error initializing dashboard: $e');
+    } finally {
+      _isLoadingUser = false;
+      notifyListeners();
+    }
+  }
 
-    if (_isDisposed) return;
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
-    // Then load other data in parallel
-    await Future.wait([
-      loadCaptures().then((_) => _initializeMapLocation()),
-      loadArtists(),
-      loadArtworks(),
-      loadEvents(),
-      loadPosts(),
-      loadAchievements(),
-    ]);
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 
-    if (_isDisposed) return;
+  /// Load user-created art walks
+  Future<void> loadUserArtWalks() async {
+    _isLoadingUserArtWalks = true;
+    _userArtWalksError = null;
+    notifyListeners();
 
-    // Award missing experience points for existing captures
-    await _awardMissingCaptureExperience();
+    try {
+      final userId = _currentUser?.id;
+      if (userId == null) {
+        _userArtWalks = [];
+        return;
+      }
+      final walks = await _artWalkService.getUserArtWalks(userId);
+      _userArtWalks = walks;
+    } catch (e) {
+      _userArtWalksError = e.toString();
+      debugPrint('Error loading user art walks: $e');
+    } finally {
+      _isLoadingUserArtWalks = false;
+      notifyListeners();
+    }
   }
 
   /// Refresh all dashboard data
@@ -227,6 +255,43 @@ class DashboardViewModel extends ChangeNotifier {
       debugPrint('Error loading artists: $e');
     } finally {
       _isLoadingArtists = false;
+      notifyListeners();
+    }
+  }
+
+  /// Load featured artists
+  Future<void> loadFeaturedArtists() async {
+    _isLoadingFeaturedArtists = true;
+    _featuredArtistsError = null;
+    notifyListeners();
+
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('artistProfiles')
+          .where('userType', isEqualTo: 'artist')
+          .where('isFeatured', isEqualTo: true)
+          .get();
+
+      final List<ArtistProfileModel> featuredArtists = [];
+
+      for (var doc in snapshot.docs) {
+        if (!doc.exists) continue;
+        try {
+          final profile = ArtistProfileModel.fromFirestore(doc);
+          featuredArtists.add(profile);
+        } catch (e) {
+          debugPrint('Error parsing featured artist profile: $e');
+        }
+      }
+
+      // Sort by most recently updated
+      featuredArtists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      _featuredArtists = featuredArtists;
+    } catch (e) {
+      _featuredArtistsError = e.toString();
+      debugPrint('Error loading featured artists: $e');
+    } finally {
+      _isLoadingFeaturedArtists = false;
       notifyListeners();
     }
   }
@@ -355,7 +420,6 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       final userId = _currentUser?.id;
-
       if (userId == null) {
         _achievements = [];
         return;
@@ -610,6 +674,94 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Load unread message count
+  Future<void> updateUnreadMessageCount() async {
+    if (!_isAuthenticated) return;
+
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return;
+
+      // Check if current user is admin
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final isAdmin =
+          userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2' ||
+          (userDoc.exists && userDoc.data()?['userType'] == 'admin');
+
+      debugPrint('🔐 Current user is admin: $isAdmin');
+
+      if (isAdmin) {
+        // Admin: Check all users' messages
+        final allUsers = await _firestore.collection('users').get();
+        int totalUnread = 0;
+
+        for (var user in allUsers.docs) {
+          // Check direct messages
+          final directMessages = await _firestore
+              .collection('users')
+              .doc(user.id)
+              .collection('messageStats')
+              .where('unread', isEqualTo: true)
+              .get();
+
+          // Check chat room messages
+          final chatRoomStats = await _firestore
+              .collection('users')
+              .doc(user.id)
+              .collection('messageStats')
+              .doc('chatStats')
+              .collection('unreadCounts')
+              .get();
+
+          int unreadChatRoomMessages = 0;
+          for (var doc in chatRoomStats.docs) {
+            unreadChatRoomMessages += (doc.data()['count'] as int?) ?? 0;
+          }
+
+          totalUnread += directMessages.docs.length + unreadChatRoomMessages;
+        }
+
+        _unreadMessageCount = totalUnread;
+      } else {
+        // Regular user: Check only their messages
+        final directMessages = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('messageStats')
+            .where('unread', isEqualTo: true)
+            .get();
+
+        final chatRoomStats = await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('messageStats')
+            .doc('chatStats')
+            .collection('unreadCounts')
+            .get();
+
+        int unreadChatRoomMessages = 0;
+        for (var doc in chatRoomStats.docs) {
+          unreadChatRoomMessages += (doc.data()['count'] as int?) ?? 0;
+        }
+
+        _unreadMessageCount =
+            directMessages.docs.length + unreadChatRoomMessages;
+      }
+
+      _hasUnreadMessages = _unreadMessageCount > 0;
+      debugPrint('✉️ Updated unread count: $_unreadMessageCount');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error loading unread message count: $e');
+      // Don't update state on error to keep previous values
+    }
+  }
+
+  /// Navigate to messaging section
+  void showMessagingMenu(BuildContext context) {
+    Navigator.pushNamed(context, '/messaging');
+  }
+
   /// Get level progress (0.0 to 1.0)
   double getLevelProgress() {
     if (_currentUser == null) return 0.0;
@@ -647,45 +799,10 @@ class DashboardViewModel extends ChangeNotifier {
     return levelTitles[level] ?? 'Unknown Level';
   }
 
-  /// Award experience points for existing captures if not already awarded
-  Future<void> _awardMissingCaptureExperience() async {
-    if (_currentUser == null || _captures.isEmpty) return;
-
-    try {
-      // For each capture, award 10 XP if not already awarded
-      // This is a one-time correction for existing captures
-
-      // Check if user's XP matches expected XP for captures
-      final expectedMinimumXP = _captures.length * 10;
-      if (_currentUser!.experiencePoints < expectedMinimumXP) {
-        final missingXP = expectedMinimumXP - _currentUser!.experiencePoints;
-        await _userService.updateExperiencePoints(
-          missingXP,
-          activityType: 'capture_correction',
-        );
-
-        // Reload user data to get updated XP (with disposal check)
-        if (_isDisposed) return; // Check if view model is still active
-        final updatedUser = await _userService.getCurrentUserModel();
-        if (_isDisposed) return; // Check again after async operation
-        _currentUser = updatedUser;
-        notifyListeners();
-      }
-    } catch (e) {
-      debugPrint('❌ Error awarding missing capture experience: $e');
-    }
-  }
-
   /// Safe notify listeners that checks disposal state
   void _safeNotifyListeners() {
-    if (!_isDisposed) {
+    if (!_disposed) {
       notifyListeners();
     }
-  }
-
-  @override
-  void dispose() {
-    _isDisposed = true;
-    super.dispose();
   }
 }

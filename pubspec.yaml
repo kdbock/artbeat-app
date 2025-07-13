@@ -73,25 +73,40 @@ dependencies:
   package_info_plus: ^8.2.0
   image_picker: ^1.0.0
   image_cropper: ^9.1.0
-  geolocator: ^14.0.2
+  geolocator: ^14.0.1
 
 flutter:
   uses-material-design: true
+
+  # Assets
   assets:
-    - .env
-    - assets/images/artbeat_logo.png
-    - assets/images/artbeat_header.png
-    - assets/images/admin_banner_ad.png
-    - assets/images/artist_banner_ad.png
-    - assets/images/splashTRANS_logo.png
-    - packages/artbeat_core/assets/images/artbeat_splash_bg.png
+    - assets/
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
     - assets/default_artwork.png
     - assets/default_profile.png
     - assets/event_placeholder.png
+    - assets/event_placeholder.svg
     - assets/logo.png
     - assets/triangle.png
+    - assets/images/subtle_pattern.png
+
+  # Fonts
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  mockito: ^5.4.4
+  build_runner: ^2.4.10
+  integration_test:
+    sdk: flutter

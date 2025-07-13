@@ -88,7 +88,7 @@ class ArtbeatTheme {
           color: ArtbeatColors.white,
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          fontFamily: 'FallingSky',
+          fontFamily: 'Roboto',
         ),
       ),
       bottomNavigationBarTheme: ArtbeatComponents.bottomNavTheme.copyWith(

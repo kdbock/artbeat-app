@@ -777,101 +777,113 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              ArtWalkColors.primaryTeal,
-            ),
-          ),
-        ),
-      );
-    }
-
+    // Only use MainLayout for navigation, remove any duplicate navigation bars
     return MainLayout(
       currentIndex: 1,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Art Walk',
-              showLogo: false,
-              showSearch: true,
-              showDeveloperTools: true,
-              onSearchPressed: () => _showSearchModal(context),
-              onProfilePressed: () => _showArtistDiscoveryMenu(context),
-              onMenuPressed: () => _openDrawer(context),
-              backgroundColor: ArtWalkColors.primaryTeal,
-              foregroundColor: Colors.white,
-              elevation: 2,
-            ),
-          ),
-        ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                ArtWalkColors.backgroundGradientStart,
-                ArtWalkColors.backgroundGradientEnd,
+      child: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  ArtWalkColors.primaryTeal,
+                ),
+              ),
+            )
+          : Stack(
+              children: [
+                Scaffold(
+                  backgroundColor: Colors.transparent,
+                  extendBodyBehindAppBar: true,
+                  drawer: const ArtbeatDrawer(),
+                  appBar: PreferredSize(
+                    preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+                    child: ArtbeatGradientBackground(
+                      addShadow: true,
+                      child: EnhancedUniversalHeader(
+                        title: 'Art Walk',
+                        showLogo: false,
+                        showSearch: true,
+                        showDeveloperTools: true,
+                        onSearchPressed: () => _showSearchModal(context),
+                        onProfilePressed: () =>
+                            _showArtistDiscoveryMenu(context),
+                        onMenuPressed: () => _openDrawer(context),
+                        backgroundColor: ArtWalkColors.primaryTeal,
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+                  body: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          ArtWalkColors.backgroundGradientStart,
+                          ArtWalkColors.backgroundGradientEnd,
+                        ],
+                      ),
+                    ),
+                    child: SafeArea(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Welcome Header
+                            _buildWelcomeHeader(),
+
+                            const SizedBox(height: 24),
+
+                            // Map Widget
+                            _buildMapWidget(),
+
+                            const SizedBox(height: 24),
+
+                            // Captures Widget
+                            _buildCapturesWidget(),
+
+                            const SizedBox(height: 24),
+
+                            // Art Walks Widget
+                            _buildArtWalksWidget(),
+
+                            const SizedBox(height: 24),
+
+                            // Achievements Widget
+                            _buildAchievementsWidget(),
+
+                            const SizedBox(height: 100), // Space for FAB
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 24,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: FloatingActionButton.extended(
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/art-walk/create'),
+                      backgroundColor: ArtWalkColors.accentOrange,
+                      foregroundColor: Colors.white,
+                      elevation: 8,
+                      label: const Text(
+                        'Create Art Walk',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      icon: const Icon(Icons.add_location, size: 24),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-          child: SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Welcome Header
-                  _buildWelcomeHeader(),
-
-                  const SizedBox(height: 24),
-
-                  // Map Widget
-                  _buildMapWidget(),
-
-                  const SizedBox(height: 24),
-
-                  // Captures Widget
-                  _buildCapturesWidget(),
-
-                  const SizedBox(height: 24),
-
-                  // Art Walks Widget
-                  _buildArtWalksWidget(),
-
-                  const SizedBox(height: 24),
-
-                  // Achievements Widget
-                  _buildAchievementsWidget(),
-
-                  const SizedBox(height: 100), // Space for FAB
-                ],
-              ),
-            ),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => Navigator.pushNamed(context, '/art-walk/create'),
-          backgroundColor: ArtWalkColors.accentOrange,
-          foregroundColor: Colors.white,
-          elevation: 8,
-          label: const Text(
-            'Create Art Walk',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          icon: const Icon(Icons.add_location, size: 24),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      ),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/artist_model.dart';
 
 class ArtistService {
@@ -15,16 +16,58 @@ class ArtistService {
       );
     }
 
-    final snapshot = await artistsQuery
-        .orderBy('name')
-        .limit(10)
-        .withConverter(
-          fromFirestore: ArtistModel.fromFirestore,
-          toFirestore: (ArtistModel artist, _) => artist.toFirestore(),
+    final snapshot = await artistsQuery.get();
+    return snapshot.docs
+        .map(
+          (doc) => ArtistModel.fromFirestore(
+            doc as DocumentSnapshot<Map<String, dynamic>>,
+            null,
+          ),
         )
-        .get();
+        .toList();
+  }
 
-    return snapshot.docs.map((doc) => doc.data()).toList();
+  Future<List<ArtistModel>> getFeaturedArtists() async {
+    try {
+      final snapshot = await _firestore
+          .collection('artists')
+          .where('isFeatured', isEqualTo: true)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      return snapshot.docs
+          .map(
+            (doc) => ArtistModel.fromFirestore(
+              doc as DocumentSnapshot<Map<String, dynamic>>,
+              null,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting featured artists: $e');
+      return [];
+    }
+  }
+
+  Future<List<ArtistModel>> getAllArtists() async {
+    try {
+      final snapshot = await _firestore
+          .collection('artists')
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      return snapshot.docs
+          .map(
+            (doc) => ArtistModel.fromFirestore(
+              doc as DocumentSnapshot<Map<String, dynamic>>,
+              null,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting all artists: $e');
+      return [];
+    }
   }
 
   Future<ArtistModel> createArtist(String name) async {
@@ -36,10 +79,7 @@ class ArtistService {
 
     // Generate search terms for case-insensitive search
     final searchTerms = _generateSearchTerms(name);
-    final artistData = {
-      ...artist.toFirestore(),
-      'searchTerms': searchTerms,
-    };
+    final artistData = {...artist.toFirestore(), 'searchTerms': searchTerms};
 
     final docRef = await _firestore.collection('artists').add(artistData);
 

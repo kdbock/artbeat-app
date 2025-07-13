@@ -4,10 +4,17 @@ import 'package:flutter/material.dart';
 
 /// Authentication service for handling user authentication
 class AuthService {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late FirebaseAuth _auth;
+  late FirebaseFirestore _firestore;
 
-  /// For dependency injection in tests
+  /// Constructor with optional dependencies for testing
+  AuthService({FirebaseAuth? auth, FirebaseFirestore? firestore}) {
+    _auth = auth ?? FirebaseAuth.instance;
+    _firestore = firestore ?? FirebaseFirestore.instance;
+  }
+
+  /// For dependency injection in tests (deprecated - use constructor)
+  @deprecated
   void setDependenciesForTesting(
     FirebaseAuth auth,
     FirebaseFirestore firestore,

@@ -1,5 +1,43 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+enum CaptureStatus { pending, approved, rejected }
+
+extension CaptureStatusExtension on CaptureStatus {
+  String get displayName {
+    switch (this) {
+      case CaptureStatus.pending:
+        return 'Pending Review';
+      case CaptureStatus.approved:
+        return 'Approved';
+      case CaptureStatus.rejected:
+        return 'Rejected';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case CaptureStatus.pending:
+        return 'pending';
+      case CaptureStatus.approved:
+        return 'approved';
+      case CaptureStatus.rejected:
+        return 'rejected';
+    }
+  }
+
+  static CaptureStatus fromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return CaptureStatus.approved;
+      case 'rejected':
+        return CaptureStatus.rejected;
+      case 'pending':
+      default:
+        return CaptureStatus.pending;
+    }
+  }
+}
+
 class CaptureModel {
   final String id;
   final String userId;
@@ -19,6 +57,8 @@ class CaptureModel {
   final bool isPublic;
   final String? artType;
   final String? artMedium;
+  final CaptureStatus status;
+  final String? moderationNotes;
 
   CaptureModel({
     required this.id,
@@ -39,6 +79,8 @@ class CaptureModel {
     this.isPublic = false,
     this.artType,
     this.artMedium,
+    this.status = CaptureStatus.pending,
+    this.moderationNotes,
   });
 
   factory CaptureModel.fromJson(Map<String, dynamic> json) {
@@ -62,6 +104,10 @@ class CaptureModel {
       isPublic: json['isPublic'] as bool? ?? false,
       artType: json['artType'] as String?,
       artMedium: json['artMedium'] as String?,
+      status: CaptureStatusExtension.fromString(
+        json['status'] as String? ?? 'pending',
+      ),
+      moderationNotes: json['moderationNotes'] as String?,
     );
   }
 
@@ -92,6 +138,8 @@ class CaptureModel {
       'isPublic': isPublic,
       'artType': artType,
       'artMedium': artMedium,
+      'status': status.value,
+      'moderationNotes': moderationNotes,
     };
   }
 
@@ -116,6 +164,8 @@ class CaptureModel {
     bool? isPublic,
     String? artType,
     String? artMedium,
+    CaptureStatus? status,
+    String? moderationNotes,
   }) {
     return CaptureModel(
       id: id ?? this.id,
@@ -136,6 +186,8 @@ class CaptureModel {
       isPublic: isPublic ?? this.isPublic,
       artType: artType ?? this.artType,
       artMedium: artMedium ?? this.artMedium,
+      status: status ?? this.status,
+      moderationNotes: moderationNotes ?? this.moderationNotes,
     );
   }
 

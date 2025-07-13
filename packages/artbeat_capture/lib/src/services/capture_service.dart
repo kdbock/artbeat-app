@@ -250,7 +250,7 @@ class CaptureService {
           .toList();
     } catch (e) {
       debugPrint('Error fetching user captures: $e');
-      
+
       // Fallback without orderBy
       try {
         final fallbackQuery = await _capturesRef
@@ -271,7 +271,9 @@ class CaptureService {
         captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
         return captures;
       } catch (fallbackError) {
-        debugPrint('❌ Fallback user captures query also failed: $fallbackError');
+        debugPrint(
+          '❌ Fallback user captures query also failed: $fallbackError',
+        );
         return [];
       }
     }
@@ -288,16 +290,18 @@ class CaptureService {
       return querySnapshot.count ?? 0;
     } catch (e) {
       debugPrint('Error getting user capture count: $e');
-      
+
       // Fallback: get all documents and count manually
       try {
         final querySnapshot = await _capturesRef
             .where('userId', isEqualTo: userId)
             .get();
-        
+
         return querySnapshot.docs.length;
       } catch (fallbackError) {
-        debugPrint('❌ Fallback capture count query also failed: $fallbackError');
+        debugPrint(
+          '❌ Fallback capture count query also failed: $fallbackError',
+        );
         return 0;
       }
     }
@@ -321,6 +325,152 @@ class CaptureService {
     } catch (e) {
       debugPrint('Error getting user capture views: $e');
       return 0;
+    }
+  }
+
+  /// Admin: Get captures pending moderation
+  Future<List<CaptureModel>> getPendingCaptures({int limit = 50}) async {
+    try {
+      final querySnapshot = await _capturesRef
+          .where('status', isEqualTo: 'pending')
+          .orderBy('createdAt', descending: false) // Oldest first for review
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs
+          .map(
+            (doc) => CaptureModel.fromJson({
+              ...doc.data() as Map<String, dynamic>,
+              'id': doc.id,
+            }),
+          )
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching pending captures: $e');
+
+      // Fallback without orderBy
+      try {
+        final fallbackQuery = await _capturesRef
+            .where('status', isEqualTo: 'pending')
+            .limit(limit)
+            .get();
+
+        final captures = fallbackQuery.docs
+            .map(
+              (doc) => CaptureModel.fromJson({
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              }),
+            )
+            .toList();
+
+        // Sort manually by createdAt
+        captures.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        return captures;
+      } catch (fallbackError) {
+        debugPrint(
+          '❌ Fallback pending captures query also failed: $fallbackError',
+        );
+        return [];
+      }
+    }
+  }
+
+  /// Admin: Approve a capture
+  Future<bool> approveCapture(
+    String captureId, {
+    String? moderationNotes,
+  }) async {
+    try {
+      await _capturesRef.doc(captureId).update({
+        'status': 'approved',
+        'moderationNotes': moderationNotes,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('Error approving capture: $e');
+      return false;
+    }
+  }
+
+  /// Admin: Reject a capture
+  Future<bool> rejectCapture(
+    String captureId, {
+    String? moderationNotes,
+  }) async {
+    try {
+      await _capturesRef.doc(captureId).update({
+        'status': 'rejected',
+        'moderationNotes': moderationNotes,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('Error rejecting capture: $e');
+      return false;
+    }
+  }
+
+  /// Admin: Delete a capture completely
+  Future<bool> adminDeleteCapture(String captureId) async {
+    try {
+      await _capturesRef.doc(captureId).delete();
+      return true;
+    } catch (e) {
+      debugPrint('Error admin deleting capture: $e');
+      return false;
+    }
+  }
+
+  /// Get captures by status
+  Future<List<CaptureModel>> getCapturesByStatus(
+    String status, {
+    int limit = 20,
+  }) async {
+    try {
+      final querySnapshot = await _capturesRef
+          .where('status', isEqualTo: status)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return querySnapshot.docs
+          .map(
+            (doc) => CaptureModel.fromJson({
+              ...doc.data() as Map<String, dynamic>,
+              'id': doc.id,
+            }),
+          )
+          .toList();
+    } catch (e) {
+      debugPrint('Error fetching captures by status: $e');
+
+      // Fallback without orderBy
+      try {
+        final fallbackQuery = await _capturesRef
+            .where('status', isEqualTo: status)
+            .limit(limit)
+            .get();
+
+        final captures = fallbackQuery.docs
+            .map(
+              (doc) => CaptureModel.fromJson({
+                ...doc.data() as Map<String, dynamic>,
+                'id': doc.id,
+              }),
+            )
+            .toList();
+
+        // Sort manually by createdAt
+        captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return captures;
+      } catch (fallbackError) {
+        debugPrint(
+          '❌ Fallback status captures query also failed: $fallbackError',
+        );
+        return [];
+      }
     }
   }
 }

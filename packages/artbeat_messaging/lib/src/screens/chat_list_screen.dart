@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show EnhancedUniversalHeader, MainLayout;
+    show
+        EnhancedUniversalHeader,
+        ArtbeatColors,
+        ArtbeatGradientBackground;
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
 import '../widgets/chat_list_tile.dart';
-import 'chat_screen.dart';
-import 'contact_selection_screen.dart';
-import 'group_creation_screen.dart';
-import 'chat_settings_screen.dart';
 
 class ChatListScreen extends StatelessWidget {
   const ChatListScreen({super.key});
@@ -18,109 +17,222 @@ class ChatListScreen extends StatelessWidget {
     final chatService = Provider.of<ChatService>(context);
     final theme = Theme.of(context);
 
-    return MainLayout(
-      currentIndex: 4, // Messages tab
+    return SafeArea(
       child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Messages',
-          showLogo: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () => _showSearchDialog(context),
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: () {
-                _showChatOptions(context);
-              },
-            ),
-          ],
-        ),
-        body: StreamBuilder<List<ChatModel>>(
-          stream: chatService.getChatStream(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  'Error loading chats',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.error,
-                  ),
+        extendBodyBehindAppBar: true,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: ArtbeatGradientBackground(
+            addShadow: true,
+            child: EnhancedUniversalHeader(
+              title: 'Messages',
+              showLogo: false,
+              backgroundColor: Colors.transparent,
+              foregroundColor: ArtbeatColors.textPrimary,
+              elevation: 0,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => _showSearchDialog(context),
                 ),
-              );
-            }
-
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final chats = snapshot.data!;
-
-            if (chats.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      size: 48,
-                      color: theme.colorScheme.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    Text('No messages yet', style: theme.textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Start a conversation with fellow artists',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () {
+                    _showChatOptions(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.white,
+                ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+                Colors.white,
+              ],
+            ),
+          ),
+          child: StreamBuilder<List<ChatModel>>(
+            stream: chatService.getChatStream(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 56,
+                        color: theme.colorScheme.error,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () => _navigateToNewChat(context),
-                      icon: const Icon(Icons.add),
-                      label: const Text('New Message'),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error loading chats',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        onPressed: () => chatService.refresh(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Try Again'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.error,
+                          foregroundColor: theme.colorScheme.onError,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 60,
+                        height: 60,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            ArtbeatColors.primaryPurple,
+                          ),
+                          strokeWidth: 3,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Loading conversations...',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final chats = snapshot.data!;
+
+              if (chats.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.chat_bubble_outline,
+                          size: 64,
+                          color: ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'No messages yet',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 40),
+                        child: Text(
+                          'Start a conversation with fellow artists and connect with the creative community',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        onPressed: () => _navigateToNewChat(context),
+                        icon: const Icon(Icons.add),
+                        label: const Text('New Message'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ArtbeatColors.primaryPurple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 4,
+                          shadowColor: ArtbeatColors.primaryPurple.withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: ListView.builder(
+                  key: ValueKey<int>(chats.length),
+                  padding: const EdgeInsets.only(top: kToolbarHeight + 16),
+                  itemCount: chats.length,
+                  itemBuilder: (context, index) {
+                    final chat = chats[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      child: ChatListTile(
+                        chat: chat,
+                        onTap: () => _navigateToChat(context, chat),
+                      ),
+                    );
+                  },
                 ),
               );
-            }
-
-            return ListView.builder(
-              itemCount: chats.length,
-              itemBuilder: (context, index) {
-                final chat = chats[index];
-                return ChatListTile(
-                  chat: chat,
-                  onTap: () => _navigateToChat(context, chat),
-                );
-              },
-            );
-          },
+            },
+          ),
         ),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _navigateToNewChat(context),
-          child: const Icon(Icons.chat),
+          icon: const Icon(Icons.chat),
+          label: const Text('New Chat'),
+          backgroundColor: ArtbeatColors.primaryPurple,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       ),
     );
   }
 
   void _navigateToNewChat(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => const ContactSelectionScreen(),
-      ),
-    );
+    Navigator.pushNamed(context, '/messaging/new');
   }
 
   void _navigateToChat(BuildContext context, ChatModel chat) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (context) => ChatScreen(chat: chat)),
-    );
+    Navigator.pushNamed(context, '/messaging/chat', arguments: {'chat': chat});
   }
 
   void _showSearchDialog(BuildContext context) {
@@ -142,12 +254,7 @@ class ChatListScreen extends StatelessWidget {
               title: const Text('New Group'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const GroupCreationScreen(),
-                  ),
-                );
+                Navigator.pushNamed(context, '/messaging/group/new');
               },
             ),
             ListTile(
@@ -155,12 +262,7 @@ class ChatListScreen extends StatelessWidget {
               title: const Text('Chat Settings'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const ChatSettingsScreen(),
-                  ),
-                );
+                Navigator.pushNamed(context, '/messaging/settings');
               },
             ),
           ],
@@ -185,29 +287,7 @@ class _ChatSearchDialogState extends State<_ChatSearchDialog> {
     super.dispose();
   }
 
-  String _getChatName(ChatModel chat) {
-    final chatService = Provider.of<ChatService>(context, listen: false);
-    if (chat.isGroup) {
-      return chat.groupName ?? 'Unnamed Group';
-    }
-    // For 1-1 chats, find the other participant
-    final otherParticipant = chat.participants.firstWhere(
-      (p) => p.id != chatService.currentUserId,
-    );
-    return otherParticipant.displayName;
-  }
-
-  String _getChatImage(ChatModel chat) {
-    final chatService = Provider.of<ChatService>(context, listen: false);
-    if (chat.isGroup) {
-      return chat.groupImage ?? '';
-    }
-    // For 1-1 chats, find the other participant's photo
-    final otherParticipant = chat.participants.firstWhere(
-      (p) => p.id != chatService.currentUserId,
-    );
-    return otherParticipant.photoUrl ?? '';
-  }
+  // Removed unused methods
 
   @override
   Widget build(BuildContext context) {
@@ -280,34 +360,13 @@ class _ChatSearchDialogState extends State<_ChatSearchDialog> {
                           itemCount: results.length,
                           itemBuilder: (context, index) {
                             final chat = results[index];
-                            final chatName = _getChatName(chat);
-                            final imageUrl = _getChatImage(chat);
-
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: imageUrl.isNotEmpty
-                                    ? NetworkImage(imageUrl)
-                                    : null,
-                                child: imageUrl.isEmpty
-                                    ? Text(chatName[0].toUpperCase())
-                                    : null,
-                              ),
-                              title: Text(chatName),
-                              subtitle: chat.lastMessage != null
-                                  ? Text(
-                                      chat.lastMessage!.content,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )
-                                  : const Text('No messages yet'),
+                            return ChatListTile(
+                              chat: chat,
                               onTap: () {
-                                Navigator.pop(context);
-                                Navigator.push(
+                                Navigator.pushNamed(
                                   context,
-                                  MaterialPageRoute<void>(
-                                    builder: (context) =>
-                                        ChatScreen(chat: chat),
-                                  ),
+                                  '/messaging/chat',
+                                  arguments: {'chat': chat},
                                 );
                               },
                             );

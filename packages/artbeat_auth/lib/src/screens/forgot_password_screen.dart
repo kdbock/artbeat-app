@@ -12,7 +12,9 @@ import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Forgot password screen with email reset functionality
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  final AuthService? authService; // Optional for testing
+
+  const ForgotPasswordScreen({super.key, this.authService});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -22,10 +24,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
-  final _authService = AuthService();
+  late final AuthService _authService;
   bool _isLoading = false;
   String? _errorMessage;
   bool _resetSent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   @override
   void dispose() {

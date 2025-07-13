@@ -10,7 +10,7 @@ import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_ads/artbeat_ads.dart' as ads;
-import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_art_walk/src/screens/my_captures_screen.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
@@ -18,59 +18,75 @@ import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import 'widgets/developer_menu.dart';
 import 'src/widgets/error_boundary.dart';
+import 'src/services/firebase_initializer.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
+  final _firebaseInitializer = FirebaseInitializer();
 
   MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ErrorBoundary(
-      onError: (error, stackTrace) {
-        // Log the error and stack trace
-        debugPrint('❌ App-level error caught: $error');
-        debugPrint('❌ Stack trace: $stackTrace');
+    return FutureBuilder(
+      future: _firebaseInitializer.ensureInitialized(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Text('Error initializing app: ${snapshot.error}'),
+              ),
+            ),
+          );
+        }
+
+        return ErrorBoundary(
+          onError: (error, stackTrace) {
+            debugPrint('❌ App-level error caught: $error');
+            debugPrint('❌ Stack trace: $stackTrace');
+          },
+          child: MultiProvider(
+            providers: [
+              // Core providers
+              ChangeNotifierProvider<core.UserService>(
+                create: (_) => core.UserService(),
+                lazy: true, // Changed to lazy to prevent early Firebase access
+              ),
+              Provider<AuthService>(create: (_) => AuthService(), lazy: true),
+              ChangeNotifierProvider<core.ConnectivityService>(
+                create: (_) => core.ConnectivityService(),
+                lazy: false,
+              ),
+              Provider<ThemeData>(
+                create: (_) => core.ArtbeatTheme.lightTheme,
+                lazy: false,
+              ),
+              ChangeNotifierProvider<messaging.ChatService>(
+                create: (_) => messaging.ChatService(),
+                lazy: true, // Changed to lazy to prevent early Firebase access
+              ),
+              // Community providers
+              ChangeNotifierProvider<CommunityService>(
+                create: (_) => CommunityService(),
+                lazy: true, // Changed to lazy to prevent early Firebase access
+              ),
+              // Dashboard ViewModel
+              ChangeNotifierProvider<core.DashboardViewModel>(
+                create: (_) => core.DashboardViewModel(),
+                lazy: true,
+              ),
+            ],
+            child: MaterialApp(
+              navigatorKey: navigatorKey,
+              title: 'ARTbeat',
+              theme: core.ArtbeatTheme.lightTheme,
+              initialRoute: '/splash',
+              onGenerateRoute: onGenerateRoute,
+            ),
+          ),
+        );
       },
-      child: MultiProvider(
-        providers: [
-          // Core providers
-          ChangeNotifierProvider<core.UserService>(
-            create: (_) => core.UserService(),
-            lazy: true, // Changed to lazy to prevent early Firebase access
-          ),
-          Provider<AuthService>(create: (_) => AuthService(), lazy: true),
-          ChangeNotifierProvider<core.ConnectivityService>(
-            create: (_) => core.ConnectivityService(),
-            lazy: false,
-          ),
-          Provider<ThemeData>(
-            create: (_) => core.ArtbeatTheme.lightTheme,
-            lazy: false,
-          ),
-          ChangeNotifierProvider<messaging.ChatService>(
-            create: (_) => messaging.ChatService(),
-            lazy: true, // Changed to lazy to prevent early Firebase access
-          ),
-          // Community providers
-          ChangeNotifierProvider<CommunityService>(
-            create: (_) => CommunityService(),
-            lazy: true, // Changed to lazy to prevent early Firebase access
-          ),
-          // Dashboard ViewModel
-          ChangeNotifierProvider<core.DashboardViewModel>(
-            create: (_) => core.DashboardViewModel(),
-            lazy: true,
-          ),
-        ],
-        child: MaterialApp(
-          navigatorKey: navigatorKey,
-          title: 'ARTbeat',
-          theme: core.ArtbeatTheme.lightTheme,
-          initialRoute: '/splash',
-          onGenerateRoute: onGenerateRoute,
-        ),
-      ),
     );
   }
 
@@ -181,8 +197,10 @@ class MyApp extends StatelessWidget {
         );
       case '/capture/camera':
         return MaterialPageRoute(
-          builder: (_) =>
-              const core.MainLayout(currentIndex: -1, child: CaptureScreen()),
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: capture.BasicCaptureScreen(),
+          ),
         );
       case '/community/feed':
         return MaterialPageRoute(
@@ -191,37 +209,99 @@ class MyApp extends StatelessWidget {
             child: UnifiedCommunityFeed(),
           ),
         );
+      // Art Walk routes
       case '/art-walk/map':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
-            currentIndex: -1,
+            currentIndex: 1, // Art Walk tab index
             child: ArtWalkMapScreen(),
           ),
         );
       case '/art-walk/list':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
-            currentIndex: -1,
+            currentIndex: 1, // Art Walk tab index
             child: ArtWalkListScreen(),
           ),
         );
+      case '/art-walk/detail':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final walkId = args?['walkId'] as String?;
+        if (walkId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: 1,
+              child: Scaffold(body: Center(child: Text('Art walk not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 1,
+            child: ArtWalkDetailScreen(walkId: walkId),
+          ),
+        );
+      case '/art-walk/experience':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artWalkId = args?['artWalkId'] as String?;
+        final artWalk = args?['artWalk'] as ArtWalkModel?;
+        if (artWalkId == null || artWalk == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: 1,
+              child: Scaffold(body: Center(child: Text('Art walk not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 1,
+            child: ArtWalkExperienceScreen(
+              artWalkId: artWalkId,
+              artWalk: artWalk,
+            ),
+          ),
+        );
       case '/art-walk/create':
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 1,
+            child: CreateArtWalkScreen(
+              artWalkId: args?['artWalkId'] as String?,
+              artWalkToEdit: args?['artWalk'] as ArtWalkModel?,
+            ),
+          ),
+        );
+      case '/art-walk/edit':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final walkId = args?['walkId'] as String?;
+        final artWalk = args?['artWalk'] as ArtWalkModel?;
+        if (walkId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: 1,
+              child: Scaffold(body: Center(child: Text('Art walk not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 1,
+            child: ArtWalkEditScreen(artWalkId: walkId, artWalk: artWalk),
+          ),
+        );
+      case '/art-walk/dashboard':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: CreateArtWalkScreen(),
+            currentIndex: 1,
+            child: ArtWalkDashboardScreen(),
           ),
         );
       case '/events/dashboard':
         return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
-      case '/art-walk/dashboard':
-        return MaterialPageRoute(
-          builder: (_) => const ArtWalkDashboardScreen(),
-        );
       case '/capture/dashboard':
-        return MaterialPageRoute(
-          builder: (_) => const CaptureDashboardScreen(),
-        );
+        return MaterialPageRoute(builder: (_) => capture.BasicCaptureScreen());
       case '/community/dashboard':
         return MaterialPageRoute(
           builder: (_) => const CommunityDashboardScreen(),
@@ -250,7 +330,6 @@ class MyApp extends StatelessWidget {
             child: artwork.ArtworkUploadScreen(),
           ),
         );
-      // ...existing code...
 
       // Subscription routes
       case '/subscription/comparison':
@@ -593,13 +672,7 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Content Moderation',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Content Moderation coming soon')),
-            ),
+            child: capture.AdminContentModerationScreen(),
           ),
         );
       case '/admin/settings':
@@ -698,6 +771,36 @@ class MyApp extends StatelessWidget {
             currentIndex: -1,
             child: ads.AdminAdReviewScreen(),
           ),
+        );
+      // Messaging routes
+      case '/messaging':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: messaging.MessagingNavigation(),
+          ),
+          fullscreenDialog: true,
+        );
+      case '/messaging/chat':
+        final args = settings.arguments as Map<String, dynamic>;
+        final chat = args['chat'] as messaging.ChatModel;
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1, // -1 means no bottom nav item is selected
+            child: messaging.ChatScreen(chat: chat),
+          ),
+        );
+      case '/messaging/group':
+        return MaterialPageRoute(
+          builder: (_) => const messaging.GroupChatScreen(),
+        );
+      case '/messaging/create-group':
+        return MaterialPageRoute(
+          builder: (_) => const messaging.GroupCreationScreen(),
+        );
+      case '/messaging/settings':
+        return MaterialPageRoute(
+          builder: (_) => const messaging.ChatSettingsScreen(),
         );
     }
     // Fallback: return splash screen if no route matched

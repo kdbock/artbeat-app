@@ -99,17 +99,17 @@ class ArtworkModel {
     required this.title,
     required this.description,
     required this.imageUrl,
-    this.additionalImageUrls = const [],
-    this.videoUrls = const [],
-    this.audioUrls = const [],
+    List<String> additionalImageUrls = const [],
+    List<String> videoUrls = const [],
+    List<String> audioUrls = const [],
     required this.medium,
-    required this.styles,
+    required List<String> styles,
     this.dimensions,
     this.materials,
     this.location,
-    this.tags,
-    this.hashtags,
-    this.keywords,
+    List<String>? tags,
+    List<String>? hashtags,
+    List<String>? keywords,
     this.price,
     required this.isForSale,
     this.isSold = false,
@@ -123,7 +123,15 @@ class ArtworkModel {
     this.commentCount = 0,
     required this.createdAt,
     required this.updatedAt,
-  });
+  })  :
+        // Create defensive copies of all lists to prevent external modification
+        additionalImageUrls = List.unmodifiable(additionalImageUrls),
+        videoUrls = List.unmodifiable(videoUrls),
+        audioUrls = List.unmodifiable(audioUrls),
+        styles = List.unmodifiable(styles),
+        tags = tags != null ? List.unmodifiable(tags) : null,
+        hashtags = hashtags != null ? List.unmodifiable(hashtags) : null,
+        keywords = keywords != null ? List.unmodifiable(keywords) : null;
 
   /// Create ArtworkModel from Firestore document
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
@@ -138,7 +146,8 @@ class ArtworkModel {
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
       imageUrl: data['imageUrl'] as String? ?? '',
-      additionalImageUrls: (data['additionalImageUrls'] as List<dynamic>? ?? []).cast<String>(),
+      additionalImageUrls:
+          (data['additionalImageUrls'] as List<dynamic>? ?? []).cast<String>(),
       videoUrls: (data['videoUrls'] as List<dynamic>? ?? []).cast<String>(),
       audioUrls: (data['audioUrls'] as List<dynamic>? ?? []).cast<String>(),
       medium: data['medium'] as String? ?? '',

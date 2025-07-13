@@ -10,6 +10,8 @@ class Message {
   final bool isRead;
   final String? replyToId;
   final Map<String, dynamic>? metadata;
+  final String? senderName;
+  final String? senderPhotoUrl;
 
   Message({
     required this.id,
@@ -21,6 +23,8 @@ class Message {
     this.isRead = false,
     this.replyToId,
     this.metadata,
+    this.senderName,
+    this.senderPhotoUrl,
   }) : assert(
          text != null || imageUrl != null,
          'Message must have either text or image',
@@ -38,6 +42,8 @@ class Message {
       isRead: data['isRead'] as bool? ?? false,
       replyToId: data['replyToId'] as String?,
       metadata: data['metadata'] as Map<String, dynamic>?,
+      senderName: data['senderName'] as String?,
+      senderPhotoUrl: data['senderPhotoUrl'] as String?,
     );
   }
 
@@ -51,6 +57,8 @@ class Message {
       'isRead': isRead,
       if (replyToId != null) 'replyToId': replyToId,
       if (metadata != null) 'metadata': metadata,
+      if (senderName != null) 'senderName': senderName,
+      if (senderPhotoUrl != null) 'senderPhotoUrl': senderPhotoUrl,
     };
   }
 
@@ -64,6 +72,8 @@ class Message {
     bool? isRead,
     String? replyToId,
     Map<String, dynamic>? metadata,
+    String? senderName,
+    String? senderPhotoUrl,
   }) {
     return Message(
       id: id ?? this.id,
@@ -75,6 +85,8 @@ class Message {
       isRead: isRead ?? this.isRead,
       replyToId: replyToId ?? this.replyToId,
       metadata: metadata ?? this.metadata,
+      senderName: senderName ?? this.senderName,
+      senderPhotoUrl: senderPhotoUrl ?? this.senderPhotoUrl,
     );
   }
 
