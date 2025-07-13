@@ -4,8 +4,10 @@ library artbeat_capture;
 export 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 
 // Screens and services
+export 'src/screens/enhanced_capture_dashboard_screen.dart';
 export 'src/screens/terms_and_conditions_screen.dart';
 export 'src/screens/camera_capture_screen.dart';
+export 'src/screens/camera_only_screen.dart';
 export 'src/screens/capture_upload_screen.dart';
 export 'src/screens/capture_details_screen.dart';
 export 'src/screens/admin_content_moderation_screen.dart';

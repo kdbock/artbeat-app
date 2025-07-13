@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'camera_capture_screen.dart';
+import 'camera_only_screen.dart';
 
 /// Terms and Conditions Screen - Separate screen for T&C acceptance
 class TermsAndConditionsScreen extends StatefulWidget {
@@ -16,7 +16,9 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
 
   void _acceptTermsAndProceed() {
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (context) => const BasicCaptureScreen()),
+      MaterialPageRoute<void>(
+        builder: (context) => const CameraCaptureScreen(),
+      ),
     );
   }
 

@@ -199,7 +199,7 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => core.MainLayout(
             currentIndex: -1,
-            child: capture.BasicCaptureScreen(),
+            child: capture.CameraCaptureScreen(),
           ),
         );
       case '/community/feed':
@@ -293,15 +293,17 @@ class MyApp extends StatelessWidget {
         );
       case '/art-walk/dashboard':
         return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: 1,
-            child: ArtWalkDashboardScreen(),
-          ),
+          builder: (_) => const ArtWalkDashboardScreen(),
         );
       case '/events/dashboard':
         return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/capture/dashboard':
-        return MaterialPageRoute(builder: (_) => capture.BasicCaptureScreen());
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: capture.EnhancedCaptureDashboardScreen(),
+          ),
+        );
       case '/community/dashboard':
         return MaterialPageRoute(
           builder: (_) => const CommunityDashboardScreen(),

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-class DashboardViewModel extends ChangeNotifier {
+abstract class BaseViewModel extends ChangeNotifier {
   bool _disposed = false;
   bool get isDisposed => _disposed;
 

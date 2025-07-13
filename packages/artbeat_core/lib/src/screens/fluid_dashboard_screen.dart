@@ -652,8 +652,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     ArtbeatColors.primaryGreen,
                     ArtbeatColors.primaryGreen.withValues(alpha: 0.7),
                   ],
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/art-walk/dashboard'),
+                  onTap: () => Navigator.pushNamed(context, '/art-walk/create'),
                 ),
                 _buildAnimatedQuickActionCard(
                   icon: Icons.camera_alt,
@@ -707,9 +706,9 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 onTap: () => Navigator.pushNamed(context, '/artwork/browse'),
               ),
               _buildFeatureButton(
-                icon: Icons.person_search,
-                label: 'Find Artists',
-                onTap: () => Navigator.pushNamed(context, '/artist/search'),
+                icon: Icons.route,
+                label: 'My Art Walks',
+                onTap: () => Navigator.pushNamed(context, '/art-walk/my-walks'),
               ),
               _buildFeatureButton(
                 icon: Icons.map,
@@ -869,7 +868,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFF0F8FF), // Very light blue
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -1005,7 +1004,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               children: [
                 // Map container
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/create-art-walk'),
+                  onTap: () => Navigator.pushNamed(context, '/art-walk/map'),
                   child: Container(
                     height: 220,
                     width: double.infinity,
@@ -1101,7 +1100,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                   left: 16,
                   child: ElevatedButton.icon(
                     onPressed: () =>
-                        Navigator.pushNamed(context, '/create-art-walk'),
+                        Navigator.pushNamed(context, '/art-walk/create'),
                     icon: const Icon(Icons.add, size: 16),
                     label: const Text('Create Art Walk'),
                     style: ElevatedButton.styleFrom(
@@ -1193,7 +1192,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             ),
             const SizedBox(height: 8),
             SizedBox(
-              height: 120,
+              height: 140,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -1215,73 +1214,82 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                         onTap: () => Navigator.pushNamed(
                           context,
                           '/art-walk/detail',
-                          arguments: walk.id,
+                          arguments: {'walkId': walk.id},
                         ),
                         borderRadius: BorderRadius.circular(16),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.max,
                             children: [
-                              Row(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: ArtbeatColors.primaryGreen
-                                          .withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.directions_walk,
-                                      color: ArtbeatColors.primaryGreen,
-                                      size: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      walk.title,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: ArtbeatColors.primaryGreen
+                                              .withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.directions_walk,
+                                          color: ArtbeatColors.primaryGreen,
+                                          size: 14,
+                                        ),
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          walk.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    walk.description,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600,
                                     ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                walk.description,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const Spacer(),
                               Row(
                                 children: [
                                   Icon(
                                     Icons.place,
-                                    size: 12,
+                                    size: 10,
                                     color: Colors.grey.shade600,
                                   ),
-                                  const SizedBox(width: 4),
+                                  const SizedBox(width: 3),
                                   Text(
                                     '${walk.artPieces.length} stops',
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 10,
                                       color: Colors.grey.shade600,
                                     ),
                                   ),
                                   const Spacer(),
                                   const Icon(
                                     Icons.arrow_forward_ios,
-                                    size: 12,
+                                    size: 10,
                                     color: ArtbeatColors.primaryGreen,
                                   ),
                                 ],
@@ -1764,42 +1772,46 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               ),
               const SizedBox(height: 40),
               // Artist info
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      artist.displayName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: ArtbeatColors.textPrimary,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        artist.displayName,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      artist.mediums.join(' • '),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: ArtbeatColors.textSecondary,
+                      const SizedBox(height: 4),
+                      Text(
+                        artist.mediums.join(' • '),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      artist.bio ?? '',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: ArtbeatColors.textPrimary,
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Text(
+                          artist.bio ?? '',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: ArtbeatColors.textPrimary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

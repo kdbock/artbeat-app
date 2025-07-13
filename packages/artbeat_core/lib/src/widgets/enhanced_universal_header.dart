@@ -663,7 +663,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               subtitle: 'Manage feedback and system settings',
               onTap: () {
                 Navigator.pop(context);
-                // Navigate to admin panel
+                Navigator.pushNamed(context, '/admin/dashboard');
               },
             ),
 
@@ -673,7 +673,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               subtitle: 'View app version and system details',
               onTap: () {
                 Navigator.pop(context);
-                // Navigate to system info
+                Navigator.pushNamed(context, '/system/info');
               },
             ),
           ],

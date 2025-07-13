@@ -10,6 +10,7 @@ import '../models/artist_profile_model.dart';
 import '../models/event_model.dart';
 import '../models/capture_model.dart';
 import '../services/user_service.dart';
+import 'base_view_model.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart'
     show RewardsService, ArtWalkModel, ArtWalkService;
 
@@ -23,9 +24,14 @@ import 'package:artbeat_community/artbeat_community.dart'
 import '../widgets/achievement_badge.dart' show AchievementBadgeData;
 
 /// ViewModel for managing dashboard state and business logic
-class DashboardViewModel with ChangeNotifier {
-  // Disposal state
-  bool _disposed = false;
+bool _disposed = false;
+
+class DashboardViewModel extends BaseViewModel {
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 
   // Services
   final UserService _userService = UserService();
@@ -126,25 +132,22 @@ class DashboardViewModel with ChangeNotifier {
       if (_isAuthenticated) {
         _currentUser = await _userService.getCurrentUserModel();
         await updateUnreadMessageCount();
+
+        // Load all dashboard data
+        await Future.wait([
+          loadFeaturedArtists(),
+          loadArtworks(),
+          loadPosts(),
+          loadEvents(),
+          loadUserArtWalks(),
+          loadCaptures(),
+        ]);
       }
     } catch (e) {
       debugPrint('Error initializing dashboard: $e');
     } finally {
       _isLoadingUser = false;
       notifyListeners();
-    }
-  }
-
-  @override
-  void dispose() {
-    _disposed = true;
-    super.dispose();
-  }
-
-  @override
-  void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
     }
   }
 

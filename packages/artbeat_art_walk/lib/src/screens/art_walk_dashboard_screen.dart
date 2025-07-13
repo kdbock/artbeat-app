@@ -7,6 +7,7 @@ import '../services/art_walk_service.dart';
 import '../services/achievement_service.dart';
 import '../models/art_walk_model.dart';
 import '../models/achievement_model.dart';
+import 'package:artbeat_core/src/widgets/artbeat_gradient_background.dart';
 
 // Art Walk specific colors
 class ArtWalkColors {
@@ -637,20 +638,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
-  void _openDrawer(BuildContext context) {
-    final scaffoldState = Scaffold.maybeOf(context);
-    if (scaffoldState != null && scaffoldState.hasDrawer) {
-      scaffoldState.openDrawer();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Navigation drawer not available'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
   Widget _buildSearchTile({
     required IconData icon,
     required String title,
@@ -780,110 +767,90 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     // Only use MainLayout for navigation, remove any duplicate navigation bars
     return MainLayout(
       currentIndex: 1,
-      child: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  ArtWalkColors.primaryTeal,
+      child: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  ArtWalkColors.backgroundGradientStart,
+                  ArtWalkColors.backgroundGradientEnd,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: kToolbarHeight + 24),
+                    _buildWelcomeHeader(),
+                    const SizedBox(height: 24),
+                    _buildMapWidget(),
+                    const SizedBox(height: 24),
+                    _buildCapturesWidget(),
+                    const SizedBox(height: 24),
+                    _buildArtWalksWidget(),
+                    const SizedBox(height: 24),
+                    _buildAchievementsWidget(),
+                    const SizedBox(height: 100),
+                  ],
                 ),
               ),
-            )
-          : Stack(
-              children: [
-                Scaffold(
-                  backgroundColor: Colors.transparent,
-                  extendBodyBehindAppBar: true,
-                  drawer: const ArtbeatDrawer(),
-                  appBar: PreferredSize(
-                    preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-                    child: ArtbeatGradientBackground(
-                      addShadow: true,
-                      child: EnhancedUniversalHeader(
-                        title: 'Art Walk',
-                        showLogo: false,
-                        showSearch: true,
-                        showDeveloperTools: true,
-                        onSearchPressed: () => _showSearchModal(context),
-                        onProfilePressed: () =>
-                            _showArtistDiscoveryMenu(context),
-                        onMenuPressed: () => _openDrawer(context),
-                        backgroundColor: ArtWalkColors.primaryTeal,
-                        foregroundColor: Colors.white,
-                        elevation: 2,
-                      ),
-                    ),
-                  ),
-                  body: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          ArtWalkColors.backgroundGradientStart,
-                          ArtWalkColors.backgroundGradientEnd,
-                        ],
-                      ),
-                    ),
-                    child: SafeArea(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Welcome Header
-                            _buildWelcomeHeader(),
-
-                            const SizedBox(height: 24),
-
-                            // Map Widget
-                            _buildMapWidget(),
-
-                            const SizedBox(height: 24),
-
-                            // Captures Widget
-                            _buildCapturesWidget(),
-
-                            const SizedBox(height: 24),
-
-                            // Art Walks Widget
-                            _buildArtWalksWidget(),
-
-                            const SizedBox(height: 24),
-
-                            // Achievements Widget
-                            _buildAchievementsWidget(),
-
-                            const SizedBox(height: 100), // Space for FAB
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 24,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: FloatingActionButton.extended(
-                      onPressed: () =>
-                          Navigator.pushNamed(context, '/art-walk/create'),
-                      backgroundColor: ArtWalkColors.accentOrange,
-                      foregroundColor: Colors.white,
-                      elevation: 8,
-                      label: const Text(
-                        'Create Art Walk',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      icon: const Icon(Icons.add_location, size: 24),
-                    ),
-                  ),
-                ),
-              ],
             ),
+          ),
+          // Header (AppBar replacement)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ArtbeatGradientBackground(
+              addShadow: true,
+              child: EnhancedUniversalHeader(
+                title: 'Art Walks',
+                showLogo: false,
+                showSearch: true,
+                showDeveloperTools: true,
+                backgroundColor: Colors.transparent,
+                foregroundColor: ArtbeatColors.textPrimary,
+                elevation: 0,
+                onSearchPressed: () => _showSearchModal(context),
+                onProfilePressed: () => _showArtistDiscoveryMenu(context),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    onPressed: () => Navigator.pushNamed(context, '/messaging'),
+                    tooltip: 'Messages',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // FAB
+          Positioned(
+            bottom: 24,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: FloatingActionButton.extended(
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/art-walk/create'),
+                backgroundColor: ArtWalkColors.accentOrange,
+                foregroundColor: Colors.white,
+                elevation: 8,
+                label: const Text(
+                  'Create Art Walk',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                icon: const Icon(Icons.add_location, size: 24),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1093,43 +1060,44 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            height: 80,
-                            width: 100,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: ArtWalkColors.primaryTeal.withValues(
-                                  alpha: 0.2,
+                          Expanded(
+                            child: Container(
+                              width: 100,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: ArtWalkColors.primaryTeal.withValues(
+                                    alpha: 0.2,
+                                  ),
                                 ),
                               ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: capture.imageUrl.isNotEmpty
-                                  ? Image.network(
-                                      capture.imageUrl,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Container(
-                                                color: Colors.grey[200],
-                                                child: const Icon(
-                                                  Icons.image,
-                                                  color: Colors.grey,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: capture.imageUrl.isNotEmpty
+                                    ? Image.network(
+                                        capture.imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                                  color: Colors.grey[200],
+                                                  child: const Icon(
+                                                    Icons.image,
+                                                    color: Colors.grey,
+                                                  ),
                                                 ),
-                                              ),
-                                    )
-                                  : Container(
-                                      color: Colors.grey[200],
-                                      child: const Icon(
-                                        Icons.image,
-                                        color: Colors.grey,
+                                      )
+                                    : Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.image,
+                                          color: Colors.grey,
+                                        ),
                                       ),
-                                    ),
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Text(
                             capture.title?.isNotEmpty == true
                                 ? capture.title!
