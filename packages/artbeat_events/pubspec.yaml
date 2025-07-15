@@ -63,5 +63,6 @@ dev_dependencies:
   mockito: ^5.4.2
   build_runner: ^2.4.9
 
+  cloud_firestore_platform_interface: any
 flutter:
   uses-material-design: true

@@ -98,7 +98,6 @@ void main() {
     test('should follow user successfully', () async {
       // Arrange
       const userId = 'user-123';
-      const targetUserId = 'target-456';
 
       when(mockFirestore.collection('users')).thenReturn(mockCollection);
       when(mockCollection.doc(userId)).thenReturn(mockDocument);
@@ -118,7 +117,6 @@ void main() {
     test('should unfollow user successfully', () async {
       // Arrange
       const userId = 'user-123';
-      const targetUserId = 'target-456';
 
       when(mockFirestore.collection('users')).thenReturn(mockCollection);
       when(mockCollection.doc(userId)).thenReturn(mockDocument);

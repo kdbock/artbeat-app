@@ -30,5 +30,7 @@ dev_dependencies:
   mockito: ^5.4.4
   build_runner: ^2.4.10
 
+  firebase_auth_platform_interface: any
+  cloud_firestore_platform_interface: any
 flutter:
   uses-material-design: true

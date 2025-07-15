@@ -501,49 +501,45 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 3, // Community index
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Community',
-              showLogo: false,
-              showSearch: true,
-              showDeveloperTools: true,
-              onSearchPressed: () => _showSearchModal(context),
-              onProfilePressed: () => _showProfileMenu(context),
-              onMenuPressed: () => _openDrawer(context),
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              elevation: 0,
-            ),
+      drawer: const ArtbeatDrawer(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: ArtbeatGradientBackground(
+          addShadow: true,
+          child: EnhancedUniversalHeader(
+            title: 'Community',
+            showLogo: false,
+            showSearch: true,
+            showDeveloperTools: true,
+            onSearchPressed: () => _showSearchModal(context),
+            onProfilePressed: () => _showProfileMenu(context),
+            onMenuPressed: () => _openDrawer(context),
+            backgroundColor: Colors.transparent,
+            foregroundColor: ArtbeatColors.textPrimary,
+            elevation: 0,
           ),
         ),
-        body: Container(
-          decoration: _buildGradientBackground(),
-          child: _isLoading
-              ? _buildLoadingState()
-              : Column(
-                  children: [
-                    _buildTabSection(),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: const [
-                          UnifiedCommunityFeed(),
-                          TrendingContentScreen(),
-                          PortfoliosScreen(),
-                          StudiosScreen(),
-                        ],
-                      ),
+      ),
+      child: Container(
+        decoration: _buildGradientBackground(),
+        child: _isLoading
+            ? _buildLoadingState()
+            : Column(
+                children: [
+                  _buildTabSection(),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: const [
+                        UnifiedCommunityFeed(),
+                        TrendingContentScreen(),
+                        PortfoliosScreen(),
+                        StudiosScreen(),
+                      ],
                     ),
-                  ],
-                ),
-        ),
+                  ),
+                ],
+              ),
       ),
     );
   }

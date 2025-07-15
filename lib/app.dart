@@ -9,6 +9,7 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
+import 'package:artbeat_artist/src/screens/artist_list_screen.dart';
 import 'package:artbeat_ads/artbeat_ads.dart' as ads;
 import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
@@ -540,6 +541,13 @@ class MyApp extends StatelessWidget {
             child: core.FeedbackForm(),
           ),
         );
+      case '/developer-feedback-admin':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: core.DeveloperFeedbackAdminScreen(),
+          ),
+        );
       case '/artist/artwork':
         return MaterialPageRoute(
           builder: (_) =>
@@ -582,13 +590,12 @@ class MyApp extends StatelessWidget {
           settings: settings,
           authenticatedBuilder: () => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Join as Artist',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Artist onboarding coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Join as Artist',
+              showLogo: false,
+              showBackButton: true,
             ),
+            child: Center(child: Text('Artist onboarding coming soon')),
           ),
           unauthenticatedBuilder: () => const core.MainLayout(
             currentIndex: -1,
@@ -683,12 +690,14 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Featured Artwork',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Featured artwork coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Featured Artists',
+              showLogo: false,
+              showBackButton: true,
+            ),
+            child: ArtistListScreen(
+              title: 'Featured Artists',
+              showFeaturedOnly: true,
             ),
           ),
         );
@@ -973,13 +982,12 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'System Settings',
-                showLogo: false,
-              ),
-              body: Center(child: Text('System Settings coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'System Settings',
+              showLogo: false,
+              showBackButton: true,
             ),
+            child: core.SystemSettingsScreen(),
           ),
         );
       case '/admin/ad-review':
@@ -993,14 +1001,15 @@ class MyApp extends StatelessWidget {
       // Developer menu (already handled above)
 
       // Feedback submission route (already handled above)
-      case '/developer-feedback-admin':
-        return MaterialPageRoute(
-          builder: (_) => const core.DeveloperFeedbackAdminScreen(),
-        );
       case '/search':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Search',
+              showLogo: false,
+              showBackButton: true,
+            ),
             child: EnhancedSearchScreen(),
           ),
         );
@@ -1017,26 +1026,24 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Search Artists',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Artist search coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Search Artists',
+              showLogo: false,
+              showBackButton: true,
             ),
+            child: ArtistListScreen(title: 'Search Artists'),
           ),
         );
       case '/artist-search':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Search Artists',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Artist search coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Browse Artists',
+              showLogo: false,
+              showBackButton: true,
             ),
+            child: ArtistListScreen(title: 'Browse Artists'),
           ),
         );
       case '/art-search':
@@ -1069,13 +1076,12 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Local Scene',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Local scene discovery coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Local Scene',
+              showLogo: false,
+              showBackButton: true,
             ),
+            child: ArtistListScreen(title: 'Local Artists'),
           ),
         );
       case '/location-search':
@@ -1095,13 +1101,12 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Trending',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Trending content coming soon')),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Trending',
+              showLogo: false,
+              showBackButton: true,
             ),
+            child: ArtistListScreen(title: 'Trending Artists'),
           ),
         );
 

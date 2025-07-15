@@ -76,6 +76,7 @@ export 'src/screens/splash_screen.dart' show SplashScreen;
 export 'src/screens/fluid_dashboard_screen.dart' show FluidDashboardScreen;
 export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
 export 'src/screens/auth_required_screen.dart' show AuthRequiredScreen;
+export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;

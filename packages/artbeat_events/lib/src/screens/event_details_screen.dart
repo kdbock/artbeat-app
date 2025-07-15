@@ -13,10 +13,7 @@ import '../utils/event_utils.dart';
 class EventDetailsScreen extends StatefulWidget {
   final String eventId;
 
-  const EventDetailsScreen({
-    super.key,
-    required this.eventId,
-  });
+  const EventDetailsScreen({super.key, required this.eventId});
 
   @override
   State<EventDetailsScreen> createState() => _EventDetailsScreenState();
@@ -74,10 +71,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           showLogo: false,
           actions: [
             if (_event != null) ...[
-              IconButton(
-                onPressed: _shareEvent,
-                icon: const Icon(Icons.share),
-              ),
+              IconButton(onPressed: _shareEvent, icon: const Icon(Icons.share)),
               PopupMenuButton<String>(
                 onSelected: _handleMenuAction,
                 itemBuilder: (context) => [
@@ -127,10 +121,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           children: [
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadEvent,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadEvent, child: const Text('Retry')),
           ],
         ),
       );
@@ -193,18 +184,11 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.event,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.event, size: 64, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           Text(
             'Event Banner',
-            style: TextStyle(
-              color: Colors.grey.shade400,
-              fontSize: 18,
-            ),
+            style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
           ),
         ],
       ),
@@ -219,17 +203,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         children: [
           Text(
             _event!.title,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _getStatusColor().withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -289,11 +272,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             EventUtils.formatEventTime(_event!.dateTime),
           ),
           const SizedBox(height: 12),
-          _buildInfoRow(
-            Icons.location_on,
-            'Location',
-            _event!.location,
-          ),
+          _buildInfoRow(Icons.location_on, 'Location', _event!.location),
           const SizedBox(height: 12),
           _buildInfoRow(
             Icons.people,
@@ -346,18 +325,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         children: [
           const Text(
             'About This Event',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Text(
             _event!.description,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.5,
-            ),
+            style: const TextStyle(fontSize: 16, height: 1.5),
           ),
         ],
       ),
@@ -375,10 +348,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         children: [
           const Text(
             'Tickets',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           ..._event!.ticketTypes.map(_buildTicketTypeCard),
@@ -452,35 +422,35 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
               const SizedBox(height: 12),
               const Text(
                 'Includes:',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               const SizedBox(height: 4),
-              ...ticket.benefits.map((benefit) => Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 2),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check, size: 16, color: Colors.green),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            benefit,
-                            style: const TextStyle(fontSize: 13),
-                          ),
+              ...ticket.benefits.map(
+                (benefit) => Padding(
+                  padding: const EdgeInsets.only(left: 8, top: 2),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check, size: 16, color: Colors.green),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          benefit,
+                          style: const TextStyle(fontSize: 13),
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
 
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed:
-                    isAvailable ? () => _showTicketPurchaseSheet(ticket) : null,
+                onPressed: isAvailable
+                    ? () => _showTicketPurchaseSheet(ticket)
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isAvailable ? null : Colors.grey.shade300,
                 ),
@@ -508,10 +478,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         children: [
           const Text(
             'Categories',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -519,8 +486,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             runSpacing: 8,
             children: _event!.tags.map((tag) {
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(16),
@@ -557,20 +526,14 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   SizedBox(width: 8),
                   Text(
                     'Refund Policy',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
                 _event!.refundPolicy.fullDescription,
-                style: TextStyle(
-                  color: Colors.grey.shade700,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
               ),
             ],
           ),
@@ -590,10 +553,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             children: [
               const Text(
                 'Contact Information',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               _buildContactRow(Icons.email, _event!.contactEmail),
@@ -614,10 +574,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
       children: [
         Icon(icon, size: 16, color: Colors.grey.shade600),
         const SizedBox(width: 8),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 14),
-        ),
+        Text(value, style: const TextStyle(fontSize: 14)),
       ],
     );
   }
@@ -653,18 +610,18 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         case 'add_to_calendar':
           await _calendarService.addEventToCalendar(_event!);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Added to calendar')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Added to calendar')));
           }
           break;
 
         case 'set_reminder':
           await _notificationService.scheduleEventReminders(_event!);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Reminders set')),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Reminders set')));
           }
           break;
 
@@ -672,13 +629,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           _showReportDialog();
           break;
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -739,10 +693,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(
-                        context,
-                        '/events/my-tickets',
-                      );
+                      Navigator.pushNamed(context, '/events/my-tickets');
                     },
                     child: const Text('View My Tickets'),
                   ),
@@ -814,8 +765,9 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     // TODO: Implement report submission
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content:
-            Text('Report submitted. Thank you for helping keep ARTbeat safe.'),
+        content: Text(
+          'Report submitted. Thank you for helping keep ARTbeat safe.',
+        ),
       ),
     );
   }

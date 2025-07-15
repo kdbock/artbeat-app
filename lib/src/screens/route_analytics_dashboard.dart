@@ -142,7 +142,7 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -186,7 +186,7 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   color: isSelected
-                      ? core.ArtbeatColors.primaryPurple.withOpacity(0.1)
+                      ? core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1)
                       : null,
                   child: ListTile(
                     leading: CircleAvatar(

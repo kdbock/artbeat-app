@@ -145,28 +145,25 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: -1,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: const EnhancedUniversalHeader(
-          title: 'Search Results',
-          showLogo: false,
-          showBackButton: true,
-        ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text('Error: $_error'),
-                  ],
-                ),
-              )
-            : _buildSearchResults(),
+      appBar: const EnhancedUniversalHeader(
+        title: 'Search Results',
+        showLogo: false,
+        showBackButton: true,
       ),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text('Error: $_error'),
+                ],
+              ),
+            )
+          : _buildSearchResults(),
     );
   }
 

@@ -129,9 +129,39 @@ class ChatService extends ChangeNotifier {
         .doc(message.id)
         .set(message.toMap());
 
+    // Get current chat to access participant IDs
+    final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+    final chatData = chatDoc.data() as Map<String, dynamic>;
+    final participantIds =
+        (chatData['participantIds'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
+
+    // Get current unread counts
+    final currentUnreadCounts =
+        (chatData['unreadCounts'] as Map<dynamic, dynamic>?)?.map(
+          (key, value) => MapEntry(key.toString(), (value as num).toInt()),
+        ) ??
+        <String, int>{};
+
+    // Update unread counts for all participants except the sender
+    final updatedUnreadCounts = <String, int>{};
+    for (String participantId in participantIds) {
+      if (participantId != message.senderId) {
+        // Increment unread count for other participants
+        updatedUnreadCounts[participantId] =
+            (currentUnreadCounts[participantId] ?? 0) + 1;
+      } else {
+        // Keep sender's unread count at 0
+        updatedUnreadCounts[participantId] = 0;
+      }
+    }
+
     await _firestore.collection('chats').doc(chatId).update({
       'lastMessage': message.toMap(),
       'updatedAt': Timestamp.now(),
+      'unreadCounts': updatedUnreadCounts,
     });
   }
 
@@ -454,6 +484,7 @@ class ChatService extends ChangeNotifier {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'isGroup': false,
+        'unreadCounts': {userId: 0, otherUserId: 0},
       });
 
       final newChat = await chatDoc.get();
@@ -489,6 +520,12 @@ class ChatService extends ChangeNotifier {
         throw Exception('One or more users not found');
       }
 
+      // Initialize unread counts for all participants
+      final initialUnreadCounts = <String, int>{};
+      for (String participantId in participantIds) {
+        initialUnreadCounts[participantId] = 0;
+      }
+
       // Create new group chat
       final chatDoc = await _firestore.collection('chats').add({
         'participantIds': participantIds,
@@ -497,6 +534,7 @@ class ChatService extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
         'isGroup': true,
         'groupName': groupName,
+        'unreadCounts': initialUnreadCounts,
       });
 
       final newChat = await chatDoc.get();
@@ -525,14 +563,44 @@ class ChatService extends ChangeNotifier {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('messageStats')
-        .doc('chatStats')
-        .collection('unreadCounts')
-        .doc(chatId)
-        .set({'count': 0}, SetOptions(merge: true));
+    try {
+      // Update the chat's unreadCounts field to reset the current user's count
+      await _firestore.collection('chats').doc(chatId).update({
+        'unreadCounts.$userId': 0,
+      });
+    } catch (e) {
+      debugPrint('Error marking chat as read: $e');
+    }
+  }
+
+  /// Gets the total unread messages count across all chats
+  Stream<int> getTotalUnreadCount() {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      return Stream.value(0);
+    }
+
+    return _firestore
+        .collection('chats')
+        .where('participantIds', arrayContains: userId)
+        .snapshots()
+        .map((snapshot) {
+          int totalUnread = 0;
+          for (final doc in snapshot.docs) {
+            try {
+              final data = doc.data();
+              final unreadCounts =
+                  data['unreadCounts'] as Map<dynamic, dynamic>?;
+              if (unreadCounts != null) {
+                final userUnreadCount = unreadCounts[userId] as int? ?? 0;
+                totalUnread += userUnreadCount;
+              }
+            } catch (e) {
+              debugPrint('Error parsing unread count for chat ${doc.id}: $e');
+            }
+          }
+          return totalUnread;
+        });
   }
 
   /// Gets a stream of typing status updates for a chat

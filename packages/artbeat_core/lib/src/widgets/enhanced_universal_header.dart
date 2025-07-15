@@ -663,7 +663,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               subtitle: 'Manage feedback and system settings',
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/dashboard');
+                Navigator.pushNamed(context, '/developer-feedback-admin');
               },
             ),
 

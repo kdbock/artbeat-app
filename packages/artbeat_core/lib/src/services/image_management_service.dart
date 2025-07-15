@@ -202,7 +202,7 @@ class ImageManagementService {
       if (!_loadingUrls.contains(url)) {
         _cacheManager.getSingleFile(url).catchError((dynamic error) {
           debugPrint('❌ Preload failed for: $url');
-          // No return needed
+          throw error as Object;
         });
       }
     }

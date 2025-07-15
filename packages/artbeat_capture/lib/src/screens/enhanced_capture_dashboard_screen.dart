@@ -431,7 +431,7 @@ class _EnhancedCaptureDashboardScreenState
           children: [
             // Image
             Image.network(
-              capture.imageUrl!,
+              capture.imageUrl,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.grey[300],
@@ -520,7 +520,7 @@ class _EnhancedCaptureDashboardScreenState
           children: [
             // Image
             Image.network(
-              capture.imageUrl!,
+              capture.imageUrl,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.grey[300],

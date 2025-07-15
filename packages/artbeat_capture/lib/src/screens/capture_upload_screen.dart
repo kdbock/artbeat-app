@@ -285,8 +285,14 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).pop(true); // Return to previous screen
+                // Navigate to dashboard after successful upload
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/dashboard',
+                  (route) => false, // Remove all previous routes
+                );
               },
-              child: const Text('Maybe Later'),
+              child: const Text('Go to Dashboard'),
             ),
             ElevatedButton.icon(
               onPressed: () {
@@ -297,7 +303,14 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                   context,
                   '/art-walk/create',
                   arguments: {'capture': capture},
-                );
+                ).then((_) {
+                  // After creating art walk, navigate to dashboard
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/dashboard',
+                    (route) => false,
+                  );
+                });
               },
               icon: const Icon(Icons.add_location),
               label: const Text('Create Art Walk'),

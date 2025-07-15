@@ -71,9 +71,8 @@ class DeveloperMenu extends StatelessWidget {
         ListTile(
           title: const Text('System Settings'),
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('System settings coming soon')),
-            );
+            Navigator.pop(context);
+            Navigator.pushNamed(context, '/admin/settings');
           },
         ),
         ListTile(

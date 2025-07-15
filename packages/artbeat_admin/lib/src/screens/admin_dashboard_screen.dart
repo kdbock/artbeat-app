@@ -24,7 +24,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final AdminService _adminService = AdminService();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
+
   AdminStatsModel? _stats;
   bool _isLoading = true;
   String? _error;
@@ -35,7 +35,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     _loadStats();
   }
 
-  @override 
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -84,7 +84,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               showLogo: false,
               showSearch: false,
               showDeveloperTools: true,
-              onProfilePressed: () => Navigator.pushNamed(context, '/admin/profile'),
+              onProfilePressed: () =>
+                  Navigator.pushNamed(context, '/admin/profile'),
               onMenuPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
               },
@@ -101,7 +102,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -178,8 +179,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Text(
           'Overview',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         GridView.count(
@@ -219,10 +220,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 2,
-      shadowColor: color.withOpacity(0.3),
+      shadowColor: color.withValues(alpha: 0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -237,16 +239,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Text(
               value,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 4),
             Text(
               title,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -262,8 +264,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Text(
           'Quick Actions',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         Wrap(
@@ -275,7 +277,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Icons.manage_accounts,
               () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (context) => const AdminUserManagementScreen(),
                 ),
               ),
@@ -307,7 +309,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildActionButton(String label, IconData icon, VoidCallback onPressed) {
+  Widget _buildActionButton(
+      String label, IconData icon, VoidCallback onPressed) {
     return SizedBox(
       width: 160,
       child: ElevatedButton.icon(
@@ -330,8 +333,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         Text(
           'Recent Activity',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         Card(

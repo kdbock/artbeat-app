@@ -9,8 +9,7 @@ import 'package:artbeat_artist/src/services/artwork_service.dart';
 import 'package:artbeat_artist/src/models/artwork_model.dart';
 import 'package:artbeat_artist/src/services/subscription_service.dart'
     as artist_subscription;
-import 'package:artbeat_core/artbeat_core.dart'
-    show EnhancedUniversalHeader, MainLayout;
+import 'package:artbeat_core/artbeat_core.dart' show EnhancedUniversalHeader;
 // Import provider for subscriptions
 
 /// Analytics Dashboard Screen for Artists with Pro and Gallery plans

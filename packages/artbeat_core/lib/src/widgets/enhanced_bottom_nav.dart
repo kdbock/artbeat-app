@@ -164,9 +164,7 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
             children: items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
-              return Expanded(
-                child: _buildNavItem(context, index, item),
-              );
+              return Expanded(child: _buildNavItem(context, index, item));
             }).toList(),
           ),
         ),

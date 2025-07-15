@@ -21,15 +21,15 @@ void main() {
     '/settings',
   ];
 
-  print('Testing community navigation routes:');
+  debugPrint('Testing community navigation routes:');
   for (final route in testRoutes) {
     final routeResult = app.onGenerateRoute(RouteSettings(name: route));
     if (routeResult != null) {
-      print('✅ Route "$route" - SUCCESS');
+      debugPrint('✅ Route "$route" - SUCCESS');
     } else {
-      print('❌ Route "$route" - FAILED');
+      debugPrint('❌ Route "$route" - FAILED');
     }
   }
 
-  print('\n🎉 Route testing complete!');
+  debugPrint('\n🎉 Route testing complete!');
 }

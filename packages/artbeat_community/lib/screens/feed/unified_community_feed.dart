@@ -411,8 +411,6 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       backgroundColor: ArtbeatColors.backgroundSecondary,
       body: Column(

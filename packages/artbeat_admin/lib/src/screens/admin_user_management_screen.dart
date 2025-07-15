@@ -108,7 +108,8 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               showLogo: false,
               showSearch: false,
               showDeveloperTools: true,
-              onProfilePressed: () => Navigator.pushNamed(context, '/admin/profile'),
+              onProfilePressed: () =>
+                  Navigator.pushNamed(context, '/admin/profile'),
               onMenuPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
               },
@@ -125,7 +126,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surface.withOpacity(0.8),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -386,9 +387,10 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         value: 'view',
                         child: Row(
                           children: [
-                            Icon(Icons.visibility),
+                            Icon(Icons.visibility, color: Colors.black87),
                             SizedBox(width: 8),
-                            Text('View Details'),
+                            Text('View Details',
+                                style: TextStyle(color: Colors.black87)),
                           ],
                         ),
                       ),
@@ -396,9 +398,10 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         value: 'edit_type',
                         child: Row(
                           children: [
-                            Icon(Icons.edit),
+                            Icon(Icons.edit, color: Colors.black87),
                             SizedBox(width: 8),
-                            Text('Change Type'),
+                            Text('Change Type',
+                                style: TextStyle(color: Colors.black87)),
                           ],
                         ),
                       ),
@@ -406,11 +409,12 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         value: user.isVerified ? 'unverify' : 'verify',
                         child: Row(
                           children: [
-                            Icon(user.isVerified
-                                ? Icons.cancel
-                                : Icons.verified),
+                            Icon(
+                                user.isVerified ? Icons.cancel : Icons.verified,
+                                color: Colors.black87),
                             const SizedBox(width: 8),
-                            Text(user.isVerified ? 'Unverify' : 'Verify'),
+                            Text(user.isVerified ? 'Unverify' : 'Verify',
+                                style: const TextStyle(color: Colors.black87)),
                           ],
                         ),
                       ),
@@ -418,11 +422,14 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                         value: user.isSuspended ? 'unsuspend' : 'suspend',
                         child: Row(
                           children: [
-                            Icon(user.isSuspended
-                                ? Icons.check_circle
-                                : Icons.block),
+                            Icon(
+                                user.isSuspended
+                                    ? Icons.check_circle
+                                    : Icons.block,
+                                color: Colors.black87),
                             const SizedBox(width: 8),
-                            Text(user.isSuspended ? 'Unsuspend' : 'Suspend'),
+                            Text(user.isSuspended ? 'Unsuspend' : 'Suspend',
+                                style: const TextStyle(color: Colors.black87)),
                           ],
                         ),
                       ),

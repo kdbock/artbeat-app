@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
+import 'package:artbeat_capture/artbeat_capture.dart'
+    show CaptureService, CaptureModel;
 import 'package:artbeat_community/artbeat_community.dart' show PostModel;
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/user_experience_card.dart';
@@ -789,7 +791,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                         Container(
                           padding: const EdgeInsets.all(8), // Reduced from 10
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
@@ -815,7 +817,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                             subtitle,
                             style: TextStyle(
                               fontSize: 12, // Reduced from 14
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -872,9 +874,12 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color.fromARGB(255, 75, 73, 73).withValues(
-                          alpha: 26,
-                        ), // 0.1 opacity
+                        color: const Color.fromARGB(
+                          255,
+                          75,
+                          73,
+                          73,
+                        ).withValues(alpha: 26), // 0.1 opacity
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -916,7 +921,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               label,
               style: const TextStyle(
@@ -1003,8 +1008,12 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               clipBehavior: Clip.none,
               children: [
                 // Map container
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/art-walk/map'),
+                InkWell(
+                  onTap: () {
+                    debugPrint('🗺️ Map tapped - navigating to art walk map');
+                    Navigator.pushNamed(context, '/art-walk/map');
+                  },
+                  borderRadius: BorderRadius.circular(24),
                   child: Container(
                     height: 220,
                     width: double.infinity,
@@ -1046,16 +1055,18 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                                 ],
                               ),
                             )
-                          : GoogleMap(
-                              mapType: MapType.normal,
-                              initialCameraPosition:
-                                  viewModel.initialCameraPosition,
-                              onMapCreated: viewModel.onMapCreated,
-                              markers: viewModel.markers,
-                              myLocationEnabled: true,
-                              myLocationButtonEnabled: false,
-                              zoomControlsEnabled: false,
-                              mapToolbarEnabled: false,
+                          : AbsorbPointer(
+                              child: GoogleMap(
+                                mapType: MapType.normal,
+                                initialCameraPosition:
+                                    viewModel.initialCameraPosition,
+                                onMapCreated: viewModel.onMapCreated,
+                                markers: viewModel.markers,
+                                myLocationEnabled: true,
+                                myLocationButtonEnabled: false,
+                                zoomControlsEnabled: false,
+                                mapToolbarEnabled: false,
+                              ),
                             ),
                     ),
                   ),
@@ -1234,7 +1245,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                                         padding: const EdgeInsets.all(6),
                                         decoration: BoxDecoration(
                                           color: ArtbeatColors.primaryGreen
-                                              .withOpacity(0.1),
+                                              .withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(
                                             6,
                                           ),
@@ -1307,123 +1318,10 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
         ],
       ),
     );
-    // Vibrant horizontal list of user-created art walks
-    if (viewModel.isLoadingUserArtWalks) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (viewModel.userArtWalks.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: Text('No Art Walks created yet. Start your own!')),
-      );
-    }
-    return SizedBox(
-      height: 180,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: viewModel.userArtWalks.length,
-        itemBuilder: (context, index) {
-          final walk = viewModel.userArtWalks[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/art-walk/detail',
-                arguments: {'walkId': walk.id},
-              );
-            },
-            child: Container(
-              width: 160,
-              margin: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    ArtbeatColors.primaryPurple.withAlphaValue(0.15),
-                    ArtbeatColors.primaryGreen.withAlphaValue(0.10),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: ArtbeatColors.primaryPurple.withAlphaValue(0.08),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                      child:
-                          walk.coverImageUrl != null &&
-                              walk.coverImageUrl!.isNotEmpty
-                          ? Image.network(
-                              walk.coverImageUrl!,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, size: 48),
-                            )
-                          : Container(
-                              color: ArtbeatColors.backgroundSecondary,
-                              child: const Center(
-                                child: Icon(
-                                  Icons.image,
-                                  size: 48,
-                                  color: ArtbeatColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          walk.title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: ArtbeatColors.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          walk.description,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: ArtbeatColors.textSecondary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 
   Widget _buildRecentCapturesSection(DashboardViewModel viewModel) {
+    // Show ALL captures, not just user captures
     return Container(
       margin: const EdgeInsets.all(16),
       child: Column(
@@ -1448,21 +1346,37 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 200,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: viewModel.captures.length.clamp(0, 10),
-              itemBuilder: (context, index) {
-                final capture = viewModel.captures[index];
-                return Container(
-                  width: 160,
-                  margin: const EdgeInsets.only(right: 16),
-                  child: _buildCaptureCard(capture),
-                );
-              },
-            ),
+          // Instead of viewModel.captures, fetch all captures from CaptureService
+          FutureBuilder<List<CaptureModel>>(
+            future: CaptureService().getAllCaptures(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error loading captures'));
+              }
+              final captures = snapshot.data ?? [];
+              if (captures.isEmpty) {
+                return Center(child: Text('No captures found'));
+              }
+              return SizedBox(
+                height: 160,
+                width: MediaQuery.of(context).size.width,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: captures.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final capture = captures[index];
+                    return SizedBox(
+                      width: 220,
+                      child: _buildCaptureCard(capture),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -1598,7 +1512,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               ),
               TextButton(
                 onPressed: () =>
-                    Navigator.pushNamed(context, '/artist/dashboard'),
+                    Navigator.pushNamed(context, '/artwork/featured'),
                 child: const Text('View All'),
               ),
             ],
@@ -1694,10 +1608,14 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                         width: double.infinity,
                         height: 120,
                         placeholder: (context, url) => Container(
-                          color: ArtbeatColors.primaryPurple.withOpacity(0.1),
+                          color: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.1,
+                          ),
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: ArtbeatColors.primaryPurple.withOpacity(0.1),
+                          color: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.1,
+                          ),
                           child: const Icon(Icons.image),
                         ),
                       ),
@@ -2254,7 +2172,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: ArtbeatColors.primaryPurple.withOpacity(0.3),
+            color: ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
             spreadRadius: 0,
@@ -2288,7 +2206,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
@@ -2317,7 +2235,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                             'Join our community of artists and showcase your work to art enthusiasts around the world.',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               height: 1.4,
                             ),
                           ),

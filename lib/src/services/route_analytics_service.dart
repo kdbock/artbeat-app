@@ -1,6 +1,7 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service for tracking route usage analytics
 class RouteAnalyticsService {
@@ -52,7 +53,9 @@ class RouteAnalyticsService {
       await _updateRoutePopularity(routeName);
     } catch (error) {
       // Don't let analytics errors break the app
-      print('Route analytics error: $error');
+      if (kDebugMode) {
+        debugPrint('Route analytics error: $error');
+      }
     }
   }
 
@@ -74,7 +77,9 @@ class RouteAnalyticsService {
         },
       );
     } catch (error) {
-      print('Route performance tracking error: $error');
+      if (kDebugMode) {
+        debugPrint('Route performance tracking error: $error');
+      }
     }
   }
 
@@ -119,7 +124,9 @@ class RouteAnalyticsService {
 
       return sortedRoutes.take(limit).toList();
     } catch (error) {
-      print('Error getting popular routes: $error');
+      if (kDebugMode) {
+        debugPrint('Error getting popular routes: $error');
+      }
       return [];
     }
   }
@@ -153,7 +160,9 @@ class RouteAnalyticsService {
             : null,
       };
     } catch (error) {
-      print('Error getting route statistics: $error');
+      if (kDebugMode) {
+        debugPrint('Error getting route statistics: $error');
+      }
       return {};
     }
   }
@@ -166,7 +175,9 @@ class RouteAnalyticsService {
         parameters: {'route_name': routeName, 'source': source},
       );
     } catch (error) {
-      print('Navigation source tracking error: $error');
+      if (kDebugMode) {
+        debugPrint('Navigation source tracking error: $error');
+      }
     }
   }
 
@@ -180,7 +191,9 @@ class RouteAnalyticsService {
         'last_visit': DateTime.now(),
       }, SetOptions(merge: true));
     } catch (error) {
-      print('Error updating route popularity: $error');
+      if (kDebugMode) {
+        debugPrint('Error updating route popularity: $error');
+      }
     }
   }
 

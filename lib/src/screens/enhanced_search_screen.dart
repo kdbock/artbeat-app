@@ -26,22 +26,16 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const core.EnhancedUniversalHeader(
-        title: 'Search',
-        showLogo: false,
-      ),
-      body: Column(
-        children: [
-          _buildSearchHeader(),
-          _buildSearchCategories(),
-          Expanded(
-            child: _searchController.text.isEmpty
-                ? _buildSearchSuggestions()
-                : _buildSearchResults(),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _buildSearchHeader(),
+        _buildSearchCategories(),
+        Expanded(
+          child: _searchController.text.isEmpty
+              ? _buildSearchSuggestions()
+              : _buildSearchResults(),
+        ),
+      ],
     );
   }
 
@@ -220,7 +214,7 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

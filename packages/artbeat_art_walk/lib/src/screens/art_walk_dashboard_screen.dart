@@ -43,7 +43,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   List<ArtWalkModel> _allUserWalks = [];
   List<AchievementModel> _artWalkAchievements = [];
   UserModel? _currentUser;
-  bool _isLoading = true;
 
   final ArtWalkService _artWalkService = ArtWalkService();
   final AchievementService _achievementService = AchievementService();
@@ -63,8 +62,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   }
 
   Future<void> _loadAllData() async {
-    setState(() => _isLoading = true);
-
     await Future.wait([
       _loadCurrentUser(),
       _loadUserLocationAndSetMap(),
@@ -72,8 +69,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       _loadAllUserWalks(),
       _loadArtWalkAchievements(),
     ]);
-
-    setState(() => _isLoading = false);
   }
 
   Future<void> _loadCurrentUser() async {

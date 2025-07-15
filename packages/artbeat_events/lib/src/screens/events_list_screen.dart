@@ -89,7 +89,7 @@ class _EventsListScreenState extends State<EventsListScreen>
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } on Exception {
       if (mounted) {
         setState(() {
           _error =
@@ -114,9 +114,11 @@ class _EventsListScreenState extends State<EventsListScreen>
     final searchQuery = _searchController.text.toLowerCase();
     if (searchQuery.isNotEmpty) {
       filtered = filtered
-          .where((event) =>
-              event.title.toLowerCase().contains(searchQuery) ||
-              event.description.toLowerCase().contains(searchQuery))
+          .where(
+            (event) =>
+                event.title.toLowerCase().contains(searchQuery) ||
+                event.description.toLowerCase().contains(searchQuery),
+          )
           .toList();
     }
 
@@ -130,18 +132,23 @@ class _EventsListScreenState extends State<EventsListScreen>
       case 2: // Today
         final now = DateTime.now();
         filtered = filtered
-            .where((event) =>
-                event.dateTime.year == now.year &&
-                event.dateTime.month == now.month &&
-                event.dateTime.day == now.day)
+            .where(
+              (event) =>
+                  event.dateTime.year == now.year &&
+                  event.dateTime.month == now.month &&
+                  event.dateTime.day == now.day,
+            )
             .toList();
         break;
       case 3: // This Week
         final now = DateTime.now();
         final weekEnd = now.add(const Duration(days: 7));
         filtered = filtered
-            .where((event) =>
-                event.dateTime.isAfter(now) && event.dateTime.isBefore(weekEnd))
+            .where(
+              (event) =>
+                  event.dateTime.isAfter(now) &&
+                  event.dateTime.isBefore(weekEnd),
+            )
             .toList();
         break;
     }
@@ -183,19 +190,22 @@ class _EventsListScreenState extends State<EventsListScreen>
           const SizedBox(width: 8),
           DropdownButton<String>(
             value: _selectedCategory,
-            items: [
-              'All',
-              'Art Show',
-              'Workshop',
-              'Exhibition',
-              'Gallery Opening',
-              'Other'
-            ]
-                .map((category) => DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    ))
-                .toList(),
+            items:
+                [
+                      'All',
+                      'Art Show',
+                      'Workshop',
+                      'Exhibition',
+                      'Gallery Opening',
+                      'Other',
+                    ]
+                    .map(
+                      (category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      ),
+                    )
+                    .toList(),
             onChanged: (value) {
               if (value != null) {
                 setState(() {
@@ -269,10 +279,7 @@ class _EventsListScreenState extends State<EventsListScreen>
           children: [
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadEvents,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadEvents, child: const Text('Retry')),
           ],
         ),
       );

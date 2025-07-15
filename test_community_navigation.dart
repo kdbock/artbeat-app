@@ -1,6 +1,5 @@
 // Quick test script to verify community navigation routes
 import 'package:flutter/material.dart';
-import 'package:artbeat_community/artbeat_community.dart';
 
 void main() {
   runApp(const TestApp());

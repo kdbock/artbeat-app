@@ -5,9 +5,17 @@ import 'package:artbeat_auth/src/services/auth_service.dart';
 
 void main() {
   group('Firebase Emulator Tests', () {
+    // Skip Firebase emulator tests unless emulator is running
+    if (!const bool.fromEnvironment('FIREBASE_EMULATOR_RUNNING')) {
+      // Skip tests when emulator is not running
+      return;
+    }
     late AuthService authService;
 
     setUpAll(() async {
+      // Initialize Flutter bindings for Firebase
+      TestWidgetsFlutterBinding.ensureInitialized();
+
       // Connect to Firebase Emulator
       await Firebase.initializeApp(
         options: const FirebaseOptions(

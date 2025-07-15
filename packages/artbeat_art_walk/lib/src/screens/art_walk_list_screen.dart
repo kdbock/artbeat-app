@@ -260,17 +260,6 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     );
   }
 
-  void _onArtWalkTapped(ArtWalkModel walk) {
-    Navigator.pushNamed(
-      context,
-      '/art-walk/detail',
-      arguments: {'walkId': walk.id, 'artWalk': walk},
-    ).then((_) {
-      // Refresh the list when returning from detail view
-      _loadArtWalks();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
 // Core imports
 import '../models/user_model.dart';
@@ -21,6 +22,7 @@ import 'package:artbeat_artwork/artbeat_artwork.dart'
 import '../utils/location_utils.dart';
 import 'package:artbeat_community/artbeat_community.dart'
     show CommunityService, PostModel;
+import 'package:artbeat_messaging/artbeat_messaging.dart' show ChatService;
 import '../widgets/achievement_badge.dart' show AchievementBadgeData;
 
 /// ViewModel for managing dashboard state and business logic
@@ -30,6 +32,7 @@ class DashboardViewModel extends BaseViewModel {
   @override
   void dispose() {
     _disposed = true;
+    _unreadCountSubscription?.cancel();
     super.dispose();
   }
 
@@ -40,8 +43,8 @@ class DashboardViewModel extends BaseViewModel {
   final RewardsService _rewardsService = RewardsService();
   final ArtworkService _artworkService = ArtworkService();
   final CommunityService _communityService = CommunityService();
+  final ChatService _chatService = ChatService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Authentication state
   bool get _isAuthenticated => _auth.currentUser != null;
@@ -49,6 +52,7 @@ class DashboardViewModel extends BaseViewModel {
   // Rest of state
   int _unreadMessageCount = 0;
   bool _hasUnreadMessages = false;
+  StreamSubscription<int>? _unreadCountSubscription;
   int _bottomNavIndex = 0;
   bool _isAchievementsExpanded = false;
   GoogleMapController? _mapController;
@@ -677,83 +681,51 @@ class DashboardViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  /// Load unread message count
+  /// Start listening to unread message count changes
+  void _startUnreadCountListener() {
+    if (!_isAuthenticated) return;
+
+    try {
+      // Cancel any existing subscription
+      _unreadCountSubscription?.cancel();
+
+      // Listen to the real-time unread count stream
+      _unreadCountSubscription = _chatService.getTotalUnreadCount().listen(
+        (unreadCount) {
+          _unreadMessageCount = unreadCount;
+          _hasUnreadMessages = _unreadMessageCount > 0;
+
+          debugPrint('✉️ Real-time unread count updated: $_unreadMessageCount');
+          _safeNotifyListeners();
+        },
+        onError: (Object error) {
+          debugPrint('❌ Error listening to unread count: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Error starting unread count listener: $e');
+    }
+  }
+
+  /// Load unread message count (for initial load)
   Future<void> updateUnreadMessageCount() async {
     if (!_isAuthenticated) return;
 
     try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) return;
+      // Use the ChatService to get the total unread count
+      final unreadCountStream = _chatService.getTotalUnreadCount();
 
-      // Check if current user is admin
-      final userDoc = await _firestore.collection('users').doc(userId).get();
-      final isAdmin =
-          userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2' ||
-          (userDoc.exists && userDoc.data()?['userType'] == 'admin');
+      // Get the current count from the stream
+      final unreadCount = await unreadCountStream.first;
 
-      debugPrint('🔐 Current user is admin: $isAdmin');
-
-      if (isAdmin) {
-        // Admin: Check all users' messages
-        final allUsers = await _firestore.collection('users').get();
-        int totalUnread = 0;
-
-        for (var user in allUsers.docs) {
-          // Check direct messages
-          final directMessages = await _firestore
-              .collection('users')
-              .doc(user.id)
-              .collection('messageStats')
-              .where('unread', isEqualTo: true)
-              .get();
-
-          // Check chat room messages
-          final chatRoomStats = await _firestore
-              .collection('users')
-              .doc(user.id)
-              .collection('messageStats')
-              .doc('chatStats')
-              .collection('unreadCounts')
-              .get();
-
-          int unreadChatRoomMessages = 0;
-          for (var doc in chatRoomStats.docs) {
-            unreadChatRoomMessages += (doc.data()['count'] as int?) ?? 0;
-          }
-
-          totalUnread += directMessages.docs.length + unreadChatRoomMessages;
-        }
-
-        _unreadMessageCount = totalUnread;
-      } else {
-        // Regular user: Check only their messages
-        final directMessages = await _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('messageStats')
-            .where('unread', isEqualTo: true)
-            .get();
-
-        final chatRoomStats = await _firestore
-            .collection('users')
-            .doc(userId)
-            .collection('messageStats')
-            .doc('chatStats')
-            .collection('unreadCounts')
-            .get();
-
-        int unreadChatRoomMessages = 0;
-        for (var doc in chatRoomStats.docs) {
-          unreadChatRoomMessages += (doc.data()['count'] as int?) ?? 0;
-        }
-
-        _unreadMessageCount =
-            directMessages.docs.length + unreadChatRoomMessages;
-      }
-
+      _unreadMessageCount = unreadCount;
       _hasUnreadMessages = _unreadMessageCount > 0;
+
       debugPrint('✉️ Updated unread count: $_unreadMessageCount');
       notifyListeners();
+
+      // Start listening for real-time updates
+      _startUnreadCountListener();
     } catch (e) {
       debugPrint('❌ Error loading unread message count: $e');
       // Don't update state on error to keep previous values

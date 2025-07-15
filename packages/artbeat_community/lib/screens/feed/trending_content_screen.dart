@@ -30,7 +30,7 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
     'Digital',
     'Photography',
     'Sculpture',
-    'Mixed Media'
+    'Mixed Media',
   ];
 
   @override
@@ -86,19 +86,24 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
       Query query = FirebaseFirestore.instance
           .collection('posts')
           .where('isPublic', isEqualTo: true)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(cutoffDate))
+          .where(
+            'createdAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(cutoffDate),
+          )
           .orderBy('createdAt', descending: true);
 
       // Apply category filter if not 'All'
       if (_selectedCategory != 'All') {
-        query =
-            query.where('tags', arrayContains: _selectedCategory.toLowerCase());
+        query = query.where(
+          'tags',
+          arrayContains: _selectedCategory.toLowerCase(),
+        );
       }
 
       // Order by applause count for trending
-      query =
-          query.orderBy('applauseCount', descending: true).limit(_postsPerPage);
+      query = query
+          .orderBy('applauseCount', descending: true)
+          .limit(_postsPerPage);
 
       final snapshot = await query.get();
 
@@ -106,8 +111,9 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
         _lastDocument = snapshot.docs.last;
 
         setState(() {
-          _trendingPosts =
-              snapshot.docs.map((doc) => PostModel.fromFirestore(doc)).toList();
+          _trendingPosts = snapshot.docs
+              .map((doc) => PostModel.fromFirestore(doc))
+              .toList();
           _isLoading = false;
         });
       } else {
@@ -154,14 +160,18 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
       Query query = FirebaseFirestore.instance
           .collection('posts')
           .where('isPublic', isEqualTo: true)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(cutoffDate))
+          .where(
+            'createdAt',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(cutoffDate),
+          )
           .orderBy('createdAt', descending: true);
 
       // Apply category filter if not 'All'
       if (_selectedCategory != 'All') {
-        query =
-            query.where('tags', arrayContains: _selectedCategory.toLowerCase());
+        query = query.where(
+          'tags',
+          arrayContains: _selectedCategory.toLowerCase(),
+        );
       }
 
       // Order by applause count for trending
@@ -175,8 +185,9 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
       if (snapshot.docs.isNotEmpty) {
         _lastDocument = snapshot.docs.last;
 
-        final morePosts =
-            snapshot.docs.map((doc) => PostModel.fromFirestore(doc)).toList();
+        final morePosts = snapshot.docs
+            .map((doc) => PostModel.fromFirestore(doc))
+            .toList();
 
         setState(() {
           _trendingPosts.addAll(morePosts);
@@ -202,9 +213,7 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trending Content'),
-      ),
+      appBar: AppBar(title: const Text('Trending Content')),
       body: Column(
         children: [
           // Filter options
@@ -231,20 +240,28 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text('Time Frame'),
-                              DropdownButton<String>(
-                                value: _selectedTimeFrame,
-                                isExpanded: true,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedTimeFrame = value!;
-                                  });
-                                },
-                                items: _timeFrames.map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
+                              Material(
+                                elevation: 4,
+                                borderRadius: BorderRadius.circular(8),
+                                child: DropdownButton<String>(
+                                  value: _selectedTimeFrame,
+                                  isExpanded: true,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedTimeFrame = value!;
+                                    });
+                                  },
+                                  underline: Container(),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  items: _timeFrames.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ],
                           ),
@@ -255,20 +272,28 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text('Category'),
-                              DropdownButton<String>(
-                                value: _selectedCategory,
-                                isExpanded: true,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _selectedCategory = value!;
-                                  });
-                                },
-                                items: _categories.map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
+                              Material(
+                                elevation: 4,
+                                borderRadius: BorderRadius.circular(8),
+                                child: DropdownButton<String>(
+                                  value: _selectedCategory,
+                                  isExpanded: true,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedCategory = value!;
+                                    });
+                                  },
+                                  underline: Container(),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  items: _categories.map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ],
                           ),
@@ -294,72 +319,74 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _trendingPosts.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.trending_up,
-                                size: 64, color: Colors.grey),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No trending content found',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Try changing your filters or check back later',
-                              style: TextStyle(color: Colors.grey.shade600),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.trending_up,
+                          size: 64,
+                          color: Colors.grey,
                         ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        itemCount:
-                            _trendingPosts.length + (_isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == _trendingPosts.length) {
-                            return const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          }
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No trending content found',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Try changing your filters or check back later',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _trendingPosts.length + (_isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == _trendingPosts.length) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
 
-                          final post = _trendingPosts[index];
-                          return PostCard(
-                            post: post,
-                            currentUserId:
-                                FirebaseAuth.instance.currentUser?.uid ?? '',
-                            comments: const [], // Empty list since we don't load comments here
-                            onUserTap: (userId) {
-                              // Navigate to user profile
-                              debugPrint('Navigate to user profile: $userId');
-                            },
-                            onApplause: (post) {
-                              // Handle applause action
-                              debugPrint('Applause for post: ${post.id}');
-                            },
-                            onComment: (postId) {
-                              // Navigate to comments screen
-                              debugPrint(
-                                  'Navigate to comments for post: $postId');
-                            },
-                            onShare: (post) {
-                              // Handle share action
-                              debugPrint('Share post: ${post.id}');
-                            },
-                            onToggleExpand: () {
-                              // Toggle expanded view
-                              debugPrint('Toggle expand for post: ${post.id}');
-                            },
-                          );
+                      final post = _trendingPosts[index];
+                      return PostCard(
+                        post: post,
+                        currentUserId:
+                            FirebaseAuth.instance.currentUser?.uid ?? '',
+                        comments:
+                            const [], // Empty list since we don't load comments here
+                        onUserTap: (userId) {
+                          // Navigate to user profile
+                          debugPrint('Navigate to user profile: $userId');
                         },
-                      ),
+                        onApplause: (post) {
+                          // Handle applause action
+                          debugPrint('Applause for post: ${post.id}');
+                        },
+                        onComment: (postId) {
+                          // Navigate to comments screen
+                          debugPrint('Navigate to comments for post: $postId');
+                        },
+                        onShare: (post) {
+                          // Handle share action
+                          debugPrint('Share post: ${post.id}');
+                        },
+                        onToggleExpand: () {
+                          // Toggle expanded view
+                          debugPrint('Toggle expand for post: ${post.id}');
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),
