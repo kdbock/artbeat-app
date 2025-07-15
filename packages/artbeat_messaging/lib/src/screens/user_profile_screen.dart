@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../services/chat_service.dart';
-import 'chat_screen.dart';
 
 class UserProfileScreen extends StatelessWidget {
   final UserModel user;
@@ -83,12 +82,10 @@ class UserProfileScreen extends StatelessWidget {
                                           .createOrGetChat(user.id);
                                       if (!context.mounted) return;
 
-                                      Navigator.push(
+                                      Navigator.pushNamed(
                                         context,
-                                        MaterialPageRoute<void>(
-                                          builder: (context) =>
-                                              ChatScreen(chat: chat),
-                                        ),
+                                        '/messaging/chat',
+                                        arguments: {'chat': chat},
                                       );
                                     } catch (e) {
                                       if (!context.mounted) return;

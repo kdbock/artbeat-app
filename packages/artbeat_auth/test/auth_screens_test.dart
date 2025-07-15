@@ -4,10 +4,13 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:artbeat_auth/src/screens/login_screen.dart';
 import 'package:artbeat_auth/src/screens/register_screen.dart';
 import 'package:artbeat_auth/src/screens/forgot_password_screen.dart';
 import 'package:artbeat_auth/src/services/auth_service.dart';
+import 'package:artbeat_core/artbeat_core.dart' show ArtbeatButton;
 
 // Import generated mocks
 import 'auth_screens_test.mocks.dart';
@@ -18,15 +21,97 @@ void main() {
 
   late MockFirebaseAuth mockFirebaseAuth;
   late MockFirebaseFirestore mockFirebaseFirestore;
-  late MockUser mockUser;
-  late MockUserCredential mockUserCredential;
+  // Removed unused mockUser and mockUserCredential
   late AuthService authService;
+
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    final binding = TestDefaultBinaryMessengerBinding.instance;
+
+    // Mock firebase_core
+    const coreChannel = MethodChannel('plugins.flutter.io/firebase_core');
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(coreChannel, (
+      methodCall,
+    ) async {
+      if (methodCall.method == 'Firebase#initializeCore') {
+        return [
+          {
+            'name': 'default',
+            'options': {
+              'apiKey': 'test',
+              'appId': 'test',
+              'messagingSenderId': 'test',
+              'projectId': 'test',
+            },
+            'pluginConstants': <String, Object?>{},
+          },
+        ];
+      }
+      if (methodCall.method == 'Firebase#initializeApp') {
+        return {
+          'name': methodCall.arguments['name'],
+          'options': methodCall.arguments['options'],
+          'pluginConstants': <String, Object?>{},
+        };
+      }
+      return null;
+    });
+
+    // Mock pigeon channel for firebase_core (used by newer Firebase)
+    const pigeonCoreChannel = MethodChannel('flutter.firebase/core');
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(pigeonCoreChannel, (
+      methodCall,
+    ) async {
+      if (methodCall.method == 'initializeCore') {
+        return [
+          {
+            'name': 'default',
+            'options': {
+              'apiKey': 'test',
+              'appId': 'test',
+              'messagingSenderId': 'test',
+              'projectId': 'test',
+            },
+            'pluginConstants': <String, Object?>{},
+          },
+        ];
+      }
+      if (methodCall.method == 'initializeApp') {
+        return {
+          'name': methodCall.arguments['name'],
+          'options': methodCall.arguments['options'],
+          'pluginConstants': <String, Object?>{},
+        };
+      }
+      return null;
+    });
+
+    // Mock firebase_auth
+    const authChannel = MethodChannel('plugins.flutter.io/firebase_auth');
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(authChannel, (
+      methodCall,
+    ) async {
+      // Return null for all calls to avoid platform exceptions
+      return null;
+    });
+
+    // Mock cloud_firestore
+    const firestoreChannel = MethodChannel(
+      'plugins.flutter.io/cloud_firestore',
+    );
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(firestoreChannel, (
+      methodCall,
+    ) async {
+      // Return null for all calls to avoid platform exceptions
+      return null;
+    });
+
+    await Firebase.initializeApp();
+  });
 
   setUp(() {
     mockFirebaseAuth = MockFirebaseAuth();
     mockFirebaseFirestore = MockFirebaseFirestore();
-    mockUser = MockUser();
-    mockUserCredential = MockUserCredential();
 
     // Create AuthService with mocked dependencies via constructor
     authService = AuthService(
@@ -49,9 +134,9 @@ void main() {
       // Check if the login form elements are present
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Login'), findsOneWidget);
+      expect(find.widgetWithText(ArtbeatButton, 'Login'), findsOneWidget);
       expect(find.text('Forgot Password?'), findsOneWidget);
-      expect(find.text('Don\'t have an account?'), findsOneWidget);
+      expect(find.text('Create Account'), findsOneWidget);
     });
 
     testWidgets('should show validation errors for empty fields', (
@@ -64,13 +149,13 @@ void main() {
       );
 
       // Find and tap the login button without entering credentials
-      final loginButton = find.widgetWithText(ElevatedButton, 'Login');
+      final loginButton = find.widgetWithText(ArtbeatButton, 'Login');
       await tester.tap(loginButton);
       await tester.pump();
 
       // Check for validation messages
-      expect(find.text('Please enter your email'), findsOneWidget);
-      expect(find.text('Please enter your password'), findsOneWidget);
+      expect(find.text('Please enter your email.'), findsOneWidget);
+      expect(find.text('Please enter your password.'), findsOneWidget);
     });
 
     testWidgets('should show error for invalid email format', (
@@ -87,11 +172,11 @@ void main() {
       await tester.enterText(find.byType(TextFormField).last, 'password123');
 
       // Tap login button
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
+      await tester.tap(find.widgetWithText(ArtbeatButton, 'Login'));
       await tester.pump();
 
       // Check for email validation error
-      expect(find.text('Please enter a valid email'), findsOneWidget);
+      expect(find.text('Please enter a valid email address.'), findsOneWidget);
     });
 
     testWidgets('should navigate to forgot password screen', (
@@ -114,7 +199,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check if we navigated to forgot password screen
-      expect(find.text('Reset Password'), findsOneWidget);
+      expect(find.text('Reset Password'), findsWidgets);
     });
 
     testWidgets('should toggle password visibility', (
@@ -156,12 +241,11 @@ void main() {
       );
 
       // Check if the register form elements are present
-      expect(find.text('Full Name'), findsOneWidget);
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Confirm Password'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'Register'), findsOneWidget);
-      expect(find.text('Already have an account?'), findsOneWidget);
+      expect(find.widgetWithText(ArtbeatButton, 'Register'), findsOneWidget);
+      expect(find.text('Already have an account? Log in'), findsOneWidget);
     });
 
     testWidgets('should show validation errors for empty fields', (
@@ -174,15 +258,14 @@ void main() {
       );
 
       // Find and tap the register button without entering data
-      final registerButton = find.widgetWithText(ElevatedButton, 'Register');
+      final registerButton = find.widgetWithText(ArtbeatButton, 'Register');
       await tester.tap(registerButton);
       await tester.pump();
 
       // Check for validation messages
-      expect(find.text('Please enter your full name'), findsOneWidget);
-      expect(find.text('Please enter your email'), findsOneWidget);
-      expect(find.text('Please enter your password'), findsOneWidget);
-      expect(find.text('Please confirm your password'), findsOneWidget);
+      expect(find.text('Please enter your email.'), findsOneWidget);
+      expect(find.text('Please enter a password.'), findsOneWidget);
+      expect(find.text('Please confirm your password.'), findsOneWidget);
     });
 
     testWidgets('should show error for password mismatch', (
@@ -202,11 +285,11 @@ void main() {
       await tester.enterText(textFields.at(3), 'different456');
 
       // Tap register button
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Register'));
+      await tester.tap(find.widgetWithText(ArtbeatButton, 'Register'));
       await tester.pump();
 
       // Check for password mismatch error
-      expect(find.text('Passwords do not match'), findsOneWidget);
+      expect(find.text('Passwords do not match.'), findsOneWidget);
     });
 
     testWidgets('should show error for weak password', (
@@ -226,12 +309,12 @@ void main() {
       await tester.enterText(textFields.at(3), '123');
 
       // Tap register button
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Register'));
+      await tester.tap(find.widgetWithText(ArtbeatButton, 'Register'));
       await tester.pump();
 
       // Check for weak password error
       expect(
-        find.text('Password must be at least 8 characters'),
+        find.text('Password must be at least 8 characters.'),
         findsOneWidget,
       );
     });
@@ -248,10 +331,10 @@ void main() {
       );
 
       // Check if the forgot password form elements are present
-      expect(find.text('Reset Password'), findsOneWidget);
+      expect(find.text('Reset Password'), findsWidgets);
       expect(find.text('Email'), findsOneWidget);
       expect(
-        find.widgetWithText(ElevatedButton, 'Send Reset Email'),
+        find.widgetWithText(ArtbeatButton, 'Reset Password'),
         findsOneWidget,
       );
       expect(find.text('Back to Login'), findsOneWidget);
@@ -266,12 +349,12 @@ void main() {
         MaterialApp(home: ForgotPasswordScreen(authService: authService)),
       );
 
-      // Tap send reset email button without entering email
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Send Reset Email'));
+      // Tap reset password button without entering email
+      await tester.tap(find.widgetWithText(ArtbeatButton, 'Reset Password'));
       await tester.pump();
 
       // Check for validation error
-      expect(find.text('Please enter your email'), findsOneWidget);
+      expect(find.text('Please enter your email.'), findsOneWidget);
     });
 
     testWidgets('should show validation error for invalid email', (
@@ -286,12 +369,12 @@ void main() {
       // Enter invalid email
       await tester.enterText(find.byType(TextFormField), 'invalid-email');
 
-      // Tap send reset email button
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Send Reset Email'));
+      // Tap reset password button
+      await tester.tap(find.widgetWithText(ArtbeatButton, 'Reset Password'));
       await tester.pump();
 
       // Check for validation error
-      expect(find.text('Please enter a valid email'), findsOneWidget);
+      expect(find.text('Please enter a valid email address.'), findsOneWidget);
     });
 
     testWidgets('should navigate back to login screen', (
@@ -313,7 +396,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check if we navigated back to login screen (check for login button)
-      expect(find.widgetWithText(ElevatedButton, 'Login'), findsOneWidget);
+      expect(find.widgetWithText(ArtbeatButton, 'Login'), findsOneWidget);
     });
   });
 

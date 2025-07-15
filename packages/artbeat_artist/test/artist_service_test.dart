@@ -4,18 +4,22 @@ import 'package:mockito/annotations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Mock classes
-@GenerateMocks([FirebaseFirestore, CollectionReference, DocumentReference])
+@GenerateMocks([
+  FirebaseFirestore,
+  CollectionReference<Map<String, dynamic>>,
+  DocumentReference<Map<String, dynamic>>,
+])
 import 'artist_service_test.mocks.dart';
 
 void main() {
   group('ArtistService Tests', () {
     late MockFirebaseFirestore mockFirestore;
-    late MockCollectionReference mockCollection;
-    late MockDocumentReference mockDocument;
+    late MockCollectionReference<Map<String, dynamic>> mockCollection;
+    late MockDocumentReference<Map<String, dynamic>> mockDocument;
 
     setUp(() {
       mockFirestore = MockFirebaseFirestore();
-      mockCollection = MockCollectionReference();
+      mockCollection = MockCollectionReference<Map<String, dynamic>>();
       mockDocument = MockDocumentReference();
     });
 
@@ -70,7 +74,8 @@ void main() {
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      when(mockFirestore.collection('artists')).thenReturn(mockCollection);
+      when(mockFirestore.collection('artists')).thenReturn(
+          mockCollection as CollectionReference<Map<String, dynamic>>);
       when(mockCollection.doc(artistId)).thenReturn(mockDocument);
       when(mockDocument.update(updateData)).thenAnswer((_) async => {});
 
@@ -95,7 +100,8 @@ void main() {
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      when(mockFirestore.collection('artists')).thenReturn(mockCollection);
+      when(mockFirestore.collection('artists')).thenReturn(
+          mockCollection as CollectionReference<Map<String, dynamic>>);
       when(mockCollection.doc(artistId)).thenReturn(mockDocument);
       when(mockDocument.update(updateData)).thenAnswer((_) async => {});
 
@@ -115,7 +121,8 @@ void main() {
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      when(mockFirestore.collection('artists')).thenReturn(mockCollection);
+      when(mockFirestore.collection('artists')).thenReturn(
+          mockCollection as CollectionReference<Map<String, dynamic>>);
       when(mockCollection.doc(artistId)).thenReturn(mockDocument);
       when(mockDocument.update(updateData)).thenAnswer((_) async => {});
 
@@ -135,7 +142,8 @@ void main() {
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      when(mockFirestore.collection('artists')).thenReturn(mockCollection);
+      when(mockFirestore.collection('artists')).thenReturn(
+          mockCollection as CollectionReference<Map<String, dynamic>>);
       when(mockCollection.doc(artistId)).thenReturn(mockDocument);
       when(mockDocument.update(updateData)).thenAnswer((_) async => {});
 
@@ -155,7 +163,8 @@ void main() {
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      when(mockFirestore.collection('artists')).thenReturn(mockCollection);
+      when(mockFirestore.collection('artists')).thenReturn(
+          mockCollection as CollectionReference<Map<String, dynamic>>);
       when(mockCollection.doc(artistId)).thenReturn(mockDocument);
       when(mockDocument.update(updateData)).thenAnswer((_) async => {});
 
@@ -180,7 +189,8 @@ void main() {
         'updatedAt': DateTime.now().toIso8601String(),
       };
 
-      when(mockFirestore.collection('artists')).thenReturn(mockCollection);
+      when(mockFirestore.collection('artists')).thenReturn(
+          mockCollection as CollectionReference<Map<String, dynamic>>);
       when(mockCollection.doc(artistId)).thenReturn(mockDocument);
       when(mockDocument.update(updateData)).thenAnswer((_) async => {});
 
@@ -560,22 +570,23 @@ class ArtistProfile {
       };
 
   factory ArtistProfile.fromJson(Map<String, dynamic> json) => ArtistProfile(
-        uid: json['uid'],
-        fullName: json['fullName'],
-        email: json['email'],
-        artistName: json['artistName'],
-        bio: json['bio'],
-        profileImageUrl: json['profileImageUrl'],
-        specialties: List<String>.from(json['specialties']),
-        yearsExperience: json['yearsExperience'],
-        subscriptionTier:
-            SubscriptionTierExtension.fromString(json['subscriptionTier']),
-        commissionStatus:
-            CommissionStatusExtension.fromString(json['commissionStatus']),
-        commissionRates: Map<String, double>.from(json['commissionRates']),
-        isVerified: json['isVerified'] ?? false,
-        createdAt: DateTime.parse(json['createdAt']),
-        updatedAt: DateTime.parse(json['updatedAt']),
+        uid: json['uid'] as String,
+        fullName: json['fullName'] as String,
+        email: json['email'] as String,
+        artistName: json['artistName'] as String,
+        bio: json['bio'] as String,
+        profileImageUrl: json['profileImageUrl'] as String,
+        specialties: List<String>.from(json['specialties'] as List),
+        yearsExperience: json['yearsExperience'] as int,
+        subscriptionTier: SubscriptionTierExtension.fromString(
+            json['subscriptionTier'] as String),
+        commissionStatus: CommissionStatusExtension.fromString(
+            json['commissionStatus'] as String),
+        commissionRates:
+            Map<String, double>.from(json['commissionRates'] as Map),
+        isVerified: json['isVerified'] as bool? ?? false,
+        createdAt: DateTime.parse(json['createdAt'] as String),
+        updatedAt: DateTime.parse(json['updatedAt'] as String),
       );
 }
 

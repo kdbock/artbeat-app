@@ -12,11 +12,34 @@ class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final EnhancedStorageService _enhancedStorage = EnhancedStorageService();
 
+  /// Upload capture image specifically
+  Future<String> uploadCaptureImage(File file, String userId) async {
+    try {
+      debugPrint('🔄 StorageService: Starting capture image upload...');
+
+      // Use the optimized upload method and return just the main image URL
+      final result = await _enhancedStorage.uploadImageWithOptimization(
+        imageFile: file,
+        category: 'capture',
+        generateThumbnail: true,
+      );
+
+      debugPrint('✅ StorageService: Capture image upload successful');
+      return result['main'] ?? result.values.first;
+    } catch (e) {
+      debugPrint(
+        '❌ StorageService: Capture image upload failed, trying fallback...',
+      );
+      // Fallback to legacy upload method
+      return uploadImage(file);
+    }
+  }
+
   /// Upload image with optimization (recommended method)
   Future<Map<String, String>> uploadImageOptimized(File file) async {
     try {
       debugPrint('🔄 StorageService: Starting optimized upload...');
-      
+
       final result = await _enhancedStorage.uploadImageWithOptimization(
         imageFile: file,
         category: 'capture',

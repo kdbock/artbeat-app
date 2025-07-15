@@ -225,7 +225,7 @@ class _EnhancedCaptureDashboardScreenState
                                     size: 24,
                                   ),
                                   label: const Text(
-                                    'Read & Agree to Guidelines',
+                                    'Start Capture',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
@@ -430,20 +430,14 @@ class _EnhancedCaptureDashboardScreenState
           fit: StackFit.expand,
           children: [
             // Image
-            if (capture.imageUrl != null)
-              Image.network(
-                capture.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image, color: Colors.grey),
-                ),
-              )
-            else
-              Container(
+            Image.network(
+              capture.imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.grey[300],
-                child: const Icon(Icons.image, color: Colors.grey),
+                child: const Icon(Icons.broken_image, color: Colors.grey),
               ),
+            ),
 
             // Overlay
             Container(
@@ -525,20 +519,14 @@ class _EnhancedCaptureDashboardScreenState
           fit: StackFit.expand,
           children: [
             // Image
-            if (capture.imageUrl != null)
-              Image.network(
-                capture.imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.broken_image, color: Colors.grey),
-                ),
-              )
-            else
-              Container(
+            Image.network(
+              capture.imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.grey[300],
-                child: const Icon(Icons.image, color: Colors.grey),
+                child: const Icon(Icons.broken_image, color: Colors.grey),
               ),
+            ),
 
             // Overlay
             Container(

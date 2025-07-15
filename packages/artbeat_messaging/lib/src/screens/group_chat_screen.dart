@@ -40,7 +40,7 @@ class GroupChatScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: () =>
-                      Navigator.pushNamed(context, '/messaging/create-group'),
+                      Navigator.pushNamed(context, '/messaging/group/new'),
                   icon: const Icon(Icons.add),
                   label: const Text('Create Group Chat'),
                 ),

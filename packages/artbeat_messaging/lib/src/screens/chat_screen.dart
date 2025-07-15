@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show
-        EnhancedUniversalHeader,
-        ArtbeatColors,
-        ArtbeatGradientBackground;
+    show EnhancedUniversalHeader, ArtbeatColors, ArtbeatGradientBackground;
 import '../models/chat_model.dart';
+import '../models/message.dart';
 import '../models/message_model.dart';
 import '../services/chat_service.dart';
 import '../widgets/message_bubble.dart';
@@ -296,7 +294,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     builder: (context, imageSnapshot) {
                       return GestureDetector(
                         onTap: () {
-                          // TODO: Navigate to profile or chat info
+                          Navigator.pushNamed(
+                            context,
+                            '/messaging/chat-info',
+                            arguments: {'chat': widget.chat},
+                          );
                         },
                         child: Container(
                           margin: const EdgeInsets.only(right: 16),
@@ -430,7 +432,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                                color: ArtbeatColors.primaryPurple.withValues(
+                                  alpha: 0.1,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -480,7 +484,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
                         final messageModel = messages[index];
-                        final message = messageModel.toMessage(widget.chat.id);
                         final isCurrentUser =
                             messageModel.senderId == chatService.currentUserId;
 
@@ -496,17 +499,47 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           children: [
                             if (showDateHeader)
                               _buildDateHeader(messageModel.timestamp),
-                            MessageBubble(
-                              message: message,
-                              isCurrentUser: isCurrentUser,
-                              onImageTap: message.imageUrl != null
-                                  ? () {
-                                      final imageIndex = allImageUrls.indexOf(
-                                        message.imageUrl!,
-                                      );
-                                      _handleImageTap(allImageUrls, imageIndex);
-                                    }
-                                  : null,
+                            FutureBuilder<Message>(
+                              future: messageModel.toMessageAsync(
+                                widget.chat.id,
+                                chat: widget.chat,
+                                chatService: chatService,
+                              ),
+                              builder: (context, messageSnapshot) {
+                                if (!messageSnapshot.hasData) {
+                                  // Show a placeholder while loading user data
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 8.0,
+                                    ),
+                                    child: Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                final message = messageSnapshot.data!;
+                                return MessageBubble(
+                                  message: message,
+                                  isCurrentUser: isCurrentUser,
+                                  onImageTap: message.imageUrl != null
+                                      ? () {
+                                          final imageIndex = allImageUrls
+                                              .indexOf(message.imageUrl!);
+                                          _handleImageTap(
+                                            allImageUrls,
+                                            imageIndex,
+                                          );
+                                        }
+                                      : null,
+                                );
+                              },
                             ),
                           ],
                         );
@@ -648,8 +681,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: ArtbeatColors.primaryPurple.withValues(alpha: 
-                                  0.2,
+                                color: ArtbeatColors.primaryPurple.withValues(
+                                  alpha: 0.2,
                                 ),
                                 width: 1,
                               ),
@@ -697,7 +730,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
+                                color: ArtbeatColors.primaryPurple.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),

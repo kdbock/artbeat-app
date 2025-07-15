@@ -1,7 +1,7 @@
 name: artbeat_profile
 description: User profile features for ARTbeat app
 version: 0.0.2
-publish_to: 'none'
+publish_to: "none"
 
 environment:
   sdk: ">=3.8.0 <4.0.0"
@@ -12,6 +12,9 @@ dependencies:
     sdk: flutter
   artbeat_core:
     path: ../artbeat_core
+  artbeat_auth:
+    path: ../artbeat_auth
+  # artbeat_auth already exists, no need to add again
   artbeat_art_walk:
     path: ../artbeat_art_walk
   artbeat_capture:
@@ -42,3 +45,5 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  mockito: ^5.4.2
+  build_runner: ^2.4.9

@@ -276,7 +276,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artwork/browse');
+                        Navigator.pushNamed(context, '/artwork/featured');
                       },
                     ),
                     _buildProfileMenuTile(
@@ -703,7 +703,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               _buildFeatureButton(
                 icon: Icons.palette,
                 label: 'Explore Art',
-                onTap: () => Navigator.pushNamed(context, '/artwork/browse'),
+                onTap: () => Navigator.pushNamed(context, '/artwork/featured'),
               ),
               _buildFeatureButton(
                 icon: Icons.route,
@@ -741,7 +741,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
       width: 280,
       margin: const EdgeInsets.only(right: 16),
       child: Material(
-        color: Colors.transparent,
+        color: const Color.fromARGB(0, 232, 152, 152),
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
@@ -872,7 +872,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(
+                        color: const Color.fromARGB(255, 75, 73, 73).withValues(
                           alpha: 26,
                         ), // 0.1 opacity
                         blurRadius: 8,
@@ -1332,7 +1332,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               Navigator.pushNamed(
                 context,
                 '/art-walk/detail',
-                arguments: walk.id,
+                arguments: {'walkId': walk.id},
               );
             },
             child: Container(
@@ -1472,12 +1472,8 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   Widget _buildCaptureCard(CaptureModel capture) {
     return GestureDetector(
       onTap: () {
-        // Navigate to capture detail screen
-        Navigator.pushNamed(
-          context,
-          '/capture/detail',
-          arguments: capture.id, // Pass only the capture ID as a String
-        );
+        // Navigate to capture dashboard since /capture/detail doesn't exist
+        Navigator.pushNamed(context, '/capture/dashboard');
       },
       child: Container(
         decoration: BoxDecoration(
@@ -1601,7 +1597,8 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/artist/browse'),
+                onPressed: () =>
+                    Navigator.pushNamed(context, '/artist/dashboard'),
                 child: const Text('View All'),
               ),
             ],
@@ -1671,8 +1668,11 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () =>
-              Navigator.pushNamed(context, '/artist/profile/${artist.userId}'),
+          onTap: () => Navigator.pushNamed(
+            context,
+            '/artist/public-profile',
+            arguments: {'artistId': artist.userId},
+          ),
           borderRadius: BorderRadius.circular(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1877,74 +1877,77 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   Widget _buildCommunityPostCard(PostModel post) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      child: Material(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlphaValue(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: ArtbeatColors.primaryPurple.withValues(
-                  alpha: 0.1,
-                ),
-                child: Text(
-                  post.userName.isNotEmpty
-                      ? post.userName[0].toUpperCase()
-                      : 'U',
-                  style: const TextStyle(
-                    color: ArtbeatColors.primaryPurple,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        elevation: 4,
+        shadowColor: Colors.black.withAlphaValue(0.1),
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(context, '/community/dashboard'),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      post.userName.isNotEmpty ? post.userName : 'Unknown User',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: ArtbeatColors.textPrimary,
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: ArtbeatColors.primaryPurple.withValues(
+                        alpha: 0.1,
+                      ),
+                      child: Text(
+                        post.userName.isNotEmpty
+                            ? post.userName[0].toUpperCase()
+                            : 'U',
+                        style: const TextStyle(
+                          color: ArtbeatColors.primaryPurple,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    Text(
-                      _formatTimeAgo(post.createdAt),
-                      style: const TextStyle(
-                        color: ArtbeatColors.textSecondary,
-                        fontSize: 12,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            post.userName.isNotEmpty
+                                ? post.userName
+                                : 'Unknown User',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: ArtbeatColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            _formatTimeAgo(post.createdAt),
+                            style: const TextStyle(
+                              color: ArtbeatColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            post.content,
-            style: const TextStyle(
-              fontSize: 14,
-              color: ArtbeatColors.textPrimary,
+                const SizedBox(height: 12),
+                Text(
+                  post.content,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: ArtbeatColors.textPrimary,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1970,7 +1973,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               ),
               TextButton(
                 onPressed: () =>
-                    Navigator.pushNamed(context, '/artwork/browse'),
+                    Navigator.pushNamed(context, '/artwork/featured'),
                 child: const Text('View All'),
               ),
             ],

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../services/chat_service.dart';
 import '../models/user_model.dart' as messaging;
-import 'chat_screen.dart';
 
 class ContactSelectionScreen extends StatefulWidget {
   const ContactSelectionScreen({super.key});
@@ -28,7 +27,10 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
     final chatService = Provider.of<ChatService>(context);
 
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(title: 'New Message', showLogo: false),
+      appBar: const EnhancedUniversalHeader(
+        title: 'New Message',
+        showLogo: false,
+      ),
       body: Column(
         children: [
           Padding(
@@ -36,8 +38,19 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search people...',
+                hintText: 'Search by name, username, or zip code...',
                 prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -54,85 +67,181 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<messaging.UserModel>>(
-              future: chatService.searchUsers(_searchQuery),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error loading users',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.error,
-                      ),
+            child: _searchQuery.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search, size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'Start typing to search for people...',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Search by name, username, or zip code',
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
                     ),
-                  );
-                }
+                  )
+                : FutureBuilder<List<messaging.UserModel>>(
+                    future: chatService.searchUsers(_searchQuery),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                final users = snapshot.data ?? [];
-
-                if (users.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No users found',
-                      style: theme.textTheme.bodyLarge,
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: user.photoUrl != null
-                            ? NetworkImage(user.photoUrl!)
-                            : null,
-                        child: user.photoUrl == null
-                            ? Text(user.displayName[0].toUpperCase())
-                            : null,
-                      ),
-                      title: Text(user.displayName),
-                      subtitle: Text(
-                        user.isOnline
-                            ? 'Online'
-                            : 'Last seen: ${_formatLastSeen(user.lastSeen)}',
-                      ),
-                      onTap: () async {
-                        try {
-                          // Create or get existing chat
-                          final chat = await chatService.createOrGetChat(
-                            user.id,
-                          );
-                          if (!mounted) return;
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (context) => ChatScreen(chat: chat),
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Error loading users',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.colorScheme.error,
                             ),
-                          );
-                        } catch (e) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Error creating chat: ${e.toString()}',
+                          ),
+                        );
+                      }
+
+                      final users = snapshot.data ?? [];
+
+                      if (users.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.person_search,
+                                size: 64,
+                                color: Colors.grey,
                               ),
-                              backgroundColor: theme.colorScheme.error,
+                              const SizedBox(height: 16),
+                              Text(
+                                'No users found',
+                                style: theme.textTheme.bodyLarge,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Try searching with a different name, username, or zip code',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: users.length,
+                        itemBuilder: (context, index) {
+                          final user = users[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: user.photoUrl != null
+                                  ? NetworkImage(user.photoUrl!)
+                                  : null,
+                              child: user.photoUrl == null
+                                  ? Text(user.displayName[0].toUpperCase())
+                                  : null,
                             ),
+                            title: Text(user.displayName),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (user.username != null)
+                                  Text(
+                                    '@${user.username}',
+                                    style: TextStyle(
+                                      color: theme.primaryColor,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                Row(
+                                  children: [
+                                    if (user.location != null) ...[
+                                      const Icon(
+                                        Icons.location_on,
+                                        size: 12,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          user.location!,
+                                          style: const TextStyle(fontSize: 12),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (user.zipCode != null) ...[
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          user.zipCode!,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ] else if (user.zipCode != null) ...[
+                                      const Icon(
+                                        Icons.location_on,
+                                        size: 12,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        user.zipCode!,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ] else ...[
+                                      Text(
+                                        user.isOnline
+                                            ? 'Online'
+                                            : 'Last seen: ${_formatLastSeen(user.lastSeen)}',
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                            isThreeLine:
+                                user.username != null ||
+                                user.location != null ||
+                                user.zipCode != null,
+                            onTap: () async {
+                              try {
+                                // Create or get existing chat
+                                final chat = await chatService.createOrGetChat(
+                                  user.id,
+                                );
+                                if (!mounted) return;
+
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/messaging/chat',
+                                  arguments: {'chat': chat},
+                                );
+                              } catch (e) {
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error creating chat: ${e.toString()}',
+                                    ),
+                                    backgroundColor: theme.colorScheme.error,
+                                  ),
+                                );
+                              }
+                            },
                           );
-                        }
-                      },
-                    );
-                  },
-                );
-              },
-            ),
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),

@@ -15,7 +15,7 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
   bool _hasAcceptedTerms = false;
 
   void _acceptTermsAndProceed() {
-    Navigator.of(context).pushReplacement(
+    Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (context) => const CameraCaptureScreen(),
       ),

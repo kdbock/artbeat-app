@@ -7,7 +7,6 @@ import '../services/art_walk_service.dart';
 import '../services/achievement_service.dart';
 import '../models/art_walk_model.dart';
 import '../models/achievement_model.dart';
-import 'package:artbeat_core/src/widgets/artbeat_gradient_background.dart';
 
 // Art Walk specific colors
 class ArtWalkColors {

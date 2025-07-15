@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../constants/routes.dart';
 
 /// Service for authentication and user profile management
 class AuthProfileService {
@@ -22,7 +23,7 @@ class AuthProfileService {
     try {
       if (!isAuthenticated) {
         debugPrint('👤 User not authenticated - redirecting to login');
-        return '/login';
+        return AuthRoutes.login;
       }
 
       final user = currentUser!;
@@ -34,16 +35,18 @@ class AuthProfileService {
 
       if (!profile.exists) {
         debugPrint(
-            '👤 User authenticated but no profile - need to create profile');
-        return '/profile/create';
+          '👤 User authenticated but no profile - need to create profile',
+        );
+        return AuthRoutes.profileCreate;
       }
 
       debugPrint(
-          '👤 User authenticated with profile - redirecting to dashboard');
-      return '/dashboard';
+        '👤 User authenticated with profile - redirecting to dashboard',
+      );
+      return AuthRoutes.dashboard;
     } catch (e) {
       debugPrint('❌ Error checking authentication status: $e');
-      return '/login';
+      return AuthRoutes.login;
     }
   }
 
@@ -52,8 +55,10 @@ class AuthProfileService {
     try {
       if (!isAuthenticated) return null;
 
-      final doc =
-          await _firestore.collection('users').doc(currentUser!.uid).get();
+      final doc = await _firestore
+          .collection('users')
+          .doc(currentUser!.uid)
+          .get();
       return doc.data();
     } catch (e) {
       debugPrint('❌ Error getting user profile: $e');

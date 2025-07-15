@@ -12,7 +12,8 @@ class ChatModel {
   final String? groupName;
   final String? groupImage;
   final Map<String, int> unreadCounts;
-  final String creatorId;
+  final String? creatorId;
+  final List<Map<String, dynamic>>? participants;
 
   ChatModel({
     required this.id,
@@ -24,11 +25,44 @@ class ChatModel {
     this.groupName,
     this.groupImage,
     required this.unreadCounts,
-    required this.creatorId,
+    this.creatorId,
+    this.participants,
   });
 
   int get unreadCount =>
       unreadCounts[FirebaseAuth.instance.currentUser?.uid ?? ''] ?? 0;
+
+  /// Get participant information by user ID
+  Map<String, dynamic>? getParticipant(String userId) {
+    if (participants == null) return null;
+
+    for (final participant in participants!) {
+      if (participant['id'] == userId) {
+        return participant;
+      }
+    }
+    return null;
+  }
+
+  /// Get display name for a participant
+  String getParticipantDisplayName(String userId) {
+    final participant = getParticipant(userId);
+    if (participant == null) return 'Unknown User';
+
+    return participant['displayName'] as String? ??
+        participant['fullName'] as String? ??
+        participant['username'] as String? ??
+        'Unknown User';
+  }
+
+  /// Get photo URL for a participant
+  String? getParticipantPhotoUrl(String userId) {
+    final participant = getParticipant(userId);
+    if (participant == null) return null;
+
+    return participant['photoUrl'] as String? ??
+        participant['profileImageUrl'] as String?;
+  }
 
   factory ChatModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -57,7 +91,10 @@ class ChatModel {
             (key, value) => MapEntry(key.toString(), (value as num).toInt()),
           ) ??
           {},
-      creatorId: data['creatorId'] as String? ?? '',
+      creatorId: data['creatorId'] as String?,
+      participants: (data['participants'] as List?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
     );
   }
 
@@ -72,6 +109,7 @@ class ChatModel {
       'groupImage': groupImage,
       'unreadCounts': unreadCounts,
       'creatorId': creatorId,
+      'participants': participants,
     };
   }
 }

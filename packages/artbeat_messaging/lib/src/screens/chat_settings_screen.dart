@@ -63,48 +63,47 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
             onTap: () {
               showDialog<void>(
                 context: context,
-                builder:
-                    (context) => AlertDialog(
-                      title: const Text('Select Theme'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadioListTile<String>(
-                            title: const Text('System'),
-                            value: 'system',
-                            groupValue: _selectedTheme,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedTheme = value!;
-                              });
-                              Navigator.pop(context);
-                            },
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('Light'),
-                            value: 'light',
-                            groupValue: _selectedTheme,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedTheme = value!;
-                              });
-                              Navigator.pop(context);
-                            },
-                          ),
-                          RadioListTile<String>(
-                            title: const Text('Dark'),
-                            value: 'dark',
-                            groupValue: _selectedTheme,
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedTheme = value!;
-                              });
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
+                builder: (context) => AlertDialog(
+                  title: const Text('Select Theme'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RadioListTile<String>(
+                        title: const Text('System'),
+                        value: 'system',
+                        groupValue: _selectedTheme,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTheme = value!;
+                          });
+                          Navigator.pop(context);
+                        },
                       ),
-                    ),
+                      RadioListTile<String>(
+                        title: const Text('Light'),
+                        value: 'light',
+                        groupValue: _selectedTheme,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTheme = value!;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                      RadioListTile<String>(
+                        title: const Text('Dark'),
+                        value: 'dark',
+                        groupValue: _selectedTheme,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTheme = value!;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -115,34 +114,31 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
             onTap: () {
               showDialog<void>(
                 context: context,
-                builder:
-                    (context) => AlertDialog(
-                      title: const Text('Clear Chat History'),
-                      content: const Text(
-                        'Are you sure you want to clear all chat history? This action cannot be undone.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            // TODO: Implement clear chat history
-                            Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Chat history cleared'),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'Clear',
-                            style: TextStyle(color: theme.colorScheme.error),
-                          ),
-                        ),
-                      ],
+                builder: (context) => AlertDialog(
+                  title: const Text('Clear Chat History'),
+                  content: const Text(
+                    'Are you sure you want to clear all chat history? This action cannot be undone.',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
                     ),
+                    TextButton(
+                      onPressed: () {
+                        // TODO: Implement clear chat history
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Chat history cleared')),
+                        );
+                      },
+                      child: Text(
+                        'Clear',
+                        style: TextStyle(color: theme.colorScheme.error),
+                      ),
+                    ),
+                  ],
+                ),
               );
             },
           ),
@@ -150,7 +146,7 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
             leading: const Icon(Icons.block),
             title: const Text('Blocked Users'),
             onTap: () {
-              // TODO: Navigate to blocked users screen
+              Navigator.pushNamed(context, '/messaging/blocked-users');
             },
           ),
           const SizedBox(height: 16),

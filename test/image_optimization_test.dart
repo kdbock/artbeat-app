@@ -1,11 +1,25 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
+  // Initialize Flutter test binding and mock path_provider
   setUpAll(() async {
-    // Initialize Firebase for testing
     TestWidgetsFlutterBinding.ensureInitialized();
+
+    // Mock path_provider plugin methods to prevent MissingPluginException
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, (MethodCall call) async {
+          if (call.method == 'getTemporaryDirectory' ||
+              call.method == 'getApplicationSupportDirectory') {
+            return '/tmp';
+          }
+          return null;
+        });
 
     // Mock Firebase initialization
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -14,6 +28,14 @@ void main() {
         ) async {
           return null;
         });
+  });
+
+  tearDownAll(() async {
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, null);
   });
 
   group('ImageManagementService Tests', () {

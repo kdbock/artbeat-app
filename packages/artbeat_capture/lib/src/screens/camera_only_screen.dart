@@ -68,7 +68,7 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
 
   void _accept() {
     if (_imageFile != null) {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (context) => CaptureDetailsScreen(imageFile: _imageFile!),
         ),

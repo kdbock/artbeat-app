@@ -4,14 +4,18 @@ import 'package:mockito/annotations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Mock classes
-@GenerateMocks([FirebaseFirestore, CollectionReference, DocumentReference])
+@GenerateMocks([
+  FirebaseFirestore,
+  CollectionReference<Map<String, dynamic>>,
+  DocumentReference<Map<String, dynamic>>,
+])
 import 'events_service_test.mocks.dart';
 
 void main() {
   group('EventsService Tests', () {
     late MockFirebaseFirestore mockFirestore;
-    late MockCollectionReference mockCollection;
-    late MockDocumentReference mockDocument;
+    late MockCollectionReference<Map<String, dynamic>> mockCollection;
+    late MockDocumentReference<Map<String, dynamic>> mockDocument;
 
     setUp(() {
       mockFirestore = MockFirebaseFirestore();
@@ -395,7 +399,9 @@ void main() {
         organizerId: 'organizer-123',
         organizerName: 'Organizer',
         startDateTime: DateTime.now().subtract(const Duration(days: 7)),
-        endDateTime: DateTime.now().subtract(const Duration(days: 7, hours: -2)),
+        endDateTime: DateTime.now().subtract(
+          const Duration(days: 7, hours: -2),
+        ),
         location: EventLocation(
           name: 'Location',
           address: '123 Main St',

@@ -1,33 +1,54 @@
-import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:device_calendar/device_calendar.dart';
 import 'package:logger/logger.dart';
+import 'package:timezone/timezone.dart' as tz;
 import '../models/artbeat_event.dart';
 
 /// Service for integrating events with device calendar
 class CalendarIntegrationService {
   final Logger _logger = Logger();
+  final DeviceCalendarPlugin _deviceCalendarPlugin = DeviceCalendarPlugin();
 
   /// Add event to device calendar
   Future<bool> addEventToCalendar(ArtbeatEvent event) async {
     try {
+      // Check permissions first
+      final permissionsGranted = await _requestCalendarPermissions();
+      if (!permissionsGranted) {
+        _logger.w('Calendar permissions not granted');
+        return false;
+      }
+
+      // Get default calendar
+      final calendar = await _getDefaultCalendar();
+      if (calendar == null) {
+        _logger.w('No calendar available');
+        return false;
+      }
+
+      // Create calendar event
       final calendarEvent = Event(
+        calendar.id,
         title: event.title,
         description: _buildEventDescription(event),
         location: event.location,
-        startDate: event.dateTime,
-        endDate: event.dateTime.add(
-          const Duration(hours: 2),
-        ), // Default 2-hour duration
+        start: tz.TZDateTime.from(event.dateTime, tz.local),
+        end: tz.TZDateTime.from(
+          event.dateTime.add(const Duration(hours: 2)),
+          tz.local,
+        ),
       );
 
-      final success = await Add2Calendar.addEvent2Cal(calendarEvent);
+      final result = await _deviceCalendarPlugin.createOrUpdateEvent(
+        calendarEvent,
+      );
 
-      if (success) {
+      if (result?.isSuccess == true) {
         _logger.i('Event added to calendar: ${event.title}');
+        return true;
       } else {
-        _logger.w('Failed to add event to calendar: ${event.title}');
+        _logger.w('Failed to add event to calendar: ${result?.errors}');
+        return false;
       }
-
-      return success;
     } on Exception catch (e) {
       _logger.e('Error adding event to calendar: $e');
       return false;
@@ -80,26 +101,39 @@ class CalendarIntegrationService {
     try {
       final reminderTime = event.dateTime.subtract(reminderBefore);
 
+      // Get default calendar first
+      final calendar = await _getDefaultCalendar();
+      if (calendar == null) {
+        _logger.w('No calendar available for reminder');
+        return false;
+      }
+
       final reminderEvent = Event(
+        calendar.id,
         title: 'Reminder: ${event.title}',
         description:
             'Your event "${event.title}" starts in ${_formatDuration(reminderBefore)} at ${event.location}',
         location: event.location,
-        startDate: reminderTime,
-        endDate: reminderTime.add(
-          const Duration(minutes: 15),
-        ), // 15-minute reminder
+        start: tz.TZDateTime.from(reminderTime, tz.local),
+        end: tz.TZDateTime.from(
+          reminderTime.add(const Duration(minutes: 15)),
+          tz.local,
+        ),
       );
 
-      final success = await Add2Calendar.addEvent2Cal(reminderEvent);
+      final result = await _deviceCalendarPlugin.createOrUpdateEvent(
+        reminderEvent,
+      );
 
-      if (success) {
+      if (result?.isSuccess == true) {
         _logger.i('Event reminder added to calendar: ${event.title}');
+        return true;
       } else {
-        _logger.w('Failed to add event reminder to calendar: ${event.title}');
+        _logger.w(
+          'Failed to add event reminder to calendar: ${result?.errors}',
+        );
+        return false;
       }
-
-      return success;
     } on Exception catch (e) {
       _logger.e('Error adding event reminder to calendar: $e');
       return false;
@@ -122,16 +156,7 @@ class CalendarIntegrationService {
   /// Check if calendar permissions are available
   Future<bool> hasCalendarPermissions() async {
     try {
-      // Create a test event to check permissions
-      final testEvent = Event(
-        title: 'Test Event',
-        description: 'This is a test event',
-        startDate: DateTime.now(),
-        endDate: DateTime.now().add(const Duration(minutes: 1)),
-      );
-
-      // This will return false if permissions are not granted
-      return await Add2Calendar.addEvent2Cal(testEvent);
+      return await _requestCalendarPermissions();
     } on Exception catch (e) {
       _logger.e('Error checking calendar permissions: $e');
       return false;
@@ -204,5 +229,44 @@ class CalendarIntegrationService {
         .replaceAll(';', r'\;')
         .replaceAll('\n', r'\n')
         .replaceAll('\r', r'\r');
+  }
+
+  /// Request calendar permissions from the user
+  Future<bool> _requestCalendarPermissions() async {
+    try {
+      final permissionsGranted = await _deviceCalendarPlugin.hasPermissions();
+      if (permissionsGranted.isSuccess && permissionsGranted.data == true) {
+        return true;
+      }
+
+      final requestPermissionsResult = await _deviceCalendarPlugin
+          .requestPermissions();
+      return requestPermissionsResult.isSuccess &&
+          requestPermissionsResult.data == true;
+    } on Exception catch (e) {
+      _logger.e('Error requesting calendar permissions: $e');
+      return false;
+    }
+  }
+
+  /// Get the default calendar for the device
+  Future<Calendar?> _getDefaultCalendar() async {
+    try {
+      final calendarsResult = await _deviceCalendarPlugin.retrieveCalendars();
+      if (calendarsResult.isSuccess && calendarsResult.data != null) {
+        final calendars = calendarsResult.data!;
+
+        // Try to find the default calendar
+        final defaultCalendar = calendars.firstWhere(
+          (calendar) => calendar.isDefault == true,
+          orElse: () => calendars.first,
+        );
+
+        return defaultCalendar;
+      }
+    } on Exception catch (e) {
+      _logger.e('Error getting default calendar: $e');
+    }
+    return null;
   }
 }

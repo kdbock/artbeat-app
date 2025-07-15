@@ -8,6 +8,8 @@ class ArtWalkRouteConfig {
   static Map<String, Widget Function(BuildContext)> routes = {
     ArtWalkRoutes.map: (_) => const ArtWalkMapScreen(),
     ArtWalkRoutes.list: (_) => const ArtWalkListScreen(),
+    ArtWalkRoutes.dashboard: (_) => const ArtWalkDashboardScreen(),
+    ArtWalkRoutes.myCaptures: (_) => const MyCapturesScreen(),
   };
 
   static Route<dynamic>? generateRoute(RouteSettings settings) {
@@ -42,6 +44,32 @@ class ArtWalkRouteConfig {
           builder: (_) => ArtWalkEditScreen(
             artWalkId: args['walkId'] as String,
             artWalk: args['artWalk'] as ArtWalkModel?,
+          ),
+        );
+
+      case ArtWalkRoutes.enhancedCreate:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => EnhancedArtWalkCreateScreen(
+            artWalkId: args?['artWalkId'] as String?,
+            artWalkToEdit: args?['artWalk'] as ArtWalkModel?,
+          ),
+        );
+
+      case ArtWalkRoutes.enhancedExperience:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artWalkId = args?['artWalkId'] as String?;
+        final artWalk = args?['artWalk'] as ArtWalkModel?;
+        if (artWalkId == null || artWalk == null) {
+          return MaterialPageRoute(
+            builder: (_) =>
+                const Scaffold(body: Center(child: Text('Art walk not found'))),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => EnhancedArtWalkExperienceScreen(
+            artWalkId: artWalkId,
+            artWalk: artWalk,
           ),
         );
 

@@ -26,13 +26,15 @@ void main() {
 
     test('should register user with emulator', () async {
       // Test with real Firebase Emulator
-      final result = await authService.signUpWithEmailAndPassword(
+      final result = await authService.registerWithEmailAndPassword(
         'test@example.com',
         'password123',
+        'Test User',
+        zipCode: '00000',
       );
 
       expect(result, isNotNull);
-      expect(result!.user!.email, equals('test@example.com'));
+      expect(result.user!.email, equals('test@example.com'));
     });
 
     tearDownAll(() async {

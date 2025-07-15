@@ -1,44 +1,1228 @@
-user taps capture on bottom navigation
-enhanced capture dashboard screen loads-this is correct
-user taps Read & Agree to Guidelines
-Safety & legal notice pops up - this is correct
-user taps I Agree & Understand
-Capture art screen comes up - This is not correct
-The camera should come up at this point to capture.
-
-Search packages for files related to capture
-Read files related to capture
-Understand capture function
-Check step by step of capture function below to ensure user experience is as stated
-Ensure proper build of capture function
-Show me the screen flow and the routing
-/Users/kristybock/artbeat/packages/artbeat_capture
-/Users/kristybock/artbeat/packages/artbeat_core
-
-Understand capture function:
-Check capture process routing and function:
-ser taps on Capture button, they are presented with terms and conditions to accept before proceeding.
-Capture process - after user accepts conditions, the camera_capture_screen opens up and allows them to take a picture.
-camera_capture_screen - after user takes photo, they are presented with options to accept or discard image.
-camera_capture_screen - if user chooses to save image, they are taken to the capture_details_screen where they can add details about their capture.
-camera_capture_screen - if user chooses to discard image, they are returned back to take another picture.
-capture_details_screen - after user adds details about their capture, they are taken to the capture_confirmation_screen where they can confirm their capture details before saving them to the database. This also explains that admin will review their capture before it is published.
-capture_confirmation_screen - if user rejects their capture details, they are taken to the capture_details_screen where they can edit their capture details.
-capture_confirmation_screen - if user confirms their capture details, they are taken to the fluid_dashboard_screen where they can see their capture listed under "My Captures" with a pending status.
-capture_confirmation_screen - if user cancels confirmation, they are returned back to the capture_details_screen where they can edit their capture details.
-admin_content_moderation - user captures are reviewed by admin and either approved or rejected. If approved, the capture is published to the capture feeds. If rejected, the capture is deleted from the database. Status is updated on user my captures screen.
-admin_content_moderation - admin can delete any capture from the database at anytime.
-approved captures are used for art_walk creations by location. They load as locations on the map for all users to use.
-
-Start
-│
-▼ enhanced_capture_dashboard_screen ("Capture" button pressed)
-│
-▼ terms_and_conditions_screen (User accepts T&C) ✅ NEW SCREEN CREATED
-│
-▼ camera_capture_screen (User takes photo) ✅ NEW SCREEN CREATED
-│
-▼ capture_details_screen
-├──> [Save Image] ──► capture_details_screen
-│ ├──> [Edit Details] ──┐
-│
+[ +105 ms] BUILD SUCCESSFUL in 6m 46s
+[        ] 999 actionable tasks: 98 executed, 901 up-to-date
+[ +494 ms] Watched directory hierarchies: [/opt/homebrew/Caskroom/flutter/3.29.3/flutter/packages/flutter_tools/gradle, /Users/kristybock/artbeat/android]
+[ +880 ms] Running Gradle task 'assembleDebug'... (completed in 408.5s)
+[ +410 ms] Calculate SHA1: LocalDirectory: '/Users/kristybock/artbeat/build/app/outputs/flutter-apk'/app-debug.apk
+[+3366 ms] ✓ Built build/app/outputs/flutter-apk/app-debug.apk
+[  +31 ms] executing: /Users/kristybock/Library/Android/sdk/build-tools/36.0.0/aapt dump xmltree
+/Users/kristybock/artbeat/build/app/outputs/flutter-apk/app-debug.apk AndroidManifest.xml
+dart(39279) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[ +265 ms] Exit code 0 from: /Users/kristybock/Library/Android/sdk/build-tools/36.0.0/aapt dump xmltree
+/Users/kristybock/artbeat/build/app/outputs/flutter-apk/app-debug.apk AndroidManifest.xml
+[        ] N: android=http://schemas.android.com/apk/res/android
+             E: manifest (line=2)
+               A: android:versionCode(0x0101021b)=(type 0x10)0x12
+               A: android:versionName(0x0101021c)="1.0.12" (Raw: "1.0.12")
+               A: android:compileSdkVersion(0x01010572)=(type 0x10)0x23
+               A: android:compileSdkVersionCodename(0x01010573)="15" (Raw: "15")
+               A: package="com.wordnerd.artbeat" (Raw: "com.wordnerd.artbeat")
+               A: platformBuildVersionCode=(type 0x10)0x23
+               A: platformBuildVersionName=(type 0x10)0xf
+               E: uses-sdk (line=7)
+                 A: android:minSdkVersion(0x0101020c)=(type 0x10)0x17
+                 A: android:targetSdkVersion(0x01010270)=(type 0x10)0x23
+               E: uses-permission (line=15)
+                 A: android:name(0x01010003)="android.permission.INTERNET" (Raw: "android.permission.INTERNET")
+               E: queries (line=23)
+                 E: intent (line=24)
+                   E: action (line=25)
+                     A: android:name(0x01010003)="android.intent.action.PROCESS_TEXT" (Raw: "android.intent.action.PROCESS_TEXT")
+                   E: data (line=27)
+                     A: android:mimeType(0x01010026)="text/plain" (Raw: "text/plain")
+                 E: intent (line=29)
+                   E: action (line=30)
+                     A: android:name(0x01010003)="android.intent.action.GET_CONTENT" (Raw: "android.intent.action.GET_CONTENT")
+                   E: data (line=32)
+                     A: android:mimeType(0x01010026)="*/*" (Raw: "*/*")
+                 E: intent (line=34)
+                   E: action (line=35)
+                     A: android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                   E: data (line=37)
+                     A: android:scheme(0x01010027)="http" (Raw: "http")
+                 E: package (line=39)
+                   A: android:name(0x01010003)="com.android.chrome" (Raw: "com.android.chrome")
+                 E: package (line=40)
+                   A: android:name(0x01010003)="com.google.android.apps.maps" (Raw: "com.google.android.apps.maps")
+               E: uses-permission (line=42)
+                 A: android:name(0x01010003)="android.permission.CAMERA" (Raw: "android.permission.CAMERA")
+               E: uses-permission (line=43)
+                 A: android:name(0x01010003)="android.permission.READ_EXTERNAL_STORAGE" (Raw: "android.permission.READ_EXTERNAL_STORAGE")
+                 A: android:maxSdkVersion(0x01010271)=(type 0x10)0x20
+               E: uses-permission (line=46)
+                 A: android:name(0x01010003)="android.permission.READ_MEDIA_IMAGES" (Raw: "android.permission.READ_MEDIA_IMAGES")
+               E: uses-permission (line=47)
+                 A: android:name(0x01010003)="android.permission.WRITE_EXTERNAL_STORAGE" (Raw: "android.permission.WRITE_EXTERNAL_STORAGE")
+                 A: android:maxSdkVersion(0x01010271)=(type 0x10)0x1d
+               E: uses-permission (line=50)
+                 A: android:name(0x01010003)="android.permission.ACCESS_NETWORK_STATE" (Raw: "android.permission.ACCESS_NETWORK_STATE")
+               E: uses-permission (line=51)
+                 A: android:name(0x01010003)="android.permission.ACCESS_FINE_LOCATION" (Raw: "android.permission.ACCESS_FINE_LOCATION")
+               E: uses-permission (line=52)
+                 A: android:name(0x01010003)="android.permission.ACCESS_COARSE_LOCATION" (Raw: "android.permission.ACCESS_COARSE_LOCATION")
+               E: uses-feature (line=54)
+                 A: android:name(0x01010003)="android.hardware.camera.any" (Raw: "android.hardware.camera.any")
+               E: uses-permission (line=56)
+                 A: android:name(0x01010003)="android.permission.RECORD_AUDIO" (Raw: "android.permission.RECORD_AUDIO")
+               E: uses-permission (line=57)
+                 A: android:name(0x01010003)="android.permission.WAKE_LOCK" (Raw: "android.permission.WAKE_LOCK")
+               E: uses-permission (line=58)
+                 A: android:name(0x01010003)="android.permission.VIBRATE" (Raw: "android.permission.VIBRATE")
+               E: uses-permission (line=59)
+                 A: android:name(0x01010003)="android.permission.POST_NOTIFICATIONS" (Raw: "android.permission.POST_NOTIFICATIONS")
+               E: uses-permission (line=60)
+                 A: android:name(0x01010003)="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS" (Raw: "android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS")
+               E: uses-permission (line=61)
+                 A: android:name(0x01010003)="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" (Raw:
+                 "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE")
+                 A: android:maxSdkVersion(0x01010271)=(type 0x10)0x16
+               E: uses-permission (line=64)
+                 A: android:name(0x01010003)="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE" (Raw:
+                 "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE")
+               E: uses-permission (line=65)
+                 A: android:name(0x01010003)="com.google.android.c2dm.permission.RECEIVE" (Raw: "com.google.android.c2dm.permission.RECEIVE")
+               E: uses-permission (line=66)
+                 A: android:name(0x01010003)="com.google.android.gms.permission.AD_ID" (Raw: "com.google.android.gms.permission.AD_ID")
+               E: uses-feature (line=68)
+                 A: android:glEsVersion(0x01010281)=(type 0x11)0x20000
+                 A: android:required(0x0101028e)=(type 0x12)0xffffffff
+               E: uses-permission (line=72)
+                 A: android:name(0x01010003)="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" (Raw: "android.permission.ACCESS_ADSERVICES_ATTRIBUTION")
+               E: uses-permission (line=73)
+                 A: android:name(0x01010003)="android.permission.ACCESS_ADSERVICES_AD_ID" (Raw: "android.permission.ACCESS_ADSERVICES_AD_ID")
+               E: uses-permission (line=74)
+                 A: android:name(0x01010003)="com.google.android.providers.gsf.permission.READ_GSERVICES" (Raw:
+                 "com.google.android.providers.gsf.permission.READ_GSERVICES")
+               E: permission (line=76)
+                 A: android:name(0x01010003)="com.wordnerd.artbeat.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" (Raw:
+                 "com.wordnerd.artbeat.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+                 A: android:protectionLevel(0x01010009)=(type 0x11)0x2
+               E: uses-permission (line=80)
+                 A: android:name(0x01010003)="com.wordnerd.artbeat.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" (Raw:
+                 "com.wordnerd.artbeat.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION")
+               E: uses-permission (line=86)
+                 A: android:name(0x01010003)="com.sec.android.provider.badge.permission.READ" (Raw: "com.sec.android.provider.badge.permission.READ")
+               E: uses-permission (line=87)
+                 A: android:name(0x01010003)="com.sec.android.provider.badge.permission.WRITE" (Raw: "com.sec.android.provider.badge.permission.WRITE")
+               E: uses-permission (line=88)
+                 A: android:name(0x01010003)="com.htc.launcher.permission.READ_SETTINGS" (Raw: "com.htc.launcher.permission.READ_SETTINGS")
+               E: uses-permission (line=89)
+                 A: android:name(0x01010003)="com.htc.launcher.permission.UPDATE_SHORTCUT" (Raw: "com.htc.launcher.permission.UPDATE_SHORTCUT")
+               E: uses-permission (line=90)
+                 A: android:name(0x01010003)="com.sonyericsson.home.permission.BROADCAST_BADGE" (Raw: "com.sonyericsson.home.permission.BROADCAST_BADGE")
+               E: uses-permission (line=91)
+                 A: android:name(0x01010003)="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE" (Raw:
+                 "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE")
+               E: uses-permission (line=92)
+                 A: android:name(0x01010003)="com.anddoes.launcher.permission.UPDATE_COUNT" (Raw: "com.anddoes.launcher.permission.UPDATE_COUNT")
+               E: uses-permission (line=93)
+                 A: android:name(0x01010003)="com.majeur.launcher.permission.UPDATE_BADGE" (Raw: "com.majeur.launcher.permission.UPDATE_BADGE")
+               E: uses-permission (line=94)
+                 A: android:name(0x01010003)="com.huawei.android.launcher.permission.CHANGE_BADGE" (Raw:
+                 "com.huawei.android.launcher.permission.CHANGE_BADGE")
+               E: uses-permission (line=95)
+                 A: android:name(0x01010003)="com.huawei.android.launcher.permission.READ_SETTINGS" (Raw:
+                 "com.huawei.android.launcher.permission.READ_SETTINGS")
+               E: uses-permission (line=96)
+                 A: android:name(0x01010003)="com.huawei.android.launcher.permission.WRITE_SETTINGS" (Raw:
+                 "com.huawei.android.launcher.permission.WRITE_SETTINGS")
+               E: uses-permission (line=97)
+                 A: android:name(0x01010003)="android.permission.READ_APP_BADGE" (Raw: "android.permission.READ_APP_BADGE")
+               E: uses-permission (line=98)
+                 A: android:name(0x01010003)="com.oppo.launcher.permission.READ_SETTINGS" (Raw: "com.oppo.launcher.permission.READ_SETTINGS")
+               E: uses-permission (line=99)
+                 A: android:name(0x01010003)="com.oppo.launcher.permission.WRITE_SETTINGS" (Raw: "com.oppo.launcher.permission.WRITE_SETTINGS")
+               E: uses-permission (line=100)
+                 A: android:name(0x01010003)="me.everything.badger.permission.BADGE_COUNT_READ" (Raw: "me.everything.badger.permission.BADGE_COUNT_READ")
+               E: uses-permission (line=101)
+                 A: android:name(0x01010003)="me.everything.badger.permission.BADGE_COUNT_WRITE" (Raw: "me.everything.badger.permission.BADGE_COUNT_WRITE")
+               E: application (line=103)
+                 A: android:label(0x01010001)="ARTbeat" (Raw: "ARTbeat")
+                 A: android:icon(0x01010002)=@0x7f0f0000
+                 A: android:name(0x01010003)="android.app.Application" (Raw: "android.app.Application")
+                 A: android:debuggable(0x0101000f)=(type 0x12)0xffffffff
+                 A: android:extractNativeLibs(0x010104ea)=(type 0x12)0x0
+                 A: android:appComponentFactory(0x0101057a)="androidx.core.app.CoreComponentFactory" (Raw: "androidx.core.app.CoreComponentFactory")
+                 E: meta-data (line=112)
+                   A: android:name(0x01010003)="com.google.android.geo.API_KEY" (Raw: "com.google.android.geo.API_KEY")
+                   A: android:value(0x01010024)="AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA" (Raw: "AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA")
+                 E: activity (line=116)
+                   A: android:theme(0x01010000)=@0x7f13012a
+                   A: android:name(0x01010003)="com.wordnerd.artbeat.MainActivity" (Raw: "com.wordnerd.artbeat.MainActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:taskAffinity(0x01010012)="" (Raw: "")
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x1
+                   A: android:configChanges(0x0101001f)=(type 0x11)0x40003fb4
+                   A: android:windowSoftInputMode(0x0101022b)=(type 0x11)0x10
+                   A: android:hardwareAccelerated(0x010102d3)=(type 0x12)0xffffffff
+                   E: meta-data (line=132)
+                     A: android:name(0x01010003)="io.flutter.embedding.android.NormalTheme" (Raw: "io.flutter.embedding.android.NormalTheme")
+                     A: android:resource(0x01010025)=@0x7f13013f
+                   E: intent-filter (line=136)
+                     E: action (line=137)
+                       A: android:name(0x01010003)="android.intent.action.MAIN" (Raw: "android.intent.action.MAIN")
+                     E: category (line=139)
+                       A: android:name(0x01010003)="android.intent.category.LAUNCHER" (Raw: "android.intent.category.LAUNCHER")
+                 E: service (line=144)
+                   A: android:name(0x01010003)="androidx.camera.core.impl.MetadataHolderService" (Raw: "androidx.camera.core.impl.MetadataHolderService")
+                   A: android:enabled(0x0101000e)=(type 0x12)0x0
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   E: meta-data (line=148)
+                     A: android:name(0x01010003)="androidx.camera.core.impl.MetadataHolderService.DEFAULT_CONFIG_PROVIDER" (Raw:
+                     "androidx.camera.core.impl.MetadataHolderService.DEFAULT_CONFIG_PROVIDER")
+                     A: android:value(0x01010024)="androidx.camera.camera2.Camera2Config$DefaultProvider" (Raw:
+                     "androidx.camera.camera2.Camera2Config$DefaultProvider")
+                 E: meta-data (line=157)
+                   A: android:name(0x01010003)="flutterEmbedding" (Raw: "flutterEmbedding")
+                   A: android:value(0x01010024)=(type 0x10)0x2
+                 E: service (line=161)
+                   A: android:name(0x01010003)="com.google.firebase.components.ComponentDiscoveryService" (Raw:
+                   "com.google.firebase.components.ComponentDiscoveryService")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:directBootAware(0x01010505)=(type 0x12)0xffffffff
+                   E: meta-data (line=165)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.analytics.FlutterFirebaseAppRegistrar" (Raw:
+                     "com.google.firebase.components:io.flutter.plugins.firebase.analytics.FlutterFirebaseAppRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=168)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.firestore.FlutterFirebaseFirestoreRegistrar"
+                     (Raw: "com.google.firebase.components:io.flutter.plugins.firebase.firestore.FlutterFirebaseFirestoreRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=171)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.appcheck.FlutterFirebaseAppRegistrar" (Raw:
+                     "com.google.firebase.components:io.flutter.plugins.firebase.appcheck.FlutterFirebaseAppRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=174)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.auth.FlutterFirebaseAuthRegistrar" (Raw:
+                     "com.google.firebase.components:io.flutter.plugins.firebase.auth.FlutterFirebaseAuthRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=177)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.messaging.FlutterFirebaseAppRegistrar" (Raw:
+                     "com.google.firebase.components:io.flutter.plugins.firebase.messaging.FlutterFirebaseAppRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=180)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.storage.FlutterFirebaseAppRegistrar" (Raw:
+                     "com.google.firebase.components:io.flutter.plugins.firebase.storage.FlutterFirebaseAppRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=183)
+                     A: android:name(0x01010003)="com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar" (Raw:
+                     "com.google.firebase.components:io.flutter.plugins.firebase.core.FlutterFirebaseCoreRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=186)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingKtxRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=189)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=192)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=195)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.appcheck.safetynet.FirebaseAppCheckSafetyNetRegistrar"
+                     (Raw: "com.google.firebase.components:com.google.firebase.appcheck.safetynet.FirebaseAppCheckSafetyNetRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=198)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.appcheck.debug.FirebaseAppCheckDebugRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.appcheck.debug.FirebaseAppCheckDebugRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=201)
+                     A:
+                     android:name(0x01010003)="com.google.firebase.components:com.google.firebase.appcheck.playintegrity.FirebaseAppCheckPlayIntegrityRegistr
+                     ar" (Raw: "com.google.firebase.components:com.google.firebase.appcheck.playintegrity.FirebaseAppCheckPlayIntegrityRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=204)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.firestore.FirebaseFirestoreKtxRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.firestore.FirebaseFirestoreKtxRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=207)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=210)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.storage.FirebaseStorageKtxRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.storage.FirebaseStorageKtxRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=213)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.storage.StorageRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.storage.StorageRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=216)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckKtxRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckKtxRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=219)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.appcheck.FirebaseAppCheckRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=222)
+                     A:
+                     android:name(0x01010003)="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+                     (Raw: "com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=225)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsKtxRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=228)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=231)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonLegacyRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=234)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.FirebaseCommonKtxRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                   E: meta-data (line=237)
+                     A: android:name(0x01010003)="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar" (Raw:
+                     "com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar")
+                     A: android:value(0x01010024)="com.google.firebase.components.ComponentRegistrar" (Raw:
+                     "com.google.firebase.components.ComponentRegistrar")
+                 E: provider (line=245)
+                   A: android:name(0x01010003)="dev.fluttercommunity.plus.share.ShareFileProvider" (Raw: "dev.fluttercommunity.plus.share.ShareFileProvider")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:authorities(0x01010018)="com.wordnerd.artbeat.flutter.share_provider" (Raw: "com.wordnerd.artbeat.flutter.share_provider")
+                   A: android:grantUriPermissions(0x0101001b)=(type 0x12)0xffffffff
+                   E: meta-data (line=250)
+                     A: android:name(0x01010003)="android.support.FILE_PROVIDER_PATHS" (Raw: "android.support.FILE_PROVIDER_PATHS")
+                     A: android:resource(0x01010025)=@0x7f150001
+                 E: receiver (line=258)
+                   A: android:name(0x01010003)="dev.fluttercommunity.plus.share.SharePlusPendingIntent" (Raw:
+                   "dev.fluttercommunity.plus.share.SharePlusPendingIntent")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   E: intent-filter (line=261)
+                     E: action (line=262)
+                       A: android:name(0x01010003)="EXTRA_CHOSEN_COMPONENT" (Raw: "EXTRA_CHOSEN_COMPONENT")
+                 E: service (line=266)
+                   A: android:name(0x01010003)="com.baseflow.geolocator.GeolocatorLocationService" (Raw: "com.baseflow.geolocator.GeolocatorLocationService")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:foregroundServiceType(0x01010599)=(type 0x11)0x8
+                 E: provider (line=272)
+                   A: android:name(0x01010003)="io.flutter.plugins.imagepicker.ImagePickerFileProvider" (Raw:
+                   "io.flutter.plugins.imagepicker.ImagePickerFileProvider")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:authorities(0x01010018)="com.wordnerd.artbeat.flutter.image_provider" (Raw: "com.wordnerd.artbeat.flutter.image_provider")
+                   A: android:grantUriPermissions(0x0101001b)=(type 0x12)0xffffffff
+                   E: meta-data (line=277)
+                     A: android:name(0x01010003)="android.support.FILE_PROVIDER_PATHS" (Raw: "android.support.FILE_PROVIDER_PATHS")
+                     A: android:resource(0x01010025)=@0x7f150000
+                 E: service (line=281)
+                   A: android:name(0x01010003)="com.google.android.gms.metadata.ModuleDependencies" (Raw:
+                   "com.google.android.gms.metadata.ModuleDependencies")
+                   A: android:enabled(0x0101000e)=(type 0x12)0x0
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   E: intent-filter (line=285)
+                     E: action (line=286)
+                       A: android:name(0x01010003)="com.google.android.gms.metadata.MODULE_DEPENDENCIES" (Raw:
+                       "com.google.android.gms.metadata.MODULE_DEPENDENCIES")
+                   E: meta-data (line=289)
+                     A: android:name(0x01010003)="photopicker_activity:0:required" (Raw: "photopicker_activity:0:required")
+                     A: android:value(0x01010024)="" (Raw: "")
+                 E: activity (line=294)
+                   A: android:theme(0x01010000)=@0x01030007
+                   A: android:name(0x01010003)="io.flutter.plugins.urllauncher.WebViewActivity" (Raw: "io.flutter.plugins.urllauncher.WebViewActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: receiver (line=299)
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.DartNotificationActionReceiver" (Raw:
+                   "me.carda.awesome_notifications.DartNotificationActionReceiver")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                 E: receiver (line=302)
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.DartDismissedNotificationReceiver" (Raw:
+                   "me.carda.awesome_notifications.DartDismissedNotificationReceiver")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                 E: receiver (line=305)
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.DartScheduledNotificationReceiver" (Raw:
+                   "me.carda.awesome_notifications.DartScheduledNotificationReceiver")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                 E: receiver (line=308)
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.DartRefreshSchedulesReceiver" (Raw:
+                   "me.carda.awesome_notifications.DartRefreshSchedulesReceiver")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   E: intent-filter (line=312)
+                     E: category (line=313)
+                       A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                     E: action (line=315)
+                       A: android:name(0x01010003)="android.intent.action.BOOT_COMPLETED" (Raw: "android.intent.action.BOOT_COMPLETED")
+                     E: action (line=316)
+                       A: android:name(0x01010003)="android.intent.action.LOCKED_BOOT_COMPLETED" (Raw: "android.intent.action.LOCKED_BOOT_COMPLETED")
+                     E: action (line=317)
+                       A: android:name(0x01010003)="android.intent.action.MY_PACKAGE_REPLACED" (Raw: "android.intent.action.MY_PACKAGE_REPLACED")
+                     E: action (line=318)
+                       A: android:name(0x01010003)="android.intent.action.QUICKBOOT_POWERON" (Raw: "android.intent.action.QUICKBOOT_POWERON")
+                     E: action (line=319)
+                       A: android:name(0x01010003)="com.htc.intent.action.QUICKBOOT_POWERON" (Raw: "com.htc.intent.action.QUICKBOOT_POWERON")
+                     E: action (line=320)
+                       A: android:name(0x01010003)="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" (Raw:
+                       "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED")
+                 E: service (line=324)
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.DartBackgroundService" (Raw:
+                   "me.carda.awesome_notifications.DartBackgroundService")
+                   A: android:permission(0x01010006)="android.permission.BIND_JOB_SERVICE" (Raw: "android.permission.BIND_JOB_SERVICE")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: service (line=328)
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.core.services.ForegroundService" (Raw:
+                   "me.carda.awesome_notifications.core.services.ForegroundService")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:stopWithTask(0x0101036a)=(type 0x12)0xffffffff
+                   A: android:foregroundServiceType(0x01010599)=(type 0x11)0x4
+                 E: service (line=334)
+                   A: android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingBackgroundService" (Raw:
+                   "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingBackgroundService")
+                   A: android:permission(0x01010006)="android.permission.BIND_JOB_SERVICE" (Raw: "android.permission.BIND_JOB_SERVICE")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: service (line=338)
+                   A: android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService" (Raw:
+                   "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingService")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   E: intent-filter (line=341)
+                     E: action (line=342)
+                       A: android:name(0x01010003)="com.google.firebase.MESSAGING_EVENT" (Raw: "com.google.firebase.MESSAGING_EVENT")
+                 E: receiver (line=346)
+                   A: android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingReceiver" (Raw:
+                   "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingReceiver")
+                   A: android:permission(0x01010006)="com.google.android.c2dm.permission.SEND" (Raw: "com.google.android.c2dm.permission.SEND")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   E: intent-filter (line=350)
+                     E: action (line=351)
+                       A: android:name(0x01010003)="com.google.android.c2dm.intent.RECEIVE" (Raw: "com.google.android.c2dm.intent.RECEIVE")
+                 E: provider (line=355)
+                   A: android:name(0x01010003)="io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingInitProvider" (Raw:
+                   "io.flutter.plugins.firebase.messaging.FlutterFirebaseMessagingInitProvider")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:authorities(0x01010018)="com.wordnerd.artbeat.flutterfirebasemessaginginitprovider" (Raw:
+                   "com.wordnerd.artbeat.flutterfirebasemessaginginitprovider")
+                   A: android:initOrder(0x0101001a)=(type 0x10)0x63
+                 E: service (line=361)
+                   A: android:label(0x01010001)="My Notification Listener Service" (Raw: "My Notification Listener Service")
+                   A: android:name(0x01010003)="me.carda.awesome_notifications.core.managers.StatusBarManager" (Raw:
+                   "me.carda.awesome_notifications.core.managers.StatusBarManager")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   E: intent-filter (line=365)
+                     E: action (line=366)
+                       A: android:name(0x01010003)="android.service.notification.NotificationListenerService" (Raw:
+                       "android.service.notification.NotificationListenerService")
+                 E: activity (line=370)
+                   A: android:name(0x01010003)="com.stripe.android.financialconnections.FinancialConnectionsSheetRedirectActivity" (Raw:
+                   "com.stripe.android.financialconnections.FinancialConnectionsSheetRedirectActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x2
+                   E: intent-filter (line=374)
+                     E: action (line=375)
+                       A: android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                     E: category (line=377)
+                       A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                     E: category (line=378)
+                       A: android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                     E: data (line=381)
+                       A: android:scheme(0x01010027)="stripe-auth" (Raw: "stripe-auth")
+                       A: android:host(0x01010028)="link-accounts" (Raw: "link-accounts")
+                       A: android:pathPrefix(0x0101002b)="/com.wordnerd.artbeat/authentication_return" (Raw: "/com.wordnerd.artbeat/authentication_return")
+                     E: data (line=387)
+                       A: android:scheme(0x01010027)="stripe-auth" (Raw: "stripe-auth")
+                       A: android:host(0x01010028)="link-native-accounts" (Raw: "link-native-accounts")
+                       A: android:pathPrefix(0x0101002b)="/com.wordnerd.artbeat/authentication_return" (Raw: "/com.wordnerd.artbeat/authentication_return")
+                     E: data (line=393)
+                       A: android:scheme(0x01010027)="stripe-auth" (Raw: "stripe-auth")
+                       A: android:host(0x01010028)="link-accounts" (Raw: "link-accounts")
+                       A: android:path(0x0101002a)="/com.wordnerd.artbeat/success" (Raw: "/com.wordnerd.artbeat/success")
+                     E: data (line=397)
+                       A: android:scheme(0x01010027)="stripe-auth" (Raw: "stripe-auth")
+                       A: android:host(0x01010028)="link-accounts" (Raw: "link-accounts")
+                       A: android:path(0x0101002a)="/com.wordnerd.artbeat/cancel" (Raw: "/com.wordnerd.artbeat/cancel")
+                     E: data (line=403)
+                       A: android:scheme(0x01010027)="stripe-auth" (Raw: "stripe-auth")
+                       A: android:host(0x01010028)="native-redirect" (Raw: "native-redirect")
+                       A: android:pathPrefix(0x0101002b)="/com.wordnerd.artbeat" (Raw: "/com.wordnerd.artbeat")
+                     E: data (line=409)
+                       A: android:scheme(0x01010027)="stripe" (Raw: "stripe")
+                       A: android:host(0x01010028)="auth-redirect" (Raw: "auth-redirect")
+                       A: android:pathPrefix(0x0101002b)="/com.wordnerd.artbeat" (Raw: "/com.wordnerd.artbeat")
+                 E: activity (line=415)
+                   A: android:theme(0x01010000)=@0x7f1301e5
+                   A: android:name(0x01010003)="com.stripe.android.financialconnections.FinancialConnectionsSheetActivity" (Raw:
+                   "com.stripe.android.financialconnections.FinancialConnectionsSheetActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=419)
+                   A: android:theme(0x01010000)=@0x7f1301e5
+                   A: android:name(0x01010003)="com.stripe.android.financialconnections.ui.FinancialConnectionsSheetNativeActivity" (Raw:
+                   "com.stripe.android.financialconnections.ui.FinancialConnectionsSheetNativeActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:windowSoftInputMode(0x0101022b)=(type 0x11)0x10
+                 E: activity (line=424)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.PaymentSheetActivity" (Raw:
+                   "com.stripe.android.paymentsheet.PaymentSheetActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=428)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.PaymentOptionsActivity" (Raw:
+                   "com.stripe.android.paymentsheet.PaymentOptionsActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=432)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.customersheet.CustomerSheetActivity" (Raw:
+                   "com.stripe.android.customersheet.CustomerSheetActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=436)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.addresselement.AddressElementActivity" (Raw:
+                   "com.stripe.android.paymentsheet.addresselement.AddressElementActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=440)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.paymentdatacollection.bacs.BacsMandateConfirmationActivity" (Raw:
+                   "com.stripe.android.paymentsheet.paymentdatacollection.bacs.BacsMandateConfirmationActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=444)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.paymentdatacollection.polling.PollingActivity" (Raw:
+                   "com.stripe.android.paymentsheet.paymentdatacollection.polling.PollingActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=448)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.ui.SepaMandateActivity" (Raw:
+                   "com.stripe.android.paymentsheet.ui.SepaMandateActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=452)
+                   A: android:theme(0x01010000)=@0x7f1301e9
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.ExternalPaymentMethodProxyActivity" (Raw:
+                   "com.stripe.android.paymentsheet.ExternalPaymentMethodProxyActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=456)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentsheet.paymentdatacollection.cvcrecollection.CvcRecollectionActivity" (Raw:
+                   "com.stripe.android.paymentsheet.paymentdatacollection.cvcrecollection.CvcRecollectionActivity")
+                 E: activity (line=459)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentelement.embedded.form.FormActivity" (Raw:
+                   "com.stripe.android.paymentelement.embedded.form.FormActivity")
+                 E: activity (line=462)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.paymentelement.embedded.manage.ManageActivity" (Raw:
+                   "com.stripe.android.paymentelement.embedded.manage.ManageActivity")
+                 E: activity (line=465)
+                   A: android:theme(0x01010000)=@0x7f1301e8
+                   A: android:label(0x01010001)=@0x7f1201d0
+                   A: android:name(0x01010003)="com.stripe.android.link.LinkActivity" (Raw: "com.stripe.android.link.LinkActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:configChanges(0x0101001f)=(type 0x11)0xdb0
+                   A: android:windowSoftInputMode(0x0101022b)=(type 0x11)0x10
+                   A: android:autoRemoveFromRecents(0x01010447)=(type 0x12)0xffffffff
+                 E: activity (line=473)
+                   A: android:theme(0x01010000)=@0x7f1301ef
+                   A: android:name(0x01010003)="com.stripe.android.link.LinkForegroundActivity" (Raw: "com.stripe.android.link.LinkForegroundActivity")
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x1
+                   A: android:configChanges(0x0101001f)=(type 0x11)0xdb0
+                   A: android:autoRemoveFromRecents(0x01010447)=(type 0x12)0xffffffff
+                 E: activity (line=479)
+                   A: android:theme(0x01010000)=@0x7f1301ef
+                   A: android:name(0x01010003)="com.stripe.android.link.LinkRedirectHandlerActivity" (Raw:
+                   "com.stripe.android.link.LinkRedirectHandlerActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x3
+                   A: android:autoRemoveFromRecents(0x01010447)=(type 0x12)0xffffffff
+                   E: intent-filter (line=485)
+                     E: action (line=486)
+                       A: android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                     E: category (line=488)
+                       A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                     E: category (line=489)
+                       A: android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                     E: data (line=491)
+                       A: android:scheme(0x01010027)="link-popup" (Raw: "link-popup")
+                       A: android:host(0x01010028)="complete" (Raw: "complete")
+                       A: android:path(0x0101002a)="/com.wordnerd.artbeat" (Raw: "/com.wordnerd.artbeat")
+                 E: activity (line=497)
+                   A: android:theme(0x01010000)=@0x7f1301ec
+                   A: android:name(0x01010003)="com.stripe.android.ui.core.cardscan.CardScanActivity" (Raw:
+                   "com.stripe.android.ui.core.cardscan.CardScanActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=501)
+                   A: android:theme(0x01010000)=@0x7f1301e3
+                   A: android:name(0x01010003)="com.stripe.android.view.PaymentAuthWebViewActivity" (Raw:
+                   "com.stripe.android.view.PaymentAuthWebViewActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=505)
+                   A: android:theme(0x01010000)=@0x7f1301ef
+                   A: android:name(0x01010003)="com.stripe.android.view.PaymentRelayActivity" (Raw: "com.stripe.android.view.PaymentRelayActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=513)
+                   A: android:theme(0x01010000)=@0x7f1301ef
+                   A: android:name(0x01010003)="com.stripe.android.payments.StripeBrowserLauncherActivity" (Raw:
+                   "com.stripe.android.payments.StripeBrowserLauncherActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x2
+                 E: activity (line=518)
+                   A: android:theme(0x01010000)=@0x7f1301ef
+                   A: android:name(0x01010003)="com.stripe.android.payments.StripeBrowserProxyReturnActivity" (Raw:
+                   "com.stripe.android.payments.StripeBrowserProxyReturnActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x2
+                   E: intent-filter (line=523)
+                     E: action (line=524)
+                       A: android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                     E: category (line=526)
+                       A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                     E: category (line=527)
+                       A: android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                     E: data (line=530)
+                       A: android:scheme(0x01010027)="stripesdk" (Raw: "stripesdk")
+                       A: android:host(0x01010028)="payment_return_url" (Raw: "payment_return_url")
+                       A: android:path(0x0101002a)="/com.wordnerd.artbeat" (Raw: "/com.wordnerd.artbeat")
+                 E: activity (line=536)
+                   A: android:theme(0x01010000)=@0x7f1301e3
+                   A: android:name(0x01010003)="com.stripe.android.payments.core.authentication.threeds2.Stripe3ds2TransactionActivity" (Raw:
+                   "com.stripe.android.payments.core.authentication.threeds2.Stripe3ds2TransactionActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=540)
+                   A: android:theme(0x01010000)=@0x7f1301e6
+                   A: android:name(0x01010003)="com.stripe.android.googlepaylauncher.GooglePayLauncherActivity" (Raw:
+                   "com.stripe.android.googlepaylauncher.GooglePayLauncherActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=544)
+                   A: android:theme(0x01010000)=@0x7f1301e6
+                   A: android:name(0x01010003)="com.stripe.android.googlepaylauncher.GooglePayPaymentMethodLauncherActivity" (Raw:
+                   "com.stripe.android.googlepaylauncher.GooglePayPaymentMethodLauncherActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=548)
+                   A: android:theme(0x01010000)=@0x7f1301e9
+                   A: android:name(0x01010003)="com.stripe.android.payments.paymentlauncher.PaymentLauncherConfirmationActivity" (Raw:
+                   "com.stripe.android.payments.paymentlauncher.PaymentLauncherConfirmationActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=552)
+                   A: android:theme(0x01010000)=@0x7f1301ef
+                   A: android:name(0x01010003)="com.stripe.android.payments.bankaccount.ui.CollectBankAccountActivity" (Raw:
+                   "com.stripe.android.payments.bankaccount.ui.CollectBankAccountActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: activity (line=556)
+                   A: android:theme(0x01010000)=@0x7f1301d6
+                   A: android:name(0x01010003)="com.stripe.android.stripe3ds2.views.ChallengeActivity" (Raw:
+                   "com.stripe.android.stripe3ds2.views.ChallengeActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: receiver (line=561)
+                   A: android:name(0x01010003)="com.google.android.gms.measurement.AppMeasurementReceiver" (Raw:
+                   "com.google.android.gms.measurement.AppMeasurementReceiver")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: service (line=567)
+                   A: android:name(0x01010003)="com.google.android.gms.measurement.AppMeasurementService" (Raw:
+                   "com.google.android.gms.measurement.AppMeasurementService")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: service (line=571)
+                   A: android:name(0x01010003)="com.google.android.gms.measurement.AppMeasurementJobService" (Raw:
+                   "com.google.android.gms.measurement.AppMeasurementJobService")
+                   A: android:permission(0x01010006)="android.permission.BIND_JOB_SERVICE" (Raw: "android.permission.BIND_JOB_SERVICE")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: receiver (line=577)
+                   A: android:name(0x01010003)="com.google.firebase.iid.FirebaseInstanceIdReceiver" (Raw:
+                   "com.google.firebase.iid.FirebaseInstanceIdReceiver")
+                   A: android:permission(0x01010006)="com.google.android.c2dm.permission.SEND" (Raw: "com.google.android.c2dm.permission.SEND")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   E: intent-filter (line=581)
+                     E: action (line=582)
+                       A: android:name(0x01010003)="com.google.android.c2dm.intent.RECEIVE" (Raw: "com.google.android.c2dm.intent.RECEIVE")
+                   E: meta-data (line=585)
+                     A: android:name(0x01010003)="com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED" (Raw:
+                     "com.google.android.gms.cloudmessaging.FINISHED_AFTER_HANDLED")
+                     A: android:value(0x01010024)=(type 0x12)0xffffffff
+                 E: service (line=593)
+                   A: android:name(0x01010003)="com.google.firebase.messaging.FirebaseMessagingService" (Raw:
+                   "com.google.firebase.messaging.FirebaseMessagingService")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:directBootAware(0x01010505)=(type 0x12)0xffffffff
+                   E: intent-filter (line=597)
+                     A: android:priority(0x0101001c)=(type 0x10)0xfffffe0c
+                     E: action (line=598)
+                       A: android:name(0x01010003)="com.google.firebase.MESSAGING_EVENT" (Raw: "com.google.firebase.MESSAGING_EVENT")
+                 E: uses-library (line=601)
+                   A: android:name(0x01010003)="org.apache.http.legacy" (Raw: "org.apache.http.legacy")
+                   A: android:required(0x0101028e)=(type 0x12)0x0
+                 E: activity (line=605)
+                   A: android:theme(0x01010000)=@0x01030010
+                   A: android:name(0x01010003)="com.google.firebase.auth.internal.GenericIdpActivity" (Raw:
+                   "com.google.firebase.auth.internal.GenericIdpActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x2
+                   E: intent-filter (line=611)
+                     E: action (line=612)
+                       A: android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                     E: category (line=614)
+                       A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                     E: category (line=615)
+                       A: android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                     E: data (line=617)
+                       A: android:scheme(0x01010027)="genericidp" (Raw: "genericidp")
+                       A: android:host(0x01010028)="firebase.auth" (Raw: "firebase.auth")
+                       A: android:path(0x0101002a)="/" (Raw: "/")
+                 E: activity (line=623)
+                   A: android:theme(0x01010000)=@0x01030010
+                   A: android:name(0x01010003)="com.google.firebase.auth.internal.RecaptchaActivity" (Raw:
+                   "com.google.firebase.auth.internal.RecaptchaActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+                   A: android:launchMode(0x0101001d)=(type 0x10)0x2
+                   E: intent-filter (line=629)
+                     E: action (line=630)
+                       A: android:name(0x01010003)="android.intent.action.VIEW" (Raw: "android.intent.action.VIEW")
+                     E: category (line=632)
+                       A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+                     E: category (line=633)
+                       A: android:name(0x01010003)="android.intent.category.BROWSABLE" (Raw: "android.intent.category.BROWSABLE")
+                     E: data (line=635)
+                       A: android:scheme(0x01010027)="recaptcha" (Raw: "recaptcha")
+                       A: android:host(0x01010028)="firebase.auth" (Raw: "firebase.auth")
+                       A: android:path(0x0101002a)="/" (Raw: "/")
+                 E: provider (line=642)
+                   A: android:name(0x01010003)="com.google.firebase.provider.FirebaseInitProvider" (Raw: "com.google.firebase.provider.FirebaseInitProvider")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:authorities(0x01010018)="com.wordnerd.artbeat.firebaseinitprovider" (Raw: "com.wordnerd.artbeat.firebaseinitprovider")
+                   A: android:initOrder(0x0101001a)=(type 0x10)0x64
+                   A: android:directBootAware(0x01010505)=(type 0x12)0xffffffff
+                 E: service (line=649)
+                   A: android:name(0x01010003)="androidx.credentials.playservices.CredentialProviderMetadataHolder" (Raw:
+                   "androidx.credentials.playservices.CredentialProviderMetadataHolder")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   E: meta-data (line=653)
+                     A: android:name(0x01010003)="androidx.credentials.CREDENTIAL_PROVIDER_KEY" (Raw: "androidx.credentials.CREDENTIAL_PROVIDER_KEY")
+                     A: android:value(0x01010024)="androidx.credentials.playservices.CredentialProviderPlayServicesImpl" (Raw:
+                     "androidx.credentials.playservices.CredentialProviderPlayServicesImpl")
+                 E: activity (line=658)
+                   A: android:theme(0x01010000)=@0x7f13028a
+                   A: android:name(0x01010003)="androidx.credentials.playservices.HiddenActivity" (Raw: "androidx.credentials.playservices.HiddenActivity")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:configChanges(0x0101001f)=(type 0x11)0x5a0
+                   A: android:fitsSystemWindows(0x010100dd)=(type 0x12)0xffffffff
+                 E: activity (line=666)
+                   A: android:theme(0x01010000)=@0x01030010
+                   A: android:name(0x01010003)="com.google.android.gms.auth.api.signin.internal.SignInHubActivity" (Raw:
+                   "com.google.android.gms.auth.api.signin.internal.SignInHubActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+                 E: service (line=675)
+                   A: android:name(0x01010003)="com.google.android.gms.auth.api.signin.RevocationBoundService" (Raw:
+                   "com.google.android.gms.auth.api.signin.RevocationBoundService")
+                   A: android:permission(0x01010006)="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION" (Raw:
+                   "com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION")
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:visibleToInstantApps(0x01010531)=(type 0x12)0xffffffff
+                 E: uses-library (line=681)
+                   A: android:name(0x01010003)="androidx.window.extensions" (Raw: "androidx.window.extensions")
+                   A: android:required(0x0101028e)=(type 0x12)0x0
+                 E: uses-library (line=684)
+                   A: android:name(0x01010003)="androidx.window.sidecar" (Raw: "androidx.window.sidecar")
+                   A: android:required(0x0101028e)=(type 0x12)0x0
+                 E: provider (line=688)
+                   A: android:name(0x01010003)="androidx.startup.InitializationProvider" (Raw: "androidx.startup.InitializationProvider")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:authorities(0x01010018)="com.wordnerd.artbeat.androidx-startup" (Raw: "com.wordnerd.artbeat.androidx-startup")
+                   E: meta-data (line=692)
+                     A: android:name(0x01010003)="androidx.emoji2.text.EmojiCompatInitializer" (Raw: "androidx.emoji2.text.EmojiCompatInitializer")
+                     A: android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+                   E: meta-data (line=695)
+                     A: android:name(0x01010003)="androidx.lifecycle.ProcessLifecycleInitializer" (Raw: "androidx.lifecycle.ProcessLifecycleInitializer")
+                     A: android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+                   E: meta-data (line=698)
+                     A: android:name(0x01010003)="androidx.profileinstaller.ProfileInstallerInitializer" (Raw:
+                     "androidx.profileinstaller.ProfileInstallerInitializer")
+                     A: android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+                 E: uses-library (line=703)
+                   A: android:name(0x01010003)="android.ext.adservices" (Raw: "android.ext.adservices")
+                   A: android:required(0x0101028e)=(type 0x12)0x0
+                 E: activity (line=707)
+                   A: android:theme(0x01010000)=@0x01030010
+                   A: android:name(0x01010003)="com.google.android.gms.common.api.GoogleApiActivity" (Raw:
+                   "com.google.android.gms.common.api.GoogleApiActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: meta-data (line=712)
+                   A: android:name(0x01010003)="com.google.android.gms.version" (Raw: "com.google.android.gms.version")
+                   A: android:value(0x01010024)=@0x7f0a0008
+                 E: service (line=716)
+                   A: android:name(0x01010003)="androidx.room.MultiInstanceInvalidationService" (Raw: "androidx.room.MultiInstanceInvalidationService")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:directBootAware(0x01010505)=(type 0x12)0xffffffff
+                 E: receiver (line=721)
+                   A: android:name(0x01010003)="androidx.profileinstaller.ProfileInstallReceiver" (Raw: "androidx.profileinstaller.ProfileInstallReceiver")
+                   A: android:permission(0x01010006)="android.permission.DUMP" (Raw: "android.permission.DUMP")
+                   A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+                   A: android:exported(0x01010010)=(type 0x12)0xffffffff
+                   A: android:directBootAware(0x01010505)=(type 0x12)0x0
+                   E: intent-filter (line=727)
+                     E: action (line=728)
+                       A: android:name(0x01010003)="androidx.profileinstaller.action.INSTALL_PROFILE" (Raw:
+                       "androidx.profileinstaller.action.INSTALL_PROFILE")
+                   E: intent-filter (line=730)
+                     E: action (line=731)
+                       A: android:name(0x01010003)="androidx.profileinstaller.action.SKIP_FILE" (Raw: "androidx.profileinstaller.action.SKIP_FILE")
+                   E: intent-filter (line=733)
+                     E: action (line=734)
+                       A: android:name(0x01010003)="androidx.profileinstaller.action.SAVE_PROFILE" (Raw: "androidx.profileinstaller.action.SAVE_PROFILE")
+                   E: intent-filter (line=736)
+                     E: action (line=737)
+                       A: android:name(0x01010003)="androidx.profileinstaller.action.BENCHMARK_OPERATION" (Raw:
+                       "androidx.profileinstaller.action.BENCHMARK_OPERATION")
+                 E: service (line=741)
+                   A: android:name(0x01010003)="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery" (Raw:
+                   "com.google.android.datatransport.runtime.backends.TransportBackendDiscovery")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   E: meta-data (line=744)
+                     A: android:name(0x01010003)="backend:com.google.android.datatransport.cct.CctBackendFactory" (Raw:
+                     "backend:com.google.android.datatransport.cct.CctBackendFactory")
+                     A: android:value(0x01010024)="cct" (Raw: "cct")
+                 E: service (line=748)
+                   A: android:name(0x01010003)="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService" (Raw:
+                   "com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService")
+                   A: android:permission(0x01010006)="android.permission.BIND_JOB_SERVICE" (Raw: "android.permission.BIND_JOB_SERVICE")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: receiver (line=754)
+                   A: android:name(0x01010003)="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+                   (Raw: "com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                 E: meta-data (line=758)
+                   A: android:name(0x01010003)="aia-compat-api-min-version" (Raw: "aia-compat-api-min-version")
+                   A: android:value(0x01010024)=(type 0x10)0x1
+                 E: activity (line=761)
+                   A: android:theme(0x01010000)=@0x7f1302d8
+                   A: android:name(0x01010003)="com.google.android.play.core.common.PlayCoreDialogWrapperActivity" (Raw:
+                   "com.google.android.play.core.common.PlayCoreDialogWrapperActivity")
+                   A: android:exported(0x01010010)=(type 0x12)0x0
+                   A: android:stateNotNeeded(0x01010016)=(type 0x12)0xffffffff
+[  +51 ms] Stopping app 'app-debug.apk' on sdk gphone64 arm64.
+[   +2 ms] executing: /Users/kristybock/Library/Android/sdk/platform-tools/adb -s emulator-5554 shell am force-stop com.wordnerd.artbeat
+dart(39351) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[+1211 ms] Installing APK.
+[   +3 ms] Installing build/app/outputs/flutter-apk/app-debug.apk...
+[        ] executing: /Users/kristybock/Library/Android/sdk/platform-tools/adb -s emulator-5554 install -t -r
+/Users/kristybock/artbeat/build/app/outputs/flutter-apk/app-debug.apk
+dart(39641) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[+29720 ms] Performing Streamed Install
+                     Success
+[  +56 ms] Installing build/app/outputs/flutter-apk/app-debug.apk... (completed in 29.8s)
+[  +56 ms] executing: /Users/kristybock/Library/Android/sdk/platform-tools/adb -s emulator-5554 shell echo -n 3751739ba1bbf9e71e9f90c28ef764c353fd7d03 >
+/data/local/tmp/sky.com.wordnerd.artbeat.sha1
+dart(45145) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[ +861 ms] executing: /Users/kristybock/Library/Android/sdk/platform-tools/adb -s emulator-5554 shell -x logcat -v time -t 1
+dart(45305) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+dart(46147) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[+5786 ms] executing: /Users/kristybock/Library/Android/sdk/platform-tools/adb -s emulator-5554 shell am start -a android.intent.action.MAIN -c
+android.intent.category.LAUNCHER -f 0x20000000 --ez enable-dart-profiling true --ez enable-checked-mode true --ez verify-entry-points true
+com.wordnerd.artbeat/com.wordnerd.artbeat.MainActivity
+dart(46149) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[+1345 ms] Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x20000000 cmp=com.wordnerd.artbeat/.MainActivity
+(has extras) }
+[   +2 ms] Waiting for VM Service port to be available...
+[+20933 ms] I/flutter (11278): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(94)] Using the Impeller rendering backend (OpenGLES).
+[ +142 ms] VM Service URL on device: http://127.0.0.1:39955/KjWABrnT09o=/
+[   +4 ms] executing: /Users/kristybock/Library/Android/sdk/platform-tools/adb -s emulator-5554 forward tcp:0 tcp:39955
+dart(49559) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[ +111 ms] 55198
+[   +1 ms] Forwarded host port 55198 to device port 39955 for VM Service
+[  +13 ms] Caching compiled dill
+[ +211 ms] Connecting to service protocol: http://127.0.0.1:55198/KjWABrnT09o=/
+[ +420 ms] Launching a Dart Developer Service (DDS) instance at http://127.0.0.1:0, connecting to VM service at http://127.0.0.1:55198/KjWABrnT09o=/.
+dart(49649) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[ +645 ms] Successfully connected to service protocol: http://127.0.0.1:55198/KjWABrnT09o=/
+[+2831 ms] DevFS: Creating new filesystem on the device (null)
+dart(49979) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+[  +52 ms] D/Android: [Awesome Notifications](11278): LiceCycleManager listener successfully attached to Android (LifeCycleManager:69)
+[        ] W/MediaSessionCompat(11278): Couldn't find a unique registered media button receiver in the given context.
+[   +1 ms] D/Android: [Awesome Notifications](11278): Awesome Notifications plugin attached to Android 36 (AwesomeNotificationsPlugin:139)
+[        ] D/Android: [Awesome Notifications](11278): Awesome Notifications attached to engine for Android 36 (AwesomeNotificationsPlugin:121)
+[  +42 ms] DevFS: Created new filesystem on the device (file:///data/user/0/com.wordnerd.artbeat/code_cache/artbeatXSVDRU/artbeat/)
+[   +3 ms] Updating assets
+[+4004 ms] Manifest contained wildcard assets. Inserting missing file into build graph to force rerun. for more information see #56466.
+[   +9 ms] Syncing files to device sdk gphone64 arm64...
+[   +3 ms] Compiling dart to kernel with 0 updated files
+[        ] Processing bundle.
+[   +4 ms] <- recompile package:artbeat/main.dart 2255408b-db94-4a2c-a8a1-2c999a2e9ed0
+[        ] <- 2255408b-db94-4a2c-a8a1-2c999a2e9ed0
+[  +14 ms] Bundle processing done.
+[  +42 ms] D/FLTFireContextHolder(11278): received application context.
+[        ] D/FlutterGeolocator(11278): Attaching Geolocator to activity
+[        ] W/Glide   (11278): Failed to find GeneratedAppGlideModule. You should include an annotationProcessor compile dependency on
+com.github.bumptech.glide:compiler in your application and a @GlideModule annotated AppGlideModule implementation or LibraryGlideModules will be silently
+ignored
+[   +2 ms] I/ordnerd.artbeat(11278): Background concurrent mark compact GC freed 3454KB AllocSpace bytes, 32(1040KB) LOS objects, 49% free, 3861KB/7722KB,
+paused 3.771ms,1.349ms total 111.608ms
+[        ] D/CompatChangeReporter(11278): Compat change id reported: 352594277; UID 10212; state: ENABLED
+[        ] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityNodeInfo;->getSourceNodeId()J
+(runtime_flags=0, domain=platform, api=unsupported,test-api) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using
+reflection: allowed
+[        ] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden method Landroid/view/accessibility/AccessibilityRecord;->getSourceNodeId()J
+(runtime_flags=0, domain=platform, api=unsupported) from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection:
+allowed
+[        ] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden field
+Landroid/view/accessibility/AccessibilityNodeInfo;->mChildNodeIds:Landroid/util/LongArray; (runtime_flags=0, domain=platform, api=unsupported) from
+Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+[        ] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden method Landroid/util/LongArray;->get(I)J (runtime_flags=0, domain=platform, api=unsupported)
+from Lio/flutter/view/AccessibilityViewEmbedder$ReflectionAccessors; (domain=app) using reflection: allowed
+[        ] D/CompatChangeReporter(11278): Compat change id reported: 309578419; UID 10212; state: ENABLED
+[        ] D/Android: [Awesome Notifications](11278): App is now Foreground (LifeCycleManager:94)
+[        ] D/CompatChangeReporter(11278): Compat change id reported: 349153669; UID 10212; state: ENABLED
+[        ] W/HWUI    (11278): Unknown dataspace 0
+[   +2 ms] I/flutter (11278): 🔄 AppLifecycleManager initialized
+[        ] I/flutter (11278): ✅ AppLifecycleManager initialized
+[        ] I/flutter (11278): Failed to initialize ConfigService: Instance of 'FileNotFoundError'
+[        ] I/flutter (11278): ✅ ConfigService initialized
+[        ] I/flutter (11278): ✅ Maps configuration initialized
+[        ] I/flutter (11278): 🔄 SecureFirebaseConfig initialization state reset
+[        ] I/flutter (11278): 🔥 Ensuring Firebase initialization...
+[        ] I/flutter (11278): 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
+[        ] I/flutter (11278): 🔥 Initializing Firebase with options...
+[  +68 ms] D/ProfileInstaller(11278): Installing profile for com.wordnerd.artbeat
+[        ] D/FlutterGeolocator(11278): Creating service.
+[        ] D/FlutterGeolocator(11278): Binding to location service.
+[        ] I/Choreographer(11278): Skipped 35 frames!  The application may be doing too much work on its main thread.
+[        ] I/WindowExtensionsImpl(11278): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+[        ] I/ordnerd.artbeat(11278): Compiler allocated 5111KB to compile void android.view.ViewRootImpl.performTraversals()
+[        ] D/FlutterGeolocator(11278): Geolocator foreground service connected
+[        ] D/FlutterGeolocator(11278): Initializing Geolocator services
+[        ] D/FlutterGeolocator(11278): Flutter engine connected. Connected engine count 1
+[        ] E/FirebaseMessaging(11278): Topic sync or token retrieval failed on hard failure exceptions: java.util.concurrent.ExecutionException:
+java.io.IOException: AUTHENTICATION_FAILED. Won't retry the operation.
+[        ] I/Choreographer(11278): Skipped 165 frames!  The application may be doing too much work on its main thread.
+[ +445 ms] D/WindowLayoutComponentImpl(11278): Register WindowLayoutInfoListener on Context=com.wordnerd.artbeat.MainActivity@b9c9127, of which
+baseContext=android.app.ContextImpl@395d122
+[  +12 ms] I/Choreographer(11278): Skipped 35 frames!  The application may be doing too much work on its main thread.
+[ +473 ms] I/ordnerd.artbeat(11278): Background concurrent mark compact GC freed 2534KB AllocSpace bytes, 14(844KB) LOS objects, 49% free, 7595KB/14MB,
+paused 3.364ms,4.015ms total 1.156s
+[  +53 ms] I/flutter (11278): 🔥 Firebase core initialized successfully
+[   +1 ms] I/flutter (11278): 🔐 Initializing App Check...
+[   +1 ms] I/flutter (11278): 🔐 Debug mode: true
+[        ] I/flutter (11278): 🔐 Team ID: H49R32NPY6
+[  +20 ms] D/com.google.firebase.appcheck.debug.internal.DebugAppCheckProvider(11278): Enter this debug secret into the allow list in the Firebase Console
+for your project: 519c4831-dcf9-4931-b79e-7b9bb0289907
+[ +756 ms] I/flutter (11278): ⚠️ App Check initialization error: [firebase_app_check/unknown] com.google.firebase.FirebaseException: Error returned from API.
+code: 403 body: App attestation failed.
+[        ] I/flutter (11278): ⚠️ This may be expected in debug mode
+[        ] I/flutter (11278): ✅ Complete Firebase initialization finished
+[        ] I/flutter (11278): ✅ Firebase initialization completed successfully
+[  +24 ms] I/flutter (11278): 🖼️ ImageManagementService initialized
+[        ] I/flutter (11278): 📊 Max concurrent loads: 2
+[        ] I/flutter (11278): 💾 Cache duration: 7 days
+[        ] I/flutter (11278): ✅ Image management service initialized
+[        ] I/flutter (11278): ✅ Firebase confirmed ready
+[        ] I/flutter (11278): 🔍 Firebase app names: [[DEFAULT]]
+[ +651 ms] I/flutter (11278): 🔄 Splash: Starting auth check...
+[ +312 ms] I/flutter (11278): 🔄 Splash: Starting auth check...
+[  +19 ms] I/flutter (11278): ✅ Firebase initialized successfully
+[ +451 ms] I/Choreographer(11278): Skipped 87 frames!  The application may be doing too much work on its main thread.
+[  +81 ms] I/flutter (11278): 🔥 Splash: Checking Firebase apps...
+[   +1 ms] I/flutter (11278): ✅ Splash: Firebase apps available (1)
+[  +24 ms] I/flutter (11278): 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
+[   +4 ms] I/flutter (11278): 🔄 Splash: Starting user sync...
+[  +56 ms] I/flutter (11278): 🧭 Splash: Navigating to /dashboard
+[  +15 ms] I/flutter (11278): ✅ Splash: Navigation command sent
+[  +73 ms] I/flutter (11278): 🏠 Building dashboard screen...
+[   +7 ms] I/flutter (11278): Building FluidDashboardScreen...
+[ +929 ms] I/flutter (11278): 👤 UserService: Initializing UserService
+[ +895 ms] I/flutter (11278): 👤 UserService: Firebase initialized successfully
+[  +13 ms] I/flutter (11278): FluidDashboardScreen initialized
+[   +1 ms] I/flutter (11278): Scaffold key: [LabeledGlobalKey<ScaffoldState>#a6005]
+[  +18 ms] I/flutter (11278): 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+[        ] I/flutter (11278): 🔥 Splash: Checking Firebase apps...
+[  +15 ms] I/flutter (11278): ✅ Splash: Firebase apps available (1)
+[        ] I/flutter (11278): 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
+[        ] I/flutter (11278): 🔄 Splash: Starting user sync...
+[        ] I/flutter (11278): 🧭 Splash: Navigating to /dashboard
+[        ] I/flutter (11278): ✅ Splash: Navigation command sent
+[  +36 ms] I/flutter (11278): ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
+[  +22 ms] I/flutter (11278): 🏠 Building dashboard screen...
+[   +1 ms] I/flutter (11278): Building FluidDashboardScreen...
+[ +228 ms] I/flutter (11278): FluidDashboardScreen initialized
+[        ] I/flutter (11278): Scaffold key: [LabeledGlobalKey<ScaffoldState>#fa14f]
+[   +6 ms] W/WindowOnBackDispatcher(11278): OnBackInvokedCallback is not enabled for the application.
+[        ] W/WindowOnBackDispatcher(11278): Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+[        ] I/Choreographer(11278): Skipped 145 frames!  The application may be doing too much work on its main thread.
+[ +197 ms] I/HWUI    (11278): Davey! duration=2596ms; Flags=1, FrameTimelineVsyncId=62812, IntendedVsync=5801627155941, Vsync=5804043822511, InputEventId=0,
+HandleInputStart=5804055348807, AnimationStart=5804055354182, PerformTraversalsStart=5804055354890, DrawStart=5804124816349, FrameDeadline=5801643822607,
+FrameStartTime=5804054819682, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=5804128197516, SyncStart=5804130320474,
+IssueDrawCommandsStart=5804130916599, SwapBuffers=5804198701807, FrameCompleted=5804225391307, DequeueBufferDuration=2500292, QueueBufferDuration=1352083,
+GpuCompleted=5804222785474, SwapBuffersCompleted=5804225391307, DisplayPresentTime=0, CommandSubmissionCompleted=5804198701807, 
+[ +206 ms] D/MapsInitializer(11278): preferredRenderer: null
+[   +3 ms] D/zzcc    (11278): preferredRenderer: null
+[        ] I/zzcc    (11278): Making Creator dynamically
+[  +41 ms] I/DynamiteModule(11278): Considering local module com.google.android.gms.maps_core_dynamite:0 and remote module
+com.google.android.gms.maps_core_dynamite:203115000
+[        ] I/DynamiteModule(11278): Selected remote version of com.google.android.gms.maps_core_dynamite, version >= 203115000
+[        ] V/DynamiteModule(11278): Dynamite loader version >= 2, using loadModule2NoCrashUtils
+[  +43 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e261ebd8) locale list changing from [] to [en-US]
+[  +35 ms] D/CompatChangeReporter(11278): Compat change id reported: 312399441; UID 10212; state: ENABLED
+[+1149 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e25e8a38) locale list changing from [] to [en-US]
+[  +11 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e25ea978) locale list changing from [] to [en-US]
+[ +266 ms] I/Google Maps Android API(11278): Google Play services client version: 18020000
+[  +39 ms] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden method Ldalvik/system/VMStack;->getStackClass2()Ljava/lang/Class; (runtime_flags=0,
+domain=core-platform, api=unsupported) from Lm/ame; (domain=app) using reflection: allowed
+[   +9 ms] I/Google Maps Android API(11278): Google Play services package version: 250734035
+[        ] I/Google Maps Android API(11278): Google Play services maps renderer version(legacy): 203115000
+[ +203 ms] D/MapsInitializer(11278): loadedRenderer: LEGACY
+[        ] D/zzcc    (11278): preferredRenderer: null
+[   +2 ms] I/Google Maps Android API(11278): Google Play services package version: 250734035
+[        ] I/Google Maps Android API(11278): Google Play services maps renderer version(legacy): 203115000
+[  +45 ms] D/CompatChangeReporter(11278): Compat change id reported: 63938206; UID 10212; state: ENABLED
+[ +167 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +5 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[   +8 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +3 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +3 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +3 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +71 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +39 ms] I/PlatformViewsController(11278): Hosting view in a virtual display for platform view: 0
+[   +6 ms] I/PlatformViewsController(11278): PlatformView is using SurfaceProducer backend
+[  +79 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e261eef8) locale list changing from [] to [en-US]
+[   +2 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e261d5f8) locale list changing from [] to [en-US]
+[  +80 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e261b078) locale list changing from [] to [en-US]
+[ +236 ms] Updating files.
+[        ] Pending asset builds completed. Writing dirty entries.
+[        ] DevFS: Sync finished
+[   +1 ms] Syncing files to device sdk gphone64 arm64... (completed in 8.8s)
+[   +1 ms] Synced 0.0MB.
+[   +3 ms] <- accept
+[  +43 ms] Connected to _flutterView/0xb4000071725d3030.
+[   +9 ms] Flutter run key commands.
+[   +1 ms] r Hot reload. 🔥🔥🔥
+[        ] R Hot restart.
+[        ] h List all available interactive commands.
+[        ] d Detach (terminate "flutter run" but leave application running).
+[        ] c Clear the screen
+[        ] q Quit (terminate the application on the device).
+[        ] A Dart VM Service on sdk gphone64 arm64 is available at: http://127.0.0.1:55202/hvQiM5iwrHA=/
+[   +2 ms] The Flutter DevTools debugger and profiler on sdk gphone64 arm64 is available at: http://127.0.0.1:55211?uri=http://127.0.0.1:55202/hvQiM5iwrHA=/
+[ +173 ms] V/GoogleMapController(11278): Controller was disposed before GoogleMap was ready.
+[        ] V/GoogleMapController(11278): Controller was disposed before GoogleMap was ready.
+[        ] V/GoogleMapController(11278): Controller was disposed before GoogleMap was ready.
+[        ] V/GoogleMapController(11278): Controller was disposed before GoogleMap was ready.
+[ +192 ms] I/Choreographer(11278): Skipped 36 frames!  The application may be doing too much work on its main thread.
+[  +54 ms] D/InsetsController(11278): hide(ime(), fromIme=false)
+[   +1 ms] I/ImeTracker(11278): com.wordnerd.artbeat:b83c8495: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+[ +407 ms] W/DynamiteModule(11278): Local module descriptor class for com.google.android.gms.providerinstaller.dynamite not found.
+[ +347 ms] I/bb      (11278): Successfully registered with Phenotype.
+[  +49 ms] W/ordnerd.artbeat(11278): Verification of com.google.firebase.firestore.bundle.BundledQuery
+com.google.firebase.firestore.local.LocalSerializer.decodeBundledQuery(com.google.firestore.bundle.BundledQuery) took 245.035ms (155.08 bytecodes/s) (0B
+arena alloc)
+[  +17 ms] W/DynamiteModule(11278): Local module descriptor class for com.google.android.gms.googlecertificates not found.
+[  +17 ms] I/DynamiteModule(11278): Considering local module com.google.android.gms.providerinstaller.dynamite:0 and remote module
+com.google.android.gms.providerinstaller.dynamite:0
+[   +3 ms] W/ProviderInstaller(11278): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found.
+Local version is 0 and remote version is 0.
+[   +6 ms] I/DynamiteModule(11278): Considering local module com.google.android.gms.googlecertificates:0 and remote module
+com.google.android.gms.googlecertificates:7
+[   +5 ms] I/DynamiteModule(11278): Selected remote version of com.google.android.gms.googlecertificates, version >= 7
+[  +88 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e2618af8) locale list changing from [] to [en-US]
+[  +29 ms] D/ApplicationLoaders(11278): Returning zygote-cached class loader: /system/framework/org.apache.http.legacy.jar
+[   +1 ms] D/ApplicationLoaders(11278): Returning zygote-cached class loader: /system/framework/com.android.media.remotedisplay.jar
+[        ] D/ApplicationLoaders(11278): Returning zygote-cached class loader: /system/framework/com.android.location.provider.jar
+[   +2 ms] D/ApplicationLoaders(11278): Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+[        ] D/ApplicationLoaders(11278): Returning zygote-cached class loader: /system_ext/framework/androidx.window.sidecar.jar
+[  +81 ms] D/nativeloader(11278): InitLlndkLibrariesProduct:
+libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libapexsupport.so:libavf.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_r
+t.asan-aarch64-android.so:libclang_rt.hwasan-aarch64-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmedia
+ndk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvendorsupport.so:libvndksupport.so:libvulkan.so
+[   +5 ms] D/nativeloader(11278): Configuring product-clns-10 for unbundled product apk /product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk.
+target_sdk_version=36, uses_libraries=,
+library_path=/product/priv-app/PrebuiltGmsCore/lib/arm64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/arm64-v8a:/product/lib64:/system/product/
+lib64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms:/product/lib64:/system/product/lib64
+[   +4 ms] D/nativeloader(11278): InitVndkspLibrariesProduct: VNDK is deprecated with product
+[   +1 ms] I/ordnerd.artbeat(11278): Waiting for a blocking GC ClassLinker
+[ +482 ms] I/ordnerd.artbeat(11278): Background concurrent mark compact GC freed 6166KB AllocSpace bytes, 25(1376KB) LOS objects, 49% free, 7965KB/15MB,
+paused 4.274ms,3.059ms total 543.258ms
+[        ] I/m.wv    (11278): Unable to retrieve flag snapshot for com.google.android.libraries.consentverifier#com.wordnerd.artbeat, using defaults.
+[   +7 ms] I/ordnerd.artbeat(11278): WaitForGcToComplete blocked ClassLinker on Background for 490.351ms
+[ +397 ms] D/nativeloader(11278): Load /product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/arm64-v8a/libconscrypt_gmscore_jni.so using class loader ns
+product-clns-10 (caller=/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!classes3.dex): ok
+[  +80 ms] V/NativeCrypto(11278): Registering com/google/android/gms/org/conscrypt/NativeCrypto's 308 native methods...
+[  +16 ms] E/GoogleApiManager(11278): Failed to get service from broker. 
+[        ] E/GoogleApiManager(11278): java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.createExceptionOrNull(Parcel.java:3340)
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.createException(Parcel.java:3324)
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.readException(Parcel.java:3307)
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.readException(Parcel.java:3249)
+[        ] E/GoogleApiManager(11278):   at asle.a(:com.google.android.gms@250734035@25.07.34 (260400-734679633):36)
+[        ] E/GoogleApiManager(11278):   at asjl.z(:com.google.android.gms@250734035@25.07.34 (260400-734679633):143)
+[        ] E/GoogleApiManager(11278):   at arqw.run(:com.google.android.gms@250734035@25.07.34 (260400-734679633):54)
+[        ] E/GoogleApiManager(11278):   at android.os.Handler.handleCallback(Handler.java:995)
+[        ] E/GoogleApiManager(11278):   at android.os.Handler.dispatchMessage(Handler.java:103)
+[        ] E/GoogleApiManager(11278):   at bzcz.mt(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] E/GoogleApiManager(11278):   at bzcz.dispatchMessage(:com.google.android.gms@250734035@25.07.34 (260400-734679633):5)
+[        ] E/GoogleApiManager(11278):   at android.os.Looper.loopOnce(Looper.java:248)
+[        ] E/GoogleApiManager(11278):   at android.os.Looper.loop(Looper.java:338)
+[        ] E/GoogleApiManager(11278):   at android.os.HandlerThread.run(HandlerThread.java:85)
+[  +43 ms] W/CondFlagRegistrar(11278): Failed to register com.google.android.gms.providerinstaller#com.google.android.gms
+[        ] W/CondFlagRegistrar(11278): etib: 17: 17: API: Phenotype.API is not available on this device. Connection failed with:
+ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null}
+[        ] W/CondFlagRegistrar(11278):  at etid.a(:com.google.android.gms@250734035@25.07.34 (260400-734679633):13)
+[        ] W/CondFlagRegistrar(11278):  at fngn.d(:com.google.android.gms@250734035@25.07.34 (260400-734679633):3)
+[        ] W/CondFlagRegistrar(11278):  at fngp.run(:com.google.android.gms@250734035@25.07.34 (260400-734679633):130)
+[        ] W/CondFlagRegistrar(11278):  at fniv.execute(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] W/CondFlagRegistrar(11278):  at fnhf.h(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] W/CondFlagRegistrar(11278):  at fnhf.l(:com.google.android.gms@250734035@25.07.34 (260400-734679633):101)
+[        ] W/CondFlagRegistrar(11278):  at fnhf.p(:com.google.android.gms@250734035@25.07.34 (260400-734679633):19)
+[        ] W/CondFlagRegistrar(11278):  at elzi.hJ(:com.google.android.gms@250734035@25.07.34 (260400-734679633):35)
+[   +1 ms] W/CondFlagRegistrar(11278):  at eajn.run(:com.google.android.gms@250734035@25.07.34 (260400-734679633):14)
+[        ] W/CondFlagRegistrar(11278):  at fniv.execute(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] W/CondFlagRegistrar(11278):  at eajo.b(:com.google.android.gms@250734035@25.07.34 (260400-734679633):18)
+[        ] W/CondFlagRegistrar(11278):  at eakd.b(:com.google.android.gms@250734035@25.07.34 (260400-734679633):36)
+[        ] W/CondFlagRegistrar(11278):  at eakf.d(:com.google.android.gms@250734035@25.07.34 (260400-734679633):25)
+[        ] W/CondFlagRegistrar(11278):  at aroe.c(:com.google.android.gms@250734035@25.07.34 (260400-734679633):9)
+[        ] W/CondFlagRegistrar(11278):  at arqu.q(:com.google.android.gms@250734035@25.07.34 (260400-734679633):48)
+[        ] W/CondFlagRegistrar(11278):  at arqu.d(:com.google.android.gms@250734035@25.07.34 (260400-734679633):10)
+[        ] W/CondFlagRegistrar(11278):  at arqu.g(:com.google.android.gms@250734035@25.07.34 (260400-734679633):211)
+[        ] W/CondFlagRegistrar(11278):  at arqu.onConnectionFailed(:com.google.android.gms@250734035@25.07.34 (260400-734679633):2)
+[        ] W/CondFlagRegistrar(11278):  at arqw.run(:com.google.android.gms@250734035@25.07.34 (260400-734679633):82)
+[        ] W/CondFlagRegistrar(11278):  at android.os.Handler.handleCallback(Handler.java:995)
+[        ] W/CondFlagRegistrar(11278):  at android.os.Handler.dispatchMessage(Handler.java:103)
+[        ] W/CondFlagRegistrar(11278):  at bzcz.mt(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] W/CondFlagRegistrar(11278):  at bzcz.dispatchMessage(:com.google.android.gms@250734035@25.07.34 (260400-734679633):5)
+[        ] W/CondFlagRegistrar(11278):  at android.os.Looper.loopOnce(Looper.java:248)
+[        ] W/CondFlagRegistrar(11278):  at android.os.Looper.loop(Looper.java:338)
+[        ] W/CondFlagRegistrar(11278):  at android.os.HandlerThread.run(HandlerThread.java:85)
+[        ] W/CondFlagRegistrar(11278): Caused by: armw: 17: API: Phenotype.API is not available on this device. Connection failed with:
+ConnectionResult{statusCode=DEVELOPER_ERROR, resolution=null, message=null}
+[        ] W/CondFlagRegistrar(11278):  at asix.a(:com.google.android.gms@250734035@25.07.34 (260400-734679633):15)
+[        ] W/CondFlagRegistrar(11278):  at aroh.a(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] W/CondFlagRegistrar(11278):  at aroe.c(:com.google.android.gms@250734035@25.07.34 (260400-734679633):5)
+[        ] W/CondFlagRegistrar(11278):  ... 12 more
+[ +179 ms] I/etho    (11278): Unable to retrieve flag snapshot for com.google.android.gms.providerinstaller#com.google.android.gms, using defaults.
+[  +27 ms] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden method Ljava/security/spec/ECParameterSpec;->getCurveName()Ljava/lang/String;
+(runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app) using reflection: allowed
+[ +305 ms] I/ProviderInstaller(11278): Installed default security provider GmsCore_OpenSSL
+[ +930 ms] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden field Ljava/net/Socket;->impl:Ljava/net/SocketImpl; (runtime_flags=0, domain=core-platform,
+api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app) using reflection: allowed
+[ +361 ms] I/ordnerd.artbeat(11278): hiddenapi: Accessing hidden method Ljava/security/spec/ECParameterSpec;->setCurveName(Ljava/lang/String;)V
+(runtime_flags=0, domain=core-platform, api=unsupported) from Lcom/google/android/gms/org/conscrypt/Platform; (domain=app) using reflection: allowed
+[ +787 ms] I/flutter (11278): ✅ UserSyncHelper: User document already exists
+[ +176 ms] I/flutter (11278): 🔐 Current user is admin: true
+[  +19 ms] I/flutter (11278): 🔐 Current user is admin: true
+[+6053 ms] I/ordnerd.artbeat(11278): Background concurrent mark compact GC freed 5604KB AllocSpace bytes, 10(1080KB) LOS objects, 49% free, 9054KB/17MB,
+paused 550us,4.123ms total 706.987ms
+[+1421 ms] E/GoogleApiManager(11278): Failed to get service from broker. 
+[        ] E/GoogleApiManager(11278): java.lang.SecurityException: Unknown calling package name 'com.google.android.gms'.
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.createExceptionOrNull(Parcel.java:3340)
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.createException(Parcel.java:3324)
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.readException(Parcel.java:3307)
+[        ] E/GoogleApiManager(11278):   at android.os.Parcel.readException(Parcel.java:3249)
+[        ] E/GoogleApiManager(11278):   at asle.a(:com.google.android.gms@250734035@25.07.34 (260400-734679633):36)
+[        ] E/GoogleApiManager(11278):   at asjl.z(:com.google.android.gms@250734035@25.07.34 (260400-734679633):143)
+[        ] E/GoogleApiManager(11278):   at arqw.run(:com.google.android.gms@250734035@25.07.34 (260400-734679633):54)
+[        ] E/GoogleApiManager(11278):   at android.os.Handler.handleCallback(Handler.java:995)
+[        ] E/GoogleApiManager(11278):   at android.os.Handler.dispatchMessage(Handler.java:103)
+[        ] E/GoogleApiManager(11278):   at bzcz.mt(:com.google.android.gms@250734035@25.07.34 (260400-734679633):1)
+[        ] E/GoogleApiManager(11278):   at bzcz.dispatchMessage(:com.google.android.gms@250734035@25.07.34 (260400-734679633):5)
+[        ] E/GoogleApiManager(11278):   at android.os.Looper.loopOnce(Looper.java:248)
+[        ] E/GoogleApiManager(11278):   at android.os.Looper.loop(Looper.java:338)
+[        ] E/GoogleApiManager(11278):   at android.os.HandlerThread.run(HandlerThread.java:85)
+[+1348 ms] I/flutter (11278): ✉️ Updated unread count: 0
+[  +54 ms] I/flutter (11278): ✉️ Updated unread count: 0
+[+4266 ms] D/MapsInitializer(11278): preferredRenderer: null
+[        ] D/zzcc    (11278): preferredRenderer: null
+[   +1 ms] I/Google Maps Android API(11278): Google Play services package version: 250734035
+[        ] I/Google Maps Android API(11278): Google Play services maps renderer version(legacy): 203115000
+[  +95 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[   +4 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[   +3 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +1 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +23 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +9 ms] I/PlatformViewsController(11278): Hosting view in a virtual display for platform view: 1
+[        ] I/PlatformViewsController(11278): PlatformView is using SurfaceProducer backend
+[  +15 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e26414f8) locale list changing from [] to [en-US]
+[  +94 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e263f298) locale list changing from [] to [en-US]
+[  +71 ms] I/ordnerd.artbeat(11278): AssetManager2(0xb4000071e2642df8) locale list changing from [] to [en-US]
+[ +402 ms] I/GoogleMapController(11278): No TextureView found. Likely using the LEGACY renderer.
+[   +6 ms] E/GoogleMapController(11278): Cannot enable MyLocation layer as location permissions are not granted
+[   +9 ms] W/HWUI    (11278): Image decoding logging dropped!
+[ +326 ms] I/Choreographer(11278): Skipped 43 frames!  The application may be doing too much work on its main thread.
+[ +107 ms] I/HWUI    (11278): Davey! duration=825ms; Flags=1, FrameTimelineVsyncId=67119, IntendedVsync=5825927154969, Vsync=5826643821607, InputEventId=0,
+HandleInputStart=5826644837068, AnimationStart=5826644838151, PerformTraversalsStart=5826644838526, DrawStart=5826723348443, FrameDeadline=5825943821635,
+FrameStartTime=5826643907068, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=5826726344693, SyncStart=5826726734776,
+IssueDrawCommandsStart=5826727294526, SwapBuffers=5826737604735, FrameCompleted=5826753481735, DequeueBufferDuration=12910500, QueueBufferDuration=572167,
+GpuCompleted=5826740506610, SwapBuffersCompleted=5826753481735, DisplayPresentTime=-5476376655604419800, CommandSubmissionCompleted=5826737604735, 
+[  +12 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +4 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +30 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +17 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +13 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +6 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +25 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +54 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +43 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +4 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +9 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +4 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +12 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +4 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +4 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +6 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[   +2 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +3 ms] W/HWUI    (11278): Image decoding logging dropped!
+[   +3 ms] W/HWUI    (11278): Image decoding logging dropped!
+[        ] W/HWUI    (11278): Image decoding logging dropped!
+[ +293 ms] I/Choreographer(11278): Skipped 38 frames!  The application may be doing too much work on its main thread.
+[ +399 ms] I/flutter (11278): Error getting location: User denied permissions to access the device's location.
+[+1558 ms] I/ordnerd.artbeat(11278): Background concurrent mark compact GC freed 6851KB AllocSpace bytes, 24(1608KB) LOS objects, 49% free, 10MB/20MB, paused
+450us,15.906ms total 426.289ms
+[ +280 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +58 ms] W/HWUI    (11278): Image decoding logging dropped!
+[ +191 ms] W/HWUI    (11278): Image decoding logging dropped!
+[  +67 ms] W/HWUI    (11278): Image decoding logging dropped!

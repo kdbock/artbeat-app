@@ -543,16 +543,28 @@ class UserSettings {
   };
 
   factory UserSettings.fromJson(Map<String, dynamic> json) => UserSettings(
-    notificationsEnabled: json['notificationsEnabled'] ?? true,
-    language: json['language'] ?? 'en',
-    themeMode: AppThemeModeExtension.fromString(json['themeMode']),
-    autoBackup: json['autoBackup'] ?? true,
-    mapZoomLevel: json['mapZoomLevel']?.toDouble() ?? 15.0,
-    maxArtworksPerPage: json['maxArtworksPerPage'] ?? 20,
-    allowAnalytics: json['allowAnalytics'] ?? true,
-    privateProfile: json['privateProfile'] ?? false,
-    favoriteCategories: json['favoriteCategories'] != null
-        ? List<String>.from(json['favoriteCategories'])
+    notificationsEnabled: json['notificationsEnabled'] is bool
+        ? json['notificationsEnabled'] as bool
+        : true,
+    language: json['language'] is String ? json['language'] as String : 'en',
+    themeMode: AppThemeModeExtension.fromString(json['themeMode'] as String?),
+    autoBackup: json['autoBackup'] is bool ? json['autoBackup'] as bool : true,
+    mapZoomLevel: json['mapZoomLevel'] is double
+        ? json['mapZoomLevel'] as double
+        : (json['mapZoomLevel'] is int
+              ? (json['mapZoomLevel'] as int).toDouble()
+              : 15.0),
+    maxArtworksPerPage: json['maxArtworksPerPage'] is int
+        ? json['maxArtworksPerPage'] as int
+        : 20,
+    allowAnalytics: json['allowAnalytics'] is bool
+        ? json['allowAnalytics'] as bool
+        : true,
+    privateProfile: json['privateProfile'] is bool
+        ? json['privateProfile'] as bool
+        : false,
+    favoriteCategories: json['favoriteCategories'] is List
+        ? List<String>.from(json['favoriteCategories'] as List)
         : [],
   );
 }
@@ -607,17 +619,20 @@ class NotificationSettings {
     'vibration': vibration,
   };
 
-  factory NotificationSettings.fromJson(Map<String, dynamic> json) =>
-      NotificationSettings(
-        enabled: json['enabled'] ?? true,
-        newArtwork: json['newArtwork'] ?? true,
-        newFollowers: json['newFollowers'] ?? true,
-        messages: json['messages'] ?? true,
-        events: json['events'] ?? true,
-        marketing: json['marketing'] ?? false,
-        sound: json['sound'] ?? true,
-        vibration: json['vibration'] ?? true,
-      );
+  factory NotificationSettings.fromJson(
+    Map<String, dynamic> json,
+  ) => NotificationSettings(
+    enabled: json['enabled'] is bool ? json['enabled'] as bool : true,
+    newArtwork: json['newArtwork'] is bool ? json['newArtwork'] as bool : true,
+    newFollowers: json['newFollowers'] is bool
+        ? json['newFollowers'] as bool
+        : true,
+    messages: json['messages'] is bool ? json['messages'] as bool : true,
+    events: json['events'] is bool ? json['events'] as bool : true,
+    marketing: json['marketing'] is bool ? json['marketing'] as bool : false,
+    sound: json['sound'] is bool ? json['sound'] as bool : true,
+    vibration: json['vibration'] is bool ? json['vibration'] as bool : true,
+  );
 }
 
 class PrivacySettings {
@@ -653,13 +668,23 @@ class PrivacySettings {
   factory PrivacySettings.fromJson(Map<String, dynamic> json) =>
       PrivacySettings(
         profileVisibility: ProfileVisibilityExtension.fromString(
-          json['profileVisibility'],
+          json['profileVisibility'] as String?,
         ),
-        showOnlineStatus: json['showOnlineStatus'] ?? true,
-        allowMessagesFromStrangers: json['allowMessagesFromStrangers'] ?? true,
-        showLocationInArtWalk: json['showLocationInArtWalk'] ?? true,
-        allowAnalytics: json['allowAnalytics'] ?? true,
-        allowCookies: json['allowCookies'] ?? true,
+        showOnlineStatus: json['showOnlineStatus'] is bool
+            ? json['showOnlineStatus'] as bool
+            : true,
+        allowMessagesFromStrangers: json['allowMessagesFromStrangers'] is bool
+            ? json['allowMessagesFromStrangers'] as bool
+            : true,
+        showLocationInArtWalk: json['showLocationInArtWalk'] is bool
+            ? json['showLocationInArtWalk'] as bool
+            : true,
+        allowAnalytics: json['allowAnalytics'] is bool
+            ? json['allowAnalytics'] as bool
+            : true,
+        allowCookies: json['allowCookies'] is bool
+            ? json['allowCookies'] as bool
+            : true,
       );
 }
 

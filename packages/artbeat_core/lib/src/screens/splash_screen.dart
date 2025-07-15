@@ -57,32 +57,50 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
+    debugPrint('🔄 Splash: Starting auth check...');
     await Future<void>.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
 
     try {
+      debugPrint('🔥 Splash: Checking Firebase apps...');
       if (Firebase.apps.isEmpty) {
+        debugPrint('❌ Splash: No Firebase apps found, going to login');
         if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
         return;
       }
 
+      debugPrint('✅ Splash: Firebase apps available (${Firebase.apps.length})');
       final user = FirebaseAuth.instance.currentUser;
+      debugPrint('👤 Splash: Current user: ${user?.uid ?? 'None'}');
+
       if (user != null) {
+        debugPrint('🔄 Splash: Starting user sync...');
         _syncUserInBackground();
       }
 
       FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
+      debugPrint('🧭 Splash: Navigating to $route');
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(route);
+      // Use pushNamedAndRemoveUntil to ensure clean navigation
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        route,
+        (Route<dynamic> route) => false, // Remove all previous routes
+      );
+      debugPrint('✅ Splash: Navigation command sent');
     } catch (e) {
-      debugPrint('Error checking auth status: $e');
+      debugPrint('❌ Splash: Error checking auth status: $e');
       if (!mounted) return;
       // Dismiss keyboard before navigating
       FocusScope.of(context).unfocus();
-      Navigator.of(context).pushReplacementNamed('/login');
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+      debugPrint('🔄 Splash: Fallback navigation to login sent');
     }
   }
 

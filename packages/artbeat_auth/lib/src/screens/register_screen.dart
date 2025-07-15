@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart'; // Only import local AuthService
+import '../constants/routes.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatInput, ArtbeatButton, EnhancedUniversalHeader;
 import 'package:artbeat_core/src/utils/location_utils.dart' show LocationUtils;
@@ -138,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/dashboard');
+        Navigator.of(context).pushReplacementNamed(AuthRoutes.dashboard);
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -647,8 +648,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/login'),
+                    onPressed: () => Navigator.pushReplacementNamed(
+                      context,
+                      AuthRoutes.login,
+                    ),
                     child: Text(
                       'Already have an account? Log in',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(

@@ -231,12 +231,12 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
 
   void _showCaptureDetail(CaptureModel capture) {
     // Navigate to capture detail screen instead of modal
-    Navigator.of(
-      context,
-    ).pushNamed('/capture/detail', arguments: capture.id).then((_) {
-      // Refresh captures when returning from detail
-      _loadCaptures();
-    });
+    Navigator.of(context)
+        .pushNamed('/capture/detail', arguments: {'captureId': capture.id})
+        .then((_) {
+          // Refresh captures when returning from detail
+          _loadCaptures();
+        });
   }
 }
 

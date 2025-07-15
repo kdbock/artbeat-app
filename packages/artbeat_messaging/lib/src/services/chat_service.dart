@@ -28,17 +28,38 @@ class ChatService extends ChangeNotifier {
 
   Stream<List<ChatModel>> getChatStream() {
     final userId = _auth.currentUser?.uid;
-    if (userId == null) throw Exception('User not authenticated');
+    if (userId == null) {
+      return Stream.error(Exception('User not authenticated'));
+    }
 
     return _firestore
         .collection('chats')
         .where('participantIds', arrayContains: userId)
         .orderBy('updatedAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => ChatModel.fromFirestore(doc)).toList(),
-        );
+        .asyncMap((snapshot) async {
+          try {
+            final chats = <ChatModel>[];
+            for (final doc in snapshot.docs) {
+              try {
+                final chat = ChatModel.fromFirestore(doc);
+                chats.add(chat);
+              } catch (e) {
+                debugPrint('Error parsing chat document ${doc.id}: $e');
+                // Skip malformed documents rather than breaking the entire stream
+                continue;
+              }
+            }
+            return chats;
+          } catch (e) {
+            debugPrint('Error processing chat stream: $e');
+            rethrow;
+          }
+        })
+        .handleError((Object error) {
+          debugPrint('Chat stream error: $error');
+          throw Exception('Failed to load chats: $error');
+        });
   }
 
   Future<List<ChatModel>> getChats() async {
@@ -201,8 +222,18 @@ class ChatService extends ChangeNotifier {
   Future<String?> getUserDisplayName(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (!userDoc.exists) {
+        return null;
+      }
       final userData = userDoc.data();
-      return userData?['displayName'] as String?;
+      if (userData == null) {
+        return null;
+      }
+
+      // Use the same fallback logic as UserModel.fromFirestore
+      return userData['displayName'] as String? ??
+          userData['fullName'] as String? ??
+          userData['username'] as String?;
     } catch (e) {
       debugPrint('Error getting user display name: $e');
       return null;
@@ -212,8 +243,17 @@ class ChatService extends ChangeNotifier {
   Future<String?> getUserPhotoUrl(String userId) async {
     try {
       final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (!userDoc.exists) {
+        return null;
+      }
       final userData = userDoc.data();
-      return userData?['photoUrl'] as String?;
+      if (userData == null) {
+        return null;
+      }
+
+      // Use the same fallback logic as UserModel.fromFirestore
+      return userData['photoUrl'] as String? ??
+          userData['profileImageUrl'] as String?;
     } catch (e) {
       debugPrint('Error getting user photo URL: $e');
       return null;
@@ -255,15 +295,113 @@ class ChatService extends ChangeNotifier {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    query = query.toLowerCase();
-    try {
-      final snapshot = await _firestore
-          .collection('users')
-          .where('searchTerms', arrayContains: query)
-          .limit(20)
-          .get();
+    if (query.isEmpty) return [];
 
-      return snapshot.docs.map((doc) => UserModel.fromFirestore(doc)).toList();
+    query = query.toLowerCase().trim();
+    try {
+      // Since Firestore doesn't support full-text search, we'll use multiple queries
+      // and combine the results
+      final List<UserModel> allResults = [];
+      final Set<String> seenIds = <String>{};
+
+      // Search by fullName (case-insensitive prefix search)
+      try {
+        final fullNameQuery = await _firestore
+            .collection('users')
+            .orderBy('fullName')
+            .startAt([query])
+            .endAt(['$query\uf8ff'])
+            .limit(10)
+            .get();
+
+        for (final doc in fullNameQuery.docs) {
+          if (!seenIds.contains(doc.id) && doc.id != userId) {
+            final user = UserModel.fromFirestore(doc);
+            allResults.add(user);
+            seenIds.add(doc.id);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error in fullName search: $e');
+      }
+
+      // Search by username (case-insensitive prefix search)
+      try {
+        final usernameQuery = await _firestore
+            .collection('users')
+            .orderBy('username')
+            .startAt([query])
+            .endAt(['$query\uf8ff'])
+            .limit(10)
+            .get();
+
+        for (final doc in usernameQuery.docs) {
+          if (!seenIds.contains(doc.id) && doc.id != userId) {
+            final user = UserModel.fromFirestore(doc);
+            allResults.add(user);
+            seenIds.add(doc.id);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error in username search: $e');
+      }
+
+      // Search by zipCode (exact match)
+      try {
+        final zipCodeQuery = await _firestore
+            .collection('users')
+            .where('zipCode', isEqualTo: query)
+            .limit(10)
+            .get();
+
+        for (final doc in zipCodeQuery.docs) {
+          if (!seenIds.contains(doc.id) && doc.id != userId) {
+            final user = UserModel.fromFirestore(doc);
+            allResults.add(user);
+            seenIds.add(doc.id);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error in zipCode search: $e');
+      }
+
+      // If we still don't have many results, do a broader search
+      if (allResults.length < 5) {
+        try {
+          // Get all users and do client-side filtering (not ideal for large datasets)
+          final allUsersQuery = await _firestore
+              .collection('users')
+              .limit(100) // Limit to prevent too much data transfer
+              .get();
+
+          for (final doc in allUsersQuery.docs) {
+            if (!seenIds.contains(doc.id) && doc.id != userId) {
+              final data = doc.data();
+              final fullName = (data['fullName'] as String? ?? '')
+                  .toLowerCase();
+              final username = (data['username'] as String? ?? '')
+                  .toLowerCase();
+              final location = (data['location'] as String? ?? '')
+                  .toLowerCase();
+
+              // Check if query matches any part of the name or location
+              if (fullName.contains(query) ||
+                  username.contains(query) ||
+                  location.contains(query)) {
+                final user = UserModel.fromFirestore(doc);
+                allResults.add(user);
+                seenIds.add(doc.id);
+
+                if (allResults.length >= 20) break; // Limit results
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('Error in broad search: $e');
+        }
+      }
+
+      return allResults;
     } catch (e) {
       debugPrint('Error searching users: $e');
       throw Exception('Failed to search users');
@@ -371,7 +509,15 @@ class ChatService extends ChangeNotifier {
 
   /// Refreshes the chat list by clearing any cached data and triggering a reload
   Future<void> refresh() async {
-    notifyListeners();
+    try {
+      // Force a refresh by notifying listeners
+      notifyListeners();
+
+      // You can also add any cache clearing logic here if needed
+      debugPrint('Chat service refreshed');
+    } catch (e) {
+      debugPrint('Error refreshing chat service: $e');
+    }
   }
 
   /// Marks a chat as read for the current user
@@ -403,5 +549,159 @@ class ChatService extends ChangeNotifier {
           }
           return data.cast<String, bool>();
         });
+  }
+
+  /// Gets a user by ID
+  Future<UserModel?> getUser(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (!doc.exists) return null;
+      return UserModel.fromFirestore(doc);
+    } catch (e) {
+      debugPrint('Error getting user: $e');
+      return null;
+    }
+  }
+
+  /// Gets a chat by ID
+  Future<ChatModel?> getChatById(String chatId) async {
+    try {
+      final doc = await _firestore.collection('chats').doc(chatId).get();
+      if (!doc.exists) return null;
+      return ChatModel.fromFirestore(doc);
+    } catch (e) {
+      debugPrint('Error getting chat: $e');
+      return null;
+    }
+  }
+
+  /// Gets blocked users for current user
+  Future<List<UserModel>> getBlockedUsers() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) throw Exception('User not authenticated');
+
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('blockedUsers')
+          .get();
+
+      final blockedUsers = <UserModel>[];
+      for (final doc in snapshot.docs) {
+        final blockedUserId = doc.id;
+        final userData = doc.data();
+
+        // Get full user data from users collection
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(blockedUserId)
+            .get();
+
+        if (userDoc.exists) {
+          final user = UserModel.fromFirestore(userDoc);
+          // Add blocked date from the blockedUsers collection
+          user.blockedAt = (userData['blockedAt'] as Timestamp?)?.toDate();
+          blockedUsers.add(user);
+        }
+      }
+
+      return blockedUsers;
+    } catch (e) {
+      debugPrint('Error getting blocked users: $e');
+      return [];
+    }
+  }
+
+  /// Blocks a user
+  Future<void> blockUser(String userId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('blockedUsers')
+          .doc(userId)
+          .set({'blockedAt': FieldValue.serverTimestamp()});
+    } catch (e) {
+      debugPrint('Error blocking user: $e');
+      throw Exception('Failed to block user');
+    }
+  }
+
+  /// Unblocks a user
+  Future<void> unblockUser(String userId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('blockedUsers')
+          .doc(userId)
+          .delete();
+    } catch (e) {
+      debugPrint('Error unblocking user: $e');
+      throw Exception('Failed to unblock user');
+    }
+  }
+
+  /// Checks if a user is blocked
+  Future<bool> isUserBlocked(String userId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) return false;
+
+    try {
+      final doc = await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('blockedUsers')
+          .doc(userId)
+          .get();
+
+      return doc.exists;
+    } catch (e) {
+      debugPrint('Error checking if user is blocked: $e');
+      return false;
+    }
+  }
+
+  /// Refresh participant data for a chat
+  Future<void> refreshChatParticipants(String chatId) async {
+    try {
+      final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+      if (!chatDoc.exists) return;
+
+      final chatData = chatDoc.data() as Map<String, dynamic>;
+      final participantIds =
+          (chatData['participantIds'] as List?)?.cast<String>() ?? [];
+
+      if (participantIds.isEmpty) return;
+
+      // Fetch fresh participant data
+      final participantDocs = await Future.wait(
+        participantIds.map(
+          (id) => _firestore.collection('users').doc(id).get(),
+        ),
+      );
+
+      final participants = participantDocs
+          .where((doc) => doc.exists)
+          .map((doc) => doc.data())
+          .where((data) => data != null)
+          .toList();
+
+      // Update the chat document with fresh participant data
+      await _firestore.collection('chats').doc(chatId).update({
+        'participants': participants,
+      });
+
+      debugPrint('Refreshed participant data for chat $chatId');
+    } catch (e) {
+      debugPrint('Error refreshing chat participants: $e');
+    }
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
+import '../constants/routes.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatInput, UserService, EnhancedUniversalHeader;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
@@ -88,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (mounted) {
-        debugPrint('Login successful. Navigating to /dashboard.');
+        debugPrint('Login successful. Navigating to ${AuthRoutes.dashboard}.');
 
         // Check if we were pushed from another route that expects a return value
         final navigator = Navigator.of(context);
@@ -97,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
           navigator.pop(true);
         } else {
           // Normal navigation flow
-          navigator.pushReplacementNamed('/dashboard');
+          navigator.pushReplacementNamed(AuthRoutes.dashboard);
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -259,12 +260,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: () => Navigator.of(
                         context,
-                      ).pushReplacementNamed('/register'),
+                      ).pushReplacementNamed(AuthRoutes.register),
                       child: const Text('Create Account'),
                     ),
                     TextButton(
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed('/forgot-password'),
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pushNamed(AuthRoutes.forgotPassword),
                       child: const Text('Forgot Password?'),
                     ),
                   ],

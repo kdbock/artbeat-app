@@ -12,3 +12,4 @@ export 'achievements_screen.dart';
 export 'profile_picture_viewer_screen.dart';
 export 'discover_screen.dart';
 export 'profile_tab.dart';
+export 'create_profile_screen.dart';

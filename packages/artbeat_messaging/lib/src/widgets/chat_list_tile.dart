@@ -8,8 +8,14 @@ import '../services/chat_service.dart';
 class ChatListTile extends StatelessWidget {
   final ChatModel chat;
   final VoidCallback onTap;
+  final String? heroTagPrefix;
 
-  const ChatListTile({super.key, required this.chat, required this.onTap});
+  const ChatListTile({
+    super.key,
+    required this.chat,
+    required this.onTap,
+    this.heroTagPrefix,
+  });
 
   void _navigateToChat(BuildContext context) {
     Navigator.pushNamed(context, '/messaging/chat', arguments: {'chat': chat});
@@ -21,7 +27,7 @@ class ChatListTile extends StatelessWidget {
     final dateFormat = DateFormat.jm();
 
     return Hero(
-      tag: 'chat_${chat.id}',
+      tag: '${heroTagPrefix ?? 'chat'}_${chat.id}',
       child: Card(
         elevation: chat.unreadCount > 0 ? 3 : 1,
         shadowColor: chat.unreadCount > 0
@@ -132,8 +138,9 @@ class ChatListTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: ArtbeatColors.primaryPurple
-                                      .withValues(alpha: 0.3),
+                                  color: ArtbeatColors.primaryPurple.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 4,
                                   offset: const Offset(0, 2),
                                 ),
@@ -247,6 +254,14 @@ class ChatListTile extends StatelessWidget {
       (id) => id != chatService.currentUserId,
       orElse: () => chat.participantIds.first,
     );
+
+    // First try to get from chat participants
+    final String? name = chat.getParticipantDisplayName(otherParticipantId);
+    if (name != null && name != 'Unknown User') {
+      return name;
+    }
+
+    // If not found or is "Unknown User", fetch from ChatService
     return await chatService.getUserDisplayName(otherParticipantId) ??
         'Unknown User';
   }
@@ -266,6 +281,13 @@ class ChatListTile extends StatelessWidget {
       orElse: () => chat.participantIds.first,
     );
 
+    // First try to get from chat participants
+    final String? photoUrl = chat.getParticipantPhotoUrl(otherParticipantId);
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      return photoUrl;
+    }
+
+    // If not found, fetch from ChatService
     return chatService.getUserPhotoUrl(otherParticipantId);
   }
 

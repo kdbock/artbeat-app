@@ -1,4 +1,5 @@
 // Copyright (c) 2025 ArtBeat. All rights reserved.
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -59,14 +60,14 @@ Future<void> main() async {
       if (kDebugMode) {
         print('❌ Image management service initialization failed: $e');
       }
+      // Don't fail the entire app for image service
     }
 
     if (kDebugMode) {
       // Print Firebase status for debugging
       final status = SecureFirebaseConfig.getStatus();
-      print('🔍 Firebase Status: $status');
-      print('🔍 Firebase apps count: ${Firebase.apps.length}');
-      if (Firebase.apps.isNotEmpty) {
+      if (status['initialized'] == true) {
+        print('✅ Firebase confirmed ready');
         print(
           '🔍 Firebase app names: ${Firebase.apps.map((app) => app.name).toList()}',
         );
@@ -74,7 +75,12 @@ Future<void> main() async {
     }
   } catch (e, stackTrace) {
     if (kDebugMode) {
-      print('❌ Firebase initialization failed: $e');
+      print('❌ Initialization failed: $e');
+      print('❌ Error type: ${e.runtimeType}');
+      if (e is FileSystemException) {
+        print('❌ File system error - Path: ${e.path}');
+        print('❌ File system error - Message: ${e.message}');
+      }
       print('❌ Stack trace: $stackTrace');
     }
 
@@ -88,7 +94,12 @@ Future<void> main() async {
       }
       // Continue with app launch since Firebase is already initialized
     } else {
-      // For other errors, show error dialog
+      // For other errors, show error dialog with more details
+      String errorDetails = e.toString();
+      if (e is FileSystemException) {
+        errorDetails = 'File not found: ${e.path}\nMessage: ${e.message}';
+      }
+
       runApp(
         MaterialApp(
           home: Scaffold(
@@ -103,7 +114,7 @@ Future<void> main() async {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  Text('Error: ${e.toString()}', textAlign: TextAlign.center),
+                  Text('Error: $errorDetails', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => main(),

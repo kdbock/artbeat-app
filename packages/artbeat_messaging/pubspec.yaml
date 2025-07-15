@@ -1,6 +1,6 @@
 name: artbeat_messaging
 description: "A new Flutter package project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.0.2
 homepage:
 
@@ -68,3 +68,5 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  mockito: ^5.4.4
+  build_runner: ^2.4.9

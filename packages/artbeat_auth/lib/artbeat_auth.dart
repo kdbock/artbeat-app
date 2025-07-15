@@ -9,3 +9,6 @@ export 'src/services/auth_profile_service.dart';
 export 'src/screens/login_screen.dart';
 export 'src/screens/register_screen.dart';
 export 'src/screens/forgot_password_screen.dart';
+
+// Export constants
+export 'src/constants/routes.dart';

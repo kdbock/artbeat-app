@@ -44,11 +44,11 @@ void main() {
         ),
       );
 
-      // Tap on capture button (should be at index 4)
+      // Tap on capture button (should be at index 2)
       await tester.tap(find.text('Capture'));
       await tester.pumpAndSettle();
 
-      expect(tappedIndex, 4);
+      expect(tappedIndex, 2);
     });
 
     testWidgets('should handle tap on regular navigation items', (

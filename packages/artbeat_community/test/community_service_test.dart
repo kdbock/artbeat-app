@@ -1,21 +1,25 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Mock classes
-@GenerateMocks([FirebaseFirestore, CollectionReference, DocumentReference])
+@GenerateMocks([
+  FirebaseFirestore,
+  CollectionReference<Map<String, dynamic>>,
+  DocumentReference<Map<String, dynamic>>,
+])
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'community_service_test.mocks.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() {
   group('CommunityService Tests', () {
     late MockFirebaseFirestore mockFirestore;
-    late MockCollectionReference mockCollection;
-    late MockDocumentReference mockDocument;
+    late MockCollectionReference<Map<String, dynamic>> mockCollection;
+    late MockDocumentReference<Map<String, dynamic>> mockDocument;
 
     setUp(() {
       mockFirestore = MockFirebaseFirestore();
-      mockCollection = MockCollectionReference();
+      mockCollection = MockCollectionReference<Map<String, dynamic>>();
       mockDocument = MockDocumentReference();
     });
 
@@ -740,23 +744,25 @@ class Post {
   };
 
   factory Post.fromJson(Map<String, dynamic> json) => Post(
-    id: json['id'],
-    authorId: json['authorId'],
-    authorName: json['authorName'],
-    content: json['content'],
-    postType: PostTypeExtension.fromString(json['postType']),
+    id: json['id'] as String,
+    authorId: json['authorId'] as String,
+    authorName: json['authorName'] as String,
+    content: json['content'] as String,
+    postType: PostTypeExtension.fromString(json['postType'] as String),
     imageUrls: json['imageUrls'] != null
-        ? List<String>.from(json['imageUrls'])
+        ? List<String>.from(json['imageUrls'] as Iterable)
         : null,
-    tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
-    isPublic: json['isPublic'] ?? true,
-    allowComments: json['allowComments'] ?? true,
-    likesCount: json['likesCount'] ?? 0,
-    commentsCount: json['commentsCount'] ?? 0,
-    sharesCount: json['sharesCount'] ?? 0,
-    viewsCount: json['viewsCount'],
-    createdAt: DateTime.parse(json['createdAt']),
-    updatedAt: DateTime.parse(json['updatedAt']),
+    tags: json['tags'] != null
+        ? List<String>.from(json['tags'] as Iterable)
+        : null,
+    isPublic: json['isPublic'] as bool? ?? true,
+    allowComments: json['allowComments'] as bool? ?? true,
+    likesCount: json['likesCount'] as int? ?? 0,
+    commentsCount: json['commentsCount'] as int? ?? 0,
+    sharesCount: json['sharesCount'] as int? ?? 0,
+    viewsCount: json['viewsCount'] as int?,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
 }
 
@@ -811,16 +817,16 @@ class Comment {
   };
 
   factory Comment.fromJson(Map<String, dynamic> json) => Comment(
-    id: json['id'],
-    postId: json['postId'],
-    authorId: json['authorId'],
-    authorName: json['authorName'],
-    content: json['content'],
-    parentCommentId: json['parentCommentId'],
-    likesCount: json['likesCount'] ?? 0,
-    repliesCount: json['repliesCount'] ?? 0,
-    createdAt: DateTime.parse(json['createdAt']),
-    updatedAt: DateTime.parse(json['updatedAt']),
+    id: json['id'] as String,
+    postId: json['postId'] as String,
+    authorId: json['authorId'] as String,
+    authorName: json['authorName'] as String,
+    content: json['content'] as String,
+    parentCommentId: json['parentCommentId'] as String?,
+    likesCount: json['likesCount'] as int? ?? 0,
+    repliesCount: json['repliesCount'] as int? ?? 0,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    updatedAt: DateTime.parse(json['updatedAt'] as String),
   );
 }
 

@@ -10,6 +10,7 @@ export 'src/screens/camera_capture_screen.dart';
 export 'src/screens/camera_only_screen.dart';
 export 'src/screens/capture_upload_screen.dart';
 export 'src/screens/capture_details_screen.dart';
+export 'src/screens/capture_confirmation_screen.dart';
 export 'src/screens/admin_content_moderation_screen.dart';
 export 'src/services/capture_service.dart';
 export 'src/services/storage_service.dart';

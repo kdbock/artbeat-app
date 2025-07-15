@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/chat_service.dart';
 import '../models/user_model.dart';
-import 'chat_screen.dart';
 
 class GroupCreationScreen extends StatefulWidget {
   const GroupCreationScreen({super.key});
@@ -48,11 +47,10 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
 
                   if (!mounted) return;
 
-                  Navigator.push(
+                  Navigator.pushNamed(
                     context,
-                    MaterialPageRoute<void>(
-                      builder: (context) => ChatScreen(chat: chat),
-                    ),
+                    '/messaging/chat',
+                    arguments: {'chat': chat},
                   );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(

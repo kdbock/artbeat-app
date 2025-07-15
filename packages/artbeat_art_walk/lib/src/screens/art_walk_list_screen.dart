@@ -29,12 +29,35 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     _determineUserRegion();
   }
 
+  String? _mapZipCodeToRegion(String zipCode) {
+    // Map zip codes to regions - this is a simplified mapping for North Carolina regions
+    // Charlotte area zip codes (280xx-282xx)
+    if (zipCode.startsWith('280') ||
+        zipCode.startsWith('281') ||
+        zipCode.startsWith('282')) {
+      return 'charlotte';
+    }
+    // Raleigh area zip codes (275xx-278xx)
+    else if (zipCode.startsWith('275') ||
+        zipCode.startsWith('276') ||
+        zipCode.startsWith('277') ||
+        zipCode.startsWith('278')) {
+      return 'raleigh';
+    }
+    // Asheville area zip codes (287xx-288xx)
+    else if (zipCode.startsWith('287') || zipCode.startsWith('288')) {
+      return 'asheville';
+    }
+    // For any other zip codes (including out-of-state like 94108), default to "All Regions"
+    return null;
+  }
+
   Future<void> _determineUserRegion() async {
     try {
       final zipCode = await LocationUtils.getZipCodeFromCurrentPosition();
       if (mounted && zipCode.isNotEmpty) {
         setState(() {
-          _selectedRegion = zipCode;
+          _selectedRegion = _mapZipCodeToRegion(zipCode);
         });
       }
     } catch (e) {

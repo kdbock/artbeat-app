@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show
-        EnhancedUniversalHeader,
-        ArtbeatColors,
-        ArtbeatGradientBackground;
+    show EnhancedUniversalHeader, ArtbeatColors, ArtbeatGradientBackground;
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
 import '../widgets/chat_list_tile.dart';
@@ -136,7 +133,9 @@ class ChatListScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                          color: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -180,7 +179,9 @@ class ChatListScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           elevation: 4,
-                          shadowColor: ArtbeatColors.primaryPurple.withValues(alpha: 0.4),
+                          shadowColor: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.4,
+                          ),
                         ),
                       ),
                     ],
@@ -204,6 +205,7 @@ class ChatListScreen extends StatelessWidget {
                       child: ChatListTile(
                         chat: chat,
                         onTap: () => _navigateToChat(context, chat),
+                        heroTagPrefix: 'chat_main',
                       ),
                     );
                   },
@@ -369,6 +371,7 @@ class _ChatSearchDialogState extends State<_ChatSearchDialog> {
                                   arguments: {'chat': chat},
                                 );
                               },
+                              heroTagPrefix: 'chat_search',
                             );
                           },
                         );

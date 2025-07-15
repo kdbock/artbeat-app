@@ -12,13 +12,15 @@ import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_ads/artbeat_ads.dart' as ads;
 import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
-import 'package:artbeat_art_walk/src/screens/my_captures_screen.dart';
+
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import 'widgets/developer_menu.dart';
 import 'src/widgets/error_boundary.dart';
 import 'src/services/firebase_initializer.dart';
+import 'src/guards/auth_guard.dart';
+import 'src/screens/enhanced_search_screen.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -106,6 +108,42 @@ class MyApp extends StatelessWidget {
             child: GalleryAnalyticsDashboardScreen(),
           ),
         );
+      // Deep link: /profile/:userId
+      case '/profile/deep':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final userId = args?['userId'] as String?;
+        if (userId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(body: Center(child: Text('No user ID provided'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) =>
+              ProfileViewScreen(userId: userId, isCurrentUser: false),
+        );
+
+      // Deep link: /favorite/:favoriteId
+      case '/favorite/deep':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final favoriteId = args?['favoriteId'] as String?;
+        final userId = args?['userId'] as String?;
+        if (favoriteId == null || userId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(
+                body: Center(child: Text('No favorite ID or user ID provided')),
+              ),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) =>
+              FavoriteDetailScreen(favoriteId: favoriteId, userId: userId),
+        );
       // Core routes
       case '/splash':
         return MaterialPageRoute(builder: (_) => const core.SplashScreen());
@@ -113,7 +151,10 @@ class MyApp extends StatelessWidget {
       // Main dashboard route
       case '/dashboard':
         return MaterialPageRoute(
-          builder: (_) => const core.FluidDashboardScreen(),
+          builder: (_) {
+            debugPrint('🏠 Building dashboard screen...');
+            return const core.FluidDashboardScreen();
+          },
         );
 
       // Profile routes
@@ -154,6 +195,25 @@ class MyApp extends StatelessWidget {
             return EditProfileScreen(userId: currentUserId);
           },
         );
+      case '/profile/picture-viewer':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final imageUrl = args?['imageUrl'] as String?;
+        if (imageUrl == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(
+                body: Center(child: Text('No image URL provided')),
+              ),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: ProfilePictureViewerScreen(imageUrl: imageUrl),
+          ),
+        );
       case '/favorites':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
@@ -169,6 +229,11 @@ class MyApp extends StatelessWidget {
         );
 
       // Auth routes
+      case '/auth':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: LoginScreen()),
+        );
       case '/login':
         return MaterialPageRoute(
           builder: (_) =>
@@ -186,6 +251,23 @@ class MyApp extends StatelessWidget {
             child: ForgotPasswordScreen(),
           ),
         );
+      case '/profile/create':
+        return MaterialPageRoute(
+          builder: (_) {
+            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+            if (currentUserId == null) {
+              // Redirect to login if not authenticated
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: LoginScreen(),
+              );
+            }
+            return core.MainLayout(
+              currentIndex: -1,
+              child: CreateProfileScreen(userId: currentUserId),
+            );
+          },
+        );
       case '/captures':
         return MaterialPageRoute(builder: (_) => const MyCapturesScreen());
       case '/achievements':
@@ -197,9 +279,45 @@ class MyApp extends StatelessWidget {
         );
       case '/capture/camera':
         return MaterialPageRoute(
-          builder: (_) => core.MainLayout(
+          builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: capture.CameraCaptureScreen(),
+          ),
+        );
+      case '/capture/detail':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final captureId = args?['captureId'] as String?;
+        if (captureId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(body: Center(child: Text('Capture not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: const core.EnhancedUniversalHeader(
+                title: 'Capture Details',
+                showLogo: false,
+              ),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.camera_alt, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    const Text('Capture Details Screen'),
+                    const SizedBox(height: 8),
+                    Text('Capture ID: $captureId'),
+                    const SizedBox(height: 16),
+                    const Text('Coming soon...'),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       case '/community/feed':
@@ -295,11 +413,57 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const ArtWalkDashboardScreen(),
         );
+      case '/art-walk/my-walks':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: 1,
+            child: ArtWalkListScreen(),
+          ),
+        );
+      case '/art-walk/my-captures':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: 1, child: MyCapturesScreen()),
+        );
+      case '/enhanced-create-art-walk':
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 1,
+            child: EnhancedArtWalkCreateScreen(
+              artWalkId: args?['artWalkId'] as String?,
+              artWalkToEdit: args?['artWalk'] as ArtWalkModel?,
+            ),
+          ),
+        );
+      case '/enhanced-art-walk-experience':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artWalkId = args?['artWalkId'] as String?;
+        final artWalk = args?['artWalk'] as ArtWalkModel?;
+        if (artWalkId == null || artWalk == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: 1,
+              child: Scaffold(body: Center(child: Text('Art walk not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 1,
+            child: EnhancedArtWalkExperienceScreen(
+              artWalkId: artWalkId,
+              artWalk: artWalk,
+            ),
+          ),
+        );
+      case '/events':
+        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/events/dashboard':
         return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/capture/dashboard':
         return MaterialPageRoute(
-          builder: (_) => core.MainLayout(
+          builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: capture.EnhancedCaptureDashboardScreen(),
           ),
@@ -307,6 +471,62 @@ class MyApp extends StatelessWidget {
       case '/community/dashboard':
         return MaterialPageRoute(
           builder: (_) => const CommunityDashboardScreen(),
+        );
+      case '/notifications':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Notifications',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Notifications coming soon')),
+            ),
+          ),
+        );
+      case '/community/posts':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: UnifiedCommunityFeed(),
+          ),
+        );
+      case '/community/studios':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: StudiosScreen()),
+        );
+      case '/community/gifts':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: GiftsScreen()),
+        );
+      case '/community/portfolios':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: PortfoliosScreen(),
+          ),
+        );
+      case '/community/moderation':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ModerationQueueScreen(),
+          ),
+        );
+      case '/community/sponsorships':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: SponsorshipScreen(),
+          ),
+        );
+      case '/community/settings':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: QuietModeScreen()),
         );
       case '/dev':
         return MaterialPageRoute(
@@ -355,6 +575,24 @@ class MyApp extends StatelessWidget {
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: ArtistProfileEditScreen(),
+          ),
+        );
+      case '/artist/onboarding':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Join as Artist',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Artist onboarding coming soon')),
+            ),
+          ),
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
           ),
         );
       case '/artist/analytics':
@@ -581,6 +819,60 @@ class MyApp extends StatelessWidget {
           ),
         );
 
+      // Additional Events routes
+      case '/events/search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: 4, // Events tab
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Search Events',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Event search coming soon')),
+            ),
+          ),
+        );
+      case '/events/nearby':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: 4, // Events tab
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Nearby Events',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Nearby events coming soon')),
+            ),
+          ),
+        );
+      case '/events/popular':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: 4, // Events tab
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Popular Events',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Popular events coming soon')),
+            ),
+          ),
+        );
+      case '/events/venues':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: 4, // Events tab
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Event Venues',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Event venues coming soon')),
+            ),
+          ),
+        );
+
       // Settings routes
       case '/settings':
         return MaterialPageRoute(
@@ -705,6 +997,13 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.DeveloperFeedbackAdminScreen(),
         );
+      case '/search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: EnhancedSearchScreen(),
+          ),
+        );
       case '/search/results':
         final searchArgs = settings.arguments as Map<String, dynamic>;
         final searchQuery = searchArgs['query'] as String;
@@ -712,6 +1011,97 @@ class MyApp extends StatelessWidget {
           builder: (_) => core.MainLayout(
             currentIndex: -1,
             child: core.SearchResultsScreen(query: searchQuery),
+          ),
+        );
+      case '/artist/search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Search Artists',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Artist search coming soon')),
+            ),
+          ),
+        );
+      case '/artist-search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Search Artists',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Artist search coming soon')),
+            ),
+          ),
+        );
+      case '/art-search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Search Art',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Art search coming soon')),
+            ),
+          ),
+        );
+      case '/art-walk-search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Search Art Walks',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Art walk search coming soon')),
+            ),
+          ),
+        );
+      case '/local':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Local Scene',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Local scene discovery coming soon')),
+            ),
+          ),
+        );
+      case '/location-search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Search Locations',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Location search coming soon')),
+            ),
+          ),
+        );
+      case '/trending':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: core.EnhancedUniversalHeader(
+                title: 'Trending',
+                showLogo: false,
+              ),
+              body: Center(child: Text('Trending content coming soon')),
+            ),
           ),
         );
 
@@ -783,9 +1173,24 @@ class MyApp extends StatelessWidget {
           ),
           fullscreenDialog: true,
         );
+      case '/messaging/new':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: messaging.ContactSelectionScreen(),
+          ),
+        );
       case '/messaging/chat':
-        final args = settings.arguments as Map<String, dynamic>;
-        final chat = args['chat'] as messaging.ChatModel;
+        final args = settings.arguments as Map<String, dynamic>?;
+        final chat = args?['chat'] as messaging.ChatModel?;
+        if (chat == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(body: Center(child: Text('Chat not found'))),
+            ),
+          );
+        }
         return MaterialPageRoute(
           builder: (_) => core.MainLayout(
             currentIndex: -1, // -1 means no bottom nav item is selected
@@ -796,15 +1201,155 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const messaging.GroupChatScreen(),
         );
-      case '/messaging/create-group':
+      case '/messaging/group/new':
         return MaterialPageRoute(
-          builder: (_) => const messaging.GroupCreationScreen(),
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: messaging.GroupCreationScreen(),
+          ),
         );
+
       case '/messaging/settings':
         return MaterialPageRoute(
           builder: (_) => const messaging.ChatSettingsScreen(),
         );
+      case '/messaging/chat-info':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final chat = args?['chat'] as messaging.ChatModel?;
+        if (chat == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(body: Center(child: Text('Chat not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: messaging.ChatInfoScreen(chat: chat),
+          ),
+        );
+      case '/messaging/blocked-users':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: messaging.BlockedUsersScreen(),
+          ),
+        );
+      case '/messaging/user':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final userId = args?['userId'] as String?;
+        if (userId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(body: Center(child: Text('User not found'))),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: FutureBuilder<messaging.UserModel?>(
+              future: Provider.of<messaging.ChatService>(
+                navigatorKey.currentContext!,
+                listen: false,
+              ).getUser(userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || snapshot.data == null) {
+                  return const Center(child: Text('User not found'));
+                }
+                return messaging.UserProfileScreen(user: snapshot.data!);
+              },
+            ),
+          ),
+        );
+      // Deep link routes for messaging
+      case '/messaging/chat-deep':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final chatId = args?['chatId'] as String?;
+        if (chatId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(
+                body: Center(child: Text('Chat ID not provided')),
+              ),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: FutureBuilder<messaging.ChatModel?>(
+              future: Provider.of<messaging.ChatService>(
+                navigatorKey.currentContext!,
+                listen: false,
+              ).getChatById(chatId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || snapshot.data == null) {
+                  return const Center(child: Text('Chat not found'));
+                }
+                return messaging.ChatScreen(chat: snapshot.data!);
+              },
+            ),
+          ),
+        );
+      case '/messaging/user-chat':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final userId = args?['userId'] as String?;
+        if (userId == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(
+                body: Center(child: Text('User ID not provided')),
+              ),
+            ),
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: FutureBuilder<messaging.ChatModel>(
+              future: Provider.of<messaging.ChatService>(
+                navigatorKey.currentContext!,
+                listen: false,
+              ).createOrGetChat(userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError || snapshot.data == null) {
+                  return const Center(child: Text('Error creating chat'));
+                }
+                return messaging.ChatScreen(chat: snapshot.data!);
+              },
+            ),
+          ),
+        );
     }
+
+    // Handle dynamic routes
+    if (settings.name != null) {
+      // Handle /event/$eventId route
+      if (settings.name!.startsWith('/event/')) {
+        final eventId = settings.name!.replaceFirst('/event/', '');
+        if (eventId.isNotEmpty) {
+          return MaterialPageRoute(
+            builder: (_) => EventDetailsWrapper(eventId: eventId),
+          );
+        }
+      }
+    }
+
     // Fallback: return splash screen if no route matched
     return MaterialPageRoute(
       builder: (_) =>
