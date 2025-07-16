@@ -1499,7 +1499,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               const Expanded(
                 child: Text(
                   'Featured Artists',
@@ -1548,7 +1548,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             )
           else
             SizedBox(
-              height: 280,
+              height: 290,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
@@ -1622,15 +1622,15 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     ),
                     // Profile image
                     Positioned(
-                      left: 16,
-                      bottom: -32,
+                      left: 32,
+                      bottom: 32,
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 4),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 26),
+                              color: const Color.fromARGB(255, 205, 195, 195).withValues(alpha: 26),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -1658,7 +1658,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
-                            vertical: 6,
+                            vertical: 12,
                           ),
                           decoration: BoxDecoration(
                             color: Colors.blue,

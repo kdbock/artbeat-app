@@ -1,8 +1,13 @@
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import '../models/admin_stats_model.dart';
+import '../models/recent_activity_model.dart';
 import '../services/admin_service.dart';
+import '../services/recent_activity_service.dart';
 import 'admin_user_management_screen.dart';
+import 'admin_content_review_screen.dart';
+import 'admin_analytics_screen.dart';
+import 'admin_settings_screen.dart';
 
 /// Enhanced Admin Dashboard screen with fluid design and better UX
 ///
@@ -22,17 +27,21 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final AdminService _adminService = AdminService();
+  final RecentActivityService _activityService = RecentActivityService();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   AdminStatsModel? _stats;
+  List<RecentActivityModel> _recentActivities = [];
   bool _isLoading = true;
+  bool _isLoadingActivities = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
     _loadStats();
+    _loadRecentActivities();
   }
 
   @override
@@ -61,6 +70,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         setState(() {
           _error = e.toString();
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadRecentActivities() async {
+    try {
+      setState(() {
+        _isLoadingActivities = true;
+      });
+
+      final activities = await _activityService.getRecentActivities(limit: 5);
+
+      if (mounted) {
+        setState(() {
+          _recentActivities = activities;
+          _isLoadingActivities = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingActivities = false;
         });
       }
     }
@@ -285,23 +317,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             _buildActionButton(
               'Review Content',
               Icons.rate_review,
-              () {
-                // TODO: Implement content review
-              },
+              () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const AdminContentReviewScreen(),
+                ),
+              ),
             ),
             _buildActionButton(
               'Analytics',
               Icons.analytics,
-              () {
-                // TODO: Implement analytics
-              },
+              () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const AdminAnalyticsScreen(),
+                ),
+              ),
             ),
             _buildActionButton(
               'Settings',
               Icons.settings,
-              () {
-                // TODO: Implement settings
-              },
+              () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) => const AdminSettingsScreen(),
+                ),
+              ),
             ),
           ],
         ),
@@ -326,39 +364,145 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildRecentActivity() {
-    // TODO: Implement recent activity stream from Firestore
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Recent Activity',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recent Activity',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            IconButton(
+              onPressed: _loadRecentActivities,
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh activities',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         Card(
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 5, // Show last 5 activities
-            separatorBuilder: (context, index) => const Divider(),
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: const CircleAvatar(
-                  child: Icon(Icons.notifications_none),
-                ),
-                title: Text('Activity ${index + 1}'),
-                subtitle: Text('Description of activity ${index + 1}'),
-                trailing: Text(
-                  '${index + 1}m ago',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              );
-            },
-          ),
+          child: _isLoadingActivities
+              ? const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : _recentActivities.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.notifications_none,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'No recent activity',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _recentActivities.length,
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final activity = _recentActivities[index];
+                        return _buildActivityTile(activity);
+                      },
+                    ),
         ),
       ],
     );
+  }
+
+  Widget _buildActivityTile(RecentActivityModel activity) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: _getActivityColor(activity.type),
+        child: Icon(
+          _getActivityIcon(activity.type),
+          color: Colors.white,
+        ),
+      ),
+      title: Text(
+        activity.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        activity.description,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Text(
+        activity.timeAgo,
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+    );
+  }
+
+  Color _getActivityColor(ActivityType type) {
+    switch (type) {
+      case ActivityType.userRegistered:
+      case ActivityType.artworkApproved:
+      case ActivityType.userVerified:
+        return Colors.green;
+      case ActivityType.userLogin:
+      case ActivityType.postCreated:
+        return Colors.blue;
+      case ActivityType.artworkUploaded:
+      case ActivityType.adminAction:
+        return Colors.purple;
+      case ActivityType.commentAdded:
+      case ActivityType.contentReported:
+        return Colors.orange;
+      case ActivityType.eventCreated:
+        return Colors.indigo;
+      case ActivityType.artworkRejected:
+      case ActivityType.userSuspended:
+      case ActivityType.systemError:
+        return Colors.red;
+    }
+  }
+
+  IconData _getActivityIcon(ActivityType type) {
+    switch (type) {
+      case ActivityType.userRegistered:
+        return Icons.person_add;
+      case ActivityType.userLogin:
+        return Icons.login;
+      case ActivityType.artworkUploaded:
+        return Icons.image;
+      case ActivityType.artworkApproved:
+        return Icons.check_circle;
+      case ActivityType.artworkRejected:
+        return Icons.cancel;
+      case ActivityType.postCreated:
+        return Icons.post_add;
+      case ActivityType.commentAdded:
+        return Icons.comment;
+      case ActivityType.eventCreated:
+        return Icons.event;
+      case ActivityType.userSuspended:
+        return Icons.block;
+      case ActivityType.userVerified:
+        return Icons.verified;
+      case ActivityType.contentReported:
+        return Icons.report;
+      case ActivityType.systemError:
+        return Icons.error;
+      case ActivityType.adminAction:
+        return Icons.admin_panel_settings;
+    }
   }
 }

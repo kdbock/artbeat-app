@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/ad_artist_model.dart';
 import '../models/ad_type.dart' as model;
 import '../models/ad_location.dart' as model;
@@ -40,16 +42,41 @@ class _ArtistAdCreateScreenState extends State<ArtistAdCreateScreen> {
     }
   }
 
+  Future<String> _uploadImage(File imageFile) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final fileName =
+          'artist_ads/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ref = FirebaseStorage.instance.ref().child(fileName);
+
+      final uploadTask = ref.putFile(imageFile);
+      final snapshot = await uploadTask.whenComplete(() {});
+
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('Failed to upload image: $e');
+    }
+  }
+
   void _submitAd() async {
     if (!_formKey.currentState!.validate() || _imageFile == null) return;
     setState(() => _isProcessing = true);
     try {
-      // TODO: Upload image and get URL
-      const imageUrl = 'https://via.placeholder.com/300';
+      // Upload image and get URL
+      final imageUrl = await _uploadImage(File(_imageFile!.path));
+
+      // Get current user ID from auth
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
       final ad = AdArtistModel(
         id: '',
-        ownerId: 'artistId', // TODO: Get from auth
-        artistId: 'artistId',
+        ownerId: user.uid,
+        artistId: user.uid,
         type: _adType,
         imageUrl: imageUrl,
         title: _titleController.text,
