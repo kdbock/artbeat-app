@@ -1,0 +1,9 @@
+# Limelight font license (OFL)
+# See: https://openfontlicense.org
+
+Copyright (c) 2011 by Sorkin Type Co (www.sorkintype.com),
+with Reserved Font Name "Limelight".
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+
+Full license text is in OFL.txt in the font directory.

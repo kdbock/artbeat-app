@@ -15,6 +15,7 @@ enum NotificationType {
   galleryInvitation,
   invitationResponse,
   invitationCancelled,
+  achievement,
 }
 
 /// Service for managing user notifications

@@ -12,6 +12,8 @@ export 'src/services/ad_service.dart';
 
 // Widgets
 export 'src/widgets/ad_display_widget.dart';
+export 'src/widgets/ads_drawer.dart';
+export 'src/widgets/ads_header.dart';
 export 'src/widgets/profile_ad_widget.dart';
 
 // Screens

@@ -1,5 +1,6 @@
 // filepath: packages/artbeat_admin/lib/bin/main.dart
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/src/services/auth_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -25,8 +26,8 @@ void main() async {
     // Check if Firebase is already initialized to avoid duplicate initialization
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
-      options: mockFirebaseOptions,
-    );
+        options: mockFirebaseOptions,
+      );
     } else {
       debugPrint('Firebase already initialized, using existing app instance');
     }
@@ -50,6 +51,9 @@ void main() async {
   runApp(const UadminModuleApp());
 }
 
+// Singleton UserService instance
+final UserService _userService = UserService();
+
 class UadminModuleApp extends StatelessWidget {
   const UadminModuleApp({Key? key}) : super(key: key);
 
@@ -57,9 +61,12 @@ class UadminModuleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // Core providers
-        ChangeNotifierProvider<UserService>(
-          create: (_) => UserService(),
+        ChangeNotifierProvider<UserService>.value(
+          value: _userService,
+        ),
+        Provider<AuthService>(
+          create: (_) => AuthService(),
+          dispose: (_, __) {}, // Prevent disposal of singleton
         ),
         // Add module-specific providers here
       ],

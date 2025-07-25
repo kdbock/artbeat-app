@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart' show UserService;
+import 'package:artbeat_core/src/models/user_model.dart' as core;
 import 'package:artbeat_messaging/artbeat_messaging.dart';
+import '../screens/artistic_messaging_screen.dart';
 
 class MessagingNavigation extends StatefulWidget {
   final int initialTabIndex;
@@ -29,6 +33,7 @@ class _MessagingNavigationState extends State<MessagingNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    return const ChatListScreen();
+    // Use the new artistic messaging screen for users
+    return const ArtisticMessagingScreen();
   }
 }

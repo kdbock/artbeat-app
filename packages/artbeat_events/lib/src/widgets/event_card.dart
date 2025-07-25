@@ -116,10 +116,7 @@ class EventCard extends StatelessWidget {
   Widget _buildEventDescription() {
     return Text(
       event.description,
-      style: TextStyle(
-        color: Colors.grey.shade700,
-        fontSize: 14,
-      ),
+      style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
       maxLines: compact ? 1 : 3,
       overflow: TextOverflow.ellipsis,
     );
@@ -168,9 +165,7 @@ class EventCard extends StatelessWidget {
             Expanded(
               child: Text(
                 event.location,
-                style: TextStyle(
-                  color: Colors.grey.shade700,
-                ),
+                style: TextStyle(color: Colors.grey.shade700),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -182,17 +177,22 @@ class EventCard extends StatelessWidget {
   }
 
   Widget _buildArtistInfo() {
+    // Check if the URL is valid for NetworkImage
+    bool isValidNetworkUrl =
+        event.artistHeadshotUrl.isNotEmpty &&
+        (event.artistHeadshotUrl.startsWith('http://') ||
+            event.artistHeadshotUrl.startsWith('https://')) &&
+        event.artistHeadshotUrl != 'placeholder_headshot_url';
+
     return Row(
       children: [
         // Artist headshot
         CircleAvatar(
           radius: 16,
-          backgroundImage: event.artistHeadshotUrl.isNotEmpty
+          backgroundImage: isValidNetworkUrl
               ? NetworkImage(event.artistHeadshotUrl)
               : null,
-          child: event.artistHeadshotUrl.isEmpty
-              ? const Icon(Icons.person, size: 16)
-              : null,
+          child: !isValidNetworkUrl ? const Icon(Icons.person, size: 16) : null,
         ),
         const SizedBox(width: 8),
         FutureBuilder<String?>(
@@ -208,10 +208,7 @@ class EventCard extends StatelessWidget {
             final artistName = snapshot.data ?? 'Artist';
             return Text(
               'By $artistName',
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
             );
           },
         ),
@@ -365,10 +362,7 @@ class EventCard extends StatelessWidget {
           ),
           child: Text(
             tag,
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 10,
-            ),
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 10),
           ),
         );
       }).toList(),

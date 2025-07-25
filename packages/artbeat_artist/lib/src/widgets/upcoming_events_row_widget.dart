@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_events/artbeat_events.dart';
 
 /// Widget for displaying upcoming local events in a horizontal scrollable row
 class UpcomingEventsRowWidget extends StatelessWidget {
@@ -104,7 +105,14 @@ class UpcomingEventsRowWidget extends StatelessWidget {
                     child: Card(
                       child: InkWell(
                         onTap: () {
-                          // TODO: Navigate to event details
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (context) => EventDetailsScreen(
+                                eventId: event.id,
+                              ),
+                            ),
+                          );
                         },
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

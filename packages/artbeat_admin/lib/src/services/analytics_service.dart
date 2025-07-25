@@ -190,7 +190,7 @@ class AnalyticsService {
       }
 
       // Calculate retention rate
-      double retentionRate =
+      final double retentionRate =
           totalUsers > 0 ? (retainedUsers / totalUsers) * 100 : 0.0;
 
       return {
@@ -247,7 +247,7 @@ class AnalyticsService {
 
       if (sessionSnapshot.docs.isNotEmpty) {
         double totalDuration = 0.0;
-        int totalSessions = sessionSnapshot.docs.length;
+        final int totalSessions = sessionSnapshot.docs.length;
         int bounces = 0;
 
         for (var doc in sessionSnapshot.docs) {
@@ -309,8 +309,8 @@ class AnalyticsService {
       double avgResponseTime = 0.0;
 
       if (requestSnapshot.docs.isNotEmpty) {
-        int totalRequests = requestSnapshot.docs.length;
-        int errors = errorSnapshot.docs.length;
+        final int totalRequests = requestSnapshot.docs.length;
+        final int errors = errorSnapshot.docs.length;
         double totalResponseTime = 0.0;
 
         for (var doc in requestSnapshot.docs) {
@@ -325,8 +325,8 @@ class AnalyticsService {
       }
 
       // Mock storage and bandwidth data (replace with actual implementation)
-      int storageUsed = 1024 * 1024 * 1024; // 1GB
-      int bandwidthUsed = 10 * 1024 * 1024 * 1024; // 10GB
+      const int storageUsed = 1024 * 1024 * 1024; // 1GB
+      const int bandwidthUsed = 10 * 1024 * 1024 * 1024; // 10GB
 
       return {
         'errorRate': errorRate,

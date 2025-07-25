@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/ad_model.dart';
 import '../models/ad_location.dart';
@@ -48,6 +49,11 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
           _currentAd = ad;
           _isLoading = false;
         });
+
+        // Track ad impression
+        if (ad != null) {
+          _trackAdImpression(ad);
+        }
       }
     } catch (e) {
       debugPrint('Error loading profile ad: $e');
@@ -67,15 +73,84 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
     // Provide haptic feedback
     HapticFeedback.lightImpact();
 
-    // TODO: Implement ad click tracking
-    // TODO: Navigate to ad target (artist profile, artwork, etc.)
+    // Track ad click
+    _trackAdClick(ad);
 
-    // For now, show a snackbar
+    // Navigate to ad target (artist profile, artwork, etc.)
+    _navigateToAdTarget(ad);
+  }
+
+  /// Track ad impression
+  void _trackAdImpression(AdModel ad) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _adService.trackAdImpression(ad.id, user.uid);
+    }
+  }
+
+  /// Track ad click
+  void _trackAdClick(AdModel ad) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _adService.trackAdClick(ad.id, user.uid);
+    }
+  }
+
+  /// Navigate to the appropriate target based on ad content
+  void _navigateToAdTarget(AdModel ad) {
+    if (!mounted) return;
+
+    // Navigate based on targetId if available
+    if (ad.targetId != null && ad.targetId!.isNotEmpty) {
+      _navigateToTarget(ad.targetId!);
+    } else {
+      // Fallback: navigate based on owner type
+      _navigateToOwnerProfile(ad.ownerId);
+    }
+  }
+
+  /// Navigate to a specific target (artist, artwork, gallery, etc.)
+  void _navigateToTarget(String targetId) {
+    // Try to determine the target type from the targetId prefix or other indicators
+    // For now, we'll try artist profile first as it's most common
+    Navigator.pushNamed(
+      context,
+      '/artist/profile',
+      arguments: {'artistId': targetId},
+    ).catchError((_) {
+      // If artist profile fails, try artwork
+      return Navigator.pushNamed(
+        context,
+        '/artwork/details',
+        arguments: {'artworkId': targetId},
+      ).catchError((_) {
+        // If that fails too, show a generic message
+        _showNavigationError();
+        return null;
+      });
+    });
+  }
+
+  /// Navigate to the owner's profile
+  void _navigateToOwnerProfile(String ownerId) {
+    // For now, assume owner profile is accessible via user profile route
+    Navigator.pushNamed(
+      context,
+      '/profile/view',
+      arguments: {'userId': ownerId},
+    ).catchError((_) {
+      _showNavigationError();
+      return null;
+    });
+  }
+
+  /// Show error message when navigation fails
+  void _showNavigationError() {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Clicked on ad: ${ad.title}'),
-          duration: const Duration(seconds: 2),
+        const SnackBar(
+          content: Text('Unable to navigate to ad content'),
+          duration: Duration(seconds: 2),
         ),
       );
     }

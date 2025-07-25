@@ -12,6 +12,7 @@ class PortfoliosScreen extends StatefulWidget {
 class _PortfoliosScreenState extends State<PortfoliosScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Map<String, dynamic>> _portfolios = [];
+  List<Map<String, dynamic>> _filteredPortfolios = [];
   bool _isLoading = true;
 
   @override
@@ -34,6 +35,7 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
         _portfolios = querySnapshot.docs
             .map((doc) => {...doc.data(), 'id': doc.id})
             .toList();
+        _filteredPortfolios = _portfolios;
         _isLoading = false;
       });
     } catch (e) {
@@ -43,6 +45,29 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading portfolios: $e')));
     }
+  }
+
+  void _performSearch(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredPortfolios = _portfolios;
+      } else {
+        _filteredPortfolios = _portfolios.where((portfolio) {
+          final name = (portfolio['name'] as String?)?.toLowerCase() ?? '';
+          final username =
+              (portfolio['username'] as String?)?.toLowerCase() ?? '';
+          final bio = (portfolio['bio'] as String?)?.toLowerCase() ?? '';
+          final location =
+              (portfolio['location'] as String?)?.toLowerCase() ?? '';
+          final searchLower = query.toLowerCase();
+
+          return name.contains(searchLower) ||
+              username.contains(searchLower) ||
+              bio.contains(searchLower) ||
+              location.contains(searchLower);
+        }).toList();
+      }
+    });
   }
 
   @override
@@ -61,7 +86,7 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
               hintText: 'Search artists...',
               leading: const Icon(Icons.search),
               onChanged: (value) {
-                // TODO: Implement search
+                _performSearch(value);
               },
             ),
           ),
@@ -69,7 +94,7 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
         // Portfolio grid
         SliverPadding(
           padding: const EdgeInsets.all(16.0),
-          sliver: _portfolios.isEmpty
+          sliver: _filteredPortfolios.isEmpty
               ? const SliverToBoxAdapter(
                   child: Center(child: Text('No portfolios available')),
                 )
@@ -81,7 +106,7 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
                     crossAxisSpacing: 16.0,
                   ),
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    final portfolio = _portfolios[index];
+                    final portfolio = _filteredPortfolios[index];
                     return Card(
                       clipBehavior: Clip.antiAlias,
                       child: Column(
@@ -92,14 +117,13 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
                             aspectRatio: 1.0,
                             child: portfolio['coverImageUrl'] != null
                                 ? ImageManagementService().getOptimizedImage(
-                                    imageUrl: portfolio['coverImageUrl'] as String,
+                                    imageUrl:
+                                        portfolio['coverImageUrl'] as String,
                                     fit: BoxFit.cover,
                                     isThumbnail: true,
                                     errorWidget: Container(
                                       color: Colors.grey[200],
-                                      child: const Icon(
-                                        Icons.broken_image,
-                                      ),
+                                      child: const Icon(Icons.broken_image),
                                     ),
                                   )
                                 : Container(
@@ -130,7 +154,7 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
                         ],
                       ),
                     );
-                  }, childCount: _portfolios.length),
+                  }, childCount: _filteredPortfolios.length),
                 ),
         ),
       ],

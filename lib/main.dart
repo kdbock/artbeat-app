@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 
 import 'config/maps_config.dart';
 import 'app.dart';
@@ -61,6 +62,19 @@ Future<void> main() async {
         print('❌ Image management service initialization failed: $e');
       }
       // Don't fail the entire app for image service
+    }
+
+    // Initialize messaging notification service
+    try {
+      await messaging.NotificationService().initialize();
+      if (kDebugMode) {
+        print('✅ Messaging notification service initialized');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Messaging notification service initialization failed: $e');
+      }
+      // Don't fail the entire app for notification service
     }
 
     if (kDebugMode) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:artbeat_core/artbeat_core.dart' show ArtbeatColors;
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/message.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -97,58 +97,10 @@ class MessageBubble extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    if (message.senderPhotoUrl != null && message.senderPhotoUrl!.isNotEmpty) {
-      return Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-          image: DecorationImage(
-            image: NetworkImage(message.senderPhotoUrl!),
-            fit: BoxFit.cover,
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isCurrentUser
-            ? ArtbeatColors.primaryPurple
-            : ArtbeatColors.primaryGreen,
-        boxShadow: [
-          BoxShadow(
-            color:
-                (isCurrentUser
-                        ? ArtbeatColors.primaryPurple
-                        : ArtbeatColors.primaryGreen)                        .withValues(alpha: 0.3),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          message.senderName?.isNotEmpty == true
-              ? message.senderName![0].toUpperCase()
-              : '?',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
-        ),
-      ),
+    return ImageUtils.safeCircleAvatar(
+      imageUrl: message.senderPhotoUrl,
+      displayName: message.senderName ?? 'User',
+      radius: 16.0,
     );
   }
 

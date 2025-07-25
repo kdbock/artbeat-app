@@ -120,7 +120,9 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                       ],
                     ),
                     tooltip: 'Messages',
-                    onPressed: () => viewModel.showMessagingMenu(context),
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/messaging');
+                    },
                   ),
                 ),
               ],
@@ -1354,11 +1356,11 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               if (snapshot.hasError) {
-                return Center(child: Text('Error loading captures'));
+                return const Center(child: Text('Error loading captures'));
               }
               final captures = snapshot.data ?? [];
               if (captures.isEmpty) {
-                return Center(child: Text('No captures found'));
+                return const Center(child: Text('No captures found'));
               }
               return SizedBox(
                 height: 160,
@@ -1630,7 +1632,12 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                           border: Border.all(color: Colors.white, width: 4),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color.fromARGB(255, 205, 195, 195).withValues(alpha: 26),
+                              color: const Color.fromARGB(
+                                255,
+                                205,
+                                195,
+                                195,
+                              ).withValues(alpha: 26),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),

@@ -148,7 +148,14 @@ class LocalArtistsRowWidget extends StatelessWidget {
                                             )
                                           : null,
                                   borderRadius: BorderRadius.circular(12),
-                                  image: artist.profileImageUrl != null
+                                  image: (artist.profileImageUrl != null &&
+                                          artist.profileImageUrl!.isNotEmpty &&
+                                          (artist.profileImageUrl!
+                                                  .startsWith('http://') ||
+                                              artist.profileImageUrl!
+                                                  .startsWith('https://')) &&
+                                          artist.profileImageUrl !=
+                                              'placeholder_headshot_url')
                                       ? DecorationImage(
                                           image: NetworkImage(
                                               artist.profileImageUrl!),
@@ -156,7 +163,14 @@ class LocalArtistsRowWidget extends StatelessWidget {
                                         )
                                       : null,
                                 ),
-                                child: artist.profileImageUrl == null
+                                child: !(artist.profileImageUrl != null &&
+                                        artist.profileImageUrl!.isNotEmpty &&
+                                        (artist.profileImageUrl!
+                                                .startsWith('http://') ||
+                                            artist.profileImageUrl!
+                                                .startsWith('https://')) &&
+                                        artist.profileImageUrl !=
+                                            'placeholder_headshot_url')
                                     ? const Icon(
                                         Icons.person,
                                         size: 60,

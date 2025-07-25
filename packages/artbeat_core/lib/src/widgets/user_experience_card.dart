@@ -264,7 +264,11 @@ class _UserExperienceCardState extends State<UserExperienceCard>
           ),
         ],
       ),
-      child: widget.user.profileImageUrl.isNotEmpty
+      child:
+          (widget.user.profileImageUrl.isNotEmpty &&
+              (widget.user.profileImageUrl.startsWith('http://') ||
+                  widget.user.profileImageUrl.startsWith('https://')) &&
+              widget.user.profileImageUrl != 'placeholder_headshot_url')
           ? CircleAvatar(
               radius: 25,
               backgroundImage: NetworkImage(widget.user.profileImageUrl),

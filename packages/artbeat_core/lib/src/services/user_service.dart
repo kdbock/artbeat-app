@@ -39,6 +39,14 @@ class UserService extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Since this is a singleton, we should not dispose it
+    // Only dispose if explicitly requested (not through provider disposal)
+    _logDebug('Dispose called - ignoring for singleton');
+    // Don't call super.dispose() to prevent disposal of singleton
+  }
+
+  // Method to force disposal if needed (for testing or app shutdown)
+  void forceDispose() {
     _disposed = true;
     super.dispose();
   }
@@ -609,21 +617,28 @@ class UserService extends ChangeNotifier {
     required String email,
     required String displayName,
     String? zipCode,
+    String? username,
+    String? bio,
+    String? location,
   }) async {
     try {
-      final username = email
-          .split('@')[0]
-          .toLowerCase()
-          .replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final finalUsername =
+          username ??
+          email
+              .split('@')[0]
+              .toLowerCase()
+              .replaceAll(RegExp(r'[^a-z0-9]'), '');
 
       final newUser = UserModel(
         id: uid,
         email: email,
-        username: username, // Create sanitized username from email
+        username: finalUsername,
         fullName: displayName,
         createdAt: DateTime.now(),
         userType: UserType.regular.value,
         zipCode: zipCode,
+        bio: bio ?? '',
+        location: location ?? '',
       );
 
       await _usersCollection
@@ -637,6 +652,53 @@ class UserService extends ChangeNotifier {
     } catch (e, s) {
       _logError('Error creating new user', e, s);
       return null;
+    }
+  }
+
+  /// Update user profile image
+  Future<bool> updateUserProfileImage(String userId, File imageFile) async {
+    try {
+      final storageService = EnhancedStorageService();
+
+      // Upload image with optimization
+      final uploadResult = await storageService.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'profile',
+        generateThumbnail: true,
+      );
+
+      final imageUrl = uploadResult['imageUrl']!;
+      final thumbnailUrl = uploadResult['thumbnailUrl'];
+
+      // Update user document with new profile image
+      await _usersCollection.doc(userId).update({
+        'profileImageUrl': imageUrl,
+        if (thumbnailUrl != null) 'profileThumbnailUrl': thumbnailUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      _logDebug('Successfully updated profile image for user: $userId');
+      notifyListeners();
+
+      return true;
+    } catch (e, s) {
+      _logError('Error updating profile image', e, s);
+      return false;
+    }
+  }
+
+  /// Check if username is available
+  Future<bool> isUsernameAvailable(String username) async {
+    try {
+      final query = await _usersCollection
+          .where('username', isEqualTo: username.toLowerCase())
+          .limit(1)
+          .get();
+
+      return query.docs.isEmpty;
+    } catch (e, s) {
+      _logError('Error checking username availability', e, s);
+      return false;
     }
   }
 }

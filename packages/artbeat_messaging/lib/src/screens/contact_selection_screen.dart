@@ -139,13 +139,10 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
                         itemBuilder: (context, index) {
                           final user = users[index];
                           return ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: user.photoUrl != null
-                                  ? NetworkImage(user.photoUrl!)
-                                  : null,
-                              child: user.photoUrl == null
-                                  ? Text(user.displayName[0].toUpperCase())
-                                  : null,
+                            leading: ImageUtils.safeCircleAvatar(
+                              imageUrl: user.photoUrl,
+                              displayName: user.displayName,
+                              radius: 20.0,
                             ),
                             title: Text(user.displayName),
                             subtitle: Column(

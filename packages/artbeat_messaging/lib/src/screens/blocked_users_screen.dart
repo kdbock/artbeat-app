@@ -108,22 +108,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
           return Card(
             margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
-              leading: CircleAvatar(
+              leading: ImageUtils.safeCircleAvatar(
+                imageUrl: user.photoUrl,
+                displayName: user.displayName,
+                radius: 20.0,
                 backgroundColor: ArtbeatColors.primaryPurple,
-                backgroundImage: user.photoUrl != null
-                    ? NetworkImage(user.photoUrl!)
-                    : null,
-                child: user.photoUrl == null
-                    ? Text(
-                        user.displayName.isNotEmpty
-                            ? user.displayName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
               ),
               title: Text(
                 user.displayName,
@@ -295,15 +284,28 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // TODO: Implement report user functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('User reported successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              try {
+                final chatService = Provider.of<ChatService>(
+                  context,
+                  listen: false,
+                );
+                await chatService.reportUser(user.id, 'Blocked user report');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('User reported successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to report user: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text('Report'),
           ),

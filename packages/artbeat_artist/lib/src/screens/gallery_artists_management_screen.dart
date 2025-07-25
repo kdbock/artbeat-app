@@ -1,5 +1,63 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/artist_profile_service.dart';
+
+/// Model for gallery invitations
+class GalleryInvitation {
+  final String id;
+  final String galleryId;
+  final String artistId;
+  final String artistName;
+  final String artistEmail;
+  final String? artistProfileImage;
+  final String status; // 'pending', 'accepted', 'declined'
+  final DateTime createdAt;
+  final DateTime? respondedAt;
+
+  GalleryInvitation({
+    required this.id,
+    required this.galleryId,
+    required this.artistId,
+    required this.artistName,
+    required this.artistEmail,
+    this.artistProfileImage,
+    required this.status,
+    required this.createdAt,
+    this.respondedAt,
+  });
+
+  factory GalleryInvitation.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return GalleryInvitation(
+      id: doc.id,
+      galleryId: data['galleryId'] as String,
+      artistId: data['artistId'] as String,
+      artistName: data['artistName'] as String,
+      artistEmail: data['artistEmail'] as String,
+      artistProfileImage: data['artistProfileImage'] as String?,
+      status: data['status'] as String,
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      respondedAt: data['respondedAt'] != null
+          ? (data['respondedAt'] as Timestamp).toDate()
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'galleryId': galleryId,
+      'artistId': artistId,
+      'artistName': artistName,
+      'artistEmail': artistEmail,
+      'artistProfileImage': artistProfileImage,
+      'status': status,
+      'createdAt': createdAt,
+      'respondedAt': respondedAt,
+    };
+  }
+}
 
 class GalleryArtistsManagementScreen extends StatefulWidget {
   const GalleryArtistsManagementScreen({super.key});
@@ -13,7 +71,12 @@ class _GalleryArtistsManagementScreenState
     extends State<GalleryArtistsManagementScreen>
     with TickerProviderStateMixin {
   late final TabController _tabController;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ArtistProfileService _artistProfileService = ArtistProfileService();
+
   List<core.ArtistProfileModel> _galleryArtists = [];
+  List<GalleryInvitation> _pendingInvitations = [];
   Map<String, core.ArtistProfileModel> _artistProfiles = {};
   bool _isLoading = true;
   String? _error;
@@ -23,6 +86,7 @@ class _GalleryArtistsManagementScreenState
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _loadGalleryArtists();
+    _loadPendingInvitations();
   }
 
   @override
@@ -38,17 +102,44 @@ class _GalleryArtistsManagementScreenState
         _error = null;
       });
 
-      // TODO: Load gallery artists from Firestore
-      final List<String> artistList = []; // Replace with actual artist IDs
-      final Map<String, core.ArtistProfileModel> artistProfiles =
-          {}; // Replace with actual profiles
+      // Load gallery artists from Firestore
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get current gallery profile
+      final galleryProfile =
+          await _artistProfileService.getArtistProfileByUserId(currentUser.uid);
+      if (galleryProfile == null) {
+        throw Exception('Gallery profile not found');
+      }
+
+      // Get gallery-artist relationships
+      final relationshipQuery = await _firestore
+          .collection('galleryArtists')
+          .where('galleryId', isEqualTo: galleryProfile.id)
+          .where('status', isEqualTo: 'active')
+          .get();
+
+      final artistIds = relationshipQuery.docs
+          .map((doc) => doc.data()['artistId'] as String)
+          .toList();
+
+      // Load artist profiles
+      final Map<String, core.ArtistProfileModel> artistProfiles = {};
+      for (final artistId in artistIds) {
+        final artistDoc =
+            await _firestore.collection('artistProfiles').doc(artistId).get();
+        if (artistDoc.exists) {
+          final artist = core.ArtistProfileModel.fromFirestore(artistDoc);
+          artistProfiles[artistId] = artist;
+        }
+      }
 
       setState(() {
         _artistProfiles = artistProfiles;
-        _galleryArtists = artistList
-            .map((id) => _artistProfiles[id])
-            .whereType<core.ArtistProfileModel>()
-            .toList();
+        _galleryArtists = artistProfiles.values.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -59,17 +150,144 @@ class _GalleryArtistsManagementScreenState
     }
   }
 
-  Future<void> _addArtistToGallery(core.ArtistProfileModel artist) async {
+  Future<void> _loadPendingInvitations() async {
     try {
-      // TODO: Implement adding artist to gallery
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) return;
+
+      // Get current gallery profile
+      final galleryProfile =
+          await _artistProfileService.getArtistProfileByUserId(currentUser.uid);
+      if (galleryProfile == null) return;
+
+      // Load pending invitations from Firestore
+      final invitationQuery = await _firestore
+          .collection('galleryInvitations')
+          .where('galleryId', isEqualTo: galleryProfile.id)
+          .where('status', isEqualTo: 'pending')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final invitations = invitationQuery.docs
+          .map((doc) => GalleryInvitation.fromFirestore(doc))
+          .toList();
+
       setState(() {
-        _galleryArtists = [..._galleryArtists, artist];
-        _artistProfiles[artist.id] = artist;
+        _pendingInvitations = invitations;
       });
+    } catch (e) {
+      // Handle error silently for now
+    }
+  }
+
+  Future<void> _sendInvitation(core.ArtistProfileModel artist) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get current gallery profile
+      final galleryProfile =
+          await _artistProfileService.getArtistProfileByUserId(currentUser.uid);
+      if (galleryProfile == null) {
+        throw Exception('Gallery profile not found');
+      }
+
+      // Get artist user information for email
+      final artistUserDoc =
+          await _firestore.collection('users').doc(artist.userId).get();
+
+      final artistEmail = artistUserDoc.data()?['email'] as String? ?? '';
+
+      // Check if invitation already exists
+      final existingInvitation = await _firestore
+          .collection('galleryInvitations')
+          .where('galleryId', isEqualTo: galleryProfile.id)
+          .where('artistId', isEqualTo: artist.id)
+          .where('status', isEqualTo: 'pending')
+          .limit(1)
+          .get();
+
+      if (existingInvitation.docs.isNotEmpty) {
+        throw Exception('Invitation already sent to this artist');
+      }
+
+      // Create new invitation
+      final invitation = GalleryInvitation(
+        id: '',
+        galleryId: galleryProfile.id,
+        artistId: artist.id,
+        artistName: artist.displayName,
+        artistEmail: artistEmail,
+        artistProfileImage: artist.profileImageUrl,
+        status: 'pending',
+        createdAt: DateTime.now(),
+      );
+
+      await _firestore.collection('galleryInvitations').add(invitation.toMap());
+
+      // Send notification to artist
+      await _firestore.collection('notifications').add({
+        'userId': artist.userId,
+        'title': 'Gallery Invitation',
+        'message':
+            '${galleryProfile.displayName} has invited you to join their gallery',
+        'type': 'galleryInvitation',
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'data': {
+          'galleryId': galleryProfile.id,
+          'galleryName': galleryProfile.displayName,
+          'artistId': artist.id,
+        },
+      });
+
+      // Refresh invitations
+      await _loadPendingInvitations();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation sent successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to add artist to gallery')),
+          SnackBar(content: Text('Failed to send invitation: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelInvitation(String invitationId) async {
+    try {
+      await _firestore
+          .collection('galleryInvitations')
+          .doc(invitationId)
+          .update({
+        'status': 'cancelled',
+        'respondedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Refresh invitations
+      await _loadPendingInvitations();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation cancelled'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to cancel invitation: $e')),
         );
       }
     }
@@ -77,15 +295,53 @@ class _GalleryArtistsManagementScreenState
 
   Future<void> _removeArtistFromGallery(String artistId) async {
     try {
-      // TODO: Implement removing artist from gallery
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get current gallery profile
+      final galleryProfile =
+          await _artistProfileService.getArtistProfileByUserId(currentUser.uid);
+      if (galleryProfile == null) {
+        throw Exception('Gallery profile not found');
+      }
+
+      // Update gallery-artist relationship to inactive
+      final relationshipQuery = await _firestore
+          .collection('galleryArtists')
+          .where('galleryId', isEqualTo: galleryProfile.id)
+          .where('artistId', isEqualTo: artistId)
+          .limit(1)
+          .get();
+
+      if (relationshipQuery.docs.isNotEmpty) {
+        await _firestore
+            .collection('galleryArtists')
+            .doc(relationshipQuery.docs.first.id)
+            .update({
+          'status': 'inactive',
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
       setState(() {
         _galleryArtists.removeWhere((artist) => artist.id == artistId);
         _artistProfiles.remove(artistId);
       });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Artist removed from gallery successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to remove artist from gallery')),
+          SnackBar(content: Text('Failed to remove artist from gallery: $e')),
         );
       }
     }
@@ -124,7 +380,7 @@ class _GalleryArtistsManagementScreenState
             );
 
             if (result != null) {
-              await _addArtistToGallery(result);
+              await _sendInvitation(result);
             }
           },
           child: const Icon(Icons.add),
@@ -165,10 +421,181 @@ class _GalleryArtistsManagementScreenState
   }
 
   Widget _buildPendingInvitations() {
-    // TODO: Implement pending invitations list
-    return const Center(
-      child: Text('Pending invitations coming soon'),
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_pendingInvitations.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.mail_outline,
+              size: 64,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'No pending invitations',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Use the + button to invite artists to your gallery',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _pendingInvitations.length,
+      itemBuilder: (context, index) {
+        final invitation = _pendingInvitations[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundImage: invitation.artistProfileImage != null
+                  ? NetworkImage(invitation.artistProfileImage!)
+                  : null,
+              child: invitation.artistProfileImage == null
+                  ? const Icon(Icons.person)
+                  : null,
+            ),
+            title: Text(
+              invitation.artistName,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(invitation.artistEmail),
+                const SizedBox(height: 4),
+                Text(
+                  'Invited ${_formatDate(invitation.createdAt)}',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.cancel, color: Colors.red),
+                  onPressed: () => _showCancelInvitationDialog(invitation),
+                  tooltip: 'Cancel invitation',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.blue),
+                  onPressed: () => _resendInvitation(invitation),
+                  tooltip: 'Resend invitation',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} days ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minutes ago';
+    } else {
+      return 'Just now';
+    }
+  }
+
+  void _showCancelInvitationDialog(GalleryInvitation invitation) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Invitation'),
+        content: Text(
+          'Are you sure you want to cancel the invitation to ${invitation.artistName}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _cancelInvitation(invitation.id);
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _resendInvitation(GalleryInvitation invitation) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get current gallery profile
+      final galleryProfile =
+          await _artistProfileService.getArtistProfileByUserId(currentUser.uid);
+      if (galleryProfile == null) {
+        throw Exception('Gallery profile not found');
+      }
+
+      // Send notification to artist again
+      await _firestore.collection('notifications').add({
+        'userId': invitation.artistId,
+        'title': 'Gallery Invitation Reminder',
+        'message':
+            '${galleryProfile.displayName} has sent you a reminder about their gallery invitation',
+        'type': 'galleryInvitation',
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'data': {
+          'galleryId': galleryProfile.id,
+          'galleryName': galleryProfile.displayName,
+          'artistId': invitation.artistId,
+        },
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invitation reminder sent'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to resend invitation: $e')),
+        );
+      }
+    }
   }
 }
 
@@ -212,8 +639,10 @@ class _ArtistSearchDialogState extends State<_ArtistSearchDialog> {
     });
 
     try {
-      // TODO: Implement artist search using core.ArtistProfileModel
-      final results = <core.ArtistProfileModel>[];
+      // Use ArtistProfileService to search for artists
+      final artistProfileService = ArtistProfileService();
+      final results =
+          await artistProfileService.searchArtists(query, limit: 20);
 
       setState(() {
         // Filter out artists already in the gallery
@@ -227,6 +656,16 @@ class _ArtistSearchDialogState extends State<_ArtistSearchDialog> {
         _searchResults = [];
         _isLoading = false;
       });
+
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error searching artists: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

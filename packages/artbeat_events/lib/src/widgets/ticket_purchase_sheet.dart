@@ -130,16 +130,16 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
       children: [
         Text(
           'Purchase Tickets',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
           widget.event.title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey.shade600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: Colors.grey.shade600),
         ),
       ],
     );
@@ -195,27 +195,26 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
               const SizedBox(height: 16),
               const Text(
                 'Includes:',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               const SizedBox(height: 8),
-              ...widget.ticketType.benefits.map((benefit) => Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check, size: 16, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            benefit,
-                            style: const TextStyle(fontSize: 13),
-                          ),
+              ...widget.ticketType.benefits.map(
+                (benefit) => Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check, size: 16, color: Colors.green),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          benefit,
+                          style: const TextStyle(fontSize: 13),
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
 
             const SizedBox(height: 12),
@@ -247,17 +246,15 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
       children: [
         const Text(
           'Quantity',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Row(
           children: [
             IconButton(
-              onPressed:
-                  _quantity > 1 ? () => setState(() => _quantity--) : null,
+              onPressed: _quantity > 1
+                  ? () => setState(() => _quantity--)
+                  : null,
               icon: const Icon(Icons.remove),
               style: IconButton.styleFrom(
                 backgroundColor: Colors.grey.shade100,
@@ -293,10 +290,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
             const SizedBox(width: 16),
             Text(
               'Max: ${widget.ticketType.remainingQuantity}',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
             ),
           ],
         ),
@@ -310,10 +304,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
       children: [
         const Text(
           'Your Information',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         TextFormField(
@@ -364,10 +355,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
           children: [
             const Text(
               'Order Summary',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             _buildSummaryRow(
@@ -376,10 +364,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
             ),
             if (subtotal > 0) ...[
               const SizedBox(height: 8),
-              _buildSummaryRow(
-                'Tax (8%)',
-                '\$${tax.toStringAsFixed(2)}',
-              ),
+              _buildSummaryRow('Tax (8%)', '\$${tax.toStringAsFixed(2)}'),
               const Divider(),
               _buildSummaryRow(
                 'Total',
@@ -388,11 +373,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
               ),
             ] else ...[
               const Divider(),
-              _buildSummaryRow(
-                'Total',
-                'Free',
-                isTotal: true,
-              ),
+              _buildSummaryRow('Total', 'Free', isTotal: true),
             ],
           ],
         ),
@@ -450,10 +431,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
             children: [
               const Text(
                 'Refund Policy:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
               ),
               const SizedBox(height: 4),
               Text(
@@ -573,7 +551,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
   }
 
   void _showSuccessDialog(String purchaseId) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
@@ -583,12 +561,14 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-                'You have successfully purchased $_quantity ticket${_quantity > 1 ? 's' : ''} for ${widget.event.title}.'),
+              'You have successfully purchased $_quantity ticket${_quantity > 1 ? 's' : ''} for ${widget.event.title}.',
+            ),
             const SizedBox(height: 16),
             Text('Confirmation ID: $purchaseId'),
             const SizedBox(height: 16),
             const Text(
-                'A confirmation email has been sent to your email address.'),
+              'A confirmation email has been sent to your email address.',
+            ),
           ],
         ),
         actions: [
@@ -605,7 +585,7 @@ class _TicketPurchaseSheetState extends State<TicketPurchaseSheet> {
   }
 
   void _showErrorDialog(String error) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('❌ Purchase Failed'),

@@ -14,6 +14,8 @@ import '../widgets/ad_location_picker_widget.dart';
 import '../widgets/ad_duration_picker_widget.dart';
 import '../widgets/ad_payment_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class AdminAdCreateScreen extends StatefulWidget {
   const AdminAdCreateScreen({super.key});
@@ -105,11 +107,8 @@ class _AdminAdCreateScreenState extends State<AdminAdCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Admin Ad'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'Create Admin Ad', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

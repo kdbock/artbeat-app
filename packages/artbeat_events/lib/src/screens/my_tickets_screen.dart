@@ -11,10 +11,7 @@ import '../widgets/qr_code_ticket_widget.dart';
 class MyTicketsScreen extends StatefulWidget {
   final String userId;
 
-  const MyTicketsScreen({
-    super.key,
-    required this.userId,
-  });
+  const MyTicketsScreen({super.key, required this.userId});
 
   @override
   State<MyTicketsScreen> createState() => _MyTicketsScreenState();
@@ -269,15 +266,15 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
               // Event date and time
               Row(
                 children: [
-                  Icon(Icons.calendar_today,
-                      size: 16, color: Colors.grey.shade600),
+                  Icon(
+                    Icons.calendar_today,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     EventUtils.formatEventDateTime(event.dateTime),
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                   ),
                 ],
               ),
@@ -287,8 +284,11 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
               // Location
               Row(
                 children: [
-                  Icon(Icons.location_on,
-                      size: 16, color: Colors.grey.shade600),
+                  Icon(
+                    Icons.location_on,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -422,11 +422,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red.shade300,
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
             'Failed to load tickets',
@@ -443,10 +439,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
             style: TextStyle(color: Colors.red.shade600),
           ),
           const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadTickets,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadTickets, child: const Text('Retry')),
         ],
       ),
     );
@@ -543,22 +536,28 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
 
                   _buildDetailRow('Event', event.title),
                   _buildDetailRow(
-                      'Date', EventUtils.formatEventDateTime(event.dateTime)),
+                    'Date',
+                    EventUtils.formatEventDateTime(event.dateTime),
+                  ),
                   _buildDetailRow('Location', event.location),
                   _buildDetailRow('Quantity', ticket.quantity.toString()),
                   _buildDetailRow('Total Paid', ticket.formattedAmount),
                   _buildDetailRow(
-                      'Purchase Date',
-                      DateFormat('MMM d, y \'at\' h:mm a')
-                          .format(ticket.purchaseDate)),
+                    'Purchase Date',
+                    DateFormat(
+                      'MMM d, y \'at\' h:mm a',
+                    ).format(ticket.purchaseDate),
+                  ),
                   _buildDetailRow('Confirmation ID', ticket.id),
                   _buildDetailRow('Status', ticket.status.displayName),
 
                   if (ticket.refundDate != null)
                     _buildDetailRow(
-                        'Refund Date',
-                        DateFormat('MMM d, y \'at\' h:mm a')
-                            .format(ticket.refundDate!)),
+                      'Refund Date',
+                      DateFormat(
+                        'MMM d, y \'at\' h:mm a',
+                      ).format(ticket.refundDate!),
+                    ),
                 ],
               ),
             ),
@@ -599,16 +598,13 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => QRCodeTicketWidget(
-          ticket: ticket,
-          event: event,
-        ),
+        builder: (context) => QRCodeTicketWidget(ticket: ticket, event: event),
       ),
     );
   }
 
   void _requestRefund(TicketPurchase ticket, ArtbeatEvent event) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Request Refund'),
@@ -617,16 +613,14 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-                'Are you sure you want to request a refund for this ticket?'),
+              'Are you sure you want to request a refund for this ticket?',
+            ),
             const SizedBox(height: 16),
             Text('Refund amount: ${ticket.formattedAmount}'),
             const SizedBox(height: 8),
             Text(
               'Refund policy: ${event.refundPolicy.terms}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ],
         ),

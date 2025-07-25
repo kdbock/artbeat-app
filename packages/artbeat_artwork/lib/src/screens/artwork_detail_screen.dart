@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtistProfileModel, UserAvatar, EnhancedUniversalHeader, MainLayout;
+    show
+        ArtistProfileModel,
+        UserAvatar,
+        EnhancedUniversalHeader,
+        MainLayout,
+        ArtbeatColors;
 import 'package:share_plus/share_plus.dart';
 
 /// Screen for viewing artwork details
@@ -23,11 +29,13 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
   final artist.SubscriptionService _subscriptionService =
       artist.SubscriptionService();
   final artist.AnalyticsService _analyticsService = artist.AnalyticsService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _isLoading = true;
   ArtworkModel? _artwork;
   ArtistProfileModel? _artist;
   bool _hasLiked = false;
+  bool _isOwner = false;
 
   @override
   void initState() {
@@ -69,6 +77,10 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       // Check if user has liked this artwork
       final hasLiked = await _artworkService.hasLiked(widget.artworkId);
 
+      // Check if current user is the owner of this artwork
+      final currentUser = _auth.currentUser;
+      final isOwner = currentUser != null && currentUser.uid == artwork.userId;
+
       // Increment view count
       await _artworkService.incrementViewCount(widget.artworkId);
 
@@ -77,6 +89,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
           _artwork = artwork;
           _artist = artistProfile;
           _hasLiked = hasLiked;
+          _isOwner = isOwner;
           _isLoading = false;
         });
       }
@@ -128,6 +141,108 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
     SharePlus.instance.share(ShareParams(text: message));
   }
 
+  void _editArtwork() {
+    if (_artwork == null) return;
+
+    Navigator.pushNamed(
+      context,
+      '/artwork/edit',
+      arguments: {
+        'artworkId': _artwork!.id,
+        'artwork': _artwork,
+      },
+    ).then((_) {
+      // Refresh artwork data when returning from edit
+      _loadArtworkData();
+    });
+  }
+
+  Future<void> _showDeleteConfirmation() async {
+    if (_artwork == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Artwork'),
+        content: Text(
+          'Are you sure you want to delete "${_artwork!.title}"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _deleteArtwork();
+    }
+  }
+
+  Future<void> _deleteArtwork() async {
+    if (_artwork == null) return;
+
+    try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 16),
+              Text('Deleting artwork...'),
+            ],
+          ),
+          duration: Duration(seconds: 30),
+        ),
+      );
+
+      await _artworkService.deleteArtwork(_artwork!.id);
+
+      if (mounted) {
+        // Hide loading snackbar
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('"${_artwork!.title}" has been deleted successfully'),
+            backgroundColor: ArtbeatColors.primaryGreen,
+          ),
+        );
+
+        // Navigate back to the previous screen
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        // Hide loading snackbar
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete artwork: $e'),
+            backgroundColor: ArtbeatColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -161,16 +276,51 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
               actions: [
-                IconButton(
-                  icon:
-                      Icon(_hasLiked ? Icons.favorite : Icons.favorite_border),
-                  color: _hasLiked ? Colors.red : null,
-                  onPressed: _toggleLike,
-                ),
+                if (!_isOwner) ...[
+                  IconButton(
+                    icon: Icon(
+                        _hasLiked ? Icons.favorite : Icons.favorite_border),
+                    color: _hasLiked ? Colors.red : null,
+                    onPressed: _toggleLike,
+                  ),
+                ],
                 IconButton(
                   icon: const Icon(Icons.share),
                   onPressed: _shareArtwork,
                 ),
+                if (_isOwner) ...[
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _editArtwork();
+                      } else if (value == 'delete') {
+                        _showDeleteConfirmation();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 18),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Delete', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Image.network(

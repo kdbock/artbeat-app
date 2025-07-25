@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:artbeat_core/src/services/auth_service.dart';
+import 'package:artbeat_core/src/services/enhanced_storage_service.dart';
 import '../models/ad_user_model.dart';
 import '../models/ad_type.dart' as model;
 import '../models/ad_location.dart' as model;
@@ -12,6 +14,8 @@ import '../widgets/ad_location_picker_widget.dart';
 import '../widgets/ad_duration_picker_widget.dart';
 import '../widgets/ad_payment_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class UserAdCreateScreen extends StatefulWidget {
   const UserAdCreateScreen({super.key});
@@ -24,6 +28,8 @@ class _UserAdCreateScreenState extends State<UserAdCreateScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
+  final _authService = AuthService();
+  final _storageService = EnhancedStorageService();
   XFile? _imageFile;
   model.AdType _adType = model.AdType.square;
   model.AdLocation _adLocation = model.AdLocation.home;
@@ -42,14 +48,32 @@ class _UserAdCreateScreenState extends State<UserAdCreateScreen> {
 
   void _submitAd() async {
     if (!_formKey.currentState!.validate() || _imageFile == null) return;
+
+    // Get current user from auth
+    final currentUser = _authService.currentUser;
+    if (currentUser == null) {
+      setState(() {
+        _error = 'Please log in to create an ad';
+        _isProcessing = false;
+      });
+      return;
+    }
+
     setState(() => _isProcessing = true);
     try {
-      // TODO: Upload image and get URL
-      const imageUrl = 'https://via.placeholder.com/300';
+      // Upload image and get URL
+      final imageFile = File(_imageFile!.path);
+      final uploadResult = await _storageService.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'ads',
+        generateThumbnail: true,
+      );
+
+      final imageUrl = uploadResult['imageUrl']!;
       final ad = AdUserModel(
         id: '',
-        ownerId: 'userId', // TODO: Get from auth
-        userId: 'userId',
+        ownerId: currentUser.uid,
+        userId: currentUser.uid,
         type: _adType,
         imageUrl: imageUrl,
         title: _titleController.text,
@@ -79,11 +103,8 @@ class _UserAdCreateScreenState extends State<UserAdCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create User Ad'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'Create User Ad', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

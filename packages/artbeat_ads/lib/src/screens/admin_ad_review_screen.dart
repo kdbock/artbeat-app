@@ -5,6 +5,8 @@ import '../models/ad_status.dart' as model;
 import '../services/ad_service.dart';
 import '../widgets/ad_status_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class AdminAdReviewScreen extends StatefulWidget {
   const AdminAdReviewScreen({super.key});
@@ -30,11 +32,8 @@ class _AdminAdReviewScreenState extends State<AdminAdReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Ad Review'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'Admin Ad Review', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

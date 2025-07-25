@@ -6,24 +6,32 @@ import 'package:flutter/foundation.dart';
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
 import '../models/user_model.dart';
+import 'notification_service.dart';
 
 class ChatService extends ChangeNotifier {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
   final FirebaseStorage _storage;
+  final NotificationService _notificationService;
 
   ChatService({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
     FirebaseStorage? storage,
+    NotificationService? notificationService,
   }) : _firestore = firestore ?? FirebaseFirestore.instance,
        _auth = auth ?? FirebaseAuth.instance,
-       _storage = storage ?? FirebaseStorage.instance;
+       _storage = storage ?? FirebaseStorage.instance,
+       _notificationService = notificationService ?? NotificationService();
 
   String get currentUserId {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
     return userId;
+  }
+
+  String? get currentUserIdSafe {
+    return _auth.currentUser?.uid;
   }
 
   Stream<List<ChatModel>> getChatStream() {
@@ -163,6 +171,9 @@ class ChatService extends ChangeNotifier {
       'updatedAt': Timestamp.now(),
       'unreadCounts': updatedUnreadCounts,
     });
+
+    // Send notifications to other participants
+    await _sendMessageNotifications(chatId, message, participantIds);
   }
 
   Stream<List<MessageModel>> getMessageStream(String chatId) {
@@ -770,6 +781,200 @@ class ChatService extends ChangeNotifier {
       debugPrint('Refreshed participant data for chat $chatId');
     } catch (e) {
       debugPrint('Error refreshing chat participants: $e');
+    }
+  }
+
+  /// Clears all messages in a chat
+  Future<void> clearChatHistory(String chatId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      final batch = _firestore.batch();
+
+      // Get all messages in the chat
+      final messagesSnapshot = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .get();
+
+      // Delete all messages
+      for (final doc in messagesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Update chat's lastMessage and updatedAt
+      batch.update(_firestore.collection('chats').doc(chatId), {
+        'lastMessage': '',
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      await batch.commit();
+      debugPrint('Chat history cleared for chat $chatId');
+    } catch (e) {
+      debugPrint('Error clearing chat history: $e');
+      throw Exception('Failed to clear chat history');
+    }
+  }
+
+  /// Leaves a group chat
+  Future<void> leaveGroup(String chatId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      final chatDoc = await _firestore.collection('chats').doc(chatId).get();
+      if (!chatDoc.exists) throw Exception('Chat not found');
+
+      final chatData = chatDoc.data() as Map<String, dynamic>;
+      final participantIds =
+          (chatData['participantIds'] as List?)?.cast<String>() ?? [];
+
+      if (!participantIds.contains(currentUserId)) {
+        throw Exception('User is not a participant in this chat');
+      }
+
+      // Remove current user from participants
+      participantIds.remove(currentUserId);
+
+      // Update the chat document
+      await _firestore.collection('chats').doc(chatId).update({
+        'participantIds': participantIds,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Add a system message about leaving
+      final leaveMessage = MessageModel(
+        id: _firestore.collection('temp').doc().id,
+        senderId: 'system',
+        content: 'User left the group',
+        timestamp: DateTime.now(),
+        type: MessageType
+            .text, // Use text, or add MessageType.system if you want a new type
+      );
+
+      await _sendMessage(chatId, leaveMessage);
+      debugPrint('Left group chat $chatId');
+    } catch (e) {
+      debugPrint('Error leaving group: $e');
+      throw Exception('Failed to leave group');
+    }
+  }
+
+  /// Deletes a chat completely
+  Future<void> deleteChat(String chatId) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      final batch = _firestore.batch();
+
+      // Get all messages in the chat
+      final messagesSnapshot = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .get();
+
+      // Delete all messages
+      for (final doc in messagesSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Delete the chat document
+      batch.delete(_firestore.collection('chats').doc(chatId));
+
+      await batch.commit();
+      debugPrint('Chat deleted: $chatId');
+    } catch (e) {
+      debugPrint('Error deleting chat: $e');
+      throw Exception('Failed to delete chat');
+    }
+  }
+
+  /// Reports a user
+  Future<void> reportUser(String userId, String reason) async {
+    final currentUserId = _auth.currentUser?.uid;
+    if (currentUserId == null) throw Exception('User not authenticated');
+
+    try {
+      await _firestore.collection('reports').add({
+        'reporterId': currentUserId,
+        'reportedUserId': userId,
+        'reason': reason,
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'type': 'user_report',
+      });
+      debugPrint('User reported: $userId');
+    } catch (e) {
+      debugPrint('Error reporting user: $e');
+      throw Exception('Failed to report user');
+    }
+  }
+
+  /// Sends push notifications to other participants when a new message is sent
+  Future<void> _sendMessageNotifications(
+    String chatId,
+    MessageModel message,
+    List<String> participantIds,
+  ) async {
+    try {
+      // Get sender's display name
+      final senderName =
+          await getUserDisplayName(message.senderId) ?? 'Someone';
+
+      // Get chat info to determine notification title
+      final chat = await getChatById(chatId);
+      String notificationTitle;
+
+      if (chat?.isGroup == true) {
+        notificationTitle = chat?.groupName ?? 'Group Chat';
+      } else {
+        notificationTitle = senderName;
+      }
+
+      // Send notifications to all participants except the sender
+      for (final participantId in participantIds) {
+        if (participantId != message.senderId) {
+          await _sendNotificationToUser(
+            participantId,
+            notificationTitle,
+            message.content,
+            {
+              'chatId': chatId,
+              'messageId': message.id,
+              'senderId': message.senderId,
+              'type': 'new_message',
+            },
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending message notifications: $e');
+      // Don't throw error to avoid breaking message sending
+    }
+  }
+
+  /// Sends a notification to a specific user
+  Future<void> _sendNotificationToUser(
+    String userId,
+    String title,
+    String body,
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      // Use the notification service to send the notification
+      await _notificationService.sendNotificationToUser(
+        userId: userId,
+        title: title,
+        body: body,
+        data: data,
+      );
+    } catch (e) {
+      debugPrint('❌ Error sending notification to user $userId: $e');
     }
   }
 }

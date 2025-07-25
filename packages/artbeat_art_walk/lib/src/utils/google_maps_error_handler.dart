@@ -27,39 +27,42 @@ class GoogleMapsErrorHandler {
     }
   }
 
-  /// Apply emulator optimizations to Google Map
-  static Future<void> optimizeMapForEmulator(
+  /// Optimized map style for emulators (reduced POI and transit visibility)
+  static const String _emulatorMapStyle = '''
+  [
+    {
+      "featureType": "poi",
+      "stylers": [{"visibility": "off"}]
+    },
+    {
+      "featureType": "transit",
+      "stylers": [{"visibility": "off"}]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels",
+      "stylers": [{"visibility": "simplified"}]
+    }
+  ]
+  ''';
+
+  /// Get map style for emulator optimization
+  /// Use this with GoogleMap.style parameter for better performance
+  static String getEmulatorMapStyle() {
+    return _emulatorMapStyle;
+  }
+
+  /// Apply emulator camera optimizations to Google Map
+  static Future<void> optimizeMapCameraForEmulator(
     GoogleMapController controller,
   ) async {
     try {
-      // Apply map style optimizations for emulators
-      // TODO: Update to newer API when available - setMapStyle is deprecated
-      // but no direct replacement for dynamic styling exists yet
-      // ignore: deprecated_member_use
-      await controller.setMapStyle('''
-      [
-        {
-          "featureType": "poi",
-          "stylers": [{"visibility": "off"}]
-        },
-        {
-          "featureType": "transit",
-          "stylers": [{"visibility": "off"}]
-        },
-        {
-          "featureType": "road",
-          "elementType": "labels",
-          "stylers": [{"visibility": "simplified"}]
-        }
-      ]
-      ''');
-
-      // Set a lower zoom level
+      // Set a lower zoom level for better emulator performance
       await controller.moveCamera(CameraUpdate.zoomTo(10));
 
-      debugPrint('✅ Applied emulator optimizations to map');
+      debugPrint('✅ Applied emulator camera optimizations to map');
     } catch (e) {
-      debugPrint('❌ Failed to optimize map for emulator: $e');
+      debugPrint('❌ Failed to optimize map camera for emulator: $e');
     }
   }
 

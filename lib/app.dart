@@ -997,6 +997,13 @@ class MyApp extends StatelessWidget {
             child: ads.AdminAdReviewScreen(),
           ),
         );
+      case '/admin/messaging':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: messaging.EnhancedMessagingDashboardScreen(),
+          ),
+        );
 
       // Developer menu (already handled above)
 
@@ -1215,8 +1222,18 @@ class MyApp extends StatelessWidget {
         );
 
       case '/messaging/settings':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final chat = args?['chat'] as messaging.ChatModel?;
+        if (chat == null) {
+          return MaterialPageRoute(
+            builder: (_) => const core.MainLayout(
+              currentIndex: -1,
+              child: Scaffold(body: Center(child: Text('Chat not found'))),
+            ),
+          );
+        }
         return MaterialPageRoute(
-          builder: (_) => const messaging.ChatSettingsScreen(),
+          builder: (_) => messaging.ChatSettingsScreen(chat: chat),
         );
       case '/messaging/chat-info':
         final args = settings.arguments as Map<String, dynamic>?;
@@ -1254,11 +1271,11 @@ class MyApp extends StatelessWidget {
           );
         }
         return MaterialPageRoute(
-          builder: (_) => core.MainLayout(
+          builder: (context) => core.MainLayout(
             currentIndex: -1,
             child: FutureBuilder<messaging.UserModel?>(
               future: Provider.of<messaging.ChatService>(
-                navigatorKey.currentContext!,
+                context,
                 listen: false,
               ).getUser(userId),
               builder: (context, snapshot) {
@@ -1288,11 +1305,11 @@ class MyApp extends StatelessWidget {
           );
         }
         return MaterialPageRoute(
-          builder: (_) => core.MainLayout(
+          builder: (context) => core.MainLayout(
             currentIndex: -1,
             child: FutureBuilder<messaging.ChatModel?>(
               future: Provider.of<messaging.ChatService>(
-                navigatorKey.currentContext!,
+                context,
                 listen: false,
               ).getChatById(chatId),
               builder: (context, snapshot) {
@@ -1321,11 +1338,11 @@ class MyApp extends StatelessWidget {
           );
         }
         return MaterialPageRoute(
-          builder: (_) => core.MainLayout(
+          builder: (context) => core.MainLayout(
             currentIndex: -1,
             child: FutureBuilder<messaging.ChatModel>(
               future: Provider.of<messaging.ChatService>(
-                navigatorKey.currentContext!,
+                context,
                 listen: false,
               ).createOrGetChat(userId),
               builder: (context, snapshot) {

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/src/services/auth_service.dart';
 import '../models/ad_user_model.dart';
 import '../models/ad_status.dart' as model;
 import '../services/ad_user_service.dart';
 import '../widgets/ad_status_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class UserAdReviewScreen extends StatefulWidget {
   const UserAdReviewScreen({super.key});
@@ -14,23 +17,42 @@ class UserAdReviewScreen extends StatefulWidget {
 
 class _UserAdReviewScreenState extends State<UserAdReviewScreen> {
   final AdUserService _service = AdUserService();
+  final AuthService _authService = AuthService();
   late Stream<List<AdUserModel>> _adsStream;
-  final String _userId = 'userId'; // TODO: Get from auth
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
-    _adsStream = _service.getUserAdsByUser(_userId);
+    _initializeUserId();
+  }
+
+  void _initializeUserId() {
+    final currentUser = _authService.currentUser;
+    if (currentUser != null) {
+      _userId = currentUser.uid;
+      _adsStream = _service.getUserAdsByUser(_userId!);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_userId == null) {
+      return const Scaffold(
+        appBar: const AdsHeader(title: 'My Ad Review', showBackButton: true),
+        drawer: const AdsDrawer(),
+        body: const Center(
+          child: Text(
+            'Please log in to view your ads',
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Ad Review'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'My Ad Review', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

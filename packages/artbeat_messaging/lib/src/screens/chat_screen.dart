@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show EnhancedUniversalHeader, ArtbeatColors, ArtbeatGradientBackground;
+import 'package:geolocator/geolocator.dart';
 import '../models/chat_model.dart';
 import '../models/message.dart';
 import '../models/message_model.dart';
@@ -218,6 +219,194 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         );
       }
     }
+  }
+
+  Future<void> _startAudioRecording() async {
+    try {
+      // Show recording dialog
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Audio Recording'),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.mic, size: 48, color: ArtbeatColors.secondaryTeal),
+              SizedBox(height: 16),
+              Text('Recording audio...'),
+              SizedBox(height: 16),
+              LinearProgressIndicator(),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Stop & Send'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+
+      // Simulate recording duration
+      await Future<void>.delayed(const Duration(seconds: 2));
+
+      if (mounted) {
+        Navigator.pop(context);
+
+        // Show feature coming soon message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio recording feature coming soon!'),
+            backgroundColor: ArtbeatColors.primaryPurple,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to record audio: ${e.toString()}'),
+            backgroundColor: ArtbeatColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showEmojiPicker() {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => Container(
+        height: 300,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const Text(
+              'Select Emoji',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 6,
+                children:
+                    [
+                          '😀',
+                          '😁',
+                          '😂',
+                          '🤣',
+                          '😊',
+                          '😇',
+                          '😍',
+                          '🤩',
+                          '😘',
+                          '😗',
+                          '😋',
+                          '😎',
+                          '🤔',
+                          '🤨',
+                          '😐',
+                          '😑',
+                          '😶',
+                          '🙄',
+                          '😏',
+                          '😣',
+                          '😥',
+                          '😮',
+                          '🤐',
+                          '😯',
+                          '😴',
+                          '😪',
+                          '😵',
+                          '🤯',
+                          '🥰',
+                          '🤪',
+                          '👍',
+                          '👎',
+                          '👌',
+                          '✌️',
+                          '🤞',
+                          '🤟',
+                          '🤘',
+                          '🤙',
+                          '👈',
+                          '👉',
+                          '👆',
+                          '👇',
+                          '❤️',
+                          '💔',
+                          '💕',
+                          '💖',
+                          '💗',
+                          '💙',
+                          '💚',
+                          '💛',
+                          '🧡',
+                          '💜',
+                          '🖤',
+                          '💯',
+                          '🔥',
+                          '⭐',
+                          '🌟',
+                          '💫',
+                          '✨',
+                          '🎉',
+                        ]
+                        .map(
+                          (emoji) => GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                              _insertEmoji(emoji);
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: ArtbeatColors.backgroundSecondary
+                                    .withValues(alpha: 0.1),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _insertEmoji(String emoji) {
+    final currentText = _messageController.text;
+    final selection = _messageController.selection;
+
+    final newText = currentText.replaceRange(
+      selection.start,
+      selection.end,
+      emoji,
+    );
+
+    _messageController.text = newText;
+    _messageController.selection = TextSelection.collapsed(
+      offset: selection.start + emoji.length,
+    );
   }
 
   void _showSendingMediaIndicator() {
@@ -647,15 +836,59 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                 label: 'Audio',
                                 color: ArtbeatColors.secondaryTeal,
                                 onTap: () {
-                                  // TODO: Implement audio recording
+                                  Navigator.pop(context);
+                                  _startAudioRecording();
                                 },
                               ),
                               _buildAttachmentOption(
                                 icon: Icons.location_on,
                                 label: 'Location',
                                 color: ArtbeatColors.accentYellow,
-                                onTap: () {
-                                  // TODO: Implement location sharing
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  try {
+                                    // Request location permission and get current position
+                                    final position =
+                                        await Geolocator.getCurrentPosition(
+                                          locationSettings:
+                                              const LocationSettings(
+                                                accuracy: LocationAccuracy.high,
+                                              ),
+                                        );
+                                    final latitude = position.latitude;
+                                    final longitude = position.longitude;
+
+                                    // Send location as a message (reuse sendMessage, but with type/location)
+                                    final chatService =
+                                        Provider.of<ChatService>(
+                                          context,
+                                          listen: false,
+                                        );
+                                    final message = MessageModel(
+                                      id: DateTime.now().millisecondsSinceEpoch
+                                          .toString(),
+                                      senderId: chatService.currentUserId,
+                                      content: 'Location: $latitude,$longitude',
+                                      timestamp: DateTime.now(),
+                                      type: MessageType.location,
+                                      metadata: {
+                                        'latitude': latitude,
+                                        'longitude': longitude,
+                                      },
+                                    );
+                                    await chatService.sendMessage(
+                                      widget.chat.id,
+                                      message.content,
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Failed to share location: ${e.toString()}',
+                                        ),
+                                      ),
+                                    );
+                                  }
                                 },
                               ),
                             ],
@@ -716,7 +949,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                   ),
                                   color: ArtbeatColors.primaryPurple,
                                   onPressed: () {
-                                    // TODO: Implement emoji picker
+                                    _showEmojiPicker();
                                   },
                                 ),
                               ],

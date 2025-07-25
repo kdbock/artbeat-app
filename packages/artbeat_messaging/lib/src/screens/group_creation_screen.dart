@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../services/chat_service.dart';
 import '../models/user_model.dart';
 
@@ -96,14 +97,10 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                       children: [
                         Stack(
                           children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundImage: user.photoUrl != null
-                                  ? NetworkImage(user.photoUrl!)
-                                  : null,
-                              child: user.photoUrl == null
-                                  ? Text(user.displayName[0].toUpperCase())
-                                  : null,
+                            ImageUtils.safeCircleAvatar(
+                              imageUrl: user.photoUrl,
+                              displayName: user.displayName,
+                              radius: 30.0,
                             ),
                             Positioned(
                               right: -4,
@@ -188,13 +185,10 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                   itemBuilder: (context, index) {
                     final user = availableUsers[index];
                     return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: user.photoUrl != null
-                            ? NetworkImage(user.photoUrl!)
-                            : null,
-                        child: user.photoUrl == null
-                            ? Text(user.displayName[0].toUpperCase())
-                            : null,
+                      leading: ImageUtils.safeCircleAvatar(
+                        imageUrl: user.photoUrl,
+                        displayName: user.displayName,
+                        radius: 20.0,
                       ),
                       title: Text(user.displayName),
                       subtitle: Text(

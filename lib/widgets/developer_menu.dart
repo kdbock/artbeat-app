@@ -6,12 +6,18 @@ class DeveloperMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: SafeArea(
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
+            // Header section
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -21,18 +27,17 @@ class DeveloperMenu extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Screen Navigation',
-                    style: TextStyle(
-                      color: Color.fromARGB(179, 27, 26, 26),
-                      fontSize: 16,
-                    ),
+                    'Screen Navigation & Tools',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                 ],
               ),
             ),
-            const Divider(),
+            const SizedBox(height: 16),
             _buildDatabaseSection(context),
+            const SizedBox(height: 8),
             _buildFeedbackSection(context),
+            const SizedBox(height: 8),
             _buildBackupSection(context),
           ],
         ),

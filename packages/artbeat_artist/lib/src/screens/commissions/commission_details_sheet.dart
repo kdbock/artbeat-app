@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/commission_model.dart';
+import '../../services/commission_service.dart';
 
 class CommissionDetailsSheet extends StatelessWidget {
   final CommissionModel commission;
@@ -179,8 +180,9 @@ class CommissionDetailsSheet extends StatelessWidget {
     );
   }
 
-  void _handleAcceptCommission(BuildContext context) {
-    // TODO: Implement commission acceptance
+  void _handleAcceptCommission(BuildContext context) async {
+    final commissionService = CommissionService();
+
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -193,10 +195,37 @@ class CommissionDetailsSheet extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Update commission status
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close details sheet
+            onPressed: () async {
+              try {
+                // Update commission status to active
+                await commissionService.updateStatus(
+                  commission.id,
+                  CommissionStatus.active,
+                );
+
+                if (context.mounted) {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Close details sheet
+
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Commission accepted successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error accepting commission: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text('Accept'),
           ),
@@ -205,8 +234,9 @@ class CommissionDetailsSheet extends StatelessWidget {
     );
   }
 
-  void _handleMarkComplete(BuildContext context) {
-    // TODO: Implement marking commission as complete
+  void _handleMarkComplete(BuildContext context) async {
+    final commissionService = CommissionService();
+
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -218,10 +248,37 @@ class CommissionDetailsSheet extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Update commission status
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Close details sheet
+            onPressed: () async {
+              try {
+                // Update commission status to completed
+                await commissionService.updateStatus(
+                  commission.id,
+                  CommissionStatus.completed,
+                );
+
+                if (context.mounted) {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Close details sheet
+
+                  // Show success message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Commission marked as complete'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error marking commission as complete: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text('Confirm'),
           ),

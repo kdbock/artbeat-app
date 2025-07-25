@@ -264,4 +264,65 @@ class ArtistProfileService {
       throw Exception('Error getting all artists: $e');
     }
   }
+
+  /// Search artists by name and location
+  Future<List<core.ArtistProfileModel>> searchArtists(
+    String query, {
+    int limit = 20,
+  }) async {
+    try {
+      if (query.trim().isEmpty) {
+        return [];
+      }
+
+      final String queryLower = query.toLowerCase().trim();
+
+      // Get all artists and filter client-side for more flexible search
+      // This is a simple implementation - for production, consider using
+      // Elasticsearch or Algolia for better search performance
+      final querySnapshot = await _artistProfilesCollection
+          .orderBy('displayName')
+          .limit(100) // Get more results to filter from
+          .get();
+
+      final List<core.ArtistProfileModel> allArtists = querySnapshot.docs
+          .map((doc) => core.ArtistProfileModel.fromFirestore(doc))
+          .toList();
+
+      // Filter results by display name and location
+      final filteredArtists = allArtists.where((artist) {
+        final displayNameMatch =
+            artist.displayName.toLowerCase().contains(queryLower);
+        final locationMatch =
+            artist.location?.toLowerCase().contains(queryLower) ?? false;
+        final bioMatch =
+            artist.bio?.toLowerCase().contains(queryLower) ?? false;
+
+        return displayNameMatch || locationMatch || bioMatch;
+      }).toList();
+
+      // Sort by relevance (exact matches first, then partial matches)
+      filteredArtists.sort((a, b) {
+        final aDisplayName = a.displayName.toLowerCase();
+        final bDisplayName = b.displayName.toLowerCase();
+
+        // Exact display name matches first
+        if (aDisplayName == queryLower && bDisplayName != queryLower) return -1;
+        if (bDisplayName == queryLower && aDisplayName != queryLower) return 1;
+
+        // Display name starts with query
+        if (aDisplayName.startsWith(queryLower) &&
+            !bDisplayName.startsWith(queryLower)) return -1;
+        if (bDisplayName.startsWith(queryLower) &&
+            !aDisplayName.startsWith(queryLower)) return 1;
+
+        // Otherwise, alphabetical order
+        return aDisplayName.compareTo(bDisplayName);
+      });
+
+      return filteredArtists.take(limit).toList();
+    } catch (e) {
+      throw Exception('Error searching artists: $e');
+    }
+  }
 }

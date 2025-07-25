@@ -437,11 +437,48 @@ class PaymentService {
     try {
       // This is a placeholder for actual Stripe recurring payment logic
       // You would call a cloud function to create a recurring subscription for the artist
-      await _firestore.collection('sponsorships').add({
-        ...sponsorship,
-        'status': 'pending',
-      });
-      // TODO: Integrate with Stripe for real recurring billing
+      // Create recurring billing schedule with Stripe
+      final subscriptionResponse = await _httpClient.post(
+        Uri.parse('$_baseUrl/createRecurringPayment'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${await _auth.currentUser?.getIdToken()}',
+        },
+        body: json.encode({
+          'amount': sponsorship['amount'],
+          'currency': sponsorship['currency'] ?? 'usd',
+          'interval': sponsorship['billingInterval'] ?? 'month',
+          'customerId': _auth.currentUser?.uid,
+          'metadata': {
+            'sponsorshipId': sponsorship['id'],
+            'eventId': sponsorship['eventId'],
+            'sponsorshipType': sponsorship['type'],
+          },
+        }),
+      );
+
+      if (subscriptionResponse.statusCode == 200) {
+        final subscriptionData = json.decode(subscriptionResponse.body);
+
+        // Save sponsorship with Stripe subscription ID
+        await _firestore.collection('sponsorships').add({
+          ...sponsorship,
+          'status': 'active',
+          'stripeSubscriptionId': subscriptionData['subscriptionId'],
+          'stripeCustomerId': subscriptionData['customerId'],
+          'nextBillingDate': DateTime.now()
+              .add(
+                Duration(
+                  days: sponsorship['billingInterval'] == 'year' ? 365 : 30,
+                ),
+              )
+              .millisecondsSinceEpoch,
+        });
+      } else {
+        throw Exception(
+          'Failed to create recurring payment: ${subscriptionResponse.body}',
+        );
+      }
     } catch (e) {
       debugPrint('Error processing sponsorship payment: $e');
       rethrow;
@@ -454,11 +491,51 @@ class PaymentService {
     required double amount,
     String? reason,
   }) async {
-    // TODO: Integrate with backend/cloud function for actual refund
-    // For now, simulate a successful refund
-    await Future<void>.delayed(const Duration(seconds: 1));
-    // In production, call your backend endpoint here
-    // throw Exception('Refund failed'); // Uncomment to simulate failure
+    try {
+      final auth = FirebaseAuth.instance;
+      final httpClient = http.Client();
+
+      // Call cloud function to process refund through Stripe
+      final response = await httpClient.post(
+        Uri.parse('$_baseUrl/processRefund'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${await auth.currentUser?.getIdToken()}',
+        },
+        body: json.encode({
+          'paymentId': paymentId,
+          'amount': amount,
+          'reason': reason ?? 'Requested by user',
+          'userId': auth.currentUser?.uid,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+
+        // Update payment record in Firestore
+        await FirebaseFirestore.instance
+            .collection('payments')
+            .doc(paymentId)
+            .update({
+              'status': 'refunded',
+              'refundId': responseData['refundId'],
+              'refundAmount': amount,
+              'refundedAt': FieldValue.serverTimestamp(),
+              'refundReason': reason,
+            });
+
+        debugPrint(
+          'Refund processed successfully: ${responseData['refundId']}',
+        );
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception('Refund failed: ${errorData['error']}');
+      }
+    } catch (e) {
+      debugPrint('Error processing refund: $e');
+      rethrow;
+    }
   }
 
   /// Get price ID for subscription tier

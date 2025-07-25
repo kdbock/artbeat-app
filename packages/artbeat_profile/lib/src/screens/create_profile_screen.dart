@@ -104,20 +104,23 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
         uid: widget.userId,
         email: currentUser?.email ?? '',
         displayName: _nameController.text.trim(),
-        // TODO: Add username, bio, location support to UserService.createNewUser
+        username: _usernameController.text.trim(),
+        bio: _bioController.text.trim(),
+        location: _locationController.text.trim(),
       );
-      // TODO: Implement profile image upload in UserService
-      // if (_profileImage != null) {
-      //   try {
-      //     await _userService.updateUserProfileImage(
-      //       widget.userId,
-      //       _profileImage!,
-      //     );
-      //   } catch (e) {
-      //     debugPrint('⚠️ Profile created but image upload failed: $e');
-      //     // Don't fail the entire process for image upload failure
-      //   }
-      // }
+
+      // Upload profile image if selected
+      if (_profileImage != null) {
+        try {
+          await _userService.updateUserProfileImage(
+            widget.userId,
+            _profileImage!,
+          );
+        } catch (e) {
+          debugPrint('⚠️ Profile created but image upload failed: $e');
+          // Don't fail the entire process for image upload failure
+        }
+      }
 
       if (mounted) {
         // Call the callback if provided
@@ -138,15 +141,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
       }
     }
   }
-
-  // TODO: Implement username availability check in UserService
-  // Future<bool> _isUsernameAvailable(String username) async {
-  //   try {
-  //     return await _userService.isUsernameAvailable(username);
-  //   } catch (e) {
-  //     return false;
-  //   }
-  // }
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -322,7 +316,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                           controller: _bioController,
                           label: 'Bio (optional)',
                           prefixIcon: const Icon(Icons.info_outline),
-                          // TODO: Add maxLines support to ArtbeatInput if needed
+                          hint: 'Tell us about yourself',
+                          maxLines: 4,
                           validator: (value) {
                             if (value != null && value.length > 500) {
                               return 'Bio must be less than 500 characters';

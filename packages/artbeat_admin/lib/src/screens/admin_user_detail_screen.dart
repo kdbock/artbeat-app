@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_admin_model.dart';
+import '../widgets/admin_header.dart';
+import '../widgets/admin_drawer.dart';
 
 /// Detailed view of a user for admin management
 class AdminUserDetailScreen extends StatefulWidget {
@@ -37,17 +39,29 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 1,
-      child: Column(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      drawer: const AdminDrawer(),
+      appBar: AdminHeader(
+        title: 'User Details',
+        showBackButton: true,
+        showSearch: true,
+        showChat: true,
+        showDeveloper: true,
+        onBackPressed: () => Navigator.pop(context),
+        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+      ),
+      body: Column(
         children: [
           Material(
-            color: Colors.deepPurple,
+            color: const Color(0xFF8C52FF), // Admin header color
             child: TabBar(
               controller: _tabController,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              indicatorColor: Colors.white,
+              labelColor: const Color(0xFF00BF63), // Admin text/icon color
+              unselectedLabelColor:
+                  const Color(0xFF00BF63).withValues(alpha: 0.7),
+              indicatorColor: const Color(0xFF00BF63),
               tabs: const [
                 Tab(text: 'Overview', icon: Icon(Icons.person)),
                 Tab(text: 'Details', icon: Icon(Icons.info)),

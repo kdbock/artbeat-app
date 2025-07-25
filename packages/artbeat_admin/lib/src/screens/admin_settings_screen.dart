@@ -1,7 +1,8 @@
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import '../models/admin_settings_model.dart';
 import '../services/admin_settings_service.dart';
+import '../widgets/admin_header.dart';
+import '../widgets/admin_drawer.dart';
 
 /// Admin Settings Screen
 ///
@@ -96,62 +97,58 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 0,
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Settings',
-              showLogo: false,
-              showSearch: false,
-              showDeveloperTools: true,
-              onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              elevation: 0,
-              actions: [
-                if (_hasUnsavedChanges)
-                  TextButton(
-                    onPressed: _saveSettings,
-                    child: const Text('Save'),
-                  ),
-              ],
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: Colors.white,
+      drawer: const AdminDrawer(),
+      appBar: AdminHeader(
+        title: 'Settings',
+        showBackButton: true,
+        showSearch: true,
+        showChat: true,
+        showDeveloper: true,
+        onBackPressed: () => Navigator.pop(context),
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        actions: [
+          if (_hasUnsavedChanges)
+            TextButton(
+              onPressed: _saveSettings,
+              child: const Text(
+                'Save',
+                style: TextStyle(color: Color(0xFF00BF63)),
+              ),
             ),
-          ),
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? _buildErrorWidget()
-                    : _buildSettingsContent(),
-          ),
-        ),
-        floatingActionButton: _hasUnsavedChanges
-            ? FloatingActionButton(
-                onPressed: _saveSettings,
-                child: const Icon(Icons.save),
-              )
-            : null,
+        ],
       ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
+                  ? _buildErrorWidget()
+                  : _buildSettingsContent(),
+        ),
+      ),
+      floatingActionButton: _hasUnsavedChanges
+          ? FloatingActionButton(
+              onPressed: _saveSettings,
+              child: const Icon(Icons.save),
+            )
+          : null,
     );
   }
 

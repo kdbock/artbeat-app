@@ -6,6 +6,7 @@ import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:logger/logger.dart';
 import 'package:artbeat_artist/src/screens/refund_request_screen.dart';
 import 'package:artbeat_artist/src/screens/subscription_comparison_screen.dart';
+import 'package:artbeat_artist/src/screens/payment_screen.dart';
 
 /// Screen for managing subscription plans
 class SubscriptionScreen extends StatefulWidget {
@@ -99,12 +100,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           _selectedTier != _currentSubscription!.tier) {
         await _changeTier();
       } else {
-        // TODO: Replace with correct PaymentScreen import if not local
         final result = await Navigator.push<bool>(
           context,
           MaterialPageRoute<bool>(
-            builder: (context) =>
-                Container(), // PaymentScreen(tier: _selectedTier),
+            builder: (context) => PaymentScreen(tier: _selectedTier),
           ),
         );
         if (result == true) {

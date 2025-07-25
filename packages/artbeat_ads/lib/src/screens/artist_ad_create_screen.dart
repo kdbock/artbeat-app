@@ -14,6 +14,8 @@ import '../widgets/ad_location_picker_widget.dart';
 import '../widgets/ad_duration_picker_widget.dart';
 import '../widgets/ad_payment_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class ArtistAdCreateScreen extends StatefulWidget {
   const ArtistAdCreateScreen({super.key});
@@ -106,11 +108,8 @@ class _ArtistAdCreateScreenState extends State<ArtistAdCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Artist Ad'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'Create Artist Ad', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

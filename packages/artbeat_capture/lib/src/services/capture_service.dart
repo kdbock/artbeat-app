@@ -17,6 +17,9 @@ class CaptureService {
   /// Collection reference for captures
   CollectionReference get _capturesRef => _firestore.collection('captures');
 
+  /// Collection reference for public art
+  CollectionReference get _publicArtRef => _firestore.collection('publicArt');
+
   /// Get all captures for a specific user
   Future<List<CaptureModel>> getCapturesForUser(String? userId) async {
     if (userId == null) return [];
@@ -44,6 +47,7 @@ class CaptureService {
   /// Save a new capture
   Future<String?> saveCapture(CaptureModel capture) async {
     try {
+      // Save to captures collection (for user's personal collection)
       final docRef = await _capturesRef.add({
         'userId': capture.userId,
         'title': capture.title,
@@ -63,6 +67,12 @@ class CaptureService {
         'artType': capture.artType,
         'artMedium': capture.artMedium,
       });
+
+      // If capture is public and processed, also save to publicArt collection
+      if (capture.isPublic && capture.isProcessed) {
+        await _saveToPublicArt(capture.copyWith(id: docRef.id));
+      }
+
       return docRef.id;
     } catch (e) {
       debugPrint('Error saving capture: $e');
@@ -70,11 +80,47 @@ class CaptureService {
     }
   }
 
+  /// Save capture to publicArt collection for art walks
+  Future<void> _saveToPublicArt(CaptureModel capture) async {
+    try {
+      await _publicArtRef.doc(capture.id).set({
+        'userId': capture.userId,
+        'title': capture.title ?? 'Untitled',
+        'description': capture.description ?? '',
+        'imageUrl': capture.imageUrl,
+        'thumbnailUrl': capture.thumbnailUrl,
+        'artistName': capture.artistName,
+        'location': capture.location,
+        'address': capture.locationName,
+        'tags': capture.tags ?? [],
+        'artType': capture.artType ?? 'Street Art',
+        'artMedium': capture.artMedium,
+        'isVerified': false,
+        'viewCount': 0,
+        'likeCount': 0,
+        'usersFavorited': <String>[],
+        'createdAt': capture.createdAt,
+        'updatedAt': capture.updatedAt,
+        'captureId': capture.id, // Reference to original capture
+      });
+      debugPrint('✅ Saved capture ${capture.id} to publicArt collection');
+    } catch (e) {
+      debugPrint('❌ Error saving to publicArt collection: $e');
+    }
+  }
+
   /// Create a new capture
   Future<CaptureModel> createCapture(CaptureModel capture) async {
     try {
       final docRef = await _capturesRef.add(capture.toFirestore());
-      return capture.copyWith(id: docRef.id);
+      final newCapture = capture.copyWith(id: docRef.id);
+
+      // If capture is public and processed, also save to publicArt collection
+      if (newCapture.isPublic && newCapture.isProcessed) {
+        await _saveToPublicArt(newCapture);
+      }
+
+      return newCapture;
     } catch (e) {
       debugPrint('Error creating capture: $e');
       rethrow;
@@ -91,6 +137,25 @@ class CaptureService {
         ...updates,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      // If the capture is being made public and processed, add to publicArt
+      if (updates['isPublic'] == true && updates['isProcessed'] == true) {
+        final captureDoc = await _capturesRef.doc(captureId).get();
+        if (captureDoc.exists) {
+          final captureData = captureDoc.data() as Map<String, dynamic>;
+          final capture = CaptureModel.fromJson({
+            ...captureData,
+            'id': captureId,
+          });
+          await _saveToPublicArt(capture);
+        }
+      }
+      // If the capture is being made private, remove from publicArt
+      else if (updates['isPublic'] == false) {
+        await _publicArtRef.doc(captureId).delete();
+        debugPrint('🗑️ Removed capture $captureId from publicArt collection');
+      }
+
       return true;
     } catch (e) {
       debugPrint('Error updating capture: $e');
@@ -101,7 +166,10 @@ class CaptureService {
   /// Delete a capture
   Future<bool> deleteCapture(String captureId) async {
     try {
+      // Delete from both collections
       await _capturesRef.doc(captureId).delete();
+      await _publicArtRef.doc(captureId).delete();
+      debugPrint('🗑️ Deleted capture $captureId from both collections');
       return true;
     } catch (e) {
       debugPrint('Error deleting capture: $e');
@@ -471,6 +539,50 @@ class CaptureService {
         );
         return [];
       }
+    }
+  }
+
+  /// Migration method: Move existing public captures to publicArt collection
+  Future<void> migrateCapturesToPublicArt() async {
+    try {
+      debugPrint(
+        '🔄 Starting migration of captures to publicArt collection...',
+      );
+
+      // Get all public and processed captures
+      final snapshot = await _capturesRef
+          .where('isPublic', isEqualTo: true)
+          .where('isProcessed', isEqualTo: true)
+          .get();
+
+      debugPrint('📊 Found ${snapshot.docs.length} public captures to migrate');
+
+      int migrated = 0;
+      int errors = 0;
+
+      for (final doc in snapshot.docs) {
+        try {
+          final data = doc.data() as Map<String, dynamic>;
+          final capture = CaptureModel.fromJson({...data, 'id': doc.id});
+
+          // Check if already exists in publicArt
+          final existingDoc = await _publicArtRef.doc(doc.id).get();
+          if (!existingDoc.exists) {
+            await _saveToPublicArt(capture);
+            migrated++;
+            debugPrint('✅ Migrated capture ${doc.id}');
+          } else {
+            debugPrint('⏭️ Capture ${doc.id} already exists in publicArt');
+          }
+        } catch (e) {
+          errors++;
+          debugPrint('❌ Error migrating capture ${doc.id}: $e');
+        }
+      }
+
+      debugPrint('🎉 Migration completed: $migrated migrated, $errors errors');
+    } catch (e) {
+      debugPrint('❌ Migration failed: $e');
     }
   }
 }

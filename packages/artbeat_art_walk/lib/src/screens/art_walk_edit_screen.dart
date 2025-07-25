@@ -211,12 +211,66 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
     }
   }
 
+  /// Handle artwork selection from the artwork browse screen
+  void _handleArtworkSelection(dynamic selectedArtwork) {
+    String artworkId;
+
+    // Handle different return types
+    if (selectedArtwork is String) {
+      artworkId = selectedArtwork;
+    } else if (selectedArtwork is Map<String, dynamic>) {
+      artworkId =
+          (selectedArtwork['id'] ?? selectedArtwork['artworkId'] ?? '')
+              as String;
+    } else {
+      debugPrint(
+        'Unsupported artwork selection type: ${selectedArtwork.runtimeType}',
+      );
+      return;
+    }
+
+    if (artworkId.isEmpty) {
+      debugPrint('No artwork ID provided');
+      return;
+    }
+
+    // Check if artwork is already in the art walk
+    if (_artworkIds.contains(artworkId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This artwork is already in your art walk'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Add artwork to the art walk
+    setState(() {
+      _artworkIds.add(artworkId);
+    });
+
+    // Show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Artwork added to art walk successfully'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    // Optional: Save changes immediately
+    _saveChanges();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const EnhancedUniversalHeader(title: 'Edit Art Walk', showLogo: false),
+        appBar: const EnhancedUniversalHeader(
+          title: 'Edit Art Walk',
+          showLogo: false,
+        ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _artWalk == null
@@ -433,12 +487,24 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
               const SizedBox(height: 16),
               OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: Navigate to artwork selection screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Artwork selection feature coming soon'),
-                    ),
-                  );
+                  // Navigate to artwork selection screen
+                  Navigator.pushNamed(
+                    context,
+                    '/artwork/browse',
+                    arguments: {
+                      'selectionMode': true,
+                      'artWalkId': widget.artWalk?.id,
+                      'onArtworkSelected': (String artworkId) {
+                        // Handle artwork selection
+                        _handleArtworkSelection(artworkId);
+                      },
+                    },
+                  ).then((selectedArtwork) {
+                    // Handle result if artwork was selected
+                    if (selectedArtwork != null) {
+                      _handleArtworkSelection(selectedArtwork);
+                    }
+                  });
                 },
                 icon: const Icon(Icons.add),
                 label: const Text('Add Artwork'),

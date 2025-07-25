@@ -33,8 +33,9 @@ class _CommissionsScreenState extends State<CommissionsScreen>
   Future<void> _loadCommissions() async {
     setState(() => _isLoading = true);
     try {
-      final commissions =
-          await _commissionService.getCommissionsByUser('userId');
+      final commissions = await _commissionService.getCommissionsByUser(
+        'userId',
+      );
       setState(() {
         _commissions = commissions;
         _isLoading = false;
@@ -42,9 +43,9 @@ class _CommissionsScreenState extends State<CommissionsScreen>
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading commissions: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error loading commissions: $e')));
     }
   }
 
@@ -69,17 +70,23 @@ class _CommissionsScreenState extends State<CommissionsScreen>
                   controller: _tabController,
                   children: [
                     // Active commissions
-                    _buildCommissionList(_commissions
-                        .where((c) => c.status == CommissionStatus.active)
-                        .toList()),
+                    _buildCommissionList(
+                      _commissions
+                          .where((c) => c.status == CommissionStatus.active)
+                          .toList(),
+                    ),
                     // Pending commissions
-                    _buildCommissionList(_commissions
-                        .where((c) => c.status == CommissionStatus.pending)
-                        .toList()),
+                    _buildCommissionList(
+                      _commissions
+                          .where((c) => c.status == CommissionStatus.pending)
+                          .toList(),
+                    ),
                     // Completed commissions
-                    _buildCommissionList(_commissions
-                        .where((c) => c.status == CommissionStatus.completed)
-                        .toList()),
+                    _buildCommissionList(
+                      _commissions
+                          .where((c) => c.status == CommissionStatus.completed)
+                          .toList(),
+                    ),
                   ],
                 ),
         ),
@@ -103,11 +110,81 @@ class _CommissionsScreenState extends State<CommissionsScreen>
             subtitle: Text('Status: ${commission.status}'),
             trailing: const Icon(Icons.arrow_forward),
             onTap: () {
-              // TODO: Navigate to commission details
+              _showCommissionDetails(commission);
             },
           ),
         );
       },
+    );
+  }
+
+  void _showCommissionDetails(CommissionModel commission) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Commission Details',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow('Commission ID', commission.id),
+              _buildDetailRow('Gallery ID', commission.galleryId),
+              _buildDetailRow('Artist ID', commission.artistId),
+              _buildDetailRow('Artwork ID', commission.artworkId),
+              _buildDetailRow(
+                'Commission Rate',
+                '${commission.commissionRate}%',
+              ),
+              _buildDetailRow('Status', commission.status),
+              _buildDetailRow(
+                'Created',
+                commission.createdAt.toDate().toString(),
+              ),
+              _buildDetailRow(
+                'Updated',
+                commission.updatedAt.toDate().toString(),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Expanded(
+            child: Text(value, style: const TextStyle(color: Colors.grey)),
+          ),
+        ],
+      ),
     );
   }
 }

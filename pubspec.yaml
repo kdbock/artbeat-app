@@ -2,7 +2,7 @@ name: artbeat
 description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
 publish_to: "none"
 
-version: 1.0.10+16
+version: 1.0.11+17
 
 environment:
   sdk: "^3.8.0"
@@ -102,6 +102,9 @@ flutter:
           weight: 500
         - asset: assets/fonts/Roboto-Bold.ttf
           weight: 700
+    - family: Limelight
+      fonts:
+        - asset: assets/fonts/Limelight/Limelight-Regular.ttf
 
 dev_dependencies:
   flutter_test:

@@ -14,11 +14,16 @@ class ArtworkCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the avatar URL is valid for NetworkImage
+    bool isValidAvatarUrl =
+        artist.avatarUrl.isNotEmpty &&
+        (artist.avatarUrl.startsWith('http://') ||
+            artist.avatarUrl.startsWith('https://')) &&
+        artist.avatarUrl != 'placeholder_headshot_url';
+
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -27,8 +32,13 @@ class ArtworkCardWidget extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundImage: NetworkImage(artist.avatarUrl),
+                  backgroundImage: isValidAvatarUrl
+                      ? NetworkImage(artist.avatarUrl)
+                      : null,
                   radius: 24,
+                  child: !isValidAvatarUrl
+                      ? const Icon(Icons.person, size: 24)
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -43,10 +53,7 @@ class ArtworkCardWidget extends StatelessWidget {
                     ),
                     Text(
                       artwork.location,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                   ],
                 ),
@@ -55,18 +62,12 @@ class ArtworkCardWidget extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               artwork.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const SizedBox(height: 8),
             Text(
               artwork.medium,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ],
         ),

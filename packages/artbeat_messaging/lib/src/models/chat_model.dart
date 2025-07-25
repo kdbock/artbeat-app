@@ -36,9 +36,14 @@ class ChatModel {
   Map<String, dynamic>? getParticipant(String userId) {
     if (participants == null) return null;
 
-    for (final participant in participants!) {
+    for (final participant in participants ?? []) {
       if (participant['id'] == userId) {
-        return participant;
+        // Ensure the participant is a Map<String, dynamic>
+        if (participant is Map<String, dynamic>) {
+          return participant;
+        } else if (participant is Map) {
+          return Map<String, dynamic>.from(participant);
+        }
       }
     }
     return null;

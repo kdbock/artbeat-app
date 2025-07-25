@@ -443,33 +443,29 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           );
           break;
         case 'captures':
-          // Get all public captures (community + user's own)
-          final allCaptures = await _artWalkService.getCapturedArtNearLocation(
-            latitude: _currentPosition!.latitude,
-            longitude: _currentPosition!.longitude,
-            radiusKm: 10.0,
-            includeUserOnly: false, // Gets all public captures
-          );
+          // Get all public art (community + user's own)
+          final allCaptures = await _artWalkService
+              .getPublicArtNearLocationWithFilter(
+                latitude: _currentPosition!.latitude,
+                longitude: _currentPosition!.longitude,
+                radiusKm: 10.0,
+                includeUserOnly: false, // Gets all public art
+              );
           debugPrint('🔍 [DEBUG] all captures length: ${allCaptures.length}');
-          nearbyArt = allCaptures
-              .map(
-                (captureModel) =>
-                    _artWalkService.captureToPublicArt(captureModel),
-              )
-              .toList();
+          nearbyArt =
+              allCaptures; // Already PublicArtModel, no conversion needed
           break;
         case 'my_captures':
           debugPrint('🔍 [DEBUG] Filter my_captures selected');
-          final captures = await _artWalkService.getCapturedArtNearLocation(
-            latitude: _currentPosition!.latitude,
-            longitude: _currentPosition!.longitude,
-            radiusKm: 10.0,
-            includeUserOnly: true,
-          );
+          final captures = await _artWalkService
+              .getPublicArtNearLocationWithFilter(
+                latitude: _currentPosition!.latitude,
+                longitude: _currentPosition!.longitude,
+                radiusKm: 10.0,
+                includeUserOnly: true,
+              );
           debugPrint('🔍 [DEBUG] my_captures docs count: ${captures.length}');
-          nearbyArt = captures
-              .map((c) => _artWalkService.captureToPublicArt(c))
-              .toList();
+          nearbyArt = captures; // Already PublicArtModel, no conversion needed
           break;
       }
 

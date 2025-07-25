@@ -38,6 +38,9 @@ dependencies:
   geolocator: ^14.0.1
   intl: ^0.20.2
 
+  # Added for favorite_detail_screen
+  url_launcher: ^6.2.6
+
 flutter:
   uses-material-design: true
 

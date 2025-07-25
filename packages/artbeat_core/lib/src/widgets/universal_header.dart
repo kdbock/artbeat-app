@@ -20,7 +20,8 @@ import 'feedback_system_info_screen.dart';
 ///   showDeveloperTools: true, // Show developer icon
 /// )
 /// ```
-class EnhancedUniversalHeader extends StatelessWidget implements PreferredSizeWidget {
+class EnhancedUniversalHeader extends StatelessWidget
+    implements PreferredSizeWidget {
   final String? title;
   final bool showLogo;
   final bool showDeveloperTools;
@@ -254,7 +255,9 @@ class EnhancedUniversalHeader extends StatelessWidget implements PreferredSizeWi
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: Container(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -268,8 +271,15 @@ class EnhancedUniversalHeader extends StatelessWidget implements PreferredSizeWi
                   border: OutlineInputBorder(),
                 ),
                 onSubmitted: (query) {
-                  // TODO: implement search logic
                   Navigator.pop(context);
+                  if (query.trim().isNotEmpty) {
+                    // Navigate to search results screen
+                    Navigator.pushNamed(
+                      context,
+                      '/search',
+                      arguments: {'query': query.trim()},
+                    );
+                  }
                 },
               ),
             ],

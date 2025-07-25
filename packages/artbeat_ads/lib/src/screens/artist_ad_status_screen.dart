@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ad_artist_model.dart';
 import '../models/ad_status.dart' as model;
 import '../services/ad_artist_service.dart';
 import '../widgets/ad_status_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class ArtistAdStatusScreen extends StatefulWidget {
   const ArtistAdStatusScreen({super.key});
@@ -15,22 +18,27 @@ class ArtistAdStatusScreen extends StatefulWidget {
 class _ArtistAdStatusScreenState extends State<ArtistAdStatusScreen> {
   final AdArtistService _service = AdArtistService();
   late Stream<List<AdArtistModel>> _adsStream;
-  final String _artistId = 'artistId'; // TODO: Get from auth
+  String? _artistId;
 
   @override
   void initState() {
     super.initState();
-    _adsStream = _service.getArtistAdsByArtist(_artistId);
+    _initializeArtistId();
+  }
+
+  void _initializeArtistId() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _artistId = user.uid;
+      _adsStream = _service.getArtistAdsByArtist(_artistId!);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Ad Status'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'My Ad Status', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -46,89 +54,107 @@ class _ArtistAdStatusScreenState extends State<ArtistAdStatusScreen> {
           ),
         ),
         child: SafeArea(
-          child: StreamBuilder<List<AdArtistModel>>(
-            stream: _adsStream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final ads = snapshot.data ?? [];
-              if (ads.isEmpty) {
-                return const Center(
+          child: _artistId == null
+              ? const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.campaign, size: 48, color: Colors.grey),
+                      Icon(Icons.error_outline, size: 48, color: Colors.red),
                       SizedBox(height: 16),
-                      Text('No ads yet', style: TextStyle(fontSize: 18)),
+                      Text(
+                        'Authentication required',
+                        style: TextStyle(fontSize: 18),
+                      ),
                       SizedBox(height: 8),
-                      Text('Create an ad to promote your work!'),
+                      Text('Please log in to view your ads'),
                     ],
                   ),
-                );
-              }
-              return ListView.builder(
-                padding: const EdgeInsets.all(20),
-                itemCount: ads.length,
-                itemBuilder: (context, i) {
-                  final ad = ads[i];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AdDisplayWidget(
-                            imageUrl: ad.imageUrl,
-                            title: ad.title,
-                            description: ad.description,
-                            displayType: ad.type.name == 'square'
-                                ? AdDisplayType.square
-                                : AdDisplayType.rectangle,
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              AdStatusWidget(
-                                status: model.AdStatus.values[ad.status.index],
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                ad.status.name.toUpperCase(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (ad.status == model.AdStatus.rejected &&
-                              ad.approvalId != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              'Reason: ${ad.approvalId}',
-                              style: const TextStyle(color: Colors.red),
-                            ),
+                )
+              : StreamBuilder<List<AdArtistModel>>(
+                  stream: _adsStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final ads = snapshot.data ?? [];
+                    if (ads.isEmpty) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.campaign, size: 48, color: Colors.grey),
+                            SizedBox(height: 16),
+                            Text('No ads yet', style: TextStyle(fontSize: 18)),
+                            SizedBox(height: 8),
+                            Text('Create an ad to promote your work!'),
                           ],
-                          const SizedBox(height: 8),
-                          Text('Duration: ${ad.duration.days} days'),
-                          Text('Location: ${ad.location.name}'),
-                          Text(
-                            'Price per day: \$${ad.pricePerDay.toStringAsFixed(2)}',
+                        ),
+                      );
+                    }
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: ads.length,
+                      itemBuilder: (context, i) {
+                        final ad = ads[i];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          Text('Start: ${ad.startDate.toLocal()}'),
-                          Text('End: ${ad.endDate.toLocal()}'),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AdDisplayWidget(
+                                  imageUrl: ad.imageUrl,
+                                  title: ad.title,
+                                  description: ad.description,
+                                  displayType: ad.type.name == 'square'
+                                      ? AdDisplayType.square
+                                      : AdDisplayType.rectangle,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    AdStatusWidget(
+                                      status: model
+                                          .AdStatus
+                                          .values[ad.status.index],
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      ad.status.name.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (ad.status == model.AdStatus.rejected &&
+                                    ad.approvalId != null) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Reason: ${ad.approvalId}',
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                                const SizedBox(height: 8),
+                                Text('Duration: ${ad.duration.days} days'),
+                                Text('Location: ${ad.location.name}'),
+                                Text(
+                                  'Price per day: \$${ad.pricePerDay.toStringAsFixed(2)}',
+                                ),
+                                Text('Start: ${ad.startDate.toLocal()}'),
+                                Text('End: ${ad.endDate.toLocal()}'),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
         ),
       ),
     );

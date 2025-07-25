@@ -4,6 +4,9 @@ import 'feed/unified_community_feed.dart';
 import 'feed/trending_content_screen.dart';
 import 'portfolios/portfolios_screen.dart';
 import 'studios/studios_screen.dart';
+import 'search/user_search_screen.dart';
+import 'search/post_search_screen.dart';
+import 'posts/user_posts_screen.dart';
 
 /// Enhanced Community Dashboard Screen
 ///
@@ -147,7 +150,12 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
                       color: ArtbeatColors.primaryPurple,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: Navigate to user search
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const UserSearchScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -157,7 +165,12 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: Navigate to post search
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const PostSearchScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildSearchOption(
@@ -277,7 +290,12 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
                       color: ArtbeatColors.primaryGreen,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: Navigate to user posts
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) => const UserPostsScreen(),
+                          ),
+                        );
                       },
                     ),
                     _buildProfileOption(

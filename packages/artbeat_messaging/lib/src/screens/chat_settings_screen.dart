@@ -1,8 +1,13 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:provider/provider.dart';
+import '../models/chat_model.dart';
+import '../services/chat_service.dart';
 
 class ChatSettingsScreen extends StatefulWidget {
-  const ChatSettingsScreen({super.key});
+  final ChatModel chat;
+  const ChatSettingsScreen({super.key, required this.chat});
 
   @override
   State<ChatSettingsScreen> createState() => _ChatSettingsScreenState();
@@ -11,6 +16,32 @@ class ChatSettingsScreen extends StatefulWidget {
 class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
   bool _notificationsEnabled = true;
   bool _mediaAutoDownload = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationsEnabled =
+          prefs.getBool('chat_notifications_enabled') ?? true;
+      _mediaAutoDownload = prefs.getBool('chat_media_auto_download') ?? true;
+    });
+  }
+
+  Future<void> _updateNotificationSetting(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('chat_notifications_enabled', value);
+  }
+
+  Future<void> _updateAutoDownloadSetting(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('chat_media_auto_download', value);
+  }
+
   String _selectedTheme = 'system';
 
   @override
@@ -31,11 +62,11 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
             subtitle: const Text('Get notified about new messages'),
             trailing: Switch(
               value: _notificationsEnabled,
-              onChanged: (value) {
+              onChanged: (value) async {
                 setState(() {
                   _notificationsEnabled = value;
                 });
-                // TODO: Implement notification settings update
+                await _updateNotificationSetting(value);
               },
             ),
           ),
@@ -45,11 +76,11 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
             subtitle: const Text('Automatically download photos and videos'),
             trailing: Switch(
               value: _mediaAutoDownload,
-              onChanged: (value) {
+              onChanged: (value) async {
                 setState(() {
                   _mediaAutoDownload = value;
                 });
-                // TODO: Implement auto-download settings update
+                await _updateAutoDownloadSetting(value);
               },
             ),
           ),
@@ -125,12 +156,30 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                       child: const Text('Cancel'),
                     ),
                     TextButton(
-                      onPressed: () {
-                        // TODO: Implement clear chat history
+                      onPressed: () async {
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Chat history cleared')),
-                        );
+                        try {
+                          final chatService = Provider.of<ChatService>(
+                            context,
+                            listen: false,
+                          );
+                          await chatService.clearChatHistory(widget.chat.id);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Chat history cleared'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to clear chat: $e'),
+                              ),
+                            );
+                          }
+                        }
                       },
                       child: Text(
                         'Clear',

@@ -9,6 +9,7 @@ import '../../models/comment_model.dart';
 import '../../widgets/critique_card.dart';
 import 'create_post_screen.dart';
 import 'comments_screen.dart';
+import '../search/user_search_screen.dart';
 
 class UnifiedCommunityFeed extends StatefulWidget {
   const UnifiedCommunityFeed({super.key});
@@ -601,8 +602,12 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
 
   void _handleUserTap(String userId) {
     // Navigate to user profile
-    // TODO: Implement user profile navigation
-    debugPrint('User tapped: $userId');
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => UserProfileScreen(userId: userId),
+      ),
+    );
   }
 
   void _togglePostExpansion(String postId) {

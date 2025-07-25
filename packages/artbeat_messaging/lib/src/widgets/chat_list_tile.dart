@@ -69,7 +69,7 @@ class ChatListTile extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(width: 12),
-              _buildAvatar(chatName, hasUnread),
+              _buildAvatar(context, chatName, hasUnread),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -94,7 +94,9 @@ class ChatListTile extends StatelessWidget {
                         ),
                         if (chat.lastMessage != null)
                           Text(
-                            dateFormat.format(chat.lastMessage!.timestamp),
+                            dateFormat.format(
+                              chat.lastMessage?.timestamp ?? DateTime.now(),
+                            ),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: hasUnread
                                   ? ArtbeatColors.primaryPurple
@@ -168,9 +170,9 @@ class ChatListTile extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(String chatName, bool hasUnread) {
+  Widget _buildAvatar(BuildContext context, String chatName, bool hasUnread) {
     return FutureBuilder<String?>(
-      future: _getChatImage(),
+      future: _getChatImage(context),
       builder: (context, snapshot) {
         final imageUrl = snapshot.data;
 
@@ -250,8 +252,9 @@ class ChatListTile extends StatelessWidget {
     if (chat.isGroup) {
       return chat.groupName ?? 'Group Chat';
     }
+    final currentUserId = chatService.currentUserIdSafe;
     final otherParticipantId = chat.participantIds.firstWhere(
-      (id) => id != chatService.currentUserId,
+      (id) => id != currentUserId,
       orElse: () => chat.participantIds.first,
     );
 
@@ -266,18 +269,16 @@ class ChatListTile extends StatelessWidget {
         'Unknown User';
   }
 
-  Future<String?> _getChatImage() async {
-    final chatService = Provider.of<ChatService>(
-      navigatorKey.currentContext!,
-      listen: false,
-    );
+  Future<String?> _getChatImage(BuildContext context) async {
+    final chatService = Provider.of<ChatService>(context, listen: false);
 
     if (chat.isGroup) {
       return chat.groupImage;
     }
 
+    final currentUserId = chatService.currentUserIdSafe;
     final otherParticipantId = chat.participantIds.firstWhere(
-      (id) => id != chatService.currentUserId,
+      (id) => id != currentUserId,
       orElse: () => chat.participantIds.first,
     );
 
@@ -308,6 +309,3 @@ class ChatListTile extends StatelessWidget {
     return name[0].toUpperCase();
   }
 }
-
-// Global navigator key for accessing context
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

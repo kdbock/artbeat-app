@@ -1,9 +1,10 @@
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import '../models/admin_stats_model.dart';
 import '../models/recent_activity_model.dart';
 import '../services/admin_service.dart';
 import '../services/recent_activity_service.dart';
+import '../widgets/admin_header.dart';
+import '../widgets/admin_drawer.dart';
 import 'admin_user_management_screen.dart';
 import 'admin_content_review_screen.dart';
 import 'admin_analytics_screen.dart';
@@ -100,104 +101,92 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 0, // Admin is usually index 0 in admin section
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Admin Dashboard',
-              showLogo: false,
-              showSearch: false,
-              showDeveloperTools: true,
-              onProfilePressed: () =>
-                  Navigator.pushNamed(context, '/admin/profile'),
-              onMenuPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              elevation: 0,
-            ),
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: Colors.white,
+      drawer: const AdminDrawer(),
+      appBar: AdminHeader(
+        title: 'Dashboard',
+        showBackButton: false,
+        showSearch: true,
+        showChat: true,
+        showDeveloper: true,
+        onMenuPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+            ],
           ),
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                if (_isLoading) ...[
-                  const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                ] else if (_error != null) ...[
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 64,
-                            color: Colors.red.shade300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Error loading dashboard',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Text(
-                              _error!,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _loadStats,
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  SliverPadding(
-                    padding: const EdgeInsets.all(16.0),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate([
-                        _buildStatsOverview(),
-                        const SizedBox(height: 24),
-                        _buildQuickActions(),
-                        const SizedBox(height: 24),
-                        _buildRecentActivity(),
+        child: SafeArea(
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              if (_isLoading) ...[
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ] else if (_error != null) ...[
+                SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red.shade300,
+                        ),
                         const SizedBox(height: 16),
-                      ]),
+                        Text(
+                          'Error loading dashboard',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Text(
+                            _error!,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadStats,
+                          child: const Text('Retry'),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
+              ] else ...[
+                SliverPadding(
+                  padding: const EdgeInsets.all(16.0),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildStatsOverview(),
+                      const SizedBox(height: 24),
+                      _buildQuickActions(),
+                      const SizedBox(height: 24),
+                      _buildRecentActivity(),
+                      const SizedBox(height: 16),
+                    ]),
+                  ),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),

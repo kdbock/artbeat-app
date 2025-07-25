@@ -1,3 +1,4 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -236,11 +237,20 @@ class _FavoriteDetailScreenState extends State<FavoriteDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   InkWell(
-                    onTap: () {
-                      // TODO: Launch URL
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Opening URL: $sourceUrl')),
-                      );
+                    onTap: () async {
+                      final uri = Uri.tryParse(sourceUrl);
+                      if (uri != null && await canLaunchUrl(uri)) {
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Could not open URL: $sourceUrl'),
+                          ),
+                        );
+                      }
                     },
                     child: Text(
                       sourceUrl,

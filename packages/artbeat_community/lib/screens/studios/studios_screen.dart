@@ -13,6 +13,7 @@ class StudiosScreen extends StatefulWidget {
 class _StudiosScreenState extends State<StudiosScreen> {
   final FirestoreService _firestoreService = FirestoreService();
   List<StudioModel> _studios = [];
+  List<StudioModel> _filteredStudios = [];
   bool _isLoading = true;
 
   @override
@@ -27,6 +28,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
       final studios = await _firestoreService.getStudios();
       setState(() {
         _studios = studios;
+        _filteredStudios = studios;
         _isLoading = false;
       });
     } catch (e) {
@@ -36,6 +38,23 @@ class _StudiosScreenState extends State<StudiosScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading studios: $e')));
     }
+  }
+
+  void _performSearch(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredStudios = _studios;
+      } else {
+        _filteredStudios = _studios.where((studio) {
+          final name = studio.name.toLowerCase();
+          final description = studio.description.toLowerCase();
+          final searchLower = query.toLowerCase();
+
+          return name.contains(searchLower) ||
+              description.contains(searchLower);
+        }).toList();
+      }
+    });
   }
 
   @override
@@ -54,7 +73,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
               hintText: 'Search studios...',
               leading: const Icon(Icons.search),
               onChanged: (value) {
-                // TODO: Implement search
+                _performSearch(value);
               },
             ),
           ),
@@ -62,7 +81,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
         // Studios grid
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: _studios.isEmpty
+          sliver: _filteredStudios.isEmpty
               ? const SliverToBoxAdapter(
                   child: Center(child: Text('No studios available')),
                 )
@@ -74,7 +93,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
                     childAspectRatio: 1.0,
                   ),
                   delegate: SliverChildBuilderDelegate((context, index) {
-                    final studio = _studios[index];
+                    final studio = _filteredStudios[index];
                     return InkWell(
                       onTap: () => Navigator.push(
                         context,
@@ -141,7 +160,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
                         ),
                       ),
                     );
-                  }, childCount: _studios.length),
+                  }, childCount: _filteredStudios.length),
                 ),
         ),
       ],

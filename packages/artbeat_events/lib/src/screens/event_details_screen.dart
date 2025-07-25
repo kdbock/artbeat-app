@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/artbeat_event.dart';
 import '../models/ticket_type.dart';
 import '../services/event_service.dart';
@@ -26,6 +28,8 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   final EventNotificationService _notificationService =
       EventNotificationService();
   final UserService _userService = UserService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   ArtbeatEvent? _event;
   bool _isLoading = true;
@@ -647,7 +651,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
     if (currentUser == null) {
       // Show login prompt if not authenticated
-      showDialog(
+      showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Login Required'),
@@ -681,7 +685,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           _refreshEvent();
 
           // Show success dialog
-          showDialog(
+          showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('🎫 Tickets Purchased!'),
@@ -726,7 +730,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   }
 
   void _showReportDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Report Event'),
@@ -761,15 +765,75 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
   }
 
-  void _submitReport(String reason) {
-    // TODO: Implement report submission
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Report submitted. Thank you for helping keep ARTbeat safe.',
-        ),
-      ),
-    );
+  Future<void> _submitReport(String reason) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to report events')),
+        );
+        return;
+      }
+
+      // Submit report to Firestore
+      await _firestore.collection('reports').add({
+        'type': 'event',
+        'targetId': widget.eventId,
+        'reportedBy': currentUser.uid,
+        'reason': reason,
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'additionalInfo': {
+          'eventTitle': _event?.title ?? 'Unknown Event',
+          'eventType': _event?.category ?? 'Unknown',
+        },
+      });
+
+      // Send notification to moderators
+      await _firestore.collection('moderationQueue').add({
+        'type': 'event_report',
+        'eventId': widget.eventId,
+        'reportedBy': currentUser.uid,
+        'reason': reason,
+        'priority': _getPriorityLevel(reason),
+        'createdAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Report submitted. Thank you for helping keep ARTbeat safe.',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to submit report: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  String _getPriorityLevel(String reason) {
+    switch (reason.toLowerCase()) {
+      case 'inappropriate content':
+      case 'harassment':
+      case 'spam':
+        return 'high';
+      case 'misleading information':
+      case 'copyright violation':
+        return 'medium';
+      default:
+        return 'low';
+    }
   }
 
   @override

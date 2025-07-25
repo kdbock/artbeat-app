@@ -666,10 +666,10 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
 
   Widget _buildEventCard(BuildContext context, ArtbeatEvent event) {
     final bool isHappeningNow =
-        event.dateTime.isBefore(
-          DateTime.now().add(const Duration(hours: 1)),
-        ) &&
-        event.dateTime.isAfter(DateTime.now().subtract(const Duration(hours: 2)));
+        event.dateTime.isBefore(DateTime.now().add(const Duration(hours: 1))) &&
+        event.dateTime.isAfter(
+          DateTime.now().subtract(const Duration(hours: 2)),
+        );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -679,7 +679,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
           onTap: () => Navigator.pushNamed(
             context,
             '/events/detail',
-            arguments: event.id,
+            arguments: {'eventId': event.id},
           ),
           borderRadius: BorderRadius.circular(12),
           child: Container(
@@ -706,11 +706,9 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    _getEventIcon(
-                      event.description,
-                    ), // Use description for type or add a category field
+                    _getEventIcon(event.description),
                     color: ArtbeatColors.primaryPurple,
-                    size: 24,
+                    size: 32,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -720,42 +718,15 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          if (isHappeningNow) ...[
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ArtbeatColors.primaryGreen,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                'LIVE',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Expanded(
-                            child: Text(
-                              event.title,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: ArtbeatColors.textPrimary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        event.title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -810,7 +781,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.people, size: 14, color: Colors.grey[600]),
                         const SizedBox(width: 4),
@@ -836,7 +806,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
             ),
           ),
         ),
-      ));
+      ),
+    );
   }
 
   String _formatEventDate(DateTime dateTime) {
@@ -1079,7 +1050,9 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
       children: [
         Text(
           'Getting Started',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Card(

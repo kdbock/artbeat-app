@@ -10,10 +10,7 @@ import '../services/event_notification_service.dart';
 class CreateEventScreen extends StatefulWidget {
   final ArtbeatEvent? editEvent; // If editing an existing event
 
-  const CreateEventScreen({
-    super.key,
-    this.editEvent,
-  });
+  const CreateEventScreen({super.key, this.editEvent});
 
   @override
   State<CreateEventScreen> createState() => _CreateEventScreenState();
@@ -63,10 +60,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             SizedBox(height: 16),
             Text(
               'Creating event...',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),
@@ -135,13 +129,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   void _showSuccessDialog(String eventId, bool isEdit) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text(
-          isEdit ? '✅ Event Updated!' : '✅ Event Created!',
-        ),
+        title: Text(isEdit ? '✅ Event Updated!' : '✅ Event Created!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +182,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   void _showErrorDialog(String error) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('❌ Error'),
@@ -206,7 +198,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   void _showUnsavedChangesDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Unsaved Changes'),

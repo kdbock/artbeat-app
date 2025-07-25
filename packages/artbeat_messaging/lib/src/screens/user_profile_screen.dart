@@ -138,9 +138,22 @@ class UserProfileScreen extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.block),
           title: const Text('Block User'),
-          onTap: () {
+          onTap: () async {
             Navigator.pop(context);
-            // TODO: Implement block user functionality
+            try {
+              final chatService = Provider.of<ChatService>(
+                context,
+                listen: false,
+              );
+              await chatService.blockUser(user.id);
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('User blocked')));
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to block user: $e')),
+              );
+            }
           },
         ),
         ListTile(
@@ -148,7 +161,20 @@ class UserProfileScreen extends StatelessWidget {
           title: const Text('Report User'),
           onTap: () {
             Navigator.pop(context);
-            // TODO: Implement report user functionality
+            // Placeholder for report user functionality
+            showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Report User'),
+                content: const Text('Reporting functionality coming soon.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ],

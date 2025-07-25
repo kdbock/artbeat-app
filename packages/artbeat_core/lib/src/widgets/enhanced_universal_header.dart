@@ -215,7 +215,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
             if (_searchController.text.isEmpty) {
               // Voice search functionality
               HapticFeedback.lightImpact();
-              // TODO: Implement voice search
+              _startVoiceSearch();
             } else {
               _searchController.clear();
             }
@@ -731,6 +731,41 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _startVoiceSearch() {
+    // Show voice search dialog
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.mic, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Voice Search'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Listening...'),
+            SizedBox(height: 8),
+            Text(
+              'Voice search is coming soon!',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
       ),
     );
   }

@@ -20,3 +20,6 @@ export 'src/screens/admin_user_detail_screen.dart';
 export 'src/screens/admin_content_review_screen.dart';
 export 'src/screens/admin_analytics_screen.dart';
 export 'src/screens/admin_settings_screen.dart';
+
+// Export widgets
+export 'src/widgets/widgets.dart';

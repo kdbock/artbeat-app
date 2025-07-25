@@ -587,6 +587,20 @@ class DashboardViewModel extends BaseViewModel {
   /// Initialize map location
   Future<void> _initializeMapLocation() async {
     try {
+      // Check location permission first
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        // Use default location if permission denied
+        debugPrint('Location permission denied, using default location');
+        _useDefaultLocation();
+        return;
+      }
+
       final position = await Geolocator.getCurrentPosition();
       _currentLocation = LatLng(position.latitude, position.longitude);
       _initialCameraPosition = CameraPosition(
@@ -605,10 +619,20 @@ class DashboardViewModel extends BaseViewModel {
       loadEvents(); // Reload events with new location
     } catch (e) {
       debugPrint('Error getting location: $e');
+      _useDefaultLocation();
     } finally {
       _isLoadingMap = false;
       notifyListeners();
     }
+  }
+
+  /// Use default location when location access is not available
+  void _useDefaultLocation() {
+    const defaultLocation = LatLng(35.5951, -82.5515); // Asheville, NC
+    _currentLocation = defaultLocation;
+    _initialCameraPosition = CameraPosition(target: defaultLocation, zoom: 12);
+    _isMapPreviewReady = true;
+    _updateMapMarkers();
   }
 
   /// Update map markers based on captures

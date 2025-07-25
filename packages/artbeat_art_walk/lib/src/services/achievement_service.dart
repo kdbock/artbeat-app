@@ -2,12 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing user achievements
 class AchievementService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final Logger _logger = Logger();
+  final NotificationService _notificationService = NotificationService();
 
   /// Get the current user ID
   String? getCurrentUserId() {
@@ -38,8 +40,10 @@ class AchievementService {
   }
 
   /// Get achievements of a specific type for the current user
-  Future<List<AchievementModel>> getUserAchievementsByType(AchievementType type,
-      {String? userId}) async {
+  Future<List<AchievementModel>> getUserAchievementsByType(
+    AchievementType type, {
+    String? userId,
+  }) async {
     try {
       final uid = userId ?? getCurrentUserId();
       if (uid == null) {
@@ -63,8 +67,9 @@ class AchievementService {
   }
 
   /// Get unviewed achievements for the current user
-  Future<List<AchievementModel>> getUnviewedAchievements(
-      {String? userId}) async {
+  Future<List<AchievementModel>> getUnviewedAchievements({
+    String? userId,
+  }) async {
     try {
       final uid = userId ?? getCurrentUserId();
       if (uid == null) {
@@ -88,8 +93,10 @@ class AchievementService {
   }
 
   /// Mark an achievement as viewed
-  Future<bool> markAchievementAsViewed(String achievementId,
-      {String? userId}) async {
+  Future<bool> markAchievementAsViewed(
+    String achievementId, {
+    String? userId,
+  }) async {
     try {
       final uid = userId ?? getCurrentUserId();
       if (uid == null) {
@@ -133,14 +140,16 @@ class AchievementService {
             .doc(userId)
             .collection('achievements')
             .add({
-          'userId': userId,
-          'type': type.name,
-          'earnedAt': FieldValue.serverTimestamp(),
-          'isNew': true,
-          'metadata': metadata,
-        });
+              'userId': userId,
+              'type': type.name,
+              'earnedAt': FieldValue.serverTimestamp(),
+              'isNew': true,
+              'metadata': metadata,
+            });
 
-        // TODO: Send notification to user about the new achievement
+        // Send notification to user about the new achievement
+        await _sendAchievementNotification(userId, type, metadata);
+
         return true;
       }
 
@@ -149,6 +158,53 @@ class AchievementService {
     } catch (e) {
       _logger.e('Error awarding achievement: $e');
       return false;
+    }
+  }
+
+  /// Send notification to user about a new achievement
+  Future<void> _sendAchievementNotification(
+    String userId,
+    AchievementType type,
+    Map<String, dynamic> metadata,
+  ) async {
+    try {
+      const String title = 'New Achievement Unlocked!';
+      final String message = _getAchievementNotificationMessage(type, metadata);
+
+      await _notificationService.sendNotification(
+        userId: userId,
+        title: title,
+        message: message,
+        type: NotificationType.achievement,
+        data: {'achievementType': type.name, 'metadata': metadata},
+      );
+    } catch (e) {
+      _logger.e('Error sending achievement notification: $e');
+    }
+  }
+
+  /// Get the notification message for an achievement
+  String _getAchievementNotificationMessage(
+    AchievementType type,
+    Map<String, dynamic> metadata,
+  ) {
+    switch (type) {
+      case AchievementType.firstWalk:
+        return 'Congratulations! You completed your first Art Walk!';
+      case AchievementType.walkMaster:
+        final walkCount = metadata['walkCount'] ?? 10;
+        return 'Amazing! You\'ve completed $walkCount Art Walks!';
+      case AchievementType.walkExplorer:
+        return 'Walk Explorer badge earned! You\'ve discovered new walks!';
+      case AchievementType.artCollector:
+        return 'Art Collector achievement unlocked! Keep discovering great art!';
+      case AchievementType.socialButterfly:
+        return 'Social Butterfly earned! Thanks for connecting with the community!';
+      case AchievementType.earlyAdopter:
+        final eventName = metadata['eventName'] ?? 'early adoption program';
+        return 'Early Adopter achievement! You were part of $eventName!';
+      default:
+        return 'Congratulations on your new achievement!';
     }
   }
 

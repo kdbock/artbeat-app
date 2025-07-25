@@ -91,6 +91,104 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
     Navigator.pushNamed(context, '/artwork/upload');
   }
 
+  void _navigateToEdit(ArtworkModel artwork) {
+    Navigator.pushNamed(
+      context,
+      '/artwork/edit',
+      arguments: {
+        'artworkId': artwork.id,
+        'artwork': artwork,
+      },
+    ).then((_) {
+      // Refresh the artwork list when returning from edit
+      _refreshArtwork();
+    });
+  }
+
+  Future<void> _showDeleteConfirmation(ArtworkModel artwork) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Artwork'),
+        content: Text(
+          'Are you sure you want to delete "${artwork.title}"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _deleteArtwork(artwork);
+    }
+  }
+
+  Future<void> _deleteArtwork(ArtworkModel artwork) async {
+    try {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                SizedBox(width: 16),
+                Text('Deleting artwork...'),
+              ],
+            ),
+            duration: Duration(seconds: 30), // Long duration for deletion
+          ),
+        );
+      }
+
+      await _artworkService.deleteArtwork(artwork.id);
+
+      if (mounted) {
+        // Hide loading snackbar
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('"${artwork.title}" has been deleted successfully'),
+            backgroundColor: core.ArtbeatColors.primaryGreen,
+          ),
+        );
+
+        // Refresh the artwork list
+        await _refreshArtwork();
+      }
+    } catch (e) {
+      if (mounted) {
+        // Hide loading snackbar
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete artwork: $e'),
+            backgroundColor: core.ArtbeatColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -239,84 +337,137 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: InkWell(
-        onTap: () => _navigateToArtworkDetail(artwork),
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Artwork image
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: artwork.imageUrl.isNotEmpty
-                    ? Image.network(
-                        artwork.imageUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: () => _navigateToArtworkDetail(artwork),
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Artwork image
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                    child: artwork.imageUrl.isNotEmpty
+                        ? Image.network(
+                            artwork.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: double.infinity,
+                                color: Colors.grey[200],
+                                child: const Icon(
+                                  Icons.image_not_supported,
+                                  size: 48,
+                                  color: Colors.grey,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
                             width: double.infinity,
                             color: Colors.grey[200],
                             child: const Icon(
-                              Icons.image_not_supported,
+                              Icons.image,
                               size: 48,
                               color: Colors.grey,
                             ),
-                          );
-                        },
-                      )
-                    : Container(
-                        width: double.infinity,
-                        color: Colors.grey[200],
-                        child: const Icon(
-                          Icons.image,
-                          size: 48,
-                          color: Colors.grey,
-                        ),
-                      ),
-              ),
-            ),
-            // Artwork details
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    artwork.title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                          ),
                   ),
-                  const SizedBox(height: 4),
-                  if (artwork.medium.isNotEmpty)
-                    Text(
-                      artwork.medium,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: core.ArtbeatColors.textSecondary,
-                          ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                ),
+                // Artwork details
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        artwork.title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      if (artwork.medium.isNotEmpty)
+                        Text(
+                          artwork.medium,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: core.ArtbeatColors.textSecondary,
+                                  ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      const SizedBox(height: 4),
+                      if (artwork.price != null)
+                        Text(
+                          '\$${artwork.price!.toStringAsFixed(2)}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: core.ArtbeatColors.primaryGreen,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Edit/Delete menu button
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _navigateToEdit(artwork);
+                  } else if (value == 'delete') {
+                    _showDeleteConfirmation(artwork);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, size: 18),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ],
                     ),
-                  const SizedBox(height: 4),
-                  if (artwork.price != null)
-                    Text(
-                      '\$${artwork.price!.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: core.ArtbeatColors.primaryGreen,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, size: 18, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete', style: TextStyle(color: Colors.red)),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

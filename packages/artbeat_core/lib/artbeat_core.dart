@@ -59,6 +59,7 @@ export 'src/widgets/optimized_image.dart';
 export 'src/widgets/feedback_form.dart';
 export 'src/widgets/developer_feedback_admin_screen.dart';
 export 'src/widgets/feedback_system_info_screen.dart';
+export 'src/widgets/developer_menu.dart';
 
 // Export Core Widget Utils
 export 'src/widgets/filter/index.dart';
@@ -70,6 +71,7 @@ export 'src/utils/date_utils.dart';
 export 'src/utils/validators.dart';
 export 'src/utils/user_sync_helper.dart';
 export 'src/utils/location_utils.dart' show LocationUtils;
+export 'src/utils/image_utils.dart' show ImageUtils;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;

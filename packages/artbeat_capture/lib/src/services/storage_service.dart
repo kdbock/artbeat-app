@@ -12,27 +12,70 @@ class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final EnhancedStorageService _enhancedStorage = EnhancedStorageService();
 
-  /// Upload capture image specifically
+  /// Upload capture image specifically with retry logic
   Future<String> uploadCaptureImage(File file, String userId) async {
-    try {
-      debugPrint('🔄 StorageService: Starting capture image upload...');
+    int retryCount = 0;
+    const maxRetries = 3;
 
-      // Use the optimized upload method and return just the main image URL
-      final result = await _enhancedStorage.uploadImageWithOptimization(
-        imageFile: file,
-        category: 'capture',
-        generateThumbnail: true,
-      );
+    while (retryCount < maxRetries) {
+      try {
+        debugPrint(
+          '🔄 StorageService: Starting capture image upload (attempt ${retryCount + 1})...',
+        );
 
-      debugPrint('✅ StorageService: Capture image upload successful');
-      return result['main'] ?? result.values.first;
-    } catch (e) {
-      debugPrint(
-        '❌ StorageService: Capture image upload failed, trying fallback...',
-      );
-      // Fallback to legacy upload method
-      return uploadImage(file);
+        // Use the optimized upload method and return just the main image URL
+        final result = await _enhancedStorage.uploadImageWithOptimization(
+          imageFile: file,
+          category: 'capture',
+          generateThumbnail: true,
+        );
+
+        debugPrint('✅ StorageService: Capture image upload successful');
+        return result['main'] ?? result.values.first;
+      } catch (e) {
+        retryCount++;
+        debugPrint('❌ StorageService: Upload attempt $retryCount failed: $e');
+
+        if (retryCount >= maxRetries) {
+          debugPrint(
+            '❌ StorageService: All attempts failed, trying fallback...',
+          );
+          // Fallback to legacy upload method
+          return uploadImageWithRetry(file);
+        }
+
+        // Wait before retrying (exponential backoff)
+        await Future<void>.delayed(Duration(seconds: retryCount * 2));
+      }
     }
+
+    throw Exception('Upload failed after $maxRetries attempts');
+  }
+
+  /// Upload with retry logic for fallback
+  Future<String> uploadImageWithRetry(File file) async {
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        return await uploadImage(file);
+      } catch (e) {
+        retryCount++;
+        debugPrint(
+          '❌ StorageService: Fallback upload attempt $retryCount failed: $e',
+        );
+
+        if (retryCount >= maxRetries) {
+          rethrow;
+        }
+
+        // Wait before retrying
+        await Future<void>.delayed(Duration(seconds: retryCount * 2));
+      }
+    }
+
+    throw Exception('Fallback upload failed after $maxRetries attempts');
   }
 
   /// Upload image with optimization (recommended method)

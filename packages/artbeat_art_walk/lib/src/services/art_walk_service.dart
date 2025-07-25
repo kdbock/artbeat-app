@@ -13,9 +13,9 @@ import 'package:logger/logger.dart';
 // Core package imports with prefix
 import 'package:artbeat_core/src/services/achievement_service.dart' as core;
 import 'package:artbeat_core/src/models/achievement_type.dart' as core;
+import 'package:artbeat_core/src/services/connectivity_service.dart';
 
 // Local imports
-import '../models/capture_model.dart';
 import '../models/public_art_model.dart';
 import '../models/art_walk_model.dart';
 import '../models/comment_model.dart';
@@ -28,6 +28,7 @@ class ArtWalkService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final Logger _logger = Logger();
+  final ConnectivityService _connectivityService = ConnectivityService();
 
   // Collection references
   final CollectionReference _artWalksCollection = FirebaseFirestore.instance
@@ -167,7 +168,7 @@ class ArtWalkService {
     }
   }
 
-  /// Get public art near a location (searches public captures)
+  /// Get public art near a location
   Future<List<PublicArtModel>> getPublicArtNearLocation({
     required double latitude,
     required double longitude,
@@ -178,13 +179,11 @@ class ArtWalkService {
         '🎯 [DEBUG] getPublicArtNearLocation: lat=$latitude, lng=$longitude, radiusKm=$radiusKm',
       );
 
-      // Search public captures instead of the empty publicArt collection
-      final snapshot = await _capturesCollection
-          .where('isPublic', isEqualTo: true)
-          .get();
+      // Search the publicArt collection directly
+      final snapshot = await _publicArtCollection.get();
 
       debugPrint(
-        '🎯 [DEBUG] Firestore returned \\${snapshot.docs.length} public capture docs',
+        '🎯 [DEBUG] Firestore returned ${snapshot.docs.length} public art docs',
       );
 
       final List<PublicArtModel> nearbyArt = [];
@@ -200,37 +199,15 @@ class ArtWalkService {
           );
           if (dist <= radiusKm) {
             try {
-              // Convert CaptureModel to PublicArtModel format
-              final art = PublicArtModel(
-                id: doc.id,
-                userId: (data['userId'] as String?) ?? '',
-                title: (data['title'] as String?) ?? 'Untitled',
-                description: (data['description'] as String?) ?? '',
-                imageUrl: (data['imageUrl'] as String?) ?? '',
-                artistName: (data['artistName'] as String?),
-                location: geo,
-                address: (data['locationName'] as String?),
-                tags: ((data['tags'] as List<dynamic>?) ?? []).cast<String>(),
-                artType: (data['artType'] as String?),
-                isVerified: false,
-                viewCount: 0,
-                likeCount: 0,
-                usersFavorited: [],
-                createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
-                updatedAt: (data['updatedAt'] as Timestamp?),
-              );
+              final art = PublicArtModel.fromJson({...data, 'id': doc.id});
               nearbyArt.add(art);
             } catch (e) {
-              debugPrint(
-                '❌ [DEBUG] Error converting capture to PublicArtModel: $e',
-              );
+              debugPrint('❌ [DEBUG] Error parsing PublicArtModel: $e');
             }
           }
         }
       }
-      debugPrint(
-        '🎯 [DEBUG] Found \\${nearbyArt.length} nearby art pieces from captures',
-      );
+      debugPrint('🎯 [DEBUG] Found ${nearbyArt.length} nearby art pieces');
       return nearbyArt;
     } catch (e) {
       _logger.e('[DEBUG] Error in getPublicArtNearLocation: $e');
@@ -238,151 +215,88 @@ class ArtWalkService {
     }
   }
 
-  /// Get all captured art (public captures)
-  Future<List<CaptureModel>> getAllCapturedArt() async {
+  /// Get all public art
+  Future<List<PublicArtModel>> getAllPublicArt() async {
     try {
-      debugPrint('🔍 [ArtWalkService] Starting getAllCapturedArt query...');
+      debugPrint('🔍 [ArtWalkService] Starting getAllPublicArt query...');
 
-      // Try a simple query first - just get all captures
-      debugPrint(
-        '🔍 [ArtWalkService] Step 1: Getting ALL captures (no filters)',
-      );
-      final allSnapshot = await _capturesCollection.get();
-      debugPrint(
-        '🔍 [ArtWalkService] Total captures in database: ${allSnapshot.docs.length}',
-      );
-
-      // Now try with individual filters to see what we get
-      debugPrint('🔍 [ArtWalkService] Step 2: Filtering by isPublic = true');
-      final publicSnapshot = await _capturesCollection
-          .where('isPublic', isEqualTo: true)
+      final snapshot = await _publicArtCollection
+          .orderBy('createdAt', descending: true)
           .get();
+
       debugPrint(
-        '🔍 [ArtWalkService] Public captures: ${publicSnapshot.docs.length}',
+        '🔍 [ArtWalkService] Found ${snapshot.docs.length} public art pieces',
       );
 
-      debugPrint('🔍 [ArtWalkService] Step 3: Filtering by isProcessed = true');
-      final processedSnapshot = await _capturesCollection
-          .where('isProcessed', isEqualTo: true)
-          .get();
-      debugPrint(
-        '🔍 [ArtWalkService] Processed captures: ${processedSnapshot.docs.length}',
-      );
-
-      // Try the combined query without orderBy to avoid index issues
-      debugPrint('🔍 [ArtWalkService] Step 4: Combined filters (no orderBy)');
-      final combinedSnapshot = await _capturesCollection
-          .where('isPublic', isEqualTo: true)
-          .where('isProcessed', isEqualTo: true)
-          .get();
-      debugPrint(
-        '🔍 [ArtWalkService] Combined filtered captures: ${combinedSnapshot.docs.length}',
-      );
-
-      // Use the combined snapshot (without orderBy to avoid index issues)
-      // If no results from filtered query, use all captures for debugging
-      final snapshot = combinedSnapshot.docs.isEmpty
-          ? allSnapshot
-          : combinedSnapshot;
-
-      if (combinedSnapshot.docs.isEmpty) {
-        debugPrint(
-          '⚠️ [ArtWalkService] No captures match filters, showing ALL captures for debugging',
-        );
-      }
-
-      final captures = <CaptureModel>[];
+      final artworks = <PublicArtModel>[];
       for (int i = 0; i < snapshot.docs.length; i++) {
         try {
           final doc = snapshot.docs[i];
           final data = doc.data() as Map<String, dynamic>;
-          debugPrint(
-            '🔍 [ArtWalkService] Processing doc ${i + 1}/${snapshot.docs.length}: id=${doc.id}',
-          );
-          debugPrint('  Raw data keys: ${data.keys.toList()}');
-          debugPrint('  isPublic: ${data['isPublic']}');
-          debugPrint('  isProcessed: ${data['isProcessed']}');
-          debugPrint('  title: ${data['title']}');
-          debugPrint('  imageUrl exists: ${data.containsKey('imageUrl')}');
 
-          final capture = CaptureModel.fromFirestore(
-            doc as DocumentSnapshot<Map<String, dynamic>>,
-            null,
-          );
-          captures.add(capture);
-          debugPrint('  ✅ Successfully parsed capture: ${capture.id}');
+          final artwork = PublicArtModel.fromJson({...data, 'id': doc.id});
+          artworks.add(artwork);
+          debugPrint('  ✅ Successfully parsed artwork: ${artwork.id}');
         } catch (e) {
           debugPrint('  ❌ Error parsing document ${i + 1}: $e');
         }
       }
 
-      // Sort manually since we removed orderBy
-      captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
       debugPrint(
-        '🔍 [ArtWalkService] Successfully parsed ${captures.length} captures',
+        '🔍 [ArtWalkService] Successfully parsed ${artworks.length} artworks',
       );
-      return captures;
+      return artworks;
     } catch (e) {
-      debugPrint('❌ [ArtWalkService] Error getting all captured art: $e');
-      _logger.e('Error getting all captured art: $e');
+      debugPrint('❌ [ArtWalkService] Error getting all public art: $e');
+      _logger.e('Error getting all public art: $e');
       return [];
     }
   }
 
-  /// Get captured art by current user
-  Future<List<CaptureModel>> getUserCapturedArt() async {
+  /// Get public art by current user
+  Future<List<PublicArtModel>> getUserPublicArt() async {
     final userId = getCurrentUserId();
     if (userId == null) {
       return [];
     }
 
     try {
-      final snapshot = await _capturesCollection
+      final snapshot = await _publicArtCollection
           .where('userId', isEqualTo: userId)
-          .where('isProcessed', isEqualTo: true)
           .orderBy('createdAt', descending: true)
           .get();
 
-      return snapshot.docs
-          .map(
-            (doc) => CaptureModel.fromFirestore(
-              doc as DocumentSnapshot<Map<String, dynamic>>,
-              null,
-            ),
-          )
-          .toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return PublicArtModel.fromJson({...data, 'id': doc.id});
+      }).toList();
     } catch (e) {
-      _logger.e('Error getting user captured art: $e');
+      _logger.e('Error getting user public art: $e');
       return [];
     }
   }
 
-  /// Get captured art near a location
-  Future<List<CaptureModel>> getCapturedArtNearLocation({
+  /// Get public art near a location (with optional user filter)
+  Future<List<PublicArtModel>> getPublicArtNearLocationWithFilter({
     required double latitude,
     required double longitude,
     double radiusKm = 5.0,
     bool includeUserOnly = false,
   }) async {
     try {
-      // Base query: processed captures
-      Query query = _capturesCollection.where('isProcessed', isEqualTo: true);
+      Query query = _publicArtCollection;
 
       if (includeUserOnly) {
         final userId = getCurrentUserId();
         if (userId == null) return [];
         query = query.where('userId', isEqualTo: userId);
-      } else {
-        // For public captures, filter by isPublic to comply with Firestore rules
-        query = query.where('isPublic', isEqualTo: true);
       }
 
       final snapshot = await query.get();
       debugPrint(
-        '🔍 [ArtWalkService] getCapturedArtNearLocation raw docs count after filters: ${snapshot.docs.length}',
+        '🔍 [ArtWalkService] getPublicArtNearLocationWithFilter raw docs count: ${snapshot.docs.length}',
       );
-      final List<CaptureModel> nearbyCaptures = [];
+      final List<PublicArtModel> nearbyArt = [];
 
       for (final doc in snapshot.docs) {
         // Log raw document ID and location existence
@@ -403,52 +317,25 @@ class ArtWalkService {
           );
           if (dist <= radiusKm) {
             try {
-              final capture = CaptureModel.fromFirestore(
-                doc as DocumentSnapshot<Map<String, dynamic>>,
-                null,
-              );
-              nearbyCaptures.add(capture);
+              final artwork = PublicArtModel.fromJson({...data, 'id': doc.id});
+              nearbyArt.add(artwork);
             } catch (e) {
               debugPrint(
-                '❌ [ArtWalkService] Error parsing CaptureModel for doc ${doc.id}: $e',
+                '❌ [ArtWalkService] Error parsing PublicArtModel for doc ${doc.id}: $e',
               );
             }
           }
         }
       }
       debugPrint(
-        '🔍 [ArtWalkService] filtered nearbyCaptures count: ${nearbyCaptures.length}',
+        '🔍 [ArtWalkService] filtered nearbyArt count: ${nearbyArt.length}',
       );
 
-      return nearbyCaptures;
+      return nearbyArt;
     } catch (e) {
       _logger.e('Error getting captured art near location: $e');
       return [];
     }
-  }
-
-  /// Convert CaptureModel to PublicArtModel for art walk integration
-  PublicArtModel captureToPublicArt(CaptureModel capture) {
-    return PublicArtModel(
-      id: capture.id,
-      userId: capture.userId,
-      title: capture.title ?? 'Captured Art',
-      description: capture.description ?? 'Art captured by community member',
-      imageUrl: capture.imageUrl,
-      artistName: capture.artistName,
-      location: capture.location ?? const GeoPoint(0, 0),
-      address: capture.locationName,
-      tags: capture.tags ?? [],
-      artType: capture.artType ?? 'Captured Art',
-      isVerified: false,
-      viewCount: 0,
-      likeCount: 0,
-      usersFavorited: [],
-      createdAt: Timestamp.fromDate(capture.createdAt),
-      updatedAt: capture.updatedAt != null
-          ? Timestamp.fromDate(capture.updatedAt!)
-          : null,
-    );
   }
 
   /// Get combined art (public art + captured art) for art walk creation
@@ -468,20 +355,16 @@ class ArtWalkService {
 
       final List<PublicArtModel> combinedArt = [...publicArt];
 
-      // Get captured art if requested
+      // Get user captures if requested (already in PublicArtModel format)
       if (includeUserCaptures) {
-        final capturedArt = await getCapturedArtNearLocation(
+        final userArt = await getPublicArtNearLocationWithFilter(
           latitude: latitude,
           longitude: longitude,
           radiusKm: radiusKm,
+          includeUserOnly: true,
         );
 
-        // Convert captured art to public art format
-        final convertedCaptures = capturedArt
-            .map((capture) => captureToPublicArt(capture))
-            .toList();
-
-        combinedArt.addAll(convertedCaptures);
+        combinedArt.addAll(userArt);
       }
 
       // Sort by distance (you might want to implement this)
@@ -1038,10 +921,9 @@ class ArtWalkService {
     required double longitude,
   }) {
     // Check internet connectivity
-    // TODO: Implement connectivity check
-    // if (!_connectivity.hasInternetConnection) {
-    //   throw Exception('No internet connection available');
-    // }
+    if (!_connectivityService.isConnected) {
+      throw Exception('No internet connection available');
+    }
 
     if (title.isEmpty) {
       throw Exception('Title cannot be empty');
@@ -1078,10 +960,9 @@ class ArtWalkService {
     bool isPublic = true,
   }) async {
     // Check internet connectivity
-    // TODO: Implement connectivity check
-    // if (!_connectivity.hasInternetConnection) {
-    //   throw Exception('No internet connection available');
-    // }
+    if (!_connectivityService.isConnected) {
+      throw Exception('No internet connection available');
+    }
 
     final userId = getCurrentUserId();
     if (userId == null) {

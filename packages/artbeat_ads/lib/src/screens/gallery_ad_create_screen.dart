@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/ad_gallery_model.dart';
 import '../models/ad_type.dart' as model;
 import '../models/ad_location.dart' as model;
@@ -12,6 +15,8 @@ import '../widgets/ad_location_picker_widget.dart';
 import '../widgets/ad_duration_picker_widget.dart';
 import '../widgets/ad_payment_widget.dart';
 import '../widgets/ad_display_widget.dart';
+import '../widgets/ads_header.dart';
+import '../widgets/ads_drawer.dart';
 
 class GalleryAdCreateScreen extends StatefulWidget {
   const GalleryAdCreateScreen({super.key});
@@ -40,17 +45,66 @@ class _GalleryAdCreateScreenState extends State<GalleryAdCreateScreen> {
     }
   }
 
+  Future<String> _uploadImage(File imageFile) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final fileName =
+          'gallery_ads/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final ref = FirebaseStorage.instance.ref().child(fileName);
+
+      final uploadTask = ref.putFile(imageFile);
+      final snapshot = await uploadTask.whenComplete(() {});
+
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('Failed to upload image: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> _getGalleryProfile(String userId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('galleries')
+          .doc(userId)
+          .get();
+
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (e) {
+      // Error fetching gallery profile: $e
+      return null;
+    }
+  }
+
   void _submitAd() async {
     if (!_formKey.currentState!.validate() || _imageFile == null) return;
     setState(() => _isProcessing = true);
     try {
-      // TODO: Upload image and get URL
-      const imageUrl = 'https://via.placeholder.com/400';
+      // Get current user ID from auth
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Upload image and get URL
+      final imageUrl = await _uploadImage(File(_imageFile!.path));
+
+      // Get gallery profile to get business name
+      final galleryProfile = await _getGalleryProfile(user.uid);
+      final businessName =
+          (galleryProfile?['businessName']?.toString() ??
+          galleryProfile?['name']?.toString() ??
+          'Gallery');
+
       final ad = AdGalleryModel(
         id: '',
-        ownerId: 'galleryId', // TODO: Get from auth
-        galleryId: 'galleryId',
-        businessName: 'Gallery Name', // TODO: Get from profile
+        ownerId: user.uid,
+        galleryId: user.uid,
+        businessName: businessName,
         type: _adType,
         imageUrl: imageUrl,
         title: _titleController.text,
@@ -80,11 +134,8 @@ class _GalleryAdCreateScreenState extends State<GalleryAdCreateScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Gallery Ad'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const AdsHeader(title: 'Create Gallery Ad', showBackButton: true),
+      drawer: const AdsDrawer(),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

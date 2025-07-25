@@ -50,6 +50,9 @@ class NotificationService {
             _firebaseMessagingBackgroundHandler,
           );
         }
+
+        // Start listening for new notifications to send push notifications
+        _startNotificationListener();
       }
     } catch (e) {
       debugPrint('❌ Error initializing notifications: $e');
@@ -192,6 +195,79 @@ class NotificationService {
         .where('isRead', isEqualTo: false)
         .snapshots()
         .map((snapshot) => snapshot.docs.length);
+  }
+
+  /// Send a notification to a specific user
+  Future<void> sendNotificationToUser({
+    required String userId,
+    required String title,
+    required String body,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_notificationsCollection)
+          .add({
+            'title': title,
+            'body': body,
+            'data': data,
+            'timestamp': FieldValue.serverTimestamp(),
+            'isRead': false,
+            'type': data['type'] ?? 'message',
+          });
+
+      debugPrint('📱 Notification sent to user $userId: $title');
+    } catch (e) {
+      debugPrint('❌ Error sending notification to user $userId: $e');
+      rethrow;
+    }
+  }
+
+  /// Start listening for new notifications in Firestore to trigger push notifications
+  void _startNotificationListener() {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_notificationsCollection)
+          .where('isRead', isEqualTo: false)
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .snapshots()
+          .listen((snapshot) {
+            for (final doc in snapshot.docChanges) {
+              if (doc.type == DocumentChangeType.added) {
+                final data = doc.doc.data() as Map<String, dynamic>;
+                _triggerLocalNotification(data);
+              }
+            }
+          });
+    } catch (e) {
+      debugPrint('❌ Error starting notification listener: $e');
+    }
+  }
+
+  /// Trigger a local notification for new messages
+  void _triggerLocalNotification(Map<String, dynamic> notificationData) {
+    try {
+      final title = notificationData['title'] as String? ?? 'New Message';
+      final body = notificationData['body'] as String? ?? '';
+      final type = notificationData['type'] as String? ?? 'message';
+
+      if (type == 'message') {
+        debugPrint('📱 New message notification: $title - $body');
+        // The actual local notification display would be handled by the platform
+        // For now, we just log it. In a full implementation, you'd use a package
+        // like flutter_local_notifications to show the notification
+      }
+    } catch (e) {
+      debugPrint('❌ Error triggering local notification: $e');
+    }
   }
 }
 

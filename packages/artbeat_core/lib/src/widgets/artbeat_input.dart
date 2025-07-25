@@ -10,6 +10,7 @@ class ArtbeatInput extends StatelessWidget {
   final Widget? suffixIcon;
   final Widget? prefixIcon;
   final String? Function(String?)? validator;
+  final int? maxLines;
 
   const ArtbeatInput({
     super.key,
@@ -21,6 +22,7 @@ class ArtbeatInput extends StatelessWidget {
     this.suffixIcon,
     this.prefixIcon,
     this.validator,
+    this.maxLines,
   });
 
   @override
@@ -30,6 +32,7 @@ class ArtbeatInput extends StatelessWidget {
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
+      maxLines: obscureText ? 1 : (maxLines ?? 1),
       decoration: ArtbeatComponents.inputDecoration(
         labelText: label,
         hintText: hint,
