@@ -62,7 +62,6 @@ class EnhancedUniversalHeader extends StatefulWidget
 class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
   bool _isSearchActive = false;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -73,9 +72,6 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
   }
 
@@ -142,70 +138,42 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       children: [
         // Back button from search
         IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-          ),
+          icon: const Icon(Icons.arrow_back),
           onPressed: _toggleSearch,
-          tooltip: 'Close search',
+          tooltip: 'Back',
         ),
 
-        // Search input
+        // Search input field
         Expanded(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                color: ArtbeatColors.backgroundSecondary,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
+          child: Container(
+            height: 40,
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: TextField(
+              controller: _searchController,
+              focusNode: _searchFocusNode,
+              decoration: const InputDecoration(
+                hintText: 'Search artists, artwork...',
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
                 ),
               ),
-              child: TextField(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                decoration: const InputDecoration(
-                  hintText: 'Search artists, artwork, events...',
-                  hintStyle: TextStyle(
-                    color: ArtbeatColors.textSecondary,
-                    fontSize: 14,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: ArtbeatColors.primaryPurple,
-                    size: 20,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
-                  ),
-                ),
-                style: const TextStyle(
-                  color: ArtbeatColors.textPrimary,
-                  fontSize: 14,
-                ),
-                onSubmitted: (query) {
-                  if (query.isNotEmpty) {
-                    // Navigate to search results page with query
-                    Navigator.pushNamed(
-                      context,
-                      '/search/results',
-                      arguments: {'query': query},
-                    );
-                    _toggleSearch();
-                  }
-                },
-              ),
+              onSubmitted: (value) {
+                if (value.isNotEmpty) {
+                  // Handle search
+                  widget.onSearchPressed?.call();
+                }
+              },
             ),
           ),
         ),
 
-        const SizedBox(width: 8),
-
-        // Clear/Search button
+        // Voice search or clear button
         IconButton(
           icon: Icon(
             _searchController.text.isEmpty ? Icons.mic : Icons.clear,
@@ -301,7 +269,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
   }
 
   List<Widget> _buildActionButtons() {
-    final actions = <Widget>[];
+    final List<Widget> actions = <Widget>[];
 
     // Search button
     if (widget.showSearch) {
@@ -317,17 +285,34 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       );
     }
 
-    // Profile/Artist discovery with notification badge
+    // Messaging icon with unread dot
+    actions.add(_buildMessagingIcon());
+
+    // Profile/Artist discovery icon
+    actions.add(
+      IconButton(
+        icon: Icon(
+          Icons.person_outline,
+          color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+        ),
+        onPressed: widget.onProfilePressed ?? () => _showProfileMenu(),
+        tooltip: 'Profile & Discovery',
+      ),
+    );
+
+    // Notifications bell icon with badge
     actions.add(
       Stack(
-        children: [
+        children: <Widget>[
           IconButton(
             icon: Icon(
-              Icons.person_outline,
+              Icons.notifications_none_outlined,
               color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
             ),
-            onPressed: widget.onProfilePressed ?? () => _showProfileMenu(),
-            tooltip: 'Profile & Discovery',
+            onPressed: () {
+              Navigator.pushNamed(context, '/notifications');
+            },
+            tooltip: 'Notifications',
           ),
           if (widget.hasNotifications)
             Positioned(
@@ -377,6 +362,25 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     }
 
     return actions;
+  }
+
+  Widget _buildMessagingIcon() {
+    return Stack(
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.message_outlined,
+            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+          ),
+          onPressed: () {
+            Navigator.pushNamed(context, '/messages');
+          },
+          tooltip: 'Messages',
+        ),
+        // Add unread message indicator if needed
+        // This would be connected to a messaging state provider
+      ],
+    );
   }
 
   void _openDrawer() {

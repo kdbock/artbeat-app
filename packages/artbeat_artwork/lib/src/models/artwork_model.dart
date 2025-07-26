@@ -92,6 +92,9 @@ class ArtworkModel {
   /// Timestamp of the last update
   final DateTime updatedAt;
 
+  /// Number of times the artwork has been applauded
+  final int applauseCount;
+
   ArtworkModel({
     required this.id,
     required this.userId,
@@ -123,6 +126,7 @@ class ArtworkModel {
     this.commentCount = 0,
     required this.createdAt,
     required this.updatedAt,
+    this.applauseCount = 0,
   })  :
         // Create defensive copies of all lists to prevent external modification
         additionalImageUrls = List.unmodifiable(additionalImageUrls),
@@ -135,7 +139,7 @@ class ArtworkModel {
 
   /// Create ArtworkModel from Firestore document
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return ArtworkModel(
       id: doc.id,
       // Handle legacy documents that have artistId instead of userId/artistProfileId
@@ -179,6 +183,7 @@ class ArtworkModel {
       commentCount: data['commentCount'] as int? ?? 0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      applauseCount: data['applauseCount'] as int? ?? 0,
     );
   }
 
@@ -214,6 +219,7 @@ class ArtworkModel {
       'commentCount': commentCount,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'applauseCount': applauseCount,
     };
   }
 
@@ -249,6 +255,7 @@ class ArtworkModel {
     int? commentCount,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? applauseCount,
   }) {
     return ArtworkModel(
       id: id ?? this.id,
@@ -281,6 +288,7 @@ class ArtworkModel {
       commentCount: commentCount ?? this.commentCount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      applauseCount: applauseCount ?? this.applauseCount,
     );
   }
 }

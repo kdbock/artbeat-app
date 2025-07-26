@@ -84,11 +84,40 @@ class CaptureModel {
   });
 
   factory CaptureModel.fromJson(Map<String, dynamic> json) {
+    // Validate required fields
+    final id = json['id'] as String?;
+    final userId = json['userId'] as String?;
+    final imageUrl = json['imageUrl'] as String?;
+    final createdAtTimestamp = json['createdAt'];
+
+    if (id == null || id.isEmpty) {
+      throw Exception('Capture ID is required but was null or empty');
+    }
+    if (userId == null || userId.isEmpty) {
+      throw Exception('User ID is required but was null or empty');
+    }
+    if (imageUrl == null) {
+      throw Exception('Image URL is required but was null');
+    }
+
+    DateTime createdAt;
+    try {
+      if (createdAtTimestamp is Timestamp) {
+        createdAt = createdAtTimestamp.toDate();
+      } else if (createdAtTimestamp is String) {
+        createdAt = DateTime.parse(createdAtTimestamp);
+      } else {
+        throw Exception('Invalid createdAt format');
+      }
+    } catch (e) {
+      throw Exception('Failed to parse createdAt: $e');
+    }
+
     return CaptureModel(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      imageUrl: json['imageUrl'] as String,
-      createdAt: (json['createdAt'] as Timestamp).toDate(),
+      id: id,
+      userId: userId,
+      imageUrl: imageUrl,
+      createdAt: createdAt,
       title: json['title'] as String?,
       textAnnotations: (json['textAnnotations'] as List<dynamic>?)
           ?.cast<String>(),
@@ -115,7 +144,10 @@ class CaptureModel {
     DocumentSnapshot<Map<String, dynamic>> snapshot,
     SnapshotOptions? options,
   ) {
-    final data = snapshot.data()!;
+    final data = snapshot.data();
+    if (data == null) {
+      throw Exception('Document data is null for capture ${snapshot.id}');
+    }
     return CaptureModel.fromJson({...data, 'id': snapshot.id});
   }
 

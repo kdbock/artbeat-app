@@ -52,7 +52,7 @@ class PostModel {
 
   /// Create from document - older convention
   factory PostModel.fromDocument(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
 
     return PostModel(
       id: doc.id,
@@ -65,7 +65,7 @@ class PostModel {
       location: (data['location'] as String?) ?? '',
       geoPoint: data['geoPoint'] as GeoPoint?,
       zipCode: data['zipCode'] as String?,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       applauseCount: (data['applauseCount'] as int?) ?? 0,
       commentCount: (data['commentCount'] as int?) ?? 0,
       shareCount: (data['shareCount'] as int?) ?? 0,

@@ -26,12 +26,9 @@ import 'package:artbeat_messaging/artbeat_messaging.dart' show ChatService;
 import '../widgets/achievement_badge.dart' show AchievementBadgeData;
 
 /// ViewModel for managing dashboard state and business logic
-bool _disposed = false;
-
 class DashboardViewModel extends BaseViewModel {
   @override
   void dispose() {
-    _disposed = true;
     _unreadCountSubscription?.cancel();
     super.dispose();
   }
@@ -134,22 +131,33 @@ class DashboardViewModel extends BaseViewModel {
 
     try {
       if (_isAuthenticated) {
+        // Phase 1: Load critical user data first
         _currentUser = await _userService.getCurrentUserModel();
+        _isLoadingUser = false; // Show dashboard structure immediately
+        notifyListeners();
+
         await updateUnreadMessageCount();
 
-        // Load all dashboard data
-        await Future.wait([
-          loadFeaturedArtists(),
-          loadArtworks(),
-          loadPosts(),
-          loadEvents(),
-          loadUserArtWalks(),
-          loadCaptures(),
-        ]);
+        // Phase 2: Load priority content (featured artists first)
+        loadFeaturedArtists();
+
+        // Phase 3: Load remaining content progressively in background
+        Future.delayed(const Duration(milliseconds: 300), () {
+          loadArtworks();
+        });
+
+        Future.delayed(const Duration(milliseconds: 600), () {
+          loadPosts();
+          loadEvents();
+        });
+
+        Future.delayed(const Duration(milliseconds: 900), () {
+          loadUserArtWalks();
+          loadCaptures();
+        });
       }
     } catch (e) {
       debugPrint('Error initializing dashboard: $e');
-    } finally {
       _isLoadingUser = false;
       notifyListeners();
     }
@@ -200,7 +208,7 @@ class DashboardViewModel extends BaseViewModel {
       debugPrint('Error loading user data: $e');
     } finally {
       _isLoadingUser = false;
-      _safeNotifyListeners();
+      notifyListeners();
     }
   }
 
@@ -374,9 +382,10 @@ class DashboardViewModel extends BaseViewModel {
             event.location,
           );
           if (eventLocation != null) {
+            final currentLoc = _currentLocation!;
             final distance = LocationUtils.calculateDistance(
-              _currentLocation!.latitude,
-              _currentLocation!.longitude,
+              currentLoc.latitude,
+              currentLoc.longitude,
               eventLocation.latitude,
               eventLocation.longitude,
             );
@@ -609,8 +618,9 @@ class DashboardViewModel extends BaseViewModel {
       );
 
       _isMapPreviewReady = true;
-      if (_mapController != null) {
-        await _mapController!.animateCamera(
+      final mapController = _mapController;
+      if (mapController != null) {
+        await mapController.animateCamera(
           CameraUpdate.newCameraPosition(_initialCameraPosition),
         );
       }
@@ -630,7 +640,10 @@ class DashboardViewModel extends BaseViewModel {
   void _useDefaultLocation() {
     const defaultLocation = LatLng(35.5951, -82.5515); // Asheville, NC
     _currentLocation = defaultLocation;
-    _initialCameraPosition = CameraPosition(target: defaultLocation, zoom: 12);
+    _initialCameraPosition = const CameraPosition(
+      target: defaultLocation,
+      zoom: 12,
+    );
     _isMapPreviewReady = true;
     _updateMapMarkers();
   }
@@ -639,26 +652,30 @@ class DashboardViewModel extends BaseViewModel {
   void _updateMapMarkers() {
     if (_captures.isEmpty || _currentLocation == null) return;
 
-    final newMarkers = _captures
-        .map((capture) {
-          if (capture.location == null) return null;
+    final newMarkers = <Marker>[];
 
-          return Marker(
-            markerId: MarkerId(capture.id),
-            position: LatLng(
-              capture.location!.latitude,
-              capture.location!.longitude,
-            ),
-            infoWindow: InfoWindow(
-              title: capture.title,
-              snippet: capture.description,
-            ),
-          );
-        })
-        .whereType<Marker>()
-        .toSet();
+    for (final capture in _captures) {
+      try {
+        if (capture.location == null) continue;
 
-    _markers = newMarkers;
+        final captureLocation = capture.location!;
+        final marker = Marker(
+          markerId: MarkerId(capture.id),
+          position: LatLng(captureLocation.latitude, captureLocation.longitude),
+          infoWindow: InfoWindow(
+            title: capture.title ?? 'Untitled Capture',
+            snippet: capture.description ?? capture.locationName,
+          ),
+        );
+
+        newMarkers.add(marker);
+      } catch (e) {
+        debugPrint('❌ Error creating marker for capture ${capture.id}: $e');
+        // Skip this capture and continue with others
+      }
+    }
+
+    _markers = newMarkers.toSet();
     notifyListeners();
   }
 
@@ -683,8 +700,9 @@ class DashboardViewModel extends BaseViewModel {
         ),
       );
       // Animate map camera to user location
-      if (_mapController != null) {
-        _mapController!.animateCamera(
+      final controller = _mapController;
+      if (controller != null) {
+        controller.animateCamera(
           CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)),
         );
       }
@@ -720,7 +738,7 @@ class DashboardViewModel extends BaseViewModel {
           _hasUnreadMessages = _unreadMessageCount > 0;
 
           debugPrint('✉️ Real-time unread count updated: $_unreadMessageCount');
-          _safeNotifyListeners();
+          notifyListeners();
         },
         onError: (Object error) {
           debugPrint('❌ Error listening to unread count: $error');
@@ -763,10 +781,11 @@ class DashboardViewModel extends BaseViewModel {
 
   /// Get level progress (0.0 to 1.0)
   double getLevelProgress() {
-    if (_currentUser == null) return 0.0;
+    final user = _currentUser;
+    if (user == null) return 0.0;
 
-    final currentXP = _currentUser!.experiencePoints;
-    final currentLevel = _currentUser!.level;
+    final currentXP = user.experiencePoints;
+    final currentLevel = user.level;
 
     // XP needed for next level: level * 100
     final xpForCurrentLevel = currentLevel * 100;
@@ -796,12 +815,5 @@ class DashboardViewModel extends BaseViewModel {
     };
 
     return levelTitles[level] ?? 'Unknown Level';
-  }
-
-  /// Safe notify listeners that checks disposal state
-  void _safeNotifyListeners() {
-    if (!_disposed) {
-      notifyListeners();
-    }
   }
 }

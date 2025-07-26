@@ -270,7 +270,7 @@ class _EnhancedMessagingDashboardScreenState
                       children: [
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.chat_bubble_outline,
                               color: textColor,
                               size: 32,
@@ -280,7 +280,7 @@ class _EnhancedMessagingDashboardScreenState
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'Messaging Dashboard',
                                     style: TextStyle(
                                       fontSize: 24,
@@ -420,7 +420,7 @@ class _EnhancedMessagingDashboardScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Overview',
           style: TextStyle(
             fontSize: 20,
@@ -539,7 +539,7 @@ class _EnhancedMessagingDashboardScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
+            const Expanded(
               child: Text(
                 'Recent Activity',
                 style: TextStyle(
@@ -675,7 +675,7 @@ class _EnhancedMessagingDashboardScreenState
               children: [
                 Text(
                   'Online Users (${users.length})',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: textColor,
@@ -780,7 +780,7 @@ class _EnhancedMessagingDashboardScreenState
               ),
               child: Text(
                 role,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 10,
                   color: textColor,
                   fontWeight: FontWeight.w500,
@@ -835,7 +835,7 @@ class _EnhancedMessagingDashboardScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
+        const Text(
           'Analytics & Insights',
           style: TextStyle(
             fontSize: 18,
@@ -1087,8 +1087,8 @@ class _EnhancedMessagingDashboardScreenState
   void _sendBroadcast() {
     HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Broadcast message sent successfully'),
+      const SnackBar(
+        content: Text('Broadcast message sent successfully'),
         backgroundColor: primaryColor,
       ),
     );

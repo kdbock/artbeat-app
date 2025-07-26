@@ -178,7 +178,7 @@ class EventCard extends StatelessWidget {
 
   Widget _buildArtistInfo() {
     // Check if the URL is valid for NetworkImage
-    bool isValidNetworkUrl =
+    final bool isValidNetworkUrl =
         event.artistHeadshotUrl.isNotEmpty &&
         (event.artistHeadshotUrl.startsWith('http://') ||
             event.artistHeadshotUrl.startsWith('https://')) &&

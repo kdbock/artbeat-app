@@ -53,6 +53,7 @@ export 'src/widgets/main_layout.dart';
 export 'src/widgets/enhanced_universal_header.dart';
 export 'src/widgets/enhanced_bottom_nav.dart';
 export 'src/widgets/artbeat_gradient_background.dart';
+export 'src/widgets/skeleton_widgets.dart';
 
 export 'src/widgets/user_avatar.dart';
 export 'src/widgets/optimized_image.dart';

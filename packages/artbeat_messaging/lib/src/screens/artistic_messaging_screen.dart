@@ -1295,7 +1295,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
     final gradient = gradients[index % gradients.length];
 
     // Determine user type from user data or default to 'user'
-    final String userType = 'user'; // Default value
+    const String userType = 'user'; // Default value
     // You might want to add a userType field to your UserModel if it doesn't exist
 
     return Container(

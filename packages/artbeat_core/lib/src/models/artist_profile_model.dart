@@ -47,7 +47,7 @@ class ArtistProfileModel {
 
   /// Create from Firestore document
   factory ArtistProfileModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
 
     return ArtistProfileModel(
       id: doc.id,

@@ -5,6 +5,7 @@ export 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 
 // Screens and services
 export 'src/screens/enhanced_capture_dashboard_screen.dart';
+export 'src/screens/captures_list_screen.dart';
 export 'src/screens/terms_and_conditions_screen.dart';
 export 'src/screens/camera_capture_screen.dart';
 export 'src/screens/camera_only_screen.dart';

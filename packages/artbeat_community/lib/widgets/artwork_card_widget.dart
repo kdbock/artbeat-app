@@ -15,7 +15,7 @@ class ArtworkCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Check if the avatar URL is valid for NetworkImage
-    bool isValidAvatarUrl =
+    final bool isValidAvatarUrl =
         artist.avatarUrl.isNotEmpty &&
         (artist.avatarUrl.startsWith('http://') ||
             artist.avatarUrl.startsWith('https://')) &&

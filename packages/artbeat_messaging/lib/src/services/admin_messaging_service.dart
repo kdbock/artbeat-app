@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/chat_model.dart';
 
@@ -137,9 +136,9 @@ class AdminMessagingService extends ChangeNotifier {
         .orderBy('timestamp', descending: true)
         .limit(20)
         .snapshots()
-        .handleError((error) {
+        .handleError((Object error) {
           debugPrint('Error in getRecentActivityStream: $error');
-          return const Stream.empty();
+          return const Stream<QuerySnapshot<Map<String, dynamic>>>.empty();
         })
         .map(
           (snapshot) => snapshot.docs.map((doc) {
@@ -184,9 +183,9 @@ class AdminMessagingService extends ChangeNotifier {
         .orderBy('lastSeen', descending: true)
         .limit(50)
         .snapshots()
-        .handleError((error) {
+        .handleError((Object error) {
           debugPrint('Error in getOnlineUsersStream: $error');
-          return const Stream.empty();
+          return const Stream<QuerySnapshot<Map<String, dynamic>>>.empty();
         })
         .map(
           (snapshot) => snapshot.docs.map((doc) {

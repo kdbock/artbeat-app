@@ -2,9 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 /// Service for handling chat and message notifications
 class NotificationService {
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
   final FirebaseMessaging _messaging;
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
@@ -24,6 +28,16 @@ class NotificationService {
   /// Initialize notification settings and request permissions
   Future<void> initialize() async {
     try {
+      // Initialize local notifications
+      const AndroidInitializationSettings androidInit =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const DarwinInitializationSettings iosInit =
+          DarwinInitializationSettings();
+      const InitializationSettings initSettings = InitializationSettings(
+        android: androidInit,
+        iOS: iosInit,
+      );
+      await _localNotifications.initialize(initSettings);
       // Request permission for notifications
       final settings = await _messaging.requestPermission(
         alert: true,
@@ -261,9 +275,22 @@ class NotificationService {
 
       if (type == 'message') {
         debugPrint('📱 New message notification: $title - $body');
-        // The actual local notification display would be handled by the platform
-        // For now, we just log it. In a full implementation, you'd use a package
-        // like flutter_local_notifications to show the notification
+        _localNotifications.show(
+          0,
+          title,
+          body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'chat_messages',
+              'Chat Messages',
+              channelDescription: 'Notifications for new chat messages',
+              importance: Importance.max,
+              priority: Priority.high,
+              icon: '@mipmap/ic_launcher',
+            ),
+            iOS: DarwinNotificationDetails(),
+          ),
+        );
       }
     } catch (e) {
       debugPrint('❌ Error triggering local notification: $e');

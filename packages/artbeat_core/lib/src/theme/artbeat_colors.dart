@@ -19,7 +19,7 @@ class ArtbeatColors {
   // Text Colors
   static const Color textPrimary = Color(0xFF212529);
   static const Color textSecondary = Color(0xFF666666);
-  static const Color textWhite = Colors.white;
+  static const Color textWhite = Color.fromARGB(255, 26, 4, 43);
   static const Color textDisabled = Color(0xFFADB5BD);
 
   // Background Colors

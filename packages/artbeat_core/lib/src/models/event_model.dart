@@ -36,18 +36,22 @@ class EventModel {
 
   /// Create an EventModel from a Firestore document
   factory EventModel.fromFirestore(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>? ?? {};
     return EventModel(
       id: doc.id,
       title: data['title'] as String? ?? '',
       description: data['description'] as String? ?? '',
-      startDate: (data['startDate'] as Timestamp?)?.toDate() ?? 
-                 (data['dateTime'] as Timestamp?)?.toDate() ?? 
-                 DateTime.now(),
+      startDate:
+          (data['startDate'] as Timestamp?)?.toDate() ??
+          (data['dateTime'] as Timestamp?)?.toDate() ??
+          DateTime.now(),
       endDate: (data['endDate'] as Timestamp?)?.toDate(),
       location: data['location'] as String? ?? '',
-      imageUrl: data['imageUrl'] as String? ?? data['eventBannerUrl'] as String?,
-      artistProfileImageUrl: data['artistProfileImageUrl'] as String? ?? data['artistHeadshotUrl'] as String?,
+      imageUrl:
+          data['imageUrl'] as String? ?? data['eventBannerUrl'] as String?,
+      artistProfileImageUrl:
+          data['artistProfileImageUrl'] as String? ??
+          data['artistHeadshotUrl'] as String?,
       artistId: data['artistId'] as String? ?? '',
       isPublic: data['isPublic'] as bool? ?? true,
       attendeeIds: List<String>.from(data['attendeeIds'] as List? ?? []),
@@ -98,7 +102,8 @@ class EventModel {
       endDate: endDate ?? this.endDate,
       location: location ?? this.location,
       imageUrl: imageUrl ?? this.imageUrl,
-      artistProfileImageUrl: artistProfileImageUrl ?? this.artistProfileImageUrl,
+      artistProfileImageUrl:
+          artistProfileImageUrl ?? this.artistProfileImageUrl,
       artistId: artistId ?? this.artistId,
       isPublic: isPublic ?? this.isPublic,
       attendeeIds: attendeeIds ?? this.attendeeIds,

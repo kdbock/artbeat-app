@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../services/chat_service.dart';
-import '../models/user_model.dart';
+import '../models/user_model.dart' as messaging;
 
 class GroupCreationScreen extends StatefulWidget {
   const GroupCreationScreen({super.key});
@@ -13,7 +13,7 @@ class GroupCreationScreen extends StatefulWidget {
 
 class _GroupCreationScreenState extends State<GroupCreationScreen> {
   final _groupNameController = TextEditingController();
-  final _selectedUsers = <UserModel>{};
+  final _selectedUsers = <messaging.UserModel>{};
   String _searchQuery = '';
 
   @override
@@ -148,7 +148,7 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<UserModel>>(
+            child: FutureBuilder<List<messaging.UserModel>>(
               future: chatService.searchUsers(_searchQuery),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {

@@ -22,6 +22,7 @@ import 'src/widgets/error_boundary.dart';
 import 'src/services/firebase_initializer.dart';
 import 'src/guards/auth_guard.dart';
 import 'src/screens/enhanced_search_screen.dart';
+import 'screens/notifications_screen.dart';
 
 class MyApp extends StatelessWidget {
   final navigatorKey = GlobalKey<NavigatorState>();
@@ -474,18 +475,7 @@ class MyApp extends StatelessWidget {
           builder: (_) => const CommunityDashboardScreen(),
         );
       case '/notifications':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: Scaffold(
-              appBar: core.EnhancedUniversalHeader(
-                title: 'Notifications',
-                showLogo: false,
-              ),
-              body: Center(child: Text('Notifications coming soon')),
-            ),
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const NotificationsScreen());
       case '/community/posts':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// Events Package Specific Header
 ///
@@ -83,7 +82,7 @@ class _EventsHeaderState extends State<EventsHeader> {
             )
           : IconButton(
               icon: const Icon(Icons.menu, color: _iconTextColor),
-              onPressed: widget.onMenuPressed ?? () => _openDrawer(),
+              onPressed: widget.onMenuPressed ?? _openDrawer,
               tooltip: 'Package Drawer',
             ),
     );
@@ -121,7 +120,7 @@ class _EventsHeaderState extends State<EventsHeader> {
             errorBuilder: (context, error, stackTrace) =>
                 const Icon(Icons.search, color: _iconTextColor),
           ),
-          onPressed: widget.onSearchPressed ?? () => _navigateToSearch(),
+          onPressed: widget.onSearchPressed ?? _navigateToSearch,
           tooltip: 'Search',
         ),
       );
@@ -139,7 +138,7 @@ class _EventsHeaderState extends State<EventsHeader> {
             errorBuilder: (context, error, stackTrace) =>
                 const Icon(Icons.chat_bubble_outline, color: _iconTextColor),
           ),
-          onPressed: widget.onChatPressed ?? () => _openMessaging(),
+          onPressed: widget.onChatPressed ?? _openMessaging,
           tooltip: 'Messages',
         ),
       );
@@ -150,7 +149,7 @@ class _EventsHeaderState extends State<EventsHeader> {
       actions.add(
         IconButton(
           icon: const Icon(Icons.developer_mode, color: _iconTextColor),
-          onPressed: widget.onDeveloperPressed ?? () => _showDeveloperMenu(),
+          onPressed: widget.onDeveloperPressed ?? _showDeveloperMenu,
           tooltip: 'Developer Tools',
         ),
       );

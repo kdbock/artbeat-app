@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'achievement_runner.dart';
 import 'achievement_badge.dart';
 
@@ -271,7 +272,9 @@ class _UserExperienceCardState extends State<UserExperienceCard>
               widget.user.profileImageUrl != 'placeholder_headshot_url')
           ? CircleAvatar(
               radius: 25,
-              backgroundImage: NetworkImage(widget.user.profileImageUrl),
+              backgroundImage: CachedNetworkImageProvider(
+                widget.user.profileImageUrl,
+              ),
               onBackgroundImageError: (exception, stackTrace) {
                 debugPrint('Error loading profile image: $exception');
               },

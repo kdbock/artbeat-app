@@ -206,14 +206,19 @@ class CaptureService {
           .limit(limit)
           .get();
 
-      final captures = querySnapshot.docs
-          .map(
-            (doc) => CaptureModel.fromJson({
-              ...doc.data() as Map<String, dynamic>,
-              'id': doc.id,
-            }),
-          )
-          .toList();
+      final captures = <CaptureModel>[];
+      for (final doc in querySnapshot.docs) {
+        try {
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data != null && data.isNotEmpty) {
+            final capture = CaptureModel.fromJson({...data, 'id': doc.id});
+            captures.add(capture);
+          }
+        } catch (e) {
+          debugPrint('❌ Error parsing capture ${doc.id}: $e');
+          // Skip this document and continue with others
+        }
+      }
 
       debugPrint(
         '✅ CaptureService.getAllCaptures() found ${captures.length} captures',
@@ -227,14 +232,19 @@ class CaptureService {
         debugPrint('🔄 Trying fallback query without orderBy...');
         final fallbackQuery = await _capturesRef.limit(limit).get();
 
-        final captures = fallbackQuery.docs
-            .map(
-              (doc) => CaptureModel.fromJson({
-                ...doc.data() as Map<String, dynamic>,
-                'id': doc.id,
-              }),
-            )
-            .toList();
+        final captures = <CaptureModel>[];
+        for (final doc in fallbackQuery.docs) {
+          try {
+            final data = doc.data() as Map<String, dynamic>?;
+            if (data != null && data.isNotEmpty) {
+              final capture = CaptureModel.fromJson({...data, 'id': doc.id});
+              captures.add(capture);
+            }
+          } catch (e) {
+            debugPrint('❌ Error parsing capture ${doc.id} in fallback: $e');
+            // Skip this document and continue with others
+          }
+        }
 
         // Sort manually by createdAt
         captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));

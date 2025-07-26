@@ -39,9 +39,9 @@ class _UserAdReviewScreenState extends State<UserAdReviewScreen> {
   Widget build(BuildContext context) {
     if (_userId == null) {
       return const Scaffold(
-        appBar: const AdsHeader(title: 'My Ad Review', showBackButton: true),
-        drawer: const AdsDrawer(),
-        body: const Center(
+        appBar: AdsHeader(title: 'My Ad Review', showBackButton: true),
+        drawer: AdsDrawer(),
+        body: Center(
           child: Text(
             'Please log in to view your ads',
             style: TextStyle(fontSize: 18),

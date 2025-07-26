@@ -1,11 +1,13 @@
+import 'package:artbeat_artist/src/screens/artist_onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_artwork/artbeat_artwork.dart';
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_capture/artbeat_capture.dart'
-    show CaptureService, CaptureModel;
-import 'package:artbeat_community/artbeat_community.dart' show PostModel;
+    show CaptureService, CaptureModel, CapturesListScreen;
+import 'package:artbeat_community/artbeat_community.dart'
+    show PostModel, ApplauseButton, GiftModal;
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/user_experience_card.dart';
 
@@ -29,8 +31,11 @@ class FluidDashboardScreen extends StatefulWidget {
   State<FluidDashboardScreen> createState() => _FluidDashboardScreenState();
 }
 
-class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
+class _FluidDashboardScreenState extends State<FluidDashboardScreen>
+    with TickerProviderStateMixin {
   late ScrollController _scrollController;
+  late AnimationController _shimmerController;
+  late Animation<double> _shimmerAnimation;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -38,21 +43,30 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
     super.initState();
     _scrollController = ScrollController();
 
+    // Initialize shimmer animation
+    _shimmerController = SkeletonWidgets.createShimmerController(this);
+    _shimmerAnimation = _shimmerController;
+
     // Initialize dashboard data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final viewModel = context.read<DashboardViewModel>();
-      viewModel.initialize();
+      try {
+        final viewModel = context.read<DashboardViewModel>();
+        viewModel.initialize();
 
-      // Debug: Verify drawer is available
-      debugPrint('FluidDashboardScreen initialized');
-      debugPrint('Scaffold key: $_scaffoldKey');
+        // Debug: Verify drawer is available
+        debugPrint('FluidDashboardScreen initialized');
+        debugPrint('Scaffold key: $_scaffoldKey');
+      } catch (e) {
+        debugPrint('Error initializing dashboard: $e');
+      }
     });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _shimmerController.dispose();
     super.dispose();
   }
 
@@ -143,9 +157,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
           child: SafeArea(
             child: Consumer<DashboardViewModel>(
               builder: (context, viewModel, child) {
-                if (viewModel.isLoadingUser) {
-                  return _buildLoadingState();
-                }
+                // Always show dashboard structure, use skeleton loading for individual sections
                 return _buildFluidContent(viewModel);
               },
             ),
@@ -158,28 +170,31 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   void _openDrawer(BuildContext context) {
     debugPrint('Attempting to open drawer...');
 
-    // First try using the GlobalKey
-    if (_scaffoldKey.currentState != null) {
+    // First try using the GlobalKey with null-safe access
+    final scaffoldState = _scaffoldKey.currentState;
+    if (scaffoldState != null) {
       debugPrint('Opening drawer using GlobalKey...');
-      _scaffoldKey.currentState!.openDrawer();
+      scaffoldState.openDrawer();
       return;
     }
 
     // Fallback to Scaffold.maybeOf
-    final scaffoldState = Scaffold.maybeOf(context);
-    debugPrint('Scaffold state: $scaffoldState');
+    final fallbackScaffoldState = Scaffold.maybeOf(context);
+    debugPrint('Scaffold state: $fallbackScaffoldState');
 
-    if (scaffoldState != null && scaffoldState.hasDrawer) {
+    if (fallbackScaffoldState != null && fallbackScaffoldState.hasDrawer) {
       debugPrint('Opening drawer using Scaffold.maybeOf...');
-      scaffoldState.openDrawer();
+      fallbackScaffoldState.openDrawer();
     } else {
       debugPrint('No drawer found or scaffold state is null');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Navigation drawer not available'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Navigation drawer not available'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -332,7 +347,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withAlphaValue(0.2)),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
             ),
             child: Row(
               children: [
@@ -386,35 +401,62 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          // Hero welcome section
-          SliverToBoxAdapter(child: _buildHeroWelcomeSection(viewModel)),
+          // Hero Map Section with tagline overlay
+          SliverToBoxAdapter(
+            child: _buildSafeSection(() => _buildHeroMapSection(viewModel)),
+          ),
 
-          // Map preview section
-          SliverToBoxAdapter(child: _buildMapPreviewSection(viewModel)),
+          // User experience card (for logged in users)
+          if (viewModel.currentUser != null)
+            SliverToBoxAdapter(
+              child: _buildSafeSection(
+                () => _buildUserExperienceSection(viewModel),
+              ),
+            ),
 
-          // Quick actions section
-          SliverToBoxAdapter(child: _buildQuickActionsSection(viewModel)),
+          // App explanation section (for new/anonymous users)
+          if (viewModel.currentUser == null)
+            SliverToBoxAdapter(
+              child: _buildSafeSection(() => _buildAppExplanationSection()),
+            ),
 
-          // Recent captures section
-          if (viewModel.captures.isNotEmpty)
-            SliverToBoxAdapter(child: _buildRecentCapturesSection(viewModel)),
+          // Public Art Captures section
+          SliverToBoxAdapter(
+            child: _buildSafeSection(
+              () => _buildRecentCapturesSection(viewModel),
+            ),
+          ),
 
           // Artists showcase section
-          SliverToBoxAdapter(child: _buildArtistsShowcaseSection(viewModel)),
-
-          // Community highlights section
           SliverToBoxAdapter(
-            child: _buildCommunityHighlightsSection(viewModel),
+            child: _buildSafeSection(
+              () => _buildArtistsShowcaseSection(viewModel),
+            ),
           ),
 
           // Artwork gallery section
-          SliverToBoxAdapter(child: _buildArtworkGallerySection(viewModel)),
+          SliverToBoxAdapter(
+            child: _buildSafeSection(
+              () => _buildArtworkGallerySection(viewModel),
+            ),
+          ),
+
+          // Community highlights section
+          SliverToBoxAdapter(
+            child: _buildSafeSection(
+              () => _buildCommunityHighlightsSection(viewModel),
+            ),
+          ),
 
           // Events section
-          SliverToBoxAdapter(child: _buildEventsSection(viewModel)),
+          SliverToBoxAdapter(
+            child: _buildSafeSection(() => _buildEventsSection(viewModel)),
+          ),
 
           // Artist CTA section
-          SliverToBoxAdapter(child: _buildArtistCTASection()),
+          SliverToBoxAdapter(
+            child: _buildSafeSection(() => _buildArtistCTASection()),
+          ),
 
           // Bottom padding for navigation
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -423,187 +465,352 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
     );
   }
 
-  Widget _buildHeroWelcomeSection(DashboardViewModel viewModel) {
-    final user = viewModel.currentUser;
-    if (user == null) {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6A3DE8), // Deeper purple
-              Color(0xFF9D50DD), // Medium purple
-              Color(0xFF6A3DE8), // Back to deeper purple
-            ],
+  Widget _buildHeroMapSection(DashboardViewModel viewModel) {
+    return Container(
+      height: 400, // Taller hero section
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: ArtbeatColors.primaryGreen.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
           ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Decorative elements
-            Positioned(
-              top: -20,
-              right: -20,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -30,
-              left: -30,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                // Add SizedBox with fixed height
-                height: 180, // Adjust this value as needed
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min, // Add this to minimize height
-                  children: [
-                    Row(
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Map background
+          ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: viewModel.isLoadingMap
+                ? Container(
+                    color: ArtbeatColors.backgroundSecondary,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.palette,
-                            color: Colors.white,
-                            size: 28,
+                        SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              ArtbeatColors.primaryGreen,
+                            ),
+                            strokeWidth: 3,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Welcome to ARTbeat!',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Discover local art & connect with artists',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ],
+                        SizedBox(height: 16),
+                        Text(
+                          'Loading your canvas...',
+                          style: TextStyle(
+                            color: ArtbeatColors.primaryGreen,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        _buildWelcomeActionButton(
-                          icon: Icons.directions_walk,
-                          label: 'Art Walks',
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/art-walk/dashboard',
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildWelcomeActionButton(
-                          icon: Icons.camera_alt,
-                          label: 'Capture Art',
-                          onTap: () => Navigator.pushNamed(
-                            context,
-                            '/capture/dashboard',
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        _buildWelcomeActionButton(
-                          icon: Icons.login,
-                          label: 'Sign In',
-                          onTap: () => Navigator.pushNamed(context, '/auth'),
-                        ),
-                      ],
+                  )
+                : AbsorbPointer(
+                    child: GoogleMap(
+                      mapType: MapType.normal,
+                      initialCameraPosition: viewModel.initialCameraPosition,
+                      onMapCreated: viewModel.onMapCreated,
+                      markers: viewModel.markers,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
                     ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+                  ),
+          ),
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: UserExperienceCard(
-        key: ValueKey<String>(user.id),
-        user: user,
-        achievements: viewModel.achievements,
-        onTap: () => Navigator.pushNamed(context, '/achievements'),
-        showAnimations: true,
-        margin: const EdgeInsets.all(16),
+          // Gradient overlay for text readability
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.6),
+                  Colors.black.withValues(alpha: 0.3),
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.4),
+                ],
+                stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
+              ),
+            ),
+          ),
+
+          // Hero text overlay
+          Positioned(
+            top: 32,
+            left: 24,
+            right: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.primaryPurple.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'ARTbeat',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'The city is the canvas.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                  ),
+                ),
+                const Text(
+                  'You choose the path.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Discover public art, connect with artists, and explore your city through creative walks.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Action buttons at bottom
+          Positioned(
+            bottom: 24,
+            left: 24,
+            right: 24,
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/art-walk/map'),
+                    icon: const Icon(Icons.explore, size: 20),
+                    label: const Text('Explore Map'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ArtbeatColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/art-walk/dashboard'),
+                    icon: const Icon(Icons.directions_walk, size: 20),
+                    label: const Text('Art Walks'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.9),
+                      foregroundColor: ArtbeatColors.primaryGreen,
+                      elevation: 4,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Location button
+          Positioned(
+            top: 24,
+            right: 24,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: IconButton(
+                onPressed: () => viewModel.centerMapOnUserLocation(),
+                icon: const Icon(
+                  Icons.my_location,
+                  color: ArtbeatColors.primaryGreen,
+                ),
+                tooltip: 'Center on my location',
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildWelcomeActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+  Widget _buildUserExperienceSection(DashboardViewModel viewModel) {
+    final user = viewModel.currentUser;
+    if (user == null) return const SizedBox.shrink();
+
+    return UserExperienceCard(
+      key: ValueKey<String>(user.id),
+      user: user,
+      achievements: viewModel.achievements,
+      onTap: () => Navigator.pushNamed(context, '/achievements'),
+      showAnimations: true,
+      margin: const EdgeInsets.all(16),
+    );
+  }
+
+  Widget _buildAppExplanationSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+            ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'How ARTbeat Works',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: ArtbeatColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 20),
+          _buildFeatureRow(
+            Icons.camera_alt,
+            'Capture Public Art',
+            'Discover and photograph murals, sculptures, and street art around your city.',
+            ArtbeatColors.primaryGreen,
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureRow(
+            Icons.palette,
+            'Connect with Artists',
+            'Follow local artists, view their portfolios, and support their work.',
+            ArtbeatColors.primaryPurple,
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureRow(
+            Icons.directions_walk,
+            'Take Art Walks',
+            'Follow curated routes to discover the best art in your neighborhood.',
+            ArtbeatColors.primaryGreen,
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/auth'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtbeatColors.primaryPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Join ARTbeat',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureRow(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
+          child: Icon(icon, color: color, size: 24),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: Colors.white, size: 24),
-              const SizedBox(height: 8),
               Text(
-                label,
+                title,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: ArtbeatColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: ArtbeatColors.textSecondary,
+                  height: 1.4,
                 ),
               ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -836,7 +1043,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 51), // 0.2 opacity
+                      color: Colors.white.withValues(alpha: 0.2), // 0.2 opacity
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -881,7 +1088,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                           75,
                           73,
                           73,
-                        ).withValues(alpha: 26), // 0.1 opacity
+                        ).withValues(alpha: 0.1), // 0.1 opacity
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -1023,7 +1230,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: ArtbeatColors.primaryGreen.withValues(
-                          alpha: 77,
+                          alpha: 0.3,
                         ), // 0.3 opacity
                         width: 2,
                       ),
@@ -1129,7 +1336,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
                           color: ArtbeatColors.primaryGreen.withValues(
-                            alpha: 77,
+                            alpha: 0.3,
                           ), // 0.3 opacity
                           width: 1,
                         ),
@@ -1218,7 +1425,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     child: Card(
                       elevation: 2,
                       shadowColor: ArtbeatColors.primaryGreen.withValues(
-                        alpha: 77,
+                        alpha: 0.3,
                       ), // 0.3 opacity
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -1323,57 +1530,196 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   }
 
   Widget _buildRecentCapturesSection(DashboardViewModel viewModel) {
-    // Show ALL captures, not just user captures
     return Container(
       margin: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Recent Captures',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.textPrimary,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.camera_alt,
+                  color: ArtbeatColors.primaryGreen,
+                  size: 20,
                 ),
               ),
-              TextButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/capture/dashboard'),
-                child: const Text('Find Art'),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Local Captures',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Street art, murals, and sculptures discovered by the community',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const CapturesListScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.explore, size: 16),
+                label: const Text('Local Captures'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          // Instead of viewModel.captures, fetch all captures from CaptureService
           FutureBuilder<List<CaptureModel>>(
             future: CaptureService().getAllCaptures(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return SizedBox(
+                  height: 180,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: 4, // Show 4 skeleton cards
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: SkeletonWidgets.captureCardSkeleton(
+                          _shimmerAnimation,
+                        ),
+                      );
+                    },
+                  ),
+                );
               }
               if (snapshot.hasError) {
-                return const Center(child: Text('Error loading captures'));
+                debugPrint('❌ Captures section error: ${snapshot.error}');
+                return Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.backgroundSecondary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: ArtbeatColors.textSecondary,
+                          size: 48,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          'Unable to load captures',
+                          style: TextStyle(color: ArtbeatColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
-              final captures = snapshot.data ?? [];
-              if (captures.isEmpty) {
-                return const Center(child: Text('No captures found'));
+              final captures = snapshot.data;
+              if (captures == null || captures.isEmpty) {
+                return Container(
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.backgroundSecondary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.camera_alt_outlined,
+                            color: ArtbeatColors.textSecondary,
+                            size: 40,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'No public art captured yet',
+                            style: TextStyle(
+                              color: ArtbeatColors.textSecondary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Be the first to discover and share art in your city!',
+                            style: TextStyle(
+                              color: ArtbeatColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 32,
+                            child: ElevatedButton.icon(
+                              onPressed: () => Navigator.pushNamed(
+                                context,
+                                '/capture/dashboard',
+                              ),
+                              icon: const Icon(Icons.add_a_photo, size: 16),
+                              label: const Text(
+                                'Start Capturing',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ArtbeatColors.primaryGreen,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
               }
               return SizedBox(
-                height: 160,
-                width: MediaQuery.of(context).size.width,
+                height: 200,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   itemCount: captures.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
                     final capture = captures[index];
                     return SizedBox(
-                      width: 220,
-                      child: _buildCaptureCard(capture),
+                      width: 150,
+                      child: _buildSafeCaptureCard(capture),
                     );
                   },
                 ),
@@ -1385,12 +1731,44 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
     );
   }
 
+  Widget _buildSafeCaptureCard(CaptureModel capture) {
+    try {
+      return _buildCaptureCard(capture);
+    } catch (e) {
+      debugPrint('❌ Error rendering capture card: $e');
+      return Container(
+        decoration: BoxDecoration(
+          color: ArtbeatColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: ArtbeatColors.textSecondary,
+                size: 32,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Error loading capture',
+                style: TextStyle(
+                  color: ArtbeatColors.textSecondary,
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
   Widget _buildCaptureCard(CaptureModel capture) {
     return GestureDetector(
-      onTap: () {
-        // Navigate to capture dashboard since /capture/detail doesn't exist
-        Navigator.pushNamed(context, '/capture/dashboard');
-      },
+      onTap: () => _showCaptureDetailsPopup(capture),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -1403,79 +1781,269 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+        child: SizedBox(
+          height: 200,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Fixed image height
+              SizedBox(
+                height: 120,
+                width: double.infinity,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                  child: _buildCaptureImage(capture),
                 ),
-                child: capture.imageUrl.isNotEmpty
-                    ? Image.network(
-                        capture.imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: ArtbeatColors.backgroundSecondary,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  ArtbeatColors.primaryPurple,
+              ),
+              // Info section expands to fill remaining space without overflow
+              SizedBox(height: 80, child: _buildCaptureInfo(capture)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCaptureImage(CaptureModel capture) {
+    // Add null safety check for imageUrl
+    final imageUrl = capture.imageUrl;
+    if (imageUrl.isEmpty) {
+      return Container(
+        color: ArtbeatColors.backgroundSecondary,
+        child: const Center(
+          child: Icon(
+            Icons.image,
+            size: 48,
+            color: ArtbeatColors.textSecondary,
+          ),
+        ),
+      );
+    }
+
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: ArtbeatColors.backgroundSecondary,
+          child: const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                ArtbeatColors.primaryPurple,
+              ),
+            ),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint('❌ Image loading error for capture ${capture.id}: $error');
+        return Container(
+          color: ArtbeatColors.backgroundSecondary,
+          child: const Center(
+            child: Icon(
+              Icons.broken_image,
+              size: 48,
+              color: ArtbeatColors.textSecondary,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCaptureInfo(CaptureModel capture) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            (capture.title?.isNotEmpty == true)
+                ? capture.title ?? 'Untitled Capture'
+                : 'Untitled Capture',
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: ArtbeatColors.textPrimary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            (capture.locationName?.isNotEmpty == true)
+                ? capture.locationName ?? 'Unknown Location'
+                : 'Unknown Location',
+            style: const TextStyle(
+              fontSize: 11,
+              color: ArtbeatColors.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCaptureDetailsPopup(CaptureModel capture) {
+    try {
+      _showCaptureDetailsPopupInternal(capture);
+    } catch (e) {
+      debugPrint('❌ Error showing capture details popup: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to show capture details'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showCaptureDetailsPopupInternal(CaptureModel capture) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Image
+                      if (capture.imageUrl.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: CachedNetworkImage(
+                            imageUrl: capture.imageUrl,
+                            width: double.infinity,
+                            height: 240,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              height: 250,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              height: 250,
+                              color: Colors.grey[200],
+                              child: const Icon(Icons.error),
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: 16),
+
+                      // Title
+                      Text(
+                        (capture.title?.isNotEmpty == true)
+                            ? capture.title ?? 'Public Art Capture'
+                            : 'Public Art Capture',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Location
+                      if (capture.locationName?.isNotEmpty == true)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              size: 16,
+                              color: ArtbeatColors.textSecondary,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                capture.locationName ?? 'Unknown Location',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: ArtbeatColors.textSecondary,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: ArtbeatColors.backgroundSecondary,
-                        child: const Center(
-                          child: Icon(
-                            Icons.image,
-                            size: 48,
-                            color: ArtbeatColors.textSecondary,
+                          ],
+                        ),
+
+                      const SizedBox(height: 16),
+
+                      // Description
+                      if (capture.description?.isNotEmpty == true)
+                        Text(
+                          capture.description ?? '',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: ArtbeatColors.textPrimary,
+                          ),
+                        ),
+
+                      const SizedBox(height: 24),
+
+                      // Create Art Walk Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(
+                              context,
+                              '/art-walk/create',
+                              arguments: {'captureId': capture.id},
+                            );
+                          },
+                          icon: const Icon(Icons.directions_walk),
+                          label: const Text('Create Art Walk'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ArtbeatColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    capture.title != null && capture.title!.isNotEmpty
-                        ? capture.title!
-                        : 'Untitled Capture',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: ArtbeatColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    capture.locationName != null &&
-                            capture.locationName!.isNotEmpty
-                        ? capture.locationName!
-                        : 'Unknown Location',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: ArtbeatColors.textSecondary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1501,66 +2069,88 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               const Expanded(
-                child: Text(
-                  'Featured Artists',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Featured Artists',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Connect with local creators and discover their work',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               TextButton(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/artwork/featured'),
+                onPressed: () => Navigator.pushNamed(context, '/artist/browse'),
                 child: const Text('View All'),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          if (viewModel.isLoadingFeaturedArtists)
-            const Center(child: CircularProgressIndicator())
-          else if (viewModel.featuredArtists.isEmpty)
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.palette_outlined,
-                    size: 48,
-                    color: ArtbeatColors.textSecondary,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Discovering featured artists...',
-                    style: TextStyle(
-                      color: ArtbeatColors.textSecondary,
-                      fontSize: 16,
+          SizedBox(
+            height: 220,
+            child: viewModel.isLoadingFeaturedArtists
+                ? ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: 3, // Show 3 skeleton cards
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: SkeletonWidgets.artistCardSkeleton(
+                          _shimmerAnimation,
+                        ),
+                      );
+                    },
+                  )
+                : viewModel.featuredArtists.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.palette_outlined,
+                          size: 48,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No featured artists yet',
+                          style: TextStyle(
+                            color: ArtbeatColors.textSecondary,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => viewModel.refresh(),
+                          child: const Text('Refresh'),
+                        ),
+                      ],
                     ),
+                  )
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: viewModel.featuredArtists.length,
+                    itemBuilder: (context, index) {
+                      final artist = viewModel.featuredArtists[index];
+                      return _buildArtistCard(artist);
+                    },
                   ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => viewModel.refresh(),
-                    child: const Text('Refresh'),
-                  ),
-                ],
-              ),
-            )
-          else
-            SizedBox(
-              height: 290,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: viewModel.featuredArtists.length,
-                itemBuilder: (context, index) {
-                  final artist = viewModel.featuredArtists[index];
-                  return _buildArtistCard(artist);
-                },
-              ),
-            ),
+          ),
         ],
       ),
     );
@@ -1568,179 +2158,150 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
 
   Widget _buildArtistCard(ArtistProfileModel artist) {
     return Container(
-      width: 240,
+      width: 200,
       margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            ArtbeatColors.primaryPurple.withValues(alpha: 0.02),
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 26), // 0.1 opacity
-            blurRadius: 10,
+            color: ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
+            blurRadius: 15,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Navigator.pushNamed(
-            context,
-            '/artist/public-profile',
-            arguments: {'artistId': artist.userId},
-          ),
-          borderRadius: BorderRadius.circular(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Cover image with profile image overlay
-              SizedBox(
-                height: 120,
-                width: double.infinity,
-                child: Stack(
-                  children: [
-                    // Cover image
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                      child: CachedNetworkImage(
-                        imageUrl: artist.coverImageUrl ?? '',
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 120,
-                        placeholder: (context, url) => Container(
-                          color: ArtbeatColors.primaryPurple.withValues(
-                            alpha: 0.1,
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: ArtbeatColors.primaryPurple.withValues(
-                            alpha: 0.1,
-                          ),
-                          child: const Icon(Icons.image),
-                        ),
-                      ),
-                    ),
-                    // Profile image
-                    Positioned(
-                      left: 32,
-                      bottom: 32,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color.fromARGB(
-                                255,
-                                205,
-                                195,
-                                195,
-                              ).withValues(alpha: 26),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 32,
-                          backgroundColor: Colors.white,
-                          backgroundImage: artist.profileImageUrl != null
-                              ? CachedNetworkImageProvider(
-                                  artist.profileImageUrl!,
-                                )
-                              : null,
-                          child: artist.profileImageUrl == null
-                              ? const Icon(Icons.person)
-                              : null,
-                        ),
-                      ),
-                    ),
-                    // Verified badge
-                    if (artist.isVerified)
-                      Positioned(
-                        right: 16,
-                        top: 16,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.verified,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Verified',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          12,
+          12,
+          12,
+          8,
+        ), // Reduced bottom padding
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Profile avatar - centered
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: ArtbeatColors.primaryPurple.withValues(alpha: 0.2),
+                  width: 2,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              const SizedBox(height: 40),
-              // Artist info
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        artist.displayName,
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white,
+                backgroundImage: (artist.profileImageUrl?.isNotEmpty == true)
+                    ? CachedNetworkImageProvider(artist.profileImageUrl ?? '')
+                    : null,
+                child: (artist.profileImageUrl?.isEmpty != false)
+                    ? Text(
+                        artist.displayName.isNotEmpty
+                            ? artist.displayName.substring(0, 1).toUpperCase()
+                            : 'A',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: ArtbeatColors.textPrimary,
+                          color: ArtbeatColors.primaryPurple,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        artist.mediums.join(' • '),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: ArtbeatColors.textSecondary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Text(
-                          artist.bio ?? '',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: ArtbeatColors.textPrimary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                      )
+                    : null,
+              ),
+            ),
+            const SizedBox(height: 8), // Slightly increased for better balance
+            // Artist name
+            Text(
+              artist.displayName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: ArtbeatColors.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4), // Increased slightly
+            // Mediums
+            artist.mediums.isNotEmpty
+                ? Text(
+                    artist.mediums.take(2).join(' • '),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: ArtbeatColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  )
+                : const SizedBox.shrink(),
+            // Conditional spacing only if bio exists
+            if (artist.bio != null && artist.bio!.isNotEmpty)
+              const SizedBox(height: 6),
+            // Bio snippet (limited to 2 lines)
+            (artist.bio != null && artist.bio!.isNotEmpty)
+                ? Text(
+                    artist.bio!,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: ArtbeatColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : const SizedBox.shrink(),
+            const SizedBox(height: 8), // Consistent spacing before button
+            // Be a Fan button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // TODO: Implement follow/fan functionality
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Following ${artist.displayName}!'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.favorite_border, size: 16),
+                label: const Text('Be a Fan'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryPurple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ), // Better padding
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
+                  textStyle: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  minimumSize: const Size(0, 32), // Consistent button height
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -1773,106 +2334,132 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          if (viewModel.isLoadingPosts)
-            const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  ArtbeatColors.primaryPurple,
-                ),
-              ),
-            )
-          else if (viewModel.posts.isEmpty)
-            _buildEmptyState(
-              icon: Icons.chat_bubble_outline,
-              title: 'No posts yet',
-              subtitle: 'Be the first to share with the community!',
-            )
-          else
-            Column(
-              children: viewModel.posts
-                  .take(3)
-                  .map((post) => _buildCommunityPostCard(post))
-                  .toList(),
-            ),
+          SizedBox(
+            height: 200,
+            child: viewModel.isLoadingPosts
+                ? ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: 3, // Show 3 skeleton cards
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: SkeletonWidgets.communityPostSkeleton(
+                          _shimmerAnimation,
+                        ),
+                      );
+                    },
+                  )
+                : viewModel.posts.isEmpty
+                ? _buildEmptyState(
+                    icon: Icons.chat_bubble_outline,
+                    title: 'No posts yet',
+                    subtitle: 'Be the first to share with the community!',
+                  )
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: viewModel.posts.length.clamp(0, 10),
+                    addAutomaticKeepAlives: false,
+                    addRepaintBoundaries: true,
+                    itemBuilder: (context, index) {
+                      final post = viewModel.posts[index];
+                      return Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: _buildCommunityHighlightCard(post),
+                      );
+                    },
+                  ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCommunityPostCard(PostModel post) {
+  Widget _buildCommunityHighlightCard(PostModel post) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        elevation: 4,
-        shadowColor: Colors.black.withAlphaValue(0.1),
-        child: InkWell(
-          onTap: () => Navigator.pushNamed(context, '/community/dashboard'),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: ArtbeatColors.primaryPurple.withValues(
-                        alpha: 0.1,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Image section
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: (post.imageUrls.isNotEmpty)
+                  ? CachedNetworkImage(
+                      imageUrl: post.imageUrls.first,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      placeholder: (context, url) => Container(
+                        color: ArtbeatColors.backgroundSecondary,
+                        child: const Center(child: CircularProgressIndicator()),
                       ),
-                      child: Text(
-                        post.userName.isNotEmpty
-                            ? post.userName[0].toUpperCase()
-                            : 'U',
-                        style: const TextStyle(
-                          color: ArtbeatColors.primaryPurple,
-                          fontWeight: FontWeight.bold,
+                      errorWidget: (context, url, error) => Container(
+                        color: ArtbeatColors.backgroundSecondary,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 48,
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: ArtbeatColors.backgroundSecondary,
+                      child: const Center(
+                        child: Icon(
+                          Icons.image,
+                          size: 48,
+                          color: ArtbeatColors.textSecondary,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            post.userName.isNotEmpty
-                                ? post.userName
-                                : 'Unknown User',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: ArtbeatColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            _formatTimeAgo(post.createdAt),
-                            style: const TextStyle(
-                              color: ArtbeatColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  post.content,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: ArtbeatColors.textPrimary,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
             ),
           ),
-        ),
+
+          // Seeking Critique button
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/community/post-detail',
+                    arguments: {'postId': post.id},
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.secondaryTeal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'Seeking Critique',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1884,63 +2471,101 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
-                child: Text(
-                  'Artwork Gallery',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
-                  ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.brush,
+                  color: ArtbeatColors.primaryPurple,
+                  size: 20,
                 ),
               ),
-              TextButton(
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Artwork Gallery',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      'Original pieces and digital art from local creators',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
                 onPressed: () =>
-                    Navigator.pushNamed(context, '/artwork/featured'),
-                child: const Text('View All'),
+                    Navigator.pushNamed(context, '/artwork/browse'),
+                icon: const Icon(Icons.collections, size: 16),
+                label: const Text('Browse'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          if (viewModel.isLoadingArtworks)
-            const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  ArtbeatColors.primaryPurple,
-                ),
-              ),
-            )
-          else if (viewModel.artworks.isEmpty)
-            _buildEmptyState(
-              icon: Icons.palette_outlined,
-              title: 'No artwork yet',
-              subtitle: 'Artists will showcase their work here!',
-            )
-          else
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: viewModel.artworks.length.clamp(0, 10),
-                itemBuilder: (context, index) {
-                  final artwork = viewModel.artworks[index];
-                  return Container(
-                    width: 160,
-                    margin: const EdgeInsets.only(right: 16),
-                    child: _buildArtworkCard(artwork),
-                  );
-                },
-              ),
-            ),
+          SizedBox(
+            height: 240,
+            child: viewModel.isLoadingArtworks
+                ? ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: 3, // Show 3 skeleton cards
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: SkeletonWidgets.artworkCardSkeleton(
+                          _shimmerAnimation,
+                        ),
+                      );
+                    },
+                  )
+                : viewModel.artworks.isEmpty
+                ? _buildEmptyState(
+                    icon: Icons.palette_outlined,
+                    title: 'No artwork yet',
+                    subtitle: 'Artists will showcase their work here!',
+                  )
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: viewModel.artworks.length.clamp(0, 10),
+                    itemBuilder: (context, index) {
+                      final artwork = viewModel.artworks[index];
+                      return Container(
+                        width: 160,
+                        margin: const EdgeInsets.only(right: 16),
+                        child: _buildArtworkCard(artwork),
+                      );
+                    },
+                  ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildArtworkCard(ArtworkModel artwork) {
+  Widget _buildArtworkCard(artwork.ArtworkModel artwork) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2028,6 +2653,46 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  const SizedBox(height: 8),
+                  // Action buttons row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Applause button
+                      Expanded(
+                        child: ApplauseButton(
+                          postId: artwork.id,
+                          userId: artwork.userId,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Applause sent!'),
+                                duration: Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                          count: artwork
+                              .applauseCount, // Applause count from model
+                        ),
+                      ),
+                      // Gift button
+                      IconButton(
+                        onPressed: () {
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) =>
+                                GiftModal(recipientId: artwork.userId),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.card_giftcard,
+                          color: ArtbeatColors.primaryPurple,
+                          size: 20,
+                        ),
+                        tooltip: 'Send Gift',
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -2063,27 +2728,26 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          if (viewModel.isLoadingEvents)
-            const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  ArtbeatColors.primaryPurple,
+          viewModel.isLoadingEvents
+              ? Column(
+                  children: List.generate(
+                    3, // Show 3 skeleton cards
+                    (index) =>
+                        SkeletonWidgets.eventCardSkeleton(_shimmerAnimation),
+                  ),
+                )
+              : viewModel.events.isEmpty
+              ? _buildEmptyState(
+                  icon: Icons.event_outlined,
+                  title: 'No events yet',
+                  subtitle: 'Check back soon for exciting art events!',
+                )
+              : Column(
+                  children: viewModel.events
+                      .take(3)
+                      .map((event) => _buildEventCard(event))
+                      .toList(),
                 ),
-              ),
-            )
-          else if (viewModel.events.isEmpty)
-            _buildEmptyState(
-              icon: Icons.event_outlined,
-              title: 'No events yet',
-              subtitle: 'Check back soon for exciting art events!',
-            )
-          else
-            Column(
-              children: viewModel.events
-                  .take(3)
-                  .map((event) => _buildEventCard(event))
-                  .toList(),
-            ),
         ],
       ),
     );
@@ -2092,7 +2756,6 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   Widget _buildEventCard(EventModel event) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -2107,66 +2770,105 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            event.title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: ArtbeatColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Icon(
-                Icons.calendar_today,
-                size: 16,
-                color: ArtbeatColors.textSecondary,
+          // Event image (small)
+          if (event.imageUrl?.isNotEmpty == true)
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
               ),
-              const SizedBox(width: 4),
-              Text(
-                _formatEventDate(event.startDate),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: ArtbeatColors.textSecondary,
+              child: CachedNetworkImage(
+                imageUrl: event.imageUrl ?? '',
+                height: 80,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  height: 80,
+                  color: ArtbeatColors.backgroundSecondary,
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const Icon(
-                Icons.location_on,
-                size: 16,
-                color: ArtbeatColors.textSecondary,
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  event.location,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: ArtbeatColors.textSecondary,
+                errorWidget: (context, url, error) => Container(
+                  height: 80,
+                  color: ArtbeatColors.backgroundSecondary,
+                  child: const Center(
+                    child: Icon(
+                      Icons.event,
+                      size: 32,
+                      color: ArtbeatColors.textSecondary,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ],
-          ),
-          if (event.description.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              event.description,
-              style: const TextStyle(
-                fontSize: 14,
-                color: ArtbeatColors.textPrimary,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-          ],
+
+          // Event details
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  event.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: ArtbeatColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: ArtbeatColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatEventDate(event.startDate),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      size: 16,
+                      color: ArtbeatColors.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        event.location,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                if (event.description.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    event.description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: ArtbeatColors.textPrimary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -2275,8 +2977,36 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 // CTA button
                 Center(
                   child: ElevatedButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/artist/onboarding'),
+                    onPressed: () {
+                      final user = context
+                          .read<DashboardViewModel>()
+                          .currentUser;
+                      if (user != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<ArtistOnboardingScreen>(
+                            builder: (context) =>
+                                ArtistOnboardingScreen(user: user),
+                          ),
+                        );
+                      } else {
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Error'),
+                            content: const Text(
+                              'User not found. Please log in again.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8E2DE2),
                       padding: const EdgeInsets.symmetric(
@@ -2287,9 +3017,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       elevation: 8,
-                      shadowColor: Colors.black.withValues(
-                        alpha: 77,
-                      ), // 0.3 opacity
+                      shadowColor: Colors.black.withValues(alpha: 0.3),
                     ),
                     child: const Text(
                       'Join as Artist',
@@ -2312,7 +3040,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 13), // 0.05 opacity
+                color: Colors.white.withValues(alpha: 0.05), // 0.05 opacity
                 shape: BoxShape.circle,
               ),
             ),
@@ -2324,7 +3052,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 13), // 0.05 opacity
+                color: Colors.white.withValues(alpha: 0.05), // 0.05 opacity
                 shape: BoxShape.circle,
               ),
             ),
@@ -2341,7 +3069,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 26), // 0.1 opacity
+                    color: Colors.black.withValues(alpha: 0.1), // 0.1 opacity
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -2354,7 +3082,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       color: ArtbeatColors.primaryPurple.withValues(
-                        alpha: 26,
+                        alpha: 0.1,
                       ), // 0.1 opacity
                       shape: BoxShape.circle,
                     ),
@@ -2390,10 +3118,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
+          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2)),
           child: Icon(icon, color: Colors.white, size: 16),
         ),
         const SizedBox(width: 16),
@@ -2471,7 +3196,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               style: TextStyle(
                 fontSize: 14,
                 color: ArtbeatColors.textSecondary.withValues(
-                  alpha: 204,
+                  alpha: 0.8,
                 ), // 0.8 opacity
                 height: 1.4,
               ),
@@ -2502,29 +3227,6 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
     );
   }
 
-  Widget _buildLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-              ArtbeatColors.primaryPurple.withValues(alpha: 179), // 0.7 opacity
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Loading your ARTbeat experience...',
-            style: TextStyle(
-              color: Colors.grey.withValues(alpha: 179), // 0.7 opacity
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   BoxDecoration _buildArtisticBackground() {
     return BoxDecoration(
       gradient: LinearGradient(
@@ -2532,29 +3234,38 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
         end: Alignment.bottomRight,
         colors: [
           Colors.white,
-          Colors.grey.withValues(alpha: 26), // 0.1 opacity
+          Colors.grey.withValues(alpha: 0.1), // 0.1 opacity
           Colors.white,
         ],
       ),
     );
   }
 
-  String _formatTimeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
-  }
-
   String _formatEventDate(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+  }
+
+  /// Wraps a section builder with error handling to prevent layout crashes
+  Widget _buildSafeSection(Widget Function() builder) {
+    try {
+      return builder();
+    } catch (e) {
+      debugPrint('❌ Safe section error: $e');
+      return Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: ArtbeatColors.backgroundSecondary,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'Section temporarily unavailable',
+            style: TextStyle(color: ArtbeatColors.textSecondary, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
   }
 }

@@ -12,6 +12,7 @@ class ArtworkModel {
   final DateTime createdAt;
   final bool isSold;
   final String? galleryId;
+  final int applauseCount;
 
   ArtworkModel({
     required this.id,
@@ -25,6 +26,7 @@ class ArtworkModel {
     required this.createdAt,
     required this.isSold,
     this.galleryId,
+    required this.applauseCount,
   });
 
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
@@ -41,6 +43,7 @@ class ArtworkModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       isSold: data['isSold'] as bool? ?? false,
       galleryId: data['galleryId'] as String?,
+      applauseCount: data['applauseCount'] as int? ?? 0,
     );
   }
 
@@ -56,6 +59,7 @@ class ArtworkModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'isSold': isSold,
       if (galleryId != null) 'galleryId': galleryId,
+      'applauseCount': applauseCount,
     };
   }
 }
