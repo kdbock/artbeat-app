@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/src/theme/artbeat_colors.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'capture_detail_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -14,7 +16,7 @@ class CapturesListScreen extends StatefulWidget {
 
 class _CapturesListScreenState extends State<CapturesListScreen> {
   final CaptureService _captureService = CaptureService();
-  List<CaptureModel> _captures = [];
+  List<core.CaptureModel> _captures = [];
   bool _isLoading = true;
   String? _error;
   Position? _userPosition;
@@ -97,149 +99,11 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
     }
   }
 
-  void _showCaptureDetails(CaptureModel capture) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        maxChildSize: 0.9,
-        minChildSize: 0.5,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Image
-                      if (capture.imageUrl.isNotEmpty)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: CachedNetworkImage(
-                            imageUrl: capture.imageUrl,
-                            width: double.infinity,
-                            height: 250,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              height: 250,
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              height: 250,
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.error),
-                            ),
-                          ),
-                        ),
-
-                      const SizedBox(height: 16),
-
-                      // Title
-                      Text(
-                        capture.title != null && capture.title!.isNotEmpty
-                            ? capture.title!
-                            : 'Public Art Capture',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: ArtbeatColors.textPrimary,
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      // Location
-                      if (capture.locationName != null &&
-                          capture.locationName!.isNotEmpty)
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.location_on,
-                              size: 16,
-                              color: ArtbeatColors.textSecondary,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                capture.locationName!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: ArtbeatColors.textSecondary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                      const SizedBox(height: 16),
-
-                      // Description
-                      if (capture.description != null &&
-                          capture.description!.isNotEmpty)
-                        Text(
-                          capture.description!,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: ArtbeatColors.textPrimary,
-                          ),
-                        ),
-
-                      const SizedBox(height: 24),
-
-                      // Create Art Walk Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(
-                              context,
-                              '/art-walk/create',
-                              arguments: {'captureId': capture.id},
-                            );
-                          },
-                          icon: const Icon(Icons.directions_walk),
-                          label: const Text('Create Art Walk'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ArtbeatColors.primaryGreen,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+  void _showCaptureDetails(core.CaptureModel capture) {
+    Navigator.push<core.CaptureModel>(
+      context,
+      MaterialPageRoute<core.CaptureModel>(
+        builder: (context) => CaptureDetailScreen(capture: capture),
       ),
     );
   }
@@ -336,7 +200,7 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
     );
   }
 
-  Widget _buildCaptureCard(CaptureModel capture) {
+  Widget _buildCaptureCard(core.CaptureModel capture) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(

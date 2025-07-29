@@ -7,3 +7,4 @@ export 'app_config.dart';
 export 'env_loader.dart';
 export 'location_utils.dart';
 export 'connectivity_utils.dart';
+export 'permission_utils.dart';

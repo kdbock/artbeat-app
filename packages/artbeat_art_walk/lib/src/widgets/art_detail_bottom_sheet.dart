@@ -16,6 +16,19 @@ class ArtDetailBottomSheet extends StatelessWidget {
     this.distanceText,
   });
 
+  /// Navigate to Create Art Walk screen with this art piece pre-selected
+  void _createArtWalk(BuildContext context) {
+    // Close the current bottom sheet first
+    Navigator.pop(context);
+
+    // Navigate to Create Art Walk screen with this art piece
+    Navigator.pushNamed(
+      context,
+      '/art-walk/create',
+      arguments: {'capture': art},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -280,29 +293,59 @@ class ArtDetailBottomSheet extends StatelessWidget {
                 ),
               ),
 
-              // Action button
-              if (onVisitPressed != null)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  child: ElevatedButton.icon(
-                    onPressed: isVisited ? null : onVisitPressed,
-                    icon: Icon(
-                      isVisited ? Icons.check_circle : Icons.location_on,
-                    ),
-                    label: Text(
-                      isVisited ? 'Already Visited' : 'Mark as Visited',
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isVisited ? Colors.green : Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              // Action buttons
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Create Art Walk button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _createArtWalk(context),
+                        icon: const Icon(Icons.route),
+                        label: const Text('Create Art Walk'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+
+                    // Visit button (if provided)
+                    if (onVisitPressed != null) ...[
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: isVisited ? null : onVisitPressed,
+                          icon: Icon(
+                            isVisited ? Icons.check_circle : Icons.location_on,
+                          ),
+                          label: Text(
+                            isVisited ? 'Already Visited' : 'Mark as Visited',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isVisited
+                                ? Colors.green
+                                : Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
+              ),
             ],
           ),
         );

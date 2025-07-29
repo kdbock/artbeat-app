@@ -8,6 +8,12 @@ class CaptureService {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  // Cache for getAllCaptures
+  List<CaptureModel>? _cachedAllCaptures;
+  DateTime? _allCapturesCacheTime;
+  static const Duration _cacheTimeout = Duration(minutes: 5);
+  bool _isLoadingAllCaptures = false;
+
   factory CaptureService() {
     return _instance;
   }
@@ -195,9 +201,31 @@ class CaptureService {
 
   /// Get all captures (for dashboard display)
   Future<List<CaptureModel>> getAllCaptures({int limit = 50}) async {
+    // Prevent multiple simultaneous calls
+    if (_isLoadingAllCaptures) {
+      debugPrint(
+        '🔄 CaptureService.getAllCaptures() already loading, waiting...',
+      );
+      // Wait for the current load to complete
+      while (_isLoadingAllCaptures) {
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      return _cachedAllCaptures ?? [];
+    }
+
+    // Check cache first
+    if (_cachedAllCaptures != null &&
+        _allCapturesCacheTime != null &&
+        DateTime.now().difference(_allCapturesCacheTime!) < _cacheTimeout) {
+      debugPrint('📦 CaptureService.getAllCaptures() returning cached data');
+      return _cachedAllCaptures!;
+    }
+
+    _isLoadingAllCaptures = true;
+
     try {
       debugPrint(
-        '🚀 CaptureService.getAllCaptures() called with limit: $limit',
+        '🚀 CaptureService.getAllCaptures() fetching from Firestore with limit: $limit',
       );
 
       // Try with orderBy first
@@ -219,6 +247,10 @@ class CaptureService {
           // Skip this document and continue with others
         }
       }
+
+      // Cache the results
+      _cachedAllCaptures = captures;
+      _allCapturesCacheTime = DateTime.now();
 
       debugPrint(
         '✅ CaptureService.getAllCaptures() found ${captures.length} captures',
@@ -248,13 +280,26 @@ class CaptureService {
 
         // Sort manually by createdAt
         captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+        // Cache the results
+        _cachedAllCaptures = captures;
+        _allCapturesCacheTime = DateTime.now();
+
         debugPrint('✅ Fallback query found ${captures.length} all captures');
         return captures;
       } catch (fallbackError) {
         debugPrint('❌ Fallback query also failed: $fallbackError');
         return [];
       }
+    } finally {
+      _isLoadingAllCaptures = false;
     }
+  }
+
+  /// Clear the cache for getAllCaptures
+  void clearAllCapturesCache() {
+    _cachedAllCaptures = null;
+    _allCapturesCacheTime = null;
   }
 
   /// Get public captures

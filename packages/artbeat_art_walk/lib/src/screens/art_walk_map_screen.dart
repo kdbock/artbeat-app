@@ -33,11 +33,14 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   bool _showInfoCard = true;
   String _currentZipCode = '';
   String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
+  bool _hasMovedToUserLocation =
+      false; // Track if we've already moved to user location
+  bool _showCapturesSlider = false; // Track if captures slider is visible
 
-  // Default to North Carolina center with better zoom with better zoom
+  // Default to ZIP code 28501 (Kinston, NC) with better zoom
   static const CameraPosition _defaultLocation = CameraPosition(
-    target: LatLng(35.7596, -79.0193), // Center of NC
-    zoom: 10.0, // Better initial zoom level // Better initial zoom level
+    target: LatLng(35.23838, -77.52658), // ZIP code 28501 (Kinston, NC)
+    zoom: 10.0, // Better initial zoom level
   );
 
   @override
@@ -84,11 +87,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       debugPrint('✅ Maps initialized successfully');
 
-      // Load user's ZIP code first, then initialize location
+      // Load user's ZIP code first
       await _loadUserZipCode();
 
-      // Now initialize location
-      await _initializeLocation();
+      // Location initialization will happen in _onMapCreated() after map is ready
 
       // If we're on an emulator, reduce map resource usage
       if (isEmulator && _mapController != null) {
@@ -161,65 +163,18 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     if (!mounted) return;
 
     try {
-      // Check if location services are enabled
-      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Location services are disabled. Please enable them to see nearby art.',
-              ),
-              duration: Duration(seconds: 3),
-            ),
-          );
-        }
-        setState(() => _isLoading = false);
-        return;
-      }
+      // Priority 1: Try to get user's current location
+      final currentLocationResult = await _tryGetCurrentLocation();
 
-      // Check and request location permission
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Location permission denied. Some features may be limited.',
-                ),
-                duration: Duration(seconds: 3),
-              ),
-            );
-          }
-          setState(() => _isLoading = false);
-          return;
-        }
-      }
-
-      // Get current position with a timeout
-      try {
-        _currentPosition =
-            await Geolocator.getCurrentPosition(
-              locationSettings: const LocationSettings(
-                accuracy: LocationAccuracy.high,
-                timeLimit: Duration(seconds: 10),
-              ),
-            ).timeout(
-              const Duration(seconds: 10),
-              onTimeout: () {
-                // If getting high accuracy location times out, try lower accuracy
-                return Geolocator.getCurrentPosition(
-                  locationSettings: const LocationSettings(
-                    accuracy: LocationAccuracy.medium,
-                    timeLimit: Duration(seconds: 5),
-                  ),
-                );
-              },
-            );
-
-        debugPrint('🌍 Got current position: $_currentPosition');
+      if (currentLocationResult != null) {
+        // Successfully got current location - use it
+        _currentPosition = currentLocationResult;
+        debugPrint('🌍 Using current location: $_currentPosition');
+        await _moveMapToLocation(
+          _currentPosition!.latitude,
+          _currentPosition!.longitude,
+          15.0,
+        );
 
         // Get ZIP code from coordinates if we don't have user's ZIP code
         if (_currentZipCode.isEmpty) {
@@ -233,73 +188,46 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           if (_currentZipCode.isNotEmpty && _currentZipCode != '00000') {
             _updateUserZipCode(_currentZipCode);
           }
-        } else {
-          debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
         }
 
-        // Load nearby art with a timeout
-        _nearbyArt = await _artWalkService
-            .getPublicArtNearLocation(
-              latitude: _currentPosition!.latitude,
-              longitude: _currentPosition!.longitude,
-              radiusKm: 10.0,
-            )
-            .timeout(
-              const Duration(seconds: 15),
-              onTimeout: () {
-                debugPrint(
-                  '⚠️ Loading nearby art timed out, using cached data if available',
-                );
-                return _artWalkService.getCachedPublicArt();
-              },
-            );
-
-        debugPrint('🎨 Loaded ${_nearbyArt.length} nearby art pieces');
-
-        // Create markers for nearby art
-        _updateMarkers();
-
-        // If map is ready, move to current location with better zoom
-        if (_mapController != null && mounted) {
-          try {
-            debugPrint('🗺️ Moving map to current location');
-            await _mapController!
-                .animateCamera(
-                  CameraUpdate.newCameraPosition(
-                    CameraPosition(
-                      target: LatLng(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                      ),
-                      zoom: 15.0, // Increased zoom for better visibility
-                    ),
-                  ),
-                )
-                .timeout(const Duration(seconds: 3));
-          } catch (e) {
-            debugPrint('⚠️ Error animating camera: $e');
-          }
-        }
-
-        // Set up periodic location updates
+        // Load nearby art based on current location
+        await _loadNearbyArt(
+          _currentPosition!.latitude,
+          _currentPosition!.longitude,
+        );
         _startLocationUpdates();
-      } on TimeoutException {
-        debugPrint('⌛ Timeout getting precise location');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Location services timed out. Using approximate location.',
-              ),
-              duration: Duration(seconds: 3),
-            ),
+      } else if (_currentZipCode.isNotEmpty) {
+        // Priority 2: Use user's saved ZIP code
+        debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
+        final coordinates = await _getCoordinatesFromZipCode(_currentZipCode);
+        if (coordinates != null) {
+          await _moveMapToLocation(
+            coordinates.latitude,
+            coordinates.longitude,
+            12.0,
+          );
+          await _loadNearbyArt(coordinates.latitude, coordinates.longitude);
+        } else {
+          // Fallback to default location if ZIP code lookup fails
+          debugPrint('📍 ZIP code lookup failed, using default location');
+          await _moveMapToLocation(
+            _defaultLocation.target.latitude,
+            _defaultLocation.target.longitude,
+            10.0,
           );
         }
-      } catch (e) {
-        if (e is SocketException) {
-          debugPrint('🌐 Network error while getting location data: $e');
-          _showSnackBar('Network error. Some features may be limited.');
-        }
+      } else {
+        // Priority 3: Use default location (Kinston, NC - 28501)
+        debugPrint('📍 Using default location: Kinston, NC (28501)');
+        await _moveMapToLocation(
+          _defaultLocation.target.latitude,
+          _defaultLocation.target.longitude,
+          10.0,
+        );
+        await _loadNearbyArt(
+          _defaultLocation.target.latitude,
+          _defaultLocation.target.longitude,
+        );
       }
     } catch (e) {
       debugPrint('❌ Error initializing location: $e');
@@ -313,10 +241,180 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           ),
         );
       }
+      // Fallback to default location on any error
+      await _moveMapToLocation(
+        _defaultLocation.target.latitude,
+        _defaultLocation.target.longitude,
+        10.0,
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  /// Try to get user's current location with proper error handling
+  Future<Position?> _tryGetCurrentLocation() async {
+    try {
+      // Check if location services are enabled
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('📍 Location services are disabled');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location services are disabled. Using saved location or default.',
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return null;
+      }
+
+      // Check and request location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          debugPrint('📍 Location permission denied');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Location permission denied. Using saved location or default.',
+                ),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return null;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        debugPrint('📍 Location permission permanently denied');
+        return null;
+      }
+
+      // Get current position with a timeout
+      final position =
+          await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 10),
+            ),
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              // If getting high accuracy location times out, try lower accuracy
+              return Geolocator.getCurrentPosition(
+                locationSettings: const LocationSettings(
+                  accuracy: LocationAccuracy.medium,
+                  timeLimit: Duration(seconds: 5),
+                ),
+              );
+            },
+          );
+
+      return position;
+    } on TimeoutException {
+      debugPrint('⌛ Timeout getting current location');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location services timed out. Using saved location or default.',
+            ),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return null;
+    } catch (e) {
+      debugPrint('❌ Error getting current location: $e');
+      if (e is SocketException) {
+        debugPrint('🌐 Network error while getting location data: $e');
+        _showSnackBar('Network error. Using saved location or default.');
+      }
+      return null;
+    }
+  }
+
+  /// Get coordinates from ZIP code
+  Future<({double latitude, double longitude})?> _getCoordinatesFromZipCode(
+    String zipCode,
+  ) async {
+    try {
+      // You might want to implement a ZIP code to coordinates lookup
+      // For now, we'll use a simple lookup for common ZIP codes
+      // This could be enhanced with a proper geocoding service
+
+      // Special case for our default ZIP code
+      if (zipCode == '28501') {
+        return (latitude: 35.23838, longitude: -77.52658);
+      }
+
+      // For other ZIP codes, you might want to use a geocoding service
+      // For now, return null to fall back to default location
+      debugPrint('📍 ZIP code coordinate lookup not implemented for: $zipCode');
+      return null;
+    } catch (e) {
+      debugPrint('❌ Error getting coordinates from ZIP code: $e');
+      return null;
+    }
+  }
+
+  /// Move map to specified location
+  Future<void> _moveMapToLocation(
+    double latitude,
+    double longitude,
+    double zoom,
+  ) async {
+    if (_mapController != null && mounted && !_hasMovedToUserLocation) {
+      try {
+        debugPrint('🗺️ Moving map to location: $latitude, $longitude');
+        await _mapController!
+            .animateCamera(
+              CameraUpdate.newCameraPosition(
+                CameraPosition(target: LatLng(latitude, longitude), zoom: zoom),
+              ),
+            )
+            .timeout(const Duration(seconds: 3));
+        _hasMovedToUserLocation = true;
+      } catch (e) {
+        debugPrint('⚠️ Error animating camera: $e');
+      }
+    }
+  }
+
+  /// Load nearby art for given coordinates
+  Future<void> _loadNearbyArt(double latitude, double longitude) async {
+    try {
+      _nearbyArt = await _artWalkService
+          .getPublicArtNearLocation(
+            latitude: latitude,
+            longitude: longitude,
+            radiusKm: 10.0,
+          )
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () {
+              debugPrint(
+                '⚠️ Loading nearby art timed out, using cached data if available',
+              );
+              return _artWalkService.getCachedPublicArt();
+            },
+          );
+
+      debugPrint('🎨 Loaded ${_nearbyArt.length} nearby art pieces');
+      _updateMarkers();
+    } catch (e) {
+      debugPrint('❌ Error loading nearby art: $e');
+      _nearbyArt = [];
+      _updateMarkers();
     }
   }
 
@@ -388,7 +486,28 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       }
     }
 
-    // Initialize location after map is ready
+    // If we already have user location, move to it immediately
+    if (_currentPosition != null && !_hasMovedToUserLocation) {
+      debugPrint('🗺️ Moving map to existing user location');
+      try {
+        await controller.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                _currentPosition!.latitude,
+                _currentPosition!.longitude,
+              ),
+              zoom: 15.0,
+            ),
+          ),
+        );
+        _hasMovedToUserLocation = true;
+      } catch (e) {
+        debugPrint('⚠️ Error moving to existing location: $e');
+      }
+    }
+
+    // Initialize location after map is ready (this will get location if we don't have it)
     await _initializeLocation();
   }
 
@@ -632,18 +751,30 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       currentIndex: 1, // Art Walk is index 1
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: EnhancedUniversalHeader(
-          title: 'Art Walk Map',
-          showDeveloperTools: false,
-          onSearchPressed: () {
-            // Handle search action - could open a search overlay
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Search functionality coming soon!'),
-                duration: Duration(seconds: 2),
+        appBar: AppBar(
+          title: Row(
+            children: [
+              Image.asset(
+                'assets/images/artbeat_logo.png',
+                height: 32,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Text(
+                    'ARTbeat',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  );
+                },
               ),
-            );
-          },
+              const SizedBox(width: 8),
+              const Text(
+                'Art Walk',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          centerTitle: false,
         ),
         drawer: const ArtbeatDrawer(),
         body: Stack(
@@ -665,34 +796,43 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 debugPrint('🗺️ Map tapped at: $position');
               },
             ),
+
+            // Floating Create Art Walk Button with label
             Positioned(
               right: 16,
-              top:
-                  MediaQuery.of(context).padding.top +
-                  120, // Increased to account for app bar
+              bottom: 120, // Above bottom navigation
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  FloatingActionButton.small(
-                    heroTag: 'artFilter',
-                    onPressed: _showFilterDialog,
-                    child: const Icon(Icons.filter_list),
+                  Tooltip(
+                    message: 'Create a new art walk',
+                    child: FloatingActionButton(
+                      heroTag: 'createArtWalk',
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/art-walk/create');
+                      },
+                      backgroundColor: Colors.purple,
+                      child: const Icon(Icons.route, color: Colors.white),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  FloatingActionButton.small(
-                    heroTag: 'myLocation',
-                    onPressed: () async {
-                      if (_currentPosition != null && _mapController != null) {
-                        await _mapController!.animateCamera(
-                          CameraUpdate.newLatLng(
-                            LatLng(
-                              _currentPosition!.latitude,
-                              _currentPosition!.longitude,
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    child: const Icon(Icons.my_location),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black87,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Create Walk',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -726,17 +866,238 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                   ),
                 ),
               ),
+            // Unified Control Bar with Search and Action Buttons
             Positioned(
-              top:
-                  MediaQuery.of(context).padding.top +
-                  80, // Increased to account for app bar
+              top: MediaQuery.of(context).padding.top + 80,
               left: 16,
               right: 16,
-              child: ZipCodeSearchBox(
-                initialValue: _currentZipCode,
-                onZipCodeSubmitted: _handleZipCodeSearch,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Search bar
+                    Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: TextField(
+                        controller: TextEditingController(
+                          text: _currentZipCode,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'Enter ZIP code to search...',
+                          prefixIcon: Icon(Icons.search, size: 20),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          hintStyle: TextStyle(fontSize: 14),
+                        ),
+                        style: const TextStyle(fontSize: 14),
+                        onSubmitted: _handleZipCodeSearch,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Action buttons row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // Gallery toggle
+                        _buildActionButton(
+                          icon: Icons.view_carousel,
+                          label: 'Gallery',
+                          isActive: _showCapturesSlider,
+                          onPressed: () {
+                            setState(() {
+                              _showCapturesSlider = !_showCapturesSlider;
+                            });
+                          },
+                          tooltip: _showCapturesSlider
+                              ? 'Hide art gallery'
+                              : 'Show art gallery',
+                        ),
+                        // Filter
+                        _buildActionButton(
+                          icon: Icons.filter_list,
+                          label: 'Filter',
+                          isActive: false,
+                          onPressed: _showFilterDialog,
+                          tooltip: 'Filter art types',
+                        ),
+                        // Zoom In
+                        _buildActionButton(
+                          icon: Icons.zoom_in,
+                          label: 'Zoom In',
+                          isActive: false,
+                          onPressed: () async {
+                            if (_mapController != null) {
+                              await _mapController!.animateCamera(
+                                CameraUpdate.zoomIn(),
+                              );
+                            }
+                          },
+                          tooltip: 'Zoom in on map',
+                        ),
+                        // Zoom Out
+                        _buildActionButton(
+                          icon: Icons.zoom_out,
+                          label: 'Zoom Out',
+                          isActive: false,
+                          onPressed: () async {
+                            if (_mapController != null) {
+                              await _mapController!.animateCamera(
+                                CameraUpdate.zoomOut(),
+                              );
+                            }
+                          },
+                          tooltip: 'Zoom out on map',
+                        ),
+                        // My Location
+                        _buildActionButton(
+                          icon: Icons.my_location,
+                          label: 'Location',
+                          isActive: false,
+                          onPressed: () async {
+                            if (_currentPosition != null &&
+                                _mapController != null) {
+                              await _mapController!.animateCamera(
+                                CameraUpdate.newLatLng(
+                                  LatLng(
+                                    _currentPosition!.latitude,
+                                    _currentPosition!.longitude,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          tooltip: 'Go to my location',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
+
+            // Captures Slider with header
+            if (_showCapturesSlider)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 180,
+                left: 0,
+                right: 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with instruction
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 16,
+                            color: Colors.purple,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _nearbyArt.isNotEmpty
+                                  ? 'Tap any art piece to view details and location'
+                                  : 'No art found in this area. Try changing your filter or location.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          if (_nearbyArt.isNotEmpty)
+                            Text(
+                              '${_nearbyArt.length} found',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.purple,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (_nearbyArt.isNotEmpty)
+                      _buildCapturesSlider()
+                    else
+                      Container(
+                        height: 120,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search_off,
+                                size: 32,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'No art pieces found',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Try adjusting your filters or location',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             if (_showInfoCard)
               Positioned(
                 bottom: 100, // Increased to account for bottom navigation
@@ -748,6 +1109,161 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Build action button for the unified control bar
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required VoidCallback onPressed,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isActive ? Colors.purple : Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isActive ? Colors.purple : Colors.grey[300]!,
+                width: 1,
+              ),
+            ),
+            child: IconButton(
+              onPressed: onPressed,
+              icon: Icon(
+                icon,
+                size: 20,
+                color: isActive ? Colors.white : Colors.grey[700],
+              ),
+              padding: EdgeInsets.zero,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: isActive ? Colors.purple : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build horizontal slider showing captures visible on the map
+  Widget _buildCapturesSlider() {
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _nearbyArt.length,
+        itemBuilder: (context, index) {
+          final art = _nearbyArt[index];
+          return Container(
+            width: 100,
+            margin: const EdgeInsets.only(right: 12),
+            child: GestureDetector(
+              onTap: () {
+                // Move map to this art piece
+                if (_mapController != null) {
+                  _mapController!.animateCamera(
+                    CameraUpdate.newCameraPosition(
+                      CameraPosition(
+                        target: LatLng(
+                          art.location.latitude,
+                          art.location.longitude,
+                        ),
+                        zoom: 17.0,
+                      ),
+                    ),
+                  );
+                }
+                // Show art details
+                _onMarkerTapped(art);
+              },
+              child: Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Art image
+                    Expanded(
+                      flex: 3,
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(8),
+                          ),
+                          color: Colors.grey[200],
+                        ),
+                        child: art.imageUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(8),
+                                ),
+                                child: Image.network(
+                                  art.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                        color: Colors.grey,
+                                        size: 24,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                            : Container(
+                                color: Colors.grey[300],
+                                child: const Icon(
+                                  Icons.image,
+                                  color: Colors.grey,
+                                  size: 24,
+                                ),
+                              ),
+                      ),
+                    ),
+                    // Art title
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Text(
+                          art.title,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

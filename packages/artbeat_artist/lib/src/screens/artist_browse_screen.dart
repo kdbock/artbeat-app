@@ -88,88 +88,98 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return core.MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: core.EnhancedUniversalHeader(
-          title: 'Discover Artists',
-          showLogo: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.tune),
-              tooltip: 'Filter',
-              onPressed: () {
-                _showFilterDialog();
-              },
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search artists...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
-                      _loadArtists();
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onChanged: (value) {
-                  if (value.isEmpty || value.length > 2) {
-                    _loadArtists();
-                  }
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      drawer: const core.ArtbeatDrawer(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: core.ArtbeatGradientBackground(
+          addShadow: true,
+          child: core.EnhancedUniversalHeader(
+            title: 'Discover Artists',
+            showLogo: false,
+            showSearch: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.tune),
+                tooltip: 'Filter',
+                onPressed: () {
+                  _showFilterDialog();
                 },
               ),
-            ),
-
-            // Filter chips
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  FilterChip(
-                    label: Text('Medium: $_selectedMedium'),
-                    selected: _selectedMedium != 'All',
-                    onSelected: (_) => _showFilterDialog(),
-                  ),
-                  const SizedBox(width: 8),
-                  FilterChip(
-                    label: Text('Style: $_selectedStyle'),
-                    selected: _selectedStyle != 'All',
-                    onSelected: (_) => _showFilterDialog(),
-                  ),
-                ],
-              ),
-            ),
-
-            // Results
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _artists.isEmpty
-                      ? const Center(child: Text('No artists found'))
-                      : ListView.builder(
-                          itemCount: _artists.length,
-                          itemBuilder: (context, index) {
-                            final artist = _artists[index];
-                            return _buildArtistCard(artist);
-                          },
-                        ),
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+      body: Column(
+        children: [
+          // Add padding for the extended app bar
+          SizedBox(
+              height: MediaQuery.of(context).padding.top + kToolbarHeight + 8),
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search artists...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _loadArtists();
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onChanged: (value) {
+                if (value.isEmpty || value.length > 2) {
+                  _loadArtists();
+                }
+              },
+            ),
+          ),
+
+          // Filter chips
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                FilterChip(
+                  label: Text('Medium: $_selectedMedium'),
+                  selected: _selectedMedium != 'All',
+                  onSelected: (_) => _showFilterDialog(),
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: Text('Style: $_selectedStyle'),
+                  selected: _selectedStyle != 'All',
+                  onSelected: (_) => _showFilterDialog(),
+                ),
+              ],
+            ),
+          ),
+
+          // Results
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _artists.isEmpty
+                    ? const Center(child: Text('No artists found'))
+                    : ListView.builder(
+                        itemCount: _artists.length,
+                        itemBuilder: (context, index) {
+                          final artist = _artists[index];
+                          return _buildArtistCard(artist);
+                        },
+                      ),
+          ),
+        ],
       ),
     );
   }
@@ -194,7 +204,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
           Navigator.pushNamed(
             context,
             '/artist/public-profile',
-            arguments: {'artistProfileId': artist.id},
+            arguments: {'artistId': artist.userId},
           );
         },
         borderRadius: BorderRadius.circular(12),

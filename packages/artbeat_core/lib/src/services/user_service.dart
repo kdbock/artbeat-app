@@ -99,15 +99,32 @@ class UserService extends ChangeNotifier {
   String? get currentUserId => currentUser?.uid;
   Stream<User?> get authStateChanges => auth.authStateChanges();
 
+  // Cache for current user model
+  UserModel? _cachedUserModel;
+  String? _cachedUserId;
+
   // User operations
   Future<UserModel?> getCurrentUserModel() async {
     final user = currentUser;
-    if (user == null) return null;
+    if (user == null) {
+      _cachedUserModel = null;
+      _cachedUserId = null;
+      return null;
+    }
+
+    // Return cached model if available and for the same user
+    if (_cachedUserModel != null && _cachedUserId == user.uid) {
+      debugPrint('👤 UserService: Returning cached user model');
+      return _cachedUserModel;
+    }
 
     try {
+      debugPrint('👤 UserService: Fetching user model from Firestore');
       final doc = await _usersCollection.doc(user.uid).get();
       if (doc.exists) {
-        return UserModel.fromDocumentSnapshot(doc);
+        _cachedUserModel = UserModel.fromDocumentSnapshot(doc);
+        _cachedUserId = user.uid;
+        return _cachedUserModel;
       }
       return null;
     } catch (e, s) {
@@ -134,11 +151,20 @@ class UserService extends ChangeNotifier {
       final user = currentUser;
       if (user != null) {
         await user.reload();
+        // Clear cache to force fresh fetch
+        _cachedUserModel = null;
+        _cachedUserId = null;
       }
       notifyListeners();
     } catch (e, s) {
       _logError('Error refreshing user data', e, s);
     }
+  }
+
+  /// Clear the cached user model
+  void clearUserCache() {
+    _cachedUserModel = null;
+    _cachedUserId = null;
   }
 
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {

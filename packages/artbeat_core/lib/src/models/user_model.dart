@@ -1,5 +1,6 @@
 // packages/artbeat_core/lib/src/models/user_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'user_type.dart';
 import 'capture_model.dart';
@@ -57,6 +58,16 @@ class UserModel {
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // Debug logging for profile image URL resolution
+    final profileImageUrl = json['profileImageUrl'] as String?;
+    final photoUrl = json['photoUrl'] as String?;
+    final finalImageUrl = profileImageUrl ?? photoUrl ?? '';
+
+    // Only log in debug mode and when there are issues
+    if (kDebugMode && (profileImageUrl == null && photoUrl == null)) {
+      debugPrint('⚠️ UserModel.fromJson: No profile image URL found');
+    }
+
     return UserModel(
       id: json['id'] as String? ?? '',
       email: json['email'] as String? ?? '',
@@ -64,7 +75,7 @@ class UserModel {
       fullName: json['fullName'] as String? ?? '',
       bio: json['bio'] as String? ?? '',
       location: json['location'] as String? ?? '',
-      profileImageUrl: json['profileImageUrl'] as String? ?? '',
+      profileImageUrl: finalImageUrl,
       followers: List<String>.from(json['followers'] as List<dynamic>? ?? []),
       following: List<String>.from(json['following'] as List<dynamic>? ?? []),
       captures: (json['captures'] as List<dynamic>? ?? [])

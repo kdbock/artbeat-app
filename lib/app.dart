@@ -18,6 +18,7 @@ import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import 'widgets/developer_menu.dart';
+import 'debug_profile_fix.dart';
 import 'src/widgets/error_boundary.dart';
 import 'src/services/firebase_initializer.dart';
 import 'src/guards/auth_guard.dart';
@@ -70,6 +71,12 @@ class MyApp extends StatelessWidget {
                 create: (_) => messaging.ChatService(),
                 lazy: true, // Changed to lazy to prevent early Firebase access
               ),
+              ChangeNotifierProvider<core.MessagingProvider>(
+                create: (context) => core.MessagingProvider(
+                  context.read<messaging.ChatService>(),
+                ),
+                lazy: true,
+              ),
               // Community providers
               ChangeNotifierProvider<CommunityService>(
                 create: (_) => CommunityService(),
@@ -95,6 +102,16 @@ class MyApp extends StatelessWidget {
   }
 
   Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    // ...existing code...
+    // Artwork browse route
+    if (settings.name == '/artwork/browse') {
+      return MaterialPageRoute(
+        builder: (_) => core.MainLayout(
+          currentIndex: -1,
+          child: artwork.ArtworkBrowseScreen(),
+        ),
+      );
+    }
     switch (settings.name) {
       case '/gallery/artists-management':
         return MaterialPageRoute(
@@ -331,12 +348,7 @@ class MyApp extends StatelessWidget {
         );
       // Art Walk routes
       case '/art-walk/map':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: 1, // Art Walk tab index
-            child: ArtWalkMapScreen(),
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const ArtWalkMapScreen());
       case '/art-walk/list':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
@@ -423,10 +435,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/art-walk/my-captures':
-        return MaterialPageRoute(
-          builder: (_) =>
-              const core.MainLayout(currentIndex: 1, child: MyCapturesScreen()),
-        );
+        return MaterialPageRoute(builder: (_) => const MyCapturesScreen());
       case '/enhanced-create-art-walk':
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
@@ -547,7 +556,7 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: artwork.ArtworkUploadScreen(),
+            child: artwork.EnhancedArtworkUploadScreen(),
           ),
         );
 
@@ -1034,13 +1043,17 @@ class MyApp extends StatelessWidget {
       case '/artist-search':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            appBar: core.EnhancedUniversalHeader(
-              title: 'Browse Artists',
-              showLogo: false,
-              showBackButton: true,
-            ),
-            child: ArtistListScreen(title: 'Browse Artists'),
+            currentIndex:
+                3, // Community tab since this is about discovering artists
+            child: ArtistBrowseScreen(),
+          ),
+        );
+      case '/artist/browse':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex:
+                3, // Community tab since this is about discovering artists
+            child: ArtistBrowseScreen(),
           ),
         );
       case '/art-search':
@@ -1346,6 +1359,11 @@ class MyApp extends StatelessWidget {
               },
             ),
           ),
+        );
+      case '/debug/profile-fix':
+        return MaterialPageRoute(
+          builder: (_) =>
+              const core.MainLayout(currentIndex: -1, child: DebugProfileFix()),
         );
     }
 

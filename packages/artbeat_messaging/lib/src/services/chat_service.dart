@@ -584,10 +584,37 @@ class ChatService extends ChangeNotifier {
     }
   }
 
+  /// Migrates chats that are missing unreadCounts field
+  Future<void> _migrateUnreadCounts(
+    String chatId,
+    List<String> participantIds,
+  ) async {
+    try {
+      final unreadCounts = <String, int>{};
+      for (String participantId in participantIds) {
+        unreadCounts[participantId] = 0;
+      }
+
+      await _firestore.collection('chats').doc(chatId).update({
+        'unreadCounts': unreadCounts,
+      });
+
+      debugPrint('ChatService: Migrated unreadCounts for chat $chatId');
+    } catch (e) {
+      debugPrint(
+        'ChatService: Error migrating unreadCounts for chat $chatId: $e',
+      );
+    }
+  }
+
   /// Gets the total unread messages count across all chats
   Stream<int> getTotalUnreadCount() {
     final userId = _auth.currentUser?.uid;
+    debugPrint('ChatService.getTotalUnreadCount: userId = $userId');
     if (userId == null) {
+      debugPrint(
+        'ChatService.getTotalUnreadCount: No user logged in, returning 0',
+      );
       return Stream.value(0);
     }
 
@@ -595,21 +622,49 @@ class ChatService extends ChangeNotifier {
         .collection('chats')
         .where('participantIds', arrayContains: userId)
         .snapshots()
-        .map((snapshot) {
+        .asyncMap((snapshot) async {
           int totalUnread = 0;
+          debugPrint(
+            'ChatService.getTotalUnreadCount: Processing ${snapshot.docs.length} chats',
+          );
+
           for (final doc in snapshot.docs) {
             try {
               final data = doc.data();
+              final participantIds =
+                  (data['participantIds'] as List<dynamic>?)
+                      ?.map((e) => e.toString())
+                      .toList() ??
+                  [];
+
               final unreadCounts =
                   data['unreadCounts'] as Map<dynamic, dynamic>?;
+
               if (unreadCounts != null) {
                 final userUnreadCount = unreadCounts[userId] as int? ?? 0;
+                debugPrint(
+                  'ChatService.getTotalUnreadCount: Chat ${doc.id} has $userUnreadCount unread for user',
+                );
                 totalUnread += userUnreadCount;
+              } else {
+                debugPrint(
+                  'ChatService.getTotalUnreadCount: Chat ${doc.id} has no unreadCounts field, migrating...',
+                );
+                // Migrate the chat to have unreadCounts field
+                await _migrateUnreadCounts(doc.id, participantIds);
+                // After migration, the count is 0 for all participants
+                debugPrint(
+                  'ChatService.getTotalUnreadCount: Chat ${doc.id} migrated, unread count = 0',
+                );
               }
             } catch (e) {
               debugPrint('Error parsing unread count for chat ${doc.id}: $e');
             }
           }
+
+          debugPrint(
+            'ChatService.getTotalUnreadCount: Total unread count = $totalUnread',
+          );
           return totalUnread;
         });
   }

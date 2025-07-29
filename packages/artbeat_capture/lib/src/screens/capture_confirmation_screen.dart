@@ -52,8 +52,10 @@ class _CaptureConfirmationScreenState extends State<CaptureConfirmationScreen> {
           ),
         );
 
-        // Return success to previous screens
-        Navigator.of(context).pop(true);
+        // Navigate to fluid dashboard screen after successful upload
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
       }
     } catch (e) {
       if (mounted) {

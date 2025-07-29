@@ -102,7 +102,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             (data['following'] ?? <dynamic>[]) as List<dynamic>,
           ),
           captures: (data['captures'] as List<dynamic>? ?? [])
-              .map((capture) => CaptureModel.fromJson(capture as Map<String, dynamic>))
+              .map(
+                (capture) =>
+                    CaptureModel.fromJson(capture as Map<String, dynamic>),
+              )
               .toList(),
           createdAt: (data['createdAt'] as Timestamp).toDate(),
           lastActive: data['lastActive'] != null
@@ -112,6 +115,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           preferences: data['preferences'] as Map<String, dynamic>?,
           experiencePoints: data['experiencePoints'] as int? ?? 0,
           level: data['level'] as int? ?? 1,
+          zipCode: data['zipCode'] as String?,
         );
       }).toList();
     } catch (e) {
@@ -802,7 +806,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         Navigator.pushNamed(
                           context,
                           '/artist/public-profile',
-                          arguments: {'artistProfileId': artist.id},
+                          arguments: {'artistId': artist.id},
                         );
                       },
                       trailing: ElevatedButton(

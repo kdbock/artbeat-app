@@ -1,349 +1,369 @@
 # ARTbeat - Creative Content Discovery Platform
 
-ARTbeat is a comprehensive Flutter application that serves as a platform for creative content discovery, artist showcasing, and community engagement. The app features robust authentication, social networking, and specialized features for artists, galleries, and art enthusiasts.
+<div align="center">
+  <img src="assets/logo.png" alt="ARTbeat Logo" width="200"/>
+  
+  [![Flutter](https://img.shields.io/badge/Flutter-3.32.0+-02569B?style=flat&logo=flutter)](https://flutter.dev)
+  [![Dart](https://img.shields.io/badge/Dart-3.8.0+-0175C2?style=flat&logo=dart)](https://dart.dev)
+  [![Firebase](https://img.shields.io/badge/Firebase-Latest-FFCA28?style=flat&logo=firebase)](https://firebase.google.com)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+  
+  **A comprehensive Flutter application for creative content discovery, artist showcasing, and community engagement**
+</div>
 
-![ARTbeat Logo](assets/default_profile.png)
+---
 
-> **⚠️ SECURITY NOTICE:** This application requires configuration of sensitive Firebase and Google Maps API keys. For security:
-> 1. Never commit `firebase_options.dart` to version control
-> 2. Use `firebase_options.template.dart` as a template
-> 3. Store sensitive keys in environment variables
-> 4. See [Firebase Configuration](#firebase-configuration) section below for secure setup instructions
+## 🎨 About ARTbeat
 
-## Table of Contents
+ARTbeat is a modular Flutter application that serves as a platform for creative content discovery, artist showcasing, and community engagement. The app features robust authentication, social networking, and specialized features for artists, galleries, and art enthusiasts.
 
-- [Features](#features)
-  - [Authentication Flow](#authentication-flow)
-  - [Profile System](#profile-system)
-  - [Artist Subscription Tiers](#artist-subscription-tiers)
-  - [Gallery Management](#gallery-management)
-  - [Art Walk Feature](#art-walk-feature)
-  - [Social Features](#social-features)
-  - [Settings & Preferences](#settings--preferences)
-  - [Notification System](#notification-system)
-  - [Payment Integration](#payment-integration)
-  - [Offline Support](#offline-support)
-- [Technical Architecture](#technical-architecture)
-  - [Modular Architecture](#modular-architecture)
-  - [Running Individual Modules](#running-individual-modules)
-  - [Project Structure](#project-structure)
-  - [Data Models](#data-models)
-  - [Services](#services)
-- [Firebase Implementation](#firebase-implementation)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the App](#running-the-app)
-- [Development](#development)
-  - [Code Conventions](#code-conventions)
-  - [Testing](#testing)
-  - [Continuous Integration](#continuous-integration)
-- [Contributing](#contributing)
-- [License](#license)
+### ✨ Key Features
 
-## Features
+- **🔐 Complete Authentication System** - Email/password login, registration, and password recovery
+- **👤 Rich Profile Management** - User profiles with stats, photo management, and social features
+- **🎭 Artist Subscription Tiers** - Basic (Free), Pro ($9.99/month), and Gallery ($49.99/month) plans
+- **🖼️ Artwork Management** - Upload, showcase, and discover art collections
+- **🚶‍♂️ Art Walk Discovery** - Interactive map-based discovery of public art with custom walking routes
+- **💬 Social Features** - Follow/unfollow, comments, likes, and real-time messaging
+- **⚙️ Comprehensive Settings** - Account management, privacy controls, and notification preferences
+- **💳 Payment Integration** - Complete Stripe integration for subscription management
+- **📱 Offline Support** - Firebase offline persistence and local data caching
 
-### Authentication Flow
-The app follows a specific screen sequence:
-- Loading Screen → Splash Screen → Login/Registration → Dashboard
-- Complete Firebase Authentication with email/password login, registration, and password recovery
-- Persistent authentication across app restarts
+---
 
-### Profile System
-- User profiles with stats (posts, followers, following)
-- Profile editing capabilities (name, bio, location)
-- Profile and cover photo management
-- Followers and following lists
-- Photo viewing with zoom functionality
-- Favorites system for saving content
+## 🏗️ Architecture
 
-### Artist Subscription Tiers
-The app supports three subscription tiers for artists:
+ARTbeat is built using a **modular architecture** where each feature is encapsulated in its own Flutter package. This approach provides:
 
-**Artist Basic Plan (Free)**
-- Artist profile page
-- Up to 5 artwork listings
-- Basic analytics
-- Community features
+- **🔧 Improved Maintainability** - Isolated features for easier debugging and updates
+- **👥 Parallel Development** - Multiple developers can work on different modules simultaneously
+- **🧪 Better Testing** - Each module can be tested independently
+- **♻️ Code Reusability** - Components can be reused across projects
 
-**Artist Pro Plan ($9.99/month)**
-- Unlimited artwork listings
-- Featured in discover section
-- Advanced analytics
-- Priority support
-- Event creation and promotion
-
-**Gallery Plan ($49.99/month)**
-- Multiple artist management
-- Business profile for galleries
-- Advanced analytics dashboard
-- Dedicated support
-- All Pro features
-
-### Gallery Management
-- Bulk artist invitation system
-- Commission tracking between galleries and artists
-- Advanced analytics dashboard for gallery performance metrics
-- Event creation and management for exhibitions
-
-### Art Walk Feature
-The Art Walk feature allows users to discover, document, and share public art throughout their city.
-
-**Key Components:**
-1. **Public Art Capture**
-   - Photo capture with metadata like artist name and description
-   - Automatic location tagging
-
-2. **Art Discovery**
-   - Interactive map interface for browsing public art
-   - Location-based filtering and discovery
-
-3. **Custom Art Walks**
-   - Create personalized art walking routes
-   - Add multiple art pieces to a single walk
-   - Public and private sharing options
-
-4. **Walking Directions**
-   - Real walking directions via Google Directions API
-   - Distance and time estimates
-   - Turn-by-turn route display
-
-### Social Features
-- User search functionality
-- Follow/unfollow mechanisms
-- Real-time updates for social interactions
-- Modern inline commenting system for posts
-- Like functionality with proper error handling
-- Content sharing capabilities
-
-### Settings & Preferences
-- Account management (username, email, phone, password)
-- Two-factor authentication options
-- Privacy controls for profile visibility
-- Notification preferences
-- Security settings and device management
-- Blocked users management
-
-### Notification System
-- Comprehensive notification handling for various events
-- Subscription-related notifications:
-  - Renewal reminders
-  - Payment confirmations
-  - Subscription expiration warnings
-  - Artwork limit notifications
-- Fine-grained user control over notification preferences
-
-### Payment Integration
-- Complete Stripe integration for subscription management
-- Multiple payment methods support
-- Secure payment processing
-- Subscription management interface
-
-### Offline Support
-- Firebase offline persistence
-- Local data caching
-- Graceful handling of network interruptions
-- Offline-friendly UI indicators
-
-## Technical Architecture
-
-### Modular Architecture
-
-ARTbeat is built using a modular architecture where each feature is encapsulated in its own module. This architecture:
-
-- Improves maintainability by isolating features
-- Enables parallel development by different team members
-- Makes the codebase more organized and testable
-- Facilitates reuse of components across projects
-
-Each module is a standalone Flutter package in the `packages/` directory:
+### 📦 Module Structure
 
 ```
 packages/
-├── artbeat_core/         # Shared functionality used across all modules
-├── artbeat_auth/         # User authentication flows
-├── artbeat_profile/      # User profiles management
-├── artbeat_artist/       # Artist and gallery management features
-├── artbeat_artwork/      # Artwork-related features
-├── artbeat_art_walk/     # Public art discovery features
-├── artbeat_community/    # Social and interaction features
-├── artbeat_capture/      # Image capture and processing features
-├── artbeat_messaging/    # User messaging system
-└── artbeat_settings/     # User preferences and account management
+├── artbeat_core/         # 🏛️ Shared functionality and UI components
+├── artbeat_auth/         # 🔐 User authentication flows
+├── artbeat_profile/      # 👤 User profile management
+├── artbeat_artist/       # 🎭 Artist and gallery management
+├── artbeat_artwork/      # 🖼️ Artwork-related features
+├── artbeat_art_walk/     # 🚶‍♂️ Public art discovery
+├── artbeat_community/    # 💬 Social and interaction features
+├── artbeat_capture/      # 📸 Image capture and processing
+├── artbeat_messaging/    # 💌 User messaging system
+├── artbeat_events/       # 📅 Event creation and management
+├── artbeat_settings/     # ⚙️ User preferences and account management
+├── artbeat_admin/        # 👑 Administrative features
+└── artbeat_ads/          # 📢 Advertisement management
 ```
 
-### Running Individual Modules
+---
 
-Each module can be run independently for faster development and testing:
+## 🚀 Getting Started
+
+### 📋 Prerequisites
+
+- **Flutter SDK**: 3.32.0 or higher
+- **Dart SDK**: 3.8.0 or higher
+- **Development Environment**: Android Studio / Xcode
+- **Firebase Project**: With Authentication, Firestore, and Storage enabled
+- **Google Maps API Key**: For Art Walk feature
+- **Stripe Account**: For payment processing
+
+### 🛠️ Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/artbeat.git
+   cd artbeat
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   flutter pub get
+   ```
+
+3. **Set up Firebase**
+
+   ```bash
+   # Copy the template file
+   cp lib/firebase_options.template.dart lib/firebase_options.dart
+
+   # Update with your Firebase configuration
+   # See Firebase Configuration section below
+   ```
+
+4. **Configure environment variables**
+
+   ```bash
+   cp .env.example .env
+   # Update .env with your API keys and configuration
+   ```
+
+5. **Run the application**
+   ```bash
+   flutter run
+   ```
+
+### 🔥 Firebase Configuration
+
+> **⚠️ SECURITY NOTICE:** Never commit `firebase_options.dart` to version control!
+
+1. **Get Firebase Configuration**
+
+   - Go to [Firebase Console](https://console.firebase.google.com)
+   - Select your project → Project Settings
+   - Add your app and get configuration details
+
+2. **Update Configuration File**
+
+   ```dart
+   // lib/firebase_options.dart
+   static const FirebaseOptions currentPlatform = FirebaseOptions(
+     apiKey: 'YOUR_API_KEY',
+     appId: 'YOUR_APP_ID',
+     messagingSenderId: 'YOUR_SENDER_ID',
+     projectId: 'YOUR_PROJECT_ID',
+   );
+   ```
+
+3. **Enable Required Services**
+   - Authentication (Email/Password)
+   - Cloud Firestore
+   - Firebase Storage
+   - Firebase Analytics
+   - Firebase App Check
+
+---
+
+## 🏃‍♂️ Development
+
+### 🔧 Running Individual Modules
+
+Each module can be run independently for faster development:
 
 ```bash
-# Run a specific module using the provided script
+# Using the provided script
 ./scripts/run_module.sh artbeat_auth
-```
 
-Or manually:
-
-```bash
+# Or manually
 cd packages/artbeat_auth
 flutter run -t lib/bin/main.dart
 ```
 
-Each module has its own standalone entry point in `lib/bin/main.dart` that initializes only what's needed for that feature, making development faster and more focused.
+### 🧪 Testing
 
-For more details, see [Running Individual Modules](docs/RUNNING_INDIVIDUAL_MODULES.md).
+```bash
+# Run all tests
+flutter test
 
-### Project Structure
-```
-lib/
-├── firebase_options.dart  # Firebase configuration
-├── main.dart              # App entry point
-├── models/                # Data models
-├── screens/               # UI screens
-│   ├── loading_screen.dart
-│   ├── splash_screen.dart
-│   ├── authentication/    # Auth screens
-│   ├── dashboard_screen.dart
-│   ├── discover_screen.dart
-│   ├── artist/            # Artist related screens
-│   ├── art_walk/          # Art Walk related screens
-│   ├── capture/           # Content capture screens
-│   ├── profile/           # Profile related screens
-│   └── settings/          # Settings screens
-├── services/              # Business logic services
-├── utils/                 # Utility functions
-└── widgets/               # Reusable UI components
+# Run tests for specific module
+cd packages/artbeat_core
+flutter test
+
+# Run integration tests
+flutter test integration_test/
 ```
 
-### Data Models
-- User profiles and authentication data
-- Artist profiles with subscription information
-- Artwork metadata
-- Public art and art walks
-- Social interactions (comments, likes)
-- Gallery and commission data
-- Subscription and payment information
+### 🏗️ Building
 
-### Services
-- Authentication and user management
-- Artwork and artist management
-- Art walk and discovery services
-- Payment processing with Stripe
-- Social interaction handling
-- Analytics tracking
-- Notification management
-- Offline data caching
+```bash
+# Android
+./scripts/build_android.sh
 
-## Firebase Implementation
-The app leverages multiple Firebase services:
-- **Firebase Authentication** for user management
-- **Cloud Firestore** for data storage and real-time updates
-- **Firebase Storage** for media storage
-- **Firebase Functions** for server-side logic
-- **Firebase Analytics** for usage tracking
-- **Firestore Security Rules** for data protection
+# iOS
+./scripts/build_ios.sh
 
-## Getting Started
-
-### Prerequisites
-- Flutter SDK 3.0 or higher
-- Dart SDK 3.0 or higher
-- Android Studio / Xcode for native development
-- Firebase project with Authentication, Firestore, and Storage enabled
-- Google Maps API key (for Art Walk feature)
-- Stripe account (for payment processing)
-
-### Installation
-1. Clone this repository
-   ```
-   git clone https://github.com/your-username/artbeat-app.git
-   ```
-2. Navigate to the project directory
-   ```
-   cd artbeat-app
-   ```
-3. Install dependencies
-   ```
-   flutter pub get
-   ```
-4. Set up Firebase:
-   - Create a Firebase project
-   - Add Android and iOS apps with the package name `com.example.emptytemplate`
-   - Download and place the configuration files
-   - Enable Authentication, Firestore, and Storage
-
-5. Configure Google Maps (for Art Walk):
-   - Get a Google Maps API key
-   - Enable Directions API
-   - Replace placeholder API keys in the Android and iOS configurations
-
-6. Configure Stripe (for payments):
-   - Set up a Stripe account
-   - Follow the instructions in STRIPE_SETUP_GUIDE.md
-
-### Running the App
-```
-flutter run
+# Release builds
+flutter build appbundle --release  # Android
+flutter build ios --release        # iOS
 ```
 
-## Development
+---
 
-### Code Conventions
-- Follow the official [Dart style guide](https://dart.dev/guides/language/effective-dart/style)
-- Use the provider pattern for state management
+## 🛠️ Tech Stack
+
+### 📱 Frontend
+
+- **Flutter** - Cross-platform mobile framework
+- **Dart** - Programming language
+- **Provider** - State management
+- **Material Design** - UI components
+
+### ☁️ Backend & Services
+
+- **Firebase Authentication** - User management
+- **Cloud Firestore** - NoSQL database
+- **Firebase Storage** - File storage
+- **Firebase Functions** - Server-side logic (Node.js 22)
+- **Firebase Analytics** - Usage tracking
+
+### 🗺️ Maps & Location
+
+- **Google Maps Flutter** - Interactive maps
+- **Geolocator** - Location services
+- **Geocoding** - Address conversion
+
+### 💳 Payments
+
+- **Stripe** - Payment processing
+- **Subscription Management** - Recurring billing
+
+### 🔧 Development Tools
+
+- **GitHub Actions** - CI/CD pipeline
+- **Flutter Lints** - Code quality
+- **Mockito** - Testing framework
+
+---
+
+## 📊 Subscription Tiers
+
+| Feature            | Basic (Free) | Pro ($9.99/month) | Gallery ($49.99/month) |
+| ------------------ | ------------ | ----------------- | ---------------------- |
+| Artist Profile     | ✅           | ✅                | ✅                     |
+| Artwork Listings   | 5            | Unlimited         | Unlimited              |
+| Analytics          | Basic        | Advanced          | Advanced               |
+| Community Features | ✅           | ✅                | ✅                     |
+| Featured Placement | ❌           | ✅                | ✅                     |
+| Event Creation     | ❌           | ✅                | ✅                     |
+| Multiple Artists   | ❌           | ❌                | ✅                     |
+| Priority Support   | ❌           | ✅                | ✅                     |
+
+---
+
+## 🔄 CI/CD Pipeline
+
+The project uses **GitHub Actions** for continuous integration:
+
+- **Automated Testing** - Runs tests for all modules on push/PR
+- **Multi-Module Strategy** - Tests each package independently
+- **Integration Tests** - Full app testing on PR to main
+- **Flutter Version** - 3.19.0 stable channel
+
+```yaml
+# Modules tested automatically
+- artbeat_core
+- artbeat_auth
+- artbeat_profile
+- artbeat_artwork
+- artbeat_artist
+- artbeat_art_walk
+- artbeat_community
+- artbeat_settings
+- artbeat_messaging
+```
+
+---
+
+## 📁 Project Structure
+
+```
+artbeat/
+├── 📱 lib/                    # Main application code
+│   ├── main.dart             # App entry point
+│   ├── firebase_options.dart # Firebase configuration
+│   └── ...
+├── 📦 packages/              # Feature modules
+│   ├── artbeat_core/         # Core components
+│   ├── artbeat_auth/         # Authentication
+│   └── ...
+├── ⚡ functions/             # Firebase Cloud Functions
+│   ├── src/                  # TypeScript source
+│   └── package.json          # Node.js dependencies
+├── 🤖 android/               # Android-specific code
+├── 🍎 ios/                   # iOS-specific code
+├── 🌐 web/                   # Web platform support
+├── 🧪 test/                  # Test files
+├── 📜 scripts/               # Build and utility scripts
+├── 🎨 assets/                # Images, fonts, resources
+└── 📋 docs/                  # Documentation
+```
+
+---
+
+## 🔒 Security Features
+
+- **🔐 Firebase App Check** - App integrity verification
+- **🛡️ Firestore Security Rules** - Data access control
+- **🔑 Secure API Key Management** - Environment-based configuration
+- **🚫 Input Validation** - Client and server-side validation
+- **📊 Analytics Privacy** - GDPR-compliant tracking
+
+---
+
+## 🚀 Deployment
+
+### 📱 Mobile App Stores
+
+- **Google Play Store** - Android App Bundle (AAB)
+- **Apple App Store** - iOS Archive via Xcode
+- **TestFlight** - iOS beta testing
+- **Google Play Console** - Android internal/closed testing
+
+### ☁️ Backend Services
+
+- **Firebase Hosting** - Web deployment
+- **Firebase Functions** - Server-side logic
+- **Firestore** - Database deployment
+- **Firebase Storage** - File storage
+
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Follow code conventions** (Dart style guide)
+4. **Write tests** for new functionality
+5. **Commit changes** (`git commit -m 'Add amazing feature'`)
+6. **Push to branch** (`git push origin feature/amazing-feature`)
+7. **Open a Pull Request**
+
+### 📝 Code Conventions
+
+- Follow the [Dart Style Guide](https://dart.dev/guides/language/effective-dart/style)
+- Use Provider pattern for state management
 - Keep UI and business logic separate
 - Document public APIs and complex functionality
+- Write unit tests for new features
 
-### Testing
-```
-flutter test
-```
+---
 
-### Continuous Integration
-The project uses GitHub Actions for CI/CD.
+## 📄 License
 
-## Contributing
-Contributions are welcome! Please feel free to submit a Pull Request.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-# Firebase Configuration
+## 📞 Support & Contact
 
-For security reasons, Firebase configuration details should not be committed to version control. Follow these steps to set up Firebase securely:
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/your-username/artbeat/issues)
+- **💡 Feature Requests**: [GitHub Discussions](https://github.com/your-username/artbeat/discussions)
+- **📧 Email**: support@artbeat.app
+- **🌐 Website**: [artbeat.app](https://artbeat.app)
 
-1. Copy the template file:
-   ```bash
-   cp lib/firebase_options.template.dart lib/firebase_options.dart
-   ```
+---
 
-2. Get your Firebase configuration:
-   - Go to [Firebase Console](https://console.firebase.google.com)
-   - Select your project
-   - Go to Project Settings
-   - Add your app if not already added
-   - Get the configuration details
+## 🙏 Acknowledgments
 
-3. Update `lib/firebase_options.dart` with your Firebase details:
-   ```dart
-   static const FirebaseOptions currentPlatform = FirebaseOptions(
-     apiKey: 'YOUR_API_KEY',             // ⚠️ From Firebase Console
-     appId: 'YOUR_APP_ID',               // ⚠️ From Firebase Console
-     messagingSenderId: 'YOUR_SENDER_ID', // ⚠️ From Firebase Console
-     projectId: 'YOUR_PROJECT_ID',        // ⚠️ From Firebase Console
-   );
-   ```
+- **Flutter Team** - For the amazing framework
+- **Firebase Team** - For the comprehensive backend services
+- **Google Maps** - For location and mapping services
+- **Stripe** - For payment processing
+- **Open Source Community** - For the incredible packages and tools
 
-4. Add `lib/firebase_options.dart` to `.gitignore`:
-   ```bash
-   echo "lib/firebase_options.dart" >> .gitignore
-   ```
+---
 
-> **🔒 Security Best Practices:**
-> - Never commit `firebase_options.dart` to version control
-> - Consider using environment variables for production deployments
-> - Regularly rotate API keys
-> - Use Firebase Security Rules to protect your data
-> - Enable only the Firebase services you need
-> - Monitor Firebase Console for unusual activity
-
-For CI/CD environments, use environment variables or secure secret storage to manage these keys.
+<div align="center">
+  <p><strong>Made with ❤️ by the ARTbeat Team</strong></p>
+  <p><em>Connecting artists and art lovers worldwide</em></p>
+</div>

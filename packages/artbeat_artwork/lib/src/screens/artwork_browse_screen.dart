@@ -64,86 +64,83 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1, // No navigation highlight for browse screens
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Browse Artwork',
-          showLogo: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: _showFilterDialog,
-              tooltip: 'Filter',
+    return Scaffold(
+      appBar: EnhancedUniversalHeader(
+        title: 'Browse Artwork',
+        showLogo: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: _showFilterDialog,
+            tooltip: 'Filter',
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search artwork...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _performSearch();
+                  },
+                ),
+              ),
+              onSubmitted: (_) => _performSearch(),
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search artwork...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
+          ),
+
+          // Filter chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                const Text('Filters:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                if (_selectedLocation != 'All')
+                  Chip(
+                    label: Text(_selectedLocation),
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    onDeleted: () {
+                      setState(() {
+                        _selectedLocation = 'All';
+                      });
                       _performSearch();
                     },
                   ),
-                ),
-                onSubmitted: (_) => _performSearch(),
-              ),
+                const SizedBox(width: 8),
+                if (_selectedMedium != 'All')
+                  Chip(
+                    label: Text(_selectedMedium),
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    onDeleted: () {
+                      setState(() {
+                        _selectedMedium = 'All';
+                      });
+                      _performSearch();
+                    },
+                  ),
+              ],
             ),
+          ),
 
-            // Filter chips
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Text('Filters:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  if (_selectedLocation != 'All')
-                    Chip(
-                      label: Text(_selectedLocation),
-                      deleteIcon: const Icon(Icons.close, size: 18),
-                      onDeleted: () {
-                        setState(() {
-                          _selectedLocation = 'All';
-                        });
-                        _performSearch();
-                      },
-                    ),
-                  const SizedBox(width: 8),
-                  if (_selectedMedium != 'All')
-                    Chip(
-                      label: Text(_selectedMedium),
-                      deleteIcon: const Icon(Icons.close, size: 18),
-                      onDeleted: () {
-                        setState(() {
-                          _selectedMedium = 'All';
-                        });
-                        _performSearch();
-                      },
-                    ),
-                ],
-              ),
-            ),
-
-            // Results
-            Expanded(
-              child: _buildArtworkGrid(),
-            ),
-          ],
-        ),
+          // Results
+          Expanded(
+            child: _buildArtworkGrid(),
+          ),
+        ],
       ),
     );
   }

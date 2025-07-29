@@ -36,6 +36,8 @@ class DeveloperMenu extends StatelessWidget {
             const SizedBox(height: 16),
             _buildDatabaseSection(context),
             const SizedBox(height: 8),
+            _buildDebugSection(context),
+            const SizedBox(height: 8),
             _buildFeedbackSection(context),
             const SizedBox(height: 8),
             _buildBackupSection(context),
@@ -168,6 +170,21 @@ class DeveloperMenu extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Backup restoration coming soon')),
             );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDebugSection(BuildContext context) {
+    return ExpansionTile(
+      title: const Text('Debug Tools'),
+      children: [
+        ListTile(
+          title: const Text('Fix Profile Image'),
+          subtitle: const Text('Update profile image URL'),
+          onTap: () {
+            Navigator.pushNamed(context, '/debug/profile-fix');
           },
         ),
       ],

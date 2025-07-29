@@ -8,7 +8,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader, MainLayout;
+    show SubscriptionTier, ArtbeatColors, MainLayout;
+import 'package:artbeat_profile/artbeat_profile.dart' show ProfileHeader;
 
 /// Enhanced artwork upload screen with support for multiple media types
 class EnhancedArtworkUploadScreen extends StatefulWidget {
@@ -252,15 +253,26 @@ class _EnhancedArtworkUploadScreenState
     }
   }
 
-  // Pick main image
+  // Pick main image - let ImagePicker handle permissions automatically
   Future<void> _pickMainImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
 
-    if (pickedFile != null) {
-      setState(() {
-        _mainImageFile = File(pickedFile.path);
-      });
+      if (pickedFile != null) {
+        setState(() {
+          _mainImageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
     }
   }
 
@@ -534,124 +546,113 @@ class _EnhancedArtworkUploadScreenState
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          appBar: EnhancedUniversalHeader(
-            title: 'Enhanced Artwork Upload',
-            showLogo: false,
-          ),
-          body: Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: ProfileHeader(
+          title: 'Upload Artwork',
+          showBackButton: true,
         ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     // Show upgrade prompt if user can't upload more artwork
     if (!_canUpload && widget.artworkId == null) {
-      return MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          appBar: const EnhancedUniversalHeader(
-            title: 'Enhanced Artwork Upload',
-            showLogo: false,
-          ),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.lock, size: 72, color: Colors.grey),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Free Plan Artwork Limit Reached',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+      return Scaffold(
+        appBar: const ProfileHeader(
+          title: 'Upload Artwork',
+          showBackButton: true,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.lock, size: 72, color: Colors.grey),
+                const SizedBox(height: 24),
+                const Text(
+                  'Free Plan Artwork Limit Reached',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
+                  'Upgrade to Artist Pro for unlimited artwork uploads.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(
+                        context, '/artist/subscription');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
-                    'Upgrade to Artist Pro for unlimited artwork uploads.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(
-                          context, '/artist/subscription');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                    ),
-                    child: const Text('Upgrade Now'),
-                  ),
-                ],
-              ),
+                  child: const Text('Upgrade Now'),
+                ),
+              ],
             ),
           ),
         ),
       );
     }
 
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: widget.artworkId == null
-              ? 'Enhanced Artwork Upload'
-              : 'Edit Artwork',
-          showLogo: false,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Main Image Section
-                _buildMainImageSection(),
-                const SizedBox(height: 24),
+    return Scaffold(
+      appBar: ProfileHeader(
+        title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
+        showBackButton: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main Image Section
+              _buildMainImageSection(),
+              const SizedBox(height: 24),
 
-                // Additional Images Section
-                _buildAdditionalImagesSection(),
-                const SizedBox(height: 24),
+              // Additional Images Section
+              _buildAdditionalImagesSection(),
+              const SizedBox(height: 24),
 
-                // Videos Section
-                _buildVideosSection(),
-                const SizedBox(height: 24),
+              // Videos Section
+              _buildVideosSection(),
+              const SizedBox(height: 24),
 
-                // Audio Files Section
-                _buildAudioFilesSection(),
-                const SizedBox(height: 24),
+              // Audio Files Section
+              _buildAudioFilesSection(),
+              const SizedBox(height: 24),
 
-                // Basic Information
-                _buildBasicInformation(),
-                const SizedBox(height: 24),
+              // Basic Information
+              _buildBasicInformation(),
+              const SizedBox(height: 24),
 
-                // Media and Styles
-                _buildMediaAndStyles(),
-                const SizedBox(height: 24),
+              // Media and Styles
+              _buildMediaAndStyles(),
+              const SizedBox(height: 24),
 
-                // Tags, Hashtags, Keywords
-                _buildTagsSection(),
-                const SizedBox(height: 24),
+              // Tags, Hashtags, Keywords
+              _buildTagsSection(),
+              const SizedBox(height: 24),
 
-                // Pricing
-                _buildPricingSection(),
-                const SizedBox(height: 32),
+              // Pricing
+              _buildPricingSection(),
+              const SizedBox(height: 32),
 
-                // Save Button
-                _buildSaveButton(),
-                const SizedBox(height: 24),
-              ],
-            ),
+              // Save Button
+              _buildSaveButton(),
+              const SizedBox(height: 24),
+            ],
           ),
         ),
       ),

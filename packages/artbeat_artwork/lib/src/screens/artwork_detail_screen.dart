@@ -393,7 +393,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                           Navigator.pushNamed(
                             context,
                             '/artist/public-profile',
-                            arguments: {'artistProfileId': artistProfile.id},
+                            arguments: {'artistId': artistProfile.id},
                           );
                         },
                         child: Padding(

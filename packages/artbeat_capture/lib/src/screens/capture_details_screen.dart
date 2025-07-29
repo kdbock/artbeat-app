@@ -293,10 +293,15 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
                   labelText: 'Art Type',
                   border: OutlineInputBorder(),
                 ),
+                style: const TextStyle(color: Colors.black),
+                dropdownColor: Colors.white,
                 items: _artTypes.map((String type) {
                   return DropdownMenuItem<String>(
                     value: type,
-                    child: Text(type),
+                    child: Text(
+                      type,
+                      style: const TextStyle(color: Colors.black),
+                    ),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
@@ -315,10 +320,15 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
                   labelText: 'Art Medium',
                   border: OutlineInputBorder(),
                 ),
+                style: const TextStyle(color: Colors.black),
+                dropdownColor: Colors.white,
                 items: _artMediums.map((String medium) {
                   return DropdownMenuItem<String>(
                     value: medium,
-                    child: Text(medium),
+                    child: Text(
+                      medium,
+                      style: const TextStyle(color: Colors.black),
+                    ),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {

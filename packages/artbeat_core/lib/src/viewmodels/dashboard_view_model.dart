@@ -29,7 +29,6 @@ import '../widgets/achievement_badge.dart' show AchievementBadgeData;
 class DashboardViewModel extends BaseViewModel {
   @override
   void dispose() {
-    _unreadCountSubscription?.cancel();
     super.dispose();
   }
 
@@ -46,10 +45,11 @@ class DashboardViewModel extends BaseViewModel {
   // Authentication state
   bool get _isAuthenticated => _auth.currentUser != null;
 
+  // Initialization state
+  bool _isInitialized = false;
+  bool _isInitializing = false;
+
   // Rest of state
-  int _unreadMessageCount = 0;
-  bool _hasUnreadMessages = false;
-  StreamSubscription<int>? _unreadCountSubscription;
   int _bottomNavIndex = 0;
   bool _isAchievementsExpanded = false;
   GoogleMapController? _mapController;
@@ -59,6 +59,9 @@ class DashboardViewModel extends BaseViewModel {
   List<CaptureModel> _captures = [];
   bool _isLoadingCaptures = false;
   String? _capturesError;
+  List<CaptureModel> _allCaptures = [];
+  bool _isLoadingAllCaptures = false;
+  String? _allCapturesError;
   List<ArtistProfileModel> _artists = [];
   bool _isLoadingArtists = false;
   String? _artistsError;
@@ -89,14 +92,16 @@ class DashboardViewModel extends BaseViewModel {
   );
 
   // Getters
-  int get unreadMessageCount => _unreadMessageCount;
-  bool get hasUnreadMessages => _hasUnreadMessages;
+
   bool get isLoadingMap => _isLoadingMap;
   UserModel? get currentUser => _currentUser;
   bool get isLoadingUser => _isLoadingUser;
   List<CaptureModel> get captures => _captures;
   bool get isLoadingCaptures => _isLoadingCaptures;
   String? get capturesError => _capturesError;
+  List<CaptureModel> get allCaptures => _allCaptures;
+  bool get isLoadingAllCaptures => _isLoadingAllCaptures;
+  String? get allCapturesError => _allCapturesError;
   List<ArtistProfileModel> get artists => _artists;
   bool get isLoadingArtists => _isLoadingArtists;
   String? get artistsError => _artistsError;
@@ -123,42 +128,63 @@ class DashboardViewModel extends BaseViewModel {
   bool get isLoadingUserArtWalks => _isLoadingUserArtWalks;
   String? get userArtWalksError => _userArtWalksError;
   int get bottomNavIndex => _bottomNavIndex;
+  bool get isInitialized => _isInitialized;
+  bool get isInitializing => _isInitializing;
 
   /// Initialize the view model
   Future<void> initialize() async {
+    // Prevent multiple initializations
+    if (_isInitialized || _isInitializing) {
+      debugPrint(
+        '🔄 DashboardViewModel: Already initialized or initializing, skipping',
+      );
+      return;
+    }
+
+    _isInitializing = true;
     _isLoadingUser = true;
     notifyListeners();
 
     try {
       if (_isAuthenticated) {
+        debugPrint('🔄 DashboardViewModel: Starting initialization');
+
         // Phase 1: Load critical user data first
         _currentUser = await _userService.getCurrentUserModel();
         _isLoadingUser = false; // Show dashboard structure immediately
         notifyListeners();
-
-        await updateUnreadMessageCount();
 
         // Phase 2: Load priority content (featured artists first)
         loadFeaturedArtists();
 
         // Phase 3: Load remaining content progressively in background
         Future.delayed(const Duration(milliseconds: 300), () {
+          if (!_isInitialized) return; // Check if still valid
           loadArtworks();
         });
 
         Future.delayed(const Duration(milliseconds: 600), () {
+          if (!_isInitialized) return; // Check if still valid
           loadPosts();
           loadEvents();
         });
 
         Future.delayed(const Duration(milliseconds: 900), () {
+          if (!_isInitialized) return; // Check if still valid
           loadUserArtWalks();
           loadCaptures();
+          loadAllCaptures();
         });
+
+        _isInitialized = true;
+        debugPrint('✅ DashboardViewModel: Initialization completed');
       }
     } catch (e) {
-      debugPrint('Error initializing dashboard: $e');
+      debugPrint('❌ DashboardViewModel: Error initializing: $e');
       _isLoadingUser = false;
+      notifyListeners();
+    } finally {
+      _isInitializing = false;
       notifyListeners();
     }
   }
@@ -188,6 +214,9 @@ class DashboardViewModel extends BaseViewModel {
 
   /// Refresh all dashboard data
   Future<void> refresh() async {
+    debugPrint('🔄 DashboardViewModel: Refreshing data');
+    _isInitialized = false;
+    _isInitializing = false;
     await initialize();
   }
 
@@ -214,6 +243,11 @@ class DashboardViewModel extends BaseViewModel {
 
   /// Load user's captures
   Future<void> loadCaptures() async {
+    if (_isLoadingCaptures) {
+      debugPrint('🔄 CaptureService: Already loading captures, skipping');
+      return;
+    }
+
     _isLoadingCaptures = true;
     _capturesError = null;
     notifyListeners();
@@ -238,8 +272,36 @@ class DashboardViewModel extends BaseViewModel {
     }
   }
 
+  /// Load all public captures for the dashboard
+  Future<void> loadAllCaptures() async {
+    if (_isLoadingAllCaptures) {
+      debugPrint('🔄 CaptureService: Already loading all captures, skipping');
+      return;
+    }
+
+    _isLoadingAllCaptures = true;
+    _allCapturesError = null;
+    notifyListeners();
+
+    try {
+      final allCaptures = await _captureService.getAllCaptures();
+      _allCaptures = allCaptures;
+    } catch (e) {
+      _allCapturesError = e.toString();
+      debugPrint('Error loading all captures: $e');
+    } finally {
+      _isLoadingAllCaptures = false;
+      notifyListeners();
+    }
+  }
+
   /// Load all artists
   Future<void> loadArtists() async {
+    if (_isLoadingArtists) {
+      debugPrint('🔄 ArtistService: Already loading artists, skipping');
+      return;
+    }
+
     _isLoadingArtists = true;
     _artistsError = null;
     notifyListeners();
@@ -276,6 +338,13 @@ class DashboardViewModel extends BaseViewModel {
 
   /// Load featured artists
   Future<void> loadFeaturedArtists() async {
+    if (_isLoadingFeaturedArtists) {
+      debugPrint(
+        '🔄 ArtistService: Already loading featured artists, skipping',
+      );
+      return;
+    }
+
     _isLoadingFeaturedArtists = true;
     _featuredArtistsError = null;
     notifyListeners();
@@ -721,57 +790,6 @@ class DashboardViewModel extends BaseViewModel {
   void updateBottomNavIndex(int index) {
     _bottomNavIndex = index;
     notifyListeners();
-  }
-
-  /// Start listening to unread message count changes
-  void _startUnreadCountListener() {
-    if (!_isAuthenticated) return;
-
-    try {
-      // Cancel any existing subscription
-      _unreadCountSubscription?.cancel();
-
-      // Listen to the real-time unread count stream
-      _unreadCountSubscription = _chatService.getTotalUnreadCount().listen(
-        (unreadCount) {
-          _unreadMessageCount = unreadCount;
-          _hasUnreadMessages = _unreadMessageCount > 0;
-
-          debugPrint('✉️ Real-time unread count updated: $_unreadMessageCount');
-          notifyListeners();
-        },
-        onError: (Object error) {
-          debugPrint('❌ Error listening to unread count: $error');
-        },
-      );
-    } catch (e) {
-      debugPrint('❌ Error starting unread count listener: $e');
-    }
-  }
-
-  /// Load unread message count (for initial load)
-  Future<void> updateUnreadMessageCount() async {
-    if (!_isAuthenticated) return;
-
-    try {
-      // Use the ChatService to get the total unread count
-      final unreadCountStream = _chatService.getTotalUnreadCount();
-
-      // Get the current count from the stream
-      final unreadCount = await unreadCountStream.first;
-
-      _unreadMessageCount = unreadCount;
-      _hasUnreadMessages = _unreadMessageCount > 0;
-
-      debugPrint('✉️ Updated unread count: $_unreadMessageCount');
-      notifyListeners();
-
-      // Start listening for real-time updates
-      _startUnreadCountListener();
-    } catch (e) {
-      debugPrint('❌ Error loading unread message count: $e');
-      // Don't update state on error to keep previous values
-    }
   }
 
   /// Navigate to messaging section

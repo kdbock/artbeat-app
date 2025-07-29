@@ -73,6 +73,7 @@ export 'src/utils/validators.dart';
 export 'src/utils/user_sync_helper.dart';
 export 'src/utils/location_utils.dart' show LocationUtils;
 export 'src/utils/image_utils.dart' show ImageUtils;
+export 'src/utils/permission_utils.dart' show PermissionUtils;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
@@ -83,5 +84,8 @@ export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
+
+// Export Providers
+export 'src/providers/messaging_provider.dart' show MessagingProvider;
 
 // Export Widgets

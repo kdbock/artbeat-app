@@ -17,18 +17,17 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.22</string>
+	<string>1.0.24</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>22</string>
+	<string>23</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>AppGroup</key>
 	<string>group.H49R32NPY6.com.wordnerd.artbeat</string>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<true/>
-
 	<key>NSCameraUsageDescription</key>
 	<string>ARTbeat needs access to your camera to capture photos of public art and share them with the community.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
@@ -38,12 +37,11 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ARTbeat needs your location to show nearby public art and create location-based art walks.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs your location to show nearby art walks.</string>
+	<string>ARTbeat uses your location to discover public art near you and create custom art walks.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ARTbeat uses your location to discover public art near you and create custom art walks.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ARTbeat needs microphone access to record audio notes about public art (optional).</string>
-
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -65,20 +63,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs your location to show nearby art walks.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This app needs your location to show nearby art walks.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs your location to show nearby art walks and provide location-based art discovery features.</string>
 	<key>GMSApiKey</key>
 	<string>AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA</string>
 	<key>io.flutter.plugins.googlemaps.API_KEY</key>
 	<string>AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA</string>
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to capture photos of artwork.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs photo library access to save and select images.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>This app may access your calendar to help you save and manage art events and art walk schedules.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -113,7 +101,6 @@
 			</dict>
 		</dict>
 	</dict>
-
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

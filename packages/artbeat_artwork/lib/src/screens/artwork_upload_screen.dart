@@ -5,7 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
     show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader;
@@ -28,6 +27,7 @@ class ArtworkUploadScreen extends StatefulWidget {
 }
 
 class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
+  // Form key
   final _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -97,9 +97,18 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
   @override
   void initState() {
     super.initState();
-    _checkUploadLimit();
+
+    // Initialize with passed image file if available
+    if (widget.imageFile != null) {
+      _imageFile = widget.imageFile;
+    }
+
+    // Load existing artwork data if editing
     if (widget.artworkId != null) {
       _loadArtworkData();
+    } else {
+      // Check upload limits for new artwork
+      _checkUploadLimit();
     }
   }
 
@@ -114,6 +123,29 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     _yearController.dispose();
     _tagController.dispose();
     super.dispose();
+  }
+
+  // Pick image from gallery - let ImagePicker handle permissions automatically
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
   }
 
   // Check if user can upload more artwork based on subscription
@@ -212,71 +244,6 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     }
   }
 
-  // Pick image from gallery
-  Future<void> _pickImage() async {
-    try {
-      final status = await Permission.photos.request();
-
-      if (status.isPermanentlyDenied) {
-        if (mounted) {
-          showDialog<void>(
-            context: context,
-            builder: (BuildContext context) => AlertDialog(
-              title: const Text('Permission Required'),
-              content: const Text(
-                'Photo library access is permanently denied. Please enable it in your device settings to upload artwork.',
-              ),
-              actions: [
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                TextButton(
-                  child: const Text('Open Settings'),
-                  onPressed: () {
-                    openAppSettings();
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          );
-        }
-        return;
-      }
-
-      if (status.isDenied) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'Photo library permission is required to upload artwork'),
-            ),
-          );
-        }
-        return;
-      }
-
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 85,
-      );
-
-      if (pickedFile != null) {
-        setState(() {
-          _imageFile = File(pickedFile.path);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
-      }
-    }
-  }
-
   // Save artwork
   Future<void> _saveArtwork() async {
     if (!_formKey.currentState!.validate()) return;
@@ -347,11 +314,13 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
 
       // Save to Firestore
       if (widget.artworkId != null) {
-        await _firestore.collection('artwork').doc(widget.artworkId).update({
-          ...artworkData,
-          'createdAt':
-              FieldValue.serverTimestamp(), // Keep original creation date
-        });
+        // For updates, don't overwrite createdAt
+        final updateData = Map<String, dynamic>.from(artworkData);
+        updateData.remove('createdAt'); // Keep original creation date
+        await _firestore
+            .collection('artwork')
+            .doc(widget.artworkId)
+            .update(updateData);
       } else {
         await _firestore.collection('artwork').add(artworkData);
       }

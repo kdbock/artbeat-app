@@ -74,6 +74,46 @@ service firebase.storage {
       allow write: if isAuthenticated(); // More permissive for development
     }
 
+    // Artwork videos - artists can upload their own artwork videos
+    match /artwork_videos/{userId}/{artworkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Temporary more permissive artwork video upload path for debugging
+    match /artwork_videos/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Very permissive artwork video path for development
+    match /artwork_videos/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+    }
+
+    // Artwork audio - artists can upload their own artwork audio files
+    match /artwork_audio/{userId}/{artworkId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Temporary more permissive artwork audio upload path for debugging
+    match /artwork_audio/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Very permissive artwork audio path for development
+    match /artwork_audio/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+    }
+
     // Artist images - for artist profiles (portfolio, banner, etc.)
     match /artist_images/{userId}/{type}/{fileName} {
       allow read: if isAuthenticated();

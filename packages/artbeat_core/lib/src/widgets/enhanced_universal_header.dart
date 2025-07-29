@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../theme/artbeat_colors.dart';
+import '../providers/messaging_provider.dart';
 
 /// Enhanced Universal Header with improved visual hierarchy and user experience
 ///
@@ -288,60 +290,6 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     // Messaging icon with unread dot
     actions.add(_buildMessagingIcon());
 
-    // Profile/Artist discovery icon
-    actions.add(
-      IconButton(
-        icon: Icon(
-          Icons.person_outline,
-          color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-        ),
-        onPressed: widget.onProfilePressed ?? () => _showProfileMenu(),
-        tooltip: 'Profile & Discovery',
-      ),
-    );
-
-    // Notifications bell icon with badge
-    actions.add(
-      Stack(
-        children: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.notifications_none_outlined,
-              color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-            ),
-            onPressed: () {
-              Navigator.pushNamed(context, '/notifications');
-            },
-            tooltip: 'Notifications',
-          ),
-          if (widget.hasNotifications)
-            Positioned(
-              right: 8,
-              top: 8,
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: ArtbeatColors.error,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                child: Text(
-                  widget.notificationCount > 99
-                      ? '99+'
-                      : widget.notificationCount.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-
     // Developer tools (if enabled)
     if (widget.showDeveloperTools) {
       actions.add(
@@ -358,6 +306,10 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
 
     // Additional custom actions
     if (widget.actions != null) {
+      // Debug: Print what actions are being added
+      debugPrint(
+        'EnhancedUniversalHeader: Adding ${widget.actions!.length} custom actions',
+      );
       actions.addAll(widget.actions!);
     }
 
@@ -365,21 +317,83 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
   }
 
   Widget _buildMessagingIcon() {
-    return Stack(
-      children: [
-        IconButton(
-          icon: Icon(
-            Icons.message_outlined,
-            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-          ),
-          onPressed: () {
-            Navigator.pushNamed(context, '/messages');
-          },
-          tooltip: 'Messages',
-        ),
-        // Add unread message indicator if needed
-        // This would be connected to a messaging state provider
-      ],
+    return Consumer<MessagingProvider>(
+      builder: (context, messagingProvider, child) {
+        debugPrint(
+          'MessagingIcon: hasUnread=${messagingProvider.hasUnreadMessages}, count=${messagingProvider.unreadCount}, initialized=${messagingProvider.isInitialized}, hasError=${messagingProvider.hasError}',
+        );
+
+        return Stack(
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.message_outlined,
+                color: messagingProvider.hasError
+                    ? ArtbeatColors.error.withOpacity(0.6)
+                    : widget.foregroundColor ?? ArtbeatColors.textPrimary,
+              ),
+              onPressed: () async {
+                // Navigate to messaging and refresh count when returning
+                await Navigator.pushNamed(context, '/messaging');
+                // Refresh the unread count when returning from messaging
+                if (context.mounted) {
+                  final provider = context.read<MessagingProvider>();
+                  provider.refreshUnreadCount();
+                }
+              },
+              tooltip: messagingProvider.hasError
+                  ? 'Messages (Error loading count)'
+                  : 'Messages',
+            ),
+            // Loading indicator for uninitialized state
+            if (!messagingProvider.isInitialized && !messagingProvider.hasError)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      widget.foregroundColor ?? ArtbeatColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            // Unread message indicator
+            if (messagingProvider.isInitialized &&
+                !messagingProvider.hasError &&
+                messagingProvider.hasUnreadMessages)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.error,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    messagingProvider.unreadCount > 99
+                        ? '99+'
+                        : messagingProvider.unreadCount.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 

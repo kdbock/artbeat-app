@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'achievement_runner.dart';
 import 'achievement_badge.dart';
 
@@ -253,8 +252,6 @@ class _UserExperienceCardState extends State<UserExperienceCard>
 
   Widget _buildUserAvatar() {
     return Container(
-      width: 50,
-      height: 50,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [
@@ -265,38 +262,19 @@ class _UserExperienceCardState extends State<UserExperienceCard>
           ),
         ],
       ),
-      child:
-          (widget.user.profileImageUrl.isNotEmpty &&
-              (widget.user.profileImageUrl.startsWith('http://') ||
-                  widget.user.profileImageUrl.startsWith('https://')) &&
-              widget.user.profileImageUrl != 'placeholder_headshot_url')
-          ? CircleAvatar(
-              radius: 25,
-              backgroundImage: CachedNetworkImageProvider(
-                widget.user.profileImageUrl,
-              ),
-              onBackgroundImageError: (exception, stackTrace) {
-                debugPrint('Error loading profile image: $exception');
-              },
-            )
-          : CircleAvatar(
-              radius: 25,
-              backgroundColor: ArtbeatColors.primaryPurple.withValues(
-                alpha: 0.1,
-              ),
-              child: Text(
-                widget.user.fullName.isNotEmpty
-                    ? widget.user.fullName[0].toUpperCase()
-                    : widget.user.username.isNotEmpty
-                    ? widget.user.username[0].toUpperCase()
-                    : 'A',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-              ),
-            ),
+      child: OptimizedAvatar(
+        imageUrl: widget.user.profileImageUrl.isNotEmpty
+            ? widget.user.profileImageUrl
+            : null,
+        displayName: widget.user.fullName.isNotEmpty
+            ? widget.user.fullName
+            : widget.user.username.isNotEmpty
+            ? widget.user.username
+            : 'User',
+        radius: 25,
+        backgroundColor: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+        textColor: ArtbeatColors.primaryPurple,
+      ),
     );
   }
 
