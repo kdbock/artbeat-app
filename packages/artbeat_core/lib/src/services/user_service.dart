@@ -135,10 +135,14 @@ class UserService extends ChangeNotifier {
 
   Future<UserModel?> getUserById(String userId) async {
     try {
+      _logDebug('Getting user document for ID: $userId');
       final doc = await _usersCollection.doc(userId).get();
+      _logDebug('Document exists: ${doc.exists}');
       if (doc.exists) {
+        _logDebug('Document data: ${doc.data()}');
         return UserModel.fromDocumentSnapshot(doc);
       }
+      _logDebug('No document found for user ID: $userId');
       return null;
     } catch (e, s) {
       _logError('Error getting user by ID', e, s);
@@ -648,12 +652,17 @@ class UserService extends ChangeNotifier {
     String? location,
   }) async {
     try {
+      _logDebug('Creating new user document for uid: $uid');
+      _logDebug('Email: $email, DisplayName: $displayName');
+
       final finalUsername =
           username ??
           email
               .split('@')[0]
               .toLowerCase()
               .replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+      _logDebug('Generated username: $finalUsername');
 
       final newUser = UserModel(
         id: uid,
@@ -667,6 +676,9 @@ class UserService extends ChangeNotifier {
         location: location ?? '',
       );
 
+      _logDebug('User model created, attempting to save to Firestore...');
+      _logDebug('UserType: ${newUser.userType}');
+
       await _usersCollection
           .doc(uid)
           .set(newUser.toMap(), SetOptions(merge: true));
@@ -677,6 +689,8 @@ class UserService extends ChangeNotifier {
       return newUser;
     } catch (e, s) {
       _logError('Error creating new user', e, s);
+      _logError('Full error details: $e');
+      _logError('Stack trace: $s');
       return null;
     }
   }

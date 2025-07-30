@@ -55,7 +55,7 @@ class ChatListScreen extends StatelessWidget {
             ),
           ),
           child: StreamBuilder<List<ChatModel>>(
-            stream: chatService.getChatStream(),
+            stream: chatService.getNonArchivedChatsStream(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return Center(
@@ -206,6 +206,7 @@ class ChatListScreen extends StatelessWidget {
                         chat: chat,
                         onTap: () => _navigateToChat(context, chat),
                         heroTagPrefix: 'chat_main',
+                        onArchive: () => _archiveChat(context, chat),
                       ),
                     );
                   },
@@ -235,6 +236,58 @@ class ChatListScreen extends StatelessWidget {
 
   void _navigateToChat(BuildContext context, ChatModel chat) {
     Navigator.pushNamed(context, '/messaging/chat', arguments: {'chat': chat});
+  }
+
+  Future<void> _archiveChat(BuildContext context, ChatModel chat) async {
+    final chatService = Provider.of<ChatService>(context, listen: false);
+
+    try {
+      await chatService.archiveChat(chat.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              chat.isGroup
+                  ? 'Group "${chat.groupName ?? 'chat'}" archived'
+                  : 'Chat archived',
+            ),
+            backgroundColor: ArtbeatColors.primaryPurple,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            action: SnackBarAction(
+              label: 'Undo',
+              textColor: Colors.white,
+              onPressed: () async {
+                try {
+                  await chatService.unarchiveChat(chat.id);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to restore chat: $e'),
+                        backgroundColor: ArtbeatColors.error,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to archive chat: $e'),
+            backgroundColor: ArtbeatColors.error,
+          ),
+        );
+      }
+    }
   }
 
   void _showSearchDialog(BuildContext context) {

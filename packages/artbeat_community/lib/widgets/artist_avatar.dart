@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
@@ -30,7 +31,9 @@ class ArtistAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('ArtistAvatar build - displayName: "$displayName", imageUrl: "$imageUrl"');
+    if (kDebugMode) {
+      debugPrint('ArtistAvatar build: $displayName');
+    }
 
     return UserAvatar(
       imageUrl: imageUrl,

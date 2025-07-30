@@ -176,7 +176,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Divider(
+                      const Divider(
                           color: core.ArtbeatColors.divider, thickness: 1.2),
                       const SizedBox(height: 18),
                       Text(
@@ -213,7 +213,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Divider(
+                      const Divider(
                           color: core.ArtbeatColors.divider, thickness: 1.2),
                       const SizedBox(height: 18),
                       Text(
@@ -281,7 +281,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
                           ),
                         ),
                       const SizedBox(height: 24),
-                      Divider(
+                      const Divider(
                           color: core.ArtbeatColors.divider, thickness: 1.2),
                       const SizedBox(height: 18),
                       Text(

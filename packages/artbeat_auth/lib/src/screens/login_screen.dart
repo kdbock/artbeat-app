@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../constants/routes.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput, UserService, EnhancedUniversalHeader;
+    show ArtbeatColors, ArtbeatInput, UserService, UserModel;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Login screen with email/password authentication
@@ -40,7 +40,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Handle login button press
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    final formState = _formKey.currentState;
+    if (formState == null) return;
+    if (!formState.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -58,33 +60,80 @@ class _LoginScreenState extends State<LoginScreen> {
       final user = userCredential.user ?? FirebaseAuth.instance.currentUser;
       if (user != null) {
         final userService = UserService();
-        final userDoc = await userService.getUserById(user.uid);
 
-        if (userDoc == null) {
-          debugPrint(
-            '⚠️ User authenticated but document not found in Firestore. Creating it now...',
-          );
+        try {
+          // Clear any cached data first
+          userService.clearUserCache();
 
-          // Try to get additional user data from Firebase Auth
-          final freshUser = FirebaseAuth.instance.currentUser;
-          await freshUser?.reload(); // Refresh user data
+          debugPrint('🔍 Checking if user document exists for ${user.uid}');
+          final userDoc = await userService.getUserById(user.uid);
 
-          await userService.createNewUser(
-            uid: user.uid,
-            email: user.email ?? _emailController.text.trim(),
-            displayName:
-                freshUser?.displayName ?? user.displayName ?? 'ARTbeat User',
-          );
+          if (userDoc == null) {
+            debugPrint(
+              '⚠️ User authenticated but document not found in Firestore. Creating it now...',
+            );
 
-          // Verify creation
-          final verifiedDoc = await userService.getUserById(user.uid);
-          if (verifiedDoc == null) {
-            debugPrint('❌ Failed to create user document after login');
+            // Try to get additional user data from Firebase Auth
+            final freshUser = FirebaseAuth.instance.currentUser;
+            await freshUser?.reload(); // Refresh user data
+
+            debugPrint('🔄 Creating new user document...');
+            final createdUser = await userService.createNewUser(
+              uid: user.uid,
+              email: user.email ?? _emailController.text.trim(),
+              displayName:
+                  freshUser?.displayName ?? user.displayName ?? 'ARTbeat User',
+            );
+
+            if (createdUser == null) {
+              debugPrint('❌ Failed to create user document after login');
+              throw Exception('Failed to create user profile in database');
+            }
+
+            debugPrint('✅ User document creation returned success');
+
+            // Verify creation with multiple attempts
+            UserModel? verifiedDoc;
+            for (int attempt = 1; attempt <= 3; attempt++) {
+              debugPrint('🔍 Verification attempt $attempt/3');
+              await Future.delayed(Duration(milliseconds: 500 * attempt));
+              userService.clearUserCache(); // Clear cache before each check
+              verifiedDoc = await userService.getUserById(user.uid);
+              if (verifiedDoc != null) {
+                debugPrint('✅ User document verified on attempt $attempt');
+                break;
+              }
+              debugPrint('⚠️ Verification attempt $attempt failed');
+            }
+
+            if (verifiedDoc == null) {
+              debugPrint(
+                '❌ User document creation verification failed after 3 attempts',
+              );
+              throw Exception(
+                'User profile creation could not be verified after multiple attempts',
+              );
+            } else {
+              debugPrint('✅ User document created and verified successfully');
+            }
           } else {
-            debugPrint('✅ User document created successfully after login');
+            debugPrint('✅ User document found in Firestore');
+            debugPrint('User type: ${userDoc.userType}');
           }
-        } else {
-          debugPrint('✅ User document found in Firestore');
+        } catch (e) {
+          debugPrint('❌ Error ensuring user document exists: $e');
+          // Sign out the user since we couldn't create their profile
+          await FirebaseAuth.instance.signOut();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to create user profile: ${e.toString()}'),
+                backgroundColor: Colors.red,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+          return; // Exit early, don't navigate
         }
       }
 
@@ -120,12 +169,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Login',
-        showLogo: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: Container(
         constraints: const BoxConstraints.expand(),
         decoration: BoxDecoration(
@@ -140,14 +183,19 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Form(
-                    key: _formKey,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 0,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Form(
+                  key: _formKey,
+                  child: IntrinsicHeight(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const SizedBox(height: 24),
@@ -160,8 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: Image.asset(
                             'assets/images/artbeat_logo.png',
-                            width: 320,
-                            height: 320,
+                            width: 180,
+                            height: 180,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => Icon(
                               Icons.image_not_supported,
@@ -170,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 20),
                         Text(
                           'Welcome Back!',
                           textAlign: TextAlign.center,
@@ -180,14 +228,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
                         Text(
                           'Sign in to continue your artistic journey',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: ArtbeatColors.textSecondary),
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 28),
                         ArtbeatInput(
                           key: const Key('emailField'),
                           controller: _emailController,
@@ -229,50 +277,43 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _handleLogin,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Login'),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(
+                                context,
+                              ).pushReplacementNamed(AuthRoutes.register),
+                              child: const Text('Create Account'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(
+                                context,
+                              ).pushNamed(AuthRoutes.forgotPassword),
+                              child: const Text('Forgot Password?'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleLogin,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Login'),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 24.0,
-                  right: 24.0,
-                  bottom: 24.0,
-                  top: 12.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(
-                        context,
-                      ).pushReplacementNamed(AuthRoutes.register),
-                      child: const Text('Create Account'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(
-                        context,
-                      ).pushNamed(AuthRoutes.forgotPassword),
-                      child: const Text('Forgot Password?'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

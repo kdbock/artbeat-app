@@ -607,7 +607,7 @@ class ChatService extends ChangeNotifier {
     }
   }
 
-  /// Gets the total unread messages count across all chats
+  /// Gets the total unread messages count across all non-archived chats
   Stream<int> getTotalUnreadCount() {
     final userId = _auth.currentUser?.uid;
     debugPrint('ChatService.getTotalUnreadCount: userId = $userId');
@@ -628,8 +628,32 @@ class ChatService extends ChangeNotifier {
             'ChatService.getTotalUnreadCount: Processing ${snapshot.docs.length} chats',
           );
 
+          // Get archived chat IDs to exclude them
+          final archivedChatIds = <String>{};
+          try {
+            final archivedSnapshot = await _firestore
+                .collection('users')
+                .doc(userId)
+                .collection('archivedChats')
+                .get();
+
+            for (final doc in archivedSnapshot.docs) {
+              archivedChatIds.add(doc.data()['chatId'] as String);
+            }
+          } catch (e) {
+            debugPrint('Error getting archived chat IDs for unread count: $e');
+          }
+
           for (final doc in snapshot.docs) {
             try {
+              // Skip archived chats
+              if (archivedChatIds.contains(doc.id)) {
+                debugPrint(
+                  'ChatService.getTotalUnreadCount: Skipping archived chat ${doc.id}',
+                );
+                continue;
+              }
+
               final data = doc.data();
               final participantIds =
                   (data['participantIds'] as List<dynamic>?)
@@ -1031,5 +1055,167 @@ class ChatService extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Error sending notification to user $userId: $e');
     }
+  }
+
+  /// Archives a chat for the current user
+  Future<void> archiveChat(String chatId) async {
+    final userId = currentUserId;
+
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('archivedChats')
+          .doc(chatId)
+          .set({'archivedAt': Timestamp.now(), 'chatId': chatId});
+
+      debugPrint('Chat $chatId archived for user $userId');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error archiving chat: $e');
+      throw Exception('Failed to archive chat');
+    }
+  }
+
+  /// Unarchives a chat for the current user
+  Future<void> unarchiveChat(String chatId) async {
+    final userId = currentUserId;
+
+    try {
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('archivedChats')
+          .doc(chatId)
+          .delete();
+
+      debugPrint('Chat $chatId unarchived for user $userId');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error unarchiving chat: $e');
+      throw Exception('Failed to unarchive chat');
+    }
+  }
+
+  /// Checks if a chat is archived for the current user
+  Future<bool> isChatArchived(String chatId) async {
+    final userId = currentUserIdSafe;
+    if (userId == null) return false;
+
+    try {
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('archivedChats')
+          .doc(chatId)
+          .get();
+
+      return doc.exists;
+    } catch (e) {
+      debugPrint('Error checking if chat is archived: $e');
+      return false;
+    }
+  }
+
+  /// Gets archived chats for the current user
+  Stream<List<ChatModel>> getArchivedChatsStream() {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      return Stream.error(Exception('User not authenticated'));
+    }
+
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('archivedChats')
+        .orderBy('archivedAt', descending: true)
+        .snapshots()
+        .asyncMap((snapshot) async {
+          try {
+            final chats = <ChatModel>[];
+            for (final doc in snapshot.docs) {
+              try {
+                final chatId = doc.data()['chatId'] as String;
+                final chatDoc = await _firestore
+                    .collection('chats')
+                    .doc(chatId)
+                    .get();
+                if (chatDoc.exists) {
+                  final chat = ChatModel.fromFirestore(chatDoc);
+                  chats.add(chat);
+                }
+              } catch (e) {
+                debugPrint(
+                  'Error parsing archived chat document ${doc.id}: $e',
+                );
+                continue;
+              }
+            }
+            return chats;
+          } catch (e) {
+            debugPrint('Error processing archived chat stream: $e');
+            rethrow;
+          }
+        })
+        .handleError((Object error) {
+          debugPrint('Archived chat stream error: $error');
+          throw Exception('Failed to load archived chats: $error');
+        });
+  }
+
+  /// Gets non-archived chats (modified version of getChatStream)
+  Stream<List<ChatModel>> getNonArchivedChatsStream() {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      return Stream.error(Exception('User not authenticated'));
+    }
+
+    return _firestore
+        .collection('chats')
+        .where('participantIds', arrayContains: userId)
+        .orderBy('updatedAt', descending: true)
+        .snapshots()
+        .asyncMap((snapshot) async {
+          try {
+            final chats = <ChatModel>[];
+            final archivedChatIds = <String>{};
+
+            // Get archived chat IDs
+            try {
+              final archivedSnapshot = await _firestore
+                  .collection('users')
+                  .doc(userId)
+                  .collection('archivedChats')
+                  .get();
+
+              for (final doc in archivedSnapshot.docs) {
+                archivedChatIds.add(doc.data()['chatId'] as String);
+              }
+            } catch (e) {
+              debugPrint('Error getting archived chat IDs: $e');
+            }
+
+            for (final doc in snapshot.docs) {
+              try {
+                // Skip archived chats
+                if (archivedChatIds.contains(doc.id)) continue;
+
+                final chat = ChatModel.fromFirestore(doc);
+                chats.add(chat);
+              } catch (e) {
+                debugPrint('Error parsing chat document ${doc.id}: $e');
+                continue;
+              }
+            }
+            return chats;
+          } catch (e) {
+            debugPrint('Error processing non-archived chat stream: $e');
+            rethrow;
+          }
+        })
+        .handleError((Object error) {
+          debugPrint('Non-archived chat stream error: $error');
+          throw Exception('Failed to load chats: $error');
+        });
   }
 }

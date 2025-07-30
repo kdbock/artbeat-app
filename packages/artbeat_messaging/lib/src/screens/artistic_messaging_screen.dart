@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../services/chat_service.dart';
+
+import '../providers/presence_provider.dart';
 import '../models/chat_model.dart';
-import '../models/user_model.dart';
 
 class ArtisticMessagingScreen extends StatefulWidget {
   const ArtisticMessagingScreen({Key? key}) : super(key: key);
@@ -577,10 +578,10 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
   }
 
   Widget _buildOnlineUsers() {
-    return Consumer<ChatService>(
-      builder: (context, chatService, child) {
-        return FutureBuilder<List<UserModel>>(
-          future: _getOnlineUsers(chatService),
+    return Consumer<PresenceProvider>(
+      builder: (context, presenceProvider, child) {
+        return StreamBuilder<List<Map<String, dynamic>>>(
+          stream: presenceProvider.getOnlineUsersStream(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -664,7 +665,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
               itemCount: onlineUsers.length,
               itemBuilder: (context, index) {
                 final user = onlineUsers[index];
-                return _buildFirestoreOnlineUserCard(user, index);
+                return _buildOnlineUserCard(user, index);
               },
             );
           },
@@ -1253,38 +1254,157 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
     );
   }
 
-  // Helper methods for Firestore integration
-  Future<List<UserModel>> _getOnlineUsers(ChatService chatService) async {
-    try {
-      // Get all users from Firestore where isOnline is true
-      final firestore = FirebaseFirestore.instance;
-      final snapshot = await firestore
-          .collection('users')
-          .where('isOnline', isEqualTo: true)
-          .orderBy('lastSeen', descending: true)
-          .limit(20) // Limit to 20 online users
-          .get();
+  Widget _buildOnlineUserCard(Map<String, dynamic> user, int index) {
+    final gradients = [
+      [const Color(0xFF667eea), const Color(0xFF764ba2)],
+      [const Color(0xFFf093fb), const Color(0xFFf5576c)],
+      [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
+    ];
 
-      final users = <UserModel>[];
-      for (final doc in snapshot.docs) {
-        try {
-          final user = UserModel.fromFirestore(doc);
-          // Don't include the current user in the online users list
-          if (user.id != chatService.currentUserIdSafe) {
-            users.add(user);
-          }
-        } catch (e) {
-          debugPrint('Error parsing user document ${doc.id}: $e');
-          continue;
-        }
-      }
-      return users;
-    } catch (e) {
-      debugPrint('Error getting online users: $e');
-      return [];
-    }
+    final gradient = gradients[index % gradients.length];
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, gradient[1].withValues(alpha: 0.1)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: gradient[0].withValues(alpha: 0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            // Navigate to user chat
+            Navigator.pushNamed(
+              context,
+              '/messaging/user-chat',
+              arguments: {'userId': user['id'] as String},
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Stack(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(colors: gradient),
+                        boxShadow: [
+                          BoxShadow(
+                            color: gradient[0].withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child:
+                          user['avatar'] != null &&
+                              (user['avatar'] as String? ?? '').isNotEmpty
+                          ? ClipOval(
+                              child: Image.network(
+                                user['avatar'] as String,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _buildAvatarFallback(
+                                    (user['name'] as String?) ?? 'U',
+                                  );
+                                },
+                              ),
+                            )
+                          : _buildAvatarFallback(
+                              (user['name'] as String?) ?? 'U',
+                            ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: user['isOnline'] == true
+                              ? Colors.green
+                              : Colors.grey,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  (user['name'] as String?) ?? 'Unknown User',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  (user['role'] as String?) ?? 'User',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Online',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
+  Widget _buildAvatarFallback(String name) {
+    return Center(
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : 'U',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  /*
   Widget _buildFirestoreOnlineUserCard(UserModel user, int index) {
     final gradients = [
       [const Color(0xFF667eea), const Color(0xFF764ba2)],
@@ -1433,6 +1553,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
       ),
     );
   }
+  */
 
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();

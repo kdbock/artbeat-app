@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../utils/user_sync_helper.dart';
+import '../utils/performance_monitor.dart';
 import '../theme/artbeat_colors.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
@@ -18,6 +19,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _heartbeatController;
   late Animation<double> _scaleAnimation;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -57,15 +59,24 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    debugPrint('🔄 Splash: Starting auth check...');
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
+    // Prevent multiple navigation calls
+    if (_hasNavigated) {
+      debugPrint('🔄 Splash: Already navigated, skipping...');
+      return;
+    }
+
+    if (kDebugMode) debugPrint('🔄 Splash: Starting auth check...');
+    // Reduced delay for faster startup - just enough for smooth animation
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!mounted || _hasNavigated) return;
 
     try {
-      debugPrint('🔥 Splash: Checking Firebase apps...');
+      if (kDebugMode) debugPrint('🔥 Splash: Checking Firebase apps...');
       if (Firebase.apps.isEmpty) {
-        debugPrint('❌ Splash: No Firebase apps found, going to login');
-        if (!mounted) return;
+        if (kDebugMode)
+          debugPrint('❌ Splash: No Firebase apps found, going to login');
+        if (!mounted || _hasNavigated) return;
+        _hasNavigated = true;
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
@@ -83,9 +94,15 @@ class _SplashScreenState extends State<SplashScreen>
 
       FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
-      debugPrint('🧭 Splash: Navigating to $route');
+      if (kDebugMode) debugPrint('🧭 Splash: Navigating to $route');
 
-      if (!mounted) return;
+      // Start dashboard navigation timing
+      if (route == '/dashboard') {
+        PerformanceMonitor.startTimer('dashboard_navigation');
+      }
+
+      if (!mounted || _hasNavigated) return;
+      _hasNavigated = true;
       // Use pushNamedAndRemoveUntil to ensure clean navigation
       Navigator.of(context).pushNamedAndRemoveUntil(
         route,
@@ -94,7 +111,8 @@ class _SplashScreenState extends State<SplashScreen>
       debugPrint('✅ Splash: Navigation command sent');
     } catch (e) {
       debugPrint('❌ Splash: Error checking auth status: $e');
-      if (!mounted) return;
+      if (!mounted || _hasNavigated) return;
+      _hasNavigated = true;
       // Dismiss keyboard before navigating
       FocusScope.of(context).unfocus();
       Navigator.of(

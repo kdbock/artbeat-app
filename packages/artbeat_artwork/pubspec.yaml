@@ -1,10 +1,10 @@
 name: artbeat_artwork
 description: Artwork management package for ARTbeat
 version: 0.0.2
-publish_to: none  # This package is not intended for publishing
+publish_to: none # This package is not intended for publishing
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
   flutter: ">=3.32.0"
 
 dependencies:
@@ -18,7 +18,7 @@ dependencies:
   firebase_storage: ^12.4.7
 
   # Local Packages
-  artbeat_core: 
+  artbeat_core:
     path: ../artbeat_core
   artbeat_artist:
     path: ../artbeat_artist
@@ -30,7 +30,7 @@ dependencies:
   intl: ^0.20.2
   geolocator: ^14.0.1
   provider: ^6.1.2
-  
+
   # Media file support
   video_player: ^2.9.2
   audioplayers: ^6.1.0
@@ -38,6 +38,8 @@ dependencies:
   video_thumbnail: ^0.5.5
   permission_handler: ^12.0.1
 
+  artbeat_profile:
+    path: ../artbeat_profile
 flutter:
   uses-material-design: true
 

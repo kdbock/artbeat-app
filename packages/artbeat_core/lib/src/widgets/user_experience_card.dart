@@ -263,6 +263,9 @@ class _UserExperienceCardState extends State<UserExperienceCard>
         ],
       ),
       child: OptimizedAvatar(
+        key: ValueKey<String>(
+          'user_avatar_${widget.user.id}_${widget.user.profileImageUrl}',
+        ),
         imageUrl: widget.user.profileImageUrl.isNotEmpty
             ? widget.user.profileImageUrl
             : null,

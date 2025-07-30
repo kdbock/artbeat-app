@@ -350,7 +350,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               Positioned(
                 right: 8,
                 top: 8,
-                child: Container(
+                child: SizedBox(
                   width: 12,
                   height: 12,
                   child: CircularProgressIndicator(

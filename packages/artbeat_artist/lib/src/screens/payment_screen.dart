@@ -3,6 +3,7 @@ import 'package:artbeat_core/artbeat_core.dart'
     show PaymentService, SubscriptionTier, EnhancedUniversalHeader, MainLayout;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'payment_methods_screen.dart';
 
 /// Screen for handling subscription payments
 class PaymentScreen extends StatefulWidget {
@@ -32,6 +33,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         appBar: EnhancedUniversalHeader(
           title: 'Subscribe to ${_getTierName(widget.tier)}',
           showLogo: false,
+          showBackButton: true,
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -199,7 +201,29 @@ class _PaymentScreenState extends State<PaymentScreen> {
           customerDoc.data()?['defaultPaymentMethodId'] as String?;
 
       if (stripeCustomerId == null || defaultPaymentMethodId == null) {
-        throw Exception('Please add a payment method before subscribing');
+        // Navigate to payment methods screen to add a payment method
+        if (mounted) {
+          final result = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute<bool>(
+              builder: (context) => const PaymentMethodsScreen(),
+            ),
+          );
+
+          // If user added a payment method, retry the payment
+          if (result == true) {
+            _handlePayment();
+            return;
+          } else {
+            // User cancelled or didn't add a payment method
+            setState(() {
+              _errorMessage =
+                  'A payment method is required to subscribe. Please add one to continue.';
+            });
+            return;
+          }
+        }
+        return;
       }
 
       // Get the amount based on the subscription tier

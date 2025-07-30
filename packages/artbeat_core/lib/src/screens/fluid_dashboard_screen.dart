@@ -1,11 +1,14 @@
-import 'package:artbeat_artist/src/screens/artist_onboarding_screen.dart';
+import 'package:artbeat_artist/src/screens/artist_profile_edit_screen.dart';
+import 'package:artbeat_artist/src/screens/subscription_screen.dart';
+import 'package:artbeat_artist/src/services/artist_profile_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_capture/artbeat_capture.dart'
-    show CaptureService, CaptureModel, CapturesListScreen;
+    show CaptureModel, CapturesListScreen;
 import 'package:artbeat_community/artbeat_community.dart'
     show PostModel, ApplauseButton, GiftModal;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -31,9 +34,6 @@ class FluidDashboardScreen extends StatefulWidget {
   State<FluidDashboardScreen> createState() => _FluidDashboardScreenState();
 }
 
-// Static flag to prevent multiple dashboard builds
-bool _isDashboardBuilding = false;
-
 class _FluidDashboardScreenState extends State<FluidDashboardScreen>
     with TickerProviderStateMixin {
   late ScrollController _scrollController;
@@ -57,14 +57,20 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
       _hasInitialized = true;
 
       try {
+        PerformanceMonitor.startTimer('dashboard_initialization');
         final viewModel = context.read<DashboardViewModel>();
-        viewModel.initialize();
+        viewModel.initialize().then((_) {
+          PerformanceMonitor.endTimer('dashboard_initialization');
+          PerformanceMonitor.endTimer('dashboard_navigation');
+          PerformanceMonitor.logAllDurations();
+        });
 
-        // Debug: Verify drawer is available
-        debugPrint('FluidDashboardScreen initialized');
-        debugPrint('Scaffold key: $_scaffoldKey');
+        if (kDebugMode) {
+          debugPrint('FluidDashboardScreen initialized');
+          debugPrint('Scaffold key: $_scaffoldKey');
+        }
       } catch (e) {
-        debugPrint('Error initializing dashboard: $e');
+        if (kDebugMode) debugPrint('Error initializing dashboard: $e');
       }
     });
   }
@@ -78,20 +84,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_isDashboardBuilding) {
-      debugPrint(
-        '🔄 FluidDashboardScreen: Already building, preventing duplicate...',
-      );
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    _isDashboardBuilding = true;
-    debugPrint('🏠 Building FluidDashboardScreen...');
-
-    // Reset the building flag after build completes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _isDashboardBuilding = false;
-    });
+    // Simplified build method - removed complex debouncing that was causing stutters
 
     return MainLayout(
       currentIndex: 0, // Home is index 0
@@ -399,6 +392,84 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
     );
   }
 
+  /// Handle artist CTA button press - check if user has artist profile
+  Future<void> _handleArtistCTAPressed() async {
+    final user = context.read<DashboardViewModel>().currentUser;
+    if (user == null) {
+      _showErrorDialog('User not found. Please log in again.');
+      return;
+    }
+
+    try {
+      // Show loading indicator
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      // Check if user already has an artist profile
+      final artistProfileService = ArtistProfileService();
+      final existingProfile = await artistProfileService
+          .getArtistProfileByUserId(user.id);
+
+      // Hide loading indicator
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      if (existingProfile != null) {
+        // User has an artist profile - navigate to edit screen
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute<ArtistProfileEditScreen>(
+              builder: (context) =>
+                  ArtistProfileEditScreen(artistProfileId: existingProfile.id),
+            ),
+          );
+        }
+      } else {
+        // User doesn't have an artist profile - start subscription sequence
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute<SubscriptionScreen>(
+              builder: (context) => const SubscriptionScreen(),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Hide loading indicator if still showing
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      debugPrint('Error checking artist profile: $e');
+      _showErrorDialog('Unable to check artist profile. Please try again.');
+    }
+  }
+
+  /// Show error dialog
+  void _showErrorDialog(String message) {
+    if (!mounted) return;
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFluidContent(DashboardViewModel viewModel) {
     return RefreshIndicator(
       onRefresh: () => viewModel.refresh(),
@@ -443,28 +514,36 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
             ),
           ),
 
-          // Artwork gallery section
+          // Artwork gallery section (lazy loaded)
           SliverToBoxAdapter(
             child: _buildSafeSection(
               () => _buildArtworkGallerySection(viewModel),
+              isLazy: true,
             ),
           ),
 
-          // Community highlights section
+          // Community highlights section (lazy loaded)
           SliverToBoxAdapter(
             child: _buildSafeSection(
               () => _buildCommunityHighlightsSection(viewModel),
+              isLazy: true,
             ),
           ),
 
-          // Events section
+          // Events section (lazy loaded)
           SliverToBoxAdapter(
-            child: _buildSafeSection(() => _buildEventsSection(viewModel)),
+            child: _buildSafeSection(
+              () => _buildEventsSection(viewModel),
+              isLazy: true,
+            ),
           ),
 
-          // Artist CTA section
+          // Artist CTA section (lazy loaded)
           SliverToBoxAdapter(
-            child: _buildSafeSection(() => _buildArtistCTASection()),
+            child: _buildSafeSection(
+              () => _buildArtistCTASection(),
+              isLazy: true,
+            ),
           ),
 
           // Bottom padding for navigation
@@ -523,6 +602,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
                   )
                 : AbsorbPointer(
                     child: GoogleMap(
+                      key: const ValueKey('dashboard_map_1'),
                       mapType: MapType.normal,
                       initialCameraPosition: viewModel.initialCameraPosition,
                       onMapCreated: viewModel.onMapCreated,
@@ -702,7 +782,9 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
     if (user == null) return const SizedBox.shrink();
 
     return UserExperienceCard(
-      key: ValueKey<String>(user.id),
+      key: ValueKey<String>(
+        '${user.id}_${user.profileImageUrl}_${user.experiencePoints}',
+      ),
       user: user,
       achievements: viewModel.achievements,
       onTap: () => Navigator.pushNamed(context, '/achievements'),
@@ -1291,6 +1373,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
                             )
                           : AbsorbPointer(
                               child: GoogleMap(
+                                key: const ValueKey('dashboard_map_2'),
                                 mapType: MapType.normal,
                                 initialCameraPosition:
                                     viewModel.initialCameraPosition,
@@ -1789,7 +1872,10 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
 
   Widget _buildCaptureCard(CaptureModel capture) {
     return GestureDetector(
-      onTap: () => _showCaptureDetailsPopup(capture),
+      onTap: () {
+        debugPrint('🎯 Capture card tapped, showing capture details popup');
+        _showCaptureDetailsPopup(capture);
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -2424,22 +2510,42 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
       ),
       child: Column(
         children: [
-          // Image section
+          // Image section - Make it tappable to view the post
           Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: (post.imageUrls.isNotEmpty)
-                  ? CachedNetworkImage(
-                      imageUrl: post.imageUrls.first,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (context, url) => Container(
-                        color: ArtbeatColors.backgroundSecondary,
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: (context, url, error) => Container(
+            child: GestureDetector(
+              onTap: () {
+                debugPrint(
+                  '🎯 Community highlight image tapped, navigating to community dashboard',
+                );
+                Navigator.pushNamed(context, '/community/dashboard');
+              },
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: (post.imageUrls.isNotEmpty)
+                    ? CachedNetworkImage(
+                        imageUrl: post.imageUrls.first,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (context, url) => Container(
+                          color: ArtbeatColors.backgroundSecondary,
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          color: ArtbeatColors.backgroundSecondary,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              size: 48,
+                              color: ArtbeatColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
                         color: ArtbeatColors.backgroundSecondary,
                         child: const Center(
                           child: Icon(
@@ -2449,17 +2555,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
                           ),
                         ),
                       ),
-                    )
-                  : Container(
-                      color: ArtbeatColors.backgroundSecondary,
-                      child: const Center(
-                        child: Icon(
-                          Icons.image,
-                          size: 48,
-                          color: ArtbeatColors.textSecondary,
-                        ),
-                      ),
-                    ),
+              ),
             ),
           ),
 
@@ -2470,11 +2566,11 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/community/post-detail',
-                    arguments: {'postId': post.id},
+                  debugPrint(
+                    '🎯 Seeking Critique button tapped for post: ${post.id}',
                   );
+                  // Navigate to community dashboard for now until post detail screen is implemented
+                  Navigator.pushNamed(context, '/community/dashboard');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ArtbeatColors.secondaryTeal,
@@ -2786,122 +2882,132 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
   }
 
   Widget _buildEventCard(EventModel event) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlphaValue(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Event image (small)
-          if (event.imageUrl?.isNotEmpty == true)
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
-              ),
-              child: CachedNetworkImage(
-                imageUrl: event.imageUrl ?? '',
-                height: 80,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  height: 80,
-                  color: ArtbeatColors.backgroundSecondary,
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  height: 80,
-                  color: ArtbeatColors.backgroundSecondary,
-                  child: const Center(
-                    child: Icon(
-                      Icons.event,
-                      size: 32,
-                      color: ArtbeatColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
+    return GestureDetector(
+      onTap: () {
+        debugPrint('🎯 Event card tapped: ${event.title} (ID: ${event.id})');
+        Navigator.pushNamed(
+          context,
+          '/events/detail',
+          arguments: {'eventId': event.id},
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlphaValue(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-
-          // Event details
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  event.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
-                  ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Event image (small)
+            if (event.imageUrl?.isNotEmpty == true)
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: ArtbeatColors.textSecondary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _formatEventDate(event.startDate),
-                      style: const TextStyle(
-                        fontSize: 12,
+                child: CachedNetworkImage(
+                  imageUrl: event.imageUrl ?? '',
+                  height: 80,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    height: 80,
+                    color: ArtbeatColors.backgroundSecondary,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: 80,
+                    color: ArtbeatColors.backgroundSecondary,
+                    child: const Center(
+                      child: Icon(
+                        Icons.event,
+                        size: 32,
                         color: ArtbeatColors.textSecondary,
                       ),
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: ArtbeatColors.textSecondary,
+              ),
+
+            // Event details
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: ArtbeatColors.textPrimary,
                     ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        event.location,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _formatEventDate(event.startDate),
                         style: const TextStyle(
                           fontSize: 12,
                           color: ArtbeatColors.textSecondary,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          event.location,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (event.description.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      event.description,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                ),
-                if (event.description.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    event.description,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: ArtbeatColors.textPrimary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -3009,36 +3115,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
                 // CTA button
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      final user = context
-                          .read<DashboardViewModel>()
-                          .currentUser;
-                      if (user != null) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute<ArtistOnboardingScreen>(
-                            builder: (context) =>
-                                ArtistOnboardingScreen(user: user),
-                          ),
-                        );
-                      } else {
-                        showDialog<void>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Error'),
-                            content: const Text(
-                              'User not found. Please log in again.',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: () => _handleArtistCTAPressed(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF8E2DE2),
                       padding: const EdgeInsets.symmetric(
@@ -3277,27 +3354,70 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
 
-  /// Wraps a section builder with error handling to prevent layout crashes
-  Widget _buildSafeSection(Widget Function() builder) {
+  /// Wraps a section builder with error handling and lazy loading
+  Widget _buildSafeSection(Widget Function() builder, {bool isLazy = false}) {
+    if (isLazy) {
+      // Use lazy loading for non-critical sections
+      return FutureBuilder<Widget>(
+        future: Future.microtask(() {
+          try {
+            return builder();
+          } catch (e) {
+            debugPrint('❌ Safe section error: $e');
+            return _buildErrorSection();
+          }
+        }),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return snapshot.data!;
+          }
+          return _buildSkeletonSection();
+        },
+      );
+    }
+
     try {
       return builder();
     } catch (e) {
       debugPrint('❌ Safe section error: $e');
-      return Container(
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: ArtbeatColors.backgroundSecondary,
-          borderRadius: BorderRadius.circular(12),
+      return _buildErrorSection();
+    }
+  }
+
+  Widget _buildErrorSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: ArtbeatColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: Text(
+          'Section temporarily unavailable',
+          style: TextStyle(color: ArtbeatColors.textSecondary, fontSize: 14),
+          textAlign: TextAlign.center,
         ),
-        child: const Center(
-          child: Text(
-            'Section temporarily unavailable',
-            style: TextStyle(color: ArtbeatColors.textSecondary, fontSize: 14),
-            textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildSkeletonSection() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      height: 120,
+      decoration: BoxDecoration(
+        color: ArtbeatColors.backgroundSecondary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(
+            ArtbeatColors.primaryPurple,
           ),
         ),
-      );
-    }
+      ),
+    );
   }
 }

@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import '../widgets/zip_code_search_box.dart';
 
 /// Screen that displays a map with nearby public art and art walks
 class ArtWalkMapScreen extends StatefulWidget {
@@ -1023,7 +1022,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                       ),
                       child: Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.info_outline,
                             size: 16,
                             color: Colors.purple,

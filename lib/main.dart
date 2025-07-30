@@ -13,69 +13,38 @@ import 'src/managers/app_lifecycle_manager.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Start performance monitoring
+  PerformanceMonitor.startTimer('app_startup');
+
   try {
-    // Initialize app lifecycle manager
+    // Initialize app lifecycle manager (non-blocking)
     AppLifecycleManager().initialize();
-    if (kDebugMode) {
-      print('✅ AppLifecycleManager initialized');
-    }
 
-    // Initialize config service first
-    await ConfigService.instance.initialize();
-    if (kDebugMode) {
-      print('✅ ConfigService initialized');
-    }
-
-    // Initialize Maps configuration
-    await MapsConfig.initialize();
-    if (kDebugMode) {
-      print('✅ Maps configuration initialized');
-    }
+    // Initialize critical services in parallel
+    final List<Future<void>> criticalInitializations = [
+      ConfigService.instance.initialize(),
+      MapsConfig.initialize(),
+    ];
 
     // Reset Firebase state on hot restart in debug mode
     if (kDebugMode) {
       SecureFirebaseConfig.resetInitializationState();
     }
 
-    // Ensure Firebase is properly initialized
-    if (kDebugMode) {
-      print('🔥 Ensuring Firebase initialization...');
-    }
+    // Wait for critical services
+    await Future.wait(criticalInitializations);
 
+    // Initialize Firebase (most critical)
     await SecureFirebaseConfig.ensureInitialized(
       teamId: 'H49R32NPY6',
       debug: kDebugMode,
     );
 
-    if (kDebugMode) {
-      print('✅ Firebase initialization completed successfully');
-    }
+    // Initialize non-critical services in background after app starts
+    _initializeNonCriticalServices();
 
-    // Initialize image management service
-    try {
-      await ImageManagementService().initialize();
-      if (kDebugMode) {
-        print('✅ Image management service initialized');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Image management service initialization failed: $e');
-      }
-      // Don't fail the entire app for image service
-    }
-
-    // Initialize messaging notification service
-    try {
-      await messaging.NotificationService().initialize();
-      if (kDebugMode) {
-        print('✅ Messaging notification service initialized');
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Messaging notification service initialization failed: $e');
-      }
-      // Don't fail the entire app for notification service
-    }
+    // End startup timing
+    PerformanceMonitor.endTimer('app_startup');
 
     if (kDebugMode) {
       // Print Firebase status for debugging
@@ -145,4 +114,35 @@ Future<void> main() async {
   }
 
   runApp(MyApp());
+}
+
+/// Initialize non-critical services in background to avoid blocking app startup
+void _initializeNonCriticalServices() {
+  Future.delayed(const Duration(milliseconds: 100), () async {
+    // Initialize image management service
+    try {
+      await ImageManagementService().initialize();
+      if (kDebugMode) {
+        print('✅ Image management service initialized');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Image management service initialization failed: $e');
+      }
+      // Don't fail the entire app for image service
+    }
+
+    // Initialize messaging notification service
+    try {
+      await messaging.NotificationService().initialize();
+      if (kDebugMode) {
+        print('✅ Messaging notification service initialized');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Messaging notification service initialization failed: $e');
+      }
+      // Don't fail the entire app for notification service
+    }
+  });
 }

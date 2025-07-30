@@ -9,12 +9,14 @@ class ChatListTile extends StatelessWidget {
   final ChatModel chat;
   final VoidCallback onTap;
   final String? heroTagPrefix;
+  final VoidCallback? onArchive;
 
   const ChatListTile({
     super.key,
     required this.chat,
     required this.onTap,
     this.heroTagPrefix,
+    this.onArchive,
   });
 
   void _navigateToChat(BuildContext context) {
@@ -28,26 +30,94 @@ class ChatListTile extends StatelessWidget {
 
     return Hero(
       tag: '${heroTagPrefix ?? 'chat'}_${chat.id}',
-      child: Card(
-        elevation: chat.unreadCount > 0 ? 3 : 1,
-        shadowColor: chat.unreadCount > 0
-            ? ArtbeatColors.primaryPurple.withValues(alpha: 0.3)
-            : Colors.black12,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: chat.unreadCount > 0
-                ? ArtbeatColors.primaryPurple.withValues(alpha: 0.2)
-                : Colors.transparent,
-            width: 1,
+      child: Dismissible(
+        key: Key('chat_${chat.id}'),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: ArtbeatColors.error,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.archive_outlined, color: Colors.white, size: 28),
+              SizedBox(height: 4),
+              Text(
+                'Archive',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
-        child: InkWell(
-          onTap: () => _navigateToChat(context),
-          borderRadius: BorderRadius.circular(16),
-          child: _buildListTile(context, theme, dateFormat),
+        confirmDismiss: (direction) async {
+          return await _showArchiveConfirmation(context);
+        },
+        onDismissed: (direction) {
+          if (onArchive != null) {
+            onArchive!();
+          }
+        },
+        child: Card(
+          elevation: chat.unreadCount > 0 ? 3 : 1,
+          shadowColor: chat.unreadCount > 0
+              ? ArtbeatColors.primaryPurple.withValues(alpha: 0.3)
+              : Colors.black12,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: chat.unreadCount > 0
+                  ? ArtbeatColors.primaryPurple.withValues(alpha: 0.2)
+                  : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: InkWell(
+            onTap: () => _navigateToChat(context),
+            borderRadius: BorderRadius.circular(16),
+            child: _buildListTile(context, theme, dateFormat),
+          ),
         ),
       ),
+    );
+  }
+
+  Future<bool?> _showArchiveConfirmation(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Archive Chat'),
+          content: Text(
+            chat.isGroup
+                ? 'Are you sure you want to archive "${chat.groupName ?? 'this group'}"? You can find it in archived chats later.'
+                : 'Are you sure you want to archive this chat? You can find it in archived chats later.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtbeatColors.error,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Archive'),
+            ),
+          ],
+        );
+      },
     );
   }
 

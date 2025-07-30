@@ -128,8 +128,13 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       // Present payment sheet
       await Stripe.instance.presentPaymentSheet();
 
-      // Reload payment methods
-      _loadPaymentMethods();
+      // Reload payment methods and return success
+      await _loadPaymentMethods();
+
+      // If we have payment methods now, return success to the calling screen
+      if (mounted && _paymentMethods.isNotEmpty) {
+        Navigator.of(context).pop(true);
+      }
     } catch (error) {
       setState(() {
         _errorMessage = error.toString().contains('Cancelled')
@@ -181,6 +186,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         _defaultPaymentMethodId = paymentMethodId;
         _isLoading = false;
       });
+
+      // Return success to the calling screen since we now have a default payment method
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
     } catch (error) {
       setState(() {
         _isLoading = false;

@@ -106,7 +106,7 @@ class MyApp extends StatelessWidget {
     // Artwork browse route
     if (settings.name == '/artwork/browse') {
       return MaterialPageRoute(
-        builder: (_) => core.MainLayout(
+        builder: (_) => const core.MainLayout(
           currentIndex: -1,
           child: artwork.ArtworkBrowseScreen(),
         ),

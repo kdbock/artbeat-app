@@ -18,6 +18,7 @@ class SubscriptionComparisonScreen extends StatelessWidget {
         appBar: const core.EnhancedUniversalHeader(
           title: 'Compare Plans',
           showLogo: false,
+          showBackButton: true,
         ),
         body: SingleChildScrollView(
           scrollDirection: Axis.horizontal,

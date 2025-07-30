@@ -5,7 +5,6 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/src/screens/camera_capture_screen.dart';

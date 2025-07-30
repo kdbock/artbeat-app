@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/artbeat_colors.dart';
@@ -40,14 +41,10 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // Debug logging to help identify issues
-    debugPrint('🔍 UserAvatar build:');
-    debugPrint('  - displayName: "$displayName"');
-    debugPrint('  - imageUrl: "${imageUrl ?? 'null'}"');
-    debugPrint('  - imageUrl isEmpty: ${imageUrl?.isEmpty ?? 'N/A'}');
-    debugPrint(
-      '  - will show fallback: ${imageUrl == null || imageUrl!.isEmpty}',
-    );
+    // Debug logging to help identify issues (reduced for performance)
+    if (kDebugMode) {
+      debugPrint('🔍 UserAvatar build: $displayName');
+    }
 
     Widget avatar;
     // Only use NetworkImage if imageUrl is a valid HTTP(S) URL

@@ -11,14 +11,14 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return Scaffold(
-        appBar: const EnhancedUniversalHeader(
+      return const Scaffold(
+        appBar: EnhancedUniversalHeader(
           title: 'Notifications',
           showLogo: false,
           showSearch: false,
           showBackButton: true,
         ),
-        body: const Center(child: Text('Please log in to view notifications.')),
+        body: Center(child: Text('Please log in to view notifications.')),
       );
     }
     return Scaffold(
@@ -41,18 +41,18 @@ class NotificationsScreen extends StatelessWidget {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return ListView(
               padding: const EdgeInsets.all(20),
-              children: [
-                const SizedBox(height: 40),
+              children: const [
+                SizedBox(height: 40),
                 Icon(Icons.notifications, size: 64, color: Colors.grey),
-                const SizedBox(height: 24),
-                const Center(
+                SizedBox(height: 24),
+                Center(
                   child: Text(
                     'No notifications yet',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Center(
+                SizedBox(height: 8),
+                Center(
                   child: Text(
                     'You’ll see updates, messages, and alerts here.',
                     style: TextStyle(fontSize: 15, color: Colors.grey),

@@ -44,6 +44,9 @@ class UserSyncHelper {
         '🔍 UserSyncHelper: Checking user document for ${authUser.uid}',
       );
 
+      // Clear any cached user data to ensure fresh check
+      _userService.clearUserCache();
+
       // Check if user document exists
       final existingUser = await _userService.getUserById(authUser.uid);
       if (existingUser != null) {

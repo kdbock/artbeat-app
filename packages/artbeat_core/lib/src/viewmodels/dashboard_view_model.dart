@@ -154,27 +154,11 @@ class DashboardViewModel extends BaseViewModel {
         _isLoadingUser = false; // Show dashboard structure immediately
         notifyListeners();
 
-        // Phase 2: Load priority content (featured artists first)
-        loadFeaturedArtists();
+        // Phase 2: Load priority content immediately (non-blocking)
+        _loadPriorityContent();
 
         // Phase 3: Load remaining content progressively in background
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (!_isInitialized) return; // Check if still valid
-          loadArtworks();
-        });
-
-        Future.delayed(const Duration(milliseconds: 600), () {
-          if (!_isInitialized) return; // Check if still valid
-          loadPosts();
-          loadEvents();
-        });
-
-        Future.delayed(const Duration(milliseconds: 900), () {
-          if (!_isInitialized) return; // Check if still valid
-          loadUserArtWalks();
-          loadCaptures();
-          loadAllCaptures();
-        });
+        _loadSecondaryContent();
 
         _isInitialized = true;
         debugPrint('✅ DashboardViewModel: Initialization completed');
@@ -210,6 +194,38 @@ class DashboardViewModel extends BaseViewModel {
       _isLoadingUserArtWalks = false;
       notifyListeners();
     }
+  }
+
+  /// Load priority content immediately (non-blocking)
+  void _loadPriorityContent() {
+    // Load featured artists first as they're most visible
+    loadFeaturedArtists();
+
+    // Load user's captures for immediate display
+    if (_currentUser != null) {
+      loadCaptures();
+    }
+  }
+
+  /// Load secondary content progressively
+  void _loadSecondaryContent() {
+    // Stagger loading to prevent UI blocking
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!_isInitialized) return;
+      loadArtworks();
+      loadPosts();
+    });
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!_isInitialized) return;
+      loadEvents();
+      loadUserArtWalks();
+    });
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!_isInitialized) return;
+      loadAllCaptures();
+    });
   }
 
   /// Refresh all dashboard data
@@ -302,6 +318,7 @@ class DashboardViewModel extends BaseViewModel {
       return;
     }
 
+    debugPrint('🎨 Loading ALL artists...');
     _isLoadingArtists = true;
     _artistsError = null;
     notifyListeners();
@@ -345,6 +362,7 @@ class DashboardViewModel extends BaseViewModel {
       return;
     }
 
+    debugPrint('🎨 Loading FEATURED artists...');
     _isLoadingFeaturedArtists = true;
     _featuredArtistsError = null;
     notifyListeners();
@@ -371,6 +389,14 @@ class DashboardViewModel extends BaseViewModel {
       // Sort by most recently updated
       featuredArtists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       _featuredArtists = featuredArtists;
+
+      // Debug: Log the featured artists that were loaded
+      debugPrint('🎨 Featured Artists loaded: ${featuredArtists.length}');
+      for (var artist in featuredArtists) {
+        debugPrint(
+          '  - ${artist.displayName} (${artist.userId}) - Featured: ${artist.isFeatured}',
+        );
+      }
     } catch (e) {
       _featuredArtistsError = e.toString();
       debugPrint('Error loading featured artists: $e');

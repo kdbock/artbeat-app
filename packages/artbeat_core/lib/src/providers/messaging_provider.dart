@@ -13,9 +13,12 @@ class MessagingProvider extends ChangeNotifier {
   StreamSubscription<User?>? _authSubscription;
   bool _isInitialized = false;
   bool _hasError = false;
+  String? _currentUserId;
 
   MessagingProvider(this._chatService) {
     debugPrint('MessagingProvider: Initializing with ChatService');
+    // Initialize current user ID to prevent unnecessary reset on first auth state change
+    _currentUserId = FirebaseAuth.instance.currentUser?.uid;
     _setupAuthListener();
     _initializeUnreadCount();
   }
@@ -23,15 +26,24 @@ class MessagingProvider extends ChangeNotifier {
   /// Listen to authentication state changes
   void _setupAuthListener() {
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      final newUserId = user?.uid;
       debugPrint(
-        'MessagingProvider: Auth state changed, user: ${user?.uid ?? 'null'}',
+        'MessagingProvider: Auth state changed, user: ${newUserId ?? 'null'}',
       );
-      if (user != null) {
-        // User logged in, initialize/reset the unread count
-        reset();
+
+      // Only reset if the user actually changed
+      if (newUserId != _currentUserId) {
+        _currentUserId = newUserId;
+
+        if (user != null) {
+          // User logged in or switched, initialize/reset the unread count
+          reset();
+        } else {
+          // User logged out, clear state
+          _clearState();
+        }
       } else {
-        // User logged out, clear state
-        _clearState();
+        debugPrint('MessagingProvider: Same user, skipping reset');
       }
     });
   }

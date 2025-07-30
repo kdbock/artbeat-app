@@ -10,10 +10,6 @@ service cloud.firestore {
       return userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2';
     }
 
-    // Allow admin access to everything first
-    match /{document=**} {
-      allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);
-    }
 
     function isGallery(userId) {
       return exists(/databases/$(database)/documents/users/$(userId)) &&

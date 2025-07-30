@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:artbeat_artist/src/screens/refund_request_screen.dart';
 import 'package:artbeat_artist/src/screens/subscription_comparison_screen.dart';
 import 'package:artbeat_artist/src/screens/payment_screen.dart';
+import 'package:artbeat_artist/src/screens/artist_profile_edit_screen.dart';
 
 /// Screen for managing subscription plans
 class SubscriptionScreen extends StatefulWidget {
@@ -88,6 +89,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         _selectedTier == core.SubscriptionTier.free) {
       if (_currentSubscription != null) {
         await _cancelSubscription();
+      } else {
+        // For free basic plan with no existing subscription, proceed to artist profile creation
+        _proceedToArtistProfileCreation();
       }
       return;
     }
@@ -401,6 +405,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   bool _isSubscriptionActive(SubscriptionModel? sub) {
     if (sub == null) return false;
     return sub.status == 'active' || sub.status == 'trialing';
+  }
+
+  /// Navigate to artist profile creation for free basic plan users
+  void _proceedToArtistProfileCreation() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<ArtistProfileEditScreen>(
+        builder: (context) => const ArtistProfileEditScreen(),
+      ),
+    );
   }
 
   @override
