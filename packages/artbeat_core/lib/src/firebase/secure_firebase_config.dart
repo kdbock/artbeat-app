@@ -129,24 +129,27 @@ class SecureFirebaseConfig {
         await FirebaseAppCheck.instance.activate(
           androidProvider: AndroidProvider.debug,
           appleProvider: AppleProvider.debug,
-          webProvider: ReCaptchaV3Provider(
-            '6LeiHc...',
-          ), // Add your reCAPTCHA site key
+          // Skip web provider in debug mode if no reCAPTCHA key is configured
         );
 
         // Get and log the debug token
         final token = await FirebaseAppCheck.instance.getToken();
         if (token != null) {
           print('🔐 Debug token: $token');
+          print(
+            '🔐 COPY THIS TOKEN TO FIREBASE CONSOLE APP CHECK DEBUG TOKENS',
+          );
+          print('🔐 Token: $token');
+        } else {
+          print('🔐 No debug token received - this may indicate an issue');
         }
       } else {
         // Production mode - use secure providers
         await FirebaseAppCheck.instance.activate(
           androidProvider: AndroidProvider.playIntegrity,
           appleProvider: AppleProvider.deviceCheck,
-          webProvider: ReCaptchaV3Provider(
-            '6LeiHc...',
-          ), // Add your reCAPTCHA site key
+          // TODO: Add proper reCAPTCHA v3 site key for web support
+          // webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
         );
       }
 
@@ -289,5 +292,63 @@ class SecureFirebaseConfig {
       }
       return false;
     }
+  }
+
+  /// Get App Check debug token for configuration
+  static Future<String?> getAppCheckDebugToken() async {
+    if (!_appCheckInitialized) {
+      if (kDebugMode) {
+        print('⚠️ App Check not initialized, cannot get debug token');
+      }
+      return null;
+    }
+
+    try {
+      final token = await FirebaseAppCheck.instance.getToken();
+      if (kDebugMode && token != null) {
+        print('🔐 Current App Check token: $token');
+      }
+      return token;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Failed to get App Check token: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Validate App Check configuration
+  static Future<Map<String, dynamic>> validateAppCheck() async {
+    final result = <String, dynamic>{
+      'initialized': _appCheckInitialized,
+      'canGetToken': false,
+      'token': null,
+      'error': null,
+    };
+
+    if (!_appCheckInitialized) {
+      result['error'] = 'App Check not initialized';
+      return result;
+    }
+
+    try {
+      final token = await FirebaseAppCheck.instance.getToken();
+      result['canGetToken'] = token != null;
+      result['token'] = token;
+
+      if (kDebugMode) {
+        print('✅ App Check validation successful');
+        if (token != null) {
+          print('🔐 Token available: ${token.substring(0, 20)}...');
+        }
+      }
+    } catch (e) {
+      result['error'] = e.toString();
+      if (kDebugMode) {
+        print('❌ App Check validation failed: $e');
+      }
+    }
+
+    return result;
   }
 }

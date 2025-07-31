@@ -32,7 +32,7 @@ class PostCard extends StatelessWidget {
     required this.onToggleExpand,
   });
 
-  // Always show gift/sponsor/applause for all posts in the artist community feed
+  // Always show gift/sponsor/applause for all posts in the community feed
   bool get canGift => true;
 
   @override

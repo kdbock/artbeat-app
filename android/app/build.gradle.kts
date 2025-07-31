@@ -1,6 +1,4 @@
-import java.io.FileInputStream
 import java.util.Properties
-import java.io.File
 
 plugins {
     id("com.android.application")
@@ -13,11 +11,10 @@ plugins {
 }
 
 // Load API keys and signing configuration from properties file
-val keystoreProperties = Properties().apply {
-    val propertiesFile = rootProject.file("key.properties")
-    if (propertiesFile.exists()) {
-        load(FileInputStream(propertiesFile))
-    }
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
 android {
@@ -41,7 +38,6 @@ android {
             val keystoreFile = keystoreProperties.getProperty("storeFile")?.let { 
                 rootProject.file(it)
             }
-            
             if (keystoreFile != null && keystoreFile.exists()) {
                 storeFile = keystoreFile
                 storePassword = keystoreProperties.getProperty("storePassword")
@@ -58,8 +54,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = 26
-        versionName = "1.0.26"
+        versionCode = (project.findProperty("flutterVersionCode") ?: "1").toString().toInt()
+        versionName = (project.findProperty("flutterVersionName") ?: "1.0").toString()
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")

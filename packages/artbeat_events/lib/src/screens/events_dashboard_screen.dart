@@ -111,7 +111,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
             child: EnhancedUniversalHeader(
               title: 'Events',
               showLogo: false,
-
               showDeveloperTools: true,
               onSearchPressed: () => _showSearchModal(context),
               onProfilePressed: () => _showProfileMenu(context),

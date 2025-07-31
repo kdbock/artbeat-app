@@ -357,7 +357,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 controller: _contentController,
                 decoration: const InputDecoration(
                   labelText: 'Content',
-                  hintText: 'Share your thoughts about this artwork...',
+                  hintText:
+                      'Share your thoughts, artwork, or creative discoveries...',
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 5,
@@ -375,7 +376,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 controller: _locationController,
                 decoration: const InputDecoration(
                   labelText: 'Location',
-                  hintText: 'Where was this created?',
+                  hintText: 'Where are you posting from?',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.location_on),
                 ),

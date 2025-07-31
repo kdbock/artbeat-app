@@ -55,9 +55,43 @@ class _EnhancedArtWalkExperienceScreenState
     await _loadArtPieces();
     await _loadVisitedArt();
     _createMarkersAndRoute();
+
     setState(() {
       _isLoading = false;
     });
+
+    // Auto-start navigation if user location is available and there are art pieces
+    if (_currentPosition != null && _artPieces.isNotEmpty) {
+      // Show a brief message that navigation is starting
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Starting turn-by-turn navigation...'),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Small delay to ensure UI is ready
+      await Future<void>.delayed(const Duration(milliseconds: 1000));
+      if (mounted) {
+        _startNavigation();
+      }
+    } else if (_currentPosition == null) {
+      // Show message if location is not available
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location not available. Please enable location services for navigation.',
+            ),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -144,8 +178,8 @@ class _EnhancedArtWalkExperienceScreenState
             isVisited
                 ? BitmapDescriptor.hueGreen
                 : isNext
-                    ? BitmapDescriptor.hueOrange
-                    : BitmapDescriptor.hueRed,
+                ? BitmapDescriptor.hueOrange
+                : BitmapDescriptor.hueRed,
           ),
           infoWindow: InfoWindow(
             title: '${i + 1}. ${art.title}',
@@ -182,7 +216,9 @@ class _EnhancedArtWalkExperienceScreenState
     if (_currentPosition == null || _artPieces.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Unable to start navigation. Check your location settings.'),
+          content: Text(
+            'Unable to start navigation. Check your location settings.',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -215,7 +251,9 @@ class _EnhancedArtWalkExperienceScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Navigation started! Follow the turn-by-turn instructions.'),
+          content: Text(
+            'Navigation started! Follow the turn-by-turn instructions.',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -252,15 +290,15 @@ class _EnhancedArtWalkExperienceScreenState
   void _updateMapWithRoute(ArtWalkRouteModel route) {
     // Update polylines with detailed route
     final polylines = <Polyline>{};
-    
+
     for (int i = 0; i < route.segments.length; i++) {
       final segment = route.segments[i];
       final polylinePoints = <LatLng>[];
-      
+
       for (final step in segment.steps) {
         polylinePoints.addAll(step.polylinePoints);
       }
-      
+
       if (polylinePoints.isNotEmpty) {
         polylines.add(
           Polyline(
@@ -417,7 +455,9 @@ class _EnhancedArtWalkExperienceScreenState
         actions: [
           if (_isNavigationMode)
             IconButton(
-              icon: Icon(_showCompactNavigation ? Icons.expand_more : Icons.expand_less),
+              icon: Icon(
+                _showCompactNavigation ? Icons.expand_more : Icons.expand_less,
+              ),
               onPressed: () {
                 setState(() {
                   _showCompactNavigation = !_showCompactNavigation;
@@ -435,7 +475,9 @@ class _EnhancedArtWalkExperienceScreenState
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('• Tap "Start Navigation" for turn-by-turn directions'),
+                      const Text(
+                        '• Tap "Start Navigation" for turn-by-turn directions',
+                      ),
                       const Text('• Follow the blue route line'),
                       const Text('• Tap markers to view art details'),
                       const Text('• Mark art as visited when you reach it'),
@@ -444,9 +486,14 @@ class _EnhancedArtWalkExperienceScreenState
                       const Text('• Red markers = not yet visited'),
                       if (_isNavigationMode) ...[
                         const SizedBox(height: 8),
-                        const Text('Navigation Mode:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Navigation Mode:',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         const Text('• Follow turn-by-turn instructions'),
-                        const Text('• Tap expand/collapse button to adjust navigation view'),
+                        const Text(
+                          '• Tap expand/collapse button to adjust navigation view',
+                        ),
                       ],
                     ],
                   ),
@@ -468,18 +515,21 @@ class _EnhancedArtWalkExperienceScreenState
           GoogleMap(
             onMapCreated: (controller) {
               _mapController = controller;
-              if (_artPieces.isNotEmpty) {
-                _centerOnFirstArt();
-              }
+              _centerOnUserLocation();
             },
             initialCameraPosition: CameraPosition(
-              target: _artPieces.isNotEmpty
+              target: _currentPosition != null
+                  ? LatLng(
+                      _currentPosition!.latitude,
+                      _currentPosition!.longitude,
+                    )
+                  : _artPieces.isNotEmpty
                   ? LatLng(
                       _artPieces[0].location.latitude,
                       _artPieces[0].location.longitude,
                     )
                   : const LatLng(35.5951, -82.5515),
-              zoom: 14.0,
+              zoom: 16.0,
             ),
             markers: _markers,
             polylines: _polylines,
@@ -553,7 +603,11 @@ class _EnhancedArtWalkExperienceScreenState
                         const SizedBox(height: 8),
                         const Row(
                           children: [
-                            Icon(Icons.check_circle, color: Colors.green, size: 16),
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 16,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Walk Completed! 🎉',
@@ -628,6 +682,26 @@ class _EnhancedArtWalkExperienceScreenState
           ),
         ],
       ),
+      floatingActionButton: _currentPosition != null
+          ? FloatingActionButton(
+              onPressed: _centerOnUserLocation,
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              tooltip: 'Center on my location',
+              child: const Icon(Icons.my_location),
+            )
+          : null,
+    );
+  }
+
+  void _centerOnUserLocation() {
+    if (_currentPosition == null || _mapController == null) return;
+
+    _mapController!.animateCamera(
+      CameraUpdate.newLatLngZoom(
+        LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+        16.0,
+      ),
     );
   }
 
@@ -636,7 +710,7 @@ class _EnhancedArtWalkExperienceScreenState
 
     final nextIndex = _getNextUnvisitedIndex();
     final targetArt = _artPieces[nextIndex];
-    
+
     _mapController!.animateCamera(
       CameraUpdate.newLatLngZoom(
         LatLng(targetArt.location.latitude, targetArt.location.longitude),

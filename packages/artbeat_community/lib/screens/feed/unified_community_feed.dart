@@ -361,7 +361,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     try {
       String shareText = '${post.content}\n\nShared from ARTbeat';
       if (post.imageUrls.isNotEmpty) {
-        shareText += '\n\nCheck out this artwork!';
+        shareText += '\n\nCheck out this post!';
       }
 
       await SharePlus.instance.share(ShareParams(text: shareText));
@@ -416,7 +416,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
       backgroundColor: ArtbeatColors.backgroundSecondary,
       body: Column(
         children: [
-          // Submit artwork button section (moved to proper position)
+          // Create post button section
           Container(
             color: ArtbeatColors.white,
             padding: const EdgeInsets.all(20),
@@ -424,8 +424,8 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _navigateToCreatePost,
-                icon: const Icon(Icons.add_photo_alternate_outlined),
-                label: const Text('Submit Artwork for Critique'),
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Create Post'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ArtbeatColors.primaryPurple,
                   foregroundColor: ArtbeatColors.white,
@@ -459,7 +459,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Loading artwork submissions...',
+              'Loading community posts...',
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: ArtbeatColors.textSecondary,
               ),
@@ -519,7 +519,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
               ),
               const SizedBox(height: 24),
               Text(
-                'No artwork submitted yet',
+                'No posts yet',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   color: ArtbeatColors.textPrimary,
                   fontWeight: FontWeight.bold,
@@ -527,7 +527,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Be the first to share your artwork and receive constructive feedback from fellow artists and art enthusiasts.',
+                'Be the first to share your creative work, thoughts, or art discoveries and connect with the community.',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   color: ArtbeatColors.textSecondary,
                   height: 1.5,
@@ -539,8 +539,8 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: _navigateToCreatePost,
-                  icon: const Icon(Icons.add_photo_alternate_outlined),
-                  label: const Text('Submit Your First Artwork'),
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Create Your First Post'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: ArtbeatColors.primaryPurple,
                     foregroundColor: ArtbeatColors.white,

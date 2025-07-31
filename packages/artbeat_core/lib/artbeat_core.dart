@@ -75,6 +75,7 @@ export 'src/utils/location_utils.dart' show LocationUtils;
 export 'src/utils/image_utils.dart' show ImageUtils;
 export 'src/utils/permission_utils.dart' show PermissionUtils;
 export 'src/utils/performance_monitor.dart' show PerformanceMonitor;
+export 'src/utils/env_loader.dart' show EnvLoader;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;

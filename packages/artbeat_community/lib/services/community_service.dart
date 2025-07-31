@@ -157,10 +157,11 @@ class CommunityService extends ChangeNotifier {
           .add({
             'userId': userId,
             'userName': userName,
-            'userPhotoUrl': userPhotoUrl,
+            'userAvatarUrl': userPhotoUrl, // Changed to match the model
             'content': content,
             'createdAt': FieldValue.serverTimestamp(),
-            'parentCommentId': parentCommentId,
+            'parentCommentId': parentCommentId ?? '',
+            'type': 'Appreciation', // Add default type
           });
 
       // Update the comment count on the post
@@ -171,6 +172,12 @@ class CommunityService extends ChangeNotifier {
       return commentRef.id;
     } catch (e) {
       debugPrint('Error adding comment: $e');
+      debugPrint('Error type: ${e.runtimeType}');
+      if (e.toString().contains('permission')) {
+        debugPrint('Permission error details: $e');
+        debugPrint('User ID: $userId');
+        debugPrint('Post ID: $postId');
+      }
       return null;
     }
   }
@@ -186,7 +193,6 @@ class CommunityService extends ChangeNotifier {
           .collection('posts')
           .doc(postId)
           .collection('comments')
-          .where('parentCommentId', isNull: true) // Get only top-level comments
           .orderBy('createdAt', descending: false) // Oldest first
           .limit(limit);
 
@@ -204,6 +210,9 @@ class CommunityService extends ChangeNotifier {
 
       return querySnapshot.docs
           .map((doc) => CommentModel.fromFirestore(doc))
+          .where(
+            (comment) => comment.parentCommentId.isEmpty,
+          ) // Filter top-level comments
           .toList();
     } catch (e) {
       debugPrint('Error getting comments: $e');

@@ -998,8 +998,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
                     ArtbeatColors.accentYellow,
                     ArtbeatColors.accentYellow.withValues(alpha: 0.7),
                   ],
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/events/dashboard'),
+                  onTap: () => Navigator.pushNamed(context, '/events/discover'),
                 ),
               ],
             ),

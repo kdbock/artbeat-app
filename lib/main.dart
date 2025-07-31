@@ -24,6 +24,7 @@ Future<void> main() async {
     final List<Future<void>> criticalInitializations = [
       ConfigService.instance.initialize(),
       MapsConfig.initialize(),
+      EnvLoader().init(),
     ];
 
     // Reset Firebase state on hot restart in debug mode

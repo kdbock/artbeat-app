@@ -9,13 +9,31 @@ class GiftController extends ChangeNotifier {
   List<GiftModel> _sentGifts = [];
   List<GiftModel> get sentGifts => _sentGifts;
 
-  Future<void> sendGift(GiftModel gift) async {
+  Future<void> sendGift(
+    GiftModel gift, {
+    String? paymentMethodId,
+    String? message,
+  }) async {
     try {
-      await _paymentService.processGiftPayment(gift);
+      // Get payment method ID if not provided
+      final paymentMethod =
+          paymentMethodId ?? await _paymentService.getDefaultPaymentMethodId();
+      if (paymentMethod == null) {
+        throw Exception(
+          'No payment method available. Please set up a payment method in your profile first.',
+        );
+      }
+
+      await _paymentService.processGiftPayment(
+        gift,
+        paymentMethodId: paymentMethod,
+        message: message,
+      );
       _sentGifts.add(gift);
       notifyListeners();
     } catch (e) {
       debugPrint('Error sending gift: $e');
+      rethrow;
     }
   }
 

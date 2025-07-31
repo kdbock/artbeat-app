@@ -1,32 +1,377 @@
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+import cors from 'cors';
+
+const stripe = require('stripe')(functions.config().stripe.secret_key);
+const corsHandler = cors({ origin: true });
+
+admin.initializeApp();
+
 /**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
+ * Create a new customer in Stripe
  */
+export const createCustomer = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
 
-import {setGlobalOptions} from "firebase-functions";
-import {onRequest} from "firebase-functions/https";
-import * as logger from "firebase-functions/logger";
+      const { email, userId } = request.body;
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+      if (!email || !userId) {
+        return response.status(400).send({ 
+          error: 'Missing required fields' 
+        });
+      }
 
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-setGlobalOptions({ maxInstances: 10 });
+      // Create customer
+      const customer = await stripe.customers.create({
+        email,
+        metadata: { 
+          userId,
+          firebaseUserId: userId,
+        },
+      });
 
-// export const helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+      // Return customer ID
+      response.status(200).send({
+        customerId: customer.id,
+        success: true,
+      });
+    } catch (error) {
+      console.error('Error creating customer:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Create a setup intent for adding payment methods
+ */
+export const createSetupIntent = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { customerId } = request.body;
+
+      if (!customerId) {
+        return response.status(400).send({ 
+          error: 'Missing customerId' 
+        });
+      }
+
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+      });
+
+      response.status(200).send({
+        clientSecret: setupIntent.client_secret,
+      });
+    } catch (error) {
+      console.error('Error creating setup intent:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Get customer's saved payment methods
+ */
+export const getPaymentMethods = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { customerId } = request.body;
+
+      if (!customerId) {
+        return response.status(400).send({ 
+          error: 'Missing customerId' 
+        });
+      }
+
+      const paymentMethods = await stripe.paymentMethods.list({
+        customer: customerId,
+        type: 'card',
+      });
+
+      response.status(200).send({
+        paymentMethods: paymentMethods.data,
+      });
+    } catch (error) {
+      console.error('Error getting payment methods:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Update customer (e.g., set default payment method)
+ */
+export const updateCustomer = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { customerId, defaultPaymentMethod } = request.body;
+
+      if (!customerId) {
+        return response.status(400).send({ 
+          error: 'Missing customerId' 
+        });
+      }
+
+      const customer = await stripe.customers.update(
+        customerId,
+        { 
+          invoice_settings: { 
+            default_payment_method: defaultPaymentMethod 
+          } 
+        }
+      );
+
+      response.status(200).send({
+        customer: customer.id,
+        success: true,
+      });
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Detach a payment method from a customer
+ */
+export const detachPaymentMethod = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { paymentMethodId } = request.body;
+
+      if (!paymentMethodId) {
+        return response.status(400).send({ 
+          error: 'Missing paymentMethodId' 
+        });
+      }
+
+      const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+
+      response.status(200).send({
+        paymentMethod: paymentMethod.id,
+        success: true,
+      });
+    } catch (error) {
+      console.error('Error detaching payment method:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Create subscription in Stripe
+ */
+export const createSubscription = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { customerId, priceId, userId } = request.body;
+
+      if (!customerId || !priceId || !userId) {
+        return response.status(400).send({ 
+          error: 'Missing required parameters' 
+        });
+      }
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+        metadata: {
+          userId,
+          firebaseUserId: userId,
+        },
+      });
+
+      // Return subscription details
+      response.status(200).send({
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        clientSecret: subscription.latest_invoice.payment_intent?.client_secret ?? '',
+      });
+    } catch (error) {
+      console.error('Error creating subscription:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Cancel subscription in Stripe
+ */
+export const cancelSubscription = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { subscriptionId } = request.body;
+
+      if (!subscriptionId) {
+        return response.status(400).send({ 
+          error: 'Missing subscription ID' 
+        });
+      }
+
+      // Cancel at period end to avoid immediate cancellation
+      const subscription = await stripe.subscriptions.update(
+        subscriptionId,
+        { cancel_at_period_end: true }
+      );
+
+      // Return cancellation details
+      response.status(200).send({
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      });
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Change subscription tier
+ */
+export const changeSubscriptionTier = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { subscriptionId, newPriceId, userId, prorated } = request.body;
+
+      if (!subscriptionId || !newPriceId || !userId) {
+        return response.status(400).send({ 
+          error: 'Missing required parameters' 
+        });
+      }
+
+      // Get current subscription to verify ownership
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      if (subscription.metadata.userId !== userId) {
+        return response.status(403).send({ 
+          error: 'Not authorized to modify this subscription' 
+        });
+      }
+
+      // Get subscription item ID
+      const subscriptionItemId = subscription.items.data[0].id;
+
+      // Update subscription with new price
+      const updatedSubscription = await stripe.subscriptions.update(
+        subscriptionId,
+        {
+          items: [
+            {
+              id: subscriptionItemId,
+              price: newPriceId,
+            },
+          ],
+          proration_behavior: prorated ? 'create_prorations' : 'none',
+          metadata: {
+            userId,
+            firebaseUserId: userId,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      );
+
+      response.status(200).send({
+        subscriptionId: updatedSubscription.id,
+        status: updatedSubscription.status,
+      });
+    } catch (error) {
+      console.error('Error changing subscription tier:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});
+
+/**
+ * Request a refund
+ */
+export const requestRefund = functions.https.onRequest((request, response) => {
+  return corsHandler(request, response, async () => {
+    try {
+      if (request.method !== 'POST') {
+        return response.status(405).send({ error: 'Method Not Allowed' });
+      }
+
+      const { paymentId, subscriptionId, userId, reason, additionalDetails } = request.body;
+
+      if (!paymentId || !subscriptionId || !userId || !reason) {
+        return response.status(400).send({ 
+          error: 'Missing required parameters' 
+        });
+      }
+
+      // Verify subscription ownership
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      if (subscription.metadata.userId !== userId) {
+        return response.status(403).send({ 
+          error: 'Not authorized to request refund for this subscription' 
+        });
+      }
+
+      // Create refund
+      const refund = await stripe.refunds.create({
+        payment_intent: paymentId,
+        metadata: {
+          userId,
+          subscriptionId,
+          reason,
+          additionalDetails: additionalDetails || '',
+        }
+      });
+
+      // Cancel subscription if active
+      if (['active', 'trialing'].includes(subscription.status)) {
+        await stripe.subscriptions.cancel(subscriptionId, {
+          invoice_now: false,
+          prorate: true,
+        });
+      }
+
+      response.status(200).send({
+        refundId: refund.id,
+        status: refund.status,
+      });
+    } catch (error) {
+      console.error('Error processing refund request:', error);
+      response.status(500).send({ error: (error as Error).message });
+    }
+  });
+});

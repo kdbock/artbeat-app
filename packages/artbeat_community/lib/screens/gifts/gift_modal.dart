@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart'; // Use the main package export for all core classes
+import '../../../controllers/gift_controller.dart';
 
 class GiftModal extends StatefulWidget {
   final String recipientId;
@@ -37,7 +38,9 @@ class _GiftModalState extends State<GiftModal> {
         createdAt: Timestamp.now(),
       );
 
-      await _paymentService.processGiftPayment(gift);
+      // Use the gift controller instead of calling payment service directly
+      final giftController = GiftController(_paymentService);
+      await giftController.sendGift(gift);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -49,10 +52,24 @@ class _GiftModalState extends State<GiftModal> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
+
+      String errorMessage = 'Failed to send gift: $e';
+
+      // Provide more user-friendly error messages
+      if (e.toString().contains('Payment service is not configured')) {
+        errorMessage =
+            'Payment service is temporarily unavailable. Please try again later.';
+      } else if (e.toString().contains('No payment method available')) {
+        errorMessage = 'Please set up a payment method in your profile first.';
+      } else if (e.toString().contains('User not authenticated')) {
+        errorMessage = 'Please log in to send gifts.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to send gift: $e'),
+          content: Text(errorMessage),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
         ),
       );
     }

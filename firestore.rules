@@ -27,6 +27,11 @@ service cloud.firestore {
          get(/databases/$(database)/documents/users/$(userId)).data.userType == 'gallery');
     }
 
+    // Allow admin access to everything first
+    match /{document=**} {
+      allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
     // User document rules
     match /users/{userId} {
       allow read: if isAuthenticated();
@@ -77,6 +82,24 @@ service cloud.firestore {
         allow read: if true;
         allow list: if true;
       }
+    }
+
+    // Artist Profiles collection rules
+    match /artistProfiles/{profileId} {
+      allow read: if true;
+      allow list: if true;
+      allow create: if isAuthenticated() && (
+        // Allow users to create their own artist profile (userId matches auth.uid)
+        request.auth.uid == request.resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        // Allow users to update their own artist profile or artists to update theirs
+        request.auth.uid == resource.data.userId ||
+        (isArtist(request.auth.uid) && request.auth.uid == resource.data.userId) ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAdmin(request.auth.uid);
     }
 
     // Chat rules
@@ -236,25 +259,40 @@ service cloud.firestore {
     // Posts and applause
     match /posts/{postId} {
       allow read: if true;
-      allow create: if isAuthenticated() && isContentCreator(request.auth.uid);
-      allow update: if isAuthenticated() && (
-        request.auth.uid == resource.data.userId && isContentCreator(request.auth.uid) ||
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applauseCount']) &&
-         request.resource.data.applauseCount >= resource.data.applauseCount) ||
-        isAdmin(request.auth.uid)
-      );
-      allow delete: if isAuthenticated() && (
-        request.auth.uid == resource.data.userId ||
-        isAdmin(request.auth.uid)
-      );
+      allow create: if isAuthenticated();
 
-      match /applause/{userId} {
+      match /comments/{commentId} {
         allow read: if true;
-        allow write: if isAuthenticated() && (
-          request.auth.uid == userId ||
+        allow create: if isAuthenticated() && (
+          request.auth.uid == request.resource.data.userId ||
           isAdmin(request.auth.uid)
         );
+        allow update, delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+
+        // Nested comment replies
+        match /comments/{replyId} {
+          allow read: if true;
+          allow create: if isAuthenticated() && (
+            request.auth.uid == request.resource.data.userId ||
+            isAdmin(request.auth.uid)
+          );
+          allow update, delete: if isAuthenticated() && (
+            request.auth.uid == resource.data.userId ||
+            isAdmin(request.auth.uid)
+          );
+        }
       }
+    }
+
+    // Developer feedback collection
+    match /developer_feedback/{feedbackId} {
+      allow read, list: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
     }
 
     // Admin collections

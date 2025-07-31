@@ -146,7 +146,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen>
                     _buildSearchOption(
                       icon: Icons.person_search,
                       title: 'Find Users',
-                      subtitle: 'Search for artists and creators',
+                      subtitle: 'Search for community members',
                       color: ArtbeatColors.primaryPurple,
                       onTap: () {
                         Navigator.pop(context);

@@ -42,6 +42,16 @@ service firebase.storage {
       allow write: if false; // Specific paths must explicitly allow write
     }
 
+    // Temporary very permissive rule for debugging artist profile uploads
+    match /profile/{allPaths=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Temporary very permissive rule for debugging artwork uploads
+    match /artwork/{allPaths=**} {
+      allow read, write: if isAuthenticated();
+    }
+
     // Root level files - for simple uploads during development
     match /{fileName} {
       allow read: if isAuthenticated();
@@ -153,6 +163,34 @@ service firebase.storage {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Enhanced Storage Service paths for profile images (very permissive for development)
+    match /profile/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated();
+    }
+
+    // Enhanced Storage Service paths for profile thumbnails
+    match /profile/thumbnails/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated();
+    }
+
+    // Enhanced Storage Service paths for artwork images (used for cover images)
+    match /artwork/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated();
+    }
+
+    // Enhanced Storage Service paths for artwork thumbnails
+    match /artwork/thumbnails/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated();
     }
 
     // Feedback images - for developer feedback system

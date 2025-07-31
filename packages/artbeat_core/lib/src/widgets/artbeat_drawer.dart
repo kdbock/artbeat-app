@@ -14,7 +14,7 @@ const Set<String> mainRoutes = {
   '/dashboard',
   '/community/feed',
   '/art-walk/map',
-  '/events/dashboard',
+  '/events/discover',
   '/profile',
   '/captures',
   '/artist/dashboard',

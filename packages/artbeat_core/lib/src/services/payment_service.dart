@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/subscription_tier.dart';
 import '../models/payment_method_model.dart';
 import '../models/gift_model.dart';
+import '../utils/env_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -19,6 +20,7 @@ class PaymentService {
 
   PaymentService._internal() {
     initializeDependencies();
+    _initializeStripe();
   }
 
   late final FirebaseAuth _auth;
@@ -38,6 +40,21 @@ class PaymentService {
     _httpClient = httpClient ?? http.Client();
   }
 
+  /// Initialize Stripe with publishable key
+  void _initializeStripe() {
+    try {
+      final publishableKey = EnvLoader().get('STRIPE_PUBLISHABLE_KEY');
+      if (publishableKey.isNotEmpty) {
+        Stripe.publishableKey = publishableKey;
+        debugPrint('✅ Stripe initialized with publishable key');
+      } else {
+        debugPrint('⚠️ Stripe publishable key not found in environment');
+      }
+    } catch (e) {
+      debugPrint('❌ Error initializing Stripe: $e');
+    }
+  }
+
   /// Create a new customer in Stripe
   Future<String> createCustomer({
     required String email,
@@ -50,17 +67,39 @@ class PaymentService {
       }
 
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/create-customer'),
+        Uri.parse('$_baseUrl/createCustomer'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email, 'name': name, 'userId': userId}),
+        body: json.encode({'email': email, 'userId': userId}),
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to create customer');
+        final errorBody = response.body;
+        debugPrint(
+          'Create customer error - Status: ${response.statusCode}, Body: $errorBody',
+        );
+
+        // Check if this is a configuration issue
+        if (response.statusCode == 500 && errorBody.contains('stripe')) {
+          throw Exception(
+            'Payment service is not configured. Please contact support or try again later.',
+          );
+        }
+
+        throw Exception(
+          'Failed to create customer: ${response.statusCode} - $errorBody',
+        );
       }
 
       final data = json.decode(response.body) as Map<String, dynamic>;
-      return data['customerId'] as String;
+      final customerId = data['customerId'] as String;
+
+      // Store customer ID in Firestore for immediate availability
+      await _firestore.collection('users').doc(userId).update({
+        'stripeCustomerId': customerId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return customerId;
     } catch (e) {
       debugPrint('Error creating customer: $e');
       rethrow;
@@ -71,7 +110,7 @@ class PaymentService {
   Future<String> createSetupIntent(String customerId) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/create-setup-intent'),
+        Uri.parse('$_baseUrl/createSetupIntent'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'customerId': customerId}),
       );
@@ -111,9 +150,10 @@ class PaymentService {
   /// Get customer's saved payment methods
   Future<List<PaymentMethodModel>> getPaymentMethods(String customerId) async {
     try {
-      final response = await _httpClient.get(
-        Uri.parse('$_baseUrl/payment-methods/$customerId'),
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/getPaymentMethods'),
         headers: {'Content-Type': 'application/json'},
+        body: json.encode({'customerId': customerId}),
       );
 
       if (response.statusCode != 200) {
@@ -141,7 +181,7 @@ class PaymentService {
   }) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/update-customer'),
+        Uri.parse('$_baseUrl/updateCustomer'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customerId': customerId,
@@ -166,7 +206,7 @@ class PaymentService {
   ) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/detach-payment-method'),
+        Uri.parse('$_baseUrl/detachPaymentMethod'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'paymentMethodId': paymentMethodId}),
       );
@@ -231,7 +271,7 @@ class PaymentService {
       }
 
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/request-refund'),
+        Uri.parse('$_baseUrl/requestRefund'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'paymentId': paymentId,
@@ -277,7 +317,7 @@ class PaymentService {
 
       final priceId = _getPriceIdForTier(newTier);
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/change-subscription-tier'),
+        Uri.parse('$_baseUrl/changeSubscriptionTier'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customerId': customerId,
@@ -311,7 +351,7 @@ class PaymentService {
   Future<Map<String, dynamic>> cancelSubscription(String subscriptionId) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/cancel-subscription'),
+        Uri.parse('$_baseUrl/cancelSubscription'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'subscriptionId': subscriptionId}),
       );
@@ -337,15 +377,16 @@ class PaymentService {
   }
 
   /// Process a gift payment and create gift record
-  Future<Map<String, dynamic>> processGiftPayment(GiftModel gift) async {
+  Future<Map<String, dynamic>> processGiftPayment(
+    GiftModel gift, {
+    required String paymentMethodId,
+    String? message,
+  }) async {
     try {
       final userId = _auth.currentUser?.uid;
       if (userId == null) {
         throw Exception('User not authenticated');
       }
-
-      // Get or create customer ID for sender
-      final customerId = await _getOrCreateCustomerId();
 
       // Process payment through Firebase Function
       final response = await _httpClient.post(
@@ -355,8 +396,9 @@ class PaymentService {
           'senderId': gift.senderId,
           'recipientId': gift.recipientId,
           'amount': gift.amount,
-          'customerId': customerId,
+          'paymentMethodId': paymentMethodId,
           'giftType': gift.giftType,
+          if (message != null) 'message': message,
         }),
       );
 
@@ -573,12 +615,19 @@ class PaymentService {
       throw Exception('User not authenticated');
     }
 
+    debugPrint('Getting or creating customer ID for user: $userId');
+
     // Check if customer ID already exists in Firestore
     final userDoc = await _firestore.collection('users').doc(userId).get();
     final data = userDoc.data();
-    if (userDoc.exists && data != null && data.containsKey('customerId')) {
-      final customerId = data['customerId'] as String?;
+    debugPrint('User document exists: ${userDoc.exists}, data: $data');
+
+    if (userDoc.exists &&
+        data != null &&
+        data.containsKey('stripeCustomerId')) {
+      final customerId = data['stripeCustomerId'] as String?;
       if (customerId != null) {
+        debugPrint('Found existing customer ID: $customerId');
         return customerId;
       }
     }
@@ -586,6 +635,22 @@ class PaymentService {
     // If not, create a new customer in Stripe
     final email = _auth.currentUser?.email ?? '';
     final name = _auth.currentUser?.displayName ?? '';
+    debugPrint('Creating new customer with email: $email, name: $name');
     return createCustomer(email: email, name: name);
+  }
+
+  /// Get the user's default payment method ID
+  Future<String?> getDefaultPaymentMethodId() async {
+    try {
+      final customerId = await _getOrCreateCustomerId();
+      final paymentMethods = await getPaymentMethods(customerId);
+
+      // Return the first payment method if available
+      // In a real app, you'd want to track which one is the default
+      return paymentMethods.isNotEmpty ? paymentMethods.first.id : null;
+    } catch (e) {
+      debugPrint('Error getting default payment method: $e');
+      return null;
+    }
   }
 }

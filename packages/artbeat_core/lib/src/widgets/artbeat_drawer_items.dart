@@ -92,9 +92,15 @@ class ArtbeatDrawerItems {
 
   // Events Section
   static const allEvents = ArtbeatDrawerItem(
-    title: 'All Events',
+    title: 'Discover Events',
+    icon: Icons.explore_outlined,
+    route: '/events/discover',
+  );
+
+  static const artistEvents = ArtbeatDrawerItem(
+    title: 'Artist Events',
     icon: Icons.event_outlined,
-    route: '/events/dashboard',
+    route: '/events/artist-dashboard',
   );
 
   static const myTickets = ArtbeatDrawerItem(
@@ -275,6 +281,7 @@ class ArtbeatDrawerItems {
 
   static List<ArtbeatDrawerItem> get eventsItems => [
     allEvents,
+    artistEvents,
     myTickets,
     createEvent,
     myEvents,

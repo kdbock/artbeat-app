@@ -469,8 +469,16 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/events':
-        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
+        return MaterialPageRoute(
+          builder: (_) => const UserEventsDashboardScreen(),
+        );
+      case '/events/discover':
+        return MaterialPageRoute(
+          builder: (_) => const UserEventsDashboardScreen(),
+        );
       case '/events/dashboard':
+        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
+      case '/events/artist-dashboard':
         return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/capture/dashboard':
         return MaterialPageRoute(

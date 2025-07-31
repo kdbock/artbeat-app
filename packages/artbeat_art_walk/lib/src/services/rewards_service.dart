@@ -463,13 +463,21 @@ class RewardsService {
   Future<void> _awardBadge(String userId, String badgeId) async {
     try {
       final userRef = _firestore.collection('users').doc(userId);
+      final userDoc = await userRef.get();
+      final badgesMap =
+          userDoc.data()?['badges'] as Map<String, dynamic>? ?? {};
 
-      await userRef.update({
-        'badges.$badgeId': {
-          'earnedAt': FieldValue.serverTimestamp(),
-          'viewed': false,
+      // Only award if not already present
+      if (badgesMap.containsKey(badgeId)) {
+        _logger.i('Badge $badgeId already awarded to user $userId');
+        return;
+      }
+
+      await userRef.set({
+        'badges': {
+          badgeId: {'earnedAt': FieldValue.serverTimestamp(), 'viewed': false},
         },
-      });
+      }, SetOptions(merge: true));
 
       _logger.i('Awarded badge $badgeId to user $userId');
     } catch (e) {

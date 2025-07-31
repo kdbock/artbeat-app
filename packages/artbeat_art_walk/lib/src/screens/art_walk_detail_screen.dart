@@ -287,7 +287,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
     Navigator.pushNamed(
       context,
-      '/art-walk/experience',
+      '/enhanced-art-walk-experience',
       arguments: {'artWalkId': _walk!.id, 'artWalk': _walk!},
     ).then((completed) {
       // If the walk was completed, refresh the state
@@ -522,19 +522,36 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
                         const SizedBox(height: 16),
 
-                        // Start art walk experience button
+                        // Start art walk with navigation button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             onPressed: _startNavigation,
-                            icon: const Icon(Icons.explore),
-                            label: const Text('Start Art Walk Experience'),
+                            icon: const Icon(Icons.navigation),
+                            label: const Text('Start Art Walk with Navigation'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Helper text
+                        Text(
+                          'Get turn-by-turn directions to each art piece',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            fontStyle: FontStyle.italic,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
 
                         // Complete art walk button (only show if not already completed)

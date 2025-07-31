@@ -54,10 +54,10 @@ class CritiqueCard extends StatelessWidget {
           // Artwork Section - Primary Focus
           if (post.imageUrls.isNotEmpty) _buildArtworkSection(),
 
-          // Artist Information - Minimal Header
+          // User Information - Minimal Header
           _buildArtistHeader(context, theme),
 
-          // Artwork Description
+          // Post Description
           if (post.content.isNotEmpty) _buildDescription(theme),
 
           // Tags
@@ -137,7 +137,7 @@ class CritiqueCard extends StatelessWidget {
 
     final displayName = post.userName.isNotEmpty
         ? '@${post.userName}'
-        : 'Unknown Artist';
+        : 'Unknown User';
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -295,7 +295,7 @@ class CritiqueCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Artist\'s Note',
+            'Post Description',
             style: theme.textTheme.labelLarge?.copyWith(
               color: ArtbeatColors.textSecondary,
               fontWeight: FontWeight.w600,
@@ -520,7 +520,8 @@ class CritiqueCard extends StatelessWidget {
     String avatarUrl = comment.userAvatarUrl;
     if (avatarUrl.isEmpty ||
         avatarUrl == 'placeholder_headshot_url' ||
-        !(avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://'))) {
+        !(avatarUrl.startsWith('http://') ||
+            avatarUrl.startsWith('https://'))) {
       avatarUrl = 'assets/default_profile.png';
     }
     return Row(

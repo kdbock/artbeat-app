@@ -56,7 +56,7 @@ class _MainLayoutState extends State<MainLayout> {
         case 4:
           Navigator.of(
             context,
-          ).pushNamedAndRemoveUntil('/events/dashboard', (route) => false);
+          ).pushNamedAndRemoveUntil('/events/discover', (route) => false);
           break;
         default:
           // Handle any other indices gracefully
