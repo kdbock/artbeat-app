@@ -75,7 +75,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         _artworkIds = List<String>.from(_artWalk!.artworkIds);
       }
     } catch (e) {
-      debugPrint('Error loading art walk: $e');
+      // debugPrint('Error loading art walk: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -102,7 +102,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      // debugPrint('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -195,7 +195,7 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
           Navigator.of(context).pop(true); // Return true to indicate deletion
         }
       } catch (e) {
-        debugPrint('Error deleting art walk: $e');
+        // debugPrint('Error deleting art walk: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error deleting art walk: $e')),
@@ -223,14 +223,14 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
           (selectedArtwork['id'] ?? selectedArtwork['artworkId'] ?? '')
               as String;
     } else {
-      debugPrint(
-        'Unsupported artwork selection type: ${selectedArtwork.runtimeType}',
-      );
+      // debugPrint(
+      //   'Unsupported artwork selection type: ${selectedArtwork.runtimeType}',
+      // );
       return;
     }
 
     if (artworkId.isEmpty) {
-      debugPrint('No artwork ID provided');
+      // debugPrint('No artwork ID provided');
       return;
     }
 

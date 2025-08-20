@@ -47,9 +47,19 @@ class AchievementsGrid extends StatelessWidget {
               Text(
                 'Complete art walks to earn achievements!',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/achievements/info');
+                },
+                icon: const Icon(Icons.info_outline, size: 18),
+                label: const Text('Learn More'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[200],
+                  foregroundColor: Colors.grey[700],
+                  elevation: 0,
                 ),
               ),
             ],

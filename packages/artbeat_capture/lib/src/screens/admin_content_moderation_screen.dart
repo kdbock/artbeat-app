@@ -393,9 +393,19 @@ class _AdminContentModerationScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const core.EnhancedUniversalHeader(
+      appBar: core.EnhancedUniversalHeader(
         title: 'Content Moderation',
         showLogo: false,
+        showBackButton: true,
+        onMenuPressed: () {
+          // Open the drawer if available
+          if (Scaffold.of(context).hasDrawer) {
+            Scaffold.of(context).openDrawer();
+          }
+        },
+        onBackPressed: () {
+          Navigator.of(context).pop();
+        },
       ),
       body: Column(
         children: [

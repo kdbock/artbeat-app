@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'group_models.dart';
 
 /// Model class for posts in the community feed
 class PostModel {
@@ -45,6 +46,26 @@ class PostModel {
     this.isUserVerified = false,
   });
 
+  /// Create from BaseGroupPost
+  factory PostModel.fromBaseGroupPost(BaseGroupPost post) {
+    return PostModel(
+      id: post.id,
+      userId: post.userId,
+      userName: post.userName,
+      userPhotoUrl: post.userPhotoUrl,
+      content: post.content,
+      imageUrls: post.imageUrls,
+      tags: post.tags, // tags map to tags
+      location: post.location,
+      createdAt: post.createdAt,
+      applauseCount: post.applauseCount, // applauseCount maps to applauseCount
+      commentCount: post.commentCount,
+      shareCount: post.shareCount,
+      isPublic: post.isPublic,
+      isUserVerified: post.isUserVerified,
+    );
+  }
+
   /// Create from Firestore document - newer convention
   factory PostModel.fromFirestore(DocumentSnapshot doc) {
     return PostModel.fromDocument(doc);
@@ -54,7 +75,7 @@ class PostModel {
   factory PostModel.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
 
-    return PostModel(
+    final result = PostModel(
       id: doc.id,
       userId: (data['userId'] as String?) ?? '',
       userName: (data['userName'] as String?) ?? '',
@@ -76,6 +97,8 @@ class PostModel {
       metadata: data['metadata'] as Map<String, dynamic>?,
       isUserVerified: (data['isUserVerified'] as bool?) ?? false,
     );
+
+    return result;
   }
 
   Map<String, dynamic> toFirestore() {

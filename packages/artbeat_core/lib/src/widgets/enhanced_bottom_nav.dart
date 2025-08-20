@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../theme/artbeat_colors.dart';
+import '../providers/community_provider.dart';
 
 /// Enhanced Bottom Navigation with improved accessibility and design
 ///
@@ -50,7 +52,7 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
   }
 
   void _initializeAnimations() {
-    final itemCount = _getDefaultItems().length;
+    const itemCount = 5; // Hard-coded to 5 navigation items
     _controllers = List.generate(
       itemCount,
       (index) => AnimationController(
@@ -97,7 +99,7 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
     super.dispose();
   }
 
-  List<BottomNavItem> _getDefaultItems() {
+  List<BottomNavItem> _getDefaultItems(BuildContext context) {
     return widget.items.isNotEmpty
         ? widget.items
         : [
@@ -124,12 +126,12 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
               isSpecial: true,
             ),
             // Index 3: Community (moved from index 2)
-            const BottomNavItem(
+            BottomNavItem(
               icon: Icons.people_outline_rounded,
               activeIcon: Icons.people_rounded,
               label: 'Community',
               semanticLabel: 'Community - Connect with other users',
-              badgeCount: 3,
+              badgeCount: context.watch<CommunityProvider>().unreadCount,
             ),
             // Index 4: Events (moved from index 3)
             const BottomNavItem(
@@ -143,7 +145,7 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
 
   @override
   Widget build(BuildContext context) {
-    final items = _getDefaultItems();
+    final items = _getDefaultItems(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -379,6 +381,11 @@ class _EnhancedBottomNavState extends State<EnhancedBottomNav>
 
   void _handleTap(int index) {
     HapticFeedback.lightImpact();
+
+    // Mark community as visited when tapping community tab
+    if (index == 3) {
+      context.read<CommunityProvider>().markCommunityAsVisited();
+    }
 
     // For all navigation items, trigger if not already selected
     if (index != widget.currentIndex) {

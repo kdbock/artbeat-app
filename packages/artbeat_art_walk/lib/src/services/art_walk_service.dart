@@ -11,16 +11,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 // Core package imports with prefix
-import 'package:artbeat_core/src/services/achievement_service.dart' as core;
-import 'package:artbeat_core/src/models/achievement_type.dart' as core;
 import 'package:artbeat_core/src/services/connectivity_service.dart';
 
 // Local imports
 import '../models/public_art_model.dart';
 import '../models/art_walk_model.dart';
 import '../models/comment_model.dart';
+import '../models/achievement_model.dart';
 import '../services/art_walk_cache_service.dart';
 import '../services/rewards_service.dart';
+import '../services/achievement_service.dart';
 
 /// Service for managing Art Walks and Public Art
 class ArtWalkService {
@@ -44,8 +44,8 @@ class ArtWalkService {
   /// Instance of RewardsService for XP and achievements
   final RewardsService _rewardsService = RewardsService();
 
-  /// Instance of achievement service from core package
-  final core.AchievementService _achievementService = core.AchievementService();
+  /// Instance of achievement service from art walk package
+  final AchievementService _achievementService = AchievementService();
 
   /// Collection reference for captured art
   final CollectionReference _capturesCollection = FirebaseFirestore.instance
@@ -1040,21 +1040,41 @@ class ArtWalkService {
     }
 
     try {
-      // Add completion record
+      final completionData = {
+        'userId': userId,
+        'artWalkId': artWalkId,
+        'completedAt': FieldValue.serverTimestamp(),
+      };
+
+      // Store completion in art walk's subcollection (for analytics)
       await _artWalksCollection
           .doc(artWalkId)
           .collection('completions')
           .doc(userId)
-          .set({'userId': userId, 'completedAt': FieldValue.serverTimestamp()});
+          .set(completionData);
+
+      // Store completion in user's subcollection (for achievements)
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('completedWalks')
+          .doc(artWalkId)
+          .set(completionData);
+
+      // Increment art walk completion count
+      await _artWalksCollection.doc(artWalkId).update({
+        'completionCount': FieldValue.increment(1),
+      });
 
       // Award XP for completion
       await _rewardsService.awardXP('art_walk_completion');
 
-      // Achievements are automatically checked when XP is awarded
-
-      // Update user achievements (legacy method)
+      // Update user achievements - this should now work correctly
       await _updateUserAchievements(userId);
 
+      _logger.i(
+        'Successfully recorded art walk completion for user $userId, walk $artWalkId',
+      );
       return true;
     } catch (e) {
       _logger.e('Error recording art walk completion: $e');
@@ -1137,25 +1157,25 @@ class ArtWalkService {
       // Check achievements
       if (completionCount >= 1) {
         await _achievementService.awardAchievement(
-          core.AchievementType.firstWalk,
-          'First Art Walk',
-          'Completed your first art walk!',
+          userId,
+          AchievementType.firstWalk,
+          {'walkCount': completionCount},
         );
       }
 
       if (completionCount >= 5) {
         await _achievementService.awardAchievement(
-          core.AchievementType.explorer,
-          'Art Walk Explorer',
-          'Completed 5 different art walks',
+          userId,
+          AchievementType.walkExplorer,
+          {'walkCount': completionCount},
         );
       }
 
-      if (completionCount >= 10) {
+      if (completionCount >= 20) {
         await _achievementService.awardAchievement(
-          core.AchievementType.master,
-          'Art Walk Master',
-          'Completed 10 different art walks',
+          userId,
+          AchievementType.walkMaster,
+          {'walkCount': completionCount},
         );
       }
     } on FirebaseException catch (e) {
@@ -1168,6 +1188,68 @@ class ArtWalkService {
       }
     } catch (e) {
       _logger.e('Error updating achievements: $e');
+    }
+  }
+
+  /// Check and award capture-related achievements
+  Future<void> checkCaptureAchievements(String userId) async {
+    try {
+      // Get user's capture count
+      final captureSnapshot = await _firestore
+          .collection('captures')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final captureCount = captureSnapshot.size;
+
+      // Get user's public capture count (contributions)
+      final publicCaptureSnapshot = await _firestore
+          .collection('captures')
+          .where('userId', isEqualTo: userId)
+          .where('isPublic', isEqualTo: true)
+          .get();
+
+      final publicCaptureCount = publicCaptureSnapshot.size;
+
+      _logger.i(
+        'User $userId has $captureCount total captures, $publicCaptureCount public',
+      );
+
+      // Art Collector achievements (viewing/capturing art)
+      if (captureCount >= 10) {
+        await _achievementService.awardAchievement(
+          userId,
+          AchievementType.artCollector,
+          {'captureCount': captureCount},
+        );
+      }
+
+      if (captureCount >= 50) {
+        await _achievementService.awardAchievement(
+          userId,
+          AchievementType.artExpert,
+          {'captureCount': captureCount},
+        );
+      }
+
+      // Photographer achievements (adding public art)
+      if (publicCaptureCount >= 5) {
+        await _achievementService.awardAchievement(
+          userId,
+          AchievementType.photographer,
+          {'publicCaptureCount': publicCaptureCount},
+        );
+      }
+
+      if (publicCaptureCount >= 20) {
+        await _achievementService.awardAchievement(
+          userId,
+          AchievementType.contributor,
+          {'publicCaptureCount': publicCaptureCount},
+        );
+      }
+    } catch (e) {
+      _logger.e('Error checking capture achievements: $e');
     }
   }
 

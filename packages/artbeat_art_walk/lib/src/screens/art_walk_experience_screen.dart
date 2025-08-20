@@ -132,7 +132,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
         _currentPosition = position;
       });
     } catch (e) {
-      debugPrint('Error getting current location: $e');
+      // debugPrint('Error getting current location: $e');
     }
   }
 
@@ -143,7 +143,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
         _artPieces = artPieces;
       });
     } catch (e) {
-      debugPrint('Error loading art pieces: $e');
+      // debugPrint('Error loading art pieces: $e');
     }
   }
 
@@ -158,7 +158,7 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
             _visitedArtIds.length == _artPieces.length && _artPieces.isNotEmpty;
       });
     } catch (e) {
-      debugPrint('Error loading visited art: $e');
+      // debugPrint('Error loading visited art: $e');
     }
   }
 

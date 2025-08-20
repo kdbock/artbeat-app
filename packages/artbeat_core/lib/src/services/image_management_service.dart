@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:collection';
+import '../widgets/secure_network_image.dart';
 
 /// Comprehensive image management service to prevent buffer overflow
 /// and optimize image loading across the app
@@ -44,7 +45,7 @@ class ImageManagementService {
     debugPrint('💾 Cache duration: ${cacheDuration.inDays} days');
   }
 
-  /// Get an optimized image widget with proper buffer management
+  /// Get an optimized image widget with proper buffer management and Firebase Storage auth
   Widget getOptimizedImage({
     required String imageUrl,
     double? width,
@@ -56,6 +57,7 @@ class ImageManagementService {
     Widget? errorWidget,
     bool enableMemoryCache = true,
     bool enableDiskCache = true,
+    bool useSecureLoading = true,
   }) {
     // Determine optimal dimensions
     int? memCacheWidth;
@@ -79,6 +81,36 @@ class ImageManagementService {
       } else {
         memCacheHeight = thumbnailSize; // fallback
       }
+    }
+
+    // Guard against invalid URLs that crash CachedNetworkImage
+    final uri = Uri.tryParse(imageUrl);
+    final isValidNetworkUrl =
+        uri != null && uri.hasScheme && uri.host.isNotEmpty;
+
+    if (!isValidNetworkUrl) {
+      // Fallback placeholder/error container without network call
+      return Container(
+        width: width,
+        height: height,
+        color: Colors.grey[200],
+        child: errorWidget ?? _buildErrorWidget(width, height),
+      );
+    }
+
+    // Use secure loading for Firebase Storage URLs or when explicitly requested
+    final isFirebaseStorageUrl = imageUrl.contains(
+      'firebasestorage.googleapis.com',
+    );
+    if (useSecureLoading && isFirebaseStorageUrl) {
+      return SecureNetworkImage(
+        imageUrl: imageUrl,
+        width: width,
+        height: height,
+        fit: fit,
+        placeholder: placeholder ?? _buildPlaceholder(width, height),
+        errorWidget: errorWidget ?? _buildErrorWidget(width, height),
+      );
     }
 
     return CachedNetworkImage(

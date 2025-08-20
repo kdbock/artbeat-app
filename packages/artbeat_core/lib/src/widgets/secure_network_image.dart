@@ -1,0 +1,280 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:flutter/foundation.dart';
+
+/// A secure network image widget that handles Firebase Storage authentication
+/// and App Check token issues gracefully
+class SecureNetworkImage extends StatefulWidget {
+  final String imageUrl;
+  final double? width;
+  final double? height;
+  final BoxFit? fit;
+  final Widget? placeholder;
+  final Widget? errorWidget;
+  final BorderRadius? borderRadius;
+  final bool enableRetry;
+  final int maxRetries;
+
+  const SecureNetworkImage({
+    super.key,
+    required this.imageUrl,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.placeholder,
+    this.errorWidget,
+    this.borderRadius,
+    this.enableRetry = true,
+    this.maxRetries = 3,
+  });
+
+  @override
+  State<SecureNetworkImage> createState() => _SecureNetworkImageState();
+}
+
+class _SecureNetworkImageState extends State<SecureNetworkImage> {
+  int _retryCount = 0;
+  bool _isRetrying = false;
+  String? _authenticatedUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _authenticatedUrl = widget.imageUrl;
+  }
+
+  /// Attempts to refresh authentication tokens and retry loading
+  Future<void> _retryWithFreshTokens() async {
+    if (_isRetrying || _retryCount >= widget.maxRetries) return;
+
+    setState(() {
+      _isRetrying = true;
+    });
+
+    try {
+      // Refresh Firebase Auth token
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.getIdToken(true); // Force refresh
+        if (kDebugMode) {
+          print('🔄 Refreshed Firebase Auth token for image retry');
+        }
+      }
+
+      // Refresh App Check token
+      try {
+        await FirebaseAppCheck.instance.getToken(true); // Force refresh
+        if (kDebugMode) {
+          print('🔄 Refreshed App Check token for image retry');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ Could not refresh App Check token: $e');
+        }
+      }
+
+      // Add a small delay to allow tokens to propagate
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+
+      _retryCount++;
+
+      // Force widget rebuild with fresh tokens
+      setState(() {
+        _authenticatedUrl =
+            '${widget.imageUrl}?retry=$_retryCount&t=${DateTime.now().millisecondsSinceEpoch}';
+        _isRetrying = false;
+      });
+
+      if (kDebugMode) {
+        print(
+          '🔄 Retrying image load (attempt $_retryCount/${widget.maxRetries}): ${widget.imageUrl}',
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error during token refresh: $e');
+      }
+      setState(() {
+        _isRetrying = false;
+      });
+    }
+  }
+
+  Widget _buildErrorWidget(
+    BuildContext context,
+    Object error,
+    StackTrace? stackTrace,
+  ) {
+    final isAuthError =
+        error.toString().contains('403') ||
+        error.toString().contains('HTTP request failed, statusCode: 403');
+
+    final is404Error =
+        error.toString().contains('404') ||
+        error.toString().contains('HTTP request failed, statusCode: 404');
+
+    if (kDebugMode) {
+      print('❌ SecureNetworkImage error for ${widget.imageUrl}: $error');
+    }
+
+    // Custom error widget or default
+    Widget errorChild =
+        widget.errorWidget ??
+        Container(
+          color: Colors.grey[300],
+          child: const Icon(Icons.broken_image, color: Colors.grey, size: 48),
+        );
+
+    // If it's a 404 error, show a "missing image" icon instead of retrying
+    if (is404Error) {
+      errorChild = Container(
+        color: Colors.grey[100],
+        child: const Icon(
+          Icons.image_not_supported,
+          color: Colors.grey,
+          size: 32,
+        ),
+      );
+    }
+    // If it's an auth error and retry is enabled, show retry button
+    else if (isAuthError &&
+        widget.enableRetry &&
+        _retryCount < widget.maxRetries &&
+        !_isRetrying) {
+      errorChild = Container(
+        color: Colors.grey[200],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.refresh, color: Colors.grey, size: 32),
+            const SizedBox(height: 8),
+            Text(
+              'Tap to retry',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap:
+          isAuthError &&
+              widget.enableRetry &&
+              _retryCount < widget.maxRetries &&
+              !_isRetrying
+          ? _retryWithFreshTokens
+          : null,
+      child: errorChild,
+    );
+  }
+
+  Widget _buildPlaceholder(BuildContext context, String url) {
+    if (_isRetrying) {
+      return Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    return widget.placeholder ??
+        Container(
+          color: Colors.grey[200],
+          child: const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Validate URL
+    final uri = Uri.tryParse(_authenticatedUrl ?? widget.imageUrl);
+    final isValidUrl = uri != null && uri.hasScheme && uri.host.isNotEmpty;
+
+    if (!isValidUrl) {
+      return _buildErrorWidget(context, 'Invalid URL', null);
+    }
+
+    Widget imageWidget = CachedNetworkImage(
+      imageUrl: _authenticatedUrl ?? widget.imageUrl,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      placeholder: _buildPlaceholder,
+      errorWidget: (context, url, error) {
+        // Catch and handle the error to prevent it from bubbling up
+        try {
+          return _buildErrorWidget(context, error, null);
+        } catch (e) {
+          // Fallback error widget if even error handling fails
+          return Container(
+            width: widget.width,
+            height: widget.height,
+            color: Colors.grey[300],
+            child: const Icon(Icons.image_not_supported, color: Colors.grey),
+          );
+        }
+      },
+      // Add headers for Firebase Storage
+      httpHeaders: const {'Cache-Control': 'no-cache'},
+      // Disable throwing on error to prevent app crashes
+      errorListener: (error) {
+        if (kDebugMode) {
+          print('🔇 CachedNetworkImage error suppressed: $error');
+        }
+      },
+    );
+
+    // Apply border radius if specified
+    if (widget.borderRadius != null) {
+      imageWidget = ClipRRect(
+        borderRadius: widget.borderRadius!,
+        child: imageWidget,
+      );
+    }
+
+    return imageWidget;
+  }
+}
+
+/// Extension to easily replace Image.network calls
+extension SecureImageExtension on Image {
+  static Widget secureNetwork(
+    String src, {
+    Key? key,
+    double? width,
+    double? height,
+    BoxFit? fit,
+    Widget? placeholder,
+    Widget? errorWidget,
+    BorderRadius? borderRadius,
+    bool enableRetry = true,
+    int maxRetries = 3,
+  }) {
+    return SecureNetworkImage(
+      key: key,
+      imageUrl: src,
+      width: width,
+      height: height,
+      fit: fit,
+      placeholder: placeholder,
+      errorWidget: errorWidget,
+      borderRadius: borderRadius,
+      enableRetry: enableRetry,
+      maxRetries: maxRetries,
+    );
+  }
+}

@@ -41,8 +41,10 @@ class ArtWalkHeader extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _ArtWalkHeaderState extends State<ArtWalkHeader> {
-  static const Color _headerColor = Color(0xFF7075E7); // Art Walk header color
-  static const Color _iconTextColor = Color(0xFF00BF63); // Text/Icon color
+  static const Color _headerColor = Color(
+    0xFF00838F,
+  ); // Art Walk header color - matches Welcome Travel user box teal
+  static const Color _iconTextColor = Colors.white; // Text/Icon color
 
   @override
   Widget build(BuildContext context) {

@@ -2,11 +2,21 @@
 // Script to get App Check debug token for Firebase Console configuration
 
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:logging/logging.dart';
 
 Future<void> main() async {
-  print('🔐 Getting App Check Debug Token...\n');
+  // Initialize Flutter bindings first
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final log = Logger('AppCheckTokenScript');
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) {
+    // Print log messages to the console
+    stdout.writeln('[${record.level.name}] ${record.time}: ${record.message}');
+  });
+  log.info('🔐 Getting App Check Debug Token...\n');
 
   try {
     // Initialize Firebase with debug mode
@@ -15,41 +25,42 @@ Future<void> main() async {
       debug: true,
     );
 
-    print('✅ Firebase initialized successfully');
+    log.info('✅ Firebase initialized successfully');
 
     // Wait a moment for App Check to fully initialize
-    await Future.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
 
     // Get the debug token
     final token = await SecureFirebaseConfig.getAppCheckDebugToken();
 
     if (token != null) {
-      print('\n🎉 SUCCESS! Your App Check Debug Token:');
-      print('=' * 60);
-      print(token);
-      print('=' * 60);
-      print('\n📋 NEXT STEPS:');
-      print('1. Copy the token above');
-      print('2. Go to Firebase Console → App Check');
-      print('3. Click on your app (com.wordnerd.artbeat)');
-      print('4. Go to "Debug tokens" tab');
-      print('5. Click "Add debug token"');
-      print('6. Paste the token and save');
-      print('7. Update your .env file:');
-      print('   FIREBASE_APP_CHECK_DEBUG_TOKEN=$token');
+      log.info('\n🎉 SUCCESS! Your App Check Debug Token:');
+      log.info('=' * 60);
+      log.info(token);
+      log.info('=' * 60);
+      log.info('\n📋 NEXT STEPS:');
+      log.info('1. Copy the token above');
+      log.info('2. Go to Firebase Console → App Check');
+      log.info('3. Click on your app (com.wordnerd.artbeat)');
+      log.info('4. Go to "Debug tokens" tab');
+      log.info('5. Click "Add debug token"');
+      log.info('6. Paste the token and save');
+      log.info('7. Update your .env file:');
+      log.info('   FIREBASE_APP_CHECK_DEBUG_TOKEN=$token');
     } else {
-      print('❌ Failed to get debug token');
+      log.severe('❌ Failed to get debug token');
 
       // Try validation
       final validation = await SecureFirebaseConfig.validateAppCheck();
-      print('\n🔍 App Check Status:');
+      log.info('\n🔍 App Check Status:');
       validation.forEach((key, value) {
-        print('  $key: $value');
+        log.info('  $key: $value');
       });
     }
   } catch (e, stackTrace) {
-    print('❌ Error: $e');
-    print('Stack trace: $stackTrace');
+    final log = Logger('AppCheckTokenScript');
+    log.severe('❌ Error: $e');
+    log.severe('Stack trace: $stackTrace');
   }
 
   exit(0);

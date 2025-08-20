@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show UserType, SubscriptionTier, ArtistProfileModel, UserAvatar, EnhancedUniversalHeader;
+    show
+        UserType,
+        SubscriptionTier,
+        ArtistProfileModel,
+        UserAvatar,
+        EnhancedUniversalHeader;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
@@ -39,8 +44,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   }
 
   Future<void> _loadArtistProfile() async {
-    debugPrint(
-        '🎨 ArtistPublicProfileScreen: Loading profile for userId: ${widget.userId}');
+    // Loading artist profile
     setState(() {
       _isLoading = true;
     });
@@ -48,19 +52,16 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     try {
       // Get current user ID
       _currentUserId = _subscriptionService.getCurrentUserId();
-      debugPrint(
-          '👤 ArtistPublicProfileScreen: Current user ID: $_currentUserId');
+      // Current user ID retrieved
 
       // Get artist profile by user ID
       final artistProfile =
           await _subscriptionService.getArtistProfileByUserId(widget.userId);
 
-      debugPrint(
-          '📄 ArtistPublicProfileScreen: Artist profile result: ${artistProfile != null ? 'Found ${artistProfile.displayName}' : 'Not found'}');
+      // Artist profile query completed
 
       if (artistProfile == null) {
-        debugPrint(
-            '❌ ArtistPublicProfileScreen: No artist profile found, showing error');
+        // No artist profile found
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Artist profile not found')),
@@ -77,13 +78,13 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
       );
 
       // Get artist's artwork using the artist profile document ID
-      debugPrint(
-          '🔍 ArtistPublicProfileScreen: About to query artwork with artistProfileId: ${artistProfile.id}');
+      // debugPrint(
+      //     '🔍 ArtistPublicProfileScreen: About to query artwork with artistProfileId: ${artistProfile.id}');
       final artwork =
           await _artworkService.getArtworkByArtistProfileId(artistProfile.id);
 
-      debugPrint(
-          '🖼️ ArtistPublicProfileScreen: Found ${artwork.length} artworks');
+      // debugPrint(
+      //     '🖼️ ArtistPublicProfileScreen: Found ${artwork.length} artworks');
 
       // Check if current user is following this artist
       bool isFollowing = false;
@@ -91,8 +92,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
         isFollowing = await _subscriptionService.isFollowingArtist(
           artistProfileId: artistProfile.id,
         );
-        debugPrint(
-            '👥 ArtistPublicProfileScreen: Following status: $isFollowing');
+        // debugPrint(
+        //     '👥 ArtistPublicProfileScreen: Following status: $isFollowing');
       }
 
       if (mounted) {
@@ -103,11 +104,11 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
           _isFollowing = isFollowing;
           _isLoading = false;
         });
-        debugPrint(
-            '✅ ArtistPublicProfileScreen: Successfully loaded profile UI');
+        // debugPrint(
+        //     '✅ ArtistPublicProfileScreen: Successfully loaded profile UI');
       }
     } catch (e) {
-      debugPrint('❌ ArtistPublicProfileScreen: Error loading profile: $e');
+      // debugPrint('❌ ArtistPublicProfileScreen: Error loading profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading artist profile: $e')),

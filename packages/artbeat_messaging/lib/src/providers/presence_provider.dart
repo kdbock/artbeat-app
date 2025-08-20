@@ -39,6 +39,11 @@ class PresenceProvider extends ChangeNotifier {
     return _presenceService.getUserLastSeen(userId);
   }
 
+  /// Force immediate presence update and debug check (for testing)
+  Future<void> forcePresenceUpdate() async {
+    await _presenceService.forcePresenceUpdate();
+  }
+
   @override
   void dispose() {
     debugPrint('PresenceProvider: Disposing');

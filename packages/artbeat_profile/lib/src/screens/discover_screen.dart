@@ -52,7 +52,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         _loadNearbyContent(),
       ]);
     } catch (e) {
-      debugPrint('Error loading initial content: $e');
+      // debugPrint('Error loading initial content: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -73,7 +73,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         _loadNearbyPosts(point),
       ]);
     } catch (e) {
-      debugPrint('Error loading nearby content: $e');
+      // debugPrint('Error loading nearby content: $e');
     }
   }
 
@@ -119,7 +119,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         );
       }).toList();
     } catch (e) {
-      debugPrint('Error loading nearby users: $e');
+      // debugPrint('Error loading nearby users: $e');
       return [];
     }
   }
@@ -162,7 +162,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         );
       }).toList();
     } catch (e) {
-      debugPrint('Error loading nearby artists: $e');
+      // debugPrint('Error loading nearby artists: $e');
       return [];
     }
   }
@@ -210,7 +210,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         );
       }).toList();
     } catch (e) {
-      debugPrint('Error loading nearby artworks: $e');
+      // debugPrint('Error loading nearby artworks: $e');
       return [];
     }
   }
@@ -246,7 +246,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         );
       }).toList();
     } catch (e) {
-      debugPrint('Error loading nearby events: $e');
+      // debugPrint('Error loading nearby events: $e');
       return [];
     }
   }
@@ -302,7 +302,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
       return posts;
     } catch (e) {
-      debugPrint('Error loading nearby posts: $e');
+      // debugPrint('Error loading nearby posts: $e');
       return [];
     }
   }
@@ -325,7 +325,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     } catch (e) {
       if (!mounted) return;
 
-      debugPrint('Error loading suggested users: ${e.toString()}');
+      // debugPrint('Error loading suggested users: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Unable to load suggested users. You may be offline.'),
@@ -375,7 +375,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     } catch (e) {
       if (!mounted) return;
 
-      debugPrint('Error loading featured artists: ${e.toString()}');
+      // debugPrint('Error loading featured artists: ${e.toString()}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Unable to load featured artists. You may be offline.'),

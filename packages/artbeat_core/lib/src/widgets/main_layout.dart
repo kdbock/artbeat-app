@@ -73,10 +73,12 @@ class _MainLayoutState extends State<MainLayout> {
       drawer: widget.drawer,
       endDrawer: widget.endDrawer,
       body: widget.child,
-      bottomNavigationBar: EnhancedBottomNav(
-        currentIndex: widget.currentIndex,
-        onTap: _handleNavigation,
-      ),
+      bottomNavigationBar: widget.currentIndex == -1
+          ? null
+          : EnhancedBottomNav(
+              currentIndex: widget.currentIndex,
+              onTap: _handleNavigation,
+            ),
     );
   }
 }

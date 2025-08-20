@@ -61,20 +61,14 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkAuthAndNavigate() async {
     // Prevent multiple navigation calls
     if (_hasNavigated) {
-      debugPrint('🔄 Splash: Already navigated, skipping...');
       return;
     }
-
-    if (kDebugMode) debugPrint('🔄 Splash: Starting auth check...');
     // Reduced delay for faster startup - just enough for smooth animation
     await Future<void>.delayed(const Duration(milliseconds: 200));
     if (!mounted || _hasNavigated) return;
 
     try {
-      if (kDebugMode) debugPrint('🔥 Splash: Checking Firebase apps...');
       if (Firebase.apps.isEmpty) {
-        if (kDebugMode)
-          debugPrint('❌ Splash: No Firebase apps found, going to login');
         if (!mounted || _hasNavigated) return;
         _hasNavigated = true;
         Navigator.of(
@@ -83,18 +77,14 @@ class _SplashScreenState extends State<SplashScreen>
         return;
       }
 
-      debugPrint('✅ Splash: Firebase apps available (${Firebase.apps.length})');
       final user = FirebaseAuth.instance.currentUser;
-      debugPrint('👤 Splash: Current user: ${user?.uid ?? 'None'}');
 
       if (user != null) {
-        debugPrint('🔄 Splash: Starting user sync...');
         _syncUserInBackground();
       }
 
       FocusScope.of(context).unfocus();
       final route = user != null ? '/dashboard' : '/login';
-      if (kDebugMode) debugPrint('🧭 Splash: Navigating to $route');
 
       // Start dashboard navigation timing
       if (route == '/dashboard') {
@@ -108,9 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
         route,
         (Route<dynamic> route) => false, // Remove all previous routes
       );
-      debugPrint('✅ Splash: Navigation command sent');
     } catch (e) {
-      debugPrint('❌ Splash: Error checking auth status: $e');
       if (!mounted || _hasNavigated) return;
       _hasNavigated = true;
       // Dismiss keyboard before navigating
@@ -118,7 +106,6 @@ class _SplashScreenState extends State<SplashScreen>
       Navigator.of(
         context,
       ).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
-      debugPrint('🔄 Splash: Fallback navigation to login sent');
     }
   }
 

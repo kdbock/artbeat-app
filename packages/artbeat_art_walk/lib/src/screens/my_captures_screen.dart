@@ -47,9 +47,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
       }
 
       final captures = await _captureService.getCapturesForUser(user!.uid);
-      debugPrint(
-        '📸 Loaded ${captures.length} captures for user in my_captures_screen',
-      );
+      // debugPrint('📸 Loaded ${captures.length} captures for user in my_captures_screen');
       if (mounted) {
         setState(() {
           _captures = captures;
@@ -57,7 +55,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
         });
       }
     } catch (e) {
-      debugPrint('Error loading captures: $e');
+      // debugPrint('Error loading captures: $e');
       if (mounted) {
         setState(() {
           _captures = [];

@@ -61,7 +61,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
         });
       }
     } catch (e) {
-      debugPrint('Error determining user region: $e');
+      // debugPrint('Error determining user region: $e');
     }
   }
 
@@ -263,65 +263,87 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Art Walks'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'My Walks'),
-            Tab(text: 'Popular'),
-            Tab(text: 'NC Regions'),
-          ],
-        ),
+      appBar: ArtWalkHeader(
+        title: 'Art Walks',
+        showSearch: true,
+        showChat: true,
+        showDeveloper: false,
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadArtWalks),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
+      body: Column(
+        children: [
+          // Tab Bar
+          Container(
+            color: const Color(
+              0xFF00838F,
+            ), // Art Walk header color - matches Welcome Travel user box teal
+            child: TabBar(
               controller: _tabController,
-              children: [
-                // My Walks Tab
-                Column(
-                  children: [
-                    if (_myWalks.isEmpty)
-                      _buildEmptyState(
-                        'You haven\'t created any art walks yet',
-                        'Create a walk to organize and share your favorite public art',
-                      )
-                    else
-                      Expanded(
-                        child: _buildWalksList(_myWalks, isMyWalks: true),
-                      ),
-
-                    // NC Regions promo banner
-                    _buildNCRegionsBanner(),
-                  ],
-                ),
-
-                // Popular Walks Tab
-                Column(
-                  children: [
-                    if (_popularWalks.isEmpty)
-                      _buildEmptyState(
-                        'No popular walks found',
-                        'Be the first to create and share an art walk',
-                      )
-                    else
-                      Expanded(
-                        child: _buildWalksList(_popularWalks, isMyWalks: false),
-                      ),
-
-                    // NC Regions promo banner
-                    _buildNCRegionsBanner(),
-                  ],
-                ),
-
-                // NC Regions Tab
-                _buildNCRegionsTab(),
+              indicatorColor: Colors.white, // Text/Icon color
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              tabs: const [
+                Tab(text: 'My Walks'),
+                Tab(text: 'Popular'),
+                Tab(text: 'NC Regions'),
               ],
             ),
+          ),
+          // Tab Bar View
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // My Walks Tab
+                      Column(
+                        children: [
+                          if (_myWalks.isEmpty)
+                            _buildEmptyState(
+                              'You haven\'t created any art walks yet',
+                              'Create a walk to organize and share your favorite public art',
+                            )
+                          else
+                            Expanded(
+                              child: _buildWalksList(_myWalks, isMyWalks: true),
+                            ),
+
+                          // NC Regions promo banner
+                          _buildNCRegionsBanner(),
+                        ],
+                      ),
+
+                      // Popular Walks Tab
+                      Column(
+                        children: [
+                          if (_popularWalks.isEmpty)
+                            _buildEmptyState(
+                              'No popular walks found',
+                              'Be the first to create and share an art walk',
+                            )
+                          else
+                            Expanded(
+                              child: _buildWalksList(
+                                _popularWalks,
+                                isMyWalks: false,
+                              ),
+                            ),
+
+                          // NC Regions promo banner
+                          _buildNCRegionsBanner(),
+                        ],
+                      ),
+
+                      // NC Regions Tab
+                      _buildNCRegionsTab(),
+                    ],
+                  ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push<bool>(

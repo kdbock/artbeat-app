@@ -117,7 +117,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
             _profileImage!,
           );
         } catch (e) {
-          debugPrint('⚠️ Profile created but image upload failed: $e');
+          // debugPrint('⚠️ Profile created but image upload failed: $e');
           // Don't fail the entire process for image upload failure
         }
       }

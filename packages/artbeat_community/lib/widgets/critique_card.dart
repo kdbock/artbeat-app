@@ -347,6 +347,12 @@ class CritiqueCard extends StatelessWidget {
   }
 
   Widget _buildCritiqueActions(ThemeData theme) {
+    // Safety check for critical post data
+    if (post.id.isEmpty) {
+      debugPrint('⚠️ CritiqueCard: Post ID is empty, skipping actions');
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
@@ -375,7 +381,10 @@ class CritiqueCard extends StatelessWidget {
                   label: 'Give Critique',
                   count: comments.length,
                   color: ArtbeatColors.primaryPurple,
-                  onTap: () => onComment(post.id),
+                  onTap: () {
+                    debugPrint('Comment button tapped for post ${post.id}');
+                    onComment(post.id);
+                  },
                 ),
               ),
               const SizedBox(width: 12),
@@ -386,7 +395,10 @@ class CritiqueCard extends StatelessWidget {
                   postId: post.id,
                   userId: currentUserId,
                   count: post.applauseCount,
-                  onTap: () => onApplause(post),
+                  onTap: () {
+                    debugPrint('Applause button tapped for post ${post.id}');
+                    onApplause(post);
+                  },
                   maxApplause: PostModel.maxApplausePerUser,
                   color: ArtbeatColors.accentYellow,
                 ),
@@ -398,7 +410,10 @@ class CritiqueCard extends StatelessWidget {
                 child: _buildIconButton(
                   icon: Icons.share_outlined,
                   color: ArtbeatColors.primaryGreen,
-                  onTap: () => onShare(post),
+                  onTap: () {
+                    debugPrint('Share button tapped for post ${post.id}');
+                    onShare(post);
+                  },
                 ),
               ),
             ],

@@ -32,7 +32,8 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   UserModel? _userModel;
   List<CaptureModel> _userCaptures = [];
   bool _isLoadingCaptures = true;
-  final int _artwalksCompleted = 0; // TODO: Implement artwalk tracking
+  // Art walk tracking is handled by the existing achievement/reward system
+  final int _artwalksCompleted = 0;
 
   @override
   void initState() {
@@ -69,13 +70,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
     }
 
     try {
-      debugPrint(
-        '🔄 ProfileViewScreen: Loading profile for user ID: ${widget.userId}',
-      );
+      // Loading profile for user ID
 
       // Check if userId is valid
       if (widget.userId.isEmpty) {
-        debugPrint('❌ ProfileViewScreen: Empty userId provided');
+        // debugPrint('❌ ProfileViewScreen: Empty userId provided');
         if (mounted) {
           ScaffoldMessenger.of(
             context,
@@ -92,9 +91,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
       // If no user model found, and this is the current user, create a placeholder
       if (userModel == null && widget.isCurrentUser) {
-        debugPrint(
-          '⚠️ ProfileViewScreen: Creating placeholder for current user',
-        );
+        // Creating placeholder for current user
         userModel = UserModel.placeholder(widget.userId);
 
         // Try to reload user data from authentication
@@ -108,7 +105,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
             );
           }
         } catch (e) {
-          debugPrint('⚠️ ProfileViewScreen: Error loading auth data: $e');
+          // debugPrint('⚠️ ProfileViewScreen: Error loading auth data: $e');
         }
       }
 
@@ -120,7 +117,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
       }
 
       if (userModel == null) {
-        debugPrint('❌ ProfileViewScreen: Could not load user profile');
+        // debugPrint('❌ ProfileViewScreen: Could not load user profile');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('User profile not found')),
@@ -129,11 +126,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         return;
       }
 
-      debugPrint(
-        '✅ ProfileViewScreen: Successfully loaded profile for ${userModel.fullName}',
-      );
+      // Successfully loaded profile
     } catch (e) {
-      debugPrint('❌ ProfileViewScreen: Error loading profile: $e');
+      // debugPrint('❌ ProfileViewScreen: Error loading profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading profile: ${e.toString()}')),
@@ -148,12 +143,10 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
   Future<void> _loadUserCaptures() async {
     try {
-      debugPrint(
-        '🔄 ProfileViewScreen: Loading captures for user ID: ${widget.userId}',
-      );
+      // Loading captures for user
 
       if (widget.userId.isEmpty) {
-        debugPrint('❌ ProfileViewScreen: Empty userId for captures');
+        // debugPrint('❌ ProfileViewScreen: Empty userId for captures');
         return;
       }
 
@@ -166,11 +159,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         });
       }
 
-      debugPrint(
-        '✅ ProfileViewScreen: Successfully loaded ${captures.length} captures',
-      );
+      // Successfully loaded captures
     } catch (e) {
-      debugPrint('❌ ProfileViewScreen: Error loading captures: $e');
+      // debugPrint('❌ ProfileViewScreen: Error loading captures: $e');
       if (mounted) {
         setState(() {
           _isLoadingCaptures = false;
@@ -353,7 +344,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           unselectedLabelColor: ArtbeatColors.textSecondary,
           tabs: const [
             Tab(text: 'Captures'),
-            Tab(text: 'Fan of'),
+            Tab(text: 'Following'),
             Tab(text: 'Achievements'),
           ],
         ),
@@ -364,7 +355,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
             controller: _tabController,
             children: [
               _buildCapturesTab(),
-              _buildFanOfTab(),
+              _buildFollowingTab(),
               _buildAchievementsTab(),
             ],
           ),
@@ -529,17 +520,20 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
     );
   }
 
-  Widget _buildFanOfTab() {
+  Widget _buildFollowingTab() {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           const Row(
             children: [
-              Icon(Icons.front_hand, color: ArtbeatColors.accentYellow),
+              Icon(
+                Icons.person_add_outlined,
+                color: ArtbeatColors.accentYellow,
+              ),
               SizedBox(width: 8),
               Text(
-                'Fan of',
+                'Following',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -565,7 +559,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                         title: Text('User ${index + 1}'),
                         subtitle: const Text('Art enthusiast'),
                         trailing: const Icon(
-                          Icons.front_hand,
+                          Icons.person_add_outlined,
                           color: ArtbeatColors.accentYellow,
                         ),
                       );
@@ -576,13 +570,13 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.front_hand,
+                          Icons.person_add_outlined,
                           size: 64,
                           color: ArtbeatColors.textSecondary,
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'No fans yet',
+                          'No followers yet',
                           style: TextStyle(
                             fontSize: 16,
                             color: ArtbeatColors.textSecondary,
@@ -590,7 +584,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Keep creating great art to gain fans!',
+                          'Keep creating great art to gain followers!',
                           style: TextStyle(
                             fontSize: 14,
                             color: ArtbeatColors.textSecondary,

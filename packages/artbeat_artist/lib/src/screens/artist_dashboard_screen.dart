@@ -1,4 +1,5 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:flutter/material.dart';
 import '../models/activity_model.dart';
 
@@ -107,6 +108,121 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildArtistMarketingSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Artist Marketing',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.blue.shade50,
+                Colors.purple.shade50,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.blue.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.campaign,
+                      color: Colors.blue.shade700,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Promote Your Art',
+                          style:
+                              Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue.shade800,
+                                  ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Create animated ads featuring your artwork to reach more art lovers',
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.blue.shade700,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _navigateToCreateArtistApprovedAd(context),
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Create Artist Approved Ad'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.star, color: Colors.amber.shade600, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Premium feature: Animated GIF ads with your artwork',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.amber.shade700,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _navigateToCreateArtistApprovedAd(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<ArtistApprovedAdCreateScreen>(
+        builder: (context) => const ArtistApprovedAdCreateScreen(),
       ),
     );
   }
@@ -243,6 +359,11 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
+
+                  // Artist Marketing Section
+                  _buildArtistMarketingSection(context),
+                  const SizedBox(height: 24),
+
                   // Recent Activity Section
                   if (_recentActivities.isNotEmpty) ...[
                     Text(

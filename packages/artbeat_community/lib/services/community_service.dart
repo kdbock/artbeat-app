@@ -256,4 +256,60 @@ class CommunityService extends ChangeNotifier {
       return [];
     }
   }
+
+  // Get unread posts count for the current user
+  Stream<int> getUnreadPostsCount(String userId) {
+    try {
+      return _firestore
+          .collection('user_activity')
+          .doc(userId)
+          .snapshots()
+          .asyncMap((doc) async {
+            if (!doc.exists) {
+              // If no user activity doc exists, count all posts as unread
+              final postsSnapshot = await _firestore
+                  .collection('posts')
+                  .where('isPublic', isEqualTo: true)
+                  .get();
+              return postsSnapshot.docs.length;
+            }
+
+            final data = doc.data()!;
+            final lastSeenTimestamp = data['lastCommunityVisit'] as Timestamp?;
+
+            if (lastSeenTimestamp == null) {
+              // If never visited, count all posts as unread
+              final postsSnapshot = await _firestore
+                  .collection('posts')
+                  .where('isPublic', isEqualTo: true)
+                  .get();
+              return postsSnapshot.docs.length;
+            }
+
+            // Count posts created after last visit
+            final unreadPostsSnapshot = await _firestore
+                .collection('posts')
+                .where('isPublic', isEqualTo: true)
+                .where('createdAt', isGreaterThan: lastSeenTimestamp)
+                .get();
+
+            return unreadPostsSnapshot.docs.length;
+          });
+    } catch (e) {
+      debugPrint('Error getting unread posts count: $e');
+      return Stream.value(0);
+    }
+  }
+
+  // Mark community as visited (reset unread count)
+  Future<void> markCommunityAsVisited(String userId) async {
+    try {
+      await _firestore.collection('user_activity').doc(userId).set({
+        'lastCommunityVisit': FieldValue.serverTimestamp(),
+        'userId': userId,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error marking community as visited: $e');
+    }
+  }
 }

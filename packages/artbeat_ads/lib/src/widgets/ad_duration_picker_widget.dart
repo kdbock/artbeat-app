@@ -23,11 +23,15 @@ class AdDurationPickerWidget extends StatelessWidget {
         const SizedBox(width: 8),
         DropdownButton<int>(
           value: selectedDays,
+          style: const TextStyle(color: Colors.black),
           items: List.generate(
             maxDays - minDays + 1,
             (i) => DropdownMenuItem(
               value: minDays + i,
-              child: Text('${minDays + i} day${minDays + i == 1 ? '' : 's'}'),
+              child: Text(
+                '${minDays + i} day${minDays + i == 1 ? '' : 's'}',
+                style: const TextStyle(color: Colors.black),
+              ),
             ),
           ),
           onChanged: (val) {

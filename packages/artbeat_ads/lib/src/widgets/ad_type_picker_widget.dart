@@ -19,14 +19,21 @@ class AdTypePickerWidget extends StatelessWidget {
         const SizedBox(width: 8),
         DropdownButton<model.AdType>(
           value: selectedType,
+          style: const TextStyle(color: Colors.black),
           items: const [
             DropdownMenuItem(
               value: model.AdType.square,
-              child: Text('Square (1:1)'),
+              child: Text(
+                'Square (1:1)',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
             DropdownMenuItem(
               value: model.AdType.rectangle,
-              child: Text('Rectangle (2:1)'),
+              child: Text(
+                'Rectangle (2:1)',
+                style: TextStyle(color: Colors.black),
+              ),
             ),
           ],
           onChanged: (val) {

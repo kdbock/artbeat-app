@@ -6,4 +6,5 @@ export 'canvas_feed.dart';
 export 'feedback_thread_widget.dart';
 export 'gift_card_widget.dart';
 export 'art_critique_slider.dart';
-export '../src/widgets/community_header.dart';
+export 'community_header.dart';
+export 'post_detail_modal.dart';

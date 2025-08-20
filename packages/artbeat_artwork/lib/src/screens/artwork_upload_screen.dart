@@ -7,7 +7,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, EnhancedUniversalHeader;
+    show
+        SubscriptionTier,
+        ArtbeatColors,
+        EnhancedUniversalHeader,
+        EnhancedStorageService;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
@@ -175,7 +179,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error checking upload limit: $e');
+      // debugPrint('Error checking upload limit: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -346,20 +350,33 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
     }
   }
 
-  // Upload image to Firebase Storage
+  // Upload image to Firebase Storage using EnhancedStorageService
   Future<String> _uploadImage(File imageFile) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId';
-    final artworkId = widget.artworkId ?? 'new';
-    final ref =
-        _storage.ref().child('artwork_images/$userId/$artworkId/$fileName');
+    try {
+      // Use the enhanced storage service for optimized uploads
+      final enhancedStorage = EnhancedStorageService();
+      final uploadResult = await enhancedStorage.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'artwork',
+        generateThumbnail: true,
+      );
 
-    final uploadTask = ref.putFile(imageFile);
-    final snapshot = await uploadTask;
+      return uploadResult['imageUrl']!;
+    } catch (e) {
+      debugPrint('❌ Enhanced upload failed, falling back to legacy method: $e');
 
-    return snapshot.ref.getDownloadURL();
+      // Fallback to legacy method but with better path structure
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId';
+      final ref = _storage.ref().child('artwork_images/$userId/$fileName');
+
+      final uploadTask = ref.putFile(imageFile);
+      final snapshot = await uploadTask;
+
+      return snapshot.ref.getDownloadURL();
+    }
   }
 
   // Add tag to the list

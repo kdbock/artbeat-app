@@ -29,6 +29,10 @@ export 'widgets/applause_button.dart';
 export 'widgets/avatar_widget.dart';
 export 'widgets/artwork_card_widget.dart';
 export 'widgets/gift_card_widget.dart';
+export 'widgets/group_feed_widget.dart';
+export 'widgets/group_post_card.dart';
+export 'widgets/create_post_fab.dart';
+export 'widgets/artist_list_widget.dart';
 
 // Controllers
 export 'controllers/controllers.dart';

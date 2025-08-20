@@ -50,7 +50,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
         _locations = locations.toList()..sort();
       });
     } catch (e) {
-      debugPrint('Error loading locations: $e');
+      // debugPrint('Error loading locations: $e');
     }
   }
 

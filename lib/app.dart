@@ -2,6 +2,7 @@ import 'package:artbeat_auth/artbeat_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_events/artbeat_events.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -20,6 +21,7 @@ import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 import 'widgets/developer_menu.dart';
 import 'debug_profile_fix.dart';
 import 'src/widgets/error_boundary.dart';
+import 'src/widgets/artist_feed_container_with_params.dart';
 import 'src/services/firebase_initializer.dart';
 import 'src/guards/auth_guard.dart';
 import 'src/screens/enhanced_search_screen.dart';
@@ -77,10 +79,26 @@ class MyApp extends StatelessWidget {
                 ),
                 lazy: true,
               ),
+              // Presence Service for online status
+              Provider<messaging.PresenceService>(
+                create: (_) => messaging.PresenceService(),
+                lazy: false, // Start immediately to track presence
+              ),
+              // Presence Provider for UI components
+              ChangeNotifierProvider<messaging.PresenceProvider>(
+                create: (context) => messaging.PresenceProvider(
+                  context.read<messaging.PresenceService>(),
+                ),
+                lazy: false,
+              ),
               // Community providers
               ChangeNotifierProvider<CommunityService>(
                 create: (_) => CommunityService(),
                 lazy: true, // Changed to lazy to prevent early Firebase access
+              ),
+              ChangeNotifierProvider<core.CommunityProvider>(
+                create: (_) => core.CommunityProvider(),
+                lazy: true,
               ),
               // Dashboard ViewModel
               ChangeNotifierProvider<core.DashboardViewModel>(
@@ -239,10 +257,10 @@ class MyApp extends StatelessWidget {
             currentIndex: -1,
             child: Scaffold(
               appBar: core.EnhancedUniversalHeader(
-                title: 'Fan Club',
+                title: 'Following',
                 showLogo: false,
               ),
-              body: Center(child: Text('Fan Club coming soon')),
+              body: Center(child: Text('Following coming soon')),
             ),
           ),
         );
@@ -296,6 +314,13 @@ class MyApp extends StatelessWidget {
             child: AchievementsScreen(),
           ),
         );
+      case '/achievements/info':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: AchievementInfoScreen(),
+          ),
+        );
       case '/capture/camera':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
@@ -339,13 +364,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         );
-      case '/community/feed':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: UnifiedCommunityFeed(),
-          ),
-        );
+
       // Art Walk routes
       case '/art-walk/map':
         return MaterialPageRoute(builder: (_) => const ArtWalkMapScreen());
@@ -469,23 +488,16 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/events':
-        return MaterialPageRoute(
-          builder: (_) => const UserEventsDashboardScreen(),
-        );
+        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/events/discover':
-        return MaterialPageRoute(
-          builder: (_) => const UserEventsDashboardScreen(),
-        );
+        return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/events/dashboard':
         return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/events/artist-dashboard':
         return MaterialPageRoute(builder: (_) => const EventsDashboardScreen());
       case '/capture/dashboard':
         return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: capture.EnhancedCaptureDashboardScreen(),
-          ),
+          builder: (_) => const capture.EnhancedCaptureDashboardScreen(),
         );
       case '/community/dashboard':
         return MaterialPageRoute(
@@ -493,6 +505,64 @@ class MyApp extends StatelessWidget {
         );
       case '/notifications':
         return MaterialPageRoute(builder: (_) => const NotificationsScreen());
+      case '/community/feed':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final scrollToPostId = args?['scrollToPostId'] as String?;
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: 2, // Community tab index
+            child: CommunityFeedScreen(scrollToPostId: scrollToPostId),
+          ),
+        );
+      case '/community/artists':
+        return MaterialPageRoute(
+          builder: (_) => const CommunityArtistsScreen(),
+        );
+      case '/community/search':
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: EnhancedSearchScreen(),
+          ),
+        );
+      case '/community/post-detail':
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('Post Details'),
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                flexibleSpace: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF9C27B0), // Purple
+                        Color(0xFF4CAF50), // Green
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              body: const SafeArea(
+                child: Center(child: Text('Post details coming soon')),
+              ),
+            ),
+          ),
+        );
+      case '/artist/feed':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artistUserId = args?['artistUserId'] as String?;
+        return MaterialPageRoute(
+          builder: (_) => core.MainLayout(
+            currentIndex: -1,
+            child: ArtistFeedContainerWithParams(artistUserId: artistUserId),
+          ),
+        );
       case '/community/posts':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
@@ -537,6 +607,7 @@ class MyApp extends StatelessWidget {
               const core.MainLayout(currentIndex: -1, child: QuietModeScreen()),
         );
       case '/dev':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) =>
               const core.MainLayout(currentIndex: -1, child: DeveloperMenu()),
@@ -549,6 +620,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/developer-feedback-admin':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -595,14 +667,38 @@ class MyApp extends StatelessWidget {
       case '/artist/onboarding':
         return AuthGuard.guardRoute(
           settings: settings,
-          authenticatedBuilder: () => const core.MainLayout(
+          authenticatedBuilder: () => core.MainLayout(
             currentIndex: -1,
-            appBar: core.EnhancedUniversalHeader(
+            appBar: const core.EnhancedUniversalHeader(
               title: 'Join as Artist',
               showLogo: false,
               showBackButton: true,
             ),
-            child: Center(child: Text('Artist onboarding coming soon')),
+            child: Builder(
+              builder: (context) {
+                final firebaseUser = FirebaseAuth.instance.currentUser;
+                if (firebaseUser == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                // Create a UserModel from Firebase User
+                final user = core.UserModel(
+                  id: firebaseUser.uid,
+                  email: firebaseUser.email ?? '',
+                  username:
+                      firebaseUser.displayName ??
+                      firebaseUser.email?.split('@').first ??
+                      '',
+                  fullName: firebaseUser.displayName ?? '',
+                  createdAt: DateTime.now(),
+                );
+
+                return ArtistOnboardingScreen(
+                  user: user,
+                  onComplete: () => Navigator.of(context).pop(),
+                );
+              },
+            ),
           ),
           unauthenticatedBuilder: () => const core.MainLayout(
             currentIndex: -1,
@@ -969,16 +1065,19 @@ class MyApp extends StatelessWidget {
           ),
         );
 
-      // Admin routes
+      // Admin routes (debug mode only)
       case '/admin/dashboard':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const admin.AdminDashboardScreen(),
         );
       case '/admin/users':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const admin.AdminUserManagementScreen(),
         );
       case '/admin/moderation':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -986,6 +1085,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/admin/settings':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -998,13 +1098,23 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/admin/ad-review':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
             child: ads.AdminAdReviewScreen(),
           ),
         );
+      case '/admin/ad-management':
+        if (!kDebugMode) return _buildNotFoundRoute();
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.AdminAdManagementScreen(),
+          ),
+        );
       case '/admin/messaging':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1151,6 +1261,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/ad-create/admin':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1181,6 +1292,7 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/ad-review/admin':
+        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1194,7 +1306,6 @@ class MyApp extends StatelessWidget {
             currentIndex: -1,
             child: messaging.MessagingNavigation(),
           ),
-          fullscreenDialog: true,
         );
       case '/messaging/new':
         return MaterialPageRoute(
@@ -1392,6 +1503,35 @@ class MyApp extends StatelessWidget {
     return MaterialPageRoute(
       builder: (_) =>
           const core.MainLayout(currentIndex: -1, child: core.SplashScreen()),
+    );
+  }
+
+  /// Build a not found route for production
+  MaterialPageRoute<void> _buildNotFoundRoute() {
+    return MaterialPageRoute<void>(
+      builder: (_) => const core.MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text(
+                  'Page Not Found',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'The requested page could not be found.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

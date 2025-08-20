@@ -65,6 +65,18 @@ service cloud.firestore {
           );
         }
       }
+      
+      // User's completed art walks subcollection
+      match /completedWalks/{walkId} {
+        allow read, list: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
     }
 
     // Artists collection rules
@@ -284,6 +296,30 @@ service cloud.firestore {
             isAdmin(request.auth.uid)
           );
         }
+      }
+    }
+
+    // Followers collection - users who follow other users
+    match /followers/{userId} {
+      allow read: if isAuthenticated();
+      
+      // Subcollection of users who follow this user
+      match /users/{followerId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && request.auth.uid == followerId;
+        allow delete: if isAuthenticated() && request.auth.uid == followerId;
+      }
+    }
+
+    // Following collection - users that other users follow
+    match /following/{userId} {
+      allow read: if isAuthenticated();
+      
+      // Subcollection of users this user follows
+      match /users/{followedUserId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
       }
     }
 

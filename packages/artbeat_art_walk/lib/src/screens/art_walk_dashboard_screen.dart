@@ -3,10 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
-import '../services/art_walk_service.dart';
-import '../services/achievement_service.dart';
-import '../models/art_walk_model.dart';
-import '../models/achievement_model.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 // Art Walk specific colors
 class ArtWalkColors {
@@ -78,7 +75,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         setState(() => _currentUser = user);
       }
     } catch (e) {
-      debugPrint('Error loading current user: $e');
+      // debugPrint('Error loading current user: $e');
     }
   }
 
@@ -107,7 +104,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         _updateMapPosition(position.latitude, position.longitude);
       }
     } catch (e) {
-      debugPrint('Error getting location: $e');
+      // debugPrint('Error getting location: $e');
       // Default to Asheville, NC
       _updateMapPosition(35.5951, -82.5515);
     }
@@ -121,7 +118,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         setState(() => _localCaptures = captures);
       }
     } catch (e) {
-      debugPrint('Error loading local captures: $e');
+      // debugPrint('Error loading local captures: $e');
     }
   }
 
@@ -133,7 +130,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         setState(() => _allUserWalks = walks);
       }
     } catch (e) {
-      debugPrint('Error loading all user walks: $e');
+      // debugPrint('Error loading all user walks: $e');
     }
   }
 
@@ -149,7 +146,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error loading achievements: $e');
+      // debugPrint('Error loading achievements: $e');
     }
   }
 
@@ -502,6 +499,142 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
+  void _showCoreDeveloperTools(BuildContext context) {
+    // Mirror EnhancedUniversalHeader developer tools sheet for consistency
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.code, color: Colors.orange, size: 24),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Developer Tools',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: ArtWalkColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildDeveloperTile(
+              context: context,
+              icon: Icons.feedback,
+              title: 'Submit Feedback',
+              subtitle: 'Report bugs or suggest improvements',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/feedback');
+              },
+            ),
+            _buildDeveloperTile(
+              context: context,
+              icon: Icons.admin_panel_settings,
+              title: 'Admin Panel',
+              subtitle: 'Manage feedback and system settings',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/developer-feedback-admin');
+              },
+            ),
+            _buildDeveloperTile(
+              context: context,
+              icon: Icons.info,
+              title: 'System Info',
+              subtitle: 'View app version and system details',
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/system/info');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeveloperTile({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Icon(icon, color: ArtWalkColors.textSecondary),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ArtWalkColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: ArtWalkColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: ArtWalkColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ignore: unused_element
   void _showArtistDiscoveryMenu(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -801,26 +934,13 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             top: 0,
             left: 0,
             right: 0,
-            child: ArtbeatGradientBackground(
-              addShadow: true,
-              child: EnhancedUniversalHeader(
-                title: 'Art Walks',
-                showLogo: false,
-                showSearch: true,
-                showDeveloperTools: true,
-                backgroundColor: Colors.transparent,
-                foregroundColor: ArtbeatColors.textPrimary,
-                elevation: 0,
-                onSearchPressed: () => _showSearchModal(context),
-                onProfilePressed: () => _showArtistDiscoveryMenu(context),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.chat_bubble_outline),
-                    onPressed: () => Navigator.pushNamed(context, '/messaging'),
-                    tooltip: 'Messages',
-                  ),
-                ],
-              ),
+            child: ArtWalkHeader(
+              title: 'Art Walks',
+              showSearch: true,
+              showChat: true,
+              showDeveloper: true,
+              onSearchPressed: () => _showSearchModal(context),
+              onDeveloperPressed: () => _showCoreDeveloperTools(context),
             ),
           ),
           // FAB
@@ -1364,16 +1484,19 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Art Walk Achievements',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: ArtWalkColors.textPrimary,
+                const Expanded(
+                  child: Text(
+                    'Art Walk Achievements',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ArtWalkColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(),
-                if (_artWalkAchievements.isNotEmpty)
+                if (_artWalkAchievements.isNotEmpty) ...[
+                  const SizedBox(width: 8),
                   TextButton(
                     onPressed: () =>
                         Navigator.pushNamed(context, '/achievements'),
@@ -1385,6 +1508,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                       ),
                     ),
                   ),
+                ],
               ],
             ),
           ),

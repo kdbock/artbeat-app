@@ -76,7 +76,7 @@ class MessagingProvider extends ChangeNotifier {
           _hasError = false;
           notifyListeners();
         },
-        onError: (error) {
+        onError: (Object error) {
           debugPrint('MessagingProvider: Error in unread count stream: $error');
           _hasError = true;
           _isInitialized = true;

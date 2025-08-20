@@ -59,7 +59,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error checking completion status: ${e.toString()}');
+      // debugPrint('Error checking completion status: ${e.toString()}');
     }
   }
 
@@ -83,7 +83,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         await _artWalkService.recordArtWalkView(walk.id);
       } catch (e) {
         // If offline, this will fail, but that's okay
-        debugPrint('Could not record view, probably offline: ${e.toString()}');
+        // debugPrint('Could not record view, probably offline: ${e.toString()}');
       }
 
       // Load all art pieces in the walk
@@ -127,9 +127,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
       // Skip art pieces with invalid coordinates to prevent NaN errors
       if (!art.location.latitude.isFinite || !art.location.longitude.isFinite) {
-        debugPrint(
-          "⚠️ Skipping marker for art with invalid coordinates: ${art.id}",
-        );
+        // debugPrint(
+        //   "⚠️ Skipping marker for art with invalid coordinates: ${art.id}",
+        // );
         continue;
       }
 
@@ -170,7 +170,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
     // Check if we still have enough valid points
     if (validArtPieces.length < 2) {
-      debugPrint("⚠️ Not enough valid coordinates for polyline");
+      // debugPrint("⚠️ Not enough valid coordinates for polyline");
       return {};
     }
 
@@ -213,21 +213,19 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   Widget _buildDetailBackground() {
     // Try to show cover image first
     if (_walk!.coverImageUrl != null && _walk!.coverImageUrl!.isNotEmpty) {
-      return Image.network(
-        _walk!.coverImageUrl!,
+      return SecureNetworkImage(
+        imageUrl: _walk!.coverImageUrl!,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-            _buildFallbackBackground(),
+        errorWidget: _buildFallbackBackground(),
       );
     }
 
     // Try to show first image from imageUrls
     if (_walk!.imageUrls.isNotEmpty) {
-      return Image.network(
-        _walk!.imageUrls.first,
+      return SecureNetworkImage(
+        imageUrl: _walk!.imageUrls.first,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) =>
-            _buildFallbackBackground(),
+        errorWidget: _buildFallbackBackground(),
       );
     }
 
@@ -377,9 +375,12 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_isLoading) {
       return const Scaffold(
         key: ValueKey('loading'),
-        appBar: EnhancedUniversalHeader(
+        appBar: ArtWalkHeader(
           title: 'Art Walk Details',
-          showLogo: false,
+          showBackButton: true,
+          showSearch: false,
+          showChat: true,
+          showDeveloper: false,
         ),
         body: Center(child: CircularProgressIndicator()),
       );
@@ -388,9 +389,12 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null) {
       return const Scaffold(
         key: ValueKey('not_found'),
-        appBar: EnhancedUniversalHeader(
+        appBar: ArtWalkHeader(
           title: 'Art Walk Details',
-          showLogo: false,
+          showBackButton: true,
+          showSearch: false,
+          showChat: true,
+          showDeveloper: false,
         ),
         body: Center(child: Text('Art walk not found')),
       );
@@ -401,18 +405,37 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       body: CustomScrollView(
         key: ValueKey('scroll_view_${_walk!.id}'),
         slivers: [
-          // App bar with image
+          // App bar with image - using Art Walk colors
           SliverAppBar(
             expandedHeight: 200.0,
             pinned: true,
+            backgroundColor: const Color(
+              0xFF00838F,
+            ), // Art Walk header color - matches Welcome Travel user box teal
+            foregroundColor: Colors.white, // Art Walk text/icon color
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(_walk!.title),
+              title: Text(
+                _walk!.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Limelight',
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
               background: _buildDetailBackground(),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.share),
+                icon: const Icon(Icons.share, color: Colors.white),
                 onPressed: _shareArtWalk,
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.chat_bubble_outline,
+                  color: Colors.white,
+                ),
+                onPressed: () => Navigator.pushNamed(context, '/messaging'),
+                tooltip: 'Messages',
               ),
             ],
           ),
@@ -739,11 +762,17 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
               topRight: Radius.circular(4),
               bottomRight: Radius.circular(4),
             ),
-            child: Image.network(
-              art.imageUrl,
+            child: SecureNetworkImage(
+              imageUrl: art.imageUrl,
               width: 100,
               height: 100,
               fit: BoxFit.cover,
+              errorWidget: Container(
+                width: 100,
+                height: 100,
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image, color: Colors.grey),
+              ),
             ),
           ),
 

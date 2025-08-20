@@ -39,6 +39,8 @@ dependencies:
     path: ../artbeat_core
   artbeat_events:
     path: ../artbeat_events
+  artbeat_ads:
+    path: ../artbeat_ads
 
   # Other dependencies
   intl: ^0.20.2

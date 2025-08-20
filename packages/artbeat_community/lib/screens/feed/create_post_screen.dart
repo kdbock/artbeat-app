@@ -103,14 +103,12 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       final userService = Provider.of<UserService>(context, listen: false);
       final userModel = await userService.getUserById(user.uid);
 
-      debugPrint(
-        '👤 Retrieved user model: ${userModel?.fullName} (${userModel?.id})',
-      );
+      // Retrieved user model successfully
 
       if (!mounted) return;
 
       if (userModel == null) {
-        debugPrint('❌ User model is null for user: ${user.uid}');
+        // debugPrint('❌ User model is null for user: ${user.uid}');
         if (!mounted) return;
 
         ScaffoldMessenger.of(
@@ -194,15 +192,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
       if (!mounted) return;
 
-      debugPrint('📝 About to create post with:');
-      debugPrint('  - User ID: ${user.uid}');
-      debugPrint('  - User Name: ${userModel.fullName}');
-      debugPrint('  - User Photo URL: "${userModel.profileImageUrl}"');
-      debugPrint('  - Content: ${_contentController.text}');
-      debugPrint('  - Image URLs: $imageUrls');
-      debugPrint('  - Tags: $tags');
-      debugPrint('  - Location: ${_locationController.text}');
-      debugPrint('  - Is Public: $_isPublic');
+      // debugPrint('📝 About to create post with:');
+      // debugPrint('  - User ID: ${user.uid}');
+      // debugPrint('  - User Name: ${userModel.fullName}');
+      // debugPrint('  - User Photo URL: "${userModel.profileImageUrl}"');
+      // debugPrint('  - Content: ${_contentController.text}');
+      // debugPrint('  - Image URLs: $imageUrls');
+      // debugPrint('  - Tags: $tags');
+      // debugPrint('  - Location: ${_locationController.text}');
+      // debugPrint('  - Is Public: $_isPublic');
 
       final postId = await communityService.createPost(
         userId: user.uid,
@@ -217,15 +215,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         isPublic: _isPublic,
       );
 
-      debugPrint('📝 Post creation result: $postId');
+      // debugPrint('📝 Post creation result: $postId');
 
       if (!mounted) return;
 
       if (postId != null) {
-        debugPrint('✅ Post created successfully, navigating back');
+        // debugPrint('✅ Post created successfully, navigating back');
         Navigator.pop(context, true); // Return success to previous screen
       } else {
-        debugPrint('❌ Failed to create post - postId is null');
+        // debugPrint('❌ Failed to create post - postId is null');
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Failed to create post')));

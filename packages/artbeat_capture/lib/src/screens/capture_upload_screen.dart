@@ -126,11 +126,9 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('CaptureUploadScreen: Art types count: ${_artTypes.length}');
-    debugPrint('CaptureUploadScreen: Art mediums count: ${_artMediums.length}');
-    debugPrint(
-      'CaptureUploadScreen: First few art types: ${_artTypes.take(5).toList()}',
-    );
+    // debugPrint('CaptureUploadScreen: Art types count: ${_artTypes.length}');
+    // debugPrint('CaptureUploadScreen: Art mediums count: ${_artMediums.length}');
+    // Art types initialization logging removed for production
     _initializeForm();
   }
 
@@ -356,10 +354,10 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
       setState(() => _uploadStatus = 'Uploading image...');
 
       // Debug: Print selected values
-      debugPrint('CaptureUpload: Selected art type: $_selectedArtType');
-      debugPrint('CaptureUpload: Selected art medium: $_selectedArtMedium');
-      debugPrint('CaptureUpload: Art types available: ${_artTypes.length}');
-      debugPrint('CaptureUpload: Art mediums available: ${_artMediums.length}');
+      // debugPrint('CaptureUpload: Selected art type: $_selectedArtType');
+      // debugPrint('CaptureUpload: Selected art medium: $_selectedArtMedium');
+      // debugPrint('CaptureUpload: Art types available: ${_artTypes.length}');
+      // debugPrint('CaptureUpload: Art mediums available: ${_artMediums.length}');
 
       // Upload image to storage (should work now with correct bucket)
       final imageUrl = await _storageService.uploadImage(widget.imageFile);

@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 
+// Import ArtWalkService for achievement checking
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
+
 /// Service for managing art captures in the ARTbeat app.
 class CaptureService {
   static final CaptureService _instance = CaptureService._internal();
@@ -126,6 +129,9 @@ class CaptureService {
         await _saveToPublicArt(newCapture);
       }
 
+      // Trigger achievement check for capture-related achievements
+      _checkCaptureAchievements(capture.userId);
+
       return newCapture;
     } catch (e) {
       debugPrint('Error creating capture: $e');
@@ -154,6 +160,9 @@ class CaptureService {
             'id': captureId,
           });
           await _saveToPublicArt(capture);
+
+          // Trigger achievement check when capture becomes public
+          _checkCaptureAchievements(capture.userId);
         }
       }
       // If the capture is being made private, remove from publicArt
@@ -208,7 +217,7 @@ class CaptureService {
       );
       // Wait for the current load to complete
       while (_isLoadingAllCaptures) {
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future<void>.delayed(const Duration(milliseconds: 100));
       }
       return _cachedAllCaptures ?? [];
     }
@@ -638,6 +647,18 @@ class CaptureService {
       debugPrint('🎉 Migration completed: $migrated migrated, $errors errors');
     } catch (e) {
       debugPrint('❌ Migration failed: $e');
+    }
+  }
+
+  /// Check capture achievements for a user
+  Future<void> _checkCaptureAchievements(String userId) async {
+    try {
+      // Use the ArtWalkService to check capture achievements
+      final artWalkService = art_walk.ArtWalkService();
+      await artWalkService.checkCaptureAchievements(userId);
+    } catch (e) {
+      debugPrint('❌ Error checking capture achievements: $e');
+      // Don't rethrow - achievement checking shouldn't break capture creation
     }
   }
 }

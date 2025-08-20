@@ -22,7 +22,10 @@ import 'package:artbeat_artwork/artbeat_artwork.dart'
 import '../utils/location_utils.dart';
 import 'package:artbeat_community/artbeat_community.dart'
     show CommunityService, PostModel;
-import 'package:artbeat_messaging/artbeat_messaging.dart' show ChatService;
+import 'package:artbeat_art_walk/src/services/achievement_service.dart'
+    as art_walk_achievement;
+import 'package:artbeat_art_walk/src/models/achievement_model.dart';
+
 import '../widgets/achievement_badge.dart' show AchievementBadgeData;
 
 /// ViewModel for managing dashboard state and business logic
@@ -37,9 +40,11 @@ class DashboardViewModel extends BaseViewModel {
   final ArtWalkService _artWalkService = ArtWalkService();
   final CaptureService _captureService = CaptureService();
   final RewardsService _rewardsService = RewardsService();
+  final art_walk_achievement.AchievementService _achievementService =
+      art_walk_achievement.AchievementService();
   final ArtworkService _artworkService = ArtworkService();
   final CommunityService _communityService = CommunityService();
-  final ChatService _chatService = ChatService();
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Authentication state
@@ -204,6 +209,8 @@ class DashboardViewModel extends BaseViewModel {
     // Load user's captures for immediate display
     if (_currentUser != null) {
       loadCaptures();
+      // Load achievements for the user experience section
+      loadAchievements();
     }
   }
 
@@ -533,38 +540,49 @@ class DashboardViewModel extends BaseViewModel {
       final userId = _currentUser?.id;
       if (userId == null) {
         _achievements = [];
+        debugPrint(
+          '🏆 DashboardViewModel: No user ID, cannot load achievements',
+        );
         return;
       }
 
-      // Load badges from RewardsService
-      final userBadges = await _rewardsService.getUserBadges(userId);
+      debugPrint(
+        '🏆 DashboardViewModel: Loading achievements for user $userId',
+      );
 
-      // Convert badges to AchievementBadgeData
+      // Load achievements from the AchievementService (the fixed one)
+      final achievementModels = await _achievementService.getUserAchievements();
+
+      debugPrint(
+        '🏆 DashboardViewModel: Found ${achievementModels.length} achievements',
+      );
+
+      // Convert AchievementModel to AchievementBadgeData for UI compatibility
       final List<AchievementBadgeData> badgeData = [];
 
-      for (final entry in userBadges.entries) {
-        final badgeId = entry.key;
-        final badgeInfo = RewardsService.badges[badgeId];
+      for (final achievement in achievementModels) {
+        final IconData icon = _getIconFromAchievementType(achievement.type);
 
-        if (badgeInfo != null) {
-          final IconData icon = _getIconFromBadgeIcon(
-            badgeInfo['icon'] as String,
-          );
+        badgeData.add(
+          AchievementBadgeData(
+            title: achievement.title,
+            description: achievement.description,
+            icon: icon,
+            isUnlocked: true, // All returned achievements are unlocked
+          ),
+        );
 
-          badgeData.add(
-            AchievementBadgeData(
-              title: badgeInfo['name'] as String,
-              description: badgeInfo['description'] as String,
-              icon: icon,
-              isUnlocked: true, // All badges from the service are unlocked
-            ),
-          );
-        }
+        debugPrint(
+          '🏆 DashboardViewModel: Achievement - ${achievement.type.name}: ${achievement.title}',
+        );
       }
 
       _achievements = badgeData;
+      debugPrint(
+        '🏆 DashboardViewModel: Dashboard achievements loaded successfully',
+      );
     } catch (e) {
-      debugPrint('Error loading achievements: $e');
+      debugPrint('❌ DashboardViewModel: Error loading achievements: $e');
     } finally {
       _isLoadingAchievements = false;
       notifyListeners();
@@ -599,64 +617,29 @@ class DashboardViewModel extends BaseViewModel {
     }
   }
 
-  /// Helper method to convert badge emoji to IconData
-  IconData _getIconFromBadgeIcon(String badgeIcon) {
-    // Map emoji icons to Material icons
-    switch (badgeIcon) {
-      case '🚶':
+  /// Helper method to convert AchievementType to IconData
+  IconData _getIconFromAchievementType(AchievementType achievementType) {
+    switch (achievementType) {
+      case AchievementType.firstWalk:
+      case AchievementType.walkExplorer:
+      case AchievementType.walkMaster:
+      case AchievementType.marathonWalker:
         return Icons.directions_walk;
-      case '🎨':
+      case AchievementType.artCollector:
+      case AchievementType.artExpert:
         return Icons.palette;
-      case '📸':
+      case AchievementType.photographer:
         return Icons.photo_camera;
-      case '✍️':
+      case AchievementType.contributor:
+      case AchievementType.curator:
+      case AchievementType.masterCurator:
         return Icons.edit;
-      case '👍':
-        return Icons.thumb_up;
-      case '🏃':
-        return Icons.directions_run;
-      case '📷':
-        return Icons.camera_alt;
-      case '📝':
-        return Icons.description;
-      case '🌟':
+      case AchievementType.commentator:
+        return Icons.comment;
+      case AchievementType.socialButterfly:
+        return Icons.groups;
+      case AchievementType.earlyAdopter:
         return Icons.star;
-      case '🏛️':
-        return Icons.account_balance;
-      case '🎭':
-        return Icons.theater_comedy;
-      case '🔥':
-        return Icons.whatshot;
-      case '🥉':
-        return Icons.looks_3;
-      case '🥈':
-        return Icons.looks_two;
-      case '🥇':
-        return Icons.looks_one;
-      case '🗺️':
-        return Icons.map;
-      case '📅':
-        return Icons.calendar_today;
-      case '💡':
-        return Icons.lightbulb;
-      case '📚':
-        return Icons.book;
-      case '📢':
-        return Icons.campaign;
-      case '⭐':
-        return Icons.star;
-      case '🎯':
-        return Icons.gps_fixed;
-      case '🌅':
-        return Icons.wb_sunny;
-      case '🏠':
-        return Icons.home;
-      case '🏆':
-        return Icons.emoji_events;
-      case '👑':
-        return Icons.military_tech;
-      default:
-        return Icons.emoji_events;
     }
   }
 

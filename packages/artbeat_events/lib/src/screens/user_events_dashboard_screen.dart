@@ -305,7 +305,6 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
         maxChildSize: 0.7,
         minChildSize: 0.3,
         builder: (context, scrollController) => Container(
@@ -691,9 +690,9 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
                         color: ArtbeatColors.textPrimary,
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Explore exhibitions, workshops, and community art events',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         color: ArtbeatColors.textSecondary,
                       ),

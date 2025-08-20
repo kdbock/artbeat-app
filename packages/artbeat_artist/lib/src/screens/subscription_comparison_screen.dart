@@ -67,127 +67,150 @@ class SubscriptionComparisonScreen extends StatelessWidget {
     bool isRecommended = false,
     bool isCurrent = false,
   }) {
-    return Container(
-      width: 280,
-      margin: const EdgeInsets.symmetric(horizontal: 8.0),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: isCurrent
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey.shade300,
-          width: isCurrent ? 2.0 : 1.0,
-        ),
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (isRecommended)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              color: Colors.amber.shade100,
-              child: const Text(
-                'RECOMMENDED',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amber,
-                ),
-              ),
-            ),
-          if (isCurrent)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: const Text(
-                'CURRENT PLAN',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Features',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ..._getFeatures(tier).map(
-                  (feature) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(feature)),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Limitations',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ..._getLimitations(tier).map(
-                  (limitation) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: Row(
-                      children: [
-                        Icon(
-                          limitation.startsWith('❌')
-                              ? Icons.cancel
-                              : Icons.info_outline,
-                          color: limitation.startsWith('❌')
-                              ? Colors.red
-                              : Colors.orange,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                            child: Text(limitation.startsWith('❌')
-                                ? limitation.substring(2)
-                                : limitation)),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    // Disable Pro and Gallery tiers for now
+    final bool isDisabled = tier == core.SubscriptionTier.artistPro ||
+        tier == core.SubscriptionTier.gallery;
+
+    return Tooltip(
+      message: isDisabled ? 'Coming Soon' : '',
+      child: Container(
+        width: 280,
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: isCurrent
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey.shade300,
+            width: isCurrent ? 2.0 : 1.0,
           ),
-        ],
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        child: Opacity(
+          opacity: isDisabled ? 0.5 : 1.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (isRecommended && !isDisabled)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  color: Colors.amber.shade100,
+                  child: const Text(
+                    'RECOMMENDED',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ),
+              if (isDisabled)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  color: Colors.orange.shade100,
+                  child: const Text(
+                    'COMING SOON',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+              if (isCurrent)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: const Text(
+                    'CURRENT PLAN',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      price,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Features',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ..._getFeatures(tier).map(
+                      (feature) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(feature)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Limitations',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ..._getLimitations(tier).map(
+                      (limitation) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              limitation.startsWith('❌')
+                                  ? Icons.cancel
+                                  : Icons.info_outline,
+                              color: limitation.startsWith('❌')
+                                  ? Colors.red
+                                  : Colors.orange,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                child: Text(limitation.startsWith('❌')
+                                    ? limitation.substring(2)
+                                    : limitation)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

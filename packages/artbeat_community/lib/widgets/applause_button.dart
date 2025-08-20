@@ -22,15 +22,70 @@ class ApplauseButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final applauseColor = color ?? ArtbeatColors.accentYellow;
-    
-    return TextButton.icon(
-      onPressed: count < maxApplause ? onTap : null,
-      icon: Icon(Icons.front_hand, color: applauseColor),
-      label: Text(
-        '$count', 
-        style: TextStyle(
-          color: applauseColor,
-          fontWeight: FontWeight.w600,
+    final isEnabled =
+        count < maxApplause && postId.isNotEmpty && userId.isNotEmpty;
+
+    // Safety check for required data
+    if (postId.isEmpty) {
+      debugPrint('⚠️ ApplauseButton: postId is empty');
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey.withAlpha(25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withAlpha(77), width: 1),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.front_hand, size: 18, color: Colors.grey),
+            SizedBox(width: 4),
+            Text('--', style: TextStyle(color: Colors.grey, fontSize: 14)),
+          ],
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: isEnabled
+          ? () {
+              debugPrint(
+                'ApplauseButton onTap called - postId: $postId, userId: $userId, enabled: $isEnabled',
+              );
+              onTap();
+            }
+          : () {
+              debugPrint(
+                'ApplauseButton disabled - postId: $postId, userId: $userId, count: $count, maxApplause: $maxApplause',
+              );
+            },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: applauseColor.withAlpha(25),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: applauseColor.withAlpha(77), width: 1),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.front_hand,
+              size: 18,
+              color: isEnabled ? applauseColor : applauseColor.withAlpha(128),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: TextStyle(
+                color: isEnabled ? applauseColor : applauseColor.withAlpha(128),
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ),
     );

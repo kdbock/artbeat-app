@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/index.dart';
+import 'secure_network_image.dart';
 
 /// Widget for displaying featured artist content and articles in a row
 class FeaturedContentRowWidget extends StatelessWidget {
@@ -133,22 +134,20 @@ class FeaturedContentRowWidget extends StatelessWidget {
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(12.0),
                               ),
-                              child: Image.network(
-                                content['imageUrl'] as String,
+                              child: SecureNetworkImage(
+                                imageUrl: content['imageUrl'] as String,
                                 height: 150,
                                 width: double.infinity,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    height: 150,
-                                    color: ArtbeatColors.backgroundSecondary,
-                                    child: const Icon(
-                                      Icons.article,
-                                      size: 40,
-                                      color: ArtbeatColors.textSecondary,
-                                    ),
-                                  );
-                                },
+                                errorWidget: Container(
+                                  height: 150,
+                                  color: ArtbeatColors.backgroundSecondary,
+                                  child: const Icon(
+                                    Icons.article,
+                                    size: 40,
+                                    color: ArtbeatColors.textSecondary,
+                                  ),
+                                ),
                               ),
                             ),
                             Padding(

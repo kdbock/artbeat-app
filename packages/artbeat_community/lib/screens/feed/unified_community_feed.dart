@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatComponents;
+    show ArtbeatColors, ArtbeatComponents, CommunityProvider;
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 import '../../widgets/critique_card.dart';
+import '../../widgets/community_header.dart';
+import '../../widgets/post_detail_modal.dart';
 import 'create_post_screen.dart';
-import 'comments_screen.dart';
-import '../search/user_search_screen.dart';
 
 class UnifiedCommunityFeed extends StatefulWidget {
   const UnifiedCommunityFeed({super.key});
@@ -39,6 +40,13 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     super.initState();
     _scrollController.addListener(_onScroll);
     _loadPosts();
+
+    // Mark community as visited when this screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CommunityProvider>().markCommunityAsVisited();
+      }
+    });
   }
 
   @override
@@ -86,6 +94,15 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
             .toList();
 
         debugPrint('Loaded ${loadedPosts.length} posts');
+
+        // Debug post data
+        for (final post in loadedPosts) {
+          debugPrint(
+            'Post ${post.id}: userId="${post.userId}", userName="${post.userName}", '
+            'applauseCount=${post.applauseCount}, commentCount=${post.commentCount}, '
+            'createdAt=${post.createdAt}, userPhotoUrl="${post.userPhotoUrl}"',
+          );
+        }
 
         // Enrich posts with current user photo URLs if missing
         final enrichedPosts = <PostModel>[];
@@ -281,8 +298,10 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   }
 
   Future<void> _handleApplause(PostModel post) async {
+    debugPrint('_handleApplause called for post ${post.id}');
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
+      debugPrint('User not authenticated');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please sign in to applaud posts')),
@@ -292,6 +311,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     }
 
     try {
+      debugPrint('Processing applause for post ${post.id} by user ${user.uid}');
       final postRef = FirebaseFirestore.instance
           .collection('posts')
           .doc(post.id);
@@ -302,10 +322,16 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
       int currentApplause = 0;
       if (applauseDoc.exists) {
         currentApplause = (applauseDoc.data()?['count'] as int?) ?? 0;
+        debugPrint('User has already applauded $currentApplause times');
+      } else {
+        debugPrint('First applause from this user');
       }
 
       // Increment applause (max 5 per user)
       if (currentApplause < PostModel.maxApplausePerUser) {
+        debugPrint(
+          'Adding applause (current: $currentApplause, max: ${PostModel.maxApplausePerUser})',
+        );
         await FirebaseFirestore.instance.runTransaction((transaction) async {
           final postSnapshot = await transaction.get(postRef);
           final currentTotalApplause =
@@ -328,6 +354,9 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
             _posts[index] = post.copyWith(
               applauseCount: post.applauseCount + 1,
             );
+            debugPrint(
+              'Updated local post applause count to ${_posts[index].applauseCount}',
+            );
           }
         });
 
@@ -337,6 +366,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
           ).showSnackBar(const SnackBar(content: Text('👏 Applause added!')));
         }
       } else {
+        debugPrint('Max applause reached for this user');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -391,11 +421,13 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   }
 
   void _navigateToComments(PostModel post) {
-    Navigator.push<void>(
-      context,
-      MaterialPageRoute<void>(builder: (context) => CommentsScreen(post: post)),
-    ).then((_) {
-      // Refresh comments when returning from comments screen
+    debugPrint('_navigateToComments called for post ${post.id}');
+    // Show post detail modal instead of full screen
+    PostDetailModal.showFromPostModel(context, post).then((_) {
+      debugPrint(
+        'Post detail modal closed, refreshing comments for post ${post.id}',
+      );
+      // Refresh comments when returning from modal
       _fetchCommentsForPost(post.id);
     });
   }
@@ -414,6 +446,13 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ArtbeatColors.backgroundSecondary,
+      appBar: const CommunityHeader(
+        title: 'Community Feed',
+        showBackButton: false,
+        showSearchIcon: true,
+        showMessagingIcon: true,
+        showDeveloperIcon: true,
+      ),
       body: Column(
         children: [
           // Create post button section
@@ -601,12 +640,10 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   }
 
   void _handleUserTap(String userId) {
-    // Navigate to user profile
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => UserProfileScreen(userId: userId),
-      ),
+    // TODO: Navigate to user profile
+    debugPrint('User tapped: $userId');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('User profile for $userId (coming soon)')),
     );
   }
 

@@ -106,8 +106,9 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
 
     try {
       // Use provided artwork or fetch from service
-      _artwork = widget.artwork ?? await _artworkService.getArtworkById(widget.artworkId);
-      
+      _artwork = widget.artwork ??
+          await _artworkService.getArtworkById(widget.artworkId);
+
       if (_artwork != null) {
         _titleController.text = _artwork!.title;
         _descriptionController.text = _artwork!.description;
@@ -116,18 +117,18 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         _locationController.text = _artwork!.location ?? '';
         _priceController.text = _artwork!.price?.toString() ?? '';
         _yearController.text = _artwork!.yearCreated?.toString() ?? '';
-        
+
         _isForSale = _artwork!.isForSale;
         _isPublic = _artwork!.isPublic;
         _medium = _artwork!.medium;
         _styles = List<String>.from(_artwork!.styles);
         _tags = List<String>.from(_artwork!.tags ?? []);
-        
+
         // Set tags in text field
         _tagController.text = _tags.join(', ');
       }
     } catch (e) {
-      debugPrint('Error loading artwork: $e');
+      // debugPrint('Error loading artwork: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading artwork: $e')),
@@ -147,14 +148,14 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      
+
       if (image != null) {
         setState(() {
           _newImageFile = File(image.path);
         });
       }
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      // debugPrint('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error picking image: $e')),
@@ -187,21 +188,21 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         medium: _medium,
         styles: _styles,
         tags: _tags,
-        dimensions: _dimensionsController.text.trim().isEmpty 
-            ? null 
+        dimensions: _dimensionsController.text.trim().isEmpty
+            ? null
             : _dimensionsController.text.trim(),
-        materials: _materialsController.text.trim().isEmpty 
-            ? null 
+        materials: _materialsController.text.trim().isEmpty
+            ? null
             : _materialsController.text.trim(),
-        location: _locationController.text.trim().isEmpty 
-            ? null 
+        location: _locationController.text.trim().isEmpty
+            ? null
             : _locationController.text.trim(),
-        price: _priceController.text.trim().isEmpty 
-            ? null 
+        price: _priceController.text.trim().isEmpty
+            ? null
             : double.tryParse(_priceController.text.trim()),
         isForSale: _isForSale,
-        yearCreated: _yearController.text.trim().isEmpty 
-            ? null 
+        yearCreated: _yearController.text.trim().isEmpty
+            ? null
             : int.tryParse(_yearController.text.trim()),
         isPublic: _isPublic,
       );
@@ -213,7 +214,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         Navigator.of(context).pop(true); // Return true to indicate success
       }
     } catch (e) {
-      debugPrint('Error updating artwork: $e');
+      // debugPrint('Error updating artwork: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error updating artwork: $e')),
@@ -234,7 +235,8 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Artwork'),
-        content: const Text('Are you sure you want to delete this artwork? This action cannot be undone.'),
+        content: const Text(
+            'Are you sure you want to delete this artwork? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -256,7 +258,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
 
       try {
         await _artworkService.deleteArtwork(widget.artworkId);
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Artwork deleted successfully')),
@@ -264,7 +266,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
           Navigator.of(context).pop(true); // Return true to indicate deletion
         }
       } catch (e) {
-        debugPrint('Error deleting artwork: $e');
+        // debugPrint('Error deleting artwork: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error deleting artwork: $e')),
@@ -309,31 +311,31 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
             // Image section
             _buildImageSection(),
             const SizedBox(height: 24),
-            
+
             // Basic information
             _buildBasicInfoSection(),
             const SizedBox(height: 24),
-            
+
             // Medium and styles
             _buildMediumAndStylesSection(),
             const SizedBox(height: 24),
-            
+
             // Additional details
             _buildAdditionalDetailsSection(),
             const SizedBox(height: 24),
-            
+
             // Tags
             _buildTagsSection(),
             const SizedBox(height: 24),
-            
+
             // Sale information
             _buildSaleInfoSection(),
             const SizedBox(height: 24),
-            
+
             // Privacy settings
             _buildPrivacySection(),
             const SizedBox(height: 32),
-            
+
             // Action buttons
             _buildActionButtons(),
           ],
@@ -361,7 +363,12 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
           child: _newImageFile != null
               ? Image.file(_newImageFile!, fit: BoxFit.cover)
               : _artwork!.imageUrl.isNotEmpty
-                  ? Image.network(_artwork!.imageUrl, fit: BoxFit.cover)
+                  ? SecureNetworkImage(
+                      imageUrl: _artwork!.imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget:
+                          const Icon(Icons.image, size: 64, color: Colors.grey),
+                    )
                   : const Icon(Icons.image, size: 64, color: Colors.grey),
         ),
         const SizedBox(height: 16),

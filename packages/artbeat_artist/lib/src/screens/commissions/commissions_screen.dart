@@ -37,7 +37,7 @@ class _CommissionsScreenState extends State<CommissionsScreen> {
       if (!mounted) return;
       setState(() => _isLoading = false);
     } catch (e) {
-      debugPrint('Error loading commissions: $e');
+      // debugPrint('Error loading commissions: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;

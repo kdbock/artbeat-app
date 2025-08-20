@@ -8,6 +8,10 @@ import 'package:artbeat_core/firebase_options.dart' as fb_opts;
 class SecureFirebaseConfig {
   const SecureFirebaseConfig._();
 
+  // reCAPTCHA v3 site key for web support
+  static const String recaptchaSiteKey =
+      '6LfazlArAAAAAJY6Qy_mL5W2Of4PVPKVeXQFyuJ3';
+
   static bool _initialized = false;
   static bool _appCheckInitialized = false;
   static Duration? _tokenTTL;

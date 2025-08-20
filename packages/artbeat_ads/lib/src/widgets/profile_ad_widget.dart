@@ -42,7 +42,9 @@ class _ProfileAdWidgetState extends State<ProfileAdWidget> {
         _hasError = false;
       });
 
-      final ad = await _adService.getRandomAdForLocation(AdLocation.profile);
+      final ad = await _adService.getRandomAdForLocation(
+        AdLocation.communityFeed,
+      );
 
       if (mounted) {
         setState(() {

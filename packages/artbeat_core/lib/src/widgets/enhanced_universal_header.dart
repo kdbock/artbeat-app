@@ -32,6 +32,7 @@ class EnhancedUniversalHeader extends StatefulWidget
   final double? elevation;
   final bool hasNotifications;
   final int notificationCount;
+  final double? titleFontSize;
 
   const EnhancedUniversalHeader({
     super.key,
@@ -51,6 +52,7 @@ class EnhancedUniversalHeader extends StatefulWidget
     this.elevation,
     this.hasNotifications = false,
     this.notificationCount = 0,
+    this.titleFontSize,
   });
 
   @override
@@ -251,7 +253,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
           style: TextStyle(
             color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
             fontWeight: FontWeight.w900,
-            fontSize: 24,
+            fontSize: widget.titleFontSize ?? 24,
             letterSpacing: 1.2,
             shadows: [
               Shadow(
@@ -306,10 +308,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
 
     // Additional custom actions
     if (widget.actions != null) {
-      // Debug: Print what actions are being added
-      debugPrint(
-        'EnhancedUniversalHeader: Adding ${widget.actions!.length} custom actions',
-      );
+      // Adding custom actions
       actions.addAll(widget.actions!);
     }
 
@@ -329,7 +328,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               icon: Icon(
                 Icons.message_outlined,
                 color: messagingProvider.hasError
-                    ? ArtbeatColors.error.withOpacity(0.6)
+                    ? ArtbeatColors.error.withValues(alpha: 0.6)
                     : widget.foregroundColor ?? ArtbeatColors.textPrimary,
               ),
               onPressed: () async {
@@ -411,211 +410,6 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
         ),
       );
     }
-  }
-
-  void _showProfileMenu() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        maxChildSize: 0.8,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        gradient: ArtbeatColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.explore,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Discover & Connect',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: ArtbeatColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            'Find artists, explore art, join the community',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: ArtbeatColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Menu items
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _buildMenuTile(
-                      icon: Icons.person_search,
-                      title: 'Find Artists',
-                      subtitle: 'Discover local and featured artists',
-                      color: ArtbeatColors.primaryPurple,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artist/search');
-                      },
-                    ),
-                    _buildMenuTile(
-                      icon: Icons.palette,
-                      title: 'Browse Artwork',
-                      subtitle: 'Explore art collections and galleries',
-                      color: ArtbeatColors.primaryGreen,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/artwork/browse');
-                      },
-                    ),
-                    _buildMenuTile(
-                      icon: Icons.location_on,
-                      title: 'Local Scene',
-                      subtitle: 'Art events and spaces near you',
-                      color: ArtbeatColors.error,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/local');
-                      },
-                    ),
-                    _buildMenuTile(
-                      icon: Icons.trending_up,
-                      title: 'Trending',
-                      subtitle: 'Popular artists and trending art',
-                      color: ArtbeatColors.warning,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/trending');
-                      },
-                    ),
-                    _buildMenuTile(
-                      icon: Icons.account_circle,
-                      title: 'My Profile',
-                      subtitle: 'View and edit your profile',
-                      color: ArtbeatColors.info,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/profile');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: ArtbeatColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: ArtbeatColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: ArtbeatColors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   void _showDeveloperTools() {

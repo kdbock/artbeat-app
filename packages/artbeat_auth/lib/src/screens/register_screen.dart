@@ -124,17 +124,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final userDoc = await userService.getUserById(user.uid);
 
         if (userDoc == null) {
-          debugPrint(
-            '⚠️ User document not found in Firestore. Creating it now...',
-          );
           await userService.createNewUser(
             uid: user.uid,
             email: user.email ?? email,
             displayName: fullName,
             zipCode: zipCode,
           );
-        } else {
-          debugPrint('✅ User document confirmed in Firestore');
         }
       }
 

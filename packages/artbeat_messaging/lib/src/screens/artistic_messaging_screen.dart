@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 import '../services/chat_service.dart';
 
@@ -68,9 +69,385 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
     super.dispose();
   }
 
+  void _showSearchModal(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(Icons.search, color: primaryGradientStart, size: 24),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Search Messages',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Find conversations and contacts',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Search options
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildSearchOption(
+                      icon: Icons.chat_bubble_outline,
+                      title: 'Search Conversations',
+                      subtitle: 'Find messages and chat history',
+                      color: primaryGradientStart,
+                      onTap: () {
+                        Navigator.pop(context);
+                        // Navigate to conversation search
+                      },
+                    ),
+                    _buildSearchOption(
+                      icon: Icons.person_search,
+                      title: 'Find People',
+                      subtitle: 'Search for artists and community members',
+                      color: secondaryGradientStart,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/messaging/find-people');
+                      },
+                    ),
+                    _buildSearchOption(
+                      icon: Icons.group_add,
+                      title: 'Join Groups',
+                      subtitle: 'Discover and join art communities',
+                      color: accentGradientStart,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/messaging/groups');
+                      },
+                    ),
+                    _buildSearchOption(
+                      icon: Icons.trending_up,
+                      title: 'Popular Chats',
+                      subtitle: 'See trending conversations',
+                      color: secondaryGradientEnd,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/messaging/popular');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showProfileMenu(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.8,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(Icons.palette, color: primaryGradientStart, size: 24),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Messaging Profile',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Your communication preferences',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Profile options
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildProfileOption(
+                      icon: Icons.person,
+                      title: 'My Profile',
+                      subtitle: 'View and edit your profile',
+                      color: primaryGradientStart,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/profile');
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.settings,
+                      title: 'Message Settings',
+                      subtitle: 'Privacy and notification preferences',
+                      color: secondaryGradientStart,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/messaging/settings');
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.block,
+                      title: 'Blocked Users',
+                      subtitle: 'Manage blocked contacts',
+                      color: secondaryGradientEnd,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/messaging/blocked');
+                      },
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.help_outline,
+                      title: 'Messaging Help',
+                      subtitle: 'Tips and support for messaging',
+                      color: accentGradientStart,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/messaging/help');
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: ArtbeatGradientBackground(
+          addShadow: true,
+          child: EnhancedUniversalHeader(
+            title: 'Messages',
+            showLogo: false,
+            showSearch: true,
+            showBackButton: true,
+            showDeveloperTools: false,
+            onSearchPressed: () => _showSearchModal(context),
+            onProfilePressed: () => _showProfileMenu(context),
+            backgroundColor: Colors.transparent,
+            foregroundColor: ArtbeatColors.textPrimary,
+            elevation: 0,
+          ),
+        ),
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -86,7 +463,6 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
               position: _slideAnimation,
               child: Column(
                 children: [
-                  _buildArtisticHeader(),
                   _buildSectionSelector(),
                   Expanded(child: _buildContent()),
                 ],
@@ -96,71 +472,6 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
         ),
       ),
       floatingActionButton: _buildArtisticFAB(),
-    );
-  }
-
-  Widget _buildArtisticHeader() {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [primaryGradientStart, primaryGradientEnd],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: primaryGradientStart.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.palette, color: Colors.white, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'ARTbeat Messages',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Connect with the art community',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.search, color: Colors.white, size: 20),
-          ),
-        ],
-      ),
     );
   }
 
@@ -441,21 +752,19 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: avatarUrl != null
-                    ? Image.network(
-                        avatarUrl,
+                    ? SecureNetworkImage(
+                        imageUrl: avatarUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(colors: gradient),
-                            ),
-                            child: Icon(
-                              chat.isGroup ? Icons.group : Icons.person,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          );
-                        },
+                        errorWidget: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: gradient),
+                          ),
+                          child: Icon(
+                            chat.isGroup ? Icons.group : Icons.person,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
                       )
                     : Container(
                         decoration: BoxDecoration(
@@ -1128,23 +1437,19 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: group.groupImage != null
-                            ? Image.network(
-                                group.groupImage!,
+                            ? SecureNetworkImage(
+                                imageUrl: group.groupImage!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: gradient,
-                                      ),
-                                    ),
-                                    child: const Icon(
-                                      Icons.group,
-                                      color: Colors.white,
-                                      size: 28,
-                                    ),
-                                  );
-                                },
+                                errorWidget: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: gradient),
+                                  ),
+                                  child: const Icon(
+                                    Icons.group,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
                               )
                             : Container(
                                 decoration: BoxDecoration(

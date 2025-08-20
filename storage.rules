@@ -59,8 +59,16 @@ service firebase.storage {
       allow delete: if isAuthenticated();
     }
 
-    // Explicit debug_uploads path - very permissive for development
+    // Debug uploads path - optimized for reliable ad uploads
+    // This path has proven most reliable for avoiding "cannot parse response" errors
     match /debug_uploads/{fileName} {
+      allow read, write: if isAuthenticated();
+      // Additional permissive rules for better reliability
+      allow read, write: if request.auth != null;
+    }
+    
+    // Debug uploads with subdirectories for better organization
+    match /debug_uploads/{category}/{fileName} {
       allow read, write: if isAuthenticated();
     }
 
@@ -78,9 +86,16 @@ service firebase.storage {
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
 
+    // Artwork images with subdirectory (e.g., artwork_images/userId/new/fileName)
+    match /artwork_images/{userId}/{subDir}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
     // Very permissive artwork path for development
     match /artwork_images/{allPaths=**} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public read access for artwork images
       allow write: if isAuthenticated(); // More permissive for development
     }
 
@@ -238,6 +253,75 @@ service firebase.storage {
     // Art Walk debug uploads (for development)
     match /art_walks_debug/{walkId}/{fileName} {
       allow read, write: if isAuthenticated() && isDebugMode();
+    }
+
+    // Enhanced storage paths for simplified uploads
+    match /temp_uploads/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Simple uploads path for development and testing
+    match /uploads/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Ad images - for advertisement uploads
+    match /ads/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Admin ads - for admin-created advertisements
+    match /admin_ads/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // Artist ads - for artist-created advertisements
+    match /artist_ads/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Gallery ads - for gallery-created advertisements
+    match /gallery_ads/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User ads - for regular user-created advertisements
+    match /user_ads/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Artist approved ads - special category for artist-approved advertisements
+    match /artist_approved_ads/{subpath=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // More permissive ad uploads path for development
+    match /ads/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated();
     }
 
     // Debug mode bypass for testing

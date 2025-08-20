@@ -65,13 +65,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             results.add(profile);
           }
         } catch (e) {
-          debugPrint('Error parsing artist profile: $e');
+          // Skip invalid artist profiles
         }
       }
 
       _artists = results;
     } catch (e) {
-      debugPrint('Error searching artists: $e');
+      // Handle search error silently
     }
   }
 
@@ -98,13 +98,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             results.add(artwork);
           }
         } catch (e) {
-          debugPrint('Error parsing artwork: $e');
+          // Skip invalid artworks
         }
       }
 
       _artworks = results;
     } catch (e) {
-      debugPrint('Error searching artworks: $e');
+      // Handle search error silently
     }
   }
 
@@ -131,13 +131,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             results.add(event);
           }
         } catch (e) {
-          debugPrint('Error parsing event: $e');
+          // Skip invalid events
         }
       }
 
       _events = results;
     } catch (e) {
-      debugPrint('Error searching events: $e');
+      // Handle search error silently
     }
   }
 

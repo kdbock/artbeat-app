@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
-import 'applause_button.dart';
 import 'artist_avatar.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import '../screens/gifts/gift_modal.dart';
-import '../screens/sponsorships/sponsor_modal.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
@@ -16,6 +13,8 @@ class PostCard extends StatelessWidget {
   final void Function(PostModel) onApplause;
   final void Function(String) onComment;
   final void Function(PostModel) onShare;
+  final void Function(PostModel)? onFeature;
+  final void Function(PostModel)? onGift;
   final bool isExpanded;
   final VoidCallback onToggleExpand;
 
@@ -28,12 +27,14 @@ class PostCard extends StatelessWidget {
     required this.onApplause,
     required this.onComment,
     required this.onShare,
+    this.onFeature,
+    this.onGift,
     this.isExpanded = false,
     required this.onToggleExpand,
   });
 
-  // Always show gift/sponsor/applause for all posts in the community feed
-  bool get canGift => true;
+  /// Get the post type based on the PostModel
+  String get postType => 'POST';
 
   @override
   Widget build(BuildContext context) {
@@ -122,45 +123,26 @@ class PostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Gift and Sponsor buttons - constrain this column
-                SizedBox(
-                  width: 80, // Fixed width to prevent overflow
-                  child: Column(
-                    children: [
-                      if (canGift) ...[
-                        _buildActionChip(
-                          context,
-                          icon: Icons.card_giftcard,
-                          label: 'Gift',
-                          color: ArtbeatColors.primaryPurple,
-                          onTap: () => showDialog<GiftModal>(
-                            context: context,
-                            builder: (ctx) =>
-                                GiftModal(recipientId: post.userId),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        _buildActionChip(
-                          context,
-                          icon: Icons.volunteer_activism,
-                          label: 'Sponsor',
-                          color: ArtbeatColors.accentYellow,
-                          onTap: () => showDialog<SponsorModal>(
-                            context: context,
-                            builder: (ctx) =>
-                                SponsorModal(artistId: post.userId),
-                          ),
-                        ),
-                      ],
-                      if (post.userId == currentUserId)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.more_vert,
-                            color: ArtbeatColors.textSecondary,
-                          ),
-                          onPressed: () => _showPostOptions(context),
-                        ),
-                    ],
+                // Post type button in top right corner
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getPostTypeColor().withAlpha(25),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _getPostTypeColor().withAlpha(77),
+                    ),
+                  ),
+                  child: Text(
+                    postType,
+                    style: TextStyle(
+                      color: _getPostTypeColor(),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -282,30 +264,51 @@ class PostCard extends StatelessWidget {
             child: Row(
               children: [
                 // Applause button
-                ApplauseButton(
-                  postId: post.id,
-                  userId: currentUserId,
-                  count: post.applauseCount,
-                  onTap: () => onApplause(post),
-                  maxApplause: PostModel.maxApplausePerUser,
-                  color: ArtbeatColors.accentYellow,
+                Expanded(
+                  child: _buildActionButton(
+                    icon: Icons.thumb_up_outlined,
+                    label: 'Appreciate',
+                    count: post.applauseCount,
+                    color: ArtbeatColors.accentYellow,
+                    onTap: () => onApplause(post),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                // Art Discussion button (renamed from comment)
+                // Comment button
                 Expanded(
-                  flex: 2,
                   child: _buildActionButton(
-                    icon: Icons.palette_outlined,
-                    label: 'Art Discussion',
+                    icon: Icons.comment_outlined,
+                    label: 'Comment',
                     count: comments.length,
                     color: ArtbeatColors.primaryPurple,
                     onTap: () => onComment(post.id),
                   ),
                 ),
                 const SizedBox(width: 8),
+                // Feature button (only for admins/moderators)
+                if (onFeature != null)
+                  Expanded(
+                    child: _buildActionButton(
+                      icon: Icons.star_outline,
+                      label: 'Feature',
+                      color: ArtbeatColors.primaryGreen,
+                      onTap: () => onFeature!(post),
+                    ),
+                  ),
+                if (onFeature != null) const SizedBox(width: 8),
+                // Gift button
+                if (onGift != null)
+                  Expanded(
+                    child: _buildActionButton(
+                      icon: Icons.card_giftcard_outlined,
+                      label: 'Gift',
+                      color: ArtbeatColors.primaryPurple,
+                      onTap: () => onGift!(post),
+                    ),
+                  ),
+                if (onGift != null) const SizedBox(width: 8),
                 // Share button
                 Expanded(
-                  flex: 1,
                   child: _buildActionButton(
                     icon: Icons.share_outlined,
                     label: 'Share',
@@ -321,42 +324,20 @@ class PostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionChip(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: color.withAlpha(25),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withAlpha(77)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 12, color: color),
-            const SizedBox(width: 3),
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  /// Get the color for the post type badge
+  Color _getPostTypeColor() {
+    switch (postType) {
+      case 'ARTWORK':
+        return ArtbeatColors.primaryPurple;
+      case 'EVENT':
+        return ArtbeatColors.primaryGreen;
+      case 'ART WALK':
+        return Colors.blue;
+      case 'OPPORTUNITY':
+        return Colors.orange;
+      default:
+        return ArtbeatColors.textSecondary;
+    }
   }
 
   Widget _buildActionButton({
@@ -368,60 +349,34 @@ class PostCard extends StatelessWidget {
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              count != null && count > 0 ? '$label ($count)' : label,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: color.withAlpha(25),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withAlpha(77)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                count != null && count > 0 ? '$count' : label,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.center,
               ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
-  }
-
-  void _showPostOptions(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.edit),
-            title: const Text('Edit Post'),
-            onTap: () {
-              Navigator.pop(context);
-              _handleEditPost(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete),
-            title: const Text('Delete Post'),
-            onTap: () {
-              Navigator.pop(context);
-              _handleDeletePost(context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _handleEditPost(BuildContext context) {
-    // Implement edit post functionality
-  }
-
-  void _handleDeletePost(BuildContext context) {
-    // Implement delete post functionality
   }
 }

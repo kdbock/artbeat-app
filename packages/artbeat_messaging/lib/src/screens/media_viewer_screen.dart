@@ -81,7 +81,7 @@ class MediaViewerScreen extends StatelessWidget {
     try {
       await SharePlus.instance.share(ShareParams(text: mediaUrl));
     } catch (e) {
-      debugPrint('Error sharing media: $e');
+      // debugPrint('Error sharing media: $e');
     }
   }
 

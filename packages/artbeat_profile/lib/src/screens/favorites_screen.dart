@@ -60,7 +60,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       currentIndex: -1,
       child: Scaffold(
         appBar: const core.EnhancedUniversalHeader(
-          title: 'Fan of',
+          title: 'Following',
           showLogo: false,
         ),
         body: Container(
@@ -97,15 +97,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(
-            Icons.front_hand,
+            Icons.person_add_outlined,
             size: 80,
             color: core.ArtbeatColors.accentYellow,
           ),
           const SizedBox(height: 16),
           Text(
             _isCurrentUser
-                ? 'You haven\'t become a fan of anyone yet'
-                : 'This user isn\'t a fan of anyone yet',
+                ? 'You haven\'t followed anyone yet'
+                : 'This user isn\'t following anyone yet',
             style: const TextStyle(
               fontSize: 16,
               color: core.ArtbeatColors.textSecondary,
@@ -215,7 +215,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       case 'walk':
         return Icons.directions_walk_outlined;
       default:
-        return Icons.front_hand; // Fan/applause icon
+        return Icons.person_add_outlined; // Follow icon
     }
   }
 

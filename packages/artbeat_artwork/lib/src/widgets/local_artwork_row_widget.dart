@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Widget for displaying local artwork in a horizontal scrollable row
 class LocalArtworkRowWidget extends StatelessWidget {
@@ -140,20 +141,18 @@ class LocalArtworkRowWidget extends StatelessWidget {
                                 ClipRRect(
                                   borderRadius: const BorderRadius.vertical(
                                       top: Radius.circular(12.0)),
-                                  child: Image.network(
-                                    artwork.imageUrl,
+                                  child: SecureNetworkImage(
+                                    imageUrl: artwork.imageUrl,
                                     width: 170,
                                     height: 150,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
-                                        width: 170,
-                                        height: 150,
-                                        color: Colors.grey.shade300,
-                                        child: const Icon(
-                                            Icons.image_not_supported),
-                                      );
-                                    },
+                                    errorWidget: Container(
+                                      width: 170,
+                                      height: 150,
+                                      color: Colors.grey.shade300,
+                                      child:
+                                          const Icon(Icons.image_not_supported),
+                                    ),
                                   ),
                                 ),
                                 if (artwork.isForSale == false)

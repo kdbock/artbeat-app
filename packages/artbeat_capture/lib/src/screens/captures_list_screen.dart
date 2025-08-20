@@ -94,7 +94,7 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
 
       return await Geolocator.getCurrentPosition();
     } catch (e) {
-      debugPrint('Error getting location: $e');
+      // debugPrint('Error getting location: $e');
       return null;
     }
   }

@@ -57,7 +57,7 @@ class ChatListTile extends StatelessWidget {
           ),
         ),
         confirmDismiss: (direction) async {
-          return await _showArchiveConfirmation(context);
+          return _showArchiveConfirmation(context);
         },
         onDismissed: (direction) {
           if (onArchive != null) {

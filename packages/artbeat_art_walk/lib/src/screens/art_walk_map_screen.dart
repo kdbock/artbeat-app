@@ -54,12 +54,12 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     setState(() => _isLoading = true);
 
     try {
-      debugPrint('🗺️ Initializing Google Maps...');
+      // debugPrint('🗺️ Initializing Google Maps...');
 
       // Check if we're running on an emulator to provide appropriate feedback
       final isEmulator = await _checkIfEmulator();
       if (isEmulator) {
-        debugPrint('⚠️ Running on emulator - map performance may be limited');
+        // debugPrint('⚠️ Running on emulator - map performance may be limited');
       }
 
       // Initialize Maps with retry logic
@@ -84,7 +84,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         });
       }
 
-      debugPrint('✅ Maps initialized successfully');
+      // debugPrint('✅ Maps initialized successfully');
 
       // Load user's ZIP code first
       await _loadUserZipCode();
@@ -93,7 +93,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       // If we're on an emulator, reduce map resource usage
       if (isEmulator && _mapController != null) {
-        debugPrint('🗺️ Optimizing map settings for emulator');
+        // debugPrint('🗺️ Optimizing map settings for emulator');
         try {
           // Use a more modest zoom level to reduce tile loading
           await _mapController!.moveCamera(CameraUpdate.zoomTo(10.0));
@@ -101,11 +101,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           // Note: Traffic layer and map type are set in the GoogleMap widget
           // We can't modify them directly through the controller
         } catch (e) {
-          debugPrint('⚠️ Error optimizing map for emulator: $e');
+          // debugPrint('⚠️ Error optimizing map for emulator: $e');
         }
       }
     } catch (e) {
-      debugPrint('❌ Error in map/location initialization: $e');
+      // debugPrint('❌ Error in map/location initialization: $e');
       if (mounted) {
         setState(() {
           _hasMapError = true;
@@ -132,7 +132,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         return !iosInfo.isPhysicalDevice;
       }
     } catch (e) {
-      debugPrint('⚠️ Error checking if device is emulator: $e');
+      // debugPrint('⚠️ Error checking if device is emulator: $e');
     }
     return false;
   }
@@ -147,14 +147,14 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             _currentZipCode = user.zipCode!;
           });
         }
-        debugPrint('📍 Loaded user ZIP code: ${user.zipCode}');
+        // debugPrint('📍 Loaded user ZIP code: ${user.zipCode}');
       } else {
-        debugPrint(
-          '📍 No user ZIP code found, will use location-based detection',
-        );
+        // debugPrint(
+        //   '📍 No user ZIP code found, will use location-based detection',
+        // );
       }
     } catch (e) {
-      debugPrint('❌ Error loading user ZIP code: $e');
+      // debugPrint('❌ Error loading user ZIP code: $e');
     }
   }
 
@@ -168,7 +168,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       if (currentLocationResult != null) {
         // Successfully got current location - use it
         _currentPosition = currentLocationResult;
-        debugPrint('🌍 Using current location: $_currentPosition');
+        // debugPrint('🌍 Using current location: $_currentPosition');
         await _moveMapToLocation(
           _currentPosition!.latitude,
           _currentPosition!.longitude,
@@ -181,7 +181,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             _currentPosition!.latitude,
             _currentPosition!.longitude,
           );
-          debugPrint('📍 Location-derived ZIP code: $_currentZipCode');
+          // debugPrint('📍 Location-derived ZIP code: $_currentZipCode');
 
           // Save the detected ZIP code to user profile if valid
           if (_currentZipCode.isNotEmpty && _currentZipCode != '00000') {
@@ -197,7 +197,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         _startLocationUpdates();
       } else if (_currentZipCode.isNotEmpty) {
         // Priority 2: Use user's saved ZIP code
-        debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
+        // debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
         final coordinates = await _getCoordinatesFromZipCode(_currentZipCode);
         if (coordinates != null) {
           await _moveMapToLocation(
@@ -208,7 +208,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           await _loadNearbyArt(coordinates.latitude, coordinates.longitude);
         } else {
           // Fallback to default location if ZIP code lookup fails
-          debugPrint('📍 ZIP code lookup failed, using default location');
+          // debugPrint('📍 ZIP code lookup failed, using default location');
           await _moveMapToLocation(
             _defaultLocation.target.latitude,
             _defaultLocation.target.longitude,
@@ -217,7 +217,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         }
       } else {
         // Priority 3: Use default location (Kinston, NC - 28501)
-        debugPrint('📍 Using default location: Kinston, NC (28501)');
+        // debugPrint('📍 Using default location: Kinston, NC (28501)');
         await _moveMapToLocation(
           _defaultLocation.target.latitude,
           _defaultLocation.target.longitude,
@@ -229,7 +229,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         );
       }
     } catch (e) {
-      debugPrint('❌ Error initializing location: $e');
+      // debugPrint('❌ Error initializing location: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -259,7 +259,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       // Check if location services are enabled
       final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        debugPrint('📍 Location services are disabled');
+        // debugPrint('📍 Location services are disabled');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -278,7 +278,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          debugPrint('📍 Location permission denied');
+          // debugPrint('📍 Location permission denied');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -294,7 +294,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        debugPrint('📍 Location permission permanently denied');
+        // debugPrint('📍 Location permission permanently denied');
         return null;
       }
 
@@ -320,7 +320,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       return position;
     } on TimeoutException {
-      debugPrint('⌛ Timeout getting current location');
+      // debugPrint('⌛ Timeout getting current location');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -333,9 +333,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       }
       return null;
     } catch (e) {
-      debugPrint('❌ Error getting current location: $e');
+      // debugPrint('❌ Error getting current location: $e');
       if (e is SocketException) {
-        debugPrint('🌐 Network error while getting location data: $e');
+        // debugPrint('🌐 Network error while getting location data: $e');
         _showSnackBar('Network error. Using saved location or default.');
       }
       return null;
@@ -358,10 +358,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       // For other ZIP codes, you might want to use a geocoding service
       // For now, return null to fall back to default location
-      debugPrint('📍 ZIP code coordinate lookup not implemented for: $zipCode');
+      // debugPrint('📍 ZIP code coordinate lookup not implemented for: $zipCode');
       return null;
     } catch (e) {
-      debugPrint('❌ Error getting coordinates from ZIP code: $e');
+      // debugPrint('❌ Error getting coordinates from ZIP code: $e');
       return null;
     }
   }
@@ -374,7 +374,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   ) async {
     if (_mapController != null && mounted && !_hasMovedToUserLocation) {
       try {
-        debugPrint('🗺️ Moving map to location: $latitude, $longitude');
+        // debugPrint('🗺️ Moving map to location: $latitude, $longitude');
         await _mapController!
             .animateCamera(
               CameraUpdate.newCameraPosition(
@@ -384,7 +384,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             .timeout(const Duration(seconds: 3));
         _hasMovedToUserLocation = true;
       } catch (e) {
-        debugPrint('⚠️ Error animating camera: $e');
+        // debugPrint('⚠️ Error animating camera: $e');
       }
     }
   }
@@ -401,17 +401,15 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
           .timeout(
             const Duration(seconds: 15),
             onTimeout: () {
-              debugPrint(
-                '⚠️ Loading nearby art timed out, using cached data if available',
-              );
+              // debugPrint('⚠️ Loading nearby art timed out, using cached data if available');
               return _artWalkService.getCachedPublicArt();
             },
           );
 
-      debugPrint('🎨 Loaded ${_nearbyArt.length} nearby art pieces');
+      // debugPrint('🎨 Loaded ${_nearbyArt.length} nearby art pieces');
       _updateMarkers();
     } catch (e) {
-      debugPrint('❌ Error loading nearby art: $e');
+      // debugPrint('❌ Error loading nearby art: $e');
       _nearbyArt = [];
       _updateMarkers();
     }
@@ -421,9 +419,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   void _updateUserZipCode(String zipCode) async {
     try {
       await _userService.updateUserZipCode(zipCode);
-      debugPrint('✅ Successfully updated user ZIP code to: $zipCode');
+      // debugPrint('✅ Successfully updated user ZIP code to: $zipCode');
     } catch (e) {
-      debugPrint('❌ Error updating user ZIP code: $e');
+      // debugPrint('❌ Error updating user ZIP code: $e');
     }
   }
 
@@ -462,10 +460,10 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
   /// Called when the map is created to initialize the controller
   Future<void> _onMapCreated(GoogleMapController controller) async {
-    debugPrint('🗺️ GoogleMap controller created successfully');
-    debugPrint(
-      '🔑 Using API key: ${ConfigService.instance.googleMapsApiKey?.substring(0, 20)}...',
-    );
+    // debugPrint('🗺️ GoogleMap controller created successfully');
+    // debugPrint(
+    //   '🔑 Using API key: ${ConfigService.instance.googleMapsApiKey?.substring(0, 20)}...',
+    // );
 
     _mapController = controller;
     _mapControllerCompleter.complete(controller);
@@ -475,9 +473,12 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       final position = await controller.getLatLng(
         const ScreenCoordinate(x: 100, y: 100),
       );
-      debugPrint('🗺️ Map tiles loading properly - test coordinate: $position');
+      // debugPrint('🗺️ Map tiles loading properly - test coordinate: $position');
+      // Suppress unused variable warning - position is used in debugPrint
+      // ignore: unused_local_variable
+      position;
     } catch (e) {
-      debugPrint('⚠️ Map tiles may not be loading: $e');
+      // debugPrint('⚠️ Map tiles may not be loading: $e');
       if (mounted) {
         _showSnackBar(
           'Map tiles not loading properly. This may be an API key issue.',
@@ -487,7 +488,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
     // If we already have user location, move to it immediately
     if (_currentPosition != null && !_hasMovedToUserLocation) {
-      debugPrint('🗺️ Moving map to existing user location');
+      // debugPrint('🗺️ Moving map to existing user location');
       try {
         await controller.animateCamera(
           CameraUpdate.newCameraPosition(
@@ -502,7 +503,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         );
         _hasMovedToUserLocation = true;
       } catch (e) {
-        debugPrint('⚠️ Error moving to existing location: $e');
+        // debugPrint('⚠️ Error moving to existing location: $e');
       }
     }
 
@@ -533,7 +534,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       setState(() => _currentPosition = newPosition);
       await _updateNearbyArt();
     } catch (e) {
-      debugPrint('Error updating location: $e');
+      // debugPrint('Error updating location: $e');
     }
   }
 
@@ -569,12 +570,12 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 radiusKm: 10.0,
                 includeUserOnly: false, // Gets all public art
               );
-          debugPrint('🔍 [DEBUG] all captures length: ${allCaptures.length}');
+          // debugPrint('🔍 [DEBUG] all captures length: ${allCaptures.length}');
           nearbyArt =
               allCaptures; // Already PublicArtModel, no conversion needed
           break;
         case 'my_captures':
-          debugPrint('🔍 [DEBUG] Filter my_captures selected');
+          // debugPrint('🔍 [DEBUG] Filter my_captures selected');
           final captures = await _artWalkService
               .getPublicArtNearLocationWithFilter(
                 latitude: _currentPosition!.latitude,
@@ -582,7 +583,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 radiusKm: 10.0,
                 includeUserOnly: true,
               );
-          debugPrint('🔍 [DEBUG] my_captures docs count: ${captures.length}');
+          // debugPrint('🔍 [DEBUG] my_captures docs count: ${captures.length}');
           nearbyArt = captures; // Already PublicArtModel, no conversion needed
           break;
       }
@@ -593,7 +594,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         _updateMarkers();
       });
     } catch (e) {
-      debugPrint('Error updating nearby art: $e');
+      // debugPrint('Error updating nearby art: $e');
     }
   }
 
@@ -733,7 +734,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         );
       }
     } catch (e) {
-      debugPrint('Error searching by ZIP code: $e');
+      // debugPrint('Error searching by ZIP code: $e');
       if (mounted) {
         _showSnackBar('Error searching location: ${e.toString()}');
       }
@@ -750,30 +751,11 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       currentIndex: 1, // Art Walk is index 1
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: Row(
-            children: [
-              Image.asset(
-                'assets/images/artbeat_logo.png',
-                height: 32,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Text(
-                    'ARTbeat',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                  );
-                },
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Art Walk',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          centerTitle: false,
+        appBar: const ArtWalkHeader(
+          title: 'Art Walk Map',
+          showSearch: true,
+          showChat: true,
+          showDeveloper: false,
         ),
         drawer: const ArtbeatDrawer(),
         body: Stack(
@@ -792,7 +774,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
               indoorViewEnabled: false,
               // Add error handling for API key issues
               onTap: (LatLng position) {
-                debugPrint('🗺️ Map tapped at: $position');
+                // debugPrint('🗺️ Map tapped at: $position');
               },
             ),
 

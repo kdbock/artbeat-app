@@ -2,10 +2,13 @@
 // Generated on Wed Jun 15 10:30:12 EDT 2025
 
 // Dashboard
-export 'community_dashboard_screen.dart';
+export '../src/screens/community_dashboard_screen.dart';
+export '../src/screens/community_feed_screen.dart';
+export '../src/screens/community_artists_screen.dart';
 
 // Feed screens
 export 'feed/unified_community_feed.dart';
+export 'feed/artist_community_feed_screen.dart';
 export 'feed/create_post_screen.dart';
 export 'feed/comments_screen.dart';
 export 'feed/trending_content_screen.dart';

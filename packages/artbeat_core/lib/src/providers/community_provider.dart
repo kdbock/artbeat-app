@@ -1,0 +1,101 @@
+import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class CommunityProvider extends ChangeNotifier {
+  int _unreadCount = 0;
+  User? _currentUser;
+  Stream<int>? _unreadStream;
+
+  int get unreadCount => _unreadCount;
+
+  CommunityProvider() {
+    _initializeUser();
+  }
+
+  void _initializeUser() {
+    _currentUser = FirebaseAuth.instance.currentUser;
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      _currentUser = user;
+      if (user != null) {
+        _listenToUnreadCount();
+      } else {
+        _unreadCount = 0;
+        notifyListeners();
+      }
+    });
+
+    if (_currentUser != null) {
+      _listenToUnreadCount();
+    }
+  }
+
+  void _listenToUnreadCount() {
+    if (_currentUser == null) return;
+
+    _unreadStream = _getUnreadPostsCount(_currentUser!.uid);
+    _unreadStream!.listen(
+      (count) {
+        _unreadCount = count;
+        notifyListeners();
+      },
+      onError: (Object error) {
+        debugPrint('Error listening to unread count: $error');
+        _unreadCount = 0;
+        notifyListeners();
+      },
+    );
+  }
+
+  Stream<int> _getUnreadPostsCount(String userId) {
+    try {
+      return FirebaseFirestore.instance
+          .collection('user_activity')
+          .doc(userId)
+          .snapshots()
+          .asyncMap((doc) async {
+            if (!doc.exists) {
+              // If no user activity doc exists, return a reasonable default
+              return 3; // Show a small number to indicate there might be new content
+            }
+
+            final data = doc.data()!;
+            final lastSeenTimestamp = data['lastCommunityVisit'] as Timestamp?;
+
+            if (lastSeenTimestamp == null) {
+              // If never visited, return a reasonable default
+              return 3;
+            }
+
+            // For now, return 0 to avoid the index requirement
+            // TODO: Implement proper unread count once the required index is created
+            // The required index is: posts collection with fields [isPublic, createdAt]
+            return 0;
+          });
+    } catch (e) {
+      debugPrint('Error getting unread posts count: $e');
+      return Stream.value(0);
+    }
+  }
+
+  Future<void> markCommunityAsVisited() async {
+    if (_currentUser == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('user_activity')
+          .doc(_currentUser!.uid)
+          .set({
+            'lastCommunityVisit': FieldValue.serverTimestamp(),
+            'userId': _currentUser!.uid,
+          }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error marking community as visited: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+}

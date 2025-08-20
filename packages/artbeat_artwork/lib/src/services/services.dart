@@ -3,3 +3,4 @@
 
 export 'image_moderation_service.dart';
 export 'artwork_service.dart';
+export 'artwork_cleanup_service.dart';

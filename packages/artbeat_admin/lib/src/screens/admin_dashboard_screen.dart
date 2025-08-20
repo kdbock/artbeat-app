@@ -313,6 +313,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             _buildActionButton(
+              'Manage Ads',
+              Icons.campaign,
+              () => Navigator.pushNamed(context, '/admin/ad-management'),
+            ),
+            _buildActionButton(
               'Analytics',
               Icons.analytics,
               () => Navigator.of(context).push(

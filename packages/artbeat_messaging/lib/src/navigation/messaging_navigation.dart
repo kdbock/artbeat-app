@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../screens/artistic_messaging_screen.dart';
-import '../providers/presence_provider.dart';
-import '../services/presence_service.dart';
 
 class MessagingNavigation extends StatefulWidget {
   final int initialTabIndex;
@@ -32,10 +29,7 @@ class _MessagingNavigationState extends State<MessagingNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // Provide PresenceProvider for ArtisticMessagingScreen
-    return ChangeNotifierProvider<PresenceProvider>(
-      create: (_) => PresenceProvider(PresenceService()),
-      child: const ArtisticMessagingScreen(),
-    );
+    // Use the PresenceProvider from the app-level provider
+    return const ArtisticMessagingScreen();
   }
 }

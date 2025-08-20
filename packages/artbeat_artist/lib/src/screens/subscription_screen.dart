@@ -37,6 +37,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     _loadSubscription();
   }
 
+  // Helper method to check if a tier is disabled
+  bool _isTierDisabled(core.SubscriptionTier tier) {
+    return tier == core.SubscriptionTier.artistPro ||
+        tier == core.SubscriptionTier.gallery;
+  }
+
   Future<void> _loadSubscription() async {
     setState(() {
       _isLoading = true;
@@ -49,8 +55,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       if (mounted) {
         setState(() {
           _currentSubscription = subscription;
+          // Ensure selected tier is not disabled, default to basic if it is
+          final tier = subscription?.tier ?? core.SubscriptionTier.artistBasic;
           _selectedTier =
-              subscription?.tier ?? core.SubscriptionTier.artistBasic;
+              _isTierDisabled(tier) ? core.SubscriptionTier.artistBasic : tier;
           _autoRenew = subscription?.autoRenew ?? true;
           _isLoading = false;
         });
@@ -85,6 +93,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Future<void> _subscribe() async {
+    // Prevent subscription to disabled tiers
+    if (_isTierDisabled(_selectedTier)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This subscription tier is coming soon!')),
+      );
+      return;
+    }
+
     if (_selectedTier == core.SubscriptionTier.artistBasic ||
         _selectedTier == core.SubscriptionTier.free) {
       if (_currentSubscription != null) {
@@ -777,131 +793,170 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         _isSubscriptionActive(_currentSubscription) &&
         _currentSubscription!.tier == tier;
 
-    return Card(
-      elevation: isSelected ? 4 : 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey.shade300,
-          width: isSelected ? 2 : 1,
+    // Disable Pro and Gallery tiers for now
+    final bool isDisabled = _isTierDisabled(tier);
+
+    return Tooltip(
+      message: isDisabled ? 'Coming Soon' : '',
+      child: Card(
+        elevation: isSelected ? 4 : 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey.shade300,
+            width: isSelected ? 2 : 1,
+          ),
         ),
-      ),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedTier = tier;
-          });
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (isRecommended)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade100,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'RECOMMENDED',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.amber,
-                    ),
-                  ),
-                ),
-
-              if (isCurrentPlan)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'CURRENT PLAN',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          price,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Radio<core.SubscriptionTier>(
-                    value: tier,
-                    groupValue: _selectedTier,
-                    onChanged: (core.SubscriptionTier? value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedTier = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // Feature list
-              ...features.map(
-                (feature) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
+        child: InkWell(
+          onTap: isDisabled
+              ? null
+              : () {
+                  setState(() {
+                    _selectedTier = tier;
+                  });
+                },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            child: Stack(
+              children: [
+                Opacity(
+                  opacity: isDisabled ? 0.5 : 1.0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.check,
-                        color: Colors.green,
-                        size: 18,
+                      if (isRecommended && !isDisabled)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'RECOMMENDED',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber,
+                            ),
+                          ),
+                        ),
+
+                      if (isDisabled)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'COMING SOON',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                            ),
+                          ),
+                        ),
+
+                      if (isCurrentPlan)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'CURRENT PLAN',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  price,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Radio<core.SubscriptionTier>(
+                            value: tier,
+                            groupValue: _selectedTier,
+                            onChanged: isDisabled
+                                ? null
+                                : (core.SubscriptionTier? value) {
+                                    if (value != null) {
+                                      setState(() {
+                                        _selectedTier = value;
+                                      });
+                                    }
+                                  },
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(feature),
+                      const SizedBox(height: 16),
+
+                      // Feature list
+                      ...features.map(
+                        (feature) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.check,
+                                color: Colors.green,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(feature),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

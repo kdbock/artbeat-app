@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show EnhancedUniversalHeader, MainLayout;
+import 'package:artbeat_core/artbeat_core.dart' show EnhancedUniversalHeader;
 import '../models/artwork_model.dart';
 
 /// Screen for browsing all artwork, with filtering options
@@ -58,7 +57,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
         _locations = locations.toList()..sort();
       });
     } catch (e) {
-      debugPrint('Error loading locations: $e');
+      // debugPrint('Error loading locations: $e');
     }
   }
 

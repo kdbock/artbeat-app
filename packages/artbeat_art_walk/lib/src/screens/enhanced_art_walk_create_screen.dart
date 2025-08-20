@@ -166,7 +166,7 @@ class _EnhancedArtWalkCreateScreenState
       // Update zip code based on current location
       await _updateZipCodeFromLocation(_mapCenter!);
     } catch (e) {
-      debugPrint('Error getting current location: $e');
+      // debugPrint('Error getting current location: $e');
       // Default to central NC if location fails
       setState(() {
         _mapCenter = const LatLng(35.7796, -78.6382);
@@ -188,7 +188,7 @@ class _EnhancedArtWalkCreateScreenState
         });
       }
     } catch (e) {
-      debugPrint('Error getting zip code from location: $e');
+      // debugPrint('Error getting zip code from location: $e');
     }
   }
 
@@ -514,10 +514,10 @@ class _EnhancedArtWalkCreateScreenState
       final uploadTask = await ref.putFile(imageFile);
       final imageUrl = await uploadTask.ref.getDownloadURL();
 
-      debugPrint('✅ EnhancedArtWalkCreate: Cover image uploaded: $imageUrl');
+      // debugPrint('✅ EnhancedArtWalkCreate: Cover image uploaded: $imageUrl');
       return imageUrl;
     } catch (e) {
-      debugPrint('❌ EnhancedArtWalkCreate: Error uploading cover image: $e');
+      // debugPrint('❌ EnhancedArtWalkCreate: Error uploading cover image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error uploading cover image: $e')),

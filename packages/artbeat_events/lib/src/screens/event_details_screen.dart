@@ -67,49 +67,45 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 3, // Events tab
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: _event?.title ?? 'Event Details',
-          showLogo: false,
-          actions: [
-            if (_event != null) ...[
-              IconButton(onPressed: _shareEvent, icon: const Icon(Icons.share)),
-              PopupMenuButton<String>(
-                onSelected: _handleMenuAction,
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'add_to_calendar',
-                    child: ListTile(
-                      leading: Icon(Icons.calendar_today),
-                      title: Text('Add to Calendar'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_event?.title ?? 'Event Details'),
+        actions: [
+          if (_event != null) ...[
+            IconButton(onPressed: _shareEvent, icon: const Icon(Icons.share)),
+            PopupMenuButton<String>(
+              onSelected: _handleMenuAction,
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'add_to_calendar',
+                  child: ListTile(
+                    leading: Icon(Icons.calendar_today),
+                    title: Text('Add to Calendar'),
+                    contentPadding: EdgeInsets.zero,
                   ),
-                  const PopupMenuItem(
-                    value: 'set_reminder',
-                    child: ListTile(
-                      leading: Icon(Icons.notifications),
-                      title: Text('Set Reminder'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                ),
+                const PopupMenuItem(
+                  value: 'set_reminder',
+                  child: ListTile(
+                    leading: Icon(Icons.notifications),
+                    title: Text('Set Reminder'),
+                    contentPadding: EdgeInsets.zero,
                   ),
-                  const PopupMenuItem(
-                    value: 'report',
-                    child: ListTile(
-                      leading: Icon(Icons.flag),
-                      title: Text('Report Event'),
-                      contentPadding: EdgeInsets.zero,
-                    ),
+                ),
+                const PopupMenuItem(
+                  value: 'report',
+                  child: ListTile(
+                    leading: Icon(Icons.flag),
+                    title: Text('Report Event'),
+                    contentPadding: EdgeInsets.zero,
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ],
-        ),
-        body: _buildBody(),
+        ],
       ),
+      body: _buildBody(),
     );
   }
 
@@ -599,9 +595,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   void _shareEvent() {
     final eventUrl = 'https://artbeat.app/events/${_event!.id}';
-    SharePlus.instance.share(
-      ShareParams(text: 'Check out this event on ARTbeat! $eventUrl'),
-    );
+    Share.share('Check out this event on ARTbeat! $eventUrl');
   }
 
   Future<void> _handleMenuAction(String action) async {

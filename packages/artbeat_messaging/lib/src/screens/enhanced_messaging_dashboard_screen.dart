@@ -56,7 +56,7 @@ class _EnhancedMessagingDashboardScreenState
       // Load real data
       _loadData();
     } catch (e) {
-      debugPrint('❌ Error initializing AdminMessagingService: $e');
+      // debugPrint('❌ Error initializing AdminMessagingService: $e');
       // Set fallback data immediately
       _messagingStats = {
         'totalMessages': 0,
@@ -103,7 +103,7 @@ class _EnhancedMessagingDashboardScreenState
       }
     } catch (e) {
       // For development: Use fallback data if Firebase data fails
-      debugPrint('Error loading messaging data: $e');
+      // debugPrint('Error loading messaging data: $e');
       if (mounted) {
         setState(() {
           _messagingStats = {
@@ -373,8 +373,11 @@ class _EnhancedMessagingDashboardScreenState
         ),
       );
     } catch (e, stackTrace) {
-      debugPrint('❌ Error in EnhancedMessagingDashboardScreen build: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
+      // debugPrint('❌ Error in EnhancedMessagingDashboardScreen build: $e');
+      // debugPrint('❌ Stack trace: $stackTrace');
+      // Suppress unused variable warning - stackTrace is used in debugPrint
+      // ignore: unused_local_variable
+      stackTrace;
 
       // Return a safe error screen
       return Scaffold(

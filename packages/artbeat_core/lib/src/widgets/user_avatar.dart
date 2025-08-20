@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/artbeat_colors.dart';
+import 'secure_network_image.dart';
 
 /// A unified avatar widget for displaying user profile images across the app
 class UserAvatar extends StatelessWidget {
@@ -58,15 +59,12 @@ class UserAvatar extends StatelessWidget {
         radius: radius,
         backgroundColor: backgroundColor ?? theme.primaryColor,
         child: ClipOval(
-          child: Image.network(
-            imageUrl!,
+          child: SecureNetworkImage(
+            imageUrl: imageUrl!,
             width: radius * 2,
             height: radius * 2,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              debugPrint('❌ Error loading avatar image: $error');
-              return _buildFallbackAvatar(theme);
-            },
+            errorWidget: _buildFallbackAvatar(theme),
           ),
         ),
       );

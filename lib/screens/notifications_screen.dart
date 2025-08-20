@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_artwork/artbeat_artwork.dart'
+    show ArtworkCleanupService;
 
 /// Basic Notifications Screen for ARTbeat
 class NotificationsScreen extends StatelessWidget {
@@ -108,6 +111,33 @@ class NotificationsScreen extends StatelessWidget {
           );
         },
       ),
+      // Debug functionality for admin users
+      floatingActionButton: _isAdminUser(user.uid) && kDebugMode
+          ? FloatingActionButton.extended(
+              onPressed: _runImageCleanup,
+              label: const Text('Fix Images'),
+              icon: const Icon(Icons.build),
+            )
+          : null,
     );
+  }
+
+  /// Check if user is admin
+  bool _isAdminUser(String userId) {
+    return userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2'; // Kristy Kelly's admin ID
+  }
+
+  /// Run image cleanup service
+  Future<void> _runImageCleanup() async {
+    final cleanupService = ArtworkCleanupService();
+
+    // First check the specific problematic image
+    await cleanupService.checkSpecificImage();
+
+    // Then run general cleanup (dry run first to see what would be fixed)
+    await cleanupService.cleanupBrokenArtworkImages(dryRun: true);
+
+    // Now actually fix the broken images
+    await cleanupService.cleanupBrokenArtworkImages(dryRun: false);
   }
 }

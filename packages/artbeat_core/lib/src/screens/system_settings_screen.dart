@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -27,7 +28,7 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
         _packageInfo = packageInfo;
       });
     } catch (e) {
-      debugPrint('Error loading package info: $e');
+      // Handle package info loading error silently
     }
   }
 
@@ -47,8 +48,10 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
               const SizedBox(height: 24),
               _buildSystemInfoSection(),
               const SizedBox(height: 24),
-              _buildDeveloperSection(),
-              const SizedBox(height: 24),
+              if (kDebugMode) ...[
+                _buildDeveloperSection(),
+                const SizedBox(height: 24),
+              ],
               _buildActionsSection(),
             ],
           ),
@@ -99,8 +102,11 @@ class _SystemSettingsScreenState extends State<SystemSettingsScreen> {
       children: [
         _buildInfoTile('Platform', Theme.of(context).platform.name),
         _buildInfoTile('Firebase Project', 'artbeat-app-b5ab4'),
-        _buildInfoTile('Environment', 'Development'),
-        _buildInfoTile('Debug Mode', 'Enabled'),
+        _buildInfoTile(
+          'Environment',
+          kDebugMode ? 'Development' : 'Production',
+        ),
+        _buildInfoTile('Debug Mode', kDebugMode ? 'Enabled' : 'Disabled'),
       ],
     );
   }

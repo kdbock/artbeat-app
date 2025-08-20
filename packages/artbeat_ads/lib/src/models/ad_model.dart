@@ -20,6 +20,8 @@ class AdModel {
   final AdStatus status;
   final String? approvalId;
   final String? targetId; // e.g. artistId, artworkId, eventId, galleryId
+  final String? destinationUrl; // External URL to drive traffic to
+  final String? ctaText; // Call-to-action text (e.g., "Shop Now", "Learn More")
 
   AdModel({
     required this.id,
@@ -36,6 +38,8 @@ class AdModel {
     required this.status,
     this.approvalId,
     this.targetId,
+    this.destinationUrl,
+    this.ctaText,
   });
 
   factory AdModel.fromMap(Map<String, dynamic> map, String id) {
@@ -74,6 +78,8 @@ class AdModel {
       status: AdStatus.values[intStatus],
       approvalId: map['approvalId']?.toString(),
       targetId: map['targetId']?.toString(),
+      destinationUrl: map['destinationUrl']?.toString(),
+      ctaText: map['ctaText']?.toString(),
     );
   }
 
@@ -91,5 +97,7 @@ class AdModel {
     'status': status.index,
     'approvalId': approvalId,
     'targetId': targetId,
+    'destinationUrl': destinationUrl,
+    'ctaText': ctaText,
   };
 }

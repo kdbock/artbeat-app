@@ -6,6 +6,7 @@ class AdPaymentWidget extends StatelessWidget {
   final double pricePerDay;
   final VoidCallback onPay;
   final bool isProcessing;
+  final bool isAdminAd;
 
   const AdPaymentWidget({
     super.key,
@@ -13,11 +14,12 @@ class AdPaymentWidget extends StatelessWidget {
     required this.pricePerDay,
     required this.onPay,
     this.isProcessing = false,
+    this.isAdminAd = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final total = days * pricePerDay;
+    final total = isAdminAd ? 0.0 : days * pricePerDay;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 12),
       child: Padding(
@@ -26,13 +28,27 @@ class AdPaymentWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Ad Duration: $days day${days == 1 ? '' : 's'}'),
-            Text('Price per day: \$${pricePerDay.toStringAsFixed(2)}'),
-            const SizedBox(height: 8),
-            const Text('Total: ', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(
-              '\$${total.toStringAsFixed(2)}',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
+            if (isAdminAd) ...[
+              const Text(
+                'Admin Ad - FREE',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                  fontSize: 16,
+                ),
+              ),
+            ] else ...[
+              Text('Price per day: \$${pricePerDay.toStringAsFixed(2)}'),
+              const SizedBox(height: 8),
+              const Text(
+                'Total: ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '\$${total.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ],
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -44,7 +60,7 @@ class AdPaymentWidget extends StatelessWidget {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Pay & Submit'),
+                    : Text(isAdminAd ? 'Submit Ad' : 'Pay & Submit'),
               ),
             ),
           ],

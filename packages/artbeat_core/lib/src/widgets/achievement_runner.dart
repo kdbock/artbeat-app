@@ -125,46 +125,52 @@ class _AchievementRunnerState extends State<AchievementRunner>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: ArtbeatColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: ArtbeatColors.primaryPurple.withValues(
-                            alpha: 0.3,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: ArtbeatColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ArtbeatColors.primaryPurple.withValues(
+                              alpha: 0.3,
+                            ),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                        ],
+                      ),
+                      child: Text(
+                        'Level ${widget.currentLevel}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      'Level ${widget.currentLevel}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    widget.levelTitle,
-                    style: const TextStyle(
-                      color: ArtbeatColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        widget.levelTitle,
+                        style: const TextStyle(
+                          color: ArtbeatColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '${widget.experiencePoints} XP',
                 style: const TextStyle(

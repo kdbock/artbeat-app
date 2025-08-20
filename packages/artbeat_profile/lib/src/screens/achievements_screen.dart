@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+// Import with alias to avoid conflicts
+import 'package:artbeat_art_walk/src/services/achievement_service.dart'
+    as art_walk;
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -11,7 +14,8 @@ class AchievementsScreen extends StatefulWidget {
 
 class _AchievementsScreenState extends State<AchievementsScreen>
     with SingleTickerProviderStateMixin {
-  final AchievementService _achievementService = AchievementService();
+  final art_walk.AchievementService _achievementService =
+      art_walk.AchievementService();
   bool _isLoading = true;
   List<AchievementModel> _achievements = [];
   Map<String, List<AchievementModel>> _categorizedAchievements = {};
@@ -34,7 +38,16 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     setState(() => _isLoading = true);
 
     try {
+      print('DEBUG: Loading achievements for user...');
       final achievements = await _achievementService.getUserAchievements();
+      print('DEBUG: Found ${achievements.length} achievements');
+
+      // Debug: Print each achievement
+      for (final achievement in achievements) {
+        print(
+          'DEBUG: Achievement - ${achievement.type.name}: ${achievement.title}',
+        );
+      }
 
       // Mark any new achievements as viewed
       for (final achievement in achievements.where((a) => a.isNew)) {
@@ -59,9 +72,9 @@ class _AchievementsScreenState extends State<AchievementsScreen>
             break;
           case AchievementType.artCollector:
           case AchievementType.artExpert:
+          case AchievementType.photographer:
             categorized['Art Discovery']!.add(achievement);
             break;
-          case AchievementType.photographer:
           case AchievementType.contributor:
           case AchievementType.curator:
           case AchievementType.masterCurator:
@@ -81,6 +94,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         _isLoading = false;
       });
     } catch (e) {
+      print('DEBUG: Error loading achievements: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -238,6 +252,21 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Achievements'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              // Force refresh achievements
+              await _loadAchievements();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Achievements refreshed')),
+                );
+              }
+            },
+            tooltip: 'Refresh Achievements',
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

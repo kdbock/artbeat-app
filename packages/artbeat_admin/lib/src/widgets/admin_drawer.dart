@@ -19,173 +19,182 @@ class AdminDrawer extends StatelessWidget {
         builder: (context, constraints) {
           // Calculate available height and adjust header accordingly
           final availableHeight = constraints.maxHeight;
-          final headerHeight = availableHeight > 600 ? 180.0 : 140.0;
-          
+          final isCompact = availableHeight < 400;
+
           return Column(
             children: [
-              // Custom drawer header with admin branding
+              // Custom drawer header with admin branding - flexible height
               Container(
-                height: headerHeight, // Dynamic height based on available space
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: _headerColor,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16), // Reduced padding
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Admin icon
-                    Container(
-                      width: availableHeight > 600 ? 60 : 50, // Responsive size
-                      height: availableHeight > 600 ? 60 : 50, // Responsive size
-                      decoration: BoxDecoration(
-                        color: _iconTextColor.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: _iconTextColor,
-                          width: 2,
+                width: double.infinity,
+                constraints: BoxConstraints(
+                  minHeight: isCompact ? 80 : 120,
+                  maxHeight:
+                      availableHeight * 0.3, // Use 30% of available height
+                ),
+                decoration: const BoxDecoration(
+                  color: _headerColor,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: EdgeInsets.all(isCompact ? 8 : 16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Admin icon
+                        Container(
+                          width: isCompact ? 40 : 50,
+                          height: isCompact ? 40 : 50,
+                          decoration: BoxDecoration(
+                            color: _iconTextColor.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: _iconTextColor,
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.admin_panel_settings,
+                            size: isCompact ? 20 : 25,
+                            color: _iconTextColor,
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        Icons.admin_panel_settings,
-                        size: availableHeight > 600 ? 30 : 25, // Responsive size
-                        color: _iconTextColor,
-                      ),
+                        SizedBox(height: isCompact ? 4 : 8),
+                        // Title
+                        Text(
+                          'Admin Panel',
+                          style: TextStyle(
+                            color: _iconTextColor,
+                            fontFamily: 'Limelight',
+                            fontSize: isCompact ? 14 : 18,
+                            fontWeight: FontWeight.normal,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        if (!isCompact) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'Management Console',
+                            style: TextStyle(
+                              color: _iconTextColor.withValues(alpha: 0.8),
+                              fontSize: 10,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                    SizedBox(height: availableHeight > 600 ? 12 : 8), // Responsive spacing
-                    // Title
-                    Text(
-                      'Admin Panel',
-                      style: TextStyle(
-                        color: _iconTextColor,
-                        fontFamily: 'Limelight',
-                        fontSize: availableHeight > 600 ? 20 : 18, // Responsive font size
-                        fontWeight: FontWeight.normal,
-                        letterSpacing: 1.2,
-                      ),
+                  ),
+                ),
+              ),
+
+              // Scrollable menu items
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  children: [
+                    // Core menu items
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.dashboard,
+                      title: 'Dashboard',
+                      route: '/admin/dashboard',
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Management Console',
-                      style: TextStyle(
-                        color: _iconTextColor.withValues(alpha: 0.8),
-                        fontSize: availableHeight > 600 ? 12 : 10, // Responsive font size
-                        letterSpacing: 0.5,
-                      ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.people,
+                      title: 'User Management',
+                      route: '/admin/users',
                     ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.report,
+                      title: 'Content Review',
+                      route: '/admin/content-review',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.campaign,
+                      title: 'Ad Management',
+                      route: '/admin/ad-management',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.analytics,
+                      title: 'Analytics',
+                      route: '/admin/analytics',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.settings,
+                      title: 'Settings',
+                      route: '/admin/settings',
+                    ),
+
+                    const Divider(height: 16), // Reduced height
+
+                    // Additional admin tools
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.security,
+                      title: 'Security Center',
+                      route: '/admin/security',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.backup,
+                      title: 'Data Management',
+                      route: '/admin/data',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.notifications,
+                      title: 'System Alerts',
+                      route: '/admin/alerts',
+                    ),
+
+                    const Divider(height: 16), // Reduced height
+
+                    // Developer tools
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.developer_mode,
+                      title: 'Developer Tools',
+                      onTap: () => _showDeveloperTools(context),
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.bug_report,
+                      title: 'System Diagnostics',
+                      onTap: () => _showSystemDiagnostics(context),
+                    ),
+
+                    const Divider(height: 16), // Reduced height
+
+                    // Footer items
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.help_outline,
+                      title: 'Help & Support',
+                      route: '/admin/help',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.logout,
+                      title: 'Logout',
+                      onTap: () => _handleLogout(context),
+                      isDestructive: true,
+                    ),
+                    const SizedBox(height: 16), // Bottom padding
                   ],
                 ),
               ),
-            ),
-          ),
-
-          // Scrollable menu items
-          Expanded(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: availableHeight - headerHeight - 20, // Reserve space for header and padding
-              ),
-              child: ListView(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                children: [
-                // Core menu items
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.dashboard,
-                  title: 'Dashboard',
-                  route: '/admin/dashboard',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.people,
-                  title: 'User Management',
-                  route: '/admin/users',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.report,
-                  title: 'Content Review',
-                  route: '/admin/content-review',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.analytics,
-                  title: 'Analytics',
-                  route: '/admin/analytics',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.settings,
-                  title: 'Settings',
-                  route: '/admin/settings',
-                ),
-
-                const Divider(height: 16), // Reduced height
-
-                // Additional admin tools
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.security,
-                  title: 'Security Center',
-                  route: '/admin/security',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.backup,
-                  title: 'Data Management',
-                  route: '/admin/data',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.notifications,
-                  title: 'System Alerts',
-                  route: '/admin/alerts',
-                ),
-
-                const Divider(height: 16), // Reduced height
-
-                // Developer tools
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.developer_mode,
-                  title: 'Developer Tools',
-                  onTap: () => _showDeveloperTools(context),
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.bug_report,
-                  title: 'System Diagnostics',
-                  onTap: () => _showSystemDiagnostics(context),
-                ),
-
-                const Divider(height: 16), // Reduced height
-
-                // Footer items
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.help_outline,
-                  title: 'Help & Support',
-                  route: '/admin/help',
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.logout,
-                  title: 'Logout',
-                  onTap: () => _handleLogout(context),
-                  isDestructive: true,
-                ),
-                const SizedBox(height: 16), // Bottom padding
-              ],
-            ),
-          ),
-          )],
+            ],
           );
         },
       ),

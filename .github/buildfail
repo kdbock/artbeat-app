@@ -1,1266 +1,650 @@
--- LLDB integration loaded --
-CLIENT OF UIKIT REQUIRES UPDATE: This process does not adopt UIScene lifecycle. This will become an assert in a future version.
-FlutterView implements focusItemsInRect: - caching for linear focus movement is limited as long as this view is on screen.
-Google Maps API Key found: AIzaSyBvmS...
-flutter: The Dart VM service is listening on http://0.0.0.0:56356/UK36hxbTLRg=/
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m LiceCycleManager listener successfully attached to iOS (LifeCycleManager:81)
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m App is now Terminated (LifeCycleManager:134)
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m LiceCycleManager listener successfully attached to iOS (LifeCycleManager:81)
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m Awesome Notifications plugin attached to iOS 3502.0 (AwesomeNotificationsPlugin:60)
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m Awesome Notifications - App Group : group.awn.e1201701 (AwesomeNotificationsPlugin:61)
-11.15.0 - [FirebaseCore][I-COR000005] No app has been configured yet.
-11.15.0 - [FirebaseAnalytics][I-ACS023007] Analytics v.11.15.0 started
-11.15.0 - [FirebaseAnalytics][I-ACS023008] To enable debug logging set the following application argument: -FIRAnalyticsDebugEnabled (see http://goo.gl/RfcP7r)
-11.15.0 - [FirebaseAnalytics][I-ACS044002] The AdSupport Framework is not currently linked. Some features will not function properly. Learn more at http://goo.gl/9vSsPb
-11.15.0 - [FirebaseMessaging][I-FCM001000] FIRMessaging Remote Notifications proxy enabled, will swizzle remote notification receiver handlers. If you'd prefer to manually integrate Firebase Messaging, add "FirebaseAppDelegateProxyEnabled" to your Info.plist, and set it to NO. Follow the instructions at:
-https://firebase.google.com/docs/cloud-messaging/ios/client#method_swizzling_in_firebase_messaging
-to ensure proper integration.
-11.15.0 - [FirebaseAnalytics][I-ACS800023] No pending snapshot to activate. SDK name: app_measurement
-11.15.0 - [FirebaseAnalytics][I-ACS023012] Analytics collection enabled
-11.15.0 - [FirebaseAnalytics][I-ACS023220] Analytics screen reporting is enabled. Call Analytics.logEvent(AnalyticsEventScreenView, parameters: [...]) to log a screen view event. To disable automatic screen reporting, set the flag FirebaseAutomaticScreenReportingEnabled to NO (boolean) in the Info.plist
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m Awesome Notifications attached for iOS (AwesomeNotifications:531)
-D/Swift: [32m[AWESOME NOTIFICATIONS][0m App is now Foreground (LifeCycleManager:134)
-flutter: 🔄 AppLifecycleManager initialized
-flutter: ✅ AppLifecycleManager initialized
-flutter: ConfigService initialized successfully
-flutter: ✅ ConfigService initialized
-flutter: ✅ Maps configuration initialized
-flutter: 🔄 SecureFirebaseConfig initialization state reset
-flutter: 🔥 Ensuring Firebase initialization...
-flutter: 🔐 App Check configured - Team ID: H49R32NPY6, Debug: true
-flutter: 🔥 Initializing Firebase with options...
-flutter: ❌ Firebase initialization failed: [core/duplicate-app] A Firebase App named "[DEFAULT]" already exists
-flutter: 🔥 Firebase already initialized (caught duplicate app error), using existing app
-flutter: 🔐 Initializing App Check...
-flutter: 🔐 Debug mode: true
-flutter: 🔐 Team ID: H49R32NPY6
-<Warning> [AppCheckCore][I-GAC004001] App Check debug token: '61A0FE93-CCA3-4EA2-A2C7-0BC05BADDEBC'.
-Firebase App Check Debug Token: 61A0FE93-CCA3-4EA2-A2C7-0BC05BADDEBC
-flutter: ⚠️ App Check initialization error: [firebase_app_check/unknown] The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDeviceCheckToken 
- - HTTP status code: 400 
- - Response body: {
-  "error": {
-    "code": 400,
-    "message": "App not registered: 1:665020451634:ios:2aa5cc17ac7d0dad78652b.",
-    "status": "FAILED_PRECONDITION"
-  }
-}
-flutter: ⚠️ This may be expected in debug mode
-flutter: ✅ Firebase initialization completed successfully
-flutter: 🖼️ ImageManagementService initialized
-flutter: 📊 Max concurrent loads: 2
-flutter: 💾 Cache duration: 7 days
-flutter: ✅ Image management service initialized
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-11.15.0 - [FirebaseAuth][I-AUT000018] Error getting App Check token; using placeholder token instead. Error: Error Domain=com.google.app_check_core Code=0 "The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-" UserInfo={NSLocalizedFailureReason=The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-}
-11.15.0 - [FirebaseAuth][I-AUT000018] Error getting App Check token; using placeholder token instead. Error: Error Domain=com.google.app_check_core Code=0 "The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-" UserInfo={NSLocalizedFailureReason=The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-}
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-nw_endpoint_flow_failed_with_error [C10 2607:f8b0:4004:c07::5f.443 failed parent-flow (unsatisfied (No network route), ipv4, dns)] already failing, returning
-nw_connection_get_connected_socket_block_invoke [C10] Client called nw_connection_get_connected_socket on unconnected nw_connection
-TCP Conn 0x12a3a85a0 Failed : error 0:50 [50]
-flutter: ✅ Messaging notification service initialized
-flutter: ✅ Firebase confirmed ready
-flutter: 🔍 Firebase app names: [[DEFAULT]]
-flutter: 🔄 Splash: Starting auth check...
-flutter: 🔄 Splash: Starting auth check...
-flutter: ✅ Firebase initialized successfully
-App is being debugged, do not track this hang
-Hang detected: 0.49s (debugger attached, not reporting)
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-flutter: 🔥 Splash: Checking Firebase apps...
-flutter: ✅ Splash: Firebase apps available (1)
-flutter: 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🔄 Splash: Starting user sync...
-flutter: 🧭 Splash: Navigating to /dashboard
-flutter: ✅ Splash: Navigation command sent
-flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 👤 UserService: Initializing UserService
-flutter: 👤 UserService: Firebase initialized successfully
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingProvider: Initializing with ChatService
-flutter: MessagingProvider: Setting up unread count stream
-flutter: ChatService.getTotalUnreadCount: userId = ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=false, hasError=false
-flutter: 🔄 DashboardViewModel: Starting initialization
-flutter: 👤 UserService: Fetching user model from Firestore
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#77f53]
-flutter: MessagingProvider: Auth state changed, user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingProvider: Resetting state
-flutter: MessagingProvider: Setting up unread count stream
-flutter: ChatService.getTotalUnreadCount: userId = ARFuyX0C44PbYlHSUSlQx55b9vt2
-CoreData: warning: no NSValueTransformer with class name 'GMSCachePropertyValueTransformer' was found for attribute 'value' on entity 'GMSCacheProperty'
-CoreData: warning: no NSValueTransformer with class name 'GMSCachePropertyValueTransformer' was found for attribute 'value' on entity 'GMSCacheProperty'
-'NSKeyedUnarchiveFromData' should not be used to for un-archiving and will be removed in a future release
-2025-07-28 17:55:04.178 Runner[87201/0x16af23000] [lvl=3] +[GMSx_CCTClearcutUploader crashIfNecessary] Multiple instances of CCTClearcutUploader were instantiated. Multiple uploaders function correctly but have an adverse affect on battery performance due to lock contention.
-App is being debugged, do not track this hang
-Hang detected: 0.35s (debugger attached, not reporting)
-flutter: 🔥 Splash: Checking Firebase apps...
-flutter: ✅ Splash: Firebase apps available (1)
-flutter: 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🔄 Splash: Starting user sync...
-flutter: 🧭 Splash: Navigating to /dashboard
-flutter: ✅ Splash: Navigation command sent
-flutter: ✅ UserSyncHelper: User document already exists
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=false, hasError=false
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=false, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#10b48]
-flutter: ⏸️ UserSyncHelper: Skipping recent check for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ChatService.getTotalUnreadCount: Processing 11 chats
-flutter: ChatService.getTotalUnreadCount: Chat 4Vaw6gbC52RgcUJ2uDKu has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat ABkpdwUjG3lKNe4RAwXq has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat CcPs4ucoiPurd535WnGQ has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat IJTKCt9eq6N5tkfD02rX has no unreadCounts field, migrating...
-flutter: ✅ DashboardViewModel: Initialization completed
-flutter: ChatService: Migrated unreadCounts for chat IJTKCt9eq6N5tkfD02rX
-flutter: ChatService.getTotalUnreadCount: Chat IJTKCt9eq6N5tkfD02rX migrated, unread count = 0
-flutter: ChatService.getTotalUnreadCount: Chat J0miinSPi2LUSJkZCqoC has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat MesrVMZw2Kd2s3BGqqdV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe has no unreadCounts field, migrating...
-flutter: ChatService: Migrated unreadCounts for chat OXT52m953eCuhMqycPDe
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe migrated, unread count = 0
-flutter: ChatService.getTotalUnreadCount: Chat eEHWKceqAmeaEAdxERUV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 has no unreadCounts field, migrating...
-nw_connection_copy_connected_local_endpoint_block_invoke [C16] Client called nw_connection_copy_connected_local_endpoint on unconnected nw_connection
-nw_connection_copy_connected_remote_endpoint_block_invoke [C16] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection
-nw_connection_copy_protocol_metadata_internal_block_invoke [C16] Client called nw_connection_copy_protocol_metadata_internal on unconnected nw_connection
-flutter: ChatService: Migrated unreadCounts for chat kPSZLURHL373gWLZP0V3
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 migrated, unread count = 0
-flutter: ChatService.getTotalUnreadCount: Chat lkVEsAFBNUJkwJgh9dDR has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat sME139JbbWN1GZ4UOicS has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Total unread count = 0
-flutter: MessagingProvider: Unread count updated to 0
-flutter: ChatService.getTotalUnreadCount: Processing 11 chats
-flutter: ChatService.getTotalUnreadCount: Chat 4Vaw6gbC52RgcUJ2uDKu has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat ABkpdwUjG3lKNe4RAwXq has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat CcPs4ucoiPurd535WnGQ has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat IJTKCt9eq6N5tkfD02rX has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat J0miinSPi2LUSJkZCqoC has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat MesrVMZw2Kd2s3BGqqdV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe has no unreadCounts field, migrating...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-App is being debugged, do not track this hang
-Hang detected: 0.53s (debugger attached, not reporting)
-flutter: ChatService: Migrated unreadCounts for chat OXT52m953eCuhMqycPDe
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe migrated, unread count = 0
-flutter: ChatService.getTotalUnreadCount: Chat eEHWKceqAmeaEAdxERUV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 has no unreadCounts field, migrating...
-flutter: 🚀 CaptureService.getAllCaptures() fetching from Firestore with limit: 50
-flutter: ChatService: Migrated unreadCounts for chat kPSZLURHL373gWLZP0V3
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 migrated, unread count = 0
-flutter: ChatService.getTotalUnreadCount: Chat lkVEsAFBNUJkwJgh9dDR has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat sME139JbbWN1GZ4UOicS has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Total unread count = 0
-flutter: MessagingProvider: Unread count updated to 0
-flutter: ChatService.getTotalUnreadCount: Processing 11 chats
-flutter: ChatService.getTotalUnreadCount: Chat 4Vaw6gbC52RgcUJ2uDKu has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat ABkpdwUjG3lKNe4RAwXq has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat CcPs4ucoiPurd535WnGQ has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat IJTKCt9eq6N5tkfD02rX has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat J0miinSPi2LUSJkZCqoC has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat MesrVMZw2Kd2s3BGqqdV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat eEHWKceqAmeaEAdxERUV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat lkVEsAFBNUJkwJgh9dDR has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat sME139JbbWN1GZ4UOicS has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Total unread count = 0
-flutter: MessagingProvider: Unread count updated to 0
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: ✅ CaptureService.getAllCaptures() found 7 captures
-flutter: ❌ Flutter Error caught by ErrorBoundary: A RenderFlex overflowed by 13 pixels on the bottom.
-flutter: ❌ Stack trace: null
-flutter: ❌ App-level error caught: A RenderFlex overflowed by 13 pixels on the bottom.
-flutter: ❌ Stack trace: #0      _ErrorBoundaryState.initState.<anonymous closure> (package:artbeat/src/widgets/error_boundary.dart:37:72)
-flutter: #1      FlutterError.reportError (package:flutter/src/foundation/assertions.dart:1204:14)
-flutter: #2      DebugOverflowIndicatorMixin._reportOverflow (package:flutter/src/rendering/debug_overflow_indicator.dart:260:18)
-flutter: #3      DebugOverflowIndicatorMixin.paintOverflowIndicator (package:flutter/src/rendering/debug_overflow_indicator.dart:331:7)
-flutter: #4      RenderFlex.paint.<anonymous closure> (package:flutter/src/rendering/flex.dart:1362:7)
-flutter: #5      RenderFlex.paint (package:flutter/src/rendering/flex.dart:1370:6)
-flutter: #6      RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #7      PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #8      RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #9      RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #10     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #11     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #12     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #13     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #14     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #15     RenderDecoratedBox.paint (package:flutter/src/rendering/proxy_box.dart:2450:11)
-flutter: #16     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #17     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #18     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #19     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #20     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #21     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #22     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #23     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #24     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #25     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #26     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
-flutter: #27     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
-flutter: #28     PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
-flutter: #29     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
-flutter: #30     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #31     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #32     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #33     RenderSliverMultiBoxAdaptor.paint (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:753:17)
-flutter: #34     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #35     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #36     RenderSliverEdgeInsetsPadding.paint (package:flutter/src/rendering/sliver_padding.dart:272:15)
-flutter: #37     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #38     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #39     RenderViewportBase._paintContents (package:flutter/src/rendering/viewport.dart:789:17)
-flutter: #40     PaintingContext.pushLayer (package:flutter/src/rendering/object.dart:507:12)
-flutter: #41     PaintingContext.pushClipRect (package:flutter/src/rendering/object.dart:574:7)
-flutter: #42     RenderViewportBase.paint (package:flutter/src/rendering/viewport.dart:764:38)
-flutter: #43     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #44     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
-flutter: #45     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
-flutter: #46     PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
-flutter: #47     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
-flutter: #48     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #49     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #50     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #51     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #52     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #53     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #54     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #55     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #56     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #57     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #58     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #59     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #60     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #61     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #62     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #63     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #64     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #65     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #66     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #67     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #68     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #69     RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
-flutter: #70     RenderFlex.paint (package:flutter/src/rendering/flex.dart:1315:7)
-flutter: #71     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #72     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #73     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #74     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #75     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #76     RenderSliverSingleBoxAdapter.paint (package:flutter/src/rendering/sliver.dart:2015:15)
-flutter: #77     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #78     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #79     RenderViewportBase._paintContents (package:flutter/src/rendering/viewport.dart:789:17)
-flutter: #80     PaintingContext.pushLayer (package:flutter/src/rendering/object.dart:507:12)
-flutter: #81     PaintingContext.pushClipRect (package:flutter/src/rendering/object.dart:574:7)
-flutter: #82     RenderViewportBase.paint (package:flutter/src/rendering/viewport.dart:764:38)
-flutter: #83     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #84     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
-flutter: #85     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
-flutter: #86     PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1312:31)
-flutter: #87     PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1322:15)
-flutter: #88     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:631:23)
-flutter: #89     WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1242:13)
-flutter: #90     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
-flutter: #91     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
-flutter: #92     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
-flutter: #93     SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
-flutter: #94     _invoke (dart:ui/hooks.dart:331:13)
-flutter: #95     PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
-flutter: #96     _drawFrame (dart:ui/hooks.dart:303:31)
-flutter:
-flutter: ❌ Flutter Error caught by ErrorBoundary: A RenderFlex overflowed by 13 pixels on the bottom.
-flutter: ❌ Stack trace: null
-flutter: ❌ App-level error caught: A RenderFlex overflowed by 13 pixels on the bottom.
-flutter: ❌ Stack trace: #0      _ErrorBoundaryState.initState.<anonymous closure> (package:artbeat/src/widgets/error_boundary.dart:37:72)
-flutter: #1      FlutterError.reportError (package:flutter/src/foundation/assertions.dart:1204:14)
-flutter: #2      DebugOverflowIndicatorMixin._reportOverflow (package:flutter/src/rendering/debug_overflow_indicator.dart:260:18)
-flutter: #3      DebugOverflowIndicatorMixin.paintOverflowIndicator (package:flutter/src/rendering/debug_overflow_indicator.dart:331:7)
-flutter: #4      RenderFlex.paint.<anonymous closure> (package:flutter/src/rendering/flex.dart:1362:7)
-flutter: #5      RenderFlex.paint (package:flutter/src/rendering/flex.dart:1370:6)
-flutter: #6      RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #7      PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #8      RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #9      RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #10     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #11     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #12     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #13     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #14     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #15     RenderDecoratedBox.paint (package:flutter/src/rendering/proxy_box.dart:2450:11)
-flutter: #16     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #17     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #18     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #19     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #20     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #21     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #22     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #23     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #24     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #25     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #26     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
-flutter: #27     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
-flutter: #28     PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
-flutter: #29     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
-flutter: #30     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #31     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #32     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #33     RenderSliverMultiBoxAdaptor.paint (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:753:17)
-flutter: #34     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #35     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #36     RenderSliverEdgeInsetsPadding.paint (package:flutter/src/rendering/sliver_padding.dart:272:15)
-flutter: #37     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #38     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-Thread Performance Checker: Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions
-PID: 87201, TID: 12592663
-Backtrace
-=================================================================
-0   Runner.debug.dylib                  0x0000000107e3d2e8 _ZN7gmscore6vector19SharedLabelerFacadeD2Ev + 100
-1   Runner.debug.dylib                  0x0000000107e26018 _ZNSt3__110shared_ptrIN7gmscore6vector19SharedLabelerFacadeEED2B8ue170006Ev + 64
-2   Runner.debug.dylib                  0x0000000107e33984 _ZN7gmscore6vector22SharedLabelingBehaviorD2Ev + 256
-3   Runner.debug.dylib                  0x0000000107e339c8 _ZN7gmscore6vector22SharedLabelingBehaviorD0Ev + 12
-4   Runner.debug.dylib                  0x0000000108330378 _ZN7gmscore4base16ReferenceCounted10GMSx_UnrefEv + 64
-5   Runner.debug.dylib                  0x0000000108151794 _ZN7gmscore4base10reffed_ptrINS0_16ReferenceCountedEED2Ev + 28
-6   Runner.debug.dylib                  0x00000001081517dc _ZNSt3__16vectorIN7gmscore8renderer14EntityRenderer9PendingOpENS_9allocatorIS4_EEE16__destroy_vectorclB8ue170006Ev + 52
-7   Runner.debug.dylib                  0x000000010814f994 _ZN7gmscore8renderer14EntityRendererD2Ev + 376
-8   Runner.debug.dylib                  0x000000010814fa70 _ZN7gmscore8renderer14EntityRendererD0Ev + 12
-9   Runner.debug.dylib                  0x0000000107e11e88 __30-[GMSPhoenixRenderer tearDown]_block_invoke + 136
-10  Foundation                          0x000000018b64a294 34DE055D-8683-380A-9198-C3347211D13D + 537236
-11  Foundation                          0x000000018b7b1954 34DE055D-8683-380A-9198-C3347211D13D + 2009428
-12  Runner.debug.dylib                  0x0000000107e11de4 -[GMSPhoenixRenderer tearDown] + 92
-13  Runner.debug.dylib                  0x0000000107e106c0 -[GMSEntityRendererView tearDownRenderer] + 88
-14  Runner.debug.dylib                  0x0000000107e0ee40 -[GMSEntityRendererView dealloc] + 40
+#116    RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
+#117    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#118    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#119    RenderBoxContainerDefaultsMixin.defaultPaint
+(package:flutter/src/rendering/box.dart:3372:15)
+#120    RenderFlex.paint (package:flutter/src/rendering/flex.dart:1315:7)
+#121    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#122    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#123    _RenderSingleChildViewport.paint.paintContents
+(package:flutter/src/widgets/single_child_scroll_view.dart:549:17)
+#124    PaintingContext.pushLayer (package:flutter/src/rendering/object.dart:507:12)
+#125    PaintingContext.pushClipRect (package:flutter/src/rendering/object.dart:574:7)
+#126    _RenderSingleChildViewport.paint
+(package:flutter/src/widgets/single_child_scroll_view.dart:553:40)
+#127    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#128    PaintingContext._repaintCompositedChild
+(package:flutter/src/rendering/object.dart:176:11)
+#129    PaintingContext.repaintCompositedChild
+(package:flutter/src/rendering/object.dart:121:5)
+#130    PaintingContext._compositeChild
+(package:flutter/src/rendering/object.dart:272:7)
+#131    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+#132    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#133    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#134    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#135    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#136    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#137    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#138    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#139    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#140    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#141    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#142    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#143    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#144    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#145    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#146    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#147    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#148    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#149    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#150    RenderBoxContainerDefaultsMixin.defaultPaint
+(package:flutter/src/rendering/box.dart:3372:15)
+#151    RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+#152    RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+#153    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#154    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#155    RenderBoxContainerDefaultsMixin.defaultPaint
+(package:flutter/src/rendering/box.dart:3372:15)
+#156    RenderCustomMultiChildLayoutBox.paint
+(package:flutter/src/rendering/custom_layout.dart:424:5)
+#157    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#158    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#159    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#160    _RenderInkFeatures.paint (package:flutter/src/material/material.dart:632:11)
+#161    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#162    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#163    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#164    RenderPhysicalModel.paint.<anonymous closure>
+(package:flutter/src/rendering/proxy_box.dart:2190:15)
+#165    PaintingContext.pushClipRRect
+(package:flutter/src/rendering/object.dart:611:14)
+#166    RenderPhysicalModel.paint
+(package:flutter/src/rendering/proxy_box.dart:2177:21)
+#167    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#168    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#169    RenderBoxContainerDefaultsMixin.defaultPaint
+(package:flutter/src/rendering/box.dart:3372:15)
+#170    RenderCustomMultiChildLayoutBox.paint
+(package:flutter/src/rendering/custom_layout.dart:424:5)
+#171    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#172    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#173    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#174    _RenderInkFeatures.paint (package:flutter/src/material/material.dart:632:11)
+#175    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#176    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#177    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#178    RenderPhysicalModel.paint.<anonymous closure>
+(package:flutter/src/rendering/proxy_box.dart:2190:15)
+#179    PaintingContext.pushClipRRect
+(package:flutter/src/rendering/object.dart:611:14)
+#180    RenderPhysicalModel.paint
+(package:flutter/src/rendering/proxy_box.dart:2177:21)
+#181    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#182    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#183    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#184    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#185    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#186    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#187    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#188    PaintingContext._repaintCompositedChild
+(package:flutter/src/rendering/object.dart:176:11)
+#189    PaintingContext.repaintCompositedChild
+(package:flutter/src/rendering/object.dart:121:5)
+#190    PaintingContext._compositeChild
+(package:flutter/src/rendering/object.dart:272:7)
+#191    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+#192    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#193    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#194    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#195    RenderBoxContainerDefaultsMixin.defaultPaint
+(package:flutter/src/rendering/box.dart:3372:15)
+#196    RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+#197    RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+#198    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#199    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#200    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#201    RenderDecoratedBox.paint (package:flutter/src/rendering/proxy_box.dart:2450:11)
+#202    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#203    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#204    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#205    RenderFractionalTranslation.paint
+(package:flutter/src/rendering/proxy_box.dart:3072:13)
+#206    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#207    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#208    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#209    RenderFractionalTranslation.paint
+(package:flutter/src/rendering/proxy_box.dart:3072:13)
+#210    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#211    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#212    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#213    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#214    PaintingContext._repaintCompositedChild
+(package:flutter/src/rendering/object.dart:176:11)
+#215    PaintingContext.repaintCompositedChild
+(package:flutter/src/rendering/object.dart:121:5)
+#216    PaintingContext._compositeChild
+(package:flutter/src/rendering/object.dart:272:7)
+#217    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+#218    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#219    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#220    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#221    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#222    RenderOffstage.paint (package:flutter/src/rendering/proxy_box.dart:3877:11)
+#223    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#224    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#225    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#226    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#227    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#228    _RenderTheaterMixin.paint (package:flutter/src/widgets/overlay.dart:1120:15)
+#229    _RenderTheater.paint (package:flutter/src/widgets/overlay.dart:1478:13)
+#230    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#231    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#232    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#233    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#234    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#235    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#236    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#237    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#238    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#239    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#240    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#241    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#242    RenderCustomPaint.paint
+(package:flutter/src/rendering/custom_paint.dart:644:11)
+#243    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#244    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#245    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#246    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#247    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#248    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#249    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#250    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#251    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#252    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#253    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#254    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#255    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#256    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#257    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#258    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#259    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#260    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#261    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#262    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#263    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+#264    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#265    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+#266    RenderView.paint (package:flutter/src/rendering/view.dart:322:15)
+#267    RenderObject._paintWithContext
+(package:flutter/src/rendering/object.dart:3427:7)
+#268    PaintingContext._repaintCompositedChild
+(package:flutter/src/rendering/object.dart:176:11)
+#269    PaintingContext.repaintCompositedChild
+(package:flutter/src/rendering/object.dart:121:5)
+#270    PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1312:31)
+#271    PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1322:15)
+#272    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:631:23)
+#273    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1242:13)
+#274    RendererBinding._handlePersistentFrameCallback
+(package:flutter/src/rendering/binding.dart:495:5)
+#275    SchedulerBinding._invokeFrameCallback
+(package:flutter/src/scheduler/binding.dart:1438:15)
+#276    SchedulerBinding.handleDrawFrame
+(package:flutter/src/scheduler/binding.dart:1351:9)
+#277    SchedulerBinding._handleDrawFrame
+(package:flutter/src/scheduler/binding.dart:1204:5)
+#278    _invoke (dart:ui/hooks.dart:331:13)
+#279    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+#280    _drawFrame (dart:ui/hooks.dart:303:31)
 
-15  Runner.debug.dylib                  0x0000000107e06f80 -[GMSGestureHandlerView dealloc] + 80
-16  Runner.debug.dylib                  0x0000000107dcfe74 -[GMSVectorMapView dealloc] + 284
-17  Runner.debug.dylib                  0x0000000107d93650 -[GMSMapView .cxx_destruct] + 1012
-18  libobjc.A.dylib                     0x0000000189eddc14 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 56340
-19  libobjc.A.dylib                     0x0000000189ed5f0c ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 24332
-20  libobjc.A.dylib                     0x0000000189edbcec _objc_rootDealloc + 72
-21  UIKitCore                           0x000000018f2663c4 96636F64-106F-30C8-A780-82DCEBB0F443 + 172996
-22  UIKitCore                           0x000000018f26618c 96636F64-106F-30C8-A780-82DCEBB0F443 + 172428
-23  Runner.debug.dylib                  0x0000000107d89880 -[GMSMapView dealloc] + 512
-24  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-25  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-26  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-27  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-28  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-29  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-30  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-31  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-32  CoreFoundation                      0x000000018c96649c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 103580
-33  CoreFoundation                      0x000000018c96615c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 102748
-34  CoreFoundation                      0x000000018c965cd8 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 101592
-35  CoreFoundation                      0x000000018c95d470 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 66672
-36  CoreFoundation                      0x000000018c95ec3c CFRunLoopRunSpecific + 572
-37  GraphicsServices                    0x00000001d9b3d454 GSEventRunModal + 168
-38  UIKitCore                           0x000000018f371274 96636F64-106F-30C8-A780-82DCEBB0F443 + 1266292
-39  UIKitCore                           0x000000018f33ca28 UIApplicationMain + 336
-40  UIKitCore                           0x000000018f41e168 96636F64-106F-30C8-A780-82DCEBB0F443 + 1974632
-41  Runner.debug.dylib                  0x0000000107c16a54 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
-42  Runner.debug.dylib                  0x0000000107c169c4 $s6Runner11AppDelegateC5$mainyyFZ + 44
-43  Runner.debug.dylib                  0x0000000107c16ad0 __debug_main_executable_dylib_entry_point + 28
-44  dyld                                0x00000001b3833f08 86D5253D-4FD1-36F3-B4AB-25982C90CBF4 + 257800
-flutter: #39     RenderViewportBase._paintContents (package:flutter/src/rendering/viewport.dart:789:17)
-flutter: #40     PaintingContext.pushLayer (package:flutter/src/rendering/object.dart:507:12)
-flutter: #41     PaintingContext.pushClipRect (package:flutter/src/rendering/object.dart:574:7)
-flutter: #42     RenderViewportBase.paint (package:flutter/src/rendering/viewport.dart:764:38)
-flutter: #43     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #44     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
-flutter: #45     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
-flutter: #46     PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
-flutter: #47     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
-flutter: #48     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #49     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #50     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #51     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #52     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #53     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #54     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #55     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #56     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #57     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+Image provider: NetworkImage("https://via.placeholder.com/80", scale: 1.0)
+Image key: NetworkImage("https://via.placeholder.com/80", scale: 1.0)
+═══════════════════════════════════════════════════════════════════════════════════════
+═════════════
+
+Another exception was thrown: SocketException: Failed host lookup:
+'via.placeholder.com' (OS Error: nodename nor servname provided, or not known, errno =
+8)
+flutter: #138    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #139    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #140    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #141    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #142    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #143    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #144    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #145    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #146    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #147    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #148    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #149    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #150    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #151    RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+flutter: #152    RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+flutter: #153    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #154    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #155    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #156    RenderCustomMultiChildLayoutBox.paint (package:flutter/src/rendering/custom_layout.dart:424:5)
+flutter: #157    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #158    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #159    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #160    _RenderInkFeatures.paint (package:flutter/src/material/material.dart:632:11)
+flutter: #161    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #162    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #163    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #164    RenderPhysicalModel.paint.<anonymous closure> (package:flutter/src/rendering/proxy_box.dart:2190:15)
+flutter: #165    PaintingContext.pushClipRRect (package:flutter/src/rendering/object.dart:611:14)
+flutter: #166    RenderPhysicalModel.paint (package:flutter/src/rendering/proxy_box.dart:2177:21)
+flutter: #167    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #168    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #169    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #170    RenderCustomMultiChildLayoutBox.paint (package:flutter/src/rendering/custom_layout.dart:424:5)
+flutter: #171    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #172    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #173    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #174    _RenderInkFeatures.paint (package:flutter/src/material/material.dart:632:11)
+flutter: #175    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #176    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #177    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #178    RenderPhysicalModel.paint.<anonymous closure> (package:flutter/src/rendering/proxy_box.dart:2190:15)
+flutter: #179    PaintingContext.pushClipRRect (package:flutter/src/rendering/object.dart:611:14)
+flutter: #180    RenderPhysicalModel.paint (package:flutter/src/rendering/proxy_box.dart:2177:21)
+flutter: #181    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #182    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #183    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #184    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #185    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #186    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #187    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #188    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #189    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #190    PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #191    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+flutter: #192    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #193    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #194    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #195    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #196    RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+flutter: #197    RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+flutter: #198    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #199    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #200    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #201    RenderDecoratedBox.paint (package:flutter/src/rendering/proxy_box.dart:2450:11)
+flutter: #202    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #203    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #204    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #205    RenderFractionalTranslation.paint (package:flutter/src/rendering/proxy_box.dart:3072:13)
+flutter: #206    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #207    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #208    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #209    RenderFractionalTranslation.paint (package:flutter/src/rendering/proxy_box.dart:3072:13)
+flutter: #210    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #211    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #212    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #213    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #214    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #215    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #216    PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #217    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+flutter: #218    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #219    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #220    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #221    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #222    RenderOffstage.paint (package:flutter/src/rendering/proxy_box.dart:3877:11)
+flutter: #223    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #224    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #225    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #226    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #227    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #228    _RenderTheaterMixin.paint (package:flutter/src/widgets/overlay.dart:1120:15)
+flutter: #229    _RenderTheater.paint (package:flutter/src/widgets/overlay.dart:1478:13)
+flutter: #230    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #231    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #232    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #233    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #234    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #235    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #236    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #237    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #238    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #239    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #240    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #241    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #242    RenderCustomPaint.paint (package:flutter/src/rendering/custom_paint.dart:644:11)
+flutter: #243    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #244    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #245    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #246    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #247    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #248    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #249    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #250    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #251    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #252    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #253    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #254    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #255    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #256    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #257    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #258    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #259    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #260    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #261    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #262    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #263    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #264    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #265    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #266    RenderView.paint (package:flutter/src/rendering/view.dart:322:15)
+flutter: #267    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #268    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #269    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #270    PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1312:31)
+flutter: #271    PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1322:15)
+flutter: #272    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:631:23)
+flutter: #273    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1242:13)
+flutter: #274    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+flutter: #275    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+flutter: #276    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+flutter: #277    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+flutter: #278    _invoke (dart:ui/hooks.dart:331:13)
+flutter: #279    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+flutter: #280    _drawFrame (dart:ui/hooks.dart:303:31)
+flutter:
+flutter: ❌ App-level error caught: SocketException: Failed host lookup: 'via.placeholder.com' (OS Error: nodename nor servname provided, or not known, errno = 8)
+flutter: ❌ Stack trace: #0      _NativeSocket.startConnect (dart:io-patch/socket_patch.dart:822:35)
+flutter: #1      _RawSocket.startConnect (dart:io-patch/socket_patch.dart:2295:26)
+flutter: #2      RawSocket.startConnect (dart:io-patch/socket_patch.dart:41:23)
+flutter: #3      RawSecureSocket.startConnect (dart:io/secure_socket.dart:334:22)
+flutter: #4      SecureSocket.startConnect (dart:io/secure_socket.dart:85:28)
+flutter: #5      _ConnectionTarget.connect (dart:_http/http_impl.dart:2704:30)
+flutter: #6      _HttpClient._getConnection.connect (dart:_http/http_impl.dart:3225:12)
+flutter: #7      _HttpClient._getConnection (dart:_http/http_impl.dart:3230:12)
+flutter: #8      _HttpClient._openUrl (dart:_http/http_impl.dart:3053:12)
+flutter: #9      _HttpClient.getUrl (dart:_http/http_impl.dart:2880:48)
+flutter: #10     NetworkImage._loadAsync (package:flutter/src/painting/_network_image_io.dart:121:59)
+flutter: #11     NetworkImage.loadImage (package:flutter/src/painting/_network_image_io.dart:82:14)
+flutter: #12     ImageProvider.resolveStreamForKey.<anonymous closure> (package:flutter/src/painting/image_provider.dart:548:39)
+flutter: #13     ImageCache.putIfAbsent (package:flutter/src/painting/image_cache.dart:372:22)
+flutter: #14     ImageProvider.resolveStreamForKey (package:flutter/src/painting/image_provider.dart:545:81)
+flutter: #15     ImageProvider.resolve.<anonymous closure> (package:flutter/src/painting/image_provider.dart:383:9)
+flutter: #16     ImageProvider._createErrorHandlerAndKey.<anonymous closure> (package:flutter/src/painting/image_provider.dart:501:28)
+flutter: #17     SynchronousFuture.then (package:flutter/src/foundation/synchronous_future.dart:44:27)
+flutter: #18     ImageProvider._createErrorHandlerAndKey (package:flutter/src/painting/image_provider.dart:498:10)
+flutter: #19     ImageProvider.resolve (package:flutter/src/painting/image_provider.dart:380:5)
+flutter: #20     _DecorationImagePainter.paint (package:flutter/src/painting/decoration_image.dart:373:55)
+flutter: #21     _BoxDecorationPainter._paintBackgroundImage (package:flutter/src/painting/box_decoration.dart:553:20)
+flutter: #22     _BoxDecorationPainter.paint (package:flutter/src/painting/box_decoration.dart:570:5)
+flutter: #23     RenderDecoratedBox.paint (package:flutter/src/rendering/proxy_box.dart:2420:17)
+flutter: #24     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #25     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #26     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #27     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #28     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #29     RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #30     RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+flutter: #31     RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+flutter: #32     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #33     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #34     RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #35     RenderFlex.paint (package:flutter/src/rendering/flex.dart:1315:7)
+flutter: #36     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #37     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #38     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
+flutter: #39     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #40     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #41     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #42     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #43     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #44     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #45     PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #46     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+flutter: #47     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #48     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #49     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #50     RenderSliverMultiBoxAdaptor.paint (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:753:17)
+flutter: #51     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #52     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #53     RenderSliverEdgeInsetsPadding.paint (package:flutter/src/rendering/sliver_padding.dart:272:15)
+flutter: #54     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #55     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #56     RenderViewportBase._paintContents (package:flutter/src/rendering/viewport.dart:789:17)
+flutter: #57     RenderViewportBase.paint (package:flutter/src/rendering/viewport.dart:774:7)
 flutter: #58     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #59     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #60     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
-flutter: #61     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #62     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #59     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #60     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #61     PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #62     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
 flutter: #63     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
 flutter: #64     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
 flutter: #65     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
 flutter: #66     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
 flutter: #67     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
 flutter: #68     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #69     RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
-flutter: #70     RenderFlex.paint (package:flutter/src/rendering/flex.dart:1315:7)
-flutter: #71     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #72     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #73     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
-flutter: #74     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #75     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #76     RenderSliverSingleBoxAdapter.paint (package:flutter/src/rendering/sliver.dart:2015:15)
-flutter: #77     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #78     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
-flutter: #79     RenderViewportBase._paintContents (package:flutter/src/rendering/viewport.dart:789:17)
-flutter: #80     PaintingContext.pushLayer (package:flutter/src/rendering/object.dart:507:12)
-flutter: #81     PaintingContext.pushClipRect (package:flutter/src/rendering/object.dart:574:7)
-flutter: #82     RenderViewportBase.paint (package:flutter/src/rendering/viewport.dart:764:38)
-flutter: #83     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
-flutter: #84     PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
-flutter: #85     PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
-flutter: #86     PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1312:31)
-flutter: #87     PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1322:15)
-flutter: #88     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:631:23)
-flutter: #89     WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1242:13)
-flutter: #90     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
-flutter: #91     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
-flutter: #92     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
-flutter: #93     SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
-flutter: #94     _invoke (dart:ui/hooks.dart:331:13)
-flutter: #95     PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
-flutter: #96     _drawFrame (dart:ui/hooks.dart:303:31)
+flutter: #69     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #70     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #71     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #72     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #73     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #74     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #75     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #76     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #77     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #78     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #79     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #80     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #81     RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #82     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #83     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #84     RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #85     RenderFlex.paint (package:flutter/src/rendering/flex.dart:1315:7)
+flutter: #86     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #87     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #88     RenderShiftedBox.paint (package:flutter/src/rendering/shifted_box.dart:81:15)
+flutter: #89     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #90     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #91     _RenderColoredBox.paint (package:flutter/src/widgets/basic.dart:8047:15)
+flutter: #92     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #93     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #94     RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #95     RenderFlex.paint (package:flutter/src/rendering/flex.dart:1315:7)
+flutter: #96     RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #97     PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #98     _RenderSingleChildViewport.paint.paintContents (package:flutter/src/widgets/single_child_scroll_view.dart:549:17)
+flutter: #99     PaintingContext.pushLayer (package:flutter/src/rendering/object.dart:507:12)
+flutter: #100    PaintingContext.pushClipRect (package:flutter/src/rendering/object.dart:574:7)
+flutter: #101    _RenderSingleChildViewport.paint (package:flutter/src/widgets/single_child_scroll_view.dart:553:40)
+flutter: #102    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #103    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #104    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #105    PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #106    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+flutter: #107    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #108    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #109    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #110    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #111    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #112    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #113    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #114    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #115    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #116    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #117    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #118    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #119    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #120    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #121    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #122    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #123    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #124    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #125    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #126    RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+flutter: #127    RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+flutter: #128    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #129    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #130    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #131    RenderCustomMultiChildLayoutBox.paint (package:flutter/src/rendering/custom_layout.dart:424:5)
+flutter: #132    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #133    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #134    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #135    _RenderInkFeatures.paint (package:flutter/src/material/material.dart:632:11)
+flutter: #136    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #137    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #138    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #139    RenderPhysicalModel.paint.<anonymous closure> (package:flutter/src/rendering/proxy_box.dart:2190:15)
+flutter: #140    PaintingContext.pushClipRRect (package:flutter/src/rendering/object.dart:611:14)
+flutter: #141    RenderPhysicalModel.paint (package:flutter/src/rendering/proxy_box.dart:2177:21)
+flutter: #142    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #143    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #144    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #145    RenderCustomMultiChildLayoutBox.paint (package:flutter/src/rendering/custom_layout.dart:424:5)
+flutter: #146    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #147    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #148    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #149    _RenderInkFeatures.paint (package:flutter/src/material/material.dart:632:11)
+flutter: #150    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #151    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #152    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #153    RenderPhysicalModel.paint.<anonymous closure> (package:flutter/src/rendering/proxy_box.dart:2190:15)
+flutter: #154    PaintingContext.pushClipRRect (package:flutter/src/rendering/object.dart:611:14)
+flutter: #155    RenderPhysicalModel.paint (package:flutter/src/rendering/proxy_box.dart:2177:21)
+flutter: #156    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #157    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #158    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #159    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #160    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #161    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #162    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #163    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #164    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #165    PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #166    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+flutter: #167    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #168    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #169    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #170    RenderBoxContainerDefaultsMixin.defaultPaint (package:flutter/src/rendering/box.dart:3372:15)
+flutter: #171    RenderStack.paintStack (package:flutter/src/rendering/stack.dart:704:5)
+flutter: #172    RenderStack.paint (package:flutter/src/rendering/stack.dart:720:7)
+flutter: #173    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #174    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #175    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #176    RenderDecoratedBox.paint (package:flutter/src/rendering/proxy_box.dart:2450:11)
+flutter: #177    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #178    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #179    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #180    RenderFractionalTranslation.paint (package:flutter/src/rendering/proxy_box.dart:3072:13)
+flutter: #181    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #182    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #183    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #184    RenderFractionalTranslation.paint (package:flutter/src/rendering/proxy_box.dart:3072:13)
+flutter: #185    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #186    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #187    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #188    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #189    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #190    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #191    PaintingContext._compositeChild (package:flutter/src/rendering/object.dart:272:7)
+flutter: #192    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:253:7)
+flutter: #193    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #194    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #195    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #196    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #197    RenderOffstage.paint (package:flutter/src/rendering/proxy_box.dart:3877:11)
+flutter: #198    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #199    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #200    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #201    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #202    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #203    _RenderTheaterMixin.paint (package:flutter/src/widgets/overlay.dart:1120:15)
+flutter: #204    _RenderTheater.paint (package:flutter/src/widgets/overlay.dart:1478:13)
+flutter: #205    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #206    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #207    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #208    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #209    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #210    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #211    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #212    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #213    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #214    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #215    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #216    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #217    RenderCustomPaint.paint (package:flutter/src/rendering/custom_paint.dart:644:11)
+flutter: #218    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #219    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #220    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #221    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #222    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #223    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #224    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #225    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #226    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #227    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #228    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #229    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #230    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #231    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #232    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #233    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #234    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #235    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #236    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #237    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #238    RenderProxyBoxMixin.paint (package:flutter/src/rendering/proxy_box.dart:140:13)
+flutter: #239    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #240    PaintingContext.paintChild (package:flutter/src/rendering/object.dart:261:13)
+flutter: #241    RenderView.paint (package:flutter/src/rendering/view.dart:322:15)
+flutter: #242    RenderObject._paintWithContext (package:flutter/src/rendering/object.dart:3427:7)
+flutter: #243    PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:176:11)
+flutter: #244    PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:121:5)
+flutter: #245    PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1312:31)
+flutter: #246    PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1322:15)
+flutter: #247    RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:631:23)
+flutter: #248    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1242:13)
+flutter: #249    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+flutter: #250    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1438:15)
+flutter: #251    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1351:9)
+flutter: #252    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:5)
+flutter: #253    _invoke (dart:ui/hooks.dart:331:13)
+flutter: #254    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+flutter: #255    _drawFrame (dart:ui/hooks.dart:303:31)
 flutter:
 flutter: MessagingProvider: Disposing
-container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
-container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
-container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
--[GMSx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
-container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
--[GMSx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
-container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
--[GMSx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
-container_create_or_lookup_app_group_path_by_app_group_identifier: client is not entitled
--[GMSx_GIPPseudonymousIDStore initializeStorage]: Shared App Groups unavailable
-flutter: 🔄 Splash: Starting auth check...
-flutter: 🔄 Splash: Starting auth check...
-flutter: 🔥 Splash: Checking Firebase apps...
-flutter: ✅ Splash: Firebase apps available (1)
-flutter: 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🔄 Splash: Starting user sync...
-flutter: 🧭 Splash: Navigating to /dashboard
-flutter: ✅ Splash: Navigation command sent
-flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🔥 Splash: Checking Firebase apps...
-flutter: ✅ Splash: Firebase apps available (1)
-flutter: 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🔄 Splash: Starting user sync...
-flutter: 🧭 Splash: Navigating to /dashboard
-flutter: ✅ Splash: Navigation command sent
-flutter: ⏳ UserSyncHelper: Already checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingProvider: Initializing with ChatService
-flutter: MessagingProvider: Setting up unread count stream
-flutter: ChatService.getTotalUnreadCount: userId = ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=false, hasError=false
-flutter: 🏠 Building dashboard screen...
-flutter: 🔄 FluidDashboardScreen: Already building, preventing duplicate...
-flutter: 🔄 DashboardViewModel: Starting initialization
-flutter: 👤 UserService: Returning cached user model
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#18149]
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#943f5]
-flutter: MessagingProvider: Auth state changed, user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingProvider: Resetting state
-flutter: MessagingProvider: Setting up unread count stream
-flutter: ChatService.getTotalUnreadCount: userId = ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ✅ DashboardViewModel: Initialization completed
-flutter: ✅ UserSyncHelper: User document already exists
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=false, hasError=false
-flutter: ChatService.getTotalUnreadCount: Processing 11 chats
-flutter: ChatService.getTotalUnreadCount: Chat 4Vaw6gbC52RgcUJ2uDKu has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat ABkpdwUjG3lKNe4RAwXq has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat CcPs4ucoiPurd535WnGQ has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat IJTKCt9eq6N5tkfD02rX has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat J0miinSPi2LUSJkZCqoC has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat MesrVMZw2Kd2s3BGqqdV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat eEHWKceqAmeaEAdxERUV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat lkVEsAFBNUJkwJgh9dDR has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat sME139JbbWN1GZ4UOicS has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Total unread count = 0
-flutter: MessagingProvider: Unread count updated to 0
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 📦 CaptureService.getAllCaptures() returning cached data
-flutter: 🔥 Firebase already initialized, skipping initialization
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-nw_path_necp_check_for_updates Failed to copy updated result (22)
-flutter: 🏠 Building dashboard screen...
-flutter: 🔄 Splash: Starting auth check...
-flutter: 🔥 Splash: Checking Firebase apps...
-flutter: ✅ Splash: Firebase apps available (1)
-flutter: 👤 Splash: Current user: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: 🔄 Splash: Starting user sync...
-flutter: 🧭 Splash: Navigating to /dashboard
-flutter: ✅ Splash: Navigation command sent
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#45608]
-flutter: 🔍 UserSyncHelper: Checking user document for ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ✅ UserSyncHelper: User document already exists
-Thread Performance Checker: Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions
-PID: 87201, TID: 12592663
-Backtrace
-=================================================================
-0   Runner.debug.dylib                  0x0000000107e3d2e8 _ZN7gmscore6vector19SharedLabelerFacadeD2Ev + 100
-1   Runner.debug.dylib                  0x0000000107e26018 _ZNSt3__110shared_ptrIN7gmscore6vector19SharedLabelerFacadeEED2B8ue170006Ev + 64
-2   Runner.debug.dylib                  0x0000000107e33984 _ZN7gmscore6vector22SharedLabelingBehaviorD2Ev + 256
-3   Runner.debug.dylib                  0x0000000107e339c8 _ZN7gmscore6vector22SharedLabelingBehaviorD0Ev + 12
-4   Runner.debug.dylib                  0x0000000108330378 _ZN7gmscore4base16ReferenceCounted10GMSx_UnrefEv + 64
-5   Runner.debug.dylib                  0x0000000108151794 _ZN7gmscore4base10reffed_ptrINS0_16ReferenceCountedEED2Ev + 28
-6   Runner.debug.dylib                  0x00000001081517dc _ZNSt3__16vectorIN7gmscore8renderer14EntityRenderer9PendingOpENS_9allocatorIS4_EEE16__destroy_vectorclB8ue170006Ev + 52
-7   Runner.debug.dylib                  0x000000010814f994 _ZN7gmscore8renderer14EntityRendererD2Ev + 376
-8   Runner.debug.dylib                  0x000000010814fa70 _ZN7gmscore8renderer14EntityRendererD0Ev + 12
-9   Runner.debug.dylib                  0x0000000107e11e88 __30-[GMSPhoenixRenderer tearDown]_block_invoke + 136
-10  Foundation                          0x000000018b64a294 34DE055D-8683-380A-9198-C3347211D13D + 537236
-11  Foundation                          0x000000018b7b1954 34DE055D-8683-380A-9198-C3347211D13D + 2009428
-12  Runner.debug.dylib                  0x0000000107e11de4 -[GMSPhoenixRenderer tearDown] + 92
-13  Runner.debug.dylib                  0x0000000107e106c0 -[GMSEntityRendererView tearDownRenderer] + 88
-14  Runner.debug.dylib                  0x0000000107e0ee40 -[GMSEntityRendererView dealloc] + 40
-
-15  Runner.debug.dylib                  0x0000000107e06f80 -[GMSGestureHandlerView dealloc] + 80
-16  Runner.debug.dylib                  0x0000000107dcfe74 -[GMSVectorMapView dealloc] + 284
-17  Runner.debug.dylib                  0x0000000107d93650 -[GMSMapView .cxx_destruct] + 1012
-18  libobjc.A.dylib                     0x0000000189eddc14 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 56340
-19  libobjc.A.dylib                     0x0000000189ed5f0c ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 24332
-20  libobjc.A.dylib                     0x0000000189edbcec _objc_rootDealloc + 72
-21  UIKitCore                           0x000000018f2663c4 96636F64-106F-30C8-A780-82DCEBB0F443 + 172996
-22  UIKitCore                           0x000000018f26618c 96636F64-106F-30C8-A780-82DCEBB0F443 + 172428
-23  Runner.debug.dylib                  0x0000000107d89880 -[GMSMapView dealloc] + 512
-24  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-25  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-26  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-27  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-28  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-29  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-30  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-31  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-32  CoreFoundation                      0x000000018c96649c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 103580
-33  CoreFoundation                      0x000000018c96615c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 102748
-34  CoreFoundation                      0x000000018c965cd8 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 101592
-35  CoreFoundation                      0x000000018c95d470 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 66672
-36  CoreFoundation                      0x000000018c95ec3c CFRunLoopRunSpecific + 572
-37  GraphicsServices                    0x00000001d9b3d454 GSEventRunModal + 168
-38  UIKitCore                           0x000000018f371274 96636F64-106F-30C8-A780-82DCEBB0F443 + 1266292
-39  UIKitCore                           0x000000018f33ca28 UIApplicationMain + 336
-40  UIKitCore                           0x000000018f41e168 96636F64-106F-30C8-A780-82DCEBB0F443 + 1974632
-41  Runner.debug.dylib                  0x0000000107c16a54 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
-42  Runner.debug.dylib                  0x0000000107c169c4 $s6Runner11AppDelegateC5$mainyyFZ + 44
-43  Runner.debug.dylib                  0x0000000107c16ad0 __debug_main_executable_dylib_entry_point + 28
-44  dyld                                0x00000001b3833f08 86D5253D-4FD1-36F3-B4AB-25982C90CBF4 + 257800
-interruptionHandler is called. -[FontServicesDaemonManager connection]_block_invoke
-nw_path_necp_check_for_updates Failed to copy updated result (22)
-flutter: 🗺️ Initializing Google Maps...
-nw_path_necp_check_for_updates Failed to copy updated result (22)
-App is being debugged, do not track this hang
-Hang detected: 0.30s (debugger attached, not reporting)
-flutter: 🔑 Google Maps API key found: AIzaSyBvmSCvenoo9u-e...
-flutter: 🔑 API key length: 39
-flutter: ✅ Maps initialized successfully
-flutter: 👤 UserService: Returning cached user model
-flutter: 📍 No user ZIP code found, will use location-based detection
-flutter: 🗺️ GoogleMap controller created successfully
-flutter: 🔑 Using API key: AIzaSyBvmSCvenoo9u-e...
-flutter: 🗺️ Map tiles loading properly - test coordinate: LatLng(-90.0, -180.0)
-flutter: 🌍 Using current location: Latitude: 35.265209165664906, Longitude: -77.5866567105175
-flutter: 🗺️ Moving map to location: 35.265209165664906, -77.5866567105175
-flutter: 📍 [DEBUG] getZipCodeFromCoordinates called with: lat=35.265209165664906, lng=-77.5866567105175
-flutter: 📍 [DEBUG] Using cached ZIP code: 28501
-flutter: 📍 Location-derived ZIP code: 28501
-flutter: 🎯 [DEBUG] getPublicArtNearLocation: lat=35.265209165664906, lng=-77.5866567105175, radiusKm=10.0
-flutter: 🎯 [DEBUG] Firestore returned 3 public art docs
-flutter: 🎯 [DEBUG] Found 3 nearby art pieces
-flutter: 🎨 Loaded 3 nearby art pieces
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-flutter: ✅ Updated user ZIP code to: 28501
-flutter: ✅ Successfully updated user ZIP code to: 28501
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#d52ba]
-App is being debugged, do not track this hang
-Hang detected: 0.82s (debugger attached, not reporting)
-Thread Performance Checker: Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions
-PID: 87201, TID: 12592663
-Backtrace
-=================================================================
-0   Runner.debug.dylib                  0x0000000107e3d2e8 _ZN7gmscore6vector19SharedLabelerFacadeD2Ev + 100
-1   Runner.debug.dylib                  0x0000000107e26018 _ZNSt3__110shared_ptrIN7gmscore6vector19SharedLabelerFacadeEED2B8ue170006Ev + 64
-2   Runner.debug.dylib                  0x0000000107e33984 _ZN7gmscore6vector22SharedLabelingBehaviorD2Ev + 256
-3   Runner.debug.dylib                  0x0000000107e339c8 _ZN7gmscore6vector22SharedLabelingBehaviorD0Ev + 12
-4   Runner.debug.dylib                  0x0000000108330378 _ZN7gmscore4base16ReferenceCounted10GMSx_UnrefEv + 64
-5   Runner.debug.dylib                  0x0000000108151794 _ZN7gmscore4base10reffed_ptrINS0_16ReferenceCountedEED2Ev + 28
-6   Runner.debug.dylib                  0x00000001081517dc _ZNSt3__16vectorIN7gmscore8renderer14EntityRenderer9PendingOpENS_9allocatorIS4_EEE16__destroy_vectorclB8ue170006Ev + 52
-7   Runner.debug.dylib                  0x000000010814f994 _ZN7gmscore8renderer14EntityRendererD2Ev + 376
-8   Runner.debug.dylib                  0x000000010814fa70 _ZN7gmscore8renderer14EntityRendererD0Ev + 12
-9   Runner.debug.dylib                  0x0000000107e11e88 __30-[GMSPhoenixRenderer tearDown]_block_invoke + 136
-10  Foundation                          0x000000018b64a294 34DE055D-8683-380A-9198-C3347211D13D + 537236
-11  Foundation                          0x000000018b7b1954 34DE055D-8683-380A-9198-C3347211D13D + 2009428
-12  Runner.debug.dylib                  0x0000000107e11de4 -[GMSPhoenixRenderer tearDown] + 92
-13  Runner.debug.dylib                  0x0000000107e106c0 -[GMSEntityRendererView tearDownRenderer] + 88
-14  Runner.debug.dylib                  0x0000000107e0ee40 -[GMSEntityRendererView dealloc] + 40
-
-15  Runner.debug.dylib                  0x0000000107e06f80 -[GMSGestureHandlerView dealloc] + 80
-16  Runner.debug.dylib                  0x0000000107dcfe74 -[GMSVectorMapView dealloc] + 284
-17  Runner.debug.dylib                  0x0000000107d93650 -[GMSMapView .cxx_destruct] + 1012
-18  libobjc.A.dylib                     0x0000000189eddc14 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 56340
-19  libobjc.A.dylib                     0x0000000189ed5f0c ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 24332
-20  libobjc.A.dylib                     0x0000000189edbcec _objc_rootDealloc + 72
-21  UIKitCore                           0x000000018f2663c4 96636F64-106F-30C8-A780-82DCEBB0F443 + 172996
-22  UIKitCore                           0x000000018f26618c 96636F64-106F-30C8-A780-82DCEBB0F443 + 172428
-23  Runner.debug.dylib                  0x0000000107d89880 -[GMSMapView dealloc] + 512
-24  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-25  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-26  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-27  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-28  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-29  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-30  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-31  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-32  CoreFoundation                      0x000000018c96649c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 103580
-33  CoreFoundation                      0x000000018c96615c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 102748
-34  CoreFoundation                      0x000000018c965cd8 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 101592
-35  CoreFoundation                      0x000000018c95d470 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 66672
-36  CoreFoundation                      0x000000018c95ec3c CFRunLoopRunSpecific + 572
-37  GraphicsServices                    0x00000001d9b3d454 GSEventRunModal + 168
-38  UIKitCore                           0x000000018f371274 96636F64-106F-30C8-A780-82DCEBB0F443 + 1266292
-39  UIKitCore                           0x000000018f33ca28 UIApplicationMain + 336
-40  UIKitCore                           0x000000018f41e168 96636F64-106F-30C8-A780-82DCEBB0F443 + 1974632
-41  Runner.debug.dylib                  0x0000000107c16a54 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
-42  Runner.debug.dylib                  0x0000000107c169c4 $s6Runner11AppDelegateC5$mainyyFZ + 44
-43  Runner.debug.dylib                  0x0000000107c16ad0 __debug_main_executable_dylib_entry_point + 28
-44  dyld                                0x00000001b3833f08 86D5253D-4FD1-36F3-B4AB-25982C90CBF4 + 257800
-Thread Performance Checker: Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions
-PID: 87201, TID: 12592663
-Backtrace
-=================================================================
-0   Runner.debug.dylib                  0x0000000107e3d2e8 _ZN7gmscore6vector19SharedLabelerFacadeD2Ev + 100
-1   Runner.debug.dylib                  0x0000000107e26018 _ZNSt3__110shared_ptrIN7gmscore6vector19SharedLabelerFacadeEED2B8ue170006Ev + 64
-2   Runner.debug.dylib                  0x0000000107e33984 _ZN7gmscore6vector22SharedLabelingBehaviorD2Ev + 256
-3   Runner.debug.dylib                  0x0000000107e339c8 _ZN7gmscore6vector22SharedLabelingBehaviorD0Ev + 12
-4   Runner.debug.dylib                  0x0000000108330378 _ZN7gmscore4base16ReferenceCounted10GMSx_UnrefEv + 64
-5   Runner.debug.dylib                  0x0000000108151794 _ZN7gmscore4base10reffed_ptrINS0_16ReferenceCountedEED2Ev + 28
-6   Runner.debug.dylib                  0x00000001081517dc _ZNSt3__16vectorIN7gmscore8renderer14EntityRenderer9PendingOpENS_9allocatorIS4_EEE16__destroy_vectorclB8ue170006Ev + 52
-7   Runner.debug.dylib                  0x000000010814f994 _ZN7gmscore8renderer14EntityRendererD2Ev + 376
-8   Runner.debug.dylib                  0x000000010814fa70 _ZN7gmscore8renderer14EntityRendererD0Ev + 12
-9   Runner.debug.dylib                  0x0000000107e11e88 __30-[GMSPhoenixRenderer tearDown]_block_invoke + 136
-10  Foundation                          0x000000018b64a294 34DE055D-8683-380A-9198-C3347211D13D + 537236
-11  Foundation                          0x000000018b7b1954 34DE055D-8683-380A-9198-C3347211D13D + 2009428
-12  Runner.debug.dylib                  0x0000000107e11de4 -[GMSPhoenixRenderer tearDown] + 92
-13  Runner.debug.dylib                  0x0000000107e106c0 -[GMSEntityRendererView tearDownRenderer] + 88
-14  Runner.debug.dylib                  0x0000000107e0ee40 -[GMSEntityRendererView dealloc] + 40
-
-15  Runner.debug.dylib                  0x0000000107e06f80 -[GMSGestureHandlerView dealloc] + 80
-16  Runner.debug.dylib                  0x0000000107dcfe74 -[GMSVectorMapView dealloc] + 284
-17  QuartzCore                          0x000000018e4e4830 109010DA-3C35-3E22-B001-939786412EE2 + 129072
-18  QuartzCore                          0x000000018e50b9c8 109010DA-3C35-3E22-B001-939786412EE2 + 289224
-19  QuartzCore                          0x000000018e554f84 109010DA-3C35-3E22-B001-939786412EE2 + 589700
-20  libdispatch.dylib                   0x0000000107ae6064 _dispatch_client_callout + 16
-21  libdispatch.dylib                   0x0000000107b06f70 _dispatch_main_queue_drain.cold.5 + 876
-22  libdispatch.dylib                   0x0000000107adc548 _dispatch_main_queue_drain + 180
-23  libdispatch.dylib                   0x0000000107adc484 _dispatch_main_queue_callback_4CF + 44
-24  CoreFoundation                      0x000000018c9b9d90 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 445840
-25  CoreFoundation                      0x000000018c95d4f4 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 66804
-26  CoreFoundation                      0x000000018c95ec3c CFRunLoopRunSpecific + 572
-27  GraphicsServices                    0x00000001d9b3d454 GSEventRunModal + 168
-28  UIKitCore                           0x000000018f371274 96636F64-106F-30C8-A780-82DCEBB0F443 + 1266292
-29  UIKitCore                           0x000000018f33ca28 UIApplicationMain + 336
-30  UIKitCore                           0x000000018f41e168 96636F64-106F-30C8-A780-82DCEBB0F443 + 1974632
-31  Runner.debug.dylib                  0x0000000107c16a54 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
-32  Runner.debug.dylib                  0x0000000107c169c4 $s6Runner11AppDelegateC5$mainyyFZ + 44
-33  Runner.debug.dylib                  0x0000000107c16ad0 __debug_main_executable_dylib_entry_point + 28
-34  dyld                                0x00000001b3833f08 86D5253D-4FD1-36F3-B4AB-25982C90CBF4 + 257800
-flutter: Menu button pressed
-flutter: Attempting to open drawer...
-flutter: Opening drawer using GlobalKey...
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Guest"
-flutter:   - imageUrl: "null"
-flutter:   - imageUrl isEmpty: N/A
-flutter:   - will show fallback: true
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "null"
-flutter:   - imageUrl isEmpty: N/A
-flutter:   - will show fallback: true
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔄 Navigating to: /admin/moderation (isMainRoute: false)
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-11.15.0 - [FirebaseFirestore][I-FST000001] Listen for query at captures failed: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/wordnerd-artbeat/firestore/indexes?create_composite=ClFwcm9qZWN0cy93b3JkbmVyZC1hcnRiZWF0L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jYXB0dXJlcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCgljcmVhdGVkQXQQARoMCghfX25hbWVfXxAB
-flutter: Error fetching pending captures: [cloud_firestore/failed-precondition] The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/wordnerd-artbeat/firestore/indexes?create_composite=ClFwcm9qZWN0cy93b3JkbmVyZC1hcnRiZWF0L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jYXB0dXJlcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCgljcmVhdGVkQXQQARoMCghfX25hbWVfXxAB
-11.15.0 - [FirebaseFirestore][I-FST000001] Listen for query at captures failed: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/wordnerd-artbeat/firestore/indexes?create_composite=ClFwcm9qZWN0cy93b3JkbmVyZC1hcnRiZWF0L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jYXB0dXJlcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCgljcmVhdGVkQXQQARoMCghfX25hbWVfXxAB
-flutter: Error fetching pending captures: [cloud_firestore/failed-precondition] The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/wordnerd-artbeat/firestore/indexes?create_composite=ClFwcm9qZWN0cy93b3JkbmVyZC1hcnRiZWF0L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jYXB0dXJlcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCgljcmVhdGVkQXQQARoMCghfX25hbWVfXxAB
-11.15.0 - [FirebaseFirestore][I-FST000001] Listen for query at captures failed: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/wordnerd-artbeat/firestore/indexes?create_composite=ClFwcm9qZWN0cy93b3JkbmVyZC1hcnRiZWF0L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jYXB0dXJlcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCgljcmVhdGVkQXQQARoMCghfX25hbWVfXxAB
-flutter: Error fetching pending captures: [cloud_firestore/failed-precondition] The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/wordnerd-artbeat/firestore/indexes?create_composite=ClFwcm9qZWN0cy93b3JkbmVyZC1hcnRiZWF0L2RhdGFiYXNlcy8oZGVmYXVsdCkvY29sbGVjdGlvbkdyb3Vwcy9jYXB0dXJlcy9pbmRleGVzL18QARoKCgZzdGF0dXMQARoNCgljcmVhdGVkQXQQARoMCghfX25hbWVfXxAB
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#b2392]
-Thread Performance Checker: Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions
-PID: 87201, TID: 12592663
-Backtrace
-=================================================================
-0   Runner.debug.dylib                  0x0000000107e3d2e8 _ZN7gmscore6vector19SharedLabelerFacadeD2Ev + 100
-1   Runner.debug.dylib                  0x0000000107e26018 _ZNSt3__110shared_ptrIN7gmscore6vector19SharedLabelerFacadeEED2B8ue170006Ev + 64
-2   Runner.debug.dylib                  0x0000000107e33984 _ZN7gmscore6vector22SharedLabelingBehaviorD2Ev + 256
-3   Runner.debug.dylib                  0x0000000107e339c8 _ZN7gmscore6vector22SharedLabelingBehaviorD0Ev + 12
-4   Runner.debug.dylib                  0x0000000108330378 _ZN7gmscore4base16ReferenceCounted10GMSx_UnrefEv + 64
-5   Runner.debug.dylib                  0x0000000108151794 _ZN7gmscore4base10reffed_ptrINS0_16ReferenceCountedEED2Ev + 28
-6   Runner.debug.dylib                  0x00000001081517dc _ZNSt3__16vectorIN7gmscore8renderer14EntityRenderer9PendingOpENS_9allocatorIS4_EEE16__destroy_vectorclB8ue170006Ev + 52
-7   Runner.debug.dylib                  0x000000010814f994 _ZN7gmscore8renderer14EntityRendererD2Ev + 376
-8   Runner.debug.dylib                  0x000000010814fa70 _ZN7gmscore8renderer14EntityRendererD0Ev + 12
-9   Runner.debug.dylib                  0x0000000107e11e88 __30-[GMSPhoenixRenderer tearDown]_block_invoke + 136
-10  Foundation                          0x000000018b64a294 34DE055D-8683-380A-9198-C3347211D13D + 537236
-11  Foundation                          0x000000018b7b1954 34DE055D-8683-380A-9198-C3347211D13D + 2009428
-12  Runner.debug.dylib                  0x0000000107e11de4 -[GMSPhoenixRenderer tearDown] + 92
-13  Runner.debug.dylib                  0x0000000107e106c0 -[GMSEntityRendererView tearDownRenderer] + 88
-14  Runner.debug.dylib                  0x0000000107e0ee40 -[GMSEntityRendererView dealloc] + 40
-
-15  Runner.debug.dylib                  0x0000000107e06f80 -[GMSGestureHandlerView dealloc] + 80
-16  Runner.debug.dylib                  0x0000000107dcfe74 -[GMSVectorMapView dealloc] + 284
-17  Runner.debug.dylib                  0x0000000107d93650 -[GMSMapView .cxx_destruct] + 1012
-18  libobjc.A.dylib                     0x0000000189eddc14 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 56340
-19  libobjc.A.dylib                     0x0000000189ed5f0c ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 24332
-20  libobjc.A.dylib                     0x0000000189edbcec _objc_rootDealloc + 72
-21  UIKitCore                           0x000000018f2663c4 96636F64-106F-30C8-A780-82DCEBB0F443 + 172996
-22  UIKitCore                           0x000000018f26618c 96636F64-106F-30C8-A780-82DCEBB0F443 + 172428
-23  Runner.debug.dylib                  0x0000000107d89880 -[GMSMapView dealloc] + 512
-24  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-25  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-26  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-27  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-28  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-29  UIKitCore                           0x000000018f266170 96636F64-106F-30C8-A780-82DCEBB0F443 + 172400
-30  libobjc.A.dylib                     0x0000000189edad08 ED7C5FC7-DDC7-3424-9C44-DB56F51B8BE2 + 44296
-31  libobjc.A.dylib                     0x0000000189edab94 objc_autoreleasePoolPop + 244
-32  CoreFoundation                      0x000000018c96649c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 103580
-33  CoreFoundation                      0x000000018c96615c 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 102748
-34  CoreFoundation                      0x000000018c965cd8 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 101592
-35  CoreFoundation                      0x000000018c95d470 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 66672
-36  CoreFoundation                      0x000000018c95ec3c CFRunLoopRunSpecific + 572
-37  GraphicsServices                    0x00000001d9b3d454 GSEventRunModal + 168
-38  UIKitCore                           0x000000018f371274 96636F64-106F-30C8-A780-82DCEBB0F443 + 1266292
-39  UIKitCore                           0x000000018f33ca28 UIApplicationMain + 336
-40  UIKitCore                           0x000000018f41e168 96636F64-106F-30C8-A780-82DCEBB0F443 + 1974632
-41  Runner.debug.dylib                  0x0000000107c16a54 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
-42  Runner.debug.dylib                  0x0000000107c169c4 $s6Runner11AppDelegateC5$mainyyFZ + 44
-43  Runner.debug.dylib                  0x0000000107c16ad0 __debug_main_executable_dylib_entry_point + 28
-44  dyld                                0x00000001b3833f08 86D5253D-4FD1-36F3-B4AB-25982C90CBF4 + 257800
-flutter: 🗺️ Initializing Google Maps...
-flutter: 🔑 Google Maps API key found: AIzaSyBvmSCvenoo9u-e...
-flutter: 🔑 API key length: 39
-flutter: 🗺️ Google Maps already initialized
-flutter: ✅ Maps initialized successfully
-flutter: 👤 UserService: Returning cached user model
-flutter: 📍 No user ZIP code found, will use location-based detection
-flutter: 🗺️ GoogleMap controller created successfully
-flutter: 🔑 Using API key: AIzaSyBvmSCvenoo9u-e...
-flutter: 🗺️ Map tiles loading properly - test coordinate: LatLng(-90.0, -180.0)
-flutter: 🌍 Using current location: Latitude: 35.26525049950044, Longitude: -77.58661952287846
-flutter: 🗺️ Moving map to location: 35.26525049950044, -77.58661952287846
-flutter: 📍 [DEBUG] getZipCodeFromCoordinates called with: lat=35.26525049950044, lng=-77.58661952287846
-flutter: 📍 [DEBUG] Geocoding result: [      Name: 407 Manning St,
-flutter:       Street: 407 Manning St,
-flutter:       ISO Country Code: US,
-flutter:       Country: United States,
-flutter:       Postal code: 28501,
-flutter:       Administrative area: NC,
-flutter:       Subadministrative area: Lenoir County,
-flutter:       Locality: Kinston,
-flutter:       Sublocality: Mitchelltown,
-flutter:       Thoroughfare: Manning St,
-flutter:       Subthoroughfare: 407]
-flutter: 📍 [DEBUG] Got ZIP from geocoding: 28501
-flutter: 📍 Location-derived ZIP code: 28501
-flutter: 🎯 [DEBUG] getPublicArtNearLocation: lat=35.26525049950044, lng=-77.58661952287846, radiusKm=10.0
-flutter: 🎯 [DEBUG] Firestore returned 3 public art docs
-flutter: 🎯 [DEBUG] Found 3 nearby art pieces
-flutter: 🎨 Loaded 3 nearby art pieces
-flutter: ✅ Updated user ZIP code to: 28501
-flutter: ✅ Successfully updated user ZIP code to: 28501
-flutter: 🗺️ Map tapped at: LatLng(35.255362496859995, -77.58044958114623)
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#ea3e4]
-Thread Performance Checker: Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Utility quality-of-service class. Investigate ways to avoid priority inversions
-PID: 87201, TID: 12592663
-Backtrace
-=================================================================
-0   Runner.debug.dylib                  0x0000000107e3d2e8 _ZN7gmscore6vector19SharedLabelerFacadeD2Ev + 100
-1   Runner.debug.dylib                  0x0000000107e26018 _ZNSt3__110shared_ptrIN7gmscore6vector19SharedLabelerFacadeEED2B8ue170006Ev + 64
-2   Runner.debug.dylib                  0x0000000107e33984 _ZN7gmscore6vector22SharedLabelingBehaviorD2Ev + 256
-3   Runner.debug.dylib                  0x0000000107e339c8 _ZN7gmscore6vector22SharedLabelingBehaviorD0Ev + 12
-4   Runner.debug.dylib                  0x0000000108330378 _ZN7gmscore4base16ReferenceCounted10GMSx_UnrefEv + 64
-5   Runner.debug.dylib                  0x0000000108151794 _ZN7gmscore4base10reffed_ptrINS0_16ReferenceCountedEED2Ev + 28
-6   Runner.debug.dylib                  0x00000001081517dc _ZNSt3__16vectorIN7gmscore8renderer14EntityRenderer9PendingOpENS_9allocatorIS4_EEE16__destroy_vectorclB8ue170006Ev + 52
-7   Runner.debug.dylib                  0x000000010814f994 _ZN7gmscore8renderer14EntityRendererD2Ev + 376
-8   Runner.debug.dylib                  0x000000010814fa70 _ZN7gmscore8renderer14EntityRendererD0Ev + 12
-9   Runner.debug.dylib                  0x0000000107e11e88 __30-[GMSPhoenixRenderer tearDown]_block_invoke + 136
-10  Foundation                          0x000000018b64a294 34DE055D-8683-380A-9198-C3347211D13D + 537236
-11  Foundation                          0x000000018b7b1954 34DE055D-8683-380A-9198-C3347211D13D + 2009428
-12  Runner.debug.dylib                  0x0000000107e11de4 -[GMSPhoenixRenderer tearDown] + 92
-13  Runner.debug.dylib                  0x0000000107e106c0 -[GMSEntityRendererView tearDownRenderer] + 88
-14  Runner.debug.dylib                  0x0000000107e0ee40 -[GMSEntityRendererView dealloc] + 40
-
-15  Runner.debug.dylib                  0x0000000107e06f80 -[GMSGestureHandlerView dealloc] + 80
-16  Runner.debug.dylib                  0x0000000107dcfe74 -[GMSVectorMapView dealloc] + 284
-17  QuartzCore                          0x000000018e4e4830 109010DA-3C35-3E22-B001-939786412EE2 + 129072
-18  QuartzCore                          0x000000018e50b9c8 109010DA-3C35-3E22-B001-939786412EE2 + 289224
-19  QuartzCore                          0x000000018e554f84 109010DA-3C35-3E22-B001-939786412EE2 + 589700
-20  libdispatch.dylib                   0x0000000107ae6064 _dispatch_client_callout + 16
-21  libdispatch.dylib                   0x0000000107b06f70 _dispatch_main_queue_drain.cold.5 + 876
-22  libdispatch.dylib                   0x0000000107adc548 _dispatch_main_queue_drain + 180
-23  libdispatch.dylib                   0x0000000107adc484 _dispatch_main_queue_callback_4CF + 44
-24  CoreFoundation                      0x000000018c9b9d90 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 445840
-25  CoreFoundation                      0x000000018c95d4f4 7821F73C-378B-3A10-BE90-EF526B7DBA93 + 66804
-26  CoreFoundation                      0x000000018c95ec3c CFRunLoopRunSpecific + 572
-27  GraphicsServices                    0x00000001d9b3d454 GSEventRunModal + 168
-28  UIKitCore                           0x000000018f371274 96636F64-106F-30C8-A780-82DCEBB0F443 + 1266292
-29  UIKitCore                           0x000000018f33ca28 UIApplicationMain + 336
-30  UIKitCore                           0x000000018f41e168 96636F64-106F-30C8-A780-82DCEBB0F443 + 1974632
-31  Runner.debug.dylib                  0x0000000107c16a54 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
-32  Runner.debug.dylib                  0x0000000107c169c4 $s6Runner11AppDelegateC5$mainyyFZ + 44
-33  Runner.debug.dylib                  0x0000000107c16ad0 __debug_main_executable_dylib_entry_point + 28
-34  dyld                                0x00000001b3833f08 86D5253D-4FD1-36F3-B4AB-25982C90CBF4 + 257800
-flutter: 🚀 CaptureService.getAllCaptures() fetching from Firestore with limit: 50
-flutter: ✅ CaptureService.getAllCaptures() found 7 captures
-flutter: 🎯 [DEBUG] getPublicArtNearLocation: lat=35.7796, lng=-78.6382, radiusKm=50.0
-flutter: 🎯 [DEBUG] Firestore returned 3 public art docs
-flutter: 🎯 [DEBUG] Found 0 nearby art pieces
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#3f425]
-flutter: MessagingProvider: Manually refreshing unread count
-flutter: ChatService.getTotalUnreadCount: userId = ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: ChatService.getTotalUnreadCount: Processing 11 chats
-flutter: ChatService.getTotalUnreadCount: Chat 4Vaw6gbC52RgcUJ2uDKu has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat ABkpdwUjG3lKNe4RAwXq has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat CcPs4ucoiPurd535WnGQ has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat IJTKCt9eq6N5tkfD02rX has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat J0miinSPi2LUSJkZCqoC has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat MesrVMZw2Kd2s3BGqqdV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat OXT52m953eCuhMqycPDe has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat eEHWKceqAmeaEAdxERUV has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat kPSZLURHL373gWLZP0V3 has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat lkVEsAFBNUJkwJgh9dDR has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Chat sME139JbbWN1GZ4UOicS has 0 unread for user
-flutter: ChatService.getTotalUnreadCount: Total unread count = 0
-flutter: MessagingProvider: Manual refresh completed, count = 0
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: Loading community feed posts...
-flutter: Loaded 4 posts
-flutter: Processing post azOi3RTeBHL7CMIz1pFX - User: Kristy Kelly, PhotoURL: ""
-flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
-flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
-flutter: Enriched post azOi3RTeBHL7CMIz1pFX with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
-flutter: Processing post opOfEge0XbuWk4dIuMsq - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Processing post pidJN3PJu3XjsxtCyUqk - User: Kristy Kelly, PhotoURL: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Post already has photoUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: Processing post fhTKk4VC4OZlBaXRGo6Q - User: Kristy Kelly, PhotoURL: ""
-flutter: Fetching user data for ARFuyX0C44PbYlHSUSlQx55b9vt2...
-flutter: User doc found - profileImageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586", isVerified: true
-flutter: Enriched post fhTKk4VC4OZlBaXRGo6Q with user photo: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586
-flutter: ArtistAvatar build - displayName: "Kristy Kelly", imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#6d98b]
-flutter: Menu button pressed
-flutter: Attempting to open drawer...
-flutter: Opening drawer using GlobalKey...
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Guest"
-flutter:   - imageUrl: "null"
-flutter:   - imageUrl isEmpty: N/A
-flutter:   - will show fallback: true
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "null"
-flutter:   - imageUrl isEmpty: N/A
-flutter:   - will show fallback: true
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔄 Navigating to: /artwork/upload (isMainRoute: false)
-flutter: 🔍 getUserSubscription: Querying for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 📊 getUserSubscription: Found 0 subscriptions
-flutter: ℹ️ getUserSubscription: No active subscription found for user ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔥 Firebase already initialized, skipping initialization
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🏠 Building dashboard screen...
-PHPickerViewControllerDelegate_Private doesn't respond to _pickerDidPerformCancelAction:
-
-
-***** Picker:<PHPickerViewController: 0x12a1fcc00> didFinishPicking:(
-    "<PHPickerResult: 0x12a39e790>"
-)
-* -[FilePickerPlugin picker:didFinishPicking:] [Line 497]
-PHPickerViewControllerDelegate_Private doesn't respond to _pickerDidPerformConfirmationAction:
-
-
-***** Picker:<PHPickerViewController: 0x12a1fcc00> didFinishPicking:(
-    "<PHPickerResult: 0x12a39e7c0>"
-)
-* -[FilePickerPlugin picker:didFinishPicking:] [Line 497]
-PHPickerViewControllerDelegate_Private doesn't respond to _pickerDidPerformConfirmationAction:
-App is being debugged, do not track this hang
-Hang detected: 0.75s (debugger attached, not reporting)
-<0x124c68140> Gesture: System gesture gate timed out.
-Result accumulator timeout: 0.250000, exceeded.
-App is being debugged, do not track this hang
-Hang detected: 0.82s (debugger attached, not reporting)
-Result accumulator timeout: 0.250000, exceeded.
-Result accumulator timeout: 0.250000, exceeded.
-Result accumulator timeout: 0.250000, exceeded.
-Result accumulator timeout: 0.250000, exceeded.
-Result accumulator timeout: 0.250000, exceeded.
-cancelFetcher Error Domain=com.google.HTTPStatus Code=400 "(null)" UserInfo={data={length = 34, bytes = 0x55706c6f 61642068 61732061 6c726561 ... 6e616c69 7a65642e }, data_content_type=text/plain; charset=utf-8}
-flutter: 🔥 Firebase already initialized, skipping initialization
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🏠 Building dashboard screen...
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-flutter: Menu button pressed
-flutter: Attempting to open drawer...
-flutter: Opening drawer using GlobalKey...
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Guest"
-flutter:   - imageUrl: "null"
-flutter:   - imageUrl isEmpty: N/A
-flutter:   - will show fallback: true
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "null"
-flutter:   - imageUrl isEmpty: N/A
-flutter:   - will show fallback: true
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 🔄 Navigating to: /artist/artwork (isMainRoute: false)
-flutter: 🔍 getArtistProfileByUserId: Querying for userId: ARFuyX0C44PbYlHSUSlQx55b9vt2
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔍 UserAvatar build:
-flutter:   - displayName: "Kristy Kelly"
-flutter:   - imageUrl: "https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586"
-flutter:   - imageUrl isEmpty: false
-flutter:   - will show fallback: false
-flutter: 📊 getArtistProfileByUserId: Found 1 documents
-flutter: ✅ getArtistProfileByUserId: Successfully loaded profile for Kristy Kelly
-flutter: 🔍 ArtworkService: Querying artwork for artistProfileId: DVDoA4qZl6eyxh0wvZEa
-flutter: 🔍 ArtworkService: Found userId: ARFuyX0C44PbYlHSUSlQx55b9vt2 for artistProfileId: DVDoA4qZl6eyxh0wvZEa
-flutter: 📊 ArtworkService: Found 0 artwork documents by artistProfileId
-flutter: 📊 ArtworkService: Found 0 artwork documents by artistId (legacy)
-flutter: 📊 ArtworkService: Found 1 artwork documents by userId
-flutter: 🖼️ ArtworkService: Total unique artworks found: 1
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#3d9d8]
-flutter: 🔄 DashboardViewModel: Refreshing data
-flutter: 🔄 DashboardViewModel: Starting initialization
-flutter: 👤 UserService: Returning cached user model
-flutter: ✅ DashboardViewModel: Initialization completed
-flutter: 🚀 CaptureService.getAllCaptures() fetching from Firestore with limit: 50
-flutter: ✅ CaptureService.getAllCaptures() found 7 captures
-flutter: 👤 UserService: Returning cached user model
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-flutter: 📦 CaptureService.getAllCaptures() returning cached data
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-App is being debugged, do not track this hang
-Hang detected: 0.36s (debugger attached, not reporting)
-flutter: 🔄 App lifecycle state changed to: AppLifecycleState.inactive
-flutter: 🔻 App inactive - temporarily pausing operations
-Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
-Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
-Attempted to change to mode Portrait with an unsupported device (BackAuto). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
-Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
-Failed to find a valid fallback video configuration.
-flutter: 🔄 App lifecycle state changed to: AppLifecycleState.hidden
-flutter: 👻 App hidden - minimizing resource usage
-flutter: 🔄 App lifecycle state changed to: AppLifecycleState.paused
-flutter: ⏸️ App paused - preparing for background
-flutter: 💾 Firestore terminated cleanly for background
-flutter: 🔄 App lifecycle state changed to: AppLifecycleState.hidden
-flutter: 👻 App hidden - minimizing resource usage
-flutter: 🔄 App lifecycle state changed to: AppLifecycleState.inactive
-flutter: 🔻 App inactive - temporarily pausing operations
-flutter: 🔄 App lifecycle state changed to: AppLifecycleState.resumed
-flutter: ✅ App resumed - reinitializing connections
-flutter: ✅ Firestore connection healthy
-flutter: 👤 UserService: Returning cached user model
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 StorageService: Starting capture image upload (attempt 1)...
-flutter: 📸 Original image: 3024x4032
-App is being debugged, do not track this hang
-Hang detected: 1.10s (debugger attached, not reporting)
-flutter: ❌ Enhanced storage upload failed: [firebase_storage/unauthorized] User is not authorized to perform the desired action.
-flutter: ❌ StorageService: Upload attempt 1 failed: [firebase_storage/unauthorized] User is not authorized to perform the desired action.
-cancelFetcher Error Domain=com.google.HTTPStatus Code=400 "(null)" UserInfo={data={length = 34, bytes = 0x55706c6f 61642068 61732061 6c726561 ... 6e616c69 7a65642e }, data_content_type=text/plain; charset=utf-8}
-flutter: 🔄 StorageService: Starting capture image upload (attempt 2)...
-flutter: 📸 Original image: 3024x4032
-App is being debugged, do not track this hang
-Hang detected: 1.05s (debugger attached, not reporting)
-flutter: ❌ Enhanced storage upload failed: [firebase_storage/unauthorized] User is not authorized to perform the desired action.
-flutter: ❌ StorageService: Upload attempt 2 failed: [firebase_storage/unauthorized] User is not authorized to perform the desired action.
-cancelFetcher Error Domain=com.google.HTTPStatus Code=400 "(null)" UserInfo={data={length = 34, bytes = 0x55706c6f 61642068 61732061 6c726561 ... 6e616c69 7a65642e }, data_content_type=text/plain; charset=utf-8}
-flutter: 🔄 StorageService: Starting capture image upload (attempt 3)...
-flutter: 📸 Original image: 3024x4032
-App is being debugged, do not track this hang
-Hang detected: 1.03s (debugger attached, not reporting)
-flutter: ❌ Enhanced storage upload failed: [firebase_storage/unauthorized] User is not authorized to perform the desired action.
-flutter: ❌ StorageService: Upload attempt 3 failed: [firebase_storage/unauthorized] User is not authorized to perform the desired action.
-flutter: ❌ StorageService: All attempts failed, trying fallback...
-flutter: StorageService: Starting upload...
-flutter: StorageService: File path: /private/var/mobile/Containers/Data/Application/6E32D291-CD79-4DEB-BB14-A64386949EE5/tmp/image_picker_0338DB3A-D1D0-499D-83F7-70DC943FBA4F-87201-00001CE72964EB7B.jpg
-flutter: StorageService: File size: 3297151 bytes
-flutter: StorageService: Storage path: capture_images/ARFuyX0C44PbYlHSUSlQx55b9vt2/capture_1753741070333_ARFuyX0C44PbYlHSUSlQx55b9vt2.jpg
-flutter: StorageService: Storage bucket: wordnerd-artbeat.firebasestorage.app
-flutter: StorageService: Upload progress: 0.01%
-cancelFetcher Error Domain=com.google.HTTPStatus Code=400 "(null)" UserInfo={data={length = 34, bytes = 0x55706c6f 61642068 61732061 6c726561 ... 6e616c69 7a65642e }, data_content_type=text/plain; charset=utf-8}
-flutter: StorageService: Upload progress: 63.61%
-flutter: StorageService: Upload progress: 100.00%
-flutter: StorageService: Upload progress: 100.00%
-flutter: StorageService: Upload progress: 100.00%
-flutter: StorageService: Upload completed successfully
-flutter: StorageService: Upload successful, URL: https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/capture_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fcapture_1753741070333_ARFuyX0C44PbYlHSUSlQx55b9vt2.jpg?alt=media&token=514e6ca7-0c9e-48d6-8604-b626dfb8a5a1
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'
-nw_endpoint_flow_failed_with_error [C57 2607:f8b0:4004:c17::5f.443 failed parent-flow (unsatisfied (No network route), ipv4, dns)] already failing, returning
-nw_connection_get_connected_socket_block_invoke [C57] Client called nw_connection_get_connected_socket on unconnected nw_connection
-TCP Conn 0x125206b20 Failed : error 0:50 [50]
-flutter: 🏠 Building dashboard screen...
-flutter: 🏠 Building FluidDashboardScreen...
-flutter: MessagingIcon: hasUnread=false, count=0, initialized=true, hasError=false
-flutter: 🔄 DashboardViewModel: Already initialized or initializing, skipping
-flutter: FluidDashboardScreen initialized
-flutter: Scaffold key: [LabeledGlobalKey<ScaffoldState>#66cb0]
-11.15.0 - [FirebaseFirestore][I-FST000001] AppCheck failed: 'The operation couldn’t be completed. The server responded with an error: 
- - URL: https://firebaseappcheck.googleapis.com/v1/projects/wordnerd-artbeat/apps/1:665020451634:ios:2aa5cc17ac7d0dad78652b:exchangeDebugToken 
- - HTTP status code: 403 
- - Response body: {
-  "error": {
-    "code": 403,
-    "message": "App attestation failed.",
-    "status": "PERMISSION_DENIED"
-  }
-}
-'

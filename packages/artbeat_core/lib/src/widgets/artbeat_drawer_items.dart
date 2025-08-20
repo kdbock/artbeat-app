@@ -41,9 +41,9 @@ class ArtbeatDrawerItems {
     route: '/achievements',
   );
 
-  static const fanClub = ArtbeatDrawerItem(
-    title: 'Fan Club',
-    icon: Icons.front_hand_outlined,
+  static const following = ArtbeatDrawerItem(
+    title: 'Following',
+    icon: Icons.person_add_outlined,
     route: '/favorites',
   );
 
@@ -52,6 +52,12 @@ class ArtbeatDrawerItems {
     title: 'Artist Dashboard',
     icon: Icons.dashboard_outlined,
     route: '/artist/dashboard',
+  );
+
+  static const artistFeed = ArtbeatDrawerItem(
+    title: 'My Artist Feed',
+    icon: Icons.dynamic_feed_outlined,
+    route: '/artist/feed',
   );
 
   static const editArtistProfile = ArtbeatDrawerItem(
@@ -266,11 +272,12 @@ class ArtbeatDrawerItems {
     editProfile,
     captures,
     achievements,
-    fanClub,
+    following,
   ];
 
   static List<ArtbeatDrawerItem> get artistItems => [
     artistDashboard,
+    artistFeed,
     editArtistProfile,
     viewPublicProfile,
     myArtwork,

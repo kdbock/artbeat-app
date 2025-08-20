@@ -25,6 +25,8 @@ export 'src/services/feedback_service.dart' show FeedbackService;
 export 'src/services/maps_diagnostic_service.dart' show MapsDiagnosticService;
 export 'src/services/image_management_service.dart' show ImageManagementService;
 export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
+export 'src/services/firebase_storage_auth_service.dart'
+    show FirebaseStorageAuthService;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -54,6 +56,7 @@ export 'src/widgets/enhanced_universal_header.dart';
 export 'src/widgets/enhanced_bottom_nav.dart';
 export 'src/widgets/artbeat_gradient_background.dart';
 export 'src/widgets/skeleton_widgets.dart';
+export 'src/widgets/secure_network_image.dart' show SecureNetworkImage;
 
 export 'src/widgets/user_avatar.dart';
 export 'src/widgets/optimized_image.dart';
@@ -89,5 +92,6 @@ export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
 
 // Export Providers
 export 'src/providers/messaging_provider.dart' show MessagingProvider;
+export 'src/providers/community_provider.dart' show CommunityProvider;
 
 // Export Widgets

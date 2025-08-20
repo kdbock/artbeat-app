@@ -43,6 +43,11 @@ class PresenceService {
     });
 
     _isOnline = true;
+
+    // Debug: Check if user appears in online list after a short delay
+    Timer(const Duration(seconds: 3), () {
+      _debugCheckOnlineStatus(userId);
+    });
   }
 
   /// Stop updating user presence
@@ -62,11 +67,34 @@ class PresenceService {
   /// Set user as online
   Future<void> _setUserOnline(String userId) async {
     try {
-      await _firestore.collection('users').doc(userId).update({
-        'isOnline': true,
-        'lastSeen': Timestamp.now(),
-        'lastActive': Timestamp.now(),
-      });
+      // Check if user document exists, create if not
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+
+      if (!userDoc.exists) {
+        // Create basic user document
+        final user = _auth.currentUser;
+        await _firestore.collection('users').doc(userId).set({
+          'uid': userId,
+          'email': user?.email,
+          'displayName': user?.displayName,
+          'photoUrl': user?.photoURL,
+          'isOnline': true,
+          'lastSeen': Timestamp.now(),
+          'lastActive': Timestamp.now(),
+          'createdAt': Timestamp.now(),
+        });
+        debugPrint('PresenceService: Created user document for $userId');
+      } else {
+        // Update existing user document
+        await _firestore.collection('users').doc(userId).update({
+          'isOnline': true,
+          'lastSeen': Timestamp.now(),
+          'lastActive': Timestamp.now(),
+        });
+      }
+
+      // Also update artist profile if exists
+      await _updateArtistProfileOnlineStatus(userId, true);
 
       debugPrint('PresenceService: Set user $userId as online');
     } catch (e) {
@@ -77,15 +105,105 @@ class PresenceService {
   /// Set user as offline
   Future<void> _setUserOffline(String userId) async {
     try {
+      // Update user document
       await _firestore.collection('users').doc(userId).update({
         'isOnline': false,
         'lastSeen': Timestamp.now(),
         'lastActive': Timestamp.now(),
       });
 
+      // Also update artist profile if exists
+      await _updateArtistProfileOnlineStatus(userId, false);
+
       debugPrint('PresenceService: Set user $userId as offline');
     } catch (e) {
       debugPrint('PresenceService: Error setting user offline: $e');
+    }
+  }
+
+  /// Update artist profile online status if the user has an artist profile
+  Future<void> _updateArtistProfileOnlineStatus(
+    String userId,
+    bool isOnline,
+  ) async {
+    try {
+      // Check if user has an artist profile
+      final artistProfileQuery = await _firestore
+          .collection('artistProfiles')
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (artistProfileQuery.docs.isNotEmpty) {
+        final artistProfileDoc = artistProfileQuery.docs.first;
+        await artistProfileDoc.reference.update({
+          'isOnline': isOnline,
+          'lastSeen': Timestamp.now(),
+          'lastActive': Timestamp.now(),
+        });
+        debugPrint(
+          'PresenceService: Updated artist profile ${artistProfileDoc.id} online status to $isOnline',
+        );
+      }
+    } catch (e) {
+      debugPrint(
+        'PresenceService: Error updating artist profile online status: $e',
+      );
+    }
+  }
+
+  /// Debug method to check online status
+  Future<void> _debugCheckOnlineStatus(String userId) async {
+    try {
+      // Check user document
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        debugPrint(
+          'PresenceService Debug: User ${userData['displayName']} isOnline: ${userData['isOnline']}',
+        );
+      } else {
+        debugPrint(
+          'PresenceService Debug: User document does not exist for $userId',
+        );
+      }
+
+      // Check artist profile
+      final artistQuery = await _firestore
+          .collection('artistProfiles')
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (artistQuery.docs.isNotEmpty) {
+        final artistData = artistQuery.docs.first.data();
+        debugPrint(
+          'PresenceService Debug: Artist ${artistData['displayName']} isOnline: ${artistData['isOnline']}',
+        );
+      } else {
+        debugPrint(
+          'PresenceService Debug: No artist profile found for $userId',
+        );
+      }
+
+      // Check how many online users/artists exist
+      final onlineUsersQuery = await _firestore
+          .collection('users')
+          .where('isOnline', isEqualTo: true)
+          .get();
+      debugPrint(
+        'PresenceService Debug: Total online users: ${onlineUsersQuery.docs.length}',
+      );
+
+      final onlineArtistsQuery = await _firestore
+          .collection('artistProfiles')
+          .where('isOnline', isEqualTo: true)
+          .get();
+      debugPrint(
+        'PresenceService Debug: Total online artists: ${onlineArtistsQuery.docs.length}',
+      );
+    } catch (e) {
+      debugPrint('PresenceService Debug: Error checking status: $e');
     }
   }
 
@@ -95,11 +213,36 @@ class PresenceService {
     if (userId == null) return;
 
     try {
-      await _firestore.collection('users').doc(userId).update({
-        'isOnline': true,
-        'lastSeen': Timestamp.now(),
-        'lastActive': Timestamp.now(),
-      });
+      // Check if user document exists, create if not
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+
+      if (!userDoc.exists) {
+        // Create basic user document
+        final user = _auth.currentUser;
+        await _firestore.collection('users').doc(userId).set({
+          'uid': userId,
+          'email': user?.email,
+          'displayName': user?.displayName,
+          'photoUrl': user?.photoURL,
+          'isOnline': true,
+          'lastSeen': Timestamp.now(),
+          'lastActive': Timestamp.now(),
+          'createdAt': Timestamp.now(),
+        });
+        debugPrint(
+          'PresenceService: Created user document for $userId during activity update',
+        );
+      } else {
+        // Update existing user document
+        await _firestore.collection('users').doc(userId).update({
+          'isOnline': true,
+          'lastSeen': Timestamp.now(),
+          'lastActive': Timestamp.now(),
+        });
+      }
+
+      // Also update artist profile if exists
+      await _updateArtistProfileOnlineStatus(userId, true);
     } catch (e) {
       debugPrint('PresenceService: Error updating activity: $e');
     }
@@ -177,6 +320,19 @@ class PresenceService {
       debugPrint('PresenceService: Error getting user last seen: $e');
       return null;
     }
+  }
+
+  /// Force immediate presence update and debug check (for testing)
+  Future<void> forcePresenceUpdate() async {
+    final userId = _auth.currentUser?.uid;
+    if (userId == null) {
+      debugPrint('PresenceService: No authenticated user for force update');
+      return;
+    }
+
+    debugPrint('PresenceService: Force updating presence for $userId');
+    await _setUserOnline(userId);
+    await _debugCheckOnlineStatus(userId);
   }
 
   /// Dispose the service

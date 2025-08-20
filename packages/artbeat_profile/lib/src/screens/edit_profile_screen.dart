@@ -118,17 +118,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
-      debugPrint('🔧 Updating Firestore profile data...');
-      final String username = _usernameController.text.trim();
+      // debugPrint('🔧 Updating Firestore profile data...');
       final String bio = _bioController.text.trim();
       final String location = _locationController.text.trim();
 
-      debugPrint(
-        '🔧 Update data: {'
-        'username: $username, '
-        'bio: $bio, '
-        'location: $location}',
-      );
+      // Update data logging removed for production
 
       // Update profile data
       await _userService.updateUserProfile(
@@ -136,13 +130,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         bio: bio,
         location: location,
       );
-      debugPrint('✅ Firestore profile data updated');
+      // debugPrint('✅ Firestore profile data updated');
 
       // Upload profile image if changed
       final profileImage = _profileImage;
       if (profileImage != null) {
         try {
-          debugPrint('🔧 Uploading profile image...');
+          // debugPrint('🔧 Uploading profile image...');
 
           // Show upload indicator
           if (mounted) {
@@ -155,7 +149,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
 
           await _userService.uploadAndUpdateProfilePhoto(profileImage);
-          debugPrint('✅ Profile image uploaded');
+          // debugPrint('✅ Profile image uploaded');
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -167,12 +161,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             );
           }
         } catch (e) {
-          debugPrint('⚠️ Profile image upload failed: $e');
+          // debugPrint('⚠️ Profile image upload failed: $e');
 
           if (e.toString().contains('object-not-found')) {
-            debugPrint(
-              '📝 Storage path issue detected. This may be a file path configuration problem.',
-            );
+            // Storage path issue detected - file path configuration problem
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -224,7 +216,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      debugPrint('❌ Error updating profile: $e');
+      // debugPrint('❌ Error updating profile: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -377,10 +369,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               ListTile(
                 leading: const Icon(
-                  Icons.front_hand,
+                  Icons.person_add_outlined,
                   color: ArtbeatColors.accentYellow,
                 ),
-                title: const Text('Fan of'),
+                title: const Text('Following'),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.pushNamed(context, '/profile/following');

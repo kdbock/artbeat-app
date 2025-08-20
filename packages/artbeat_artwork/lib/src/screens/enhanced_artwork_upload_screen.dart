@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, MainLayout;
+    show SubscriptionTier, ArtbeatColors, EnhancedStorageService;
 import 'package:artbeat_profile/artbeat_profile.dart' show ProfileHeader;
 
 /// Enhanced artwork upload screen with support for multiple media types
@@ -171,7 +171,7 @@ class _EnhancedArtworkUploadScreenState
         }
       }
     } catch (e) {
-      debugPrint('Error checking upload limit: $e');
+      // debugPrint('Error checking upload limit: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -345,15 +345,32 @@ class _EnhancedArtworkUploadScreenState
     });
   }
 
-  // Upload file to Firebase Storage
+  // Upload file to Firebase Storage using EnhancedStorageService for images
   Future<String> _uploadFile(File file, String folder) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
+    // Use enhanced storage service for image uploads
+    if (folder == 'artwork_images') {
+      try {
+        final enhancedStorage = EnhancedStorageService();
+        final uploadResult = await enhancedStorage.uploadImageWithOptimization(
+          imageFile: file,
+          category: 'artwork',
+          generateThumbnail: true,
+        );
+        return uploadResult['imageUrl']!;
+      } catch (e) {
+        debugPrint(
+            '❌ Enhanced upload failed, falling back to legacy method: $e');
+      }
+    }
+
+    // Fallback to legacy method for non-images or if enhanced upload fails
     final fileName =
         '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
-    final artworkId = widget.artworkId ?? 'new';
-    final ref = _storage.ref().child('$folder/$userId/$artworkId/$fileName');
+    // Remove the problematic 'new' subdirectory
+    final ref = _storage.ref().child('$folder/$userId/$fileName');
 
     final uploadTask = ref.putFile(file);
     final snapshot = await uploadTask;

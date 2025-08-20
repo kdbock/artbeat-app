@@ -49,7 +49,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
             final artist = ArtistProfileModel.fromFirestore(doc);
             artists.add(artist);
           } catch (e) {
-            debugPrint('Error parsing artist: $e');
+            // debugPrint('Error parsing artist: $e');
           }
         }
       }

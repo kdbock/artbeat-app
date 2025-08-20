@@ -113,18 +113,45 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: widget.useEnhancedUniversalHeader
-          ? const EnhancedUniversalHeader(
-              title: 'Create Event',
-              showLogo: false,
-            ) as PreferredSizeWidget
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+              child: ArtbeatGradientBackground(
+                addShadow: true,
+                child: EnhancedUniversalHeader(
+                  title: widget.initialEvent == null
+                      ? 'Create Event'
+                      : 'Edit Event',
+                  showLogo: false,
+                  showSearch: true,
+                  showDeveloperTools: true,
+                  onSearchPressed: () => _showSearchModal(context),
+                  onProfilePressed: () => _showProfileMenu(context),
+                  onMenuPressed: () => _openDrawer(context),
+                  onDeveloperPressed: () => _showDeveloperTools(context),
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: ArtbeatColors.textPrimary,
+                  elevation: 0,
+                  actions: [
+                    TextButton(
+                      onPressed: _submitForm,
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(
+                          color: ArtbeatColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
           : AppBar(
               title: Text(
-                  widget.initialEvent == null ? 'Create Event' : 'Edit Event'),
+                widget.initialEvent == null ? 'Create Event' : 'Edit Event',
+              ),
               actions: [
-                TextButton(
-                  onPressed: _submitForm,
-                  child: const Text('Save'),
-                ),
+                TextButton(onPressed: _submitForm, child: const Text('Save')),
               ],
             ),
       body: Container(
@@ -272,12 +299,15 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                ..._eventImages.map((image) => _buildImagePreview(image, () {
-                      setState(() => _eventImages.remove(image));
-                    })),
+                ..._eventImages.map(
+                  (image) => _buildImagePreview(image, () {
+                    setState(() => _eventImages.remove(image));
+                  }),
+                ),
                 _buildAddImageButton(() async {
-                  final image =
-                      await _imagePicker.pickImage(source: ImageSource.gallery);
+                  final image = await _imagePicker.pickImage(
+                    source: ImageSource.gallery,
+                  );
                   if (image != null) {
                     setState(() => _eventImages.add(File(image.path)));
                   }
@@ -302,8 +332,9 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
         const SizedBox(height: 8),
         GestureDetector(
           onTap: () async {
-            final pickedImage =
-                await _imagePicker.pickImage(source: ImageSource.gallery);
+            final pickedImage = await _imagePicker.pickImage(
+              source: ImageSource.gallery,
+            );
             if (pickedImage != null) {
               onImageSelected(File(pickedImage.path));
             }
@@ -323,8 +354,11 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                 : const Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate,
-                          size: 48, color: Colors.grey),
+                      Icon(
+                        Icons.add_photo_alternate,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
                       Text('Tap to select image'),
                     ],
                   ),
@@ -339,12 +373,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.file(
-            image,
-            width: 80,
-            height: 80,
-            fit: BoxFit.cover,
-          ),
+          child: Image.file(image, width: 80, height: 80, fit: BoxFit.cover),
         ),
         Positioned(
           top: 4,
@@ -400,10 +429,13 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.calendar_today),
-              title: Text(_selectedDateTime != null
-                  ? DateFormat('EEEE, MMMM d, y \'at\' h:mm a')
-                      .format(_selectedDateTime!)
-                  : 'Select date and time *'),
+              title: Text(
+                _selectedDateTime != null
+                    ? DateFormat(
+                        'EEEE, MMMM d, y \'at\' h:mm a',
+                      ).format(_selectedDateTime!)
+                    : 'Select date and time *',
+              ),
               onTap: _selectDateTime,
               contentPadding: EdgeInsets.zero,
             ),
@@ -590,7 +622,8 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             const SizedBox(height: 16),
             if (_ticketTypes.isEmpty)
               const Text(
-                  'No ticket types added yet. Add at least one ticket type.')
+                'No ticket types added yet. Add at least one ticket type.',
+              )
             else
               ..._ticketTypes.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -641,17 +674,26 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
               style: const TextStyle(color: Colors.black),
               items: const [
                 DropdownMenuItem(
-                    value: 'standard',
-                    child: Text('Standard (24 hours)',
-                        style: TextStyle(color: Colors.black))),
+                  value: 'standard',
+                  child: Text(
+                    'Standard (24 hours)',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
                 DropdownMenuItem(
-                    value: 'flexible',
-                    child: Text('Flexible (7 days)',
-                        style: TextStyle(color: Colors.black))),
+                  value: 'flexible',
+                  child: Text(
+                    'Flexible (7 days)',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
                 DropdownMenuItem(
-                    value: 'no_refunds',
-                    child: Text('No Refunds',
-                        style: TextStyle(color: Colors.black))),
+                  value: 'no_refunds',
+                  child: Text(
+                    'No Refunds',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -724,8 +766,9 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     if (date != null && mounted) {
       final time = await showTimePicker(
         context: context,
-        initialTime:
-            TimeOfDay.fromDateTime(_selectedDateTime ?? DateTime.now()),
+        initialTime: TimeOfDay.fromDateTime(
+          _selectedDateTime ?? DateTime.now(),
+        ),
       );
 
       if (time != null) {
@@ -810,34 +853,45 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     // Get current user ID from UserService
     final userId = UserService().currentUserId;
     if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not logged in.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('User not logged in.')));
       return;
     }
-    final eventId = widget.initialEvent?.id ??
+    final eventId =
+        widget.initialEvent?.id ??
         DateTime.now().millisecondsSinceEpoch.toString();
     String headshotUrl = '';
     String bannerUrl = '';
     List<String> imageUrls = [];
     try {
       headshotUrl = await _uploadImageToStorage(
-          _artistHeadshot!, 'events/$userId/$eventId/headshot.jpg');
+        _artistHeadshot!,
+        'events/$userId/$eventId/headshot.jpg',
+      );
       bannerUrl = await _uploadImageToStorage(
-          _eventBanner!, 'events/$userId/$eventId/banner.jpg');
-      imageUrls = await Future.wait(_eventImages.asMap().entries.map((entry) =>
-          _uploadImageToStorage(
-              entry.value, 'events/$userId/$eventId/image_${entry.key}.jpg')));
+        _eventBanner!,
+        'events/$userId/$eventId/banner.jpg',
+      );
+      imageUrls = await Future.wait(
+        _eventImages.asMap().entries.map(
+          (entry) => _uploadImageToStorage(
+            entry.value,
+            'events/$userId/$eventId/image_${entry.key}.jpg',
+          ),
+        ),
+      );
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to upload images: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload images: $e')));
       }
       return;
     }
 
-    final event = widget.initialEvent?.copyWith(
+    final event =
+        widget.initialEvent?.copyWith(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           imageUrls: imageUrls,
@@ -878,5 +932,225 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
         );
 
     widget.onEventCreated(event);
+  }
+
+  // Header callback methods
+  void _openDrawer(BuildContext context) {
+    // Create event screen doesn't use drawer, but method needed for header
+  }
+
+  void _showSearchModal(BuildContext context) {
+    // Placeholder for search functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Search functionality not available in create event'),
+      ),
+    );
+  }
+
+  void _showProfileMenu(BuildContext context) {
+    // Placeholder for profile menu
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile menu not available in create event'),
+      ),
+    );
+  }
+
+  void _showDeveloperTools(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.9,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.developer_mode,
+                      color: ArtbeatColors.primaryPurple,
+                    ),
+                    SizedBox(width: 12),
+                    Text(
+                      'Developer Tools',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Developer options
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    _buildDeveloperOption(
+                      icon: Icons.bug_report,
+                      title: 'Form Debug Info',
+                      subtitle: 'View current form state',
+                      color: ArtbeatColors.primaryPurple,
+                      onTap: () => _showFormDebugInfo(context),
+                    ),
+                    _buildDeveloperOption(
+                      icon: Icons.data_object,
+                      title: 'Event Data Preview',
+                      subtitle: 'Preview event JSON structure',
+                      color: ArtbeatColors.primaryGreen,
+                      onTap: () => _showEventDataPreview(context),
+                    ),
+                    _buildDeveloperOption(
+                      icon: Icons.storage,
+                      title: 'Firebase Storage',
+                      subtitle: 'Check image upload paths',
+                      color: ArtbeatColors.secondaryTeal,
+                      onTap: () => _showStorageInfo(context),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeveloperOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFormDebugInfo(BuildContext context) {
+    Navigator.pop(context); // Close developer tools
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Form Debug Info'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Title: ${_titleController.text}'),
+              Text('Description: ${_descriptionController.text}'),
+              Text('Location: ${_locationController.text}'),
+              Text('Date: ${_selectedDateTime?.toString() ?? 'Not set'}'),
+              Text('Event Images: ${_eventImages.length}'),
+              Text('Has Headshot: ${_artistHeadshot != null}'),
+              Text('Has Banner: ${_eventBanner != null}'),
+              Text('Ticket Types: ${_ticketTypes.length}'),
+              Text('Tags: ${_tags.join(', ')}'),
+              Text('Is Public: $_isPublic'),
+              Text('Reminder Enabled: $_reminderEnabled'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEventDataPreview(BuildContext context) {
+    Navigator.pop(context); // Close developer tools
+    // This would show a preview of the event data structure
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Event data preview - feature coming soon')),
+    );
+  }
+
+  void _showStorageInfo(BuildContext context) {
+    Navigator.pop(context); // Close developer tools
+    // This would show Firebase Storage path information
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Storage info - feature coming soon')),
+    );
   }
 }

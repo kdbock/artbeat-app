@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-// Assume these are available in artbeat_core or messaging module
-// import 'package:artbeat_core/models/user_model.dart';
-// import '../services/messaging_service.dart';
+import '../models/chat_model.dart';
+import 'chat_screen.dart';
+import 'contact_selection_screen.dart';
 
 class MessagingDashboardScreen extends StatefulWidget {
   const MessagingDashboardScreen({Key? key}) : super(key: key);
@@ -206,7 +206,7 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen> {
                         ),
                       ),
                       onTap: () {
-                        // TODO: Navigate to chat detail screen
+                        _navigateToChatDetail(context, chat);
                       },
                     ),
                   ),
@@ -224,8 +224,47 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.chat),
         onPressed: () {
-          // TODO: Start new chat
+          _startNewChat(context);
         },
+      ),
+    );
+  }
+
+  /// Navigate to chat detail screen
+  void _navigateToChatDetail(
+    BuildContext context,
+    Map<String, dynamic> chatData,
+  ) {
+    // Create a ChatModel from the dummy data
+    // In a real implementation, this would come from the chat service
+    final chat = ChatModel(
+      id: 'chat_${chatData['name']?.toString().toLowerCase()}',
+      participantIds: ['current_user', 'other_user'],
+      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      updatedAt: DateTime.now(),
+      unreadCounts: {'current_user': chatData['unread'] as int? ?? 0},
+      isGroup: false,
+      participants: [
+        {
+          'id': 'other_user',
+          'displayName': chatData['name'] as String,
+          'photoUrl': chatData['avatar'] as String,
+        },
+      ],
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (context) => ChatScreen(chat: chat)),
+    );
+  }
+
+  /// Start new chat by navigating to contact selection
+  void _startNewChat(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const ContactSelectionScreen(),
       ),
     );
   }

@@ -2,16 +2,16 @@
 class AdConstants {
   static const double userAdPricePerDay = 1.0;
   static const double artistAdPricePerDay = 1.0;
-  static const double galleryAdPricePerDay = 5.0;
+  static const double galleryAdPricePerDay = 1.0;
   static const int minAdDurationDays = 1;
   static const int maxAdDurationDays = 30;
   static const List<String> adLocations = [
-    'Home',
-    'Discover',
-    'Profile',
-    'Event',
-    'Art Walk',
-    'Gallery',
+    'Main Dashboard',
+    'Art Walk Dashboard',
+    'Capture Dashboard',
+    'Community Dashboard',
+    'Events Dashboard',
+    'Community Feed',
   ];
   static const List<String> adTypes = ['Square (1:1)', 'Rectangle (2:1)'];
   static const int squareAdWidth = 300;

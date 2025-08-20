@@ -65,19 +65,13 @@ class _LoginScreenState extends State<LoginScreen> {
           // Clear any cached data first
           userService.clearUserCache();
 
-          debugPrint('🔍 Checking if user document exists for ${user.uid}');
           final userDoc = await userService.getUserById(user.uid);
 
           if (userDoc == null) {
-            debugPrint(
-              '⚠️ User authenticated but document not found in Firestore. Creating it now...',
-            );
-
             // Try to get additional user data from Firebase Auth
             final freshUser = FirebaseAuth.instance.currentUser;
             await freshUser?.reload(); // Refresh user data
 
-            debugPrint('🔄 Creating new user document...');
             final createdUser = await userService.createNewUser(
               uid: user.uid,
               email: user.email ?? _emailController.text.trim(),
@@ -86,42 +80,27 @@ class _LoginScreenState extends State<LoginScreen> {
             );
 
             if (createdUser == null) {
-              debugPrint('❌ Failed to create user document after login');
               throw Exception('Failed to create user profile in database');
             }
-
-            debugPrint('✅ User document creation returned success');
 
             // Verify creation with multiple attempts
             UserModel? verifiedDoc;
             for (int attempt = 1; attempt <= 3; attempt++) {
-              debugPrint('🔍 Verification attempt $attempt/3');
-              await Future.delayed(Duration(milliseconds: 500 * attempt));
+              await Future<void>.delayed(Duration(milliseconds: 500 * attempt));
               userService.clearUserCache(); // Clear cache before each check
               verifiedDoc = await userService.getUserById(user.uid);
               if (verifiedDoc != null) {
-                debugPrint('✅ User document verified on attempt $attempt');
                 break;
               }
-              debugPrint('⚠️ Verification attempt $attempt failed');
             }
 
             if (verifiedDoc == null) {
-              debugPrint(
-                '❌ User document creation verification failed after 3 attempts',
-              );
               throw Exception(
                 'User profile creation could not be verified after multiple attempts',
               );
-            } else {
-              debugPrint('✅ User document created and verified successfully');
             }
-          } else {
-            debugPrint('✅ User document found in Firestore');
-            debugPrint('User type: ${userDoc.userType}');
           }
         } catch (e) {
-          debugPrint('❌ Error ensuring user document exists: $e');
           // Sign out the user since we couldn't create their profile
           await FirebaseAuth.instance.signOut();
           if (mounted) {
@@ -138,8 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       if (mounted) {
-        debugPrint('Login successful. Navigating to ${AuthRoutes.dashboard}.');
-
         // Check if we were pushed from another route that expects a return value
         final navigator = Navigator.of(context);
         if (navigator.canPop()) {
@@ -151,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       }
     } on FirebaseAuthException catch (e) {
-      debugPrint('FirebaseAuthException: [33m${e.message}[0m');
+      // debugPrint('FirebaseAuthException: [33m${e.message}[0m');
       if (!mounted) return;
 
       ScaffoldMessenger.of(

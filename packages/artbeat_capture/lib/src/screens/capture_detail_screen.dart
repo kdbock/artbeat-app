@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/artbeat_core.dart' show SecureNetworkImage;
 import 'package:intl/intl.dart';
 
 /// Read-only screen for viewing all details of a captured artwork
@@ -32,11 +33,12 @@ class CaptureDetailScreen extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    capture.imageUrl,
+                  child: SecureNetworkImage(
+                    imageUrl: capture.imageUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Center(child: Icon(Icons.broken_image, size: 48)),
+                    errorWidget: const Center(
+                      child: Icon(Icons.broken_image, size: 48),
+                    ),
                   ),
                 ),
               ),

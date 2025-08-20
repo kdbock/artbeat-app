@@ -12,7 +12,6 @@ import '../storage/enhanced_storage_service.dart';
 
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
-  bool _disposed = false;
 
   factory UserService() {
     return _instance;
@@ -39,23 +38,21 @@ class UserService extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Since this is a singleton, we should not dispose it
-    // Only dispose if explicitly requested (not through provider disposal)
-    _logDebug('Dispose called - ignoring for singleton');
-    // Don't call super.dispose() to prevent disposal of singleton
-  }
-
-  // Method to force disposal if needed (for testing or app shutdown)
-  void forceDispose() {
-    _disposed = true;
-    super.dispose();
+    // Since this is a singleton, we try to prevent disposal but handle it gracefully
+    try {
+      _logDebug('Dispose called - attempting to prevent for singleton');
+      // For singleton pattern, we don't want to dispose, but Flutter requires it
+      // So we call super but catch any subsequent usage errors
+      super.dispose();
+    } catch (e) {
+      _logDebug('Dispose error caught (expected for singleton): $e');
+    }
   }
 
   @override
   void notifyListeners() {
-    if (!_disposed) {
-      super.notifyListeners();
-    }
+    // For singleton, always notify listeners
+    super.notifyListeners();
   }
 
   // Firebase initialization

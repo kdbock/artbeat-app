@@ -8,7 +8,8 @@ import 'package:artbeat_core/artbeat_core.dart'
         UserAvatar,
         EnhancedUniversalHeader,
         MainLayout,
-        ArtbeatColors;
+        ArtbeatColors,
+        SecureNetworkImage;
 import 'package:share_plus/share_plus.dart';
 
 /// Screen for viewing artwork details
@@ -323,9 +324,17 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                 ],
               ],
               flexibleSpace: FlexibleSpaceBar(
-                background: Image.network(
-                  artwork.imageUrl,
+                background: SecureNetworkImage(
+                  imageUrl: artwork.imageUrl,
                   fit: BoxFit.cover,
+                  errorWidget: Container(
+                    color: Colors.grey[300],
+                    child: const Icon(
+                      Icons.broken_image,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
             ),

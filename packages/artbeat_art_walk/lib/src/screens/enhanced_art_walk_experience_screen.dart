@@ -110,7 +110,7 @@ class _EnhancedArtWalkExperienceScreenState
         _currentPosition = position;
       });
     } catch (e) {
-      debugPrint('Error getting current location: $e');
+      // debugPrint('Error getting current location: $e');
     }
   }
 
@@ -121,7 +121,7 @@ class _EnhancedArtWalkExperienceScreenState
         _artPieces = artPieces;
       });
     } catch (e) {
-      debugPrint('Error loading art pieces: $e');
+      // debugPrint('Error loading art pieces: $e');
     }
   }
 
@@ -136,7 +136,7 @@ class _EnhancedArtWalkExperienceScreenState
             _visitedArtIds.length == _artPieces.length && _artPieces.isNotEmpty;
       });
     } catch (e) {
-      debugPrint('Error loading visited art: $e');
+      // debugPrint('Error loading visited art: $e');
     }
   }
 
@@ -700,20 +700,6 @@ class _EnhancedArtWalkExperienceScreenState
     _mapController!.animateCamera(
       CameraUpdate.newLatLngZoom(
         LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-        16.0,
-      ),
-    );
-  }
-
-  void _centerOnFirstArt() {
-    if (_artPieces.isEmpty || _mapController == null) return;
-
-    final nextIndex = _getNextUnvisitedIndex();
-    final targetArt = _artPieces[nextIndex];
-
-    _mapController!.animateCamera(
-      CameraUpdate.newLatLngZoom(
-        LatLng(targetArt.location.latitude, targetArt.location.longitude),
         16.0,
       ),
     );
