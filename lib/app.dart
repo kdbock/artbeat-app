@@ -1084,6 +1084,9 @@ class MyApp extends StatelessWidget {
             child: capture.AdminContentModerationScreen(),
           ),
         );
+      case '/admin/ad-test':
+        if (!kDebugMode) return _buildNotFoundRoute();
+        return MaterialPageRoute(builder: (_) => const ads.AdTestWidget());
       case '/admin/settings':
         if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(

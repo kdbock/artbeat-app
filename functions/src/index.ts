@@ -35,13 +35,13 @@ export const createCustomer = functions.https.onRequest((request, response) => {
       });
 
       // Return customer ID
-      response.status(200).send({
+      return response.status(200).send({
         customerId: customer.id,
         success: true,
       });
     } catch (error) {
       console.error('Error creating customer:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -69,12 +69,12 @@ export const createSetupIntent = functions.https.onRequest((request, response) =
         payment_method_types: ['card'],
       });
 
-      response.status(200).send({
+      return response.status(200).send({
         clientSecret: setupIntent.client_secret,
       });
     } catch (error) {
       console.error('Error creating setup intent:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -102,12 +102,12 @@ export const getPaymentMethods = functions.https.onRequest((request, response) =
         type: 'card',
       });
 
-      response.status(200).send({
+      return response.status(200).send({
         paymentMethods: paymentMethods.data,
       });
     } catch (error) {
       console.error('Error getting payment methods:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -139,13 +139,13 @@ export const updateCustomer = functions.https.onRequest((request, response) => {
         }
       );
 
-      response.status(200).send({
+      return response.status(200).send({
         customer: customer.id,
         success: true,
       });
     } catch (error) {
       console.error('Error updating customer:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -170,13 +170,13 @@ export const detachPaymentMethod = functions.https.onRequest((request, response)
 
       const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
 
-      response.status(200).send({
+      return response.status(200).send({
         paymentMethod: paymentMethod.id,
         success: true,
       });
     } catch (error) {
       console.error('Error detaching payment method:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -212,14 +212,14 @@ export const createSubscription = functions.https.onRequest((request, response) 
       });
 
       // Return subscription details
-      response.status(200).send({
+      return response.status(200).send({
         subscriptionId: subscription.id,
         status: subscription.status,
         clientSecret: subscription.latest_invoice.payment_intent?.client_secret ?? '',
       });
     } catch (error) {
       console.error('Error creating subscription:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -249,14 +249,14 @@ export const cancelSubscription = functions.https.onRequest((request, response) 
       );
 
       // Return cancellation details
-      response.status(200).send({
+      return response.status(200).send({
         subscriptionId: subscription.id,
         status: subscription.status,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
     } catch (error) {
       console.error('Error cancelling subscription:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -309,13 +309,13 @@ export const changeSubscriptionTier = functions.https.onRequest((request, respon
         }
       );
 
-      response.status(200).send({
+      return response.status(200).send({
         subscriptionId: updatedSubscription.id,
         status: updatedSubscription.status,
       });
     } catch (error) {
       console.error('Error changing subscription tier:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
 });
@@ -365,13 +365,81 @@ export const requestRefund = functions.https.onRequest((request, response) => {
         });
       }
 
-      response.status(200).send({
+      return response.status(200).send({
         refundId: refund.id,
         status: refund.status,
       });
     } catch (error) {
       console.error('Error processing refund request:', error);
-      response.status(500).send({ error: (error as Error).message });
+      return response.status(500).send({ error: (error as Error).message });
     }
   });
+});
+
+/**
+ * Fix admin ads to use Firebase Storage URLs instead of placeholder URLs
+ */
+export const fixAdminAds = functions.https.onRequest(async (req, res) => {
+  try {
+    const db = admin.firestore();
+    const storage = admin.storage();
+    
+    // File paths in Firebase Storage
+    const imagePaths = [
+      'admin_ads/ARFuyX0C44PbYlHSUSlQx55b9vt2/1755734362607_upload.png',
+      'admin_ads/ARFuyX0C44PbYlHSUSlQx55b9vt2/1755734362608_upload.png',
+      'admin_ads/ARFuyX0C44PbYlHSUSlQx55b9vt2/1755734362609_upload.png',
+      'admin_ads/ARFuyX0C44PbYlHSUSlQx55b9vt2/1755734362610_upload.png',
+    ];
+
+    // Generate fresh download URLs for all images
+    const freshUrls: string[] = [];
+    
+    for (const imagePath of imagePaths) {
+      try {
+        const file = storage.bucket().file(imagePath);
+        
+        // Generate a signed URL that expires in 1 year
+        const [url] = await file.getSignedUrl({
+          action: 'read',
+          expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year from now
+        });
+        
+        freshUrls.push(url);
+        console.log(`Generated fresh URL for ${imagePath}`);
+      } catch (error) {
+        console.error(`Error generating URL for ${imagePath}:`, error);
+        // If URL generation fails, skip this image
+      }
+    }
+
+    if (freshUrls.length === 0) {
+      throw new Error('Failed to generate any fresh URLs');
+    }
+
+    // Get all ads in the collection
+    const adsSnapshot = await db.collection('ads').get();
+    let updatedCount = 0;
+
+    for (const doc of adsSnapshot.docs) {
+      // Update imageUrl to first fresh URL and set artworkUrls to all fresh URLs
+      await doc.ref.update({
+        imageUrl: freshUrls[0],
+        artworkUrls: freshUrls.join(','),
+      });
+      
+      updatedCount++;
+      console.log(`Updated ad ${doc.id} with fresh Firebase Storage URLs`);
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Updated ${updatedCount} ads with ${freshUrls.length} fresh Firebase Storage URLs`,
+      urls: freshUrls
+    });
+
+  } catch (error: any) {
+    console.error('Error fixing admin ads:', error);
+    res.status(500).json({ error: error.message });
+  }
 });

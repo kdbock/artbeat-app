@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
 import 'dart:developer' as developer;
 
@@ -686,6 +687,13 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                   _buildFeaturedEventsCarousel(),
                   const SizedBox(height: 32),
                 ],
+
+                // Ad placement: Between Featured Events and All Events sections
+                const BetweenSectionsAdWidget(
+                  location: AdLocation.eventsDashboard,
+                  analyticsLocation: 'events_dashboard_between_featured_all',
+                ),
+                const SizedBox(height: 24),
 
                 // All Events Section
                 _buildSectionHeader(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 
 /// Enhanced Capture Dashboard Screen
 ///
@@ -676,9 +677,29 @@ class _EnhancedCaptureDashboardScreenState
                                   ),
                                   const SizedBox(height: 32),
                                 ],
+                              ],
+                            ),
+                          ),
+                        ),
 
-                                // Recent captures section
-                                if (_recentCaptures.isNotEmpty) ...[
+                        // Ad placement: After stats section
+                        if (_currentUser != null)
+                          const SliverToBoxAdapter(
+                            child: BetweenSectionsAdWidget(
+                              location: AdLocation.captureDashboard,
+                              analyticsLocation:
+                                  'capture_dashboard_after_stats',
+                            ),
+                          ),
+
+                        // Recent captures section
+                        if (_recentCaptures.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
                                     'Your Recent Captures',
                                     style: Theme.of(context)
@@ -689,12 +710,10 @@ class _EnhancedCaptureDashboardScreenState
                                           color: ArtbeatColors.textPrimary,
                                         ),
                                   ),
-                                  const SizedBox(height: 16),
                                 ],
-                              ],
+                              ),
                             ),
                           ),
-                        ),
 
                         // Recent captures grid
                         if (_recentCaptures.isNotEmpty)
@@ -717,6 +736,17 @@ class _EnhancedCaptureDashboardScreenState
                                 final capture = _recentCaptures[index];
                                 return _buildCaptureCard(capture);
                               }, childCount: _recentCaptures.length),
+                            ),
+                          ),
+
+                        // Ad placement: Between recent captures and community inspiration
+                        if (_recentCaptures.isNotEmpty &&
+                            _communityCaptures.isNotEmpty)
+                          const SliverToBoxAdapter(
+                            child: BetweenSectionsAdWidget(
+                              location: AdLocation.captureDashboard,
+                              analyticsLocation:
+                                  'capture_dashboard_between_sections',
                             ),
                           ),
 

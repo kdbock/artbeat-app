@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/community_service.dart';
 import '../../models/post_model.dart';
@@ -382,17 +383,26 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                 // Recent Posts Section
                 _buildRecentPostsSection(),
 
+                // First Ad Placement
+                _buildAdSection('community_dashboard_top'),
+
                 // Are You An Artist Widget
                 _buildAreYouAnArtistSection(),
 
                 // Featured Artists Section
                 _buildFeaturedArtistsSection(),
 
+                // Second Ad Placement
+                _buildAdSection('community_dashboard_middle'),
+
                 // Verified Artists Section
                 _buildVerifiedArtistsSection(),
 
                 // Artists Section
                 _buildArtistsSection(),
+
+                // Third Ad Placement
+                _buildAdSection('community_dashboard_bottom'),
 
                 const SizedBox(height: 120), // Bottom padding for navigation
               ],
@@ -1466,6 +1476,20 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
             const SizedBox(height: 16),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Build ad section for dashboard
+  Widget _buildAdSection(String analyticsLocation) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: DashboardAdPlacementWidget(
+        location: AdLocation.communityDashboard,
+        analyticsLocation: analyticsLocation,
+        displayType: AdDisplayType.rectangle,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        height: 108, // 100px ad + 8px margin
       ),
     );
   }

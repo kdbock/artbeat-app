@@ -23,9 +23,9 @@ class NavigationService {
         name: 'navigation_attempt',
         parameters: {
           'route_name': routeName,
-          'has_arguments': arguments != null,
-          'replace': replace,
-          'clear_stack': clearStack,
+          'has_arguments': arguments != null ? 1 : 0,
+          'replace': replace ? 1 : 0,
+          'clear_stack': clearStack ? 1 : 0,
         },
       );
 

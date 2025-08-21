@@ -221,8 +221,8 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   void _navigateToCreateArtistApprovedAd(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<ArtistApprovedAdCreateScreen>(
-        builder: (context) => const ArtistApprovedAdCreateScreen(),
+      MaterialPageRoute<ArtistAdCreateScreen>(
+        builder: (context) => const ArtistAdCreateScreen(),
       ),
     );
   }

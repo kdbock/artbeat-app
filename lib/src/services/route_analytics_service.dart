@@ -30,7 +30,7 @@ class RouteAnalyticsService {
         name: 'route_visit',
         parameters: {
           'route_name': routeName,
-          'has_arguments': arguments != null,
+          'has_arguments': arguments != null ? 1 : 0,
           'source': source ?? 'unknown',
           'load_time_ms': loadTime?.inMilliseconds ?? 0,
           'user_id': user?.uid ?? 'anonymous',

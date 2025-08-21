@@ -531,6 +531,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
             const SliverToBoxAdapter(
               child: Column(
                 children: [
+                  // Temporary debug widget - remove after fixing ads
                   AdDebugWidget(
                     location: AdLocation.dashboard,
                     analyticsLocation: 'fluid_dashboard_between_ux_capture',
@@ -607,14 +608,14 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
 
           // Ad placement: 2 ad spaces beneath the artist widget
           const SliverToBoxAdapter(
-            child: BottomSectionAdWidget(
+            child: BetweenSectionsAdWidget(
               location: AdLocation.communityDashboard,
               analyticsLocation: 'fluid_dashboard_below_artist_1',
             ),
           ),
 
           const SliverToBoxAdapter(
-            child: BottomSectionAdWidget(
+            child: BetweenSectionsAdWidget(
               location: AdLocation.communityFeed,
               analyticsLocation: 'fluid_dashboard_below_artist_2',
             ),

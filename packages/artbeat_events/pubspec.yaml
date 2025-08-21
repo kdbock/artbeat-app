@@ -47,6 +47,8 @@ dependencies:
     path: ../artbeat_core
   artbeat_auth:
     path: ../artbeat_auth
+  artbeat_ads:
+    path: ../artbeat_ads
 
   # QR Code generation
   qr_flutter: ^4.1.0

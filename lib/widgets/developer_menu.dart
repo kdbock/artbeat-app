@@ -187,6 +187,13 @@ class DeveloperMenu extends StatelessWidget {
             Navigator.pushNamed(context, '/debug/profile-fix');
           },
         ),
+        ListTile(
+          title: const Text('Ad System Test'),
+          subtitle: const Text('Test and fix ad display issues'),
+          onTap: () {
+            Navigator.pushNamed(context, '/admin/ad-test');
+          },
+        ),
       ],
     );
   }

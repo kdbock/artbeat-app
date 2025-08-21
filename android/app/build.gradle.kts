@@ -52,7 +52,7 @@ android {
     defaultConfig {
         // ARTbeat application ID
         applicationId = "com.wordnerd.artbeat"
-        minSdk = 23
+        minSdkVersion flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 30
         versionName = "1.0.30"

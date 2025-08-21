@@ -331,6 +331,38 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
     }
 
+    // Ads collections - allow read access for all authenticated users
+    match /ads/{adId} {
+      allow read, list: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Artist approved ads collection
+    match /artist_approved_ads/{adId} {
+      allow read, list: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        isArtist(request.auth.uid) ||
+        isAdmin(request.auth.uid)
+      );
+      allow update, delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.ownerId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Ad analytics collection
+    match /ad_analytics/{analyticsId} {
+      allow read: if isAuthenticated() && (
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
     // Admin collections
     match /admin/{document=**} {
       allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);

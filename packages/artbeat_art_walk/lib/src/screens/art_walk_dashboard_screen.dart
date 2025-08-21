@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 
 // Art Walk specific colors
 class ArtWalkColors {
@@ -918,9 +919,27 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                     const SizedBox(height: 24),
                     _buildMapWidget(),
                     const SizedBox(height: 24),
+                    // Ad placement after map
+                    const DashboardAdPlacementWidget(
+                      location: AdLocation.artWalkDashboard,
+                      analyticsLocation: 'art_walk_dashboard_top',
+                      displayType: AdDisplayType.rectangle,
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      height: 108, // 100px ad + 8px margin
+                    ),
+                    const SizedBox(height: 24),
                     _buildCapturesWidget(),
                     const SizedBox(height: 24),
                     _buildArtWalksWidget(),
+                    const SizedBox(height: 24),
+                    // Ad placement after art walks
+                    const DashboardAdPlacementWidget(
+                      location: AdLocation.artWalkDashboard,
+                      analyticsLocation: 'art_walk_dashboard_bottom',
+                      displayType: AdDisplayType.rectangle,
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      height: 108, // 100px ad + 8px margin
+                    ),
                     const SizedBox(height: 24),
                     _buildAchievementsWidget(),
                     const SizedBox(height: 100),
