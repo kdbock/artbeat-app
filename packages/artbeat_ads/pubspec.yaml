@@ -1,17 +1,19 @@
 name: artbeat_ads
 description: ARTbeat Ads module for in-app ad purchasing and management
 version: 0.1.1
-publish_to: 'none'
+publish_to: "none"
 
 environment:
-  sdk: '^3.8.0'
-  flutter: '>=3.32.0'
+  sdk: "^3.8.0"
+  flutter: ">=3.32.0"
 
 dependencies:
   flutter:
     sdk: flutter
   artbeat_core:
     path: ../artbeat_core
+  artbeat_admin:
+    path: ../artbeat_admin
   artbeat_artist:
     path: ../artbeat_artist
   artbeat_artwork:
@@ -40,6 +42,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
 
   image_picker: any
+  url_launcher: ^6.2.5
 dev_dependencies:
   flutter_test:
     sdk: flutter

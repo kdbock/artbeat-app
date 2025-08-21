@@ -5,7 +5,6 @@ import 'ad_display_widget.dart';
 /// Simplified widget for placing rotating ads in dashboard screens
 class DashboardAdPlacementWidget extends StatelessWidget {
   final AdLocation location;
-  final dynamic displayType; // Accept any type but ignore it
   final String analyticsLocation;
   final EdgeInsets? margin;
   final double? height;
@@ -13,7 +12,6 @@ class DashboardAdPlacementWidget extends StatelessWidget {
   const DashboardAdPlacementWidget({
     super.key,
     required this.location,
-    this.displayType,
     this.analyticsLocation = 'dashboard',
     this.margin,
     this.height,
@@ -21,7 +19,7 @@ class DashboardAdPlacementWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget adWidget = AdDisplayWidget(location: location);
+    Widget adWidget = const AdDisplayWidget();
 
     // Apply height constraint if specified
     if (height != null) {

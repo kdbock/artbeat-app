@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/ad_location.dart';
 import '../models/ad_status.dart';
+import 'ad_service.dart';
 
 /// Debug service to help troubleshoot ad display issues
 class AdDebugService {
@@ -109,8 +110,8 @@ class AdDebugService {
 
   static int _getArtistApprovedTypeIndex() {
     // This should match the AdType.artistApproved index
-    // You'll need to check your AdType enum
-    return 1; // Assuming artistApproved is index 1
+    // AdType enum: square(0), rectangle(1), artistApproved(2)
+    return 2; // artistApproved is index 2
   }
 
   /// Fix ads in the ads collection by moving them to artist_approved_ads
@@ -241,6 +242,117 @@ class AdDebugService {
       debugPrint('📊 Finished fixing $collectionName');
     } catch (e) {
       debugPrint('❌ Error fixing locations in $collectionName: $e');
+    }
+  }
+
+  /// Migrate existing ads to populate artworkUrls for proper image rotation
+  static Future<void> migrateAdsArtworkUrls() async {
+    if (!kDebugMode) return;
+
+    debugPrint('🔧 === ARTWORK URLS MIGRATION ===');
+
+    final adService = AdService();
+    await adService.migrateExistingAdsArtworkUrls();
+
+    debugPrint('🔧 === MIGRATION COMPLETE ===');
+  }
+
+  /// Fix ads that have broken artworkUrls by replacing them with working ones
+  static Future<void> fixBrokenArtworkUrls() async {
+    if (kDebugMode) {
+      debugPrint('🔧 === FIXING BROKEN ARTWORK URLS ===');
+    }
+
+    try {
+      // Use placeholder images that always work
+      final workingUrls = [
+        'https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Image+1',
+        'https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Image+2',
+        'https://via.placeholder.com/300x200/45B7D1/FFFFFF?text=Image+3',
+        'https://via.placeholder.com/300x200/96CEB4/FFFFFF?text=Image+4',
+      ];
+
+      int totalFixedCount = 0;
+
+      // Fix ads in 'ads' collection
+      totalFixedCount += await _fixCollectionUrls('ads', workingUrls);
+
+      // Fix ads in 'artist_approved_ads' collection
+      totalFixedCount += await _fixCollectionUrls(
+        'artist_approved_ads',
+        workingUrls,
+      );
+
+      if (kDebugMode) {
+        debugPrint('🎉 Fixed $totalFixedCount ads total with working URLs!');
+        debugPrint('🔧 === FIX COMPLETE ===');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error fixing broken URLs: $e');
+      }
+    }
+  }
+
+  /// Fix broken URLs in a specific collection
+  static Future<int> _fixCollectionUrls(
+    String collectionName,
+    List<String> workingUrls,
+  ) async {
+    try {
+      if (kDebugMode) {
+        debugPrint('🔧 Fixing collection: $collectionName');
+      }
+
+      final collectionRef = FirebaseFirestore.instance.collection(
+        collectionName,
+      );
+      final query = await collectionRef.get();
+
+      int fixedCount = 0;
+
+      for (final doc in query.docs) {
+        final data = doc.data();
+        final artworkUrlsString = data['artworkUrls'] as String? ?? '';
+        final imageUrl = data['imageUrl'] as String? ?? '';
+
+        // Check if we need to fix this ad
+        bool needsFix = false;
+
+        // If artworkUrls contains broken Firebase URLs or is empty
+        if (artworkUrlsString.contains('firebasestorage') ||
+            artworkUrlsString.isEmpty) {
+          needsFix = true;
+        }
+
+        // If imageUrl contains broken Firebase URLs
+        if (imageUrl.contains('firebasestorage')) {
+          needsFix = true;
+        }
+
+        if (needsFix) {
+          await collectionRef.doc(doc.id).update({
+            'artworkUrls': workingUrls.join(','),
+            'imageUrl': workingUrls.first,
+          });
+          fixedCount++;
+
+          if (kDebugMode) {
+            debugPrint('✅ Fixed URLs for ad ${doc.id} in $collectionName');
+          }
+        }
+      }
+
+      if (kDebugMode) {
+        debugPrint('📊 Fixed $fixedCount ads in $collectionName');
+      }
+
+      return fixedCount;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('❌ Error fixing URLs in $collectionName: $e');
+      }
+      return 0;
     }
   }
 }

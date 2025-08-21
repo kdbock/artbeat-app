@@ -135,7 +135,7 @@ class AdFixService {
       final testAd = {
         'ownerId': 'test_owner',
         'artistId': 'test_artist',
-        'type': 1, // Assuming artistApproved is index 1
+        'type': 2, // artistApproved is index 2
         'title': 'Test Artist Ad',
         'description': 'This is a test ad for debugging',
         'tagline': 'Test Artist Tagline',

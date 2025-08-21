@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/ad_location.dart';
+import '../services/ad_cleanup_service.dart';
+import '../services/ad_diagnostic_service.dart';
 import '../services/ad_debug_service.dart';
-import '../services/ad_fix_service.dart';
 
 /// Debug widget to help troubleshoot ad issues
 class AdDebugWidget extends StatelessWidget {
@@ -55,39 +56,29 @@ class AdDebugWidget extends StatelessWidget {
               runSpacing: 2,
               children: [
                 _buildCompactButton(
-                  'Debug',
+                  'Full Diagnostic',
                   Colors.blue,
-                  () => AdDebugService.debugAdCollections(),
+                  () => AdDiagnosticService.runFullDiagnostic(),
                 ),
                 _buildCompactButton(
-                  'Query',
+                  'Quick Fix',
                   Colors.green,
-                  () => AdDebugService.testAdQuery(location),
+                  () => AdDiagnosticService.quickFix(),
                 ),
                 _buildCompactButton(
-                  'Fix',
-                  Colors.purple,
-                  () => AdFixService.fixAdsForTesting(),
-                ),
-                _buildCompactButton(
-                  'Copy',
+                  'Reset Ads',
                   Colors.orange,
-                  () => AdFixService.copyAdsToArtistApprovedCollection(),
+                  () => AdCleanupService.resetAdsForTesting(),
                 ),
                 _buildCompactButton(
-                  'Test',
-                  Colors.teal,
-                  () => AdFixService.createTestAd(),
+                  'Fix URLs',
+                  Colors.purple,
+                  () => AdDebugService.migrateAdsArtworkUrls(),
                 ),
                 _buildCompactButton(
-                  'All',
-                  Colors.indigo,
-                  () => AdFixService.createTestAdsForAllLocations(),
-                ),
-                _buildCompactButton(
-                  'Clean',
+                  'Fix Broken',
                   Colors.red,
-                  () => AdFixService.cleanupPlaceholderUrls(),
+                  () => AdDebugService.fixBrokenArtworkUrls(),
                 ),
               ],
             ),

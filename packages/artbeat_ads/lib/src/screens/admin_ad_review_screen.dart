@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ad_model.dart';
 import '../models/ad_status.dart' as model;
+import '../models/ad_display_type.dart';
 import '../services/ad_service.dart';
 import '../widgets/ad_status_widget.dart';
 import '../widgets/ad_display_widget.dart';
@@ -103,6 +104,7 @@ class _AdminAdReviewScreenState extends State<AdminAdReviewScreen> {
                               children: [
                                 AdDisplayWidget(
                                   imageUrl: ad.imageUrl,
+                                  artworkUrls: ad.artworkUrls,
                                   title: ad.title,
                                   description: ad.description,
                                   displayType: ad.type.name == 'square'

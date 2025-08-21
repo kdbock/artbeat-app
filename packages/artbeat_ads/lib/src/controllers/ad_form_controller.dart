@@ -34,12 +34,7 @@ class AdFormController extends ChangeNotifier {
 
   // Image state
   XFile? _selectedImage;
-  XFile? _avatarImage;
   final List<XFile?> _artworkImages = [null, null, null, null];
-
-  // Animation settings (for artist approved ads)
-  int _animationSpeed = 1000;
-  bool _autoPlay = true;
 
   // Getters
   AdType get adType => _adType;
@@ -50,20 +45,12 @@ class AdFormController extends ChangeNotifier {
   String? get error => _error;
   double get uploadProgress => _uploadProgress;
   XFile? get selectedImage => _selectedImage;
-  XFile? get avatarImage => _avatarImage;
   List<XFile?> get artworkImages => _artworkImages;
-  int get animationSpeed => _animationSpeed;
-  bool get autoPlay => _autoPlay;
 
   // Calculated properties
   double get totalPrice => _pricePerDay * _durationDays;
   bool get hasSelectedImage {
-    if (_adType == AdType.artistApproved) {
-      return _avatarImage != null &&
-          _artworkImages.any((image) => image != null);
-    } else {
-      return _artworkImages.any((image) => image != null);
-    }
+    return _artworkImages.any((image) => image != null);
   }
 
   bool get isFormValid => formKey.currentState?.validate() ?? false;
@@ -112,17 +99,6 @@ class AdFormController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Update animation settings for artist approved ads
-  void setAnimationSpeed(int speed) {
-    _animationSpeed = speed;
-    notifyListeners();
-  }
-
-  void setAutoPlay(bool autoPlay) {
-    _autoPlay = autoPlay;
-    notifyListeners();
-  }
-
   /// Select main image
   Future<void> selectImage() async {
     try {
@@ -138,22 +114,7 @@ class AdFormController extends ChangeNotifier {
     }
   }
 
-  /// Select avatar image (for artist approved ads)
-  Future<void> selectAvatarImage() async {
-    try {
-      final picker = ImagePicker();
-      final image = await picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        _avatarImage = image;
-        _clearError();
-        notifyListeners();
-      }
-    } catch (e) {
-      _setError('Failed to select avatar image: $e');
-    }
-  }
-
-  /// Select artwork image at specific index (for artist approved ads)
+  /// Select artwork image at specific index
   Future<void> selectArtworkImage(int index) async {
     if (index < 0 || index >= 4) return;
 
@@ -187,13 +148,8 @@ class AdFormController extends ChangeNotifier {
       return false;
     }
 
-    // Image validation based on ad type
-    switch (_adType) {
-      case AdType.artistApproved:
-        return _validateArtistApprovedForm();
-      default:
-        return _validateStandardForm();
-    }
+    // Image validation
+    return _validateStandardForm();
   }
 
   bool _validateStandardForm() {
@@ -209,24 +165,6 @@ class AdFormController extends ChangeNotifier {
     return true;
   }
 
-  bool _validateArtistApprovedForm() {
-    if (_avatarImage == null) {
-      _setError('Please select an avatar image');
-      return false;
-    }
-
-    final selectedArtworkCount = _artworkImages
-        .where((image) => image != null)
-        .length;
-
-    if (selectedArtworkCount < 4) {
-      _setError('Please select all 4 artwork images for the animation');
-      return false;
-    }
-
-    return true;
-  }
-
   /// Submit ad form
   Future<bool> submitAd({
     required String userId,
@@ -237,6 +175,19 @@ class AdFormController extends ChangeNotifier {
     _setProcessing(true);
 
     try {
+      // Test upload capability first
+      final canUpload = await _uploadService.testUploadCapability(
+        userId,
+        userType: userType,
+      );
+      if (!canUpload) {
+        _setError(
+          'Upload test failed. Please check your connection and try again.',
+        );
+        _setProcessing(false);
+        return false;
+      }
+
       // Upload images with progress tracking
       final uploadResults = await _uploadImages(userId, userType);
 
@@ -272,47 +223,43 @@ class AdFormController extends ChangeNotifier {
         onProgress: (double progress) =>
             _updateProgress(0.2 + (progress * 0.3)),
       );
+
+      // Add delay after main image upload
+      await Future<void>.delayed(const Duration(milliseconds: 1000));
     }
 
-    // Upload avatar image (artist approved ads)
-    if (_avatarImage != null) {
-      _updateProgress(0.5);
-      results['avatarUrl'] = await _uploadService.uploadImage(
-        File(_avatarImage!.path),
-        userId: userId,
-        category: 'artist_approved_ads/avatars',
-        onProgress: (double progress) =>
-            _updateProgress(0.5 + (progress * 0.2)),
-      );
-    }
-
-    // Upload artwork images
+    // Upload artwork images sequentially to avoid conflicts
     final artworkUrls = <String>[];
     final artworkCount = _artworkImages.where((image) => image != null).length;
 
+    int uploadedCount = 0;
     for (int i = 0; i < _artworkImages.length; i++) {
       if (_artworkImages[i] != null) {
-        final imageIndex = artworkUrls.length; // Current image being uploaded
-        final category = _adType == AdType.artistApproved
-            ? 'artist_approved_ads/artwork'
-            : _getImageCategory(userType);
+        final category = _getImageCategory(userType);
+
+        // Add delay between uploads to prevent rate limiting
+        if (uploadedCount > 0) {
+          await Future<void>.delayed(const Duration(milliseconds: 1500));
+        }
+
         final url = await _uploadService.uploadImage(
           File(_artworkImages[i]!.path),
           userId: userId,
           category: category,
           onProgress: (double progress) {
             // Calculate progress: 0.7 to 1.0 divided among all artwork images
-            final baseProgress = 0.7;
-            final totalArtworkProgress = 0.3;
+            const baseProgress = 0.7;
+            const totalArtworkProgress = 0.3;
             final progressPerImage = totalArtworkProgress / artworkCount;
             final currentProgress =
                 baseProgress +
-                (imageIndex * progressPerImage) +
+                (uploadedCount * progressPerImage) +
                 (progress * progressPerImage);
             _updateProgress(currentProgress.clamp(0.0, 1.0));
           },
         );
         artworkUrls.add(url);
+        uploadedCount++;
       }
     }
 
@@ -343,44 +290,29 @@ class AdFormController extends ChangeNotifier {
       'createdAt': DateTime.now(),
     };
 
-    // Handle image URLs based on ad type
-    if (_adType == AdType.artistApproved) {
-      // Artist approved ads use specific URLs
-      baseData.addAll(uploadResults);
-    } else {
-      // Standard ads (including admin) use artwork images
-      if (uploadResults.containsKey('artworkUrls') &&
-          uploadResults['artworkUrls'] != null) {
-        final artworkUrls = uploadResults['artworkUrls']!.split(',');
-        // Use first artwork image as main imageUrl for compatibility
-        baseData['imageUrl'] = artworkUrls.first;
-        // Also store the full list
-        baseData['artworkUrls'] = uploadResults['artworkUrls']!;
-      } else if (uploadResults.containsKey('imageUrl') &&
-          uploadResults['imageUrl'] != null) {
-        // Fallback for single image uploads
-        baseData['imageUrl'] = uploadResults['imageUrl']!;
-      }
+    // Handle image URLs
+    if (uploadResults.containsKey('artworkUrls') &&
+        uploadResults['artworkUrls'] != null) {
+      final artworkUrls = uploadResults['artworkUrls']!.split(',');
+      // Use first artwork image as main imageUrl for compatibility
+      baseData['imageUrl'] = artworkUrls.first;
+      // Also store the full list
+      baseData['artworkUrls'] = uploadResults['artworkUrls']!;
+    } else if (uploadResults.containsKey('imageUrl') &&
+        uploadResults['imageUrl'] != null) {
+      // Fallback for single image uploads
+      baseData['imageUrl'] = uploadResults['imageUrl']!;
     }
 
-    // Add type-specific data
-    switch (_adType) {
-      case AdType.artistApproved:
-        baseData.addAll({
-          'tagline': taglineController.text.trim(),
-          'ctaText': ctaController.text.trim(),
-          'destinationUrl': destinationUrlController.text.trim(),
-          'animationSpeed': _animationSpeed,
-          'autoPlay': _autoPlay,
-        });
-        break;
-      default:
-        if (ctaController.text.isNotEmpty) {
-          baseData['ctaText'] = ctaController.text.trim();
-        }
-        if (urlController.text.isNotEmpty) {
-          baseData['targetUrl'] = urlController.text.trim();
-        }
+    // Add optional data
+    if (ctaController.text.isNotEmpty) {
+      baseData['ctaText'] = ctaController.text.trim();
+    }
+    if (destinationUrlController.text.isNotEmpty) {
+      baseData['destinationUrl'] = destinationUrlController.text.trim();
+    }
+    if (urlController.text.isNotEmpty) {
+      baseData['targetUrl'] = urlController.text.trim();
     }
 
     return baseData;
@@ -409,7 +341,6 @@ class AdFormController extends ChangeNotifier {
     destinationUrlController.clear();
 
     _selectedImage = null;
-    _avatarImage = null;
     for (int i = 0; i < _artworkImages.length; i++) {
       _artworkImages[i] = null;
     }
@@ -418,8 +349,6 @@ class AdFormController extends ChangeNotifier {
     _adLocation = AdLocation.dashboard;
     _durationDays = 7;
     _pricePerDay = 5.0;
-    _animationSpeed = 1000;
-    _autoPlay = true;
 
     _clearError();
     _uploadProgress = 0.0;

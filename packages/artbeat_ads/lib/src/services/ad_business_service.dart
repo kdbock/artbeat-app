@@ -7,14 +7,13 @@ import '../models/ad_model.dart';
 import '../models/ad_artist_model.dart';
 import '../models/ad_gallery_model.dart';
 import '../models/ad_user_model.dart';
-import '../models/ad_artist_approved_model.dart';
+
 import '../models/ad_duration.dart';
 import '../utils/ad_constants.dart';
 import '../services/ad_service.dart';
 import '../services/ad_artist_service.dart';
 import '../services/ad_gallery_service.dart';
 import '../services/ad_user_service.dart';
-import '../services/ad_artist_approved_service.dart';
 
 /// Business logic service for ad operations
 /// Handles pricing, validation, submission routing, and business rules
@@ -26,8 +25,6 @@ class AdBusinessService {
   final AdArtistService _artistService = AdArtistService();
   final AdGalleryService _galleryService = AdGalleryService();
   final AdUserService _userService = AdUserService();
-  final AdArtistApprovedService _artistApprovedService =
-      AdArtistApprovedService();
 
   /// Get price per day for specific ad type
   double getPriceForAdType(AdType adType) {
@@ -35,8 +32,6 @@ class AdBusinessService {
       case AdType.square:
       case AdType.rectangle:
         return AdConstants.userAdPricePerDay;
-      case AdType.artistApproved:
-        return AdConstants.artistAdPricePerDay * 2; // Premium pricing
     }
   }
 
@@ -66,13 +61,8 @@ class AdBusinessService {
       // Admin can create any type
       if (userType == 'admin') return true;
 
-      // Check user subscription/permissions based on type
-      switch (adType) {
-        case AdType.artistApproved:
-          return await _checkArtistApprovedPermissions(userId);
-        default:
-          return true; // Basic ad types available to all
-      }
+      // Basic ad types available to all
+      return true;
     } catch (e) {
       debugPrint('❌ Error checking ad creation permissions: $e');
       return false;
@@ -131,25 +121,17 @@ class AdBusinessService {
     return basePrice;
   }
 
-  /// Submit ad to appropriate service based on user type and ad type
+  /// Submit ad to appropriate service based on user type
   Future<String> submitAd(Map<String, dynamic> adData, String userType) async {
     try {
-      final adType = AdType.values[adData['type'] as int];
-
       switch (userType) {
         case 'admin':
           return await _adService.createAd(_createAdModel(adData));
 
         case 'artist':
-          if (adType == AdType.artistApproved) {
-            return await _artistApprovedService.createArtistApprovedAd(
-              _createArtistApprovedModel(adData),
-            );
-          } else {
-            return await _artistService.createArtistAd(
-              _createArtistModel(adData),
-            );
-          }
+          return await _artistService.createArtistAd(
+            _createArtistModel(adData),
+          );
 
         case 'gallery':
           return await _galleryService.createGalleryAd(
@@ -203,54 +185,31 @@ class AdBusinessService {
   }
 
   bool _validateAdTypeSpecificData(Map<String, dynamic> adData, AdType adType) {
-    switch (adType) {
-      case AdType.artistApproved:
-        // Artist approved ads need avatar and artwork images
-        if (!adData.containsKey('avatarUrl') ||
-            (adData['avatarUrl'] as String).isEmpty) {
-          debugPrint('❌ Missing avatar URL for artist approved ad');
-          return false;
-        }
-        if (!adData.containsKey('artworkUrls') ||
-            (adData['artworkUrls'] as String).isEmpty) {
-          debugPrint('❌ Missing artwork URLs for artist approved ad');
-          return false;
-        }
-        break;
-      default:
-        // Standard validation passed
-        break;
-    }
+    // All ad types use standard validation now
     return true;
-  }
-
-  Future<bool> _checkArtistApprovedPermissions(String userId) async {
-    try {
-      // Check if user has artist profile with proper subscription
-      final artistDoc = await _firestore
-          .collection('artistProfiles')
-          .doc(userId)
-          .get();
-
-      if (!artistDoc.exists) return false;
-
-      final data = artistDoc.data()!;
-      final userType = data['userType'] as String?;
-
-      return userType == 'artist' || userType == 'gallery';
-    } catch (e) {
-      debugPrint('❌ Error checking artist approved permissions: $e');
-      return false;
-    }
   }
 
   // Model creation methods with proper type casting
   AdModel _createAdModel(Map<String, dynamic> data) {
+    // Parse artworkUrls from comma-separated string
+    List<String> artworkUrls = [];
+    if (data.containsKey('artworkUrls') && data['artworkUrls'] != null) {
+      final rawUrls = data['artworkUrls'] as String;
+      if (rawUrls.isNotEmpty) {
+        artworkUrls = rawUrls
+            .split(',')
+            .map((url) => url.trim())
+            .where((url) => url.isNotEmpty)
+            .toList();
+      }
+    }
+
     return AdModel(
       id: '',
       ownerId: data['ownerId'] as String,
       type: AdType.values[data['type'] as int],
       imageUrl: data['imageUrl'] as String,
+      artworkUrls: artworkUrls, // ✅ Now properly included!
       title: data['title'] as String,
       description: data['description'] as String,
       location: AdLocation.values[data['location'] as int],
@@ -330,50 +289,14 @@ class AdBusinessService {
     );
   }
 
-  AdArtistApprovedModel _createArtistApprovedModel(Map<String, dynamic> data) {
-    final artworkUrls = (data['artworkUrls'] as String).split(',');
-    final now = DateTime.now();
-
-    return AdArtistApprovedModel(
-      id: '',
-      ownerId: data['ownerId'] as String,
-      artistId: data['ownerId'] as String,
-      type: AdType.values[data['type'] as int],
-      avatarImageUrl: data['avatarUrl'] as String,
-      artworkImageUrls: artworkUrls,
-      tagline: (data['tagline'] as String?) ?? '', // Default to empty if null
-      title: data['title'] as String,
-      description: data['description'] as String,
-      location: AdLocation.values[data['location'] as int],
-      duration: AdDuration(
-        days: (data['duration'] as Map<String, dynamic>)['days'] as int,
-      ),
-      pricePerDay: (data['pricePerDay'] as num).toDouble(),
-      startDate: data['startDate'] as DateTime,
-      endDate: data['endDate'] as DateTime,
-      status: AdStatus.values[data['status'] as int],
-      destinationUrl: data['destinationUrl'] as String?,
-      ctaText: data['ctaText'] as String?,
-      animationSpeed: data['animationSpeed'] as int,
-      autoPlay: data['autoPlay'] as bool,
-      createdAt: now,
-      updatedAt: now,
-    );
-  }
-
   /// Get recommended duration based on ad type and budget
   int getRecommendedDuration(AdType adType, double budget, double pricePerDay) {
     if (pricePerDay <= 0) return 7; // Default to 1 week
 
     final maxDays = (budget / pricePerDay).floor();
 
-    // Recommend optimal duration based on ad type
-    switch (adType) {
-      case AdType.artistApproved:
-        return maxDays.clamp(14, 30); // 2-4 weeks for premium ads
-      default:
-        return maxDays.clamp(3, 14); // 3 days to 2 weeks for standard ads
-    }
+    // Recommend optimal duration for standard ads
+    return maxDays.clamp(3, 14); // 3 days to 2 weeks for standard ads
   }
 
   /// Get available locations for user type

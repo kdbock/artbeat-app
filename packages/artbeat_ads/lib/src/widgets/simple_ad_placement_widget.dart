@@ -1,0 +1,226 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../models/ad_model.dart';
+import '../models/ad_location.dart';
+import '../services/simple_ad_service.dart';
+import 'simple_ad_display_widget.dart';
+
+/// Simple widget to display ads in specific locations throughout the app
+class SimpleAdPlacementWidget extends StatelessWidget {
+  final AdLocation location;
+  final EdgeInsets? padding;
+  final bool showIfEmpty;
+
+  const SimpleAdPlacementWidget({
+    super.key,
+    required this.location,
+    this.padding,
+    this.showIfEmpty = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => SimpleAdService(),
+      child: Consumer<SimpleAdService>(
+        builder: (context, adService, child) {
+          return StreamBuilder<List<AdModel>>(
+            stream: adService.getAdsByLocation(location),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return showIfEmpty
+                    ? _buildPlaceholder()
+                    : const SizedBox.shrink();
+              }
+
+              if (snapshot.hasError) {
+                debugPrint(
+                  'Error loading ads for ${location.name}: ${snapshot.error}',
+                );
+                return showIfEmpty
+                    ? _buildPlaceholder()
+                    : const SizedBox.shrink();
+              }
+
+              final ads = snapshot.data ?? [];
+
+              if (ads.isEmpty) {
+                return showIfEmpty
+                    ? _buildPlaceholder()
+                    : const SizedBox.shrink();
+              }
+
+              // Show the first active ad (you could implement rotation logic here)
+              final ad = ads.first;
+
+              return Container(
+                padding: padding ?? const EdgeInsets.all(8.0),
+                child: SimpleAdDisplayWidget(ad: ad),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(8.0),
+      child: Container(
+        width: 320,
+        height: 50, // Default to small ad size
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: const Center(
+          child: Text(
+            'Ad Space',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Widget specifically for banner ads (typically at top/bottom of screens)
+class BannerAdWidget extends StatelessWidget {
+  final AdLocation location;
+  final bool showAtTop;
+
+  const BannerAdWidget({
+    super.key,
+    required this.location,
+    this.showAtTop = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SimpleAdPlacementWidget(
+      location: location,
+      padding: EdgeInsets.only(
+        top: showAtTop ? 8.0 : 0,
+        bottom: showAtTop ? 0 : 8.0,
+        left: 8.0,
+        right: 8.0,
+      ),
+    );
+  }
+}
+
+/// Widget specifically for feed ads (integrated into content lists)
+class FeedAdWidget extends StatelessWidget {
+  final AdLocation location;
+  final int index;
+
+  const FeedAdWidget({super.key, required this.location, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                Icon(Icons.campaign, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(
+                  'Sponsored',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          SimpleAdPlacementWidget(
+            location: location,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Helper widget to easily add ads to any screen
+class AdSpaceWidget extends StatelessWidget {
+  final AdLocation location;
+  final String? customLabel;
+  final double? width;
+  final double? height;
+
+  const AdSpaceWidget({
+    super.key,
+    required this.location,
+    this.customLabel,
+    this.width,
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => SimpleAdService(),
+      child: Consumer<SimpleAdService>(
+        builder: (context, adService, child) {
+          return FutureBuilder<int>(
+            future: adService.getActiveAdsCount(location),
+            builder: (context, snapshot) {
+              final hasAds = (snapshot.data ?? 0) > 0;
+
+              if (hasAds) {
+                return SimpleAdPlacementWidget(location: location);
+              }
+
+              // Show placeholder for development/testing
+              return Container(
+                width: width ?? 320,
+                height: height ?? 50,
+                margin: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.shade300,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.campaign_outlined,
+                        color: Colors.grey.shade400,
+                        size: 20,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        customLabel ?? '${location.displayName} Ad',
+                        style: TextStyle(
+                          color: Colors.grey.shade500,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}

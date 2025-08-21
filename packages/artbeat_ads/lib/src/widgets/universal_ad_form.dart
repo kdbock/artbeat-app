@@ -57,10 +57,8 @@ class UniversalAdForm extends StatelessWidget {
                       AdImageSection(
                         adType: controller.adType,
                         selectedImage: controller.selectedImage,
-                        avatarImage: controller.avatarImage,
                         artworkImages: controller.artworkImages,
                         onSelectImage: controller.selectImage,
-                        onSelectAvatar: controller.selectAvatarImage,
                         onSelectArtwork: controller.selectArtworkImage,
                         onRemoveArtwork: controller.removeArtworkImage,
                       ),
@@ -78,17 +76,12 @@ class UniversalAdForm extends StatelessWidget {
 
                       const SizedBox(height: 24),
 
-                      // Artist approved specific fields
-                      if (controller.adType == AdType.artistApproved)
-                        AdArtistApprovedSection(
-                          taglineController: controller.taglineController,
-                          ctaController: controller.ctaController,
-                          urlController: controller.destinationUrlController,
-                          animationSpeed: controller.animationSpeed,
-                          autoPlay: controller.autoPlay,
-                          onAnimationSpeedChanged: controller.setAnimationSpeed,
-                          onAutoPlayChanged: controller.setAutoPlay,
-                        ),
+                      // Destination URL and CTA section
+                      AdDestinationSection(
+                        destinationUrlController:
+                            controller.destinationUrlController,
+                        ctaController: controller.ctaController,
+                      ),
 
                       const SizedBox(height: 24),
 

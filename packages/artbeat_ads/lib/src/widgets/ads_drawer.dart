@@ -73,6 +73,12 @@ class AdsDrawer extends StatelessWidget {
                   title: 'Review Admin Ads',
                   route: '/ads/admin/review',
                 ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.settings,
+                  title: 'Ad Management',
+                  route: '/ads/admin/management',
+                ),
 
                 const Divider(),
 

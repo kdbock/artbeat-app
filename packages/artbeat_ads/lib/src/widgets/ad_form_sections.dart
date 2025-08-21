@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/ad_type.dart';
 import '../models/ad_location.dart';
+import '../models/ad_display_type.dart';
 import '../controllers/ad_form_controller.dart';
+import 'ad_display_widget.dart';
 
 /// Basic information section of the ad form
 class AdBasicInfoSection extends StatelessWidget {
@@ -99,10 +101,8 @@ class AdBasicInfoSection extends StatelessWidget {
 class AdImageSection extends StatelessWidget {
   final AdType adType;
   final XFile? selectedImage;
-  final XFile? avatarImage;
   final List<XFile?> artworkImages;
   final VoidCallback onSelectImage;
-  final VoidCallback onSelectAvatar;
   final void Function(int) onSelectArtwork;
   final void Function(int) onRemoveArtwork;
 
@@ -110,10 +110,8 @@ class AdImageSection extends StatelessWidget {
     super.key,
     required this.adType,
     this.selectedImage,
-    this.avatarImage,
     required this.artworkImages,
     required this.onSelectImage,
-    required this.onSelectAvatar,
     required this.onSelectArtwork,
     required this.onRemoveArtwork,
   });
@@ -133,7 +131,7 @@ class AdImageSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                '2️⃣ Images - Upload 4 high-quality images that will rotate as a GIF',
+                '2️⃣ Images - Upload up to 4 high-quality images for your ad',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -143,7 +141,7 @@ class AdImageSection extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Tip: Choose your best, most eye-catching images. They will automatically rotate to create an engaging animated effect.',
+              'Tip: Choose your best, most eye-catching images to showcase your content.',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -152,10 +150,7 @@ class AdImageSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            if (adType == AdType.artistApproved)
-              _buildArtistApprovedImages(context)
-            else
-              _buildStandardImage(context),
+            _buildStandardImage(context),
           ],
         ),
       ),
@@ -285,122 +280,6 @@ class AdImageSection extends StatelessWidget {
         Text(
           'Upload at least 2 images (up to 4) for the best animated effect',
           style: TextStyle(color: Colors.grey[600], fontSize: 12),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildArtistApprovedImages(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Avatar image
-        const Text('Avatar Image*'),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: onSelectAvatar,
-          child: Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: avatarImage != null ? Colors.green : Colors.grey[400]!,
-                width: 2,
-              ),
-              image: avatarImage != null
-                  ? DecorationImage(
-                      image: FileImage(File(avatarImage!.path)),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-            ),
-            child: avatarImage == null
-                ? Icon(Icons.add_a_photo, size: 32, color: Colors.grey[600])
-                : null,
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        // Artwork images
-        const Text('Artwork Images* (4 required for animation)'),
-        const SizedBox(height: 8),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1,
-          ),
-          itemCount: 4,
-          itemBuilder: (context, index) {
-            final hasImage = artworkImages[index] != null;
-            return GestureDetector(
-              onTap: () => onSelectArtwork(index),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: hasImage ? Colors.green : Colors.grey[400]!,
-                    width: 2,
-                  ),
-                  image: hasImage
-                      ? DecorationImage(
-                          image: FileImage(File(artworkImages[index]!.path)),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: hasImage
-                    ? Stack(
-                        children: [
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: GestureDetector(
-                              onTap: () => onRemoveArtwork(index),
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.close,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_photo_alternate,
-                            color: Colors.grey[600],
-                            size: 32,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Artwork ${index + 1}',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            );
-          },
         ),
       ],
     );
@@ -553,25 +432,15 @@ class AdLocationSection extends StatelessWidget {
   }
 }
 
-/// Artist approved ad specific section
-class AdArtistApprovedSection extends StatelessWidget {
-  final TextEditingController taglineController;
+/// Destination URL and CTA section
+class AdDestinationSection extends StatelessWidget {
+  final TextEditingController destinationUrlController;
   final TextEditingController ctaController;
-  final TextEditingController urlController;
-  final int animationSpeed;
-  final bool autoPlay;
-  final void Function(int) onAnimationSpeedChanged;
-  final void Function(bool) onAutoPlayChanged;
 
-  const AdArtistApprovedSection({
+  const AdDestinationSection({
     super.key,
-    required this.taglineController,
+    required this.destinationUrlController,
     required this.ctaController,
-    required this.urlController,
-    required this.animationSpeed,
-    required this.autoPlay,
-    required this.onAnimationSpeedChanged,
-    required this.onAutoPlayChanged,
   });
 
   @override
@@ -589,7 +458,7 @@ class AdArtistApprovedSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                'Artist Approved Settings',
+                '4️⃣ Destination & Action - Where should users go when they tap your ad?',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -597,74 +466,107 @@ class AdArtistApprovedSection extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            const Text(
+              'Optional: Add a destination URL and call-to-action to drive traffic to your website, social media, or online store.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
             const SizedBox(height: 16),
 
-            // Tagline
+            // Destination URL field
             TextFormField(
-              controller: taglineController,
+              controller: destinationUrlController,
               decoration: const InputDecoration(
-                labelText: 'Tagline',
-                hintText: 'A catchy tagline for your ad',
+                labelText: 'Destination URL (Optional)',
+                hintText:
+                    'https://your-website.com or https://instagram.com/yourprofile',
                 border: OutlineInputBorder(),
+                helperText: 'Where users will go when they tap your ad',
+                prefixIcon: Icon(Icons.link),
               ),
-              maxLength: 50,
+              keyboardType: TextInputType.url,
+              validator: (value) {
+                if (value != null && value.trim().isNotEmpty) {
+                  // Basic URL validation
+                  final urlPattern = RegExp(
+                    r'^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$',
+                  );
+                  if (!urlPattern.hasMatch(value.trim())) {
+                    return 'Please enter a valid URL (must start with http:// or https://)';
+                  }
+                }
+                return null;
+              },
             ),
 
             const SizedBox(height: 16),
 
-            // Call to action
+            // CTA text field
             TextFormField(
               controller: ctaController,
               decoration: const InputDecoration(
-                labelText: 'Call to Action',
-                hintText: 'e.g., "View Portfolio", "Visit Gallery"',
+                labelText: 'Call-to-Action Text (Optional)',
+                hintText: 'Shop Now, Learn More, Visit Gallery, Follow Me',
                 border: OutlineInputBorder(),
+                helperText: 'Short text that encourages users to take action',
+                prefixIcon: Icon(Icons.touch_app),
               ),
-              maxLength: 30,
-            ),
-
-            const SizedBox(height: 16),
-
-            // Destination URL
-            TextFormField(
-              controller: urlController,
-              decoration: const InputDecoration(
-                labelText: 'Destination URL',
-                hintText: 'https://your-website.com',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.url,
-            ),
-
-            const SizedBox(height: 16),
-
-            // Animation settings
-            Text(
-              'Animation Settings',
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+              maxLength: 20,
+              validator: (value) {
+                if (value != null && value.trim().isNotEmpty) {
+                  if (value.trim().length < 2) {
+                    return 'CTA text must be at least 2 characters';
+                  }
+                }
+                return null;
+              },
             ),
 
             const SizedBox(height: 8),
 
-            // Animation speed
-            Text('Animation Speed: ${animationSpeed}ms per image'),
-            Slider(
-              value: animationSpeed.toDouble(),
-              min: 500,
-              max: 3000,
-              divisions: 10,
-              label: '${animationSpeed}ms',
-              onChanged: (value) => onAnimationSpeedChanged(value.round()),
-            ),
-
-            // Auto play toggle
-            SwitchListTile(
-              title: const Text('Auto Play Animation'),
-              subtitle: const Text('Start animation automatically'),
-              value: autoPlay,
-              onChanged: onAutoPlayChanged,
+            // Info container with examples
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        color: Colors.blue.shade700,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Popular Examples:',
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• Artists: "View Portfolio", "Commission Me", "Follow"\n'
+                    '• Galleries: "Visit Gallery", "Book Tour", "Learn More"\n'
+                    '• Events: "Get Tickets", "RSVP", "Details"\n'
+                    '• General: "Shop Now", "Discover", "Explore"',
+                    style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -705,7 +607,7 @@ class AdPricingSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                '4️⃣ Pricing - Review your cost and submit',
+                '5️⃣ Pricing - Review your cost and submit',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -815,67 +717,119 @@ class AdPreviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get artwork image paths for preview
+    final artworkPaths = controller.artworkImages
+        .where((image) => image != null)
+        .map((image) => image!.path)
+        .toList();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Preview',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF00BF63),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                '6️⃣ Preview - See how your ad will look with rotating images',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Preview image
-                  if (controller.selectedImage != null)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(
-                        File(controller.selectedImage!.path),
-                        width: double.infinity,
-                        height: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-
-                  const SizedBox(height: 12),
-
-                  // Title
-                  Text(
-                    controller.titleController.text.isNotEmpty
-                        ? controller.titleController.text
-                        : 'Your Ad Title',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Description
-                  Text(
-                    controller.descriptionController.text.isNotEmpty
-                        ? controller.descriptionController.text
-                        : 'Your ad description will appear here',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
+            // Use the actual AdDisplayWidget for preview
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 350),
+                child: AdDisplayWidget(
+                  imageUrl: artworkPaths.isNotEmpty ? artworkPaths.first : '',
+                  artworkUrls: artworkPaths,
+                  title: controller.titleController.text.isNotEmpty
+                      ? controller.titleController.text
+                      : 'Your Ad Title',
+                  description: controller.descriptionController.text.isNotEmpty
+                      ? controller.descriptionController.text
+                      : 'Your ad description will appear here',
+                  ctaText: controller.ctaController.text.isNotEmpty
+                      ? controller.ctaController.text
+                      : null,
+                  displayType: controller.adType == AdType.square
+                      ? AdDisplayType.square
+                      : AdDisplayType.rectangle,
+                ),
               ),
             ),
+
+            const SizedBox(height: 16),
+
+            // Info text
+            if (artworkPaths.length > 1)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.blue.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '✨ Your ad will rotate through ${artworkPaths.length} images every 3 seconds to catch viewers\' attention!',
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (artworkPaths.length == 1)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline,
+                      color: Colors.orange.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '💡 Add more images (up to 4) to create an eye-catching rotating effect!',
+                        style: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),

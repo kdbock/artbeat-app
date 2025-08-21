@@ -178,17 +178,3 @@ class AdminAdCreateScreen extends StatelessWidget {
     );
   }
 }
-
-/// Specific implementation for Artist Approved Ad Creation
-class ArtistApprovedAdCreateScreen extends StatelessWidget {
-  const ArtistApprovedAdCreateScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const BaseAdCreateScreen(
-      initialAdType: AdType.artistApproved,
-      userType: 'artist',
-      screenTitle: '✨ Premium Artist Showcase',
-    );
-  }
-}

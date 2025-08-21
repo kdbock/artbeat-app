@@ -111,19 +111,6 @@ class AdCreationTestScreen extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Artist Approved Ad Test
-              _buildTestCard(
-                context,
-                title: 'Artist Approved Ad',
-                description:
-                    'Test the premium artist approved ad with animations.',
-                buttonText: 'Create Artist Approved Ad',
-                onPressed: user != null
-                    ? () => _navigateToArtistApprovedAd(context)
-                    : null,
-                userType: 'artist_approved',
-              ),
-
               const Spacer(),
 
               // Architecture Benefits
@@ -260,14 +247,6 @@ class AdCreationTestScreen extends StatelessWidget {
   void _navigateToUserAd(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (context) => const UserAdCreateScreen()),
-    );
-  }
-
-  void _navigateToArtistApprovedAd(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => const ArtistApprovedAdCreateScreen(),
-      ),
     );
   }
 }

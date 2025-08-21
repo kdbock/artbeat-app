@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_admin/artbeat_admin.dart';
 import '../models/ad_model.dart';
 import '../models/ad_status.dart';
 import '../models/ad_type.dart';
+import '../models/ad_display_type.dart';
 import '../services/ad_service.dart';
-import '../widgets/ads_header.dart';
-import '../widgets/ads_drawer.dart';
 import '../widgets/ad_display_widget.dart';
 import '../widgets/ad_status_widget.dart';
 
@@ -165,7 +165,7 @@ class _AdminAdManagementScreenState extends State<AdminAdManagementScreen>
     if (confirmed == true) {
       try {
         await _adService.updateAd(ad.id, {
-          'status': AdStatus.approved.index,
+          'status': AdStatus.running.index, // Changed from approved to running
           'approvalId': notesController.text.trim().isEmpty
               ? null
               : notesController.text.trim(),
@@ -405,6 +405,7 @@ class _AdminAdManagementScreenState extends State<AdminAdManagementScreen>
                         // Ad Preview
                         AdDisplayWidget(
                           imageUrl: ad.imageUrl,
+                          artworkUrls: ad.artworkUrls,
                           title: ad.title,
                           description: ad.description,
                           displayType: ad.type == AdType.square
@@ -698,9 +699,28 @@ class _AdminAdManagementScreenState extends State<AdminAdManagementScreen>
 
   @override
   Widget build(BuildContext context) {
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
     return Scaffold(
-      appBar: const AdsHeader(title: 'Ad Management', showBackButton: true),
-      drawer: const AdsDrawer(),
+      key: scaffoldKey,
+      backgroundColor: Colors.white,
+      drawer: const AdminDrawer(),
+      appBar: AdminHeader(
+        title: 'Ad Management',
+        showBackButton: true,
+        showSearch: true,
+        showChat: true,
+        showDeveloper: true,
+        onMenuPressed: () {
+          scaffoldKey.currentState?.openDrawer();
+        },
+        onBackPressed: () {
+          // Navigate back to admin dashboard
+          Navigator.pushReplacementNamed(context, '/admin/dashboard');
+        },
+        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

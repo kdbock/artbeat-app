@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/src/services/auth_service.dart';
 import '../models/ad_user_model.dart';
 import '../models/ad_status.dart' as model;
+import '../models/ad_display_type.dart';
 import '../services/ad_user_service.dart';
 import '../widgets/ad_status_widget.dart';
 import '../widgets/ad_display_widget.dart';
@@ -106,6 +107,7 @@ class _UserAdReviewScreenState extends State<UserAdReviewScreen> {
                         children: [
                           AdDisplayWidget(
                             imageUrl: ad.imageUrl,
+                            artworkUrls: ad.artworkUrls,
                             title: ad.title,
                             description: ad.description,
                             displayType: ad.type.name == 'square'
