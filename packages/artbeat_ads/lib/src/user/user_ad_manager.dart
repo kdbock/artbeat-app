@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
-import '../models/ad_user_model.dart';
-import '../services/ad_user_service.dart';
+import 'dart:io';
+import '../models/ad_model.dart';
+import '../services/simple_ad_service.dart';
 
-/// Manages user ad creation, updates, and state for UI
+/// Manages user ad creation, updates, and state for UI - Simplified Version
 class UserAdManager extends ChangeNotifier {
-  final AdUserService _service = AdUserService();
+  final SimpleAdService _service = SimpleAdService();
 
-  List<AdUserModel> _ads = [];
-  List<AdUserModel> get ads => _ads;
+  List<AdModel> _ads = [];
+  List<AdModel> get ads => _ads;
   bool _loading = false;
   bool get loading => _loading;
   String? _error;
@@ -18,7 +19,7 @@ class UserAdManager extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _service.getUserAdsByUser(userId).listen((adList) {
+      _service.getAdsByOwner(userId).listen((adList) {
         _ads = adList;
         _loading = false;
         notifyListeners();
@@ -30,9 +31,9 @@ class UserAdManager extends ChangeNotifier {
     }
   }
 
-  Future<String?> createUserAd(AdUserModel ad) async {
+  Future<String?> createUserAd(AdModel ad, List<File> images) async {
     try {
-      final id = await _service.createUserAd(ad);
+      final id = await _service.createAdWithImages(ad, images);
       return id;
     } catch (e) {
       _error = e.toString();
@@ -43,7 +44,7 @@ class UserAdManager extends ChangeNotifier {
 
   Future<void> deleteUserAd(String adId) async {
     try {
-      await _service.deleteUserAd(adId);
+      await _service.deleteAd(adId);
     } catch (e) {
       _error = e.toString();
       notifyListeners();

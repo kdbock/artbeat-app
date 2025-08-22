@@ -675,22 +675,18 @@ class _EnhancedCaptureDashboardScreenState
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 32),
+                                  const SizedBox(height: 16),
                                 ],
+
+                                // Ad placement beneath stats section
+                                if (_currentUser != null)
+                                  const BannerAdWidget(
+                                    location: AdLocation.captureStats,
+                                  ),
                               ],
                             ),
                           ),
                         ),
-
-                        // Ad placement: After stats section
-                        if (_currentUser != null)
-                          const SliverToBoxAdapter(
-                            child: BetweenSectionsAdWidget(
-                              location: AdLocation.captureDashboard,
-                              analyticsLocation:
-                                  'capture_dashboard_after_stats',
-                            ),
-                          ),
 
                         // Recent captures section
                         if (_recentCaptures.isNotEmpty)
@@ -739,14 +735,14 @@ class _EnhancedCaptureDashboardScreenState
                             ),
                           ),
 
-                        // Ad placement: Between recent captures and community inspiration
-                        if (_recentCaptures.isNotEmpty &&
-                            _communityCaptures.isNotEmpty)
+                        // Ad placement beneath recent captures section
+                        if (_recentCaptures.isNotEmpty)
                           const SliverToBoxAdapter(
-                            child: BetweenSectionsAdWidget(
-                              location: AdLocation.captureDashboard,
-                              analyticsLocation:
-                                  'capture_dashboard_between_sections',
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              child: BannerAdWidget(
+                                location: AdLocation.captureRecent,
+                              ),
                             ),
                           ),
 
@@ -801,6 +797,16 @@ class _EnhancedCaptureDashboardScreenState
                                     child: _buildCommunityCard(capture),
                                   );
                                 },
+                              ),
+                            ),
+                          ),
+
+                          // Ad placement beneath community inspiration section
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              child: BannerAdWidget(
+                                location: AdLocation.captureCommunity,
                               ),
                             ),
                           ),

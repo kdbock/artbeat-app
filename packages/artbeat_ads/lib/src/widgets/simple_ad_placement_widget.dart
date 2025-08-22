@@ -11,12 +11,14 @@ class SimpleAdPlacementWidget extends StatelessWidget {
   final AdLocation location;
   final EdgeInsets? padding;
   final bool showIfEmpty;
+  final Widget Function(BuildContext)? emptyBuilder;
 
   const SimpleAdPlacementWidget({
     super.key,
     required this.location,
     this.padding,
     this.showIfEmpty = false,
+    this.emptyBuilder,
   });
 
   @override
@@ -46,6 +48,9 @@ class SimpleAdPlacementWidget extends StatelessWidget {
               final ads = snapshot.data ?? [];
 
               if (ads.isEmpty) {
+                if (emptyBuilder != null) {
+                  return emptyBuilder!(context);
+                }
                 return showIfEmpty
                     ? _buildPlaceholder()
                     : const SizedBox.shrink();
@@ -82,72 +87,6 @@ class SimpleAdPlacementWidget extends StatelessWidget {
             style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Widget specifically for banner ads (typically at top/bottom of screens)
-class BannerAdWidget extends StatelessWidget {
-  final AdLocation location;
-  final bool showAtTop;
-
-  const BannerAdWidget({
-    super.key,
-    required this.location,
-    this.showAtTop = true,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SimpleAdPlacementWidget(
-      location: location,
-      padding: EdgeInsets.only(
-        top: showAtTop ? 8.0 : 0,
-        bottom: showAtTop ? 0 : 8.0,
-        left: 8.0,
-        right: 8.0,
-      ),
-    );
-  }
-}
-
-/// Widget specifically for feed ads (integrated into content lists)
-class FeedAdWidget extends StatelessWidget {
-  final AdLocation location;
-  final int index;
-
-  const FeedAdWidget({super.key, required this.location, required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Icon(Icons.campaign, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 4),
-                Text(
-                  'Sponsored',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 4),
-          SimpleAdPlacementWidget(
-            location: location,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          ),
-        ],
       ),
     );
   }

@@ -4,5 +4,6 @@ enum AdStatus {
   approved, // Approved and scheduled
   rejected, // Rejected by admin
   running, // Currently running
+  paused, // Temporarily paused
   expired, // Finished
 }

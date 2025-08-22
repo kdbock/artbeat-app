@@ -1,5 +1,4 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:flutter/material.dart';
 import '../models/activity_model.dart';
 
@@ -219,10 +218,10 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   }
 
   void _navigateToCreateArtistApprovedAd(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute<ArtistAdCreateScreen>(
-        builder: (context) => const ArtistAdCreateScreen(),
+    // TODO: Implement artist approved ad creation
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Artist approved ad creation coming soon!'),
       ),
     );
   }

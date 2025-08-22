@@ -529,19 +529,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
           // Ad placement: Between user experience section and local capture
           if (viewModel.currentUser != null)
             const SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  // Temporary debug widget - remove after fixing ads
-                  AdDebugWidget(
-                    location: AdLocation.dashboard,
-                    analyticsLocation: 'fluid_dashboard_between_ux_capture',
-                  ),
-                  BetweenSectionsAdWidget(
-                    location: AdLocation.dashboard,
-                    analyticsLocation: 'fluid_dashboard_between_ux_capture',
-                  ),
-                ],
-              ),
+              child: BannerAdWidget(location: AdLocation.dashboard),
             ),
 
           // Public Art Captures section
@@ -560,10 +548,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
 
           // Ad placement: Between Featured Artists and Artwork Gallery sections
           const SliverToBoxAdapter(
-            child: BetweenSectionsAdWidget(
-              location: AdLocation.artWalkDashboard,
-              analyticsLocation: 'fluid_dashboard_between_artists_artwork',
-            ),
+            child: BannerAdWidget(location: AdLocation.artWalkDashboard),
           ),
 
           // Artwork gallery section (lazy loaded)
@@ -572,6 +557,11 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
               () => _buildArtworkGallerySection(viewModel),
               isLazy: true,
             ),
+          ),
+
+          // Ad placement: Between artwork gallery section and community highlights section
+          const SliverToBoxAdapter(
+            child: BannerAdWidget(location: AdLocation.artworkGallery),
           ),
 
           // Community highlights section (lazy loaded)
@@ -592,10 +582,12 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
 
           // Ad placement: Between Upcoming Events section and Artist widget
           const SliverToBoxAdapter(
-            child: BetweenSectionsAdWidget(
-              location: AdLocation.eventsDashboard,
-              analyticsLocation: 'fluid_dashboard_between_events_artist',
-            ),
+            child: BannerAdWidget(location: AdLocation.eventsDashboard),
+          ),
+
+          // Ad placement: Above "are you an artist" section
+          const SliverToBoxAdapter(
+            child: BannerAdWidget(location: AdLocation.preArtistCTA),
           ),
 
           // Artist CTA section (lazy loaded)
@@ -606,19 +598,13 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen>
             ),
           ),
 
-          // Ad placement: 2 ad spaces beneath the artist widget
+          // Ad placement: 2 ad spaces beneath the "are you an artist" section (one on top of the other)
           const SliverToBoxAdapter(
-            child: BetweenSectionsAdWidget(
-              location: AdLocation.communityDashboard,
-              analyticsLocation: 'fluid_dashboard_below_artist_1',
-            ),
+            child: BannerAdWidget(location: AdLocation.postArtistCTA1),
           ),
 
           const SliverToBoxAdapter(
-            child: BetweenSectionsAdWidget(
-              location: AdLocation.communityFeed,
-              analyticsLocation: 'fluid_dashboard_below_artist_2',
-            ),
+            child: BannerAdWidget(location: AdLocation.postArtistCTA2),
           ),
 
           // Bottom padding for navigation

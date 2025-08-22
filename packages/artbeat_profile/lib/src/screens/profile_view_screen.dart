@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String userId;
@@ -359,12 +358,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
               _buildAchievementsTab(),
             ],
           ),
-        ),
-        // Ad Space
-        const ProfileAdWidget(
-          margin: EdgeInsets.all(16),
-          height: 100,
-          showPlaceholder: true,
         ),
       ],
     );

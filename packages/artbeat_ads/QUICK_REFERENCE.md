@@ -46,6 +46,32 @@ Navigator.push(context, MaterialPageRoute(
 - `AdLocation.communityDashboard` - Community section
 - `AdLocation.eventsDashboard` - Events section
 - `AdLocation.communityFeed` - Community feed
+- `AdLocation.artworkGallery` - Artwork gallery section
+- `AdLocation.preArtistCTA` - Before artist CTA section
+- `AdLocation.postArtistCTA1` - After artist CTA (first ad)
+- `AdLocation.postArtistCTA2` - After artist CTA (second ad)
+- `AdLocation.artWalkMap` - Beneath art walk map section
+- `AdLocation.artWalkCaptures` - Beneath art walk captures section
+- `AdLocation.artWalkAchievements` - Beneath art walk achievements section
+- `AdLocation.captureStats` - Beneath capture stats section
+- `AdLocation.captureRecent` - Beneath recent captures section
+- `AdLocation.captureCommunity` - Beneath community inspiration section
+- `AdLocation.communityOnlineArtists` - Beneath online artists section
+- `AdLocation.communityRecentPosts` - Beneath recent posts section
+- `AdLocation.communityFeaturedArtists` - Beneath featured artists section
+- `AdLocation.communityVerifiedArtists` - Beneath verified artists section
+- `AdLocation.eventsHero` - Beneath hero section in events dashboard
+- `AdLocation.eventsFeatured` - Beneath featured events section
+- `AdLocation.eventsAll` - Beneath all events section
+
+### 📱 Community Feed In-Feed Ads
+
+The unified community feed displays ads every 5th post:
+
+- **Pattern**: Posts 0,1,2,3,4 → Ad → Posts 5,6,7,8,9 → Ad → etc.
+- **Location**: `AdLocation.communityFeed`
+- **Widget**: `FeedAdWidget`
+- **Implementation**: Automatic insertion in `UnifiedCommunityFeed`
 
 ## 🧩 Key Widgets
 
@@ -60,11 +86,25 @@ BannerAdWidget(
 
 ### FeedAdWidget
 
+For in-feed ads that appear between content items:
+
 ```dart
 FeedAdWidget(
   location: AdLocation.communityFeed,
-  index: index, // for feed positioning
+  index: index, // for feed positioning and analytics
 )
+```
+
+**In-Feed Implementation Example:**
+
+```dart
+// In ListView.builder itemBuilder
+if (_isAdPosition(index)) {
+  return FeedAdWidget(
+    location: AdLocation.communityFeed,
+    index: index,
+  );
+}
 ```
 
 ### SimpleAdPlacementWidget

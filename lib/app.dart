@@ -11,12 +11,13 @@ import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_profile/artbeat_profile.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_artist/src/screens/artist_list_screen.dart';
-import 'package:artbeat_ads/artbeat_ads.dart' as ads;
+
 import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
+import 'package:artbeat_ads/artbeat_ads.dart' as ads;
 
 import 'widgets/developer_menu.dart';
 import 'debug_profile_fix.dart';
@@ -1086,7 +1087,7 @@ class MyApp extends StatelessWidget {
         );
       case '/admin/ad-test':
         if (!kDebugMode) return _buildNotFoundRoute();
-        return MaterialPageRoute(builder: (_) => const ads.AdTestWidget());
+        return _buildNotFoundRoute();
       case '/admin/settings':
         if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
@@ -1102,20 +1103,10 @@ class MyApp extends StatelessWidget {
         );
       case '/admin/ad-review':
         if (!kDebugMode) return _buildNotFoundRoute();
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.AdminAdReviewScreen(),
-          ),
-        );
+        return _buildNotFoundRoute();
       case '/admin/ad-management':
         if (!kDebugMode) return _buildNotFoundRoute();
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.AdminAdManagementScreen(),
-          ),
-        );
+        return _buildNotFoundRoute();
       case '/admin/messaging':
         if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
@@ -1241,65 +1232,41 @@ class MyApp extends StatelessWidget {
           ),
         );
 
-      // Ad Creation Routes
-      case '/ad-create/user':
+      // New Simplified Ad System Routes
+      case '/ads/create':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: ads.UserAdCreateScreen(),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Create Ad',
+              showLogo: false,
+              showBackButton: true,
+            ),
+            child: ads.SimpleAdCreateScreen(),
           ),
         );
-      case '/ad-create/artist':
+      case '/ads/management':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: ads.ArtistAdCreateScreen(),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Ad Management',
+              showLogo: false,
+              showBackButton: true,
+            ),
+            child: ads.SimpleAdManagementScreen(),
           ),
         );
-      case '/ad-create/gallery':
+      case '/ads/statistics':
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
-            child: ads.GalleryAdCreateScreen(),
-          ),
-        );
-      case '/ad-create/admin':
-        if (!kDebugMode) return _buildNotFoundRoute();
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.AdminAdCreateScreen(),
-          ),
-        );
-
-      // Ad Review Routes
-      case '/ad-review/user':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.UserAdReviewScreen(),
-          ),
-        );
-      case '/ad-status/artist':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.ArtistAdStatusScreen(),
-          ),
-        );
-      case '/ad-status/gallery':
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.GalleryAdStatusScreen(),
-          ),
-        );
-      case '/ad-review/admin':
-        if (!kDebugMode) return _buildNotFoundRoute();
-        return MaterialPageRoute(
-          builder: (_) => const core.MainLayout(
-            currentIndex: -1,
-            child: ads.AdminAdReviewScreen(),
+            appBar: core.EnhancedUniversalHeader(
+              title: 'Ad Statistics',
+              showLogo: false,
+              showBackButton: true,
+            ),
+            child: ads.SimpleAdStatisticsScreen(),
           ),
         );
       // Messaging routes

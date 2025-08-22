@@ -1,10 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import '../models/ad_model.dart';
-import '../services/ad_service.dart';
+import '../services/simple_ad_service.dart';
 
-/// Manages admin ad creation, updates, and state for UI
+/// Manages admin ad creation, updates, and state for UI - Simplified Version
 class AdminAdManager extends ChangeNotifier {
-  final AdService _service = AdService();
+  final SimpleAdService _service = SimpleAdService();
 
   List<AdModel> _ads = [];
   List<AdModel> get ads => _ads;
@@ -30,9 +31,9 @@ class AdminAdManager extends ChangeNotifier {
     }
   }
 
-  Future<String?> createAdminAd(AdModel ad) async {
+  Future<String?> createAdminAd(AdModel ad, List<File> images) async {
     try {
-      final id = await _service.createAd(ad);
+      final id = await _service.createAdWithImages(ad, images);
       return id;
     } catch (e) {
       _error = e.toString();

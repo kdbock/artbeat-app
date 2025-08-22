@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
-import '../models/ad_artist_model.dart';
-import '../services/ad_artist_service.dart';
+import 'dart:io';
+import '../models/ad_model.dart';
+import '../services/simple_ad_service.dart';
 
-/// Manages artist ad creation, updates, and state for UI
+/// Manages artist ad creation, updates, and state for UI - Simplified Version
 class ArtistAdManager extends ChangeNotifier {
-  final AdArtistService _service = AdArtistService();
+  final SimpleAdService _service = SimpleAdService();
 
-  List<AdArtistModel> _ads = [];
-  List<AdArtistModel> get ads => _ads;
+  List<AdModel> _ads = [];
+  List<AdModel> get ads => _ads;
   bool _loading = false;
   bool get loading => _loading;
   String? _error;
@@ -18,7 +19,7 @@ class ArtistAdManager extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _service.getArtistAdsByArtist(artistId).listen((adList) {
+      _service.getAdsByOwner(artistId).listen((adList) {
         _ads = adList;
         _loading = false;
         notifyListeners();
@@ -30,9 +31,9 @@ class ArtistAdManager extends ChangeNotifier {
     }
   }
 
-  Future<String?> createArtistAd(AdArtistModel ad) async {
+  Future<String?> createArtistAd(AdModel ad, List<File> images) async {
     try {
-      final id = await _service.createArtistAd(ad);
+      final id = await _service.createAdWithImages(ad, images);
       return id;
     } catch (e) {
       _error = e.toString();
@@ -43,7 +44,7 @@ class ArtistAdManager extends ChangeNotifier {
 
   Future<void> deleteArtistAd(String adId) async {
     try {
-      await _service.deleteArtistAd(adId);
+      await _service.deleteAd(adId);
     } catch (e) {
       _error = e.toString();
       notifyListeners();

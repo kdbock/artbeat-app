@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatComponents, CommunityProvider;
+import 'package:artbeat_ads/artbeat_ads.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 import '../../widgets/critique_card.dart';
@@ -602,9 +603,13 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(20),
-        itemCount: _posts.length + (_isLoadingMore ? 1 : 0),
+        itemCount: _getTotalItemCount(),
         itemBuilder: (context, index) {
-          if (index >= _posts.length) {
+          final totalItemsWithoutLoader =
+              _getTotalItemCount() - (_isLoadingMore ? 1 : 0);
+
+          // Show loading indicator at the end
+          if (index >= totalItemsWithoutLoader) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -617,7 +622,25 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
             );
           }
 
-          final post = _posts[index];
+          // Check if this position should show an ad
+          if (_isAdPosition(index)) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: FeedAdWidget(
+                location: AdLocation.communityFeed,
+                index: index,
+              ),
+            );
+          }
+
+          // Show regular post
+          final postIndex = _getPostIndex(index);
+          if (postIndex >= _posts.length) {
+            // This shouldn't happen, but just in case
+            return const SizedBox.shrink();
+          }
+
+          final post = _posts[postIndex];
           final comments = _postComments[post.id] ?? [];
 
           return Padding(
@@ -651,5 +674,43 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     setState(() {
       _postExpansionState[postId] = !(_postExpansionState[postId] ?? false);
     });
+  }
+
+  /// Calculate total item count including ads every 5th post
+  int _getTotalItemCount() {
+    if (_posts.isEmpty) return _isLoadingMore ? 1 : 0;
+
+    // Add one ad for every 5 posts (after posts 4, 9, 14, etc.)
+    final adCount = (_posts.length / 5).floor();
+    final totalItems = _posts.length + adCount;
+
+    return totalItems + (_isLoadingMore ? 1 : 0);
+  }
+
+  /// Check if the given index should display an ad
+  bool _isAdPosition(int index) {
+    // We want ads after every 5 posts
+    // In the combined list: posts 0,1,2,3,4 -> ad at index 5
+    // posts 5,6,7,8,9 -> ad at index 11, etc.
+    //
+    // Example with 15 posts:
+    // Index: 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+    // Item:  P,P,P,P,P,A,P,P,P,P,P, A, P, P, P, P, P, A
+    // Where P = Post, A = Ad
+
+    if (index < 5) return false; // No ad in first 5 positions
+
+    // Check if this is an ad position: 5, 11, 17, 23, etc.
+    // Pattern: (5 + 6*n) where n = 0, 1, 2, ...
+    return (index - 5) % 6 == 0;
+  }
+
+  /// Get the actual post index for a given list index (accounting for ads)
+  int _getPostIndex(int listIndex) {
+    if (listIndex < 5) return listIndex;
+
+    // Calculate how many ads appear before this index
+    final adsBeforeIndex = ((listIndex - 5) / 6).floor() + 1;
+    return listIndex - adsBeforeIndex;
   }
 }

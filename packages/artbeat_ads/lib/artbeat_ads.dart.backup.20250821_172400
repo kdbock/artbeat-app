@@ -1,6 +1,6 @@
 library artbeat_ads;
 
-// Core Models
+// Models
 export 'src/models/ad_model.dart';
 export 'src/models/ad_type.dart';
 export 'src/models/ad_size.dart';
@@ -8,19 +8,16 @@ export 'src/models/ad_status.dart';
 export 'src/models/ad_location.dart';
 export 'src/models/ad_duration.dart';
 
-// Simplified Services
+// Services
 export 'src/services/simple_ad_service.dart';
-export 'src/services/ad_cleanup_service.dart';
 
-// Simplified Widgets
+// Widgets
 export 'src/widgets/simple_ad_display_widget.dart';
 export 'src/widgets/simple_ad_placement_widget.dart';
-export 'src/widgets/missing_ad_widgets.dart'; // BannerAdWidget, FeedAdWidget, etc.
 
-// Simplified Screens
+// Screens
 export 'src/screens/simple_ad_create_screen.dart';
 export 'src/screens/simple_ad_management_screen.dart';
-export 'src/screens/simple_ad_statistics_screen.dart';
 
 // Examples
 export 'src/examples/simple_ad_example.dart';

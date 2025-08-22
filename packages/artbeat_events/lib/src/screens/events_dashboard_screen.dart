@@ -674,6 +674,10 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
               children: [
                 // Hero Section with Stats
                 _buildHeroSection(context, currentUser),
+                const SizedBox(height: 16),
+
+                // Ad placement beneath hero section
+                const BannerAdWidget(location: AdLocation.eventsHero),
                 const SizedBox(height: 24),
 
                 // Quick Actions
@@ -685,15 +689,12 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                   _buildSectionHeader('Featured Events', 'Trending now'),
                   const SizedBox(height: 16),
                   _buildFeaturedEventsCarousel(),
-                  const SizedBox(height: 32),
-                ],
+                  const SizedBox(height: 16),
 
-                // Ad placement: Between Featured Events and All Events sections
-                const BetweenSectionsAdWidget(
-                  location: AdLocation.eventsDashboard,
-                  analyticsLocation: 'events_dashboard_between_featured_all',
-                ),
-                const SizedBox(height: 24),
+                  // Ad placement beneath featured events section
+                  const BannerAdWidget(location: AdLocation.eventsFeatured),
+                  const SizedBox(height: 24),
+                ],
 
                 // All Events Section
                 _buildSectionHeader(
@@ -702,6 +703,10 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                 ),
                 const SizedBox(height: 16),
                 _buildModernEventsList(context, currentUser),
+                const SizedBox(height: 16),
+
+                // Ad placement beneath all events section
+                const BannerAdWidget(location: AdLocation.eventsAll),
                 const SizedBox(height: 24),
 
                 // Getting Started (for new users)

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 
 import '../models/ad_model.dart';
@@ -9,8 +9,7 @@ import '../models/ad_size.dart';
 import '../models/ad_location.dart';
 import '../models/ad_status.dart';
 import '../models/ad_duration.dart';
-import '../services/ad_service.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import '../services/simple_ad_service.dart';
 
 /// Simplified unified ad creation screen for all user types
 class SimpleAdCreateScreen extends StatefulWidget {
@@ -86,10 +85,8 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final adService = Provider.of<AdService>(context, listen: false);
-
-      final user = authService.currentUser;
+      // Get current user (simplified - you may need to adjust based on your auth system)
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
@@ -99,11 +96,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
       final endDate = startDate.add(Duration(days: _selectedDays));
 
       // Create duration object
-      final duration = AdDuration(
-        days: _selectedDays,
-        startDate: startDate,
-        endDate: endDate,
-      );
+      final duration = AdDuration(days: _selectedDays);
 
       // Create ad model
       final ad = AdModel(
@@ -128,7 +121,8 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
             : _ctaTextController.text.trim(),
       );
 
-      // Create ad with images
+      // Create ad with images using SimpleAdService
+      final adService = SimpleAdService();
       await adService.createAdWithImages(ad, _selectedImages);
 
       if (mounted) {
@@ -238,7 +232,11 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
       ),
     );
   }
@@ -249,17 +247,33 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: AdType.values.map((type) {
-            return RadioListTile<AdType>(
-              title: Text(_getAdTypeDisplayName(type)),
-              subtitle: Text(_getAdTypeDescription(type)),
-              value: type,
-              groupValue: _selectedType,
-              onChanged: (AdType? value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedType = value;
-                  });
-                }
+            return ListTile(
+              leading: Radio<AdType>(
+                value: type,
+                groupValue: _selectedType,
+                onChanged: (AdType? value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedType = value;
+                    });
+                  }
+                },
+              ),
+              title: Text(
+                _getAdTypeDisplayName(type),
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                _getAdTypeDescription(type),
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
+              ),
+              onTap: () {
+                setState(() {
+                  _selectedType = type;
+                });
               },
             );
           }).toList(),
@@ -274,17 +288,37 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: AdSize.values.map((size) {
-            return RadioListTile<AdSize>(
-              title: Text(size.displayName),
-              subtitle: Text('\$${size.pricePerDay.toStringAsFixed(0)}/day'),
-              value: size,
-              groupValue: _selectedSize,
-              onChanged: (AdSize? value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedSize = value;
-                  });
-                }
+            return ListTile(
+              leading: Radio<AdSize>(
+                value: size,
+                groupValue: _selectedSize,
+                onChanged: (AdSize? value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedSize = value;
+                    });
+                  }
+                },
+              ),
+              title: Text(
+                size.displayName,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                '\$${size.pricePerDay.toStringAsFixed(0)}/day',
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () {
+                setState(() {
+                  _selectedSize = size;
+                });
               },
             );
           }).toList(),
@@ -297,35 +331,51 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: DropdownButtonFormField<AdLocation>(
-          value: _selectedLocation,
-          decoration: const InputDecoration(
-            labelText: 'Select Display Location',
-            border: OutlineInputBorder(),
-          ),
-          items: AdLocation.values.map((location) {
-            return DropdownMenuItem(
-              value: location,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(location.displayName),
-                  Text(
-                    location.description,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<AdLocation>(
+              initialValue: _selectedLocation,
+              decoration: const InputDecoration(
+                labelText: 'Select Display Location',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
               ),
-            );
-          }).toList(),
-          onChanged: (AdLocation? value) {
-            if (value != null) {
-              setState(() {
-                _selectedLocation = value;
-              });
-            }
-          },
+              style: const TextStyle(color: Colors.black87, fontSize: 16),
+              dropdownColor: Colors.white,
+              items: AdLocation.values.map((location) {
+                return DropdownMenuItem(
+                  value: location,
+                  child: Text(
+                    location.displayName,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (AdLocation? value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedLocation = value;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _selectedLocation.description,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.black54,
+                fontStyle: FontStyle.italic,
+                height: 1.3,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -338,12 +388,19 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Duration: $_selectedDays days'),
+            Text(
+              'Duration: $_selectedDays days',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
             Slider(
               value: _selectedDays.toDouble(),
               min: 1,
-              max: 30,
-              divisions: 29,
+              max: 365,
+              divisions: 364,
               label: '$_selectedDays days',
               onChanged: (double value) {
                 setState(() {
@@ -351,14 +408,73 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                 });
               },
             ),
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('1 day', style: TextStyle(fontSize: 12)),
-                Text('30 days', style: TextStyle(fontSize: 12)),
+              children: [
+                Text(
+                  '1 day',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+                Text(
+                  '365 days (1 year)',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Quick Select:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildDurationChip('1 Week', 7),
+                _buildDurationChip('2 Weeks', 14),
+                _buildDurationChip('1 Month', 30),
+                _buildDurationChip('3 Months', 90),
+                _buildDurationChip('6 Months', 180),
+                _buildDurationChip('1 Year', 365),
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDurationChip(String label, int days) {
+    final isSelected = _selectedDays == days;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedDays = days;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Theme.of(context).primaryColor : Colors.grey[200],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.grey[300]!,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.black87,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
         ),
       ),
     );

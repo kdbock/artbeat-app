@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import 'dart:io';
 
 class EditProfileScreen extends StatefulWidget {
@@ -540,12 +539,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
-
-                            // Ad Space
-                            const ProfileAdWidget(
-                              showPlaceholder: true,
-                              margin: EdgeInsets.symmetric(vertical: 16),
-                            ),
                           ],
                         ),
                       ), // Form

@@ -57,21 +57,148 @@ class SimpleAdService extends ChangeNotifier {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
     for (int i = 0; i < images.length; i++) {
-      try {
-        final fileName = '${timestamp}_${i}_upload.png';
-        final ref = _storage.ref().child('ads/$ownerId/$fileName');
+      String? downloadUrl;
+      int retryCount = 0;
+      const maxRetries = 3;
 
-        final uploadTask = ref.putFile(images[i]);
-        final snapshot = await uploadTask;
-        final downloadUrl = await snapshot.ref.getDownloadURL();
+      while (downloadUrl == null && retryCount < maxRetries) {
+        try {
+          debugPrint(
+            'Starting upload for image $i (attempt ${retryCount + 1}/$maxRetries)',
+          );
+          debugPrint(
+            'Upload strategy: ${retryCount == 0
+                ? "Full metadata"
+                : retryCount == 1
+                ? "Minimal metadata"
+                : "No metadata"}',
+          );
 
-        imageUrls.add(downloadUrl);
-      } catch (e) {
-        debugPrint('Error uploading image $i: $e');
-        throw Exception('Failed to upload image ${i + 1}');
+          // Validate file exists and is readable
+          if (!await images[i].exists()) {
+            throw Exception('Image file does not exist');
+          }
+
+          final fileSize = await images[i].length();
+          debugPrint('Image $i size: ${fileSize} bytes');
+
+          // Check file size (limit to 10MB)
+          if (fileSize > 10 * 1024 * 1024) {
+            throw Exception('Image file too large (max 10MB)');
+          }
+
+          final fileName = '${timestamp}_${i}_upload.jpg';
+          // Try different paths based on retry attempt for better reliability
+          String uploadPath;
+          if (retryCount == 0) {
+            uploadPath = 'debug_uploads/ads/$fileName';
+          } else if (retryCount == 1) {
+            uploadPath = 'temp_uploads/$fileName';
+          } else {
+            uploadPath = 'uploads/$fileName';
+          }
+          final ref = _storage.ref().child(uploadPath);
+
+          debugPrint('Uploading to path: $uploadPath');
+
+          // Try putData instead of putFile for better reliability
+          final imageBytes = await images[i].readAsBytes();
+          debugPrint(
+            'Successfully read ${imageBytes.length} bytes from image file',
+          );
+
+          // Use different upload strategies based on retry attempt
+          UploadTask uploadTask;
+          if (retryCount == 0) {
+            // First attempt: Full metadata with putData
+            final metadata = SettableMetadata(
+              contentType: 'image/jpeg',
+              customMetadata: {
+                'uploadedBy': ownerId,
+                'uploadedAt': timestamp.toString(),
+                'imageIndex': i.toString(),
+              },
+            );
+            uploadTask = ref.putData(imageBytes, metadata);
+          } else if (retryCount == 1) {
+            // Second attempt: Minimal metadata with putData
+            final metadata = SettableMetadata(contentType: 'image/jpeg');
+            uploadTask = ref.putData(imageBytes, metadata);
+          } else {
+            // Final attempt: No metadata, just raw upload
+            uploadTask = ref.putData(imageBytes);
+          }
+
+          // Monitor upload progress
+          uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+            final progress = snapshot.bytesTransferred / snapshot.totalBytes;
+            debugPrint(
+              'Upload progress for image $i: ${(progress * 100).toStringAsFixed(1)}%',
+            );
+          });
+
+          // Add timeout to prevent hanging
+          final snapshot = await uploadTask.timeout(
+            const Duration(minutes: 2),
+            onTimeout: () {
+              throw Exception(
+                'Upload timeout - please check your internet connection',
+              );
+            },
+          );
+          debugPrint('Upload completed for image $i, getting download URL...');
+
+          downloadUrl = await snapshot.ref.getDownloadURL();
+          debugPrint('Download URL obtained for image $i: $downloadUrl');
+
+          imageUrls.add(downloadUrl);
+          break; // Success, exit retry loop
+        } catch (e) {
+          retryCount++;
+          debugPrint('Error uploading image $i (attempt $retryCount): $e');
+          debugPrint('Error type: ${e.runtimeType}');
+
+          // If this was the last retry, throw the error
+          if (retryCount >= maxRetries) {
+            // Provide more specific error messages
+            if (e.toString().contains('permission-denied')) {
+              throw Exception(
+                'Permission denied. Please check Firebase Storage rules.',
+              );
+            } else if (e.toString().contains('network')) {
+              throw Exception(
+                'Network error. Please check your internet connection.',
+              );
+            } else if (e.toString().contains('quota-exceeded')) {
+              throw Exception(
+                'Storage quota exceeded. Please try again later.',
+              );
+            } else if (e.toString().contains('cannot parse response')) {
+              throw Exception(
+                'Upload failed due to server response error. Please try again.',
+              );
+            } else {
+              throw Exception(
+                'Failed to upload image ${i + 1} after $maxRetries attempts: ${e.toString()}',
+              );
+            }
+          } else {
+            // Wait before retrying
+            debugPrint('Retrying upload for image $i in 2 seconds...');
+            await Future<void>.delayed(const Duration(seconds: 2));
+          }
+        }
+      }
+
+      // If we exit the retry loop without success, throw an error
+      if (downloadUrl == null) {
+        throw Exception(
+          'Failed to upload image ${i + 1} after $maxRetries attempts',
+        );
       }
     }
 
+    debugPrint('All images uploaded successfully. URLs: $imageUrls');
     return imageUrls;
   }
 
@@ -115,11 +242,13 @@ class SimpleAdService extends ChangeNotifier {
   Stream<List<AdModel>> getPendingAds() {
     return _adsRef
         .where('status', isEqualTo: AdStatus.pending.index)
-        .orderBy('startDate', descending: false)
         .snapshots()
         .map(
           (snap) =>
-              snap.docs.map((d) => AdModel.fromMap(d.data(), d.id)).toList(),
+              snap.docs.map((d) => AdModel.fromMap(d.data(), d.id)).toList()
+                ..sort(
+                  (a, b) => a.startDate.compareTo(b.startDate),
+                ), // Sort in memory temporarily
         );
   }
 

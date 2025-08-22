@@ -380,11 +380,18 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                 // Online Artists Section
                 _buildOnlineArtistsSection(),
 
+                // Ad placement beneath online artists section
+                const BannerAdWidget(
+                  location: AdLocation.communityOnlineArtists,
+                ),
+                const SizedBox(height: 16),
+
                 // Recent Posts Section
                 _buildRecentPostsSection(),
 
-                // First Ad Placement
-                _buildAdSection('community_dashboard_top'),
+                // Ad placement beneath recent posts section
+                const BannerAdWidget(location: AdLocation.communityRecentPosts),
+                const SizedBox(height: 16),
 
                 // Are You An Artist Widget
                 _buildAreYouAnArtistSection(),
@@ -392,17 +399,23 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                 // Featured Artists Section
                 _buildFeaturedArtistsSection(),
 
-                // Second Ad Placement
-                _buildAdSection('community_dashboard_middle'),
+                // Ad placement beneath featured artists section
+                const BannerAdWidget(
+                  location: AdLocation.communityFeaturedArtists,
+                ),
+                const SizedBox(height: 16),
 
                 // Verified Artists Section
                 _buildVerifiedArtistsSection(),
 
+                // Ad placement beneath verified artists section
+                const BannerAdWidget(
+                  location: AdLocation.communityVerifiedArtists,
+                ),
+                const SizedBox(height: 16),
+
                 // Artists Section
                 _buildArtistsSection(),
-
-                // Third Ad Placement
-                _buildAdSection('community_dashboard_bottom'),
 
                 const SizedBox(height: 120), // Bottom padding for navigation
               ],
@@ -1476,20 +1489,6 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
             const SizedBox(height: 16),
           ],
         ),
-      ),
-    );
-  }
-
-  /// Build ad section for dashboard
-  Widget _buildAdSection(String analyticsLocation) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: DashboardAdPlacementWidget(
-        location: AdLocation.communityDashboard,
-        analyticsLocation: analyticsLocation,
-        displayType: AdDisplayType.rectangle,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        height: 108, // 100px ad + 8px margin
       ),
     );
   }

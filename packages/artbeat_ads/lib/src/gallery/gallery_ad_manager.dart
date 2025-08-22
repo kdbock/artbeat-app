@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
-import '../models/ad_gallery_model.dart';
-import '../services/ad_gallery_service.dart';
+import 'dart:io';
+import '../models/ad_model.dart';
+import '../services/simple_ad_service.dart';
 
-/// Manages gallery ad creation, updates, and state for UI
+/// Manages gallery ad creation, updates, and state for UI - Simplified Version
 class GalleryAdManager extends ChangeNotifier {
-  final AdGalleryService _service = AdGalleryService();
+  final SimpleAdService _service = SimpleAdService();
 
-  List<AdGalleryModel> _ads = [];
-  List<AdGalleryModel> get ads => _ads;
+  List<AdModel> _ads = [];
+  List<AdModel> get ads => _ads;
   bool _loading = false;
   bool get loading => _loading;
   String? _error;
@@ -18,7 +19,7 @@ class GalleryAdManager extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _service.getGalleryAdsByGallery(galleryId).listen((adList) {
+      _service.getAdsByOwner(galleryId).listen((adList) {
         _ads = adList;
         _loading = false;
         notifyListeners();
@@ -30,9 +31,9 @@ class GalleryAdManager extends ChangeNotifier {
     }
   }
 
-  Future<String?> createGalleryAd(AdGalleryModel ad) async {
+  Future<String?> createGalleryAd(AdModel ad, List<File> images) async {
     try {
-      final id = await _service.createGalleryAd(ad);
+      final id = await _service.createAdWithImages(ad, images);
       return id;
     } catch (e) {
       _error = e.toString();
@@ -43,7 +44,7 @@ class GalleryAdManager extends ChangeNotifier {
 
   Future<void> deleteGalleryAd(String adId) async {
     try {
-      await _service.deleteGalleryAd(adId);
+      await _service.deleteAd(adId);
     } catch (e) {
       _error = e.toString();
       notifyListeners();

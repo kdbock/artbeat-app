@@ -91,28 +91,57 @@ class AdModel {
       }
     }
 
+    // Safe enum parsing with additional validation
+    AdType safeType;
+    try {
+      safeType = intType >= 0 && intType < AdType.values.length
+          ? AdType.values[intType]
+          : AdType.banner_ad;
+    } catch (e) {
+      safeType = AdType.banner_ad;
+    }
+
+    AdSize safeSize;
+    try {
+      safeSize = intSize >= 0 && intSize < AdSize.values.length
+          ? AdSize.values[intSize]
+          : AdSize.small;
+    } catch (e) {
+      safeSize = AdSize.small;
+    }
+
+    AdLocation safeLocation;
+    try {
+      safeLocation = intLocation >= 0 && intLocation < AdLocation.values.length
+          ? AdLocation.values[intLocation]
+          : AdLocation.dashboard;
+    } catch (e) {
+      safeLocation = AdLocation.dashboard;
+    }
+
+    AdStatus safeStatus;
+    try {
+      safeStatus = intStatus >= 0 && intStatus < AdStatus.values.length
+          ? AdStatus.values[intStatus]
+          : AdStatus.pending;
+    } catch (e) {
+      safeStatus = AdStatus.pending;
+    }
+
     return AdModel(
       id: id,
       ownerId: map['ownerId']?.toString() ?? '',
-      type: intType >= 0 && intType < AdType.values.length
-          ? AdType.values[intType]
-          : AdType.banner_ad, // Default to banner_ad for invalid types
-      size: intSize >= 0 && intSize < AdSize.values.length
-          ? AdSize.values[intSize]
-          : AdSize.small, // Default to small for invalid sizes
+      type: safeType,
+      size: safeSize,
       imageUrl: map['imageUrl']?.toString() ?? '',
       artworkUrls: artworkUrls,
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      location: intLocation >= 0 && intLocation < AdLocation.values.length
-          ? AdLocation.values[intLocation]
-          : AdLocation.dashboard, // Default to dashboard for invalid locations
+      location: safeLocation,
       duration: AdDuration.fromMap(durationMap),
       startDate: (map['startDate'] as Timestamp).toDate(),
       endDate: (map['endDate'] as Timestamp).toDate(),
-      status: intStatus >= 0 && intStatus < AdStatus.values.length
-          ? AdStatus.values[intStatus]
-          : AdStatus.pending, // Default to pending for invalid statuses
+      status: safeStatus,
       approvalId: map['approvalId']?.toString(),
       destinationUrl: map['destinationUrl']?.toString(),
       ctaText: map['ctaText']?.toString(),

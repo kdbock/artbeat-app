@@ -187,7 +187,7 @@ class ArtbeatDrawerItems {
   static const adminReviewAds = ArtbeatDrawerItem(
     title: 'Review Ads',
     icon: Icons.rate_review_outlined,
-    route: '/admin/ad-review',
+    route: '/ads/management',
   );
 
   static const userManagement = ArtbeatDrawerItem(
@@ -219,47 +219,34 @@ class ArtbeatDrawerItems {
     color: ArtbeatColors.error,
   );
 
-  // Ad Creation Items
-  static const userCreateAd = ArtbeatDrawerItem(
-    title: 'Create User Ad',
-    icon: Icons.post_add,
-    route: '/ad-create/user',
-    color: ArtbeatColors.textPrimary,
-  );
-
-  static const artistCreateAd = ArtbeatDrawerItem(
-    title: 'Create Artist Ad',
-    icon: Icons.brush_outlined,
-    route: '/ad-create/artist',
+  // New Simplified Ad System Items
+  static const createAd = ArtbeatDrawerItem(
+    title: 'Create Ad',
+    icon: Icons.campaign_outlined,
+    route: '/ads/create',
     color: ArtbeatColors.primaryPurple,
   );
 
-  static const galleryCreateAd = ArtbeatDrawerItem(
-    title: 'Create Gallery Ad',
-    icon: Icons.store_outlined,
-    route: '/ad-create/gallery',
-    color: ArtbeatColors.primaryGreen,
+  static const moderateAds = ArtbeatDrawerItem(
+    title: 'Moderate Ads',
+    icon: Icons.rate_review_outlined,
+    route: '/ads/management',
+    color: ArtbeatColors.warning,
   );
 
-  static const adminCreateAd = ArtbeatDrawerItem(
-    title: 'Create Admin Ad',
-    icon: Icons.campaign_outlined,
-    route: '/ad-create/admin',
-    color: Colors.red,
+  static const adStatistics = ArtbeatDrawerItem(
+    title: 'Ad Statistics',
+    icon: Icons.analytics_outlined,
+    route: '/ads/statistics',
+    color: ArtbeatColors.info,
   );
 
   // Ad Management Items
-  static final adItems = [
-    userCreateAd,
-    artistCreateAd,
-    galleryCreateAd,
-    adminCreateAd,
-  ];
+  static final adItems = [createAd, moderateAds, adStatistics];
 
   // Admin items getter
   static List<ArtbeatDrawerItem> get adminItemsSection => [
     adminDashboard,
-    adminCreateAd,
     adminReviewAds,
     userManagement,
     contentModeration,
@@ -310,7 +297,6 @@ class ArtbeatDrawerItems {
 
   static List<ArtbeatDrawerItem> get adminItems => [
     adminDashboard,
-    adminCreateAd,
     adminReviewAds,
     userManagement,
     contentModeration,

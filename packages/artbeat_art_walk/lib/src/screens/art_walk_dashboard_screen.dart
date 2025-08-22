@@ -918,30 +918,23 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                     _buildWelcomeHeader(),
                     const SizedBox(height: 24),
                     _buildMapWidget(),
-                    const SizedBox(height: 24),
-                    // Ad placement after map
-                    const DashboardAdPlacementWidget(
-                      location: AdLocation.artWalkDashboard,
-                      analyticsLocation: 'art_walk_dashboard_top',
-                      displayType: AdDisplayType.rectangle,
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      height: 108, // 100px ad + 8px margin
-                    ),
+                    const SizedBox(height: 16),
+                    // Ad placement beneath local art map section
+                    const BannerAdWidget(location: AdLocation.artWalkMap),
                     const SizedBox(height: 24),
                     _buildCapturesWidget(),
+                    const SizedBox(height: 16),
+                    // Ad placement beneath local art captures section
+                    const BannerAdWidget(location: AdLocation.artWalkCaptures),
                     const SizedBox(height: 24),
                     _buildArtWalksWidget(),
                     const SizedBox(height: 24),
-                    // Ad placement after art walks
-                    const DashboardAdPlacementWidget(
-                      location: AdLocation.artWalkDashboard,
-                      analyticsLocation: 'art_walk_dashboard_bottom',
-                      displayType: AdDisplayType.rectangle,
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      height: 108, // 100px ad + 8px margin
-                    ),
-                    const SizedBox(height: 24),
                     _buildAchievementsWidget(),
+                    const SizedBox(height: 16),
+                    // Ad placement beneath art walk achievements section
+                    const BannerAdWidget(
+                      location: AdLocation.artWalkAchievements,
+                    ),
                     const SizedBox(height: 100),
                   ],
                 ),

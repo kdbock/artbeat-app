@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/ad_model.dart';
 import '../models/ad_status.dart';
+import '../models/ad_size.dart';
+import '../models/ad_location.dart';
 import '../services/simple_ad_service.dart';
 import '../widgets/simple_ad_display_widget.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 
 /// Simplified admin screen for managing ads
 class SimpleAdManagementScreen extends StatefulWidget {
@@ -209,14 +210,14 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${ad.type.name} • ${ad.size.displayName} • ${ad.location.displayName}',
+                        _buildAdDetailsText(ad),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        'Duration: ${ad.duration.days} days (\$${ad.pricePerDay * ad.duration.days})',
+                        _buildDurationText(ad),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -300,21 +301,21 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${ad.type.name} • ${ad.size.displayName} • ${ad.location.displayName}',
+                        _buildAdDetailsText(ad),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        'Duration: ${ad.duration.days} days (\$${ad.pricePerDay * ad.duration.days})',
+                        _buildDurationText(ad),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        'Dates: ${_formatDate(ad.startDate)} - ${_formatDate(ad.endDate)}',
+                        _buildDateRangeText(ad),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
@@ -404,16 +405,24 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
         color = Colors.red;
         text = 'Rejected';
         break;
+      case AdStatus.running:
+        color = Colors.blue;
+        text = 'Running';
+        break;
       case AdStatus.paused:
         color = Colors.grey;
         text = 'Paused';
+        break;
+      case AdStatus.expired:
+        color = Colors.grey.shade600;
+        text = 'Expired';
         break;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color),
       ),
@@ -430,8 +439,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
 
   Future<void> _approveAd(AdModel ad) async {
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final user = authService.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
       await _adService.approveAd(ad.id, user.uid);
@@ -458,8 +466,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
 
   Future<void> _rejectAd(AdModel ad) async {
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final user = authService.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
       await _adService.rejectAd(ad.id, user.uid);
@@ -571,5 +578,40 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  String _buildAdDetailsText(AdModel ad) {
+    try {
+      final typeName = ad.type.name;
+      final sizeDisplay = ad.size.displayName;
+      final locationDisplay = ad.location.displayName;
+      return '$typeName • $sizeDisplay • $locationDisplay';
+    } catch (e) {
+      // Fallback if any property access fails
+      return 'Ad Details • ${ad.id.substring(0, 8)}...';
+    }
+  }
+
+  String _buildDurationText(AdModel ad) {
+    try {
+      final days = ad.duration.days;
+      final pricePerDay = ad.pricePerDay;
+      final totalPrice = pricePerDay * days;
+      return 'Duration: $days days (\$${totalPrice.toStringAsFixed(2)})';
+    } catch (e) {
+      // Fallback if any calculation fails
+      return 'Duration: N/A';
+    }
+  }
+
+  String _buildDateRangeText(AdModel ad) {
+    try {
+      final startDate = _formatDate(ad.startDate);
+      final endDate = _formatDate(ad.endDate);
+      return 'Dates: $startDate - $endDate';
+    } catch (e) {
+      // Fallback if date formatting fails
+      return 'Dates: N/A';
+    }
   }
 }
