@@ -3,12 +3,8 @@ service firebase.storage {
   match /b/{bucket}/o {
     // Helper functions for access control
     function isDebugMode() {
-      return request.resource != null && (
-        request.resource.metadata.debug_mode == "true" ||
-        request.resource.metadata.build_mode == "debug" ||
-        request.auth.token.debug == true || 
-        request.path.matches('.*debug_.*') // Allow paths containing "debug_"
-      );
+      // Disabled debug mode for production security
+      return false;
     }
 
     function hasAppCheck() {
@@ -31,9 +27,8 @@ service firebase.storage {
     }
 
     function isAdmin(userId) {
-      return userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2'  // Hardcoded admin for Kristy Kelly
-        || (exists(/databases/$(database)/documents/users/$(userId)) 
-          && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin');
+      return (exists(/databases/$(database)/documents/users/$(userId)) 
+        && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin');
     }
 
     // Base rules that apply to all paths

@@ -20,7 +20,6 @@ import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 import 'package:artbeat_ads/artbeat_ads.dart' as ads;
 
 import 'widgets/developer_menu.dart';
-import 'debug_profile_fix.dart';
 import 'src/widgets/error_boundary.dart';
 import 'src/widgets/artist_feed_container_with_params.dart';
 import 'src/services/firebase_initializer.dart';
@@ -608,7 +607,6 @@ class MyApp extends StatelessWidget {
               const core.MainLayout(currentIndex: -1, child: QuietModeScreen()),
         );
       case '/dev':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) =>
               const core.MainLayout(currentIndex: -1, child: DeveloperMenu()),
@@ -621,7 +619,6 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/developer-feedback-admin':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1066,19 +1063,16 @@ class MyApp extends StatelessWidget {
           ),
         );
 
-      // Admin routes (debug mode only)
+      // Admin routes
       case '/admin/dashboard':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const admin.AdminDashboardScreen(),
         );
       case '/admin/users':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const admin.AdminUserManagementScreen(),
         );
       case '/admin/moderation':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1086,10 +1080,8 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/admin/ad-test':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return _buildNotFoundRoute();
       case '/admin/settings':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1102,13 +1094,20 @@ class MyApp extends StatelessWidget {
           ),
         );
       case '/admin/ad-review':
-        if (!kDebugMode) return _buildNotFoundRoute();
-        return _buildNotFoundRoute();
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.SimpleAdStatisticsScreen(),
+          ),
+        );
       case '/admin/ad-management':
-        if (!kDebugMode) return _buildNotFoundRoute();
-        return _buildNotFoundRoute();
+        return MaterialPageRoute(
+          builder: (_) => const core.MainLayout(
+            currentIndex: -1,
+            child: ads.SimpleAdManagementScreen(),
+          ),
+        );
       case '/admin/messaging':
-        if (!kDebugMode) return _buildNotFoundRoute();
         return MaterialPageRoute(
           builder: (_) => const core.MainLayout(
             currentIndex: -1,
@@ -1449,24 +1448,6 @@ class MyApp extends StatelessWidget {
             ),
           ),
         );
-      case '/debug/profile-fix':
-        return MaterialPageRoute(
-          builder: (_) =>
-              const core.MainLayout(currentIndex: -1, child: DebugProfileFix()),
-        );
-    }
-
-    // Handle dynamic routes
-    if (settings.name != null) {
-      // Handle /event/$eventId route
-      if (settings.name!.startsWith('/event/')) {
-        final eventId = settings.name!.replaceFirst('/event/', '');
-        if (eventId.isNotEmpty) {
-          return MaterialPageRoute(
-            builder: (_) => EventDetailsWrapper(eventId: eventId),
-          );
-        }
-      }
     }
 
     // Fallback: return splash screen if no route matched

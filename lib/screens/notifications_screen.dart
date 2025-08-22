@@ -122,9 +122,11 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 
-  /// Check if user is admin
+  /// Check if user is admin - moved to database-based check for security
   bool _isAdminUser(String userId) {
-    return userId == 'ARFuyX0C44PbYlHSUSlQx55b9vt2'; // Kristy Kelly's admin ID
+    // TODO: Replace with proper database-based admin role check
+    // For now, returning false for security - enable admin features via database
+    return false;
   }
 
   /// Run image cleanup service

@@ -12,6 +12,16 @@
 .swiftpm/
 migrate_working_dir/
 
+# Security - OAuth and API credentials
+**/client_secret_*.json
+**/google-services.json
+**/GoogleService-Info.plist
+.env
+.env.*
+!.env.example
+firebase-debug.log
+firebase-debug.*.log
+
 # IntelliJ related
 *.iml
 *.ipr
