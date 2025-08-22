@@ -2,7 +2,6 @@ import 'package:artbeat_auth/artbeat_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_events/artbeat_events.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
