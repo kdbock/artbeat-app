@@ -170,7 +170,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               // User type filter
               Expanded(
                 child: DropdownButtonFormField<UserType>(
-                  value: _filterUserType,
+                  initialValue: _filterUserType,
                   decoration: const InputDecoration(
                     labelText: 'Filter by Type',
                     border: OutlineInputBorder(),
@@ -199,7 +199,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
               // Sort options
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _sortBy,
+                  initialValue: _sortBy,
                   decoration: const InputDecoration(
                     labelText: 'Sort By',
                     border: OutlineInputBorder(),
@@ -589,7 +589,7 @@ class _AdminUserManagementScreenState extends State<AdminUserManagementScreen> {
                   'Current type: ${_getUserTypeFromString(user.userType).name.toUpperCase()}'),
               const SizedBox(height: 16),
               DropdownButtonFormField<UserType>(
-                value: selectedType,
+                initialValue: selectedType,
                 decoration: const InputDecoration(
                   labelText: 'New User Type',
                   border: OutlineInputBorder(),

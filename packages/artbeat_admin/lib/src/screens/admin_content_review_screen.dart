@@ -389,20 +389,11 @@ class _AdminContentReviewScreenState extends State<AdminContentReviewScreen> {
   Widget _buildContentTypeChip(ContentType type) {
     Color color;
     switch (type) {
-      case ContentType.artwork:
-        color = Colors.blue;
-        break;
-      case ContentType.post:
-        color = Colors.green;
-        break;
-      case ContentType.comment:
-        color = Colors.orange;
-        break;
-      case ContentType.profile:
+      case ContentType.ads:
         color = Colors.purple;
         break;
-      case ContentType.event:
-        color = Colors.red;
+      case ContentType.captures:
+        color = Colors.blue;
         break;
       case ContentType.all:
         color = Colors.grey;

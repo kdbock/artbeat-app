@@ -109,11 +109,11 @@ class AdminDrawer extends StatelessWidget {
                       context,
                       icon: Icons.people,
                       title: 'User Management',
-                      route: '/admin/users',
+                      route: '/admin/user-management',
                     ),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.report,
+                      icon: Icons.rate_review,
                       title: 'Content Review',
                       route: '/admin/content-review',
                     ),
@@ -262,7 +262,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('API Console'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to API console
+                  Navigator.pushNamed(context, '/admin/settings');
                 },
               ),
               ListTile(
@@ -270,7 +270,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('Database Tools'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to database tools
+                  Navigator.pushNamed(context, '/admin/data');
                 },
               ),
               ListTile(
@@ -278,7 +278,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('Performance Monitor'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Navigate to performance monitor
+                  Navigator.pushNamed(context, '/admin/analytics');
                 },
               ),
               ListTile(
@@ -286,7 +286,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('Memory Usage'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Show memory usage
+                  Navigator.pushNamed(context, '/admin/alerts');
                 },
               ),
             ],
@@ -324,7 +324,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('System Health'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Show system health
+                  Navigator.pushNamed(context, '/admin/alerts');
                 },
               ),
               ListTile(
@@ -332,7 +332,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('Network Status'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Show network status
+                  Navigator.pushNamed(context, '/admin/security');
                 },
               ),
               ListTile(
@@ -340,7 +340,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('Error Logs'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Show error logs
+                  Navigator.pushNamed(context, '/admin/alerts');
                 },
               ),
               ListTile(
@@ -348,7 +348,7 @@ class AdminDrawer extends StatelessWidget {
                 title: const Text('Performance Metrics'),
                 onTap: () {
                   Navigator.pop(context);
-                  // Show performance metrics
+                  Navigator.pushNamed(context, '/admin/analytics');
                 },
               ),
             ],

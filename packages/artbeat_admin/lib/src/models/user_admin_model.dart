@@ -16,13 +16,10 @@ class UserAdminModel extends UserModel {
   final DateTime? emailVerifiedAt;
   final bool requiresPasswordReset;
   final String? coverImageUrl;
-  final String? zipCode;
   final DateTime? birthDate;
   final String? gender;
   final DateTime? updatedAt;
   final bool isVerified;
-  final int experiencePoints;
-  final int level;
   final List<String> achievements;
 
   UserAdminModel({
@@ -33,14 +30,15 @@ class UserAdminModel extends UserModel {
     super.bio,
     super.profileImageUrl,
     super.location,
-    super.followers,
-    super.following,
     super.captures,
     super.posts,
     required super.createdAt,
     super.lastActive,
     super.userType,
     super.preferences,
+    super.experiencePoints,
+    super.level,
+    super.zipCode,
     this.lastLoginAt,
     this.lastActiveAt,
     this.isSuspended = false,
@@ -54,13 +52,10 @@ class UserAdminModel extends UserModel {
     this.emailVerifiedAt,
     this.requiresPasswordReset = false,
     this.coverImageUrl,
-    this.zipCode,
     this.birthDate,
     this.gender,
     this.updatedAt,
     this.isVerified = false,
-    this.experiencePoints = 0,
-    this.level = 1,
     this.achievements = const [],
   });
 
@@ -74,13 +69,14 @@ class UserAdminModel extends UserModel {
       profileImageUrl: user.profileImageUrl,
       location: user.location,
       posts: user.posts,
-      followers: user.followers,
-      following: user.following,
       captures: user.captures,
       createdAt: user.createdAt,
       lastActive: user.lastActive,
       userType: user.userType,
       preferences: user.preferences,
+      experiencePoints: user.experiencePoints,
+      level: user.level,
+      zipCode: user.zipCode,
     );
   }
 
@@ -96,24 +92,23 @@ class UserAdminModel extends UserModel {
       profileImageUrl: data['profileImageUrl'] as String? ?? '',
       location: data['location'] as String? ?? '',
       posts: List<String>.from(data['posts'] as List<dynamic>? ?? []),
-      followers: List<String>.from(data['followers'] as List<dynamic>? ?? []),
-      following: List<String>.from(data['following'] as List<dynamic>? ?? []),
       captures: (data['captures'] as List<dynamic>? ?? [])
-          .map((capture) => CaptureModel.fromJson(capture as Map<String, dynamic>))
+          .map((capture) =>
+              CaptureModel.fromJson(capture as Map<String, dynamic>))
           .toList(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastActive: (data['lastActive'] as Timestamp?)?.toDate(),
       userType: data['userType'] as String?,
       preferences: data['preferences'] as Map<String, dynamic>?,
+      experiencePoints: data['experiencePoints'] as int? ?? 0,
+      level: data['level'] as int? ?? 1,
+      zipCode: data['zipCode'] as String?,
       // Admin-specific fields
       coverImageUrl: data['coverImageUrl'] as String?,
-      zipCode: data['zipCode'] as String?,
       birthDate: (data['birthDate'] as Timestamp?)?.toDate(),
       gender: data['gender'] as String?,
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
       isVerified: data['isVerified'] as bool? ?? false,
-      experiencePoints: data['experiencePoints'] as int? ?? 0,
-      level: data['level'] as int? ?? 1,
       achievements: List<String>.from(
         data['achievements'] as List<dynamic>? ?? [],
       ),
@@ -181,23 +176,79 @@ class UserAdminModel extends UserModel {
     String? bio,
     String? location,
     String? profileImageUrl,
-    List<String>? followers,
-    List<String>? following,
+    EngagementStats? engagementStats,
     List<CaptureModel>? captures,
     List<String>? posts,
     DateTime? createdAt,
     DateTime? lastActive,
     String? userType,
     Map<String, dynamic>? preferences,
+    int? experiencePoints,
+    int? level,
+  }) {
+    return UserAdminModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      bio: bio ?? this.bio,
+      location: location ?? this.location,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      captures: captures ?? this.captures,
+      posts: posts ?? this.posts,
+      createdAt: createdAt ?? this.createdAt,
+      lastActive: lastActive ?? this.lastActive,
+      userType: userType ?? this.userType,
+      preferences: preferences ?? this.preferences,
+      experiencePoints: experiencePoints ?? this.experiencePoints,
+      level: level ?? this.level,
+      zipCode: this.zipCode,
+      // Keep existing admin-specific fields
+      coverImageUrl: this.coverImageUrl,
+      birthDate: this.birthDate,
+      gender: this.gender,
+      updatedAt: this.updatedAt,
+      isVerified: this.isVerified,
+      achievements: this.achievements,
+      lastLoginAt: this.lastLoginAt,
+      lastActiveAt: this.lastActiveAt,
+      isSuspended: this.isSuspended,
+      isDeleted: this.isDeleted,
+      suspensionReason: this.suspensionReason,
+      suspendedAt: this.suspendedAt,
+      suspendedBy: this.suspendedBy,
+      adminNotes: this.adminNotes,
+      adminFlags: this.adminFlags,
+      reportCount: this.reportCount,
+      emailVerifiedAt: this.emailVerifiedAt,
+      requiresPasswordReset: this.requiresPasswordReset,
+    );
+  }
+
+  /// Admin-specific copyWith method with all admin fields
+  UserAdminModel copyWithAdmin({
+    String? id,
+    String? email,
+    String? username,
+    String? fullName,
+    String? bio,
+    String? location,
+    String? profileImageUrl,
+    List<CaptureModel>? captures,
+    List<String>? posts,
+    DateTime? createdAt,
+    DateTime? lastActive,
+    String? userType,
+    Map<String, dynamic>? preferences,
+    int? experiencePoints,
+    int? level,
+    String? zipCode,
     // Admin-specific fields
     String? coverImageUrl,
-    String? zipCode,
     DateTime? birthDate,
     String? gender,
     DateTime? updatedAt,
     bool? isVerified,
-    int? experiencePoints,
-    int? level,
     List<String>? achievements,
     DateTime? lastLoginAt,
     DateTime? lastActiveAt,
@@ -220,23 +271,21 @@ class UserAdminModel extends UserModel {
       bio: bio ?? this.bio,
       location: location ?? this.location,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      followers: followers ?? this.followers,
-      following: following ?? this.following,
       captures: captures ?? this.captures,
       posts: posts ?? this.posts,
       createdAt: createdAt ?? this.createdAt,
       lastActive: lastActive ?? this.lastActive,
       userType: userType ?? this.userType,
       preferences: preferences ?? this.preferences,
+      experiencePoints: experiencePoints ?? this.experiencePoints,
+      level: level ?? this.level,
+      zipCode: zipCode ?? this.zipCode,
       // Admin-specific fields
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
-      zipCode: zipCode ?? this.zipCode,
       birthDate: birthDate ?? this.birthDate,
       gender: gender ?? this.gender,
       updatedAt: updatedAt ?? this.updatedAt,
       isVerified: isVerified ?? this.isVerified,
-      experiencePoints: experiencePoints ?? this.experiencePoints,
-      level: level ?? this.level,
       achievements: achievements ?? this.achievements,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,

@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/analytics_model.dart';
+import 'financial_analytics_service.dart';
 
-/// Service for analytics operations
-class AnalyticsService {
+/// Enhanced analytics service with comprehensive metrics
+class EnhancedAnalyticsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FinancialAnalyticsService _financialService =
+      FinancialAnalyticsService();
 
-  /// Get analytics data for the specified date range
-  Future<AnalyticsModel> getAnalytics({
+  /// Get comprehensive analytics data for the specified date range
+  Future<AnalyticsModel> getEnhancedAnalytics({
     required DateRange dateRange,
   }) async {
     try {
@@ -28,6 +31,13 @@ class AnalyticsService {
         _getTechnicalMetrics(startDate, endDate),
         _getTechnicalMetrics(previousStartDate, startDate), // Previous period
         _getTopContent(startDate, endDate),
+        _financialService.getFinancialMetrics(
+            startDate: startDate, endDate: endDate),
+        _getCohortAnalysis(startDate, endDate),
+        _getUsersByCountry(startDate, endDate),
+        _getDeviceBreakdown(startDate, endDate),
+        _getTopUserJourneys(startDate, endDate),
+        _getConversionFunnels(startDate, endDate),
       ]);
 
       final currentUserMetrics = futures[0] as Map<String, dynamic>;
@@ -39,6 +49,12 @@ class AnalyticsService {
       final currentTechnicalMetrics = futures[6] as Map<String, dynamic>;
       final previousTechnicalMetrics = futures[7] as Map<String, dynamic>;
       final topContent = futures[8] as List<TopContentItem>;
+      final financialMetrics = futures[9] as FinancialMetrics;
+      final cohortAnalysis = futures[10] as List<CohortData>;
+      final usersByCountry = futures[11] as Map<String, int>;
+      final deviceBreakdown = futures[12] as Map<String, int>;
+      final topUserJourneys = futures[13] as List<UserJourneyStep>;
+      final conversionFunnels = futures[14] as Map<String, double>;
 
       return AnalyticsModel(
         // User metrics
@@ -132,6 +148,14 @@ class AnalyticsService {
           previousTechnicalMetrics['bandwidthUsed'] as int? ?? 0,
         ),
 
+        // Enhanced metrics
+        financialMetrics: financialMetrics,
+        cohortAnalysis: cohortAnalysis,
+        usersByCountry: usersByCountry,
+        deviceBreakdown: deviceBreakdown,
+        topUserJourneys: topUserJourneys,
+        conversionFunnels: conversionFunnels,
+
         // Top content
         topContent: topContent,
 
@@ -139,42 +163,16 @@ class AnalyticsService {
         startDate: startDate,
         endDate: endDate,
         generatedAt: DateTime.now(),
-
-        // Additional required parameters with default values
-        financialMetrics: FinancialMetrics(
-          totalRevenue: 0.0,
-          subscriptionRevenue: 0.0,
-          eventRevenue: 0.0,
-          commissionRevenue: 0.0,
-          averageRevenuePerUser: 0.0,
-          monthlyRecurringRevenue: 0.0,
-          churnRate: 0.0,
-          lifetimeValue: 0.0,
-          totalTransactions: 0,
-          revenueGrowth: 0.0,
-          subscriptionGrowth: 0.0,
-          commissionGrowth: 0.0,
-          revenueByCategory: const {},
-          revenueTimeSeries: const [],
-        ),
-        cohortAnalysis: const [],
-        usersByCountry: const {},
-        deviceBreakdown: const {},
-        topUserJourneys: const [],
-        conversionFunnels: const {},
       );
     } catch (e) {
-      throw Exception('Failed to get analytics: $e');
+      throw Exception('Failed to get enhanced analytics: $e');
     }
   }
 
   /// Get user metrics for the specified date range
   Future<Map<String, dynamic>> _getUserMetrics(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+      DateTime startDate, DateTime endDate) async {
     try {
-      // Get all users
       final usersSnapshot = await _firestore.collection('users').get();
       final users = usersSnapshot.docs;
 
@@ -202,7 +200,7 @@ class AnalyticsService {
           activeUsers++;
         }
 
-        // Count retained users (created before period, active during period)
+        // Count retained users
         if (createdAt != null &&
             createdAt.isBefore(startDate) &&
             lastActiveAt != null &&
@@ -212,7 +210,6 @@ class AnalyticsService {
         }
       }
 
-      // Calculate retention rate
       final double retentionRate =
           totalUsers > 0 ? (retainedUsers / totalUsers) * 100 : 0.0;
 
@@ -229,9 +226,7 @@ class AnalyticsService {
 
   /// Get content metrics for the specified date range
   Future<Map<String, dynamic>> _getContentMetrics(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+      DateTime startDate, DateTime endDate) async {
     try {
       final futures = await Future.wait([
         _getCollectionCount('artwork', startDate, endDate),
@@ -253,11 +248,9 @@ class AnalyticsService {
 
   /// Get engagement metrics for the specified date range
   Future<Map<String, dynamic>> _getEngagementMetrics(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+      DateTime startDate, DateTime endDate) async {
     try {
-      // Get session data (if available)
+      // Get session data
       final sessionSnapshot = await _firestore
           .collection('analytics_sessions')
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
@@ -289,19 +282,17 @@ class AnalyticsService {
       }
 
       // Get total likes
-      int totalLikes = 0;
       final likesSnapshot = await _firestore
           .collection('likes')
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
           .where('createdAt', isLessThanOrEqualTo: endDate)
           .get();
-      totalLikes = likesSnapshot.docs.length;
 
       return {
         'avgSessionDuration': avgSessionDuration,
         'pageViews': pageViews,
         'bounceRate': bounceRate,
-        'totalLikes': totalLikes,
+        'totalLikes': likesSnapshot.docs.length,
       };
     } catch (e) {
       throw Exception('Failed to get engagement metrics: $e');
@@ -310,18 +301,16 @@ class AnalyticsService {
 
   /// Get technical metrics for the specified date range
   Future<Map<String, dynamic>> _getTechnicalMetrics(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+      DateTime startDate, DateTime endDate) async {
     try {
-      // Get error logs (if available)
+      // Get error logs
       final errorSnapshot = await _firestore
           .collection('error_logs')
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
           .where('createdAt', isLessThanOrEqualTo: endDate)
           .get();
 
-      // Get request logs (if available)
+      // Get request logs
       final requestSnapshot = await _firestore
           .collection('request_logs')
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
@@ -364,9 +353,7 @@ class AnalyticsService {
 
   /// Get top content for the specified date range
   Future<List<TopContentItem>> _getTopContent(
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+      DateTime startDate, DateTime endDate) async {
     try {
       final List<TopContentItem> topContent = [];
 
@@ -376,7 +363,7 @@ class AnalyticsService {
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
           .where('createdAt', isLessThanOrEqualTo: endDate)
           .orderBy('views', descending: true)
-          .limit(5)
+          .limit(10)
           .get();
 
       for (var doc in artworkSnapshot.docs) {
@@ -386,89 +373,267 @@ class AnalyticsService {
           title:
               (data['title'] is String) ? data['title'] as String : 'Untitled',
           type: 'artwork',
-          views: (data['views'] is int)
-              ? data['views'] as int
-              : int.tryParse(data['views']?.toString() ?? '') ?? 0,
-          likes: (data['likes'] is int)
-              ? data['likes'] as int
-              : int.tryParse(data['likes']?.toString() ?? '') ?? 0,
-          authorName: (data['authorName'] is String)
-              ? data['authorName'] as String
+          views: (data['views'] is int) ? data['views'] as int : 0,
+          likes: (data['likes'] is int) ? data['likes'] as int : 0,
+          authorName: (data['artistName'] is String)
+              ? data['artistName'] as String
               : 'Unknown',
-          createdAt: (data['createdAt'] is Timestamp)
-              ? (data['createdAt'] as Timestamp).toDate()
-              : DateTime.now(),
+          createdAt:
+              (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         ));
       }
 
-      // Get top posts
-      final postSnapshot = await _firestore
-          .collection('posts')
-          .where('createdAt', isGreaterThanOrEqualTo: startDate)
-          .where('createdAt', isLessThanOrEqualTo: endDate)
-          .orderBy('views', descending: true)
-          .limit(5)
-          .get();
-
-      for (var doc in postSnapshot.docs) {
-        final data = doc.data();
-        topContent.add(TopContentItem(
-          id: doc.id,
-          title: (data['content'] is String)
-              ? data['content'] as String
-              : 'Untitled Post',
-          type: 'post',
-          views: (data['views'] is int)
-              ? data['views'] as int
-              : int.tryParse(data['views']?.toString() ?? '') ?? 0,
-          likes: (data['likes'] is int)
-              ? data['likes'] as int
-              : int.tryParse(data['likes']?.toString() ?? '') ?? 0,
-          authorName: (data['authorName'] is String)
-              ? data['authorName'] as String
-              : 'Unknown',
-          createdAt: (data['createdAt'] is Timestamp)
-              ? (data['createdAt'] as Timestamp).toDate()
-              : DateTime.now(),
-        ));
-      }
-
-      // Sort by views and return top 10
-      topContent.sort((a, b) => b.views.compareTo(a.views));
-      return topContent.take(10).toList();
+      return topContent;
     } catch (e) {
       throw Exception('Failed to get top content: $e');
     }
   }
 
-  /// Get count of documents in a collection within date range
+  /// Get cohort analysis data
+  Future<List<CohortData>> _getCohortAnalysis(
+      DateTime startDate, DateTime endDate) async {
+    try {
+      final List<CohortData> cohorts = [];
+
+      // Generate monthly cohorts for the past year
+      DateTime cohortDate = DateTime(startDate.year, startDate.month - 12, 1);
+
+      while (cohortDate.isBefore(endDate)) {
+        final cohortEndDate =
+            DateTime(cohortDate.year, cohortDate.month + 1, 1);
+
+        // Get users who joined in this cohort month
+        final cohortUsers = await _firestore
+            .collection('users')
+            .where('createdAt', isGreaterThanOrEqualTo: cohortDate)
+            .where('createdAt', isLessThan: cohortEndDate)
+            .get();
+
+        if (cohortUsers.docs.isNotEmpty) {
+          final Map<int, double> retentionRates = {};
+
+          // Calculate retention for each subsequent month
+          for (int month = 1; month <= 12; month++) {
+            final checkDate =
+                DateTime(cohortDate.year, cohortDate.month + month, 1);
+            if (checkDate.isAfter(DateTime.now())) break;
+
+            int activeUsers = 0;
+            for (var doc in cohortUsers.docs) {
+              final data = doc.data();
+              final lastActiveAt =
+                  (data['lastActiveAt'] as Timestamp?)?.toDate();
+
+              if (lastActiveAt != null && lastActiveAt.isAfter(checkDate)) {
+                activeUsers++;
+              }
+            }
+
+            retentionRates[month] =
+                (activeUsers / cohortUsers.docs.length) * 100;
+          }
+
+          cohorts.add(CohortData(
+            cohortMonth:
+                '${cohortDate.year}-${cohortDate.month.toString().padLeft(2, '0')}',
+            totalUsers: cohortUsers.docs.length,
+            retentionRates: retentionRates,
+            averageLifetimeValue: 0.0, // Calculate based on revenue data
+          ));
+        }
+
+        cohortDate = DateTime(cohortDate.year, cohortDate.month + 1, 1);
+      }
+
+      return cohorts;
+    } catch (e) {
+      throw Exception('Failed to get cohort analysis: $e');
+    }
+  }
+
+  /// Get users by country
+  Future<Map<String, int>> _getUsersByCountry(
+      DateTime startDate, DateTime endDate) async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .get();
+
+      final Map<String, int> usersByCountry = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final country = (data['country'] as String?) ?? 'Unknown';
+        usersByCountry[country] = (usersByCountry[country] ?? 0) + 1;
+      }
+
+      return usersByCountry;
+    } catch (e) {
+      throw Exception('Failed to get users by country: $e');
+    }
+  }
+
+  /// Get device breakdown
+  Future<Map<String, int>> _getDeviceBreakdown(
+      DateTime startDate, DateTime endDate) async {
+    try {
+      final snapshot = await _firestore
+          .collection('analytics_sessions')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .get();
+
+      final Map<String, int> deviceBreakdown = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final deviceType = (data['deviceType'] as String?) ?? 'Unknown';
+        deviceBreakdown[deviceType] = (deviceBreakdown[deviceType] ?? 0) + 1;
+      }
+
+      return deviceBreakdown;
+    } catch (e) {
+      throw Exception('Failed to get device breakdown: $e');
+    }
+  }
+
+  /// Get top user journeys
+  Future<List<UserJourneyStep>> _getTopUserJourneys(
+      DateTime startDate, DateTime endDate) async {
+    try {
+      final snapshot = await _firestore
+          .collection('user_journeys')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .get();
+
+      final Map<String, List<Map<String, dynamic>>> journeySteps = {};
+
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final stepName = (data['stepName'] as String?) ?? 'Unknown';
+        final timeSpent = (data['timeSpent'] as num?)?.toDouble() ?? 0.0;
+
+        if (!journeySteps.containsKey(stepName)) {
+          journeySteps[stepName] = [];
+        }
+
+        journeySteps[stepName]!.add({
+          'timeSpent': timeSpent,
+          'converted': (data['converted'] as bool?) ?? false,
+        });
+      }
+
+      final List<UserJourneyStep> topJourneys = [];
+
+      journeySteps.forEach((stepName, steps) {
+        final userCount = steps.length;
+        final conversions =
+            steps.where((step) => step['converted'] == true).length;
+        final conversionRate =
+            userCount > 0 ? (conversions / userCount) * 100 : 0.0;
+        final avgTimeSpent = steps.isNotEmpty
+            ? steps
+                    .map((step) => step['timeSpent'] as double)
+                    .reduce((a, b) => a + b) /
+                steps.length
+            : 0.0;
+
+        topJourneys.add(UserJourneyStep(
+          stepName: stepName,
+          userCount: userCount,
+          conversionRate: conversionRate,
+          avgTimeSpent: avgTimeSpent,
+        ));
+      });
+
+      // Sort by user count and return top 10
+      topJourneys.sort((a, b) => b.userCount.compareTo(a.userCount));
+      return topJourneys.take(10).toList();
+    } catch (e) {
+      throw Exception('Failed to get top user journeys: $e');
+    }
+  }
+
+  /// Get conversion funnels
+  Future<Map<String, double>> _getConversionFunnels(
+      DateTime startDate, DateTime endDate) async {
+    try {
+      final Map<String, double> funnels = {};
+
+      // Registration to Profile Completion
+      final registrations = await _firestore
+          .collection('users')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .get();
+
+      final profileCompletions = await _firestore
+          .collection('users')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .where('profileCompleted', isEqualTo: true)
+          .get();
+
+      if (registrations.docs.isNotEmpty) {
+        funnels['Registration to Profile'] =
+            (profileCompletions.docs.length / registrations.docs.length) * 100;
+      }
+
+      // Profile to First Artwork Upload
+      final firstArtworks = await _firestore
+          .collection('artwork')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .get();
+
+      if (profileCompletions.docs.isNotEmpty) {
+        funnels['Profile to First Artwork'] =
+            (firstArtworks.docs.length / profileCompletions.docs.length) * 100;
+      }
+
+      // Artwork to First Like
+      final firstLikes = await _firestore
+          .collection('likes')
+          .where('createdAt', isGreaterThanOrEqualTo: startDate)
+          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .get();
+
+      if (firstArtworks.docs.isNotEmpty) {
+        funnels['Artwork to First Like'] =
+            (firstLikes.docs.length / firstArtworks.docs.length) * 100;
+      }
+
+      return funnels;
+    } catch (e) {
+      throw Exception('Failed to get conversion funnels: $e');
+    }
+  }
+
+  /// Get collection count for the specified date range
   Future<int> _getCollectionCount(
-    String collection,
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+      String collection, DateTime startDate, DateTime endDate) async {
     try {
       final snapshot = await _firestore
           .collection(collection)
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
           .where('createdAt', isLessThanOrEqualTo: endDate)
           .get();
+
       return snapshot.docs.length;
     } catch (e) {
-      // If the collection doesn't exist or query fails, return 0
-      return 0;
+      throw Exception('Failed to get $collection count: $e');
     }
   }
 
   /// Calculate growth percentage
   double _calculateGrowth(dynamic current, dynamic previous) {
-    if (previous == null || previous == 0) return 0.0;
+    final currentValue = (current is num) ? current.toDouble() : 0.0;
+    final previousValue = (previous is num) ? previous.toDouble() : 0.0;
 
-    final currentValue = (current as num?)?.toDouble() ?? 0.0;
-    final previousValue = (previous as num?)?.toDouble() ?? 0.0;
-
-    if (previousValue == 0) return 0.0;
-
+    if (previousValue == 0) return currentValue > 0 ? 100.0 : 0.0;
     return ((currentValue - previousValue) / previousValue) * 100;
   }
 }

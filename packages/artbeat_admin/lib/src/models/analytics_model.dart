@@ -80,7 +80,189 @@ class TopContentItem {
   }
 }
 
-/// Analytics data model
+/// Financial metrics model
+class FinancialMetrics {
+  final double totalRevenue;
+  final double subscriptionRevenue;
+  final double eventRevenue;
+  final double commissionRevenue;
+  final double averageRevenuePerUser;
+  final double monthlyRecurringRevenue;
+  final double churnRate;
+  final double lifetimeValue;
+  final int totalTransactions;
+  final double revenueGrowth;
+  final double subscriptionGrowth;
+  final double commissionGrowth;
+  final Map<String, double> revenueByCategory;
+  final List<RevenueDataPoint> revenueTimeSeries;
+
+  FinancialMetrics({
+    required this.totalRevenue,
+    required this.subscriptionRevenue,
+    required this.eventRevenue,
+    required this.commissionRevenue,
+    required this.averageRevenuePerUser,
+    required this.monthlyRecurringRevenue,
+    required this.churnRate,
+    required this.lifetimeValue,
+    required this.totalTransactions,
+    required this.revenueGrowth,
+    required this.subscriptionGrowth,
+    required this.commissionGrowth,
+    required this.revenueByCategory,
+    required this.revenueTimeSeries,
+  });
+
+  factory FinancialMetrics.fromMap(Map<String, dynamic> map) {
+    return FinancialMetrics(
+      totalRevenue: ((map['totalRevenue'] as num?) ?? 0.0).toDouble(),
+      subscriptionRevenue:
+          ((map['subscriptionRevenue'] as num?) ?? 0.0).toDouble(),
+      eventRevenue: ((map['eventRevenue'] as num?) ?? 0.0).toDouble(),
+      commissionRevenue: ((map['commissionRevenue'] as num?) ?? 0.0).toDouble(),
+      averageRevenuePerUser:
+          ((map['averageRevenuePerUser'] as num?) ?? 0.0).toDouble(),
+      monthlyRecurringRevenue:
+          ((map['monthlyRecurringRevenue'] as num?) ?? 0.0).toDouble(),
+      churnRate: ((map['churnRate'] as num?) ?? 0.0).toDouble(),
+      lifetimeValue: ((map['lifetimeValue'] as num?) ?? 0.0).toDouble(),
+      totalTransactions: (map['totalTransactions'] as int?) ?? 0,
+      revenueGrowth: ((map['revenueGrowth'] as num?) ?? 0.0).toDouble(),
+      subscriptionGrowth:
+          ((map['subscriptionGrowth'] as num?) ?? 0.0).toDouble(),
+      commissionGrowth: ((map['commissionGrowth'] as num?) ?? 0.0).toDouble(),
+      revenueByCategory: Map<String, double>.from(
+          (map['revenueByCategory'] as Map<dynamic, dynamic>?) ?? {}),
+      revenueTimeSeries: (map['revenueTimeSeries'] as List<dynamic>?)
+              ?.map((item) =>
+                  RevenueDataPoint.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'totalRevenue': totalRevenue,
+      'subscriptionRevenue': subscriptionRevenue,
+      'eventRevenue': eventRevenue,
+      'commissionRevenue': commissionRevenue,
+      'averageRevenuePerUser': averageRevenuePerUser,
+      'monthlyRecurringRevenue': monthlyRecurringRevenue,
+      'churnRate': churnRate,
+      'lifetimeValue': lifetimeValue,
+      'totalTransactions': totalTransactions,
+      'revenueGrowth': revenueGrowth,
+      'subscriptionGrowth': subscriptionGrowth,
+      'commissionGrowth': commissionGrowth,
+      'revenueByCategory': revenueByCategory,
+      'revenueTimeSeries':
+          revenueTimeSeries.map((item) => item.toMap()).toList(),
+    };
+  }
+}
+
+/// Revenue data point for time series
+class RevenueDataPoint {
+  final DateTime date;
+  final double amount;
+  final String category;
+
+  RevenueDataPoint({
+    required this.date,
+    required this.amount,
+    required this.category,
+  });
+
+  factory RevenueDataPoint.fromMap(Map<String, dynamic> map) {
+    return RevenueDataPoint(
+      date: map['date'] is String
+          ? DateTime.parse(map['date'] as String)
+          : (map['date'] as DateTime?) ?? DateTime.now(),
+      amount: ((map['amount'] as num?) ?? 0.0).toDouble(),
+      category: (map['category'] as String?) ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'date': date.toIso8601String(),
+      'amount': amount,
+      'category': category,
+    };
+  }
+}
+
+/// User cohort data
+class CohortData {
+  final String cohortMonth;
+  final int totalUsers;
+  final Map<int, double> retentionRates; // month -> retention rate
+  final double averageLifetimeValue;
+
+  CohortData({
+    required this.cohortMonth,
+    required this.totalUsers,
+    required this.retentionRates,
+    required this.averageLifetimeValue,
+  });
+
+  factory CohortData.fromMap(Map<String, dynamic> map) {
+    return CohortData(
+      cohortMonth: (map['cohortMonth'] as String?) ?? '',
+      totalUsers: (map['totalUsers'] as int?) ?? 0,
+      retentionRates: Map<int, double>.from(
+          (map['retentionRates'] as Map<dynamic, dynamic>?) ?? {}),
+      averageLifetimeValue:
+          ((map['averageLifetimeValue'] as num?) ?? 0.0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'cohortMonth': cohortMonth,
+      'totalUsers': totalUsers,
+      'retentionRates': retentionRates,
+      'averageLifetimeValue': averageLifetimeValue,
+    };
+  }
+}
+
+/// User journey step
+class UserJourneyStep {
+  final String stepName;
+  final int userCount;
+  final double conversionRate;
+  final double avgTimeSpent;
+
+  UserJourneyStep({
+    required this.stepName,
+    required this.userCount,
+    required this.conversionRate,
+    required this.avgTimeSpent,
+  });
+
+  factory UserJourneyStep.fromMap(Map<String, dynamic> map) {
+    return UserJourneyStep(
+      stepName: (map['stepName'] as String?) ?? '',
+      userCount: (map['userCount'] as int?) ?? 0,
+      conversionRate: ((map['conversionRate'] as num?) ?? 0.0).toDouble(),
+      avgTimeSpent: ((map['avgTimeSpent'] as num?) ?? 0.0).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'stepName': stepName,
+      'userCount': userCount,
+      'conversionRate': conversionRate,
+      'avgTimeSpent': avgTimeSpent,
+    };
+  }
+}
+
+/// Enhanced analytics data model
 class AnalyticsModel {
   // User metrics
   final int totalUsers;
@@ -121,6 +303,14 @@ class AnalyticsModel {
   final double responseTimeChange;
   final double storageGrowth;
   final double bandwidthChange;
+
+  // Enhanced metrics
+  final FinancialMetrics financialMetrics;
+  final List<CohortData> cohortAnalysis;
+  final Map<String, int> usersByCountry;
+  final Map<String, int> deviceBreakdown;
+  final List<UserJourneyStep> topUserJourneys;
+  final Map<String, double> conversionFunnels;
 
   // Top content
   final List<TopContentItem> topContent;
@@ -163,6 +353,12 @@ class AnalyticsModel {
     required this.responseTimeChange,
     required this.storageGrowth,
     required this.bandwidthChange,
+    required this.financialMetrics,
+    required this.cohortAnalysis,
+    required this.usersByCountry,
+    required this.deviceBreakdown,
+    required this.topUserJourneys,
+    required this.conversionFunnels,
     required this.topContent,
     required this.startDate,
     required this.endDate,
@@ -206,6 +402,40 @@ class AnalyticsModel {
           ((map['responseTimeChange'] as num?) ?? 0.0).toDouble(),
       storageGrowth: ((map['storageGrowth'] as num?) ?? 0.0).toDouble(),
       bandwidthChange: ((map['bandwidthChange'] as num?) ?? 0.0).toDouble(),
+      financialMetrics: map['financialMetrics'] != null
+          ? FinancialMetrics.fromMap(
+              map['financialMetrics'] as Map<String, dynamic>)
+          : FinancialMetrics(
+              totalRevenue: 0.0,
+              subscriptionRevenue: 0.0,
+              eventRevenue: 0.0,
+              commissionRevenue: 0.0,
+              averageRevenuePerUser: 0.0,
+              monthlyRecurringRevenue: 0.0,
+              churnRate: 0.0,
+              lifetimeValue: 0.0,
+              totalTransactions: 0,
+              revenueGrowth: 0.0,
+              subscriptionGrowth: 0.0,
+              commissionGrowth: 0.0,
+              revenueByCategory: {},
+              revenueTimeSeries: [],
+            ),
+      cohortAnalysis: (map['cohortAnalysis'] as List<dynamic>?)
+              ?.map((item) => CohortData.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+      usersByCountry: Map<String, int>.from(
+          (map['usersByCountry'] as Map<dynamic, dynamic>?) ?? {}),
+      deviceBreakdown: Map<String, int>.from(
+          (map['deviceBreakdown'] as Map<dynamic, dynamic>?) ?? {}),
+      topUserJourneys: (map['topUserJourneys'] as List<dynamic>?)
+              ?.map((item) =>
+                  UserJourneyStep.fromMap(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+      conversionFunnels: Map<String, double>.from(
+          (map['conversionFunnels'] as Map<dynamic, dynamic>?) ?? {}),
       topContent: (map['topContent'] as List<dynamic>?)
               ?.map((item) =>
                   TopContentItem.fromMap(item as Map<String, dynamic>))
@@ -257,6 +487,12 @@ class AnalyticsModel {
       'responseTimeChange': responseTimeChange,
       'storageGrowth': storageGrowth,
       'bandwidthChange': bandwidthChange,
+      'financialMetrics': financialMetrics.toMap(),
+      'cohortAnalysis': cohortAnalysis.map((item) => item.toMap()).toList(),
+      'usersByCountry': usersByCountry,
+      'deviceBreakdown': deviceBreakdown,
+      'topUserJourneys': topUserJourneys.map((item) => item.toMap()).toList(),
+      'conversionFunnels': conversionFunnels,
       'topContent': topContent.map((item) => item.toMap()).toList(),
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),

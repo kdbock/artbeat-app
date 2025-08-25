@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/content_review_model.dart';
+import '../models/content_model.dart';
 
 /// Service for content review operations
 class ContentReviewService {
@@ -28,7 +29,8 @@ class ContentReviewService {
 
       final snapshot = await query.get();
       return snapshot.docs
-          .map((doc) => ContentReviewModel.fromDocument(doc))
+          .map((doc) => ContentReviewModel.fromDocument(
+              doc as DocumentSnapshot<Map<String, dynamic>>))
           .toList();
     } catch (e) {
       throw Exception('Failed to get pending reviews: $e');
@@ -70,7 +72,8 @@ class ContentReviewService {
 
       final snapshot = await query.get();
       return snapshot.docs
-          .map((doc) => ContentReviewModel.fromDocument(doc))
+          .map((doc) => ContentReviewModel.fromDocument(
+              doc as DocumentSnapshot<Map<String, dynamic>>))
           .toList();
     } catch (e) {
       throw Exception('Failed to get content reviews: $e');
@@ -174,20 +177,11 @@ class ContentReviewService {
   ) async {
     String collectionName;
     switch (contentType) {
-      case ContentType.artwork:
-        collectionName = 'artwork';
+      case ContentType.ads:
+        collectionName = 'ads';
         break;
-      case ContentType.post:
-        collectionName = 'posts';
-        break;
-      case ContentType.comment:
-        collectionName = 'comments';
-        break;
-      case ContentType.profile:
-        collectionName = 'users';
-        break;
-      case ContentType.event:
-        collectionName = 'events';
+      case ContentType.captures:
+        collectionName = 'captures';
         break;
       case ContentType.all:
         return; // Cannot update all content types
@@ -235,7 +229,8 @@ class ContentReviewService {
 
       final snapshot = await query.get();
       final reviews = snapshot.docs
-          .map((doc) => ContentReviewModel.fromDocument(doc))
+          .map((doc) => ContentReviewModel.fromDocument(
+              doc as DocumentSnapshot<Map<String, dynamic>>))
           .toList();
 
       final stats = <String, int>{
@@ -333,6 +328,66 @@ class ContentReviewService {
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to bulk reject content: $e');
+    }
+  }
+
+  /// Get all content for admin management
+  Future<List<ContentModel>> getAllContent({
+    String? contentType,
+    String? status,
+    int? limit,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection('content')
+          .orderBy('createdAt', descending: true);
+
+      if (contentType != null && contentType != 'all') {
+        query = query.where('type', isEqualTo: contentType);
+      }
+
+      if (status != null && status != 'all') {
+        query = query.where('status', isEqualTo: status);
+      }
+
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+
+      final snapshot = await query.get();
+      return snapshot.docs
+          .map((doc) => ContentModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      throw Exception('Failed to get content: $e');
+    }
+  }
+
+  /// Get content analytics
+  Future<Map<String, dynamic>> getContentAnalytics({
+    String? contentType,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      // This is a simplified version - in production you'd calculate real analytics
+      final content = await getAllContent(contentType: contentType);
+
+      return {
+        'totalContent': content.length,
+        'pendingReviews':
+            content.where((c) => c.moderationStatus == 'pending').length,
+        'approvedContent':
+            content.where((c) => c.moderationStatus == 'approved').length,
+        'rejectedContent':
+            content.where((c) => c.moderationStatus == 'rejected').length,
+        'averageEngagement': content.isNotEmpty
+            ? content.map((c) => c.engagementScore).reduce((a, b) => a + b) /
+                content.length
+            : 0.0,
+      };
+    } catch (e) {
+      throw Exception('Failed to get content analytics: $e');
     }
   }
 }
