@@ -290,12 +290,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
   String _getPlanDescription(SubscriptionTier tier) {
     switch (tier) {
       case SubscriptionTier.free:
-      case SubscriptionTier.artistBasic:
         return 'Basic features for artists';
-      case SubscriptionTier.artistPro:
-        return 'Pro features for artists';
-      case SubscriptionTier.gallery:
-        return 'Premium features for galleries';
+      case SubscriptionTier.starter:
+        return 'Essential features for emerging artists';
+      case SubscriptionTier.creator:
+        return 'Advanced features for professional artists';
+      case SubscriptionTier.business:
+        return 'Premium features for art businesses';
+      case SubscriptionTier.enterprise:
+        return 'Enterprise features with unlimited access';
     }
   }
 

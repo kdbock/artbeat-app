@@ -21,7 +21,6 @@ export 'src/services/chat_service.dart';
 export 'src/services/admin_messaging_service.dart';
 export 'src/services/presence_service.dart';
 export 'src/providers/presence_provider.dart';
-export 'src/screens/messaging_dashboard_screen.dart';
 export 'src/screens/enhanced_messaging_dashboard_screen.dart';
 export 'src/screens/artistic_messaging_screen.dart';
 export 'src/services/notification_service.dart';

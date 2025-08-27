@@ -84,8 +84,6 @@ void main() {
         isPublic: true,
         externalLink: 'https://artist-website.com/artwork',
         viewCount: 1200,
-        likeCount: 150,
-        commentCount: 25,
         createdAt: createdAt,
         updatedAt: updatedAt,
       );
@@ -112,9 +110,9 @@ void main() {
       expect(artwork.isSold, isFalse);
       expect(
           artwork.externalLink, equals('https://artist-website.com/artwork'));
-      expect(artwork.likeCount, equals(150));
+      expect(artwork.likeCount, equals(0)); // Default from EngagementStats
       expect(artwork.viewCount, equals(1200));
-      expect(artwork.commentCount, equals(25));
+      expect(artwork.commentCount, equals(0)); // Default from EngagementStats
       expect(artwork.createdAt, equals(createdAt));
       expect(artwork.updatedAt, equals(updatedAt));
     });
@@ -172,7 +170,6 @@ void main() {
         styles: ['Abstract'],
         price: 100.0,
         isForSale: true,
-        likeCount: 10,
         viewCount: 50,
         createdAt: now,
         updatedAt: now,
@@ -183,7 +180,6 @@ void main() {
         title: 'Updated Title',
         description: 'Updated description',
         price: 200.0,
-        likeCount: 20,
         viewCount: 100,
       );
 
@@ -196,7 +192,8 @@ void main() {
       expect(
           updatedArtwork.description, equals('Updated description')); // Changed
       expect(updatedArtwork.price, equals(200.0)); // Changed
-      expect(updatedArtwork.likeCount, equals(20)); // Changed
+      expect(
+          updatedArtwork.likeCount, equals(0)); // Default from EngagementStats
       expect(updatedArtwork.viewCount, equals(100)); // Changed
       expect(updatedArtwork.medium, equals('Oil on canvas')); // Unchanged
       expect(updatedArtwork.styles, equals(['Abstract'])); // Unchanged

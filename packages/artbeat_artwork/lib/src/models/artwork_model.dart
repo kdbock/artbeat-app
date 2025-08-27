@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Model representing an artwork item in the ARTbeat platform
 class ArtworkModel {
@@ -80,20 +81,14 @@ class ArtworkModel {
   /// Number of times the artwork has been viewed
   final int viewCount;
 
-  /// Number of likes the artwork has received
-  final int likeCount;
-
-  /// Number of comments on the artwork
-  final int commentCount;
+  /// Universal engagement statistics
+  final EngagementStats engagementStats;
 
   /// Timestamp when the artwork was created
   final DateTime createdAt;
 
   /// Timestamp of the last update
   final DateTime updatedAt;
-
-  /// Number of times the artwork has been applauded
-  final int applauseCount;
 
   ArtworkModel({
     required this.id,
@@ -122,11 +117,9 @@ class ArtworkModel {
     this.isPublic = true,
     this.externalLink,
     this.viewCount = 0,
-    this.likeCount = 0,
-    this.commentCount = 0,
+    EngagementStats? engagementStats,
     required this.createdAt,
     required this.updatedAt,
-    this.applauseCount = 0,
   })  :
         // Create defensive copies of all lists to prevent external modification
         additionalImageUrls = List.unmodifiable(additionalImageUrls),
@@ -135,7 +128,9 @@ class ArtworkModel {
         styles = List.unmodifiable(styles),
         tags = tags != null ? List.unmodifiable(tags) : null,
         hashtags = hashtags != null ? List.unmodifiable(hashtags) : null,
-        keywords = keywords != null ? List.unmodifiable(keywords) : null;
+        keywords = keywords != null ? List.unmodifiable(keywords) : null,
+        engagementStats =
+            engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
   /// Create ArtworkModel from Firestore document
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
@@ -179,11 +174,9 @@ class ArtworkModel {
       isPublic: data['isPublic'] as bool? ?? true,
       externalLink: data['externalLink'] as String?,
       viewCount: data['viewCount'] as int? ?? 0,
-      likeCount: data['likeCount'] as int? ?? 0,
-      commentCount: data['commentCount'] as int? ?? 0,
+      engagementStats: EngagementStats.fromFirestore(data),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      applauseCount: data['applauseCount'] as int? ?? 0,
     );
   }
 
@@ -215,11 +208,9 @@ class ArtworkModel {
       'isPublic': isPublic,
       'externalLink': externalLink,
       'viewCount': viewCount,
-      'likeCount': likeCount,
-      'commentCount': commentCount,
+      ...engagementStats.toFirestore(),
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
-      'applauseCount': applauseCount,
     };
   }
 
@@ -251,11 +242,9 @@ class ArtworkModel {
     bool? isPublic,
     String? externalLink,
     int? viewCount,
-    int? likeCount,
-    int? commentCount,
+    EngagementStats? engagementStats,
     DateTime? createdAt,
     DateTime? updatedAt,
-    int? applauseCount,
   }) {
     return ArtworkModel(
       id: id ?? this.id,
@@ -284,11 +273,22 @@ class ArtworkModel {
       isPublic: isPublic ?? this.isPublic,
       externalLink: externalLink ?? this.externalLink,
       viewCount: viewCount ?? this.viewCount,
-      likeCount: likeCount ?? this.likeCount,
-      commentCount: commentCount ?? this.commentCount,
+      engagementStats: engagementStats ?? this.engagementStats,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      applauseCount: applauseCount ?? this.applauseCount,
     );
   }
+
+  // Backward compatibility getters for migration period
+  int get likeCount => engagementStats.appreciateCount;
+  int get commentCount => engagementStats.discussCount;
+  int get applauseCount => engagementStats.appreciateCount;
+
+  // Dashboard compatibility getters
+  int get likesCount => engagementStats.appreciateCount;
+  int get viewsCount => viewCount;
+
+  // Artist name getter - this would need to be populated from artist profile data
+  // For now, return a placeholder that can be overridden when artist data is available
+  String get artistName => 'Unknown Artist';
 }

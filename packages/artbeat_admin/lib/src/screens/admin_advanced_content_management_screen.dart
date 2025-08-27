@@ -5,6 +5,7 @@ import '../services/content_review_service.dart';
 import '../models/content_review_model.dart';
 import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
+import '../utils/image_utils.dart';
 
 /// Advanced Content Management Screen with AI-powered moderation
 ///
@@ -1095,7 +1096,7 @@ class _AdminAdvancedContentManagementScreenState
         color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: content.thumbnailUrl != null
+      child: content.thumbnailUrl != null && content.thumbnailUrl!.isNotEmpty
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(

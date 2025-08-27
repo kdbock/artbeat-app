@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class AuthGuard {
+  /// Check if user is currently authenticated
+  bool get isAuthenticated => FirebaseAuth.instance.currentUser != null;
+
   /// Checks if the user is authenticated and returns appropriate route
   static Route<dynamic>? guardRoute({
     required RouteSettings settings,

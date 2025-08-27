@@ -22,14 +22,14 @@ void main() async {
     // Check if Firebase is already initialized to avoid duplicate initialization
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
-      options: FirebaseOptions(
-        apiKey: config['apiKey'] ?? '',
-        appId: config['appId'] ?? '',
-        messagingSenderId: config['messagingSenderId'] ?? '',
-        projectId: config['projectId'] ?? '',
-        storageBucket: config['storageBucket'] ?? '',
-      ),
-    );
+        options: FirebaseOptions(
+          apiKey: config['apiKey'] ?? '',
+          appId: config['appId'] ?? '',
+          messagingSenderId: config['messagingSenderId'] ?? '',
+          projectId: config['projectId'] ?? '',
+          storageBucket: config['storageBucket'] ?? '',
+        ),
+      );
     } else {
       debugPrint('Firebase already initialized, using existing app instance');
     }
@@ -158,24 +158,13 @@ class ArtistModuleHome extends StatelessWidget {
             const SizedBox(height: 16),
             _buildFeatureCard(
               context,
-              'Subscription Plans',
-              'View and manage your subscription plans',
+              'Modern Onboarding',
+              'Modern 2025 artist onboarding experience',
               Icons.card_membership,
               () => Navigator.push(
                 context,
                 MaterialPageRoute<void>(
-                    builder: (_) => const SubscriptionScreen()),
-              ),
-            ),
-            _buildFeatureCard(
-              context,
-              'Subscription Comparison',
-              'Compare different subscription tiers',
-              Icons.compare_arrows,
-              () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                    builder: (_) => const SubscriptionComparisonScreen()),
+                    builder: (_) => const Modern2025OnboardingScreen()),
               ),
             ),
             const SizedBox(height: 40),

@@ -74,8 +74,10 @@ class SubscriptionService extends ChangeNotifier {
   Future<bool> isSubscriber() async {
     try {
       final tier = await getCurrentSubscriptionTier();
-      return tier == SubscriptionTier.artistPro ||
-          tier == SubscriptionTier.gallery;
+      return tier == SubscriptionTier.starter ||
+          tier == SubscriptionTier.creator ||
+          tier == SubscriptionTier.business ||
+          tier == SubscriptionTier.enterprise;
     } catch (e) {
       debugPrint('Error checking if user is subscriber: $e');
       return false;
@@ -139,50 +141,71 @@ class SubscriptionService extends ChangeNotifier {
   /// Get subscription details by tier
   Map<String, dynamic> getSubscriptionDetails(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.artistPro:
+      case SubscriptionTier.creator:
         return {
-          'name': 'Artist Pro',
-          'price': 9.99,
-          'priceId': 'price_artist_pro_monthly',
+          'name': 'Creator',
+          'price': 12.99,
+          'priceId': 'price_creator_monthly_2025',
           'features': [
             'Unlimited artwork listings',
             'Featured in discover section',
             'Advanced analytics',
             'Priority support',
             'Event creation and promotion',
+            'AI features: 50 credits/month',
           ],
         };
-      case SubscriptionTier.gallery:
+      case SubscriptionTier.business:
         return {
-          'name': 'Gallery',
-          'price': 49.99,
-          'priceId': 'price_gallery_monthly',
+          'name': 'Business',
+          'price': 29.99,
+          'priceId': 'price_business_monthly_2025',
           'features': [
             'Multiple artist management',
             'Business profile for galleries',
             'Advanced analytics dashboard',
             'Dedicated support',
-            'All Pro features',
+            'All Creator features',
+            'AI features: 200 credits/month',
           ],
         };
-      case SubscriptionTier.artistBasic:
+      case SubscriptionTier.starter:
         return {
-          'name': 'Artist Basic',
-          'price': 0.00,
-          'priceId': '',
+          'name': 'Starter',
+          'price': 4.99,
+          'priceId': 'price_starter_monthly_2025',
           'features': [
             'Artist profile page',
             'Up to 5 artwork listings',
             'Basic analytics',
             'Community features',
+            'AI features: 10 credits/month',
           ],
         };
       case SubscriptionTier.free:
         return {
-          'name': 'None',
+          'name': 'Free',
           'price': 0.00,
           'priceId': '',
-          'features': <String>[],
+          'features': [
+            'Artist profile page',
+            'Community features',
+            'Basic support',
+          ],
+        };
+      case SubscriptionTier.enterprise:
+        return {
+          'name': 'Enterprise',
+          'price': 79.99,
+          'priceId': 'price_enterprise_monthly_2025',
+          'features': [
+            'All Business features',
+            'White-label branding',
+            'Dedicated account manager',
+            'SLA guarantee',
+            'Custom integrations',
+            'AI features: 1000 credits/month',
+          ],
         };
     }
   }

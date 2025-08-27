@@ -184,7 +184,7 @@ class AdminUploadGalleryScreen extends StatelessWidget {
     body: const AdminUploadForm(
       label: 'Upload Gallery',
       hint: 'Enter gallery data (JSON, ID, etc)',
-      uploadType: 'gallery',
+      uploadType: 'business',
     ),
   );
 }

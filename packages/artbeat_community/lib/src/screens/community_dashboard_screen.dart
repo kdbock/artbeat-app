@@ -556,7 +556,11 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                     backgroundImage:
                                         (artist['avatar'] != null &&
                                             (artist['avatar'] as String)
-                                                .isNotEmpty)
+                                                .isNotEmpty &&
+                                            Uri.tryParse(
+                                                  artist['avatar'] as String,
+                                                )?.hasScheme ==
+                                                true)
                                         ? NetworkImage(
                                             artist['avatar'] as String,
                                           )
@@ -564,7 +568,11 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                     child:
                                         (artist['avatar'] == null ||
                                             (artist['avatar'] as String)
-                                                .isEmpty)
+                                                .isEmpty ||
+                                            Uri.tryParse(
+                                                  artist['avatar'] as String,
+                                                )?.hasScheme !=
+                                                true)
                                         ? const Icon(Icons.person, size: 30)
                                         : null,
                                   ),
@@ -1050,68 +1058,8 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
     return Container(
       margin: const EdgeInsets.only(top: 8),
       color: Colors.white,
-      padding: const EdgeInsets.all(20),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-              ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
-          ),
-        ),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.palette,
-              size: 48,
-              color: ArtbeatColors.primaryPurple,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Are You An Artist?',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: ArtbeatColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Join our community of creators and showcase your work to art enthusiasts worldwide.',
-              style: TextStyle(
-                fontSize: 14,
-                color: ArtbeatColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/artist/onboarding');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ArtbeatColors.primaryPurple,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-              ),
-              child: const Text('Become an Artist'),
-            ),
-          ],
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: new CompactArtistCTAWidget(),
     );
   }
 
@@ -1319,7 +1267,11 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                       backgroundImage:
                                           (artist['avatar'] != null &&
                                               (artist['avatar'] as String)
-                                                  .isNotEmpty)
+                                                  .isNotEmpty &&
+                                              Uri.tryParse(
+                                                    artist['avatar'] as String,
+                                                  )?.hasScheme ==
+                                                  true)
                                           ? NetworkImage(
                                               artist['avatar'] as String,
                                             )
@@ -1327,7 +1279,11 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                       child:
                                           (artist['avatar'] == null ||
                                               (artist['avatar'] as String)
-                                                  .isEmpty)
+                                                  .isEmpty ||
+                                              Uri.tryParse(
+                                                    artist['avatar'] as String,
+                                                  )?.hasScheme !=
+                                                  true)
                                           ? const Icon(Icons.person, size: 26)
                                           : null,
                                     ),

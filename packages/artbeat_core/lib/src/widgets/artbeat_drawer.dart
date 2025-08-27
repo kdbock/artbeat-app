@@ -78,24 +78,117 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
     String route,
     bool isMainRoute,
   ) {
-    try {
-      debugPrint('🔄 Navigating to: $route (isMainRoute: $isMainRoute)');
-      if (isMainRoute) {
-        Navigator.pushReplacementNamed(context, route);
-      } else {
-        Navigator.pushNamed(context, route);
+    // List of implemented routes based on app_router.dart
+    final implementedRoutes = {
+      '/dashboard',
+      '/profile',
+      '/profile/edit',
+      '/login',
+      '/register',
+      '/artist/dashboard',
+      '/artist/onboarding',
+      '/artist/profile-edit',
+      '/artist/public-profile',
+      '/artist/analytics',
+      '/artist/artwork',
+      '/artist/feed',
+      '/artist/browse',
+      '/artist/approved-ads',
+      '/artwork/upload',
+      '/artwork/browse',
+      '/artwork/edit',
+      '/artwork/featured',
+      '/artwork/search',
+      '/artwork/recent',
+      '/artwork/trending',
+      '/gallery/artists-management',
+      '/gallery/analytics',
+      '/community/dashboard',
+      '/community/feed',
+      '/community/artists',
+      '/community/search',
+      '/community/posts',
+      '/community/studios',
+      '/community/gifts',
+      '/community/portfolios',
+      '/community/moderation',
+      '/community/sponsorships',
+      '/community/settings',
+      '/art-walk/map',
+      '/art-walk/list',
+      '/art-walk/detail',
+      '/art-walk/create',
+      '/messaging',
+      '/messaging/new',
+      '/messaging/chat',
+      '/events',
+      '/events/discover',
+      '/events/dashboard',
+      '/events/artist-dashboard',
+      '/events/create',
+      '/admin/dashboard',
+      '/admin/users',
+      '/admin/moderation',
+      '/settings/account',
+      '/settings/notifications',
+      '/settings/privacy',
+      '/settings/security',
+      '/captures',
+      '/capture/camera',
+      '/capture/dashboard',
+      '/ads/create',
+      '/ads/management',
+      '/ads/statistics',
+      '/subscription/comparison',
+      '/subscription/plans',
+      '/achievements',
+      '/achievements/info',
+      '/notifications',
+      '/search',
+      '/search/results',
+      '/feedback',
+      '/developer-feedback-admin',
+    };
+
+    if (implementedRoutes.contains(route)) {
+      try {
+        debugPrint('🔄 Navigating to: $route (isMainRoute: $isMainRoute)');
+        if (isMainRoute) {
+          Navigator.pushReplacementNamed(context, route);
+        } else {
+          Navigator.pushNamed(context, route);
+        }
+      } catch (error) {
+        debugPrint('⚠️ Navigation error for route $route: $error');
+        _showError(snackBarContext, error.toString());
       }
-    } catch (error) {
-      debugPrint('⚠️ Navigation error for route $route: $error');
-      if (mounted) {
-        ScaffoldMessenger.of(snackBarContext).showSnackBar(
-          SnackBar(
-            content: Text('Navigation error: ${error.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
+    } else {
+      // Show "Coming Soon" dialog for unimplemented routes
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Coming Soon'),
+          content: Text('The $route feature is coming soon!'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showError(BuildContext context, String error) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Navigation error: $error'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
     }
   }
 

@@ -362,300 +362,326 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Create Account',
-        showLogo: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ArtbeatColors.primaryPurple.withAlphaValue(0.05),
-              Colors.white,
-              ArtbeatColors.accent2.withAlphaValue(0.05),
-            ],
+      body: SizedBox.expand(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                ArtbeatColors.primaryPurple.withAlphaValue(0.05),
+                Colors.white,
+                ArtbeatColors.accent2.withAlphaValue(0.05),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  // Animated logo
-                  TweenAnimationBuilder(
-                    duration: const Duration(seconds: 2),
-                    tween: Tween<double>(begin: 0.8, end: 1.0),
-                    builder: (context, double value, child) {
-                      return Transform.scale(scale: value, child: child);
-                    },
-                    child: Image.asset(
-                      'assets/images/artbeat_logo.png',
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Join ARTbeat',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: ArtbeatColors.primaryPurple,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Create your account to start your artistic journey',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: ArtbeatColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: ArtbeatColors.error.withAlphaValue(0.1),
-                        borderRadius: BorderRadius.circular(12),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    // Animated logo
+                    TweenAnimationBuilder(
+                      duration: const Duration(seconds: 2),
+                      tween: Tween<double>(begin: 0.8, end: 1.0),
+                      builder: (context, double value, child) {
+                        return Transform.scale(scale: value, child: child);
+                      },
+                      child: Image.asset(
+                        'assets/images/artbeat_logo.png',
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.contain,
                       ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: ArtbeatColors.error,
-                            size: 24,
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Join ARTbeat',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        color: ArtbeatColors.primaryPurple,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Create your account to start your artistic journey',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: ArtbeatColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ArtbeatColors.error.withAlphaValue(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: ArtbeatColors.error,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: ArtbeatColors.error),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    // Name fields in a row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ArtbeatInput(
+                            controller: _firstNameController,
+                            label: 'First Name',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: ArtbeatColors.error),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ArtbeatInput(
+                            controller: _lastNameController,
+                            label: 'Last Name',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Required';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ArtbeatInput(
+                            controller: _zipCodeController,
+                            label: 'ZIP Code',
+                            keyboardType: TextInputType.number,
+                            prefixIcon: const Icon(Icons.location_on_outlined),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Required';
+                              }
+                              if (value.length != 5) {
+                                return 'Invalid ZIP';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        IconButton(
+                          onPressed: _getZipCodeFromLocation,
+                          icon: const Icon(Icons.my_location),
+                          color: ArtbeatColors.primaryPurple,
+                          tooltip: 'Use current location',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ArtbeatInput(
+                      controller: _emailController,
+                      label: 'Email',
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(Icons.email_outlined),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Invalid email format';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ArtbeatInput(
+                      controller: _passwordController,
+                      label: 'Password',
+                      obscureText: _obscurePassword,
+                      prefixIcon: const Icon(Icons.lock_outlined),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        }
+                        if (value.length < 8) {
+                          return 'Password must be at least 8 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ArtbeatInput(
+                      controller: _confirmPasswordController,
+                      label: 'Confirm Password',
+                      obscureText: _obscureConfirmPassword,
+                      prefixIcon: const Icon(Icons.lock_outlined),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _agreedToTerms,
+                            onChanged: (value) {
+                              setState(() {
+                                _agreedToTerms = value ?? false;
+                              });
+                            },
+                            activeColor: ArtbeatColors.primaryPurple,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'I agree to the ',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                              children: [
+                                TextSpan(
+                                  text: 'Terms of Service',
+                                  style: const TextStyle(
+                                    color: ArtbeatColors.primaryPurple,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _navigateToTerms,
+                                ),
+                                const TextSpan(text: ' and '),
+                                TextSpan(
+                                  text: 'Privacy Policy',
+                                  style: const TextStyle(
+                                    color: ArtbeatColors.primaryPurple,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _navigateToPrivacyPolicy,
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  const SizedBox(height: 24),
-                  // Name fields in a row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ArtbeatInput(
-                          controller: _firstNameController,
-                          label: 'First Name',
-                          prefixIcon: const Icon(Icons.person_outline),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
-                          },
-                        ),
+                    const SizedBox(height: 24),
+                    Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ArtbeatInput(
-                          controller: _lastNameController,
-                          label: 'Last Name',
-                          prefixIcon: const Icon(Icons.person_outline),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Required';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ArtbeatInput(
-                          controller: _zipCodeController,
-                          label: 'ZIP Code',
-                          keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.location_on_outlined),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Required';
-                            }
-                            if (value.length != 5) {
-                              return 'Invalid ZIP';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      IconButton(
-                        onPressed: _getZipCodeFromLocation,
-                        icon: const Icon(Icons.my_location),
-                        color: ArtbeatColors.primaryPurple,
-                        tooltip: 'Use current location',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ArtbeatInput(
-                    controller: _emailController,
-                    label: 'Email',
-                    keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Invalid email format';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  ArtbeatInput(
-                    controller: _passwordController,
-                    label: 'Password',
-                    obscureText: _obscurePassword,
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a password';
-                      }
-                      if (value.length < 8) {
-                        return 'Password must be at least 8 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  ArtbeatInput(
-                    controller: _confirmPasswordController,
-                    label: 'Confirm Password',
-                    obscureText: _obscureConfirmPassword,
-                    prefixIcon: const Icon(Icons.lock_outlined),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off_outlined
-                            : Icons.visibility_outlined,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please confirm your password';
-                      }
-                      if (value != _passwordController.text) {
-                        return 'Passwords do not match';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: Checkbox(
-                          value: _agreedToTerms,
-                          onChanged: (value) {
-                            setState(() {
-                              _agreedToTerms = value ?? false;
-                            });
-                          },
-                          activeColor: ArtbeatColors.primaryPurple,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text.rich(
-                          TextSpan(
-                            text: 'I agree to the ',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            children: [
-                              TextSpan(
-                                text: 'Terms of Service',
-                                style: const TextStyle(
-                                  color: ArtbeatColors.primaryPurple,
-                                  fontWeight: FontWeight.w600,
+                      clipBehavior: Clip.antiAlias,
+                      child: ArtbeatButton(
+                        onPressed: _isLoading ? null : _handleRegister,
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
                                 ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = _navigateToTerms,
-                              ),
-                              const TextSpan(text: ' and '),
-                              TextSpan(
-                                text: 'Privacy Policy',
-                                style: const TextStyle(
-                                  color: ArtbeatColors.primaryPurple,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = _navigateToPrivacyPolicy,
-                              ),
-                            ],
+                              )
+                            : const Text('Register'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            ArtbeatColors.primaryPurple,
+                            ArtbeatColors.primaryGreen,
+                          ],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () => Navigator.pushReplacementNamed(
+                            context,
+                            AuthRoutes.login,
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Already have an account? Log in',
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  ArtbeatButton(
-                    onPressed: _isLoading ? null : _handleRegister,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Register'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => Navigator.pushReplacementNamed(
-                      context,
-                      AuthRoutes.login,
                     ),
-                    child: Text(
-                      'Already have an account? Log in',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: ArtbeatColors.primaryPurple,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

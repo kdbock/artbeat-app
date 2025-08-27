@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_artwork/artbeat_artwork.dart' show ArtworkModel;
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_core/artbeat_core.dart';
 
 import '../models/filter_types.dart';
@@ -84,7 +84,9 @@ class FilterService {
   }
 
   /// Filter artworks based on parameters
-  Future<List<ArtworkModel>> filterArtwork(FilterParameters params) async {
+  Future<List<artwork.ArtworkModel>> filterArtwork(
+    FilterParameters params,
+  ) async {
     try {
       Query query = _firestore.collection('artwork');
 
@@ -134,9 +136,9 @@ class FilterService {
       }
 
       final snapshot = await query.get();
-      List<ArtworkModel> artworks = snapshot.docs.map((doc) {
+      List<artwork.ArtworkModel> artworks = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        return ArtworkModel(
+        return artwork.ArtworkModel(
           id: doc.id,
           userId: data['userId'] as String? ?? '',
           artistProfileId: data['artistProfileId'] as String? ?? '',

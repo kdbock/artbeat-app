@@ -139,7 +139,7 @@ void main() {
         final userTypes = [
           {'id': 'artist-user', 'name': 'Artist User', 'type': 'artist'},
           {'id': 'regular-user', 'name': 'Regular User', 'type': 'user'},
-          {'id': 'gallery-user', 'name': 'Gallery User', 'type': 'gallery'},
+          {'id': 'gallery-user', 'name': 'Gallery User', 'type': 'business'},
           {
             'id': 'enthusiast-user',
             'name': 'Art Enthusiast',

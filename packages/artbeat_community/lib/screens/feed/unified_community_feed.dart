@@ -353,7 +353,10 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
           final index = _posts.indexWhere((p) => p.id == post.id);
           if (index != -1) {
             _posts[index] = post.copyWith(
-              applauseCount: post.applauseCount + 1,
+              engagementStats: post.engagementStats.copyWith(
+                appreciateCount: post.applauseCount + 1,
+                lastUpdated: DateTime.now(),
+              ),
             );
             debugPrint(
               'Updated local post applause count to ${_posts[index].applauseCount}',
@@ -408,7 +411,12 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
       setState(() {
         final index = _posts.indexWhere((p) => p.id == post.id);
         if (index != -1) {
-          _posts[index] = post.copyWith(shareCount: post.shareCount + 1);
+          _posts[index] = post.copyWith(
+            engagementStats: post.engagementStats.copyWith(
+              amplifyCount: post.shareCount + 1,
+              lastUpdated: DateTime.now(),
+            ),
+          );
         }
       });
     } catch (e) {

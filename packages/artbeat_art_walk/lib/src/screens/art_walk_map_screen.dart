@@ -618,50 +618,37 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter Art'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: const Text('All Art'),
-              subtitle: const Text('Public art + captured art'),
-              value: 'all',
-              groupValue: _artFilter,
-              onChanged: (value) {
-                Navigator.of(context).pop();
-                _changeFilter(value!);
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Public Art Only'),
-              subtitle: const Text('Curated public art pieces'),
-              value: 'public',
-              groupValue: _artFilter,
-              onChanged: (value) {
-                Navigator.of(context).pop();
-                _changeFilter(value!);
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Community Captures'),
-              subtitle: const Text('Art captured by community'),
-              value: 'captures',
-              groupValue: _artFilter,
-              onChanged: (value) {
-                Navigator.of(context).pop();
-                _changeFilter(value!);
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('My Captures'),
-              subtitle: const Text('Art you\'ve captured'),
-              value: 'my_captures',
-              groupValue: _artFilter,
-              onChanged: (value) {
-                Navigator.of(context).pop();
-                _changeFilter(value!);
-              },
-            ),
-          ],
+        content: RadioGroup<String>(
+          groupValue: _artFilter,
+          onChanged: (value) {
+            Navigator.of(context).pop();
+            _changeFilter(value!);
+          },
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile<String>(
+                title: Text('All Art'),
+                subtitle: Text('Public art + captured art'),
+                value: 'all',
+              ),
+              RadioListTile<String>(
+                title: Text('Public Art Only'),
+                subtitle: Text('Curated public art pieces'),
+                value: 'public',
+              ),
+              RadioListTile<String>(
+                title: Text('Community Captures'),
+                subtitle: Text('Art captured by community'),
+                value: 'captures',
+              ),
+              RadioListTile<String>(
+                title: Text('My Captures'),
+                subtitle: Text('Art you\'ve captured'),
+                value: 'my_captures',
+              ),
+            ],
+          ),
         ),
       ),
     );

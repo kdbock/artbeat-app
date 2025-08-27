@@ -1,846 +1,499 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
-// Core imports
-import '../models/user_model.dart';
-import '../models/artist_profile_model.dart';
-import '../models/event_model.dart';
-import '../models/capture_model.dart';
-import '../services/user_service.dart';
-import 'base_view_model.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart'
-    show RewardsService, ArtWalkModel, ArtWalkService;
-
-// External package imports
-import 'package:artbeat_capture/artbeat_capture.dart' show CaptureService;
-import 'package:artbeat_artwork/artbeat_artwork.dart'
-    show ArtworkService, ArtworkModel;
+import 'package:artbeat_core/artbeat_core.dart';
 import '../utils/location_utils.dart';
-import 'package:artbeat_community/artbeat_community.dart'
-    show CommunityService, PostModel;
-import 'package:artbeat_art_walk/src/services/achievement_service.dart'
-    as art_walk_achievement;
-import 'package:artbeat_art_walk/src/models/achievement_model.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_artist/artbeat_artist.dart' as artist_profile;
+import 'package:artbeat_events/artbeat_events.dart' as eventLib;
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artworkLib;
+import 'package:artbeat_capture/artbeat_capture.dart';
 
-import '../widgets/achievement_badge.dart' show AchievementBadgeData;
-
-/// ViewModel for managing dashboard state and business logic
-class DashboardViewModel extends BaseViewModel {
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // Services
-  final UserService _userService = UserService();
-  final ArtWalkService _artWalkService = ArtWalkService();
-  final CaptureService _captureService = CaptureService();
-  final RewardsService _rewardsService = RewardsService();
-  final art_walk_achievement.AchievementService _achievementService =
-      art_walk_achievement.AchievementService();
-  final ArtworkService _artworkService = ArtworkService();
-  final CommunityService _communityService = CommunityService();
-
+class DashboardViewModel extends ChangeNotifier {
+  final eventLib.EventService _eventService;
+  final artworkLib.ArtworkService _artworkService;
+  final ArtWalkService _artWalkService;
+  final SubscriptionService _subscriptionService;
+  final UserService _userService;
+  final CaptureService _captureService;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Authentication state
-  bool get _isAuthenticated => _auth.currentUser != null;
-
-  // Initialization state
-  bool _isInitialized = false;
-  bool _isInitializing = false;
-
-  // Rest of state
-  int _bottomNavIndex = 0;
-  bool _isAchievementsExpanded = false;
-  GoogleMapController? _mapController;
-  bool _isLoadingMap = false;
   UserModel? _currentUser;
-  bool _isLoadingUser = false;
-  List<CaptureModel> _captures = [];
-  bool _isLoadingCaptures = false;
-  String? _capturesError;
-  List<CaptureModel> _allCaptures = [];
-  bool _isLoadingAllCaptures = false;
-  String? _allCapturesError;
-  List<ArtistProfileModel> _artists = [];
-  bool _isLoadingArtists = false;
-  String? _artistsError;
-  List<ArtistProfileModel> _featuredArtists = [];
-  bool _isLoadingFeaturedArtists = false;
-  String? _featuredArtistsError;
-  List<ArtworkModel> _artworks = [];
-  bool _isLoadingArtworks = false;
-  String? _artworksError;
-  List<EventModel> _events = [];
-  bool _isLoadingEvents = false;
-  String? _eventsError;
-  List<PostModel> _posts = [];
-  bool _isLoadingPosts = false;
-  String? _postsError;
-  List<AchievementBadgeData> _achievements = [];
-  bool _isLoadingAchievements = false;
+  bool _isInitializing = true;
+  bool _isLoadingEvents = true;
+  bool _isLoadingUpcomingEvents = true;
+  bool _isLoadingArtwork = true;
+  bool _isLoadingArtists = true;
+  bool _isLoadingLocation = true;
   bool _isMapPreviewReady = false;
-  LatLng? _currentLocation;
+  bool _isLoadingMap = false;
+  bool _isLoadingAchievements = true;
+  bool _isLoadingLocalCaptures = true;
+
+  String? _eventsError;
+  String? _upcomingEventsError;
+  String? _artworkError;
+  String? _achievementsError;
+  String? _artistsError;
+  String? _locationError;
+  String? _localCapturesError;
+
+  List<EventModel> _events = [];
+  List<EventModel> _upcomingEvents = [];
+  List<ArtworkModel> _artwork = [];
+  List<ArtistProfileModel> _artists = [];
   Set<Marker> _markers = {};
-  List<ArtWalkModel> _userArtWalks = [];
-  bool _isLoadingUserArtWalks = false;
-  String? _userArtWalksError;
+  Position? _currentLocation;
+  LatLng? _mapLocation;
+  List<AchievementModel> _achievements = [];
+  List<CaptureModel> _localCaptures = [];
 
-  CameraPosition _initialCameraPosition = const CameraPosition(
-    target: LatLng(35.7796, -78.6382), // Default to Raleigh, NC
-    zoom: 12,
-  );
+  DashboardViewModel({
+    required eventLib.EventService eventService,
+    required artworkLib.ArtworkService artworkService,
+    required ArtWalkService artWalkService,
+    required SubscriptionService subscriptionService,
+    required UserService userService,
+    CaptureService? captureService,
+  }) : _eventService = eventService,
+       _artworkService = artworkService,
+       _artWalkService = artWalkService,
+       _subscriptionService = subscriptionService,
+       _userService = userService,
+       _captureService = captureService ?? CaptureService();
 
-  // Getters
-
-  bool get isLoadingMap => _isLoadingMap;
-  UserModel? get currentUser => _currentUser;
-  bool get isLoadingUser => _isLoadingUser;
-  List<CaptureModel> get captures => _captures;
-  bool get isLoadingCaptures => _isLoadingCaptures;
-  String? get capturesError => _capturesError;
-  List<CaptureModel> get allCaptures => _allCaptures;
-  bool get isLoadingAllCaptures => _isLoadingAllCaptures;
-  String? get allCapturesError => _allCapturesError;
-  List<ArtistProfileModel> get artists => _artists;
-  bool get isLoadingArtists => _isLoadingArtists;
-  String? get artistsError => _artistsError;
-  List<ArtistProfileModel> get featuredArtists => _featuredArtists;
-  bool get isLoadingFeaturedArtists => _isLoadingFeaturedArtists;
-  String? get featuredArtistsError => _featuredArtistsError;
-  List<ArtworkModel> get artworks => _artworks;
-  bool get isLoadingArtworks => _isLoadingArtworks;
-  String? get artworksError => _artworksError;
-  List<EventModel> get events => _events;
-  bool get isLoadingEvents => _isLoadingEvents;
-  String? get eventsError => _eventsError;
-  List<PostModel> get posts => _posts;
-  bool get isLoadingPosts => _isLoadingPosts;
-  String? get postsError => _postsError;
-  List<AchievementBadgeData> get achievements => _achievements;
-  bool get isLoadingAchievements => _isLoadingAchievements;
-  bool get isAchievementsExpanded => _isAchievementsExpanded;
-  bool get isMapPreviewReady => _isMapPreviewReady;
-  LatLng? get currentLocation => _currentLocation;
-  Set<Marker> get markers => _markers;
-  CameraPosition get initialCameraPosition => _initialCameraPosition;
-  List<ArtWalkModel> get userArtWalks => _userArtWalks;
-  bool get isLoadingUserArtWalks => _isLoadingUserArtWalks;
-  String? get userArtWalksError => _userArtWalksError;
-  int get bottomNavIndex => _bottomNavIndex;
-  bool get isInitialized => _isInitialized;
-  bool get isInitializing => _isInitializing;
-
-  /// Initialize the view model
+  /// Initializes dashboard data and state
   Future<void> initialize() async {
-    // Prevent multiple initializations
-    if (_isInitialized || _isInitializing) {
-      debugPrint(
-        '🔄 DashboardViewModel: Already initialized or initializing, skipping',
-      );
-      return;
-    }
-
-    _isInitializing = true;
-    _isLoadingUser = true;
-    notifyListeners();
+    if (!_isInitializing) return; // Prevent multiple initializations
 
     try {
-      if (_isAuthenticated) {
-        debugPrint('🔄 DashboardViewModel: Starting initialization');
+      _resetLoadingStates();
+      // First load current user since other operations depend on it
+      await _loadCurrentUser();
+      debugPrint('👤 Current user loaded: ${_currentUser?.id}');
 
-        // Phase 1: Load critical user data first
-        _currentUser = await _userService.getCurrentUserModel();
-        _isLoadingUser = false; // Show dashboard structure immediately
-        notifyListeners();
-
-        // Phase 2: Load priority content immediately (non-blocking)
-        _loadPriorityContent();
-
-        // Phase 3: Load remaining content progressively in background
-        _loadSecondaryContent();
-
-        _isInitialized = true;
-        debugPrint('✅ DashboardViewModel: Initialization completed');
-      }
-    } catch (e) {
-      debugPrint('❌ DashboardViewModel: Error initializing: $e');
-      _isLoadingUser = false;
-      notifyListeners();
+      // Then load all other data in parallel
+      await Future.wait<void>([
+        _loadEvents(),
+        _loadArtwork(),
+        _loadArtists(),
+        _loadLocation(),
+        _loadAchievements(),
+        _loadLocalCaptures(),
+      ]);
+    } catch (e, stack) {
+      debugPrint('❌ Error initializing dashboard: $e');
+      debugPrint('❌ Stack trace: $stack');
     } finally {
       _isInitializing = false;
       notifyListeners();
     }
   }
 
-  /// Load user-created art walks
-  Future<void> loadUserArtWalks() async {
-    _isLoadingUserArtWalks = true;
-    _userArtWalksError = null;
-    notifyListeners();
-
-    try {
-      final userId = _currentUser?.id;
-      if (userId == null) {
-        _userArtWalks = [];
-        return;
-      }
-      final walks = await _artWalkService.getUserArtWalks(userId);
-      _userArtWalks = walks;
-    } catch (e) {
-      _userArtWalksError = e.toString();
-      debugPrint('Error loading user art walks: $e');
-    } finally {
-      _isLoadingUserArtWalks = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load priority content immediately (non-blocking)
-  void _loadPriorityContent() {
-    // Load featured artists first as they're most visible
-    loadFeaturedArtists();
-
-    // Load user's captures for immediate display
-    if (_currentUser != null) {
-      loadCaptures();
-      // Load achievements for the user experience section
-      loadAchievements();
-    }
-  }
-
-  /// Load secondary content progressively
-  void _loadSecondaryContent() {
-    // Stagger loading to prevent UI blocking
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (!_isInitialized) return;
-      loadArtworks();
-      loadPosts();
-    });
-
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!_isInitialized) return;
-      loadEvents();
-      loadUserArtWalks();
-    });
-
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (!_isInitialized) return;
-      loadAllCaptures();
-    });
-  }
-
-  /// Refresh all dashboard data
-  Future<void> refresh() async {
-    debugPrint('🔄 DashboardViewModel: Refreshing data');
-    _isInitialized = false;
-    _isInitializing = false;
-    await initialize();
-  }
-
-  /// Load current user data
-  Future<void> loadUserData() async {
-    _isLoadingUser = true;
-    notifyListeners();
-
-    try {
-      final user = await _userService.getCurrentUserModel();
-      _currentUser = user;
-
-      // Once user is loaded, reload captures with user context
-      if (_currentUser != null) {
-        await loadCaptures();
-      }
-    } catch (e) {
-      debugPrint('Error loading user data: $e');
-    } finally {
-      _isLoadingUser = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load user's captures
-  Future<void> loadCaptures() async {
-    if (_isLoadingCaptures) {
-      debugPrint('🔄 CaptureService: Already loading captures, skipping');
-      return;
-    }
-
-    _isLoadingCaptures = true;
-    _capturesError = null;
-    notifyListeners();
-
-    try {
-      final userId = _currentUser?.id;
-      if (userId == null) {
-        _captures = [];
-        return;
-      }
-
-      final captures = await _captureService.getCapturesForUser(userId);
-
-      _captures = captures;
-      _updateMapMarkers();
-    } catch (e) {
-      _capturesError = e.toString();
-      debugPrint('Error loading captures: $e');
-    } finally {
-      _isLoadingCaptures = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load all public captures for the dashboard
-  Future<void> loadAllCaptures() async {
-    if (_isLoadingAllCaptures) {
-      debugPrint('🔄 CaptureService: Already loading all captures, skipping');
-      return;
-    }
-
-    _isLoadingAllCaptures = true;
-    _allCapturesError = null;
-    notifyListeners();
-
-    try {
-      final allCaptures = await _captureService.getAllCaptures();
-      _allCaptures = allCaptures;
-    } catch (e) {
-      _allCapturesError = e.toString();
-      debugPrint('Error loading all captures: $e');
-    } finally {
-      _isLoadingAllCaptures = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load all artists
-  Future<void> loadArtists() async {
-    if (_isLoadingArtists) {
-      debugPrint('🔄 ArtistService: Already loading artists, skipping');
-      return;
-    }
-
-    debugPrint('🎨 Loading ALL artists...');
-    _isLoadingArtists = true;
-    _artistsError = null;
-    notifyListeners();
-
-    try {
-      final QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('artistProfiles')
-          .where('userType', isEqualTo: 'artist')
-          .get();
-
-      final List<ArtistProfileModel> allArtists = [];
-
-      for (var doc in snapshot.docs) {
-        if (!doc.exists) continue;
-        try {
-          final profile = ArtistProfileModel.fromFirestore(doc);
-          allArtists.add(profile);
-        } catch (e) {
-          debugPrint('Error parsing artist profile: $e');
-        }
-      }
-
-      // Sort by most recently updated
-      allArtists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      _artists = allArtists;
-    } catch (e) {
-      _artistsError = e.toString();
-      debugPrint('Error loading artists: $e');
-    } finally {
-      _isLoadingArtists = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load featured artists
-  Future<void> loadFeaturedArtists() async {
-    if (_isLoadingFeaturedArtists) {
-      debugPrint(
-        '🔄 ArtistService: Already loading featured artists, skipping',
-      );
-      return;
-    }
-
-    debugPrint('🎨 Loading FEATURED artists...');
-    _isLoadingFeaturedArtists = true;
-    _featuredArtistsError = null;
-    notifyListeners();
-
-    try {
-      final QuerySnapshot snapshot = await FirebaseFirestore.instance
-          .collection('artistProfiles')
-          .where('userType', isEqualTo: 'artist')
-          .where('isFeatured', isEqualTo: true)
-          .get();
-
-      final List<ArtistProfileModel> featuredArtists = [];
-
-      for (var doc in snapshot.docs) {
-        if (!doc.exists) continue;
-        try {
-          final profile = ArtistProfileModel.fromFirestore(doc);
-          featuredArtists.add(profile);
-        } catch (e) {
-          debugPrint('Error parsing featured artist profile: $e');
-        }
-      }
-
-      // Sort by most recently updated
-      featuredArtists.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      _featuredArtists = featuredArtists;
-
-      // Debug: Log the featured artists that were loaded
-      debugPrint('🎨 Featured Artists loaded: ${featuredArtists.length}');
-      for (var artist in featuredArtists) {
-        debugPrint(
-          '  - ${artist.displayName} (${artist.userId}) - Featured: ${artist.isFeatured}',
-        );
-      }
-    } catch (e) {
-      _featuredArtistsError = e.toString();
-      debugPrint('Error loading featured artists: $e');
-    } finally {
-      _isLoadingFeaturedArtists = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load all artworks
-  Future<void> loadArtworks() async {
-    _isLoadingArtworks = true;
-    _artworksError = null;
-    notifyListeners();
-
-    try {
-      final artworks = await _artworkService.getAllArtwork(limit: 50);
-      _artworks = artworks;
-    } catch (e) {
-      _artworksError = e.toString();
-      debugPrint('Error loading artworks: $e');
-    } finally {
-      _isLoadingArtworks = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load upcoming events near the user's location
-  Future<void> loadEvents() async {
+  void _resetLoadingStates() {
     _isLoadingEvents = true;
-    _eventsError = null;
-    notifyListeners();
-
-    try {
-      if (_currentLocation == null) {
-        // Default to loading events in Raleigh if location not available
-        _currentLocation = const LatLng(35.7796, -78.6382);
-      }
-
-      // Query events within ~25 miles of current location
-      // First try with both filters, fallback to single filter if composite index missing
-      QuerySnapshot? snapshots;
-      try {
-        snapshots = await FirebaseFirestore.instance
-            .collection('events')
-            .where(
-              'dateTime',
-              isGreaterThan: Timestamp.fromDate(DateTime.now()),
-            )
-            .where('isPublic', isEqualTo: true)
-            .orderBy('dateTime')
-            .limit(10)
-            .get();
-      } catch (e) {
-        // Fallback to single filter if composite index not available
-        debugPrint(
-          'Composite index not available, falling back to single filter',
-        );
-        snapshots = await FirebaseFirestore.instance
-            .collection('events')
-            .where('isPublic', isEqualTo: true)
-            .orderBy('dateTime')
-            .limit(10)
-            .get();
-      }
-
-      final List<EventModel> filteredEvents = [];
-      for (var doc in snapshots.docs) {
-        final event = EventModel.fromFirestore(doc);
-
-        // Filter for future events if we used the fallback query
-        if (event.startDate.isBefore(DateTime.now())) {
-          continue;
-        }
-
-        if (_currentLocation != null) {
-          final eventLocation = await LocationUtils.getLocationFromAddress(
-            event.location,
-          );
-          if (eventLocation != null) {
-            final currentLoc = _currentLocation!;
-            final distance = LocationUtils.calculateDistance(
-              currentLoc.latitude,
-              currentLoc.longitude,
-              eventLocation.latitude,
-              eventLocation.longitude,
-            );
-            if (distance <= 40233.6) {
-              // ~25 miles in meters
-              filteredEvents.add(event);
-            }
-          } else {
-            // If location can't be resolved, include the event
-            filteredEvents.add(event);
-          }
-        } else {
-          filteredEvents.add(event);
-        }
-      }
-      _events = filteredEvents;
-    } catch (e) {
-      _eventsError = e.toString();
-      debugPrint('Error loading events: $e');
-    } finally {
-      _isLoadingEvents = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load community posts
-  Future<void> loadPosts() async {
-    _isLoadingPosts = true;
-    _postsError = null;
-    notifyListeners();
-
-    try {
-      final posts = await _communityService.getPosts(limit: 10);
-      _posts = posts;
-    } catch (e) {
-      _postsError = e.toString();
-      debugPrint('Error loading posts: $e');
-    } finally {
-      _isLoadingPosts = false;
-      notifyListeners();
-    }
-  }
-
-  /// Load user achievements/badges
-  Future<void> loadAchievements() async {
+    _isLoadingUpcomingEvents = true;
+    _isLoadingArtwork = true;
+    _isLoadingArtists = true;
+    _isLoadingLocation = true;
     _isLoadingAchievements = true;
+    _isLoadingLocalCaptures = true;
     notifyListeners();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    if (_auth.currentUser == null) {
+      _currentUser = null;
+      return;
+    }
 
     try {
-      final userId = _currentUser?.id;
-      if (userId == null) {
+      _currentUser = await _userService.getCurrentUserModel();
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+      _currentUser = null;
+    }
+  }
+
+  // Getters
+  bool get isInitializing => _isInitializing;
+  bool get isLoadingEvents => _isLoadingEvents;
+  bool get isLoadingUpcomingEvents => _isLoadingUpcomingEvents;
+  bool get isLoadingArtwork => _isLoadingArtwork;
+  bool get isLoadingArtists => _isLoadingArtists;
+  bool get isLoadingLocation => _isLoadingLocation;
+  bool get isMapPreviewReady => _isMapPreviewReady;
+  bool get isLoadingMap => _isLoadingMap;
+  bool get isLoadingLocalCaptures => _isLoadingLocalCaptures;
+  bool get isLoadingAchievements => _isLoadingAchievements;
+  bool get isAuthenticated => _auth.currentUser != null;
+  String? get eventsError => _eventsError;
+  String? get upcomingEventsError => _upcomingEventsError;
+  String? get artworkError => _artworkError;
+  String? get achievementsError => _achievementsError;
+  String? get artistsError => _artistsError;
+  String? get locationError => _locationError;
+  String? get localCapturesError => _localCapturesError;
+
+  List<EventModel> get events => List.unmodifiable(_events);
+  List<EventModel> get upcomingEvents => List.unmodifiable(_upcomingEvents);
+  List<ArtworkModel> get artwork => List.unmodifiable(_artwork);
+  List<ArtistProfileModel> get artists => List.unmodifiable(_artists);
+  Set<Marker> get markers => Set.unmodifiable(_markers);
+  Position? get currentLocation => _currentLocation;
+  List<AchievementModel> get achievements => List.unmodifiable(_achievements);
+  List<CaptureModel> get localCaptures => List.unmodifiable(_localCaptures);
+  LatLng? get mapLocation => _mapLocation;
+  UserModel? get currentUser => _currentUser;
+
+  // Methods
+  Future<void> refresh() async {
+    if (_isInitializing) {
+      // If still initializing, wait for it to complete
+      return;
+    }
+
+    try {
+      _resetLoadingStates();
+      await _loadCurrentUser();
+
+      await Future.wait<void>([
+        _loadEvents(),
+        _loadArtwork(),
+        _loadArtists(),
+        _loadLocation(),
+        _loadAchievements(),
+        _loadLocalCaptures(),
+      ]);
+    } catch (e, stack) {
+      debugPrint('❌ Error refreshing dashboard: $e');
+      debugPrint('❌ Stack trace: $stack');
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadAchievements() async {
+    try {
+      if (_currentUser == null) {
         _achievements = [];
-        debugPrint(
-          '🏆 DashboardViewModel: No user ID, cannot load achievements',
-        );
+        _achievementsError = null;
         return;
       }
 
-      debugPrint(
-        '🏆 DashboardViewModel: Loading achievements for user $userId',
-      );
-
-      // Load achievements from the AchievementService (the fixed one)
-      final achievementModels = await _achievementService.getUserAchievements();
-
-      debugPrint(
-        '🏆 DashboardViewModel: Found ${achievementModels.length} achievements',
-      );
-
-      // Convert AchievementModel to AchievementBadgeData for UI compatibility
-      final List<AchievementBadgeData> badgeData = [];
-
-      for (final achievement in achievementModels) {
-        final IconData icon = _getIconFromAchievementType(achievement.type);
-
-        badgeData.add(
-          AchievementBadgeData(
-            title: achievement.title,
-            description: achievement.description,
-            icon: icon,
-            isUnlocked: true, // All returned achievements are unlocked
-          ),
-        );
-
-        debugPrint(
-          '🏆 DashboardViewModel: Achievement - ${achievement.type.name}: ${achievement.title}',
-        );
-      }
-
-      _achievements = badgeData;
-      debugPrint(
-        '🏆 DashboardViewModel: Dashboard achievements loaded successfully',
-      );
+      _achievements = await _userService.getUserAchievements(_currentUser!.id);
+      _achievementsError = null;
     } catch (e) {
-      debugPrint('❌ DashboardViewModel: Error loading achievements: $e');
+      debugPrint('Error loading achievements: $e');
+      _achievementsError = e.toString();
+      _achievements = [];
     } finally {
       _isLoadingAchievements = false;
       notifyListeners();
     }
   }
 
-  /// DEBUG: Award test achievements for debugging
-  Future<void> debugAwardTestAchievements() async {
+  Future<void> _loadEvents() async {
     try {
-      final userId = _currentUser?.id;
-      if (userId == null) {
-        debugPrint('No user logged in, cannot award badges');
-        return;
-      }
-
-      // Award some test badges using RewardsService
-      const testBadges = [
-        'first_walk_completed',
-        'first_capture_approved',
-        'first_review_submitted',
-        'contributor_level_1',
-      ];
-
-      for (final badgeId in testBadges) {
-        await _rewardsService.awardBadge(userId, badgeId);
-      }
-
-      // Reload achievements to see the new ones
-      await loadAchievements();
-    } catch (e) {
-      debugPrint('Error awarding test achievements: $e');
-    }
-  }
-
-  /// Helper method to convert AchievementType to IconData
-  IconData _getIconFromAchievementType(AchievementType achievementType) {
-    switch (achievementType) {
-      case AchievementType.firstWalk:
-      case AchievementType.walkExplorer:
-      case AchievementType.walkMaster:
-      case AchievementType.marathonWalker:
-        return Icons.directions_walk;
-      case AchievementType.artCollector:
-      case AchievementType.artExpert:
-        return Icons.palette;
-      case AchievementType.photographer:
-        return Icons.photo_camera;
-      case AchievementType.contributor:
-      case AchievementType.curator:
-      case AchievementType.masterCurator:
-        return Icons.edit;
-      case AchievementType.commentator:
-        return Icons.comment;
-      case AchievementType.socialButterfly:
-        return Icons.groups;
-      case AchievementType.earlyAdopter:
-        return Icons.star;
-    }
-  }
-
-  /// Get user location
-  Future<void> getUserLocation() async {
-    try {
-      final position = await LocationUtils.getCurrentPosition();
-      final userLocation = LatLng(position.latitude, position.longitude);
-
-      _currentLocation = userLocation;
-      _updateMapMarkers();
-      _isMapPreviewReady = true;
+      _isLoadingEvents = true;
       notifyListeners();
+
+      final events = await _eventService.getUpcomingPublicEvents();
+      _events = events
+          .map(
+            (e) => EventModel(
+              id: e.id,
+              title: e.title,
+              description: e.description,
+              startDate: e.dateTime,
+              location: e.location,
+              artistId: e.artistId,
+              isPublic: e.isPublic,
+              attendeeIds: e.attendeeIds,
+              createdAt: e.createdAt,
+              updatedAt: e.updatedAt,
+              imageUrl: e.imageUrls.isNotEmpty ? e.imageUrls.first : null,
+              price: 0.0, // Default price
+            ),
+          )
+          .toList();
+      _eventsError = null;
     } catch (e) {
-      // Fallback to default location (Asheville, NC)
-      const defaultLocation = LatLng(35.5951, -82.5515);
-      _currentLocation = defaultLocation;
-      _updateMapMarkers();
-      _isMapPreviewReady = true;
-      notifyListeners();
-    }
-  }
-
-  // Map initialization callback
-  void onMapCreated(GoogleMapController controller) async {
-    _mapController = controller;
-    await _initializeMapLocation();
-    _isLoadingMap = false;
-    notifyListeners();
-  }
-
-  /// Initialize map location
-  Future<void> _initializeMapLocation() async {
-    try {
-      // Check location permission first
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        // Use default location if permission denied
-        debugPrint('Location permission denied, using default location');
-        _useDefaultLocation();
-        return;
-      }
-
-      final position = await Geolocator.getCurrentPosition();
-      _currentLocation = LatLng(position.latitude, position.longitude);
-      _initialCameraPosition = CameraPosition(
-        target: _currentLocation!,
-        zoom: 12,
-      );
-
-      _isMapPreviewReady = true;
-      final mapController = _mapController;
-      if (mapController != null) {
-        await mapController.animateCamera(
-          CameraUpdate.newCameraPosition(_initialCameraPosition),
-        );
-      }
-
-      _updateMapMarkers();
-      loadEvents(); // Reload events with new location
-    } catch (e) {
-      debugPrint('Error getting location: $e');
-      _useDefaultLocation();
+      debugPrint('Error loading events: $e');
+      _eventsError = e.toString();
+      _events = [];
     } finally {
-      _isLoadingMap = false;
+      _isLoadingEvents = false;
       notifyListeners();
     }
   }
 
-  /// Use default location when location access is not available
-  void _useDefaultLocation() {
-    const defaultLocation = LatLng(35.5951, -82.5515); // Asheville, NC
-    _currentLocation = defaultLocation;
-    _initialCameraPosition = const CameraPosition(
-      target: defaultLocation,
-      zoom: 12,
-    );
-    _isMapPreviewReady = true;
-    _updateMapMarkers();
-  }
-
-  /// Update map markers based on captures
-  void _updateMapMarkers() {
-    if (_captures.isEmpty || _currentLocation == null) return;
-
-    final newMarkers = <Marker>[];
-
-    for (final capture in _captures) {
-      try {
-        if (capture.location == null) continue;
-
-        final captureLocation = capture.location!;
-        final marker = Marker(
-          markerId: MarkerId(capture.id),
-          position: LatLng(captureLocation.latitude, captureLocation.longitude),
-          infoWindow: InfoWindow(
-            title: capture.title ?? 'Untitled Capture',
-            snippet: capture.description ?? capture.locationName,
-          ),
-        );
-
-        newMarkers.add(marker);
-      } catch (e) {
-        debugPrint('❌ Error creating marker for capture ${capture.id}: $e');
-        // Skip this capture and continue with others
-      }
-    }
-
-    _markers = newMarkers.toSet();
-    notifyListeners();
-  }
-
-  /// Centers the dashboard map on the user's current location
-  Future<void> centerMapOnUserLocation() async {
+  Future<void> _loadArtwork() async {
     try {
-      // Request location permission if needed
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) {
-          // Permission denied, show error or fallback
-          return;
-        }
+      _isLoadingArtwork = true;
+      notifyListeners();
+
+      final artworks = await _artworkService.getFeaturedArtwork();
+      _artwork = artworks
+          .map(
+            (a) => ArtworkModel(
+              id: a.id,
+              title: a.title,
+              description: a.description,
+              artistId: a.id, // Using artwork id as artist id for now
+              medium: 'digital', // Default medium
+              tags: const <String>[], // Empty tags list
+              imageUrl: a.imageUrl,
+              price: 0.0, // Default price
+              isSold: false, // Default not sold
+              applauseCount: 0, // Default applause count
+              createdAt: DateTime.now(),
+              viewsCount: 0, // Default views count
+              artistName: 'Featured Artist', // Default artist name
+            ),
+          )
+          .toList();
+      _artworkError = null;
+    } catch (e) {
+      debugPrint('Error loading artwork: $e');
+      _artworkError = e.toString();
+      _artwork = [];
+    } finally {
+      _isLoadingArtwork = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadArtists() async {
+    try {
+      _isLoadingArtists = true;
+      notifyListeners();
+
+      final profileService = artist_profile.ArtistProfileService();
+      final featuredArtists = await profileService.getFeaturedArtists(
+        limit: 10,
+      );
+      if (featuredArtists.isNotEmpty) {
+        _artists = featuredArtists;
+      } else {
+        // Fallback: load all artists if no featured
+        final allArtists = await profileService.getAllArtists(limit: 10);
+        _artists = allArtists;
       }
-      // Get current position using locationSettings
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
+      _artistsError = null;
+    } catch (e) {
+      debugPrint('Error loading artists: $e');
+      _artistsError = e.toString();
+      _artists = [];
+    } finally {
+      _isLoadingArtists = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadLocalCaptures() async {
+    try {
+      _isLoadingLocalCaptures = true;
+      notifyListeners();
+
+      // Get all captures
+      final allCaptures = await _captureService.getAllCaptures();
+
+      // Filter captures within 15 miles (24.14 km) of user location if available
+      if (_currentLocation != null) {
+        _localCaptures = allCaptures.where((capture) {
+          if (capture.location == null) {
+            return false;
+          }
+
+          final distance = Geolocator.distanceBetween(
+            _currentLocation!.latitude,
+            _currentLocation!.longitude,
+            capture.location!.latitude,
+            capture.location!.longitude,
+          );
+
+          // Convert meters to miles (1 mile = 1609.34 meters)
+          final distanceInMiles = distance / 1609.34;
+          return distanceInMiles <= 15.0;
+        }).toList();
+      } else {
+        // If no location available, show all captures (or limit to a reasonable number)
+        _localCaptures = allCaptures.take(10).toList();
+      }
+
+      _localCapturesError = null;
+    } catch (e) {
+      debugPrint('Error loading local captures: $e');
+      _localCapturesError = e.toString();
+      _localCaptures = [];
+    } finally {
+      _isLoadingLocalCaptures = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadLocation() async {
+    try {
+      _isLoadingLocation = true;
+      notifyListeners();
+
+      // Use LocationUtils with a shorter timeout and better error handling
+      final position =
+          await LocationUtils.getCurrentPosition(
+            timeoutDuration: const Duration(seconds: 5), // Reduced timeout
+          ).timeout(
+            const Duration(seconds: 8), // Overall timeout
+            onTimeout: () {
+              debugPrint('⚠️ Location request timed out after 8 seconds');
+              throw TimeoutException(
+                'Location request timed out',
+                const Duration(seconds: 8),
+              );
+            },
+          );
+
+      _currentLocation = position;
+      _mapLocation = LatLng(position.latitude, position.longitude);
+
+      await _loadNearbyArtMarkers();
+      _locationError = null;
+      debugPrint(
+        '✅ Location loaded successfully: ${position.latitude}, ${position.longitude}',
+      );
+    } catch (e) {
+      debugPrint('❌ Error loading location: $e');
+      _locationError = e.toString();
+
+      // Set default location to Raleigh, NC if location fails
+      _mapLocation = const LatLng(35.7796, -78.6382);
+      debugPrint('🌍 Using default location: Raleigh, NC');
+
+      // Still try to load markers for default location
+      try {
+        await _loadNearbyArtMarkers();
+      } catch (markerError) {
+        debugPrint(
+          '❌ Error loading markers for default location: $markerError',
+        );
+      }
+    } finally {
+      _isLoadingLocation = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadNearbyArtMarkers() async {
+    if (_mapLocation == null) return;
+
+    try {
+      final newMarkers = <Marker>{};
+
+      // Add current location marker if we have it
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('current_location'),
+          position: _mapLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueAzure,
+          ),
+          infoWindow: const InfoWindow(title: 'Current Location'),
         ),
       );
-      // Animate map camera to user location
-      final controller = _mapController;
-      if (controller != null) {
-        controller.animateCamera(
-          CameraUpdate.newLatLng(LatLng(position.latitude, position.longitude)),
+
+      // Get nearby art pieces from ArtWalk service
+      final nearbyArt = await _artWalkService.getPublicArtNearLocation(
+        latitude: _mapLocation!.latitude,
+        longitude: _mapLocation!.longitude,
+        radiusKm: 10, // 10km radius
+      );
+
+      // Add markers for each art piece
+      for (final art in nearbyArt) {
+        newMarkers.add(
+          Marker(
+            markerId: MarkerId('art_${art.id}'),
+            position: LatLng(art.location.latitude, art.location.longitude),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueViolet,
+            ),
+            infoWindow: InfoWindow(title: art.title, snippet: art.artistName),
+          ),
         );
       }
+
+      _markers = newMarkers;
+      _isMapPreviewReady = true;
+      notifyListeners();
     } catch (e) {
-      // Handle error (e.g., show a snackbar or log)
+      debugPrint('Error loading nearby art markers: $e');
+      _isMapPreviewReady = false;
+      notifyListeners();
     }
   }
 
-  /// Toggle achievements expansion
-  void toggleAchievementsExpansion() {
-    _isAchievementsExpanded = !_isAchievementsExpanded;
+  // Intentionally removed duplicate methods that were declared again below
+
+  Future<void> followArtist({required String artistId}) async {
+    if (!isAuthenticated) {
+      throw Exception('User must be logged in to follow artists');
+    }
+
+    try {
+      // Optimistic update
+      _artists = _artists
+          .map((a) => a.id == artistId ? a.copyWith(isFollowing: true) : a)
+          .toList();
+      notifyListeners();
+
+      final subscription = await _subscriptionService.getUserSubscription();
+      if (subscription != null) {
+        // TODO: Implement artist following with ArtistService
+        debugPrint('Artist follow requested: $artistId');
+      }
+    } catch (e) {
+      // Revert on error
+      _artists = _artists
+          .map((a) => a.id == artistId ? a.copyWith(isFollowing: false) : a)
+          .toList();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> unfollowArtist({required String artistId}) async {
+    if (!isAuthenticated) {
+      throw Exception('User must be logged in to unfollow artists');
+    }
+
+    try {
+      // Optimistic update
+      _artists = _artists
+          .map((a) => a.id == artistId ? a.copyWith(isFollowing: false) : a)
+          .toList();
+      notifyListeners();
+
+      final subscription = await _subscriptionService.getUserSubscription();
+      if (subscription != null) {
+        // TODO: Implement artist unfollowing with ArtistService
+        debugPrint('Artist unfollow requested: $artistId');
+      }
+    } catch (e) {
+      // Revert on error
+      _artists = _artists
+          .map((a) => a.id == artistId ? a.copyWith(isFollowing: true) : a)
+          .toList();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// Handles when the Google Map is created - currently not used
+  void onMapCreated(GoogleMapController controller) {
+    // Map controller initialization
     notifyListeners();
-  }
-
-  /// Update bottom navigation index
-  void updateBottomNavIndex(int index) {
-    _bottomNavIndex = index;
-    notifyListeners();
-  }
-
-  /// Navigate to messaging section
-  void showMessagingMenu(BuildContext context) {
-    Navigator.pushNamed(context, '/messaging');
-  }
-
-  /// Get level progress (0.0 to 1.0)
-  double getLevelProgress() {
-    final user = _currentUser;
-    if (user == null) return 0.0;
-
-    final currentXP = user.experiencePoints;
-    final currentLevel = user.level;
-
-    // XP needed for next level: level * 100
-    final xpForCurrentLevel = currentLevel * 100;
-    final xpForNextLevel = (currentLevel + 1) * 100;
-    final xpInCurrentLevel = currentXP - xpForCurrentLevel;
-    final xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
-
-    if (xpNeededForLevel <= 0) return 1.0;
-
-    return (xpInCurrentLevel / xpNeededForLevel).clamp(0.0, 1.0);
-  }
-
-  /// Get user level title
-  String getLevelTitle(int level) {
-    final Map<int, String> levelTitles = {
-      0: 'Art Explorer',
-      1: 'Art Enthusiast',
-      2: 'Art Collector',
-      3: 'Art Connoisseur',
-      4: 'Art Advocate',
-      5: 'Art Ambassador',
-      6: 'Art Curator',
-      7: 'Art Patron',
-      8: 'Art Master',
-      9: 'Art Legend',
-      10: 'Art Icon',
-    };
-
-    return levelTitles[level] ?? 'Unknown Level';
   }
 }

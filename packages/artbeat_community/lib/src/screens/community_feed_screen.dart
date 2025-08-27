@@ -242,10 +242,14 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: post.userPhotoUrl.isNotEmpty
+                    backgroundImage:
+                        post.userPhotoUrl.isNotEmpty &&
+                            Uri.tryParse(post.userPhotoUrl)?.hasScheme == true
                         ? NetworkImage(post.userPhotoUrl)
                         : null,
-                    child: post.userPhotoUrl.isEmpty
+                    child:
+                        post.userPhotoUrl.isEmpty ||
+                            Uri.tryParse(post.userPhotoUrl)?.hasScheme != true
                         ? const Icon(Icons.person, size: 20)
                         : null,
                   ),
@@ -498,7 +502,8 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  if (groupPost.userPhotoUrl.isNotEmpty)
+                  if (groupPost.userPhotoUrl.isNotEmpty &&
+                      Uri.tryParse(groupPost.userPhotoUrl)?.hasScheme == true)
                     CircleAvatar(
                       radius: 16,
                       backgroundImage: NetworkImage(groupPost.userPhotoUrl),

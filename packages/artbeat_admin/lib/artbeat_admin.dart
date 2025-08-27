@@ -16,6 +16,9 @@ export 'src/services/cohort_analytics_service.dart';
 export 'src/services/admin_settings_service.dart';
 export 'src/services/recent_activity_service.dart';
 
+// Export utilities
+export 'src/utils/image_utils.dart';
+
 // Export screens
 export 'src/screens/admin_dashboard_screen.dart';
 export 'src/screens/admin_enhanced_dashboard_screen.dart';

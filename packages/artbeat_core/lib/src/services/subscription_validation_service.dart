@@ -86,7 +86,7 @@ class SubscriptionValidationService {
     // Check for downgrade conflicts
     if (targetTier.index < currentTier.index) {
       // Gallery to Pro/Basic conflicts
-      if (currentTier == SubscriptionTier.gallery) {
+      if (currentTier == SubscriptionTier.business) {
         final commissionSnapshot = await _firestore
             .collection('commissions')
             .where('galleryId', isEqualTo: userId)
@@ -114,8 +114,8 @@ class SubscriptionValidationService {
       }
 
       // Pro to Basic conflicts
-      if (currentTier == SubscriptionTier.artistPro &&
-          (targetTier == SubscriptionTier.artistBasic ||
+      if (currentTier == SubscriptionTier.creator &&
+          (targetTier == SubscriptionTier.starter ||
               targetTier == SubscriptionTier.free)) {
         final artworkCount = await _firestore
             .collection('artwork')

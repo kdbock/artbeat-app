@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_artwork/artbeat_artwork.dart' show ArtworkModel;
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 
 class SearchResultsScreen extends StatefulWidget {
   final String query;
@@ -14,7 +14,7 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreenState extends State<SearchResultsScreen> {
   bool _isLoading = true;
   List<ArtistProfileModel> _artists = [];
-  List<ArtworkModel> _artworks = [];
+  List<artwork.ArtworkModel> _artworks = [];
   List<EventModel> _events = [];
   String? _error;
 
@@ -83,19 +83,19 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
           .collection('artwork')
           .get();
 
-      final List<ArtworkModel> results = [];
+      final List<artwork.ArtworkModel> results = [];
 
       for (var doc in snapshot.docs) {
         if (!doc.exists) continue;
         try {
-          final artwork = ArtworkModel.fromFirestore(doc);
+          final artworkItem = artwork.ArtworkModel.fromFirestore(doc);
 
           // Check if query matches title or description
-          final title = artwork.title.toLowerCase();
-          final description = artwork.description.toLowerCase();
+          final title = artworkItem.title.toLowerCase();
+          final description = artworkItem.description.toLowerCase();
 
           if (title.contains(query) || description.contains(query)) {
-            results.add(artwork);
+            results.add(artworkItem);
           }
         } catch (e) {
           // Skip invalid artworks
@@ -271,7 +271,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
     );
   }
 
-  Widget _buildArtworkTile(ArtworkModel artwork) {
+  Widget _buildArtworkTile(artwork.ArtworkModel artwork) {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(

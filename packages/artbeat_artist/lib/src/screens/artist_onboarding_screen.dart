@@ -79,7 +79,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
         mediums: _selectedMediums,
         styles: _selectedStyles,
         userType: core.UserType.artist,
-        subscriptionTier: core.SubscriptionTier.artistBasic,
+        subscriptionTier: core.SubscriptionTier.free,
       );
 
       // Update user type in core user model

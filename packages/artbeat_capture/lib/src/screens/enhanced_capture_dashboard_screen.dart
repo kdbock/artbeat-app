@@ -810,6 +810,14 @@ class _EnhancedCaptureDashboardScreenState
                               ),
                             ),
                           ),
+
+                          // Artist CTA widget
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0),
+                              child: new CompactArtistCTAWidget(),
+                            ),
+                          ),
                         ],
 
                         // Bottom padding

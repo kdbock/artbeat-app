@@ -288,7 +288,7 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
 
               // Art type dropdown
               DropdownButtonFormField<String>(
-                value: _selectedArtType,
+                initialValue: _selectedArtType,
                 decoration: const InputDecoration(
                   labelText: 'Art Type',
                   border: OutlineInputBorder(),
@@ -315,7 +315,7 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
 
               // Art medium dropdown
               DropdownButtonFormField<String>(
-                value: _selectedArtMedium,
+                initialValue: _selectedArtMedium,
                 decoration: const InputDecoration(
                   labelText: 'Art Medium',
                   border: OutlineInputBorder(),

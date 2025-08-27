@@ -69,8 +69,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     try {
       final subscription = await _subscriptionService.getUserSubscription();
       final canCreateEvents = subscription != null &&
-          (subscription.tier == core.SubscriptionTier.artistPro ||
-              subscription.tier == core.SubscriptionTier.gallery) &&
+          (subscription.tier == core.SubscriptionTier.creator ||
+              subscription.tier == core.SubscriptionTier.business ||
+              subscription.tier == core.SubscriptionTier.enterprise) &&
           subscription.isActive;
 
       setState(() {

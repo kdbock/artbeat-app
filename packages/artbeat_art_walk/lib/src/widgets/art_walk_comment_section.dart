@@ -46,8 +46,9 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
     setState(() => _isLoading = true);
 
     try {
-      final comments =
-          await _artWalkService.getArtWalkComments(widget.artWalkId);
+      final comments = await _artWalkService.getArtWalkComments(
+        widget.artWalkId,
+      );
       setState(() {
         _comments = comments;
         _isLoading = false;
@@ -177,7 +178,8 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('You must be logged in to like comments')),
+            content: Text('You must be logged in to like comments'),
+          ),
         );
       }
       return;
@@ -207,10 +209,7 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Text(
             'Comments & Reviews',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
 
@@ -330,89 +329,87 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
         _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _comments.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text(
-                        'No comments yet. Be the first to comment!',
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                        ),
-                      ),
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text(
+                    'No comments yet. Be the first to comment!',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
                     ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _comments.length,
-                    itemBuilder: (context, index) {
-                      final comment = _comments[index];
-                      final timeAgo = timeago.format(comment.createdAt);
-
-                      final currentUserId =
-                          FirebaseAuth.instance.currentUser?.uid;
-                      final isAuthor = comment.userId == currentUserId;
-
-                      // Get replies
-                      final replies = comment.replies ?? [];
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Main comment
-                          CommentTile(
-                            authorName: comment.userName,
-                            authorPhotoUrl: comment.userPhotoUrl,
-                            content: comment.content,
-                            timeAgo: timeAgo,
-                            likeCount: comment.likeCount,
-                            rating: comment.rating,
-                            isAuthor: isAuthor,
-                            onReply: () => _replyToComment(
-                              comment.id,
-                              comment.userName,
-                            ),
-                            onDelete: isAuthor
-                                ? () => _deleteComment(comment.id)
-                                : null,
-                            onLike: () => _toggleCommentLike(comment.id),
-                          ),
-
-                          // Replies
-                          if (replies.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 32.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: replies.map<Widget>((reply) {
-                                  final replyTimeAgo =
-                                      timeago.format(reply.createdAt);
-                                  final isReplyAuthor =
-                                      reply.userId == currentUserId;
-
-                                  return CommentTile(
-                                    authorName: reply.userName,
-                                    authorPhotoUrl: reply.userPhotoUrl,
-                                    content: reply.content,
-                                    timeAgo: replyTimeAgo,
-                                    likeCount: reply.likeCount,
-                                    isAuthor: isReplyAuthor,
-                                    isReply: true,
-                                    onDelete: isReplyAuthor
-                                        ? () => _deleteComment(reply.id)
-                                        : null,
-                                    onLike: () => _toggleCommentLike(reply.id),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-
-                          const Divider(),
-                        ],
-                      );
-                    },
                   ),
+                ),
+              )
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _comments.length,
+                itemBuilder: (context, index) {
+                  final comment = _comments[index];
+                  final timeAgo = timeago.format(comment.createdAt);
+
+                  final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                  final isAuthor = comment.userId == currentUserId;
+
+                  // Get replies
+                  final replies = comment.replies ?? [];
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Main comment
+                      CommentTile(
+                        authorName: comment.userName,
+                        authorPhotoUrl: comment.userPhotoUrl,
+                        content: comment.content,
+                        timeAgo: timeAgo,
+                        likeCount: comment.likeCount,
+                        rating: comment.rating,
+                        isAuthor: isAuthor,
+                        onReply: () =>
+                            _replyToComment(comment.id, comment.userName),
+                        onDelete: isAuthor
+                            ? () => _deleteComment(comment.id)
+                            : null,
+                        onLike: () => _toggleCommentLike(comment.id),
+                      ),
+
+                      // Replies
+                      if (replies.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 32.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: replies.map<Widget>((reply) {
+                              final replyTimeAgo = timeago.format(
+                                reply.createdAt,
+                              );
+                              final isReplyAuthor =
+                                  reply.userId == currentUserId;
+
+                              return CommentTile(
+                                authorName: reply.userName,
+                                authorPhotoUrl: reply.userPhotoUrl,
+                                content: reply.content,
+                                timeAgo: replyTimeAgo,
+                                likeCount: reply.likeCount,
+                                isAuthor: isReplyAuthor,
+                                isReply: true,
+                                onDelete: isReplyAuthor
+                                    ? () => _deleteComment(reply.id)
+                                    : null,
+                                onLike: () => _toggleCommentLike(reply.id),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+
+                      const Divider(),
+                    ],
+                  );
+                },
+              ),
       ],
     );
   }
@@ -465,10 +462,15 @@ class CommentTile extends StatelessWidget {
                 radius: isReply ? 14.0 : 18.0,
                 backgroundColor: Colors.grey.shade300,
                 backgroundImage:
-                    authorPhotoUrl != null && authorPhotoUrl!.isNotEmpty
-                        ? NetworkImage(authorPhotoUrl!)
-                        : null,
-                child: authorPhotoUrl == null || authorPhotoUrl!.isEmpty
+                    authorPhotoUrl != null &&
+                        authorPhotoUrl!.isNotEmpty &&
+                        Uri.tryParse(authorPhotoUrl!)?.hasScheme == true
+                    ? NetworkImage(authorPhotoUrl!)
+                    : null,
+                child:
+                    authorPhotoUrl == null ||
+                        authorPhotoUrl!.isEmpty ||
+                        Uri.tryParse(authorPhotoUrl!)?.hasScheme != true
                     ? Icon(
                         Icons.person,
                         size: isReply ? 16.0 : 20.0,
@@ -558,10 +560,7 @@ class CommentTile extends StatelessWidget {
                 if (onReply != null && !isReply)
                   TextButton.icon(
                     icon: const Icon(Icons.reply, size: 14),
-                    label: const Text(
-                      'Reply',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                    label: const Text('Reply', style: TextStyle(fontSize: 12)),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       minimumSize: Size.zero,

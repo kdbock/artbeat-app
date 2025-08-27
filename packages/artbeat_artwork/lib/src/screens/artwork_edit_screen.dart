@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
 
 /// Screen for editing existing artwork
 class ArtworkEditScreen extends StatefulWidget {
@@ -432,7 +432,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: _medium.isEmpty ? null : _medium,
+          initialValue: _medium.isEmpty ? null : _medium,
           decoration: const InputDecoration(
             labelText: 'Medium *',
             border: OutlineInputBorder(),

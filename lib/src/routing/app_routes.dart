@@ -1,0 +1,313 @@
+/// Centralized route constants for the ARTbeat app
+class AppRoutes {
+  // Core routes
+  static const String splash = '/splash';
+  static const String dashboard = '/dashboard';
+
+  // Auth routes
+  static const String auth = '/auth';
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
+
+  // Profile routes
+  static const String profile = '/profile';
+  static const String profileEdit = '/profile/edit';
+  static const String profileCreate = '/profile/create';
+  static const String profileDeep = '/profile/deep';
+  static const String profilePictureViewer = '/profile/picture-viewer';
+  static const String favorites = '/favorites';
+  static const String favoriteDeep = '/favorite/deep';
+
+  // Settings routes
+  static const String accountSettings = '/settings/account';
+  static const String notificationSettings = '/settings/notifications';
+  static const String privacySettings = '/settings/privacy';
+  static const String securitySettings = '/settings/security';
+  static const String help = '/support';
+  static const String feedback = '/feedback';
+
+  // Events routes
+  static const String allEvents = '/events/discover';
+  static const String artistEvents = '/events/artist-dashboard';
+  static const String myTickets = '/events/my-tickets';
+  static const String createEvent = '/events/create';
+  static const String myEvents = '/events/my-events';
+  static const String eventDetail = '/events/detail';
+
+  // Gallery routes
+  static const String galleryCommissions = '/gallery/commissions';
+
+  // Artist routes
+  static const String artistDashboard = '/artist/dashboard';
+  static const String artistOnboarding = '/artist/onboarding';
+  static const String artistProfileEdit = '/artist/profile-edit';
+  static const String artistPublicProfile = '/artist/public-profile';
+  static const String artistAnalytics = '/artist/analytics';
+  static const String artistApprovedAds = '/artist/approved-ads';
+  static const String artistArtwork = '/artist/artwork';
+  static const String artistArtworkDetail = '/artist/artwork-detail';
+  static const String artistFeed = '/artist/feed';
+  static const String artistSearch = '/artist/search';
+  static const String artistSearchShort = '/artist-search';
+  static const String artistBrowse = '/artist/browse';
+
+  // Artwork routes
+  static const String artworkUpload = '/artwork/upload';
+  static const String artworkBrowse = '/artwork/browse';
+  static const String artworkSearch = '/artwork/search';
+  static const String artworkFeatured = '/artwork/featured';
+  static const String artworkRecent = '/artwork/recent';
+  static const String artworkTrending = '/artwork/trending';
+  static const String artworkEdit = '/artwork/edit';
+
+  // Gallery routes
+  static const String galleryArtistsManagement = '/gallery/artists-management';
+  static const String galleryAnalytics = '/gallery/analytics';
+
+  // Subscription routes
+  static const String subscriptionComparison = '/subscription/comparison';
+  static const String subscriptionPlans = '/subscription/plans';
+
+  // Capture routes
+  static const String captures = '/captures';
+  static const String captureCamera = '/capture/camera';
+  static const String captureDetail = '/capture/detail';
+  static const String captureDashboard = '/capture/dashboard';
+
+  // Art Walk routes
+  static const String artWalkMap = '/art-walk/map';
+  static const String artWalkList = '/art-walk/list';
+  static const String artWalkDetail = '/art-walk/detail';
+  static const String artWalkExperience = '/art-walk/experience';
+  static const String artWalkCreate = '/art-walk/create';
+  static const String artWalkEdit = '/art-walk/edit';
+  static const String artWalkDashboard = '/art-walk/dashboard';
+  static const String artWalkMyWalks = '/art-walk/my-walks';
+  static const String artWalkMyCaptures = '/art-walk/my-captures';
+  static const String enhancedCreateArtWalk = '/enhanced-create-art-walk';
+  static const String enhancedArtWalkExperience =
+      '/enhanced-art-walk-experience';
+
+  // Community routes
+  static const String communityDashboard = '/community/dashboard';
+  static const String communityFeed = '/community/feed';
+  static const String communityArtists = '/community/artists';
+  static const String communitySearch = '/community/search';
+  static const String communityPostDetail = '/community/post-detail';
+  static const String communityPosts = '/community/posts';
+  static const String communityStudios = '/community/studios';
+  static const String communityGifts = '/community/gifts';
+  static const String communityPortfolios = '/community/portfolios';
+  static const String communityModeration = '/community/moderation';
+  static const String communitySponsorships = '/community/sponsorships';
+  static const String communitySettings = '/community/settings';
+
+  // Events routes
+  static const String events = '/events';
+  static const String eventsDiscover = '/events/discover';
+  static const String eventsDashboard = '/events/dashboard';
+  static const String eventsArtistDashboard = '/events/artist-dashboard';
+  static const String eventsDetail = '/events/detail';
+  static const String eventsUpcoming = '/events/upcoming';
+  static const String eventsAll = '/events/all';
+  static const String eventsMyEvents = '/events/my-events';
+  static const String eventsMyTickets = '/events/my-tickets';
+  static const String eventsCreate = '/events/create';
+  static const String eventsSearch = '/events/search';
+  static const String eventsNearby = '/events/nearby';
+  static const String eventsPopular = '/events/popular';
+  static const String eventsVenues = '/events/venues';
+
+  // Messaging routes
+  static const String messaging = '/messaging';
+  static const String messagingNew = '/messaging/new';
+  static const String messagingChat = '/messaging/chat';
+  static const String messagingGroup = '/messaging/group';
+  static const String messagingGroupNew = '/messaging/group/new';
+  static const String messagingSettings = '/messaging/settings';
+  static const String messagingChatInfo = '/messaging/chat-info';
+  static const String messagingBlockedUsers = '/messaging/blocked-users';
+  static const String messagingUser = '/messaging/user';
+  static const String messagingChatDeep = '/messaging/chat-deep';
+  static const String messagingUserChat = '/messaging/user-chat';
+
+  // Admin routes
+  static const String adminDashboard = '/admin/dashboard';
+  static const String adminUsers = '/admin/users';
+  static const String adminModeration = '/admin/moderation';
+  static const String adminAdTest = '/admin/ad-test';
+  static const String adminSettings = '/admin/settings';
+  static const String adminAdReview = '/admin/ad-review';
+  static const String adminAdManagement = '/admin/ad-management';
+  static const String adminMessaging = '/admin/messaging';
+
+  // Settings routes
+  static const String settings = '/settings';
+  static const String settingsAccount = '/settings/account';
+  static const String settingsPrivacy = '/settings/privacy';
+  static const String settingsNotifications = '/settings/notifications';
+  static const String settingsSecurity = '/settings/security';
+
+  // Other routes
+  static const String achievements = '/achievements';
+  static const String achievementsInfo = '/achievements/info';
+  static const String notifications = '/notifications';
+  static const String dev = '/dev';
+  static const String developerFeedbackAdmin = '/developer-feedback-admin';
+  static const String support = '/support';
+  static const String search = '/search';
+  static const String searchResults = '/search/results';
+  static const String artSearch = '/art-search';
+  static const String artWalkSearch = '/art-walk-search';
+  static const String local = '/local';
+  static const String locationSearch = '/location-search';
+  static const String trending = '/trending';
+
+  // Ad routes
+  static const String adsCreate = '/ads/create';
+  static const String adsManagement = '/ads/management';
+  static const String adsStatistics = '/ads/statistics';
+
+  /// Returns a list of all available routes
+  static List<String> get allRoutes => [
+    splash,
+    dashboard,
+    auth,
+    login,
+    register,
+    forgotPassword,
+    profile,
+    profileEdit,
+    profileCreate,
+    profileDeep,
+    profilePictureViewer,
+    favorites,
+    favoriteDeep,
+    artistDashboard,
+    artistOnboarding,
+    artistProfileEdit,
+    artistPublicProfile,
+    artistAnalytics,
+    artistApprovedAds,
+    artistArtwork,
+    artistArtworkDetail,
+    artistFeed,
+    artistSearch,
+    artistSearchShort,
+    artistBrowse,
+    artworkUpload,
+    artworkBrowse,
+    artworkSearch,
+    artworkFeatured,
+    artworkRecent,
+    artworkTrending,
+    artworkEdit,
+    galleryArtistsManagement,
+    galleryAnalytics,
+    subscriptionComparison,
+    subscriptionPlans,
+    captures,
+    captureCamera,
+    captureDetail,
+    captureDashboard,
+    artWalkMap,
+    artWalkList,
+    artWalkDetail,
+    artWalkExperience,
+    artWalkCreate,
+    artWalkEdit,
+    artWalkDashboard,
+    artWalkMyWalks,
+    artWalkMyCaptures,
+    enhancedCreateArtWalk,
+    enhancedArtWalkExperience,
+    communityDashboard,
+    communityFeed,
+    communityArtists,
+    communitySearch,
+    communityPostDetail,
+    communityPosts,
+    communityStudios,
+    communityGifts,
+    communityPortfolios,
+    communityModeration,
+    communitySponsorships,
+    communitySettings,
+    events,
+    eventsDiscover,
+    eventsDashboard,
+    eventsArtistDashboard,
+    eventsDetail,
+    eventsUpcoming,
+    eventsAll,
+    eventsMyEvents,
+    eventsMyTickets,
+    eventsCreate,
+    eventsSearch,
+    eventsNearby,
+    eventsPopular,
+    eventsVenues,
+    messaging,
+    messagingNew,
+    messagingChat,
+    messagingGroup,
+    messagingGroupNew,
+    messagingSettings,
+    messagingChatInfo,
+    messagingBlockedUsers,
+    messagingUser,
+    messagingChatDeep,
+    messagingUserChat,
+    adminDashboard,
+    adminUsers,
+    adminModeration,
+    adminAdTest,
+    adminSettings,
+    adminAdReview,
+    adminAdManagement,
+    adminMessaging,
+    settings,
+    settingsAccount,
+    settingsPrivacy,
+    settingsNotifications,
+    settingsSecurity,
+    achievements,
+    achievementsInfo,
+    notifications,
+    dev,
+    feedback,
+    developerFeedbackAdmin,
+    support,
+    search,
+    searchResults,
+    artSearch,
+    artWalkSearch,
+    local,
+    locationSearch,
+    trending,
+    adsCreate,
+    adsManagement,
+    adsStatistics,
+  ];
+
+  /// Checks if a route is valid
+  static bool isValidRoute(String route) => allRoutes.contains(route);
+
+  /// Returns the feature category for a route
+  static String getRouteCategory(String route) {
+    if (route.startsWith('/artist')) return 'Artist';
+    if (route.startsWith('/artwork')) return 'Artwork';
+    if (route.startsWith('/community')) return 'Community';
+    if (route.startsWith('/art-walk')) return 'Art Walk';
+    if (route.startsWith('/messaging')) return 'Messaging';
+    if (route.startsWith('/events')) return 'Events';
+    if (route.startsWith('/admin')) return 'Admin';
+    if (route.startsWith('/settings')) return 'Settings';
+    if (route.startsWith('/gallery')) return 'Gallery';
+    if (route.startsWith('/profile')) return 'Profile';
+    if (route.startsWith('/capture')) return 'Capture';
+    if (route.startsWith('/ads')) return 'Advertising';
+    return 'Core';
+  }
+}

@@ -30,6 +30,7 @@ class UserAdminModel extends UserModel {
     super.bio,
     super.profileImageUrl,
     super.location,
+    super.engagementStats,
     super.captures,
     super.posts,
     required super.createdAt,
@@ -167,64 +168,6 @@ class UserAdminModel extends UserModel {
 
   Map<String, dynamic> toMap() => toJson();
 
-  @override
-  UserAdminModel copyWith({
-    String? id,
-    String? email,
-    String? username,
-    String? fullName,
-    String? bio,
-    String? location,
-    String? profileImageUrl,
-    EngagementStats? engagementStats,
-    List<CaptureModel>? captures,
-    List<String>? posts,
-    DateTime? createdAt,
-    DateTime? lastActive,
-    String? userType,
-    Map<String, dynamic>? preferences,
-    int? experiencePoints,
-    int? level,
-  }) {
-    return UserAdminModel(
-      id: id ?? this.id,
-      email: email ?? this.email,
-      username: username ?? this.username,
-      fullName: fullName ?? this.fullName,
-      bio: bio ?? this.bio,
-      location: location ?? this.location,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      captures: captures ?? this.captures,
-      posts: posts ?? this.posts,
-      createdAt: createdAt ?? this.createdAt,
-      lastActive: lastActive ?? this.lastActive,
-      userType: userType ?? this.userType,
-      preferences: preferences ?? this.preferences,
-      experiencePoints: experiencePoints ?? this.experiencePoints,
-      level: level ?? this.level,
-      zipCode: this.zipCode,
-      // Keep existing admin-specific fields
-      coverImageUrl: this.coverImageUrl,
-      birthDate: this.birthDate,
-      gender: this.gender,
-      updatedAt: this.updatedAt,
-      isVerified: this.isVerified,
-      achievements: this.achievements,
-      lastLoginAt: this.lastLoginAt,
-      lastActiveAt: this.lastActiveAt,
-      isSuspended: this.isSuspended,
-      isDeleted: this.isDeleted,
-      suspensionReason: this.suspensionReason,
-      suspendedAt: this.suspendedAt,
-      suspendedBy: this.suspendedBy,
-      adminNotes: this.adminNotes,
-      adminFlags: this.adminFlags,
-      reportCount: this.reportCount,
-      emailVerifiedAt: this.emailVerifiedAt,
-      requiresPasswordReset: this.requiresPasswordReset,
-    );
-  }
-
   /// Admin-specific copyWith method with all admin fields
   UserAdminModel copyWithAdmin({
     String? id,
@@ -234,6 +177,7 @@ class UserAdminModel extends UserModel {
     String? bio,
     String? location,
     String? profileImageUrl,
+    EngagementStats? engagementStats,
     List<CaptureModel>? captures,
     List<String>? posts,
     DateTime? createdAt,
@@ -271,6 +215,7 @@ class UserAdminModel extends UserModel {
       bio: bio ?? this.bio,
       location: location ?? this.location,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      engagementStats: engagementStats,
       captures: captures ?? this.captures,
       posts: posts ?? this.posts,
       createdAt: createdAt ?? this.createdAt,

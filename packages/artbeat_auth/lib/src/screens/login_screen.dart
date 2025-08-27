@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
-import '../constants/routes.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show ArtbeatColors, ArtbeatInput, UserService, UserModel;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
+import '../constants/routes.dart';
 
 /// Login screen with email/password authentication
 class LoginScreen extends StatefulWidget {
@@ -254,33 +254,105 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _handleLogin,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Text('Login'),
+                        SizedBox(
+                          height: 40,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            onPressed: _isLoading ? null : _handleLogin,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Login'),
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
-                              onPressed: () => Navigator.of(
-                                context,
-                              ).pushReplacementNamed(AuthRoutes.register),
-                              child: const Text('Create Account'),
+                            Expanded(
+                              child: Container(
+                                height: 40,
+                                margin: const EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ArtbeatColors.primaryPurple,
+                                      ArtbeatColors.primaryGreen,
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(24),
+                                    onTap: () => Navigator.of(
+                                      context,
+                                    ).pushReplacementNamed(AuthRoutes.register),
+                                    child: Center(
+                                      child: Text(
+                                        'Create Account',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                            TextButton(
-                              onPressed: () => Navigator.of(
-                                context,
-                              ).pushNamed(AuthRoutes.forgotPassword),
-                              child: const Text('Forgot Password?'),
+                            Expanded(
+                              child: Container(
+                                height: 40,
+                                margin: const EdgeInsets.only(left: 8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ArtbeatColors.primaryPurple,
+                                      ArtbeatColors.primaryGreen,
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(24),
+                                    onTap: () => Navigator.of(
+                                      context,
+                                    ).pushNamed(AuthRoutes.forgotPassword),
+                                    child: Center(
+                                      child: Text(
+                                        'Forgot Password?',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelLarge
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),

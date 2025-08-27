@@ -200,8 +200,16 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
 
   @override
   Widget build(BuildContext context) {
-    // Validate URL
-    final uri = Uri.tryParse(_authenticatedUrl ?? widget.imageUrl);
+    // Early validation to prevent empty or invalid URLs from reaching NetworkImage
+    final urlToCheck = _authenticatedUrl ?? widget.imageUrl;
+
+    // Check for empty or whitespace-only URLs
+    if (urlToCheck.trim().isEmpty) {
+      return _buildErrorWidget(context, 'Empty URL', null);
+    }
+
+    // Validate URL structure
+    final uri = Uri.tryParse(urlToCheck);
     final isValidUrl = uri != null && uri.hasScheme && uri.host.isNotEmpty;
 
     if (!isValidUrl) {
@@ -209,7 +217,7 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
     }
 
     Widget imageWidget = CachedNetworkImage(
-      imageUrl: _authenticatedUrl ?? widget.imageUrl,
+      imageUrl: urlToCheck,
       width: widget.width,
       height: widget.height,
       fit: widget.fit,

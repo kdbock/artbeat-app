@@ -247,18 +247,16 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: AdType.values.map((type) {
-            return ListTile(
-              leading: Radio<AdType>(
-                value: type,
-                groupValue: _selectedType,
-                onChanged: (AdType? value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedType = value;
-                    });
-                  }
-                },
-              ),
+            return RadioListTile<AdType>(
+              value: type,
+              groupValue: _selectedType,
+              onChanged: (AdType? value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedType = value;
+                  });
+                }
+              },
               title: Text(
                 _getAdTypeDisplayName(type),
                 style: const TextStyle(
@@ -270,11 +268,6 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                 _getAdTypeDescription(type),
                 style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
-              onTap: () {
-                setState(() {
-                  _selectedType = type;
-                });
-              },
             );
           }).toList(),
         ),
@@ -288,18 +281,16 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: AdSize.values.map((size) {
-            return ListTile(
-              leading: Radio<AdSize>(
-                value: size,
-                groupValue: _selectedSize,
-                onChanged: (AdSize? value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedSize = value;
-                    });
-                  }
-                },
-              ),
+            return RadioListTile<AdSize>(
+              value: size,
+              groupValue: _selectedSize,
+              onChanged: (AdSize? value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedSize = value;
+                  });
+                }
+              },
               title: Text(
                 size.displayName,
                 style: const TextStyle(
@@ -315,11 +306,6 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              onTap: () {
-                setState(() {
-                  _selectedSize = size;
-                });
-              },
             );
           }).toList(),
         ),

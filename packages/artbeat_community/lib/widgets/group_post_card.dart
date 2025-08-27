@@ -50,10 +50,14 @@ class GroupPostCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: post.userPhotoUrl.isNotEmpty
+            backgroundImage:
+                post.userPhotoUrl.isNotEmpty &&
+                    Uri.tryParse(post.userPhotoUrl)?.hasScheme == true
                 ? NetworkImage(post.userPhotoUrl)
                 : null,
-            child: post.userPhotoUrl.isEmpty
+            child:
+                post.userPhotoUrl.isEmpty ||
+                    Uri.tryParse(post.userPhotoUrl)?.hasScheme != true
                 ? const Icon(Icons.person, size: 20)
                 : null,
           ),
@@ -178,10 +182,19 @@ class GroupPostCard extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: NetworkImage(post.imageUrls[index]),
-                fit: BoxFit.cover,
-              ),
+              image:
+                  post.imageUrls[index].isNotEmpty &&
+                      Uri.tryParse(post.imageUrls[index])?.hasScheme == true
+                  ? DecorationImage(
+                      image: NetworkImage(post.imageUrls[index]),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+              color:
+                  post.imageUrls[index].isEmpty ||
+                      Uri.tryParse(post.imageUrls[index])?.hasScheme != true
+                  ? Colors.grey[300]
+                  : null,
             ),
           );
         },

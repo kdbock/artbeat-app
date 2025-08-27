@@ -37,7 +37,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _loadUserProfile();
     _loadUserCaptures();
   }
@@ -55,8 +55,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   String get location => _userModel?.location ?? "United States";
   String get profileImageUrl => _userModel?.profileImageUrl ?? "";
   int get postsCount => _userModel?.posts.length ?? 0;
-  int get followersCount => _userModel?.followers.length ?? 0;
-  int get followingCount => _userModel?.following.length ?? 0;
+
   int get capturesCount => _userCaptures.length;
   String get cityState => _userModel?.location ?? "City, State";
   int get artwalksCompleted => _artwalksCompleted;
@@ -294,13 +293,27 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               const SizedBox(height: 16),
+              // Universal engagement stats for profile
+              UniversalEngagementBar(
+                contentId: widget.userId,
+                contentType: 'profile',
+                initialStats:
+                    _userModel?.engagementStats ??
+                    EngagementStats(lastUpdated: DateTime.now()),
+                showConnect: !widget
+                    .isCurrentUser, // Only show connect if not viewing own profile
+                targetUserId: widget.userId,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Additional profile stats
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatColumn('Posts', postsCount),
-                  _buildStatColumn('Followers', followersCount),
-                  _buildStatColumn('Following', followingCount),
                   _buildStatColumn('Captures', capturesCount),
+                  _buildStatColumn('Art Walks', _artwalksCompleted),
                 ],
               ),
             ],
@@ -343,7 +356,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           unselectedLabelColor: ArtbeatColors.textSecondary,
           tabs: const [
             Tab(text: 'Captures'),
-            Tab(text: 'Following'),
             Tab(text: 'Achievements'),
           ],
         ),
@@ -352,11 +364,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           height: MediaQuery.of(context).size.height * 0.5,
           child: TabBarView(
             controller: _tabController,
-            children: [
-              _buildCapturesTab(),
-              _buildFollowingTab(),
-              _buildAchievementsTab(),
-            ],
+            children: [_buildCapturesTab(), _buildAchievementsTab()],
           ),
         ),
       ],
@@ -498,86 +506,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                         SizedBox(height: 6),
                         Text(
                           'Start capturing art to see it here!',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: ArtbeatColors.textSecondary,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFollowingTab() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.person_add_outlined,
-                color: ArtbeatColors.accentYellow,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Following',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: followersCount > 0
-                ? ListView.builder(
-                    itemCount: followersCount,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: ArtbeatColors.primaryPurple,
-                          child: Text(
-                            'U${index + 1}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        title: Text('User ${index + 1}'),
-                        subtitle: const Text('Art enthusiast'),
-                        trailing: const Icon(
-                          Icons.person_add_outlined,
-                          color: ArtbeatColors.accentYellow,
-                        ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_add_outlined,
-                          size: 64,
-                          color: ArtbeatColors.textSecondary,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No followers yet',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: ArtbeatColors.textSecondary,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Keep creating great art to gain followers!',
                           style: TextStyle(
                             fontSize: 14,
                             color: ArtbeatColors.textSecondary,

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'group_models.dart';
 
 /// Model class for posts in the community feed
@@ -14,15 +15,13 @@ class PostModel {
   final GeoPoint? geoPoint;
   final String? zipCode;
   final DateTime createdAt;
-  final int applauseCount;
-  final int commentCount;
-  final int shareCount;
+  final EngagementStats engagementStats;
   final bool isPublic;
   final List<String>? mentionedUsers;
   final Map<String, dynamic>? metadata;
   final bool isUserVerified;
 
-  // Maximum applause per user is always 5
+  // Legacy constant for backward compatibility during migration
   static const int maxApplausePerUser = 5;
 
   PostModel({
@@ -37,14 +36,13 @@ class PostModel {
     this.geoPoint,
     this.zipCode,
     required this.createdAt,
-    this.applauseCount = 0,
-    this.commentCount = 0,
-    this.shareCount = 0,
+    EngagementStats? engagementStats,
     this.isPublic = true,
     this.mentionedUsers,
     this.metadata,
     this.isUserVerified = false,
-  });
+  }) : engagementStats =
+           engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
   /// Create from BaseGroupPost
   factory PostModel.fromBaseGroupPost(BaseGroupPost post) {
@@ -58,9 +56,12 @@ class PostModel {
       tags: post.tags, // tags map to tags
       location: post.location,
       createdAt: post.createdAt,
-      applauseCount: post.applauseCount, // applauseCount maps to applauseCount
-      commentCount: post.commentCount,
-      shareCount: post.shareCount,
+      engagementStats: EngagementStats(
+        appreciateCount: post.applauseCount,
+        discussCount: post.commentCount,
+        amplifyCount: post.shareCount,
+        lastUpdated: post.createdAt,
+      ),
       isPublic: post.isPublic,
       isUserVerified: post.isUserVerified,
     );
@@ -87,9 +88,7 @@ class PostModel {
       geoPoint: data['geoPoint'] as GeoPoint?,
       zipCode: data['zipCode'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      applauseCount: (data['applauseCount'] as int?) ?? 0,
-      commentCount: (data['commentCount'] as int?) ?? 0,
-      shareCount: (data['shareCount'] as int?) ?? 0,
+      engagementStats: EngagementStats.fromFirestore(data),
       isPublic: (data['isPublic'] as bool?) ?? true,
       mentionedUsers: data['mentionedUsers'] != null
           ? List<String>.from(data['mentionedUsers'] as Iterable)
@@ -113,9 +112,7 @@ class PostModel {
       'geoPoint': geoPoint,
       'zipCode': zipCode,
       'createdAt': Timestamp.fromDate(createdAt),
-      'applauseCount': applauseCount,
-      'commentCount': commentCount,
-      'shareCount': shareCount,
+      ...engagementStats.toFirestore(),
       'isPublic': isPublic,
       'mentionedUsers': mentionedUsers,
       'metadata': metadata,
@@ -134,9 +131,7 @@ class PostModel {
     GeoPoint? geoPoint,
     String? zipCode,
     DateTime? createdAt,
-    int? applauseCount,
-    int? commentCount,
-    int? shareCount,
+    EngagementStats? engagementStats,
     bool? isPublic,
     bool? isUserVerified,
     List<String>? mentionedUsers,
@@ -154,9 +149,7 @@ class PostModel {
       geoPoint: geoPoint ?? this.geoPoint,
       zipCode: zipCode ?? this.zipCode,
       createdAt: createdAt ?? this.createdAt,
-      applauseCount: applauseCount ?? this.applauseCount,
-      commentCount: commentCount ?? this.commentCount,
-      shareCount: shareCount ?? this.shareCount,
+      engagementStats: engagementStats ?? this.engagementStats,
       isPublic: isPublic ?? this.isPublic,
       isUserVerified: isUserVerified ?? this.isUserVerified,
       mentionedUsers: mentionedUsers ?? this.mentionedUsers,
@@ -166,4 +159,20 @@ class PostModel {
 
   /// Getter for authorUsername - returns userName for compatibility
   String get authorUsername => userName;
+
+  /// Getter for authorName - returns userName for compatibility
+  String get authorName => userName;
+
+  /// Getter for authorProfileImageUrl - returns userPhotoUrl for compatibility
+  String get authorProfileImageUrl => userPhotoUrl;
+
+  // Backward compatibility getters for migration period
+  int get applauseCount => engagementStats.appreciateCount;
+  int get commentCount => engagementStats.discussCount;
+  int get shareCount => engagementStats.amplifyCount;
+
+  // Dashboard compatibility getters
+  int get likesCount => engagementStats.appreciateCount;
+  int get commentsCount => engagementStats.discussCount;
+  int get sharesCount => engagementStats.amplifyCount;
 }

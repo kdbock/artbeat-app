@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
+import '../utils/image_utils.dart';
 
 /// Enhanced storage service with image compression and optimization
 class EnhancedStorageService {
@@ -271,14 +272,26 @@ class EnhancedStorageService {
     String? thumbnailUrl,
   ]) async {
     try {
+      // Validate URL before attempting to delete
+      if (!ImageUtils.isValidFirebaseStorageUrl(imageUrl)) {
+        debugPrint('⚠️ Invalid Firebase Storage URL for deletion: $imageUrl');
+        return;
+      }
+
       // Delete main image
       final mainRef = _storage.refFromURL(imageUrl);
       await mainRef.delete();
 
       // Delete thumbnail if provided
       if (thumbnailUrl != null) {
-        final thumbRef = _storage.refFromURL(thumbnailUrl);
-        await thumbRef.delete();
+        if (!ImageUtils.isValidFirebaseStorageUrl(thumbnailUrl)) {
+          debugPrint(
+            '⚠️ Invalid Firebase Storage URL for thumbnail deletion: $thumbnailUrl',
+          );
+        } else {
+          final thumbRef = _storage.refFromURL(thumbnailUrl);
+          await thumbRef.delete();
+        }
       }
 
       debugPrint('🗑️ Image and thumbnail deleted successfully');
@@ -291,6 +304,12 @@ class EnhancedStorageService {
   /// Get image metadata
   Future<Map<String, dynamic>> getImageMetadata(String imageUrl) async {
     try {
+      // Validate URL before attempting to get metadata
+      if (!ImageUtils.isValidFirebaseStorageUrl(imageUrl)) {
+        debugPrint('⚠️ Invalid Firebase Storage URL for metadata: $imageUrl');
+        return {};
+      }
+
       final ref = _storage.refFromURL(imageUrl);
       final metadata = await ref.getMetadata();
 

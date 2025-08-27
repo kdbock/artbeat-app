@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Model class for comments on art walks
 class ArtWalkCommentModel {
@@ -9,7 +10,7 @@ class ArtWalkCommentModel {
   final String userPhotoUrl;
   final String content;
   final DateTime createdAt;
-  final int likeCount;
+  final EngagementStats engagementStats;
   final String? parentCommentId; // For threaded comments
   final bool isEdited;
   final double? rating; // Optional rating (1-5 stars)
@@ -24,7 +25,7 @@ class ArtWalkCommentModel {
     required this.userPhotoUrl,
     required this.content,
     required this.createdAt,
-    required this.likeCount,
+    required this.engagementStats,
     this.parentCommentId,
     this.isEdited = false,
     this.rating,
@@ -32,8 +33,10 @@ class ArtWalkCommentModel {
   });
 
   /// Create an ArtWalkCommentModel from Firestore document
-  factory ArtWalkCommentModel.fromFirestore(DocumentSnapshot doc,
-      {String? artWalkId}) {
+  factory ArtWalkCommentModel.fromFirestore(
+    DocumentSnapshot doc, {
+    String? artWalkId,
+  }) {
     final data = doc.data() as Map<String, dynamic>;
 
     // Handle server timestamps that might be null for new comments
@@ -52,7 +55,9 @@ class ArtWalkCommentModel {
       userPhotoUrl: data['userPhotoUrl'] as String? ?? '',
       content: data['content'] as String? ?? '',
       createdAt: createdAt,
-      likeCount: data['likeCount'] as int? ?? 0,
+      engagementStats: EngagementStats.fromMap(
+        data['engagementStats'] as Map<String, dynamic>? ?? {},
+      ),
       parentCommentId: data['parentCommentId'] as String?,
       isEdited: data['isEdited'] as bool? ?? false,
       rating: (data['rating'] as num?)?.toDouble(),
@@ -71,7 +76,7 @@ class ArtWalkCommentModel {
       'userPhotoUrl': userPhotoUrl,
       'content': content,
       'createdAt': FieldValue.serverTimestamp(),
-      'likeCount': likeCount,
+      'engagementStats': engagementStats.toMap(),
       'parentCommentId': parentCommentId,
       'isEdited': isEdited,
       'rating': rating,
@@ -88,7 +93,7 @@ class ArtWalkCommentModel {
     String? userPhotoUrl,
     String? content,
     DateTime? createdAt,
-    int? likeCount,
+    EngagementStats? engagementStats,
     String? parentCommentId,
     bool? isEdited,
     double? rating,
@@ -103,12 +108,13 @@ class ArtWalkCommentModel {
       userPhotoUrl: userPhotoUrl ?? this.userPhotoUrl,
       content: content ?? this.content,
       createdAt: createdAt ?? this.createdAt,
-      likeCount: likeCount ?? this.likeCount,
+      engagementStats: engagementStats ?? this.engagementStats,
       parentCommentId: parentCommentId ?? this.parentCommentId,
       isEdited: isEdited ?? this.isEdited,
       rating: rating ?? this.rating,
-      mentionedUsers:
-          clearMentionedUsers ? null : (mentionedUsers ?? this.mentionedUsers),
+      mentionedUsers: clearMentionedUsers
+          ? null
+          : (mentionedUsers ?? this.mentionedUsers),
     );
   }
 }

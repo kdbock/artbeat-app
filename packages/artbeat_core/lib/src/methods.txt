@@ -1,0 +1,21 @@
+/// Follow an artist
+  Future<void> followArtist(String artistId) async {
+    try {
+      await _subscriptionService.followArtist(artistProfileId: artistId);
+      await loadFeaturedArtists(); // Reload artists to update UI
+    } catch (e) {
+      debugPrint('Error following artist: $e');
+      rethrow;
+    }
+  }
+
+  /// Unfollow an artist 
+  Future<void> unfollowArtist(String artistId) async {
+    try {
+      await _subscriptionService.unfollowArtist(artistProfileId: artistId);
+      await loadFeaturedArtists(); // Reload artists to update UI
+    } catch (e) {
+      debugPrint('Error unfollowing artist: $e');
+      rethrow;
+    }
+  }

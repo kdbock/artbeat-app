@@ -176,7 +176,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
         Container(
           padding: const EdgeInsets.all(16),
           child: DropdownButtonFormField<String>(
-            value: _selectedRegion,
+            initialValue: _selectedRegion,
             decoration: const InputDecoration(
               labelText: 'Filter by Region',
               border: OutlineInputBorder(),
@@ -433,13 +433,18 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     final String? imageUrl = walk.imageUrls.isNotEmpty
         ? walk.imageUrls.first
         : null;
+    final bool hasValidImage =
+        imageUrl != null &&
+        imageUrl.isNotEmpty &&
+        Uri.tryParse(imageUrl)?.hasScheme == true;
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Cover image
-          imageUrl != null
+          hasValidImage
               ? Container(
                   height: 150,
                   width: double.infinity,

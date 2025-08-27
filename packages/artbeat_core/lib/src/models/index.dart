@@ -7,3 +7,4 @@ export 'favorite_model.dart';
 export 'artist_model.dart';
 export 'user_type.dart';
 export 'gift_model.dart';
+export 'artwork_model.dart';

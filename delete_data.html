@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTbeat - Delete Your Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #6c5ce7;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 40px 0;
+        }
+        
+        h1 {
+            color: #2d3436;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        
+        h2 {
+            color: #636e72;
+            margin: 30px 0 15px 0;
+            font-size: 1.4rem;
+            border-left: 4px solid #6c5ce7;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #2d3436;
+            margin: 25px 0 10px 0;
+            font-size: 1.2rem;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+        
+        ul {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .important-box {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .warning-box {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .info-box {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .contact-button {
+            display: inline-block;
+            background-color: #6c5ce7;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .contact-button:hover {
+            background-color: #5a4fcf;
+        }
+        
+        .delete-button {
+            background-color: #e17055;
+        }
+        
+        .delete-button:hover {
+            background-color: #d63031;
+        }
+        
+        .timeline {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .step-number {
+            background-color: #6c5ce7;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .footer {
+            border-top: 2px solid #e9ecef;
+            padding: 30px 0;
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px 0;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .contact-button {
+                display: block;
+                text-align: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎨 ARTbeat</div>
+            <div class="subtitle">Data Deletion & Account Management</div>
+        </div>
+        
+        <div class="content">
+            <h1>Delete Your ARTbeat Data</h1>
+            
+            <p>At ARTbeat, we respect your privacy and give you full control over your personal data. This page explains how you can delete your account and data from our platform.</p>
+            
+            <div class="important-box">
+                <h3>🔒 Your Data, Your Choice</h3>
+                <p>You have the right to request deletion of your personal data at any time. We're committed to making this process simple and transparent.</p>
+            </div>
+            
+            <h2>📋 Quick Actions</h2>
+            
+            <a href="mailto:support@artbeat.app?subject=Delete My Account&body=Hello ARTbeat Team,%0D%0A%0D%0AI would like to delete my account and all associated data.%0D%0A%0D%0AAccount Email: [YOUR EMAIL HERE]%0D%0AUsername: [YOUR USERNAME HERE]%0D%0AReason (optional): [REASON HERE]%0D%0A%0D%0AThank you." class="contact-button delete-button">📧 Request Account Deletion</a>
+            
+            <a href="mailto:support@artbeat.app?subject=Delete Specific Data&body=Hello ARTbeat Team,%0D%0A%0D%0AI would like to delete specific data from my account.%0D%0A%0D%0AAccount Email: [YOUR EMAIL HERE]%0D%0AData to Delete: [SPECIFY DATA TYPES]%0D%0A%0D%0AThank you." class="contact-button">🗂️ Delete Specific Data</a>
+            
+            <h2>🚶‍♀️ Step-by-Step Deletion Process</h2>
+            
+            <div class="timeline">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3>Choose Your Deletion Type</h3>
+                        <p>Decide whether you want to delete your entire account or just specific data types.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3>Contact Us</h3>
+                        <p>Send an email to <strong>support@artbeat.app</strong> with your deletion request. Include your account email and username.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3>Identity Verification</h3>
+                        <p>We'll verify your identity to protect your account security. This typically takes 1-2 business days.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h3>Data Deletion</h3>
+                        <p>Once verified, we'll delete your data within 30 days and send you a confirmation email.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h2>📊 What Data Gets Deleted</h2>
+            
+            <h3>Complete Account Deletion Includes:</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data Type</th>
+                        <th>What's Deleted</th>
+                        <th>Deletion Timeline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Profile Information</strong></td>
+                        <td>Name, email, bio, profile photos, cover photos</td>
+                        <td>Immediate</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Artwork & Content</strong></td>
+                        <td>All uploaded artwork, descriptions, metadata</td>
+                        <td>Immediate</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Social Activity</strong></td>
+                        <td>Posts, comments, likes, follows, messages</td>
+                        <td>Immediate</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Art Walks</strong></td>
+                        <td>Created art walks, location data, achievements</td>
+                        <td>Immediate</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Payment Data</strong></td>
+                        <td>Subscription history (kept for legal compliance)</td>
+                        <td>7 years (legal requirement)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Analytics Data</strong></td>
+                        <td>Usage statistics, app interactions</td>
+                        <td>30 days</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Backup Data</strong></td>
+                        <td>Encrypted backups for disaster recovery</td>
+                        <td>90 days</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2>🔧 Partial Data Deletion Options</h2>
+            
+            <p>You can also request deletion of specific data types without deleting your entire account:</p>
+            
+            <ul>
+                <li><strong>Artwork Only:</strong> Delete specific artworks or your entire portfolio</li>
+                <li><strong>Social Activity:</strong> Remove posts, comments, or social interactions</li>
+                <li><strong>Location Data:</strong> Clear art walk history and location information</li>
+                <li><strong>Messages:</strong> Delete conversation history</li>
+                <li><strong>Analytics:</strong> Opt out of future analytics collection</li>
+            </ul>
+            
+            <div class="info-box">
+                <h3>💡 Alternative: In-App Deletion</h3>
+                <p>Many data types can be deleted directly within the ARTbeat app:</p>
+                <ul>
+                    <li>Profile Settings → Edit Profile → Delete specific content</li>
+                    <li>Artwork Gallery → Select artwork → Delete</li>
+                    <li>Messages → Long press → Delete conversation</li>
+                    <li>Settings → Privacy → Manage data preferences</li>
+                </ul>
+            </div>
+            
+            <h2>⚠️ Important Information</h2>
+            
+            <div class="warning-box">
+                <h3>🚨 Account Deletion is Permanent</h3>
+                <p>Once your account is deleted, this action cannot be undone. You will lose access to:</p>
+                <ul>
+                    <li>Your artist profile and portfolio</li>
+                    <li>All uploaded artwork and content</li>
+                    <li>Social connections and messages</li>
+                    <li>Art walk history and achievements</li>
+                    <li>Subscription benefits (if applicable)</li>
+                </ul>
+            </div>
+            
+            <h3>📝 Legal Retention Requirements</h3>
+            <p>Some data may be retained longer due to legal requirements:</p>
+            
+            <ul>
+                <li><strong>Payment Records:</strong> Kept for 7 years for tax and legal compliance</li>
+                <li><strong>Fraud Prevention:</strong> Certain security logs may be kept for up to 1 year</li>
+                <li><strong>Legal Disputes:</strong> Data may be retained if involved in legal proceedings</li>
+            </ul>
+            
+            <h2>⏱️ Deletion Timeline</h2>
+            
+            <div class="info-box">
+                <h3>📅 What to Expect</h3>
+                <ul>
+                    <li><strong>Request Received:</strong> Immediate confirmation email</li>
+                    <li><strong>Identity Verification:</strong> 1-2 business days</li>
+                    <li><strong>Account Deactivation:</strong> Within 24 hours of verification</li>
+                    <li><strong>Data Deletion:</strong> Complete within 30 days</li>
+                    <li><strong>Confirmation:</strong> Email sent when process is complete</li>
+                </ul>
+            </div>
+            
+            <h2>🆘 Need Help?</h2>
+            
+            <p>If you have questions about data deletion or need assistance:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="mailto:support@artbeat.app" class="contact-button">📧 Contact Support</a>
+                <a href="mailto:privacy@artbeat.app" class="contact-button">🔒 Privacy Team</a>
+            </div>
+            
+            <h3>📞 Contact Information</h3>
+            <ul>
+                <li><strong>Email:</strong> support@artbeat.app</li>
+                <li><strong>Privacy:</strong> privacy@artbeat.app</li>
+                <li><strong>Response Time:</strong> Within 2 business days</li>
+                <li><strong>Available:</strong> Monday - Friday, 9 AM - 5 PM EST</li>
+            </ul>
+            
+            <h2>📚 Additional Resources</h2>
+            
+            <ul>
+                <li><a href="https://artbeat.app/privacy" target="_blank">Privacy Policy</a></li>
+                <li><a href="https://artbeat.app/terms" target="_blank">Terms of Service</a></li>
+                <li><a href="https://help.artbeat.app" target="_blank">Help Center</a></li>
+                <li><a href="https://artbeat.app/gdpr" target="_blank">GDPR Information</a></li>
+            </ul>
+            
+            <div class="important-box">
+                <h3>🔐 Your Privacy Rights</h3>
+                <p>Under GDPR, CCPA, and other privacy laws, you have the right to:</p>
+                <ul>
+                    <li>Access your personal data</li>
+                    <li>Correct inaccurate data</li>
+                    <li>Delete your data</li>
+                    <li>Port your data to another service</li>
+                    <li>Object to data processing</li>
+                    <li>Withdraw consent</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 ARTbeat. All rights reserved.</p>
+            <p>This page was last updated on August 23, 2025</p>
+            <p>Questions? Contact us at <a href="mailto:support@artbeat.app">support@artbeat.app</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -904,7 +904,9 @@ class _EnhancedArtWalkCreateScreenState
 
         return Card(
           child: ListTile(
-            leading: art.imageUrl.isNotEmpty
+            leading:
+                art.imageUrl.isNotEmpty &&
+                    Uri.tryParse(art.imageUrl)?.hasScheme == true
                 ? CircleAvatar(backgroundImage: NetworkImage(art.imageUrl))
                 : const CircleAvatar(child: Icon(Icons.art_track)),
             title: Text(art.title),

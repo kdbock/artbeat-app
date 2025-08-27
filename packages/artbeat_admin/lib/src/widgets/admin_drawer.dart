@@ -98,7 +98,8 @@ class AdminDrawer extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   children: [
-                    // Core menu items
+                    // Overview Section
+                    _buildSectionHeader('Overview'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.dashboard,
@@ -107,10 +108,38 @@ class AdminDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context,
+                      icon: Icons.dashboard_customize,
+                      title: 'Enhanced Dashboard',
+                      route: '/admin/enhanced-dashboard',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.attach_money,
+                      title: 'Financial Analytics',
+                      route: '/admin/financial-analytics',
+                    ),
+
+                    const Divider(height: 16),
+
+                    // User Management Section
+                    _buildSectionHeader('User Management'),
+                    _buildDrawerItem(
+                      context,
                       icon: Icons.people,
                       title: 'User Management',
                       route: '/admin/user-management',
                     ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.manage_accounts,
+                      title: 'Advanced User Management',
+                      route: '/admin/advanced-user-management',
+                    ),
+
+                    const Divider(height: 16),
+
+                    // Content Management Section
+                    _buildSectionHeader('Content Management'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.rate_review,
@@ -119,26 +148,32 @@ class AdminDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context,
+                      icon: Icons.content_copy,
+                      title: 'Advanced Content Management',
+                      route: '/admin/advanced-content-management',
+                    ),
+                    _buildDrawerItem(
+                      context,
                       icon: Icons.campaign,
                       title: 'Ad Management',
                       route: '/admin/ad-management',
                     ),
+
+                    const Divider(height: 16),
+
+                    // Analytics Section
+                    _buildSectionHeader('Analytics'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.analytics,
                       title: 'Analytics',
                       route: '/admin/analytics',
                     ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.settings,
-                      title: 'Settings',
-                      route: '/admin/settings',
-                    ),
 
-                    const Divider(height: 16), // Reduced height
+                    const Divider(height: 16),
 
-                    // Additional admin tools
+                    // System Management Section
+                    _buildSectionHeader('System Management'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.security,
@@ -157,10 +192,17 @@ class AdminDrawer extends StatelessWidget {
                       title: 'System Alerts',
                       route: '/admin/alerts',
                     ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.settings,
+                      title: 'Settings',
+                      route: '/admin/settings',
+                    ),
 
-                    const Divider(height: 16), // Reduced height
+                    const Divider(height: 16),
 
-                    // Developer tools
+                    // Developer Tools Section
+                    _buildSectionHeader('Developer Tools'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.developer_mode,
@@ -174,9 +216,10 @@ class AdminDrawer extends StatelessWidget {
                       onTap: () => _showSystemDiagnostics(context),
                     ),
 
-                    const Divider(height: 16), // Reduced height
+                    const Divider(height: 16),
 
-                    // Footer items
+                    // Support & Account Section
+                    _buildSectionHeader('Support & Account'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.help_outline,
@@ -360,6 +403,21 @@ class AdminDrawer extends StatelessWidget {
             child: const Text('Close'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: _headerColor,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }

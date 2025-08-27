@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/post_model.dart';
 import '../models/group_models.dart';
 import '../models/comment_model.dart';
@@ -117,9 +118,12 @@ class _PostDetailModalState extends State<PostDetailModal> {
           tags: wrapper.tags,
           location: wrapper.location,
           createdAt: wrapper.createdAt,
-          applauseCount: wrapper.applauseCount,
-          commentCount: _comments.length, // Use current comment count
-          shareCount: wrapper.shareCount,
+          engagementStats: EngagementStats(
+            appreciateCount: wrapper.applauseCount,
+            discussCount: _comments.length, // Use current comment count
+            amplifyCount: wrapper.shareCount,
+            lastUpdated: DateTime.now(),
+          ),
           isPublic: wrapper.isPublic,
           isUserVerified: wrapper.isUserVerified,
         ),
@@ -615,10 +619,14 @@ class _PostDetailModalState extends State<PostDetailModal> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundImage: comment.userAvatarUrl.isNotEmpty
+                backgroundImage:
+                    comment.userAvatarUrl.isNotEmpty &&
+                        Uri.tryParse(comment.userAvatarUrl)?.hasScheme == true
                     ? NetworkImage(comment.userAvatarUrl)
                     : null,
-                child: comment.userAvatarUrl.isEmpty
+                child:
+                    comment.userAvatarUrl.isEmpty ||
+                        Uri.tryParse(comment.userAvatarUrl)?.hasScheme != true
                     ? const Icon(Icons.person, size: 16)
                     : null,
               ),

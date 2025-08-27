@@ -158,13 +158,13 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
 
   String _getCategoryFromDescription(String description) {
     final desc = description.toLowerCase();
-    if (desc.contains('gallery') || desc.contains('exhibition')) {
+    if (desc.contains('business') || desc.contains('exhibition')) {
       return 'Exhibition';
     }
     if (desc.contains('tour') || desc.contains('walk')) return 'Tour';
     if (desc.contains('music') || desc.contains('concert')) return 'Concert';
     if (desc.contains('workshop') || desc.contains('class')) return 'Workshop';
-    if (desc.contains('gallery')) return 'Gallery';
+    if (desc.contains('business')) return 'Gallery';
     return 'Other';
   }
 
@@ -186,7 +186,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
             child: EnhancedUniversalHeader(
               title: 'Events',
               showLogo: false,
-              showSearch: true,
               showDeveloperTools: true,
               onSearchPressed: () => _showSearchModal(context),
               onProfilePressed: () => _showProfileMenu(context),
@@ -644,7 +643,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
   IconData _getEventIcon(String description) {
     // Simple keyword matching for event types based on description
     final desc = description.toLowerCase();
-    if (desc.contains('gallery') || desc.contains('exhibition')) {
+    if (desc.contains('business') || desc.contains('exhibition')) {
       return Icons.museum;
     } else if (desc.contains('tour') || desc.contains('walk')) {
       return Icons.directions_walk;
@@ -707,6 +706,10 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
 
                 // Ad placement beneath all events section
                 const BannerAdWidget(location: AdLocation.eventsAll),
+                const SizedBox(height: 24),
+
+                // Artist CTA widget
+                new CompactArtistCTAWidget(),
                 const SizedBox(height: 24),
 
                 // Getting Started (for new users)
@@ -1874,7 +1877,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
         return ArtbeatColors.secondaryTeal;
       case 'concert':
         return ArtbeatColors.accentYellow;
-      case 'gallery':
+      case 'business':
         return ArtbeatColors.primaryPurple;
       default:
         return ArtbeatColors.textSecondary;

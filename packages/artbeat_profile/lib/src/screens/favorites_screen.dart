@@ -208,7 +208,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         return Icons.palette_outlined;
       case 'artist':
         return Icons.person_outlined;
-      case 'gallery':
+      case 'business':
         return Icons.museum_outlined;
       case 'event':
         return Icons.event_outlined;

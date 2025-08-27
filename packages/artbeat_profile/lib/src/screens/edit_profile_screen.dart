@@ -239,13 +239,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final userModel = _userModel;
     final profileImageUrl = userModel?.profileImageUrl;
-    if (profileImageUrl != null) {
-      return NetworkImage(profileImageUrl);
+    if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
+      // Use ImageUtils for safe URL validation
+      final networkImage = ImageUtils.safeNetworkImage(profileImageUrl);
+      if (networkImage != null) {
+        return networkImage;
+      } else {
+        debugPrint('⚠️ Invalid profile image URL format: $profileImageUrl');
+      }
     }
 
     final photoURL = currentUser?.photoURL;
-    if (photoURL != null) {
-      return NetworkImage(photoURL);
+    if (photoURL != null && photoURL.isNotEmpty) {
+      // Use ImageUtils for safe URL validation
+      final networkImage = ImageUtils.safeNetworkImage(photoURL);
+      if (networkImage != null) {
+        return networkImage;
+      } else {
+        debugPrint('⚠️ Invalid photo URL format: $photoURL');
+      }
     }
     return null;
   }

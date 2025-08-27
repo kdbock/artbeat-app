@@ -45,7 +45,7 @@ void main() {
           'longitude': -80.8431,
         },
         'category': EventCategory.exhibition.toString(),
-        'tags': ['contemporary', 'opening', 'gallery'],
+        'tags': ['contemporary', 'opening', 'business'],
         'ticketPrice': 25.0,
         'maxAttendees': 100,
         'currentAttendees': 0,

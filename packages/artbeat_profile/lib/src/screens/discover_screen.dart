@@ -95,12 +95,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           posts: List<String>.from(
             (data['posts'] ?? <dynamic>[]) as List<dynamic>,
           ),
-          followers: List<String>.from(
-            (data['followers'] ?? <dynamic>[]) as List<dynamic>,
-          ),
-          following: List<String>.from(
-            (data['following'] ?? <dynamic>[]) as List<dynamic>,
-          ),
+          engagementStats: data['engagementStats'] != null
+              ? EngagementStats.fromFirestore(
+                  data['engagementStats'] as Map<String, dynamic>,
+                )
+              : null,
           captures: (data['captures'] as List<dynamic>? ?? [])
               .map(
                 (capture) =>
@@ -155,7 +154,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           isVerified: data['isVerified'] as bool? ?? false,
           isFeatured: data['isFeatured'] as bool? ?? false,
           subscriptionTier: _getTierFromString(
-            data['subscriptionTier'] as String? ?? 'artistBasic',
+            data['subscriptionTier'] as String? ?? 'starter',
           ),
           createdAt: (data['createdAt'] as Timestamp).toDate(),
           updatedAt: (data['updatedAt'] as Timestamp).toDate(),
@@ -170,7 +169,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   SubscriptionTier _getTierFromString(String tierString) {
     return SubscriptionTier.values.firstWhere(
       (t) => t.name == tierString,
-      orElse: () => SubscriptionTier.artistBasic,
+      orElse: () => SubscriptionTier.starter,
     );
   }
 
@@ -279,9 +278,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           geoPoint: data['geoPoint'] as GeoPoint?,
           zipCode: data['zipCode'] as String?,
           createdAt: (data['createdAt'] as Timestamp).toDate(),
-          applauseCount: (data['applauseCount'] as num?)?.toInt() ?? 0,
-          commentCount: (data['commentCount'] as num?)?.toInt() ?? 0,
-          shareCount: (data['shareCount'] as num?)?.toInt() ?? 0,
+          engagementStats: data['engagementStats'] != null
+              ? EngagementStats.fromMap(
+                  data['engagementStats'] as Map<String, dynamic>,
+                )
+              : null,
           isPublic: data['isPublic'] as bool? ?? true,
           mentionedUsers: data['mentionedUsers'] != null
               ? List<String>.from(

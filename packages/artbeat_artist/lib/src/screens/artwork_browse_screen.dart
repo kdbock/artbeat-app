@@ -116,7 +116,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                           ),
-                          value: _selectedLocation,
+                          initialValue: _selectedLocation,
                           items: _locations.map((location) {
                             return DropdownMenuItem<String>(
                               value: location,
@@ -141,7 +141,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                           ),
-                          value: _selectedMedium,
+                          initialValue: _selectedMedium,
                           items: _mediums.map((medium) {
                             return DropdownMenuItem<String>(
                               value: medium,

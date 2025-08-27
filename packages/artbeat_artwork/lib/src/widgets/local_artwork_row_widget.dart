@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
 
 /// Widget for displaying local artwork in a horizontal scrollable row
 class LocalArtworkRowWidget extends StatelessWidget {

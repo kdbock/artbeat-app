@@ -42,8 +42,6 @@ void main() {
         location: 'Test Location',
         createdAt: createdAt,
         lastActive: lastActive,
-        followers: ['user1', 'user2'],
-        following: ['user3'],
         posts: ['post1', 'post2'],
         experiencePoints: 100,
         level: 5,
@@ -260,7 +258,7 @@ void main() {
     test('should convert UserType to string correctly', () {
       expect(UserType.regular.toString(), equals('user'));
       expect(UserType.artist.toString(), equals('artist'));
-      expect(UserType.gallery.toString(), equals('gallery'));
+      expect(UserType.gallery.toString(), equals('business'));
       expect(UserType.moderator.toString(), equals('moderator'));
       expect(UserType.admin.toString(), equals('admin'));
     });
@@ -268,14 +266,14 @@ void main() {
     test('should get UserType value correctly', () {
       expect(UserType.regular.value, equals('user'));
       expect(UserType.artist.value, equals('artist'));
-      expect(UserType.gallery.value, equals('gallery'));
+      expect(UserType.gallery.value, equals('business'));
       expect(UserType.moderator.value, equals('moderator'));
       expect(UserType.admin.value, equals('admin'));
     });
 
     test('should parse UserType from string correctly', () {
       expect(UserType.fromString('artist'), equals(UserType.artist));
-      expect(UserType.fromString('gallery'), equals(UserType.gallery));
+      expect(UserType.fromString('business'), equals(UserType.gallery));
       expect(UserType.fromString('moderator'), equals(UserType.moderator));
       expect(UserType.fromString('admin'), equals(UserType.admin));
       expect(

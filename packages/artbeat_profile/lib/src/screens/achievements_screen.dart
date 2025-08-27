@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' hide AchievementModel;
 import 'package:artbeat_core/artbeat_core.dart';
 // Import with alias to avoid conflicts
 import 'package:artbeat_art_walk/src/services/achievement_service.dart'
     as art_walk;
+import 'package:artbeat_art_walk/src/models/achievement_model.dart'
+    as art_walk_model;
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -17,8 +19,9 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   final art_walk.AchievementService _achievementService =
       art_walk.AchievementService();
   bool _isLoading = true;
-  List<AchievementModel> _achievements = [];
-  Map<String, List<AchievementModel>> _categorizedAchievements = {};
+  List<art_walk_model.AchievementModel> _achievements = [];
+  Map<String, List<art_walk_model.AchievementModel>> _categorizedAchievements =
+      {};
   late TabController _tabController;
 
   @override
@@ -38,13 +41,13 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     setState(() => _isLoading = true);
 
     try {
-      print('DEBUG: Loading achievements for user...');
+      debugPrint('DEBUG: Loading achievements for user...');
       final achievements = await _achievementService.getUserAchievements();
-      print('DEBUG: Found ${achievements.length} achievements');
+      debugPrint('DEBUG: Found ${achievements.length} achievements');
 
       // Debug: Print each achievement
       for (final achievement in achievements) {
-        print(
+        debugPrint(
           'DEBUG: Achievement - ${achievement.type.name}: ${achievement.title}',
         );
       }
@@ -55,7 +58,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       }
 
       // Categorize achievements
-      final Map<String, List<AchievementModel>> categorized = {
+      final Map<String, List<art_walk_model.AchievementModel>> categorized = {
         'Art Walks': [],
         'Art Discovery': [],
         'Contributions': [],
@@ -64,25 +67,25 @@ class _AchievementsScreenState extends State<AchievementsScreen>
 
       for (final achievement in achievements) {
         switch (achievement.type) {
-          case AchievementType.firstWalk:
-          case AchievementType.walkExplorer:
-          case AchievementType.walkMaster:
-          case AchievementType.marathonWalker:
+          case art_walk_model.AchievementType.firstWalk:
+          case art_walk_model.AchievementType.walkExplorer:
+          case art_walk_model.AchievementType.walkMaster:
+          case art_walk_model.AchievementType.marathonWalker:
             categorized['Art Walks']!.add(achievement);
             break;
-          case AchievementType.artCollector:
-          case AchievementType.artExpert:
-          case AchievementType.photographer:
+          case art_walk_model.AchievementType.artCollector:
+          case art_walk_model.AchievementType.artExpert:
+          case art_walk_model.AchievementType.photographer:
             categorized['Art Discovery']!.add(achievement);
             break;
-          case AchievementType.contributor:
-          case AchievementType.curator:
-          case AchievementType.masterCurator:
+          case art_walk_model.AchievementType.contributor:
+          case art_walk_model.AchievementType.curator:
+          case art_walk_model.AchievementType.masterCurator:
             categorized['Contributions']!.add(achievement);
             break;
-          case AchievementType.commentator:
-          case AchievementType.socialButterfly:
-          case AchievementType.earlyAdopter:
+          case art_walk_model.AchievementType.commentator:
+          case art_walk_model.AchievementType.socialButterfly:
+          case art_walk_model.AchievementType.earlyAdopter:
             categorized['Social']!.add(achievement);
             break;
         }
@@ -94,7 +97,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         _isLoading = false;
       });
     } catch (e) {
-      print('DEBUG: Error loading achievements: $e');
+      debugPrint('DEBUG: Error loading achievements: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -104,7 +107,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     }
   }
 
-  void _showAchievementDetails(AchievementModel achievement) {
+  void _showAchievementDetails(art_walk_model.AchievementModel achievement) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -187,7 +190,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     return '${date.month}/${date.day}/${date.year}';
   }
 
-  IconData _getAchievementIcon(AchievementModel achievement) {
+  IconData _getAchievementIcon(art_walk_model.AchievementModel achievement) {
     final String iconName = achievement.iconName;
 
     // Map the string icon name to actual IconData
@@ -223,28 +226,32 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     }
   }
 
-  List<Color> _getAchievementColors(AchievementModel achievement) {
+  List<Color> _getAchievementColors(
+    art_walk_model.AchievementModel achievement,
+  ) {
     switch (achievement.type) {
       // "First" achievements - bronze
-      case AchievementType.firstWalk:
-      case AchievementType.artCollector:
-      case AchievementType.photographer:
-      case AchievementType.commentator:
-      case AchievementType.socialButterfly:
-      case AchievementType.curator:
-      case AchievementType.earlyAdopter:
+      case art_walk_model.AchievementType.firstWalk:
+      case art_walk_model.AchievementType.artCollector:
+      case art_walk_model.AchievementType.photographer:
+      case art_walk_model.AchievementType.commentator:
+      case art_walk_model.AchievementType.socialButterfly:
+      case art_walk_model.AchievementType.curator:
+      case art_walk_model.AchievementType.earlyAdopter:
         return [const Color(0xFFCD7F32), const Color(0xFFA05B20)];
       // Mid-level achievements - silver
-      case AchievementType.walkExplorer:
-      case AchievementType.artExpert:
-      case AchievementType.marathonWalker:
+      case art_walk_model.AchievementType.walkExplorer:
+      case art_walk_model.AchievementType.artExpert:
+      case art_walk_model.AchievementType.marathonWalker:
         return [const Color(0xFFC0C0C0), const Color(0xFF8a8a8a)];
       // Advanced achievements - gold
-      case AchievementType.walkMaster:
-      case AchievementType.contributor:
-      case AchievementType.masterCurator:
+      case art_walk_model.AchievementType.walkMaster:
+      case art_walk_model.AchievementType.contributor:
+      case art_walk_model.AchievementType.masterCurator:
         return [const Color(0xFFFFD700), const Color(0xFFB7950B)];
     }
+    // Default fallback
+    return [const Color(0xFFCD7F32), const Color(0xFFA05B20)];
   }
 
   @override
@@ -330,7 +337,9 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  Widget _buildAchievementsTab(List<AchievementModel> achievements) {
+  Widget _buildAchievementsTab(
+    List<art_walk_model.AchievementModel> achievements,
+  ) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
@@ -439,35 +448,35 @@ class _AchievementsScreenState extends State<AchievementsScreen>
   }
 
   int _countAchievementsByTier(
-    List<AchievementModel> achievements,
+    List<art_walk_model.AchievementModel> achievements,
     String tier,
   ) {
-    Set<AchievementType> tierAchievements;
+    Set<art_walk_model.AchievementType> tierAchievements;
 
     switch (tier) {
       case 'bronze':
         tierAchievements = {
-          AchievementType.firstWalk,
-          AchievementType.artCollector,
-          AchievementType.photographer,
-          AchievementType.commentator,
-          AchievementType.socialButterfly,
-          AchievementType.curator,
-          AchievementType.earlyAdopter,
+          art_walk_model.AchievementType.firstWalk,
+          art_walk_model.AchievementType.artCollector,
+          art_walk_model.AchievementType.photographer,
+          art_walk_model.AchievementType.commentator,
+          art_walk_model.AchievementType.socialButterfly,
+          art_walk_model.AchievementType.curator,
+          art_walk_model.AchievementType.earlyAdopter,
         };
         break;
       case 'silver':
         tierAchievements = {
-          AchievementType.walkExplorer,
-          AchievementType.artExpert,
-          AchievementType.marathonWalker,
+          art_walk_model.AchievementType.walkExplorer,
+          art_walk_model.AchievementType.artExpert,
+          art_walk_model.AchievementType.marathonWalker,
         };
         break;
       case 'gold':
         tierAchievements = {
-          AchievementType.walkMaster,
-          AchievementType.contributor,
-          AchievementType.masterCurator,
+          art_walk_model.AchievementType.walkMaster,
+          art_walk_model.AchievementType.contributor,
+          art_walk_model.AchievementType.masterCurator,
         };
         break;
       default:

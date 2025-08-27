@@ -58,6 +58,18 @@ class PaymentMethodModel {
     return now.isAfter(expiry);
   }
 
+  /// Convenience getter for card brand
+  String? get brand => card?.brand;
+
+  /// Convenience getter for card last4 digits
+  String? get last4 => card?.last4;
+
+  /// Convenience getter for card expiration month
+  int? get expMonth => card?.expMonth;
+
+  /// Convenience getter for card expiration year
+  int? get expYear => card?.expYear;
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

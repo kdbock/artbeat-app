@@ -122,7 +122,6 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                       ? 'Create Event'
                       : 'Edit Event',
                   showLogo: false,
-                  showSearch: true,
                   showDeveloperTools: true,
                   onSearchPressed: () => _showSearchModal(context),
                   onProfilePressed: () => _showProfileMenu(context),
@@ -661,7 +660,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _getRefundPolicyKey(),
+              initialValue: _getRefundPolicyKey(),
               decoration: const InputDecoration(
                 labelText: 'Refund Policy',
                 filled: true,

@@ -186,8 +186,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
 
   Widget _buildArtistCard(core.ArtistProfileModel artist) {
     final bool isPremium =
-        artist.subscriptionTier != core.SubscriptionTier.free &&
-            artist.subscriptionTier != core.SubscriptionTier.artistBasic;
+        artist.subscriptionTier != core.SubscriptionTier.free;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -224,14 +223,18 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                       top: Radius.circular(12),
                     ),
                     image: artist.coverImageUrl != null &&
-                            artist.coverImageUrl!.isNotEmpty
+                            artist.coverImageUrl!.isNotEmpty &&
+                            Uri.tryParse(artist.coverImageUrl!)?.hasScheme ==
+                                true
                         ? DecorationImage(
                             image: NetworkImage(artist.coverImageUrl!),
                             fit: BoxFit.cover,
                           )
                         : null,
                     color: artist.coverImageUrl == null ||
-                            artist.coverImageUrl!.isEmpty
+                            artist.coverImageUrl!.isEmpty ||
+                            Uri.tryParse(artist.coverImageUrl!)?.hasScheme !=
+                                true
                         ? Colors.grey[300]
                         : null,
                   ),
@@ -258,9 +261,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                 ),
 
                 // Premium badge
-                if (artist.subscriptionTier != core.SubscriptionTier.free &&
-                    artist.subscriptionTier !=
-                        core.SubscriptionTier.artistBasic)
+                if (artist.subscriptionTier != core.SubscriptionTier.free)
                   Positioned(
                     top: 10,
                     right: 10,
@@ -269,7 +270,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: artist.subscriptionTier ==
-                                core.SubscriptionTier.gallery
+                                core.SubscriptionTier.business
                             ? Colors.amber
                             : Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(12),
@@ -285,9 +286,9 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                           const SizedBox(width: 4),
                           Text(
                             artist.subscriptionTier ==
-                                    core.SubscriptionTier.gallery
-                                ? 'Gallery'
-                                : 'Pro',
+                                    core.SubscriptionTier.business
+                                ? 'Business'
+                                : artist.subscriptionTier.displayName,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

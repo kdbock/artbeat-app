@@ -1,0 +1,456 @@
+import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_community/artbeat_community.dart' show PostModel;
+import 'package:cached_network_image/cached_network_image.dart';
+
+class DashboardCommunitySection extends StatelessWidget {
+  final DashboardViewModel viewModel;
+
+  const DashboardCommunitySection({Key? key, required this.viewModel})
+    : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
+            ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionHeader(context),
+            const SizedBox(height: 16),
+            _buildCommunityContent(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [ArtbeatColors.primaryGreen, ArtbeatColors.primaryPurple],
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.event_available,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Upcoming Events',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: ArtbeatColors.textPrimary,
+                ),
+              ),
+              Text(
+                'See what the art community is talking about',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: ArtbeatColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ElevatedButton.icon(
+          onPressed: () => Navigator.pushNamed(context, '/community'),
+          icon: const Icon(Icons.explore, size: 16),
+          label: const Text('View All'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ArtbeatColors.warning,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommunityContent(BuildContext context) {
+    // Community highlights not implemented yet
+    final posts = <PostModel>[];
+
+    if (posts.isEmpty) {
+      return _buildEmptyState(context);
+    }
+
+    return SizedBox(
+      height: 180,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: posts.length,
+        itemBuilder: (context, index) {
+          final post = posts[index];
+          return Padding(
+            padding: EdgeInsets.only(
+              left: index == 0 ? 0 : 12,
+              right: index == posts.length - 1 ? 0 : 0,
+            ),
+            child: _buildCommunityCard(context, post),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return SizedBox(
+      height: 180,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(left: index == 0 ? 0 : 12),
+            child: _buildSkeletonCard(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        color: ArtbeatColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: ArtbeatColors.textSecondary,
+              size: 48,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Unable to load community posts',
+              style: TextStyle(color: ArtbeatColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Container(
+      height: 180,
+      decoration: BoxDecoration(
+        color: ArtbeatColors.backgroundSecondary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.forum_outlined,
+                color: ArtbeatColors.textSecondary,
+                size: 32,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'No community posts yet',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: ArtbeatColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Be the first to start a conversation!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: ArtbeatColors.textSecondary,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 32,
+                child: ElevatedButton.icon(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/community/create'),
+                  icon: const Icon(Icons.add, size: 14),
+                  label: const Text(
+                    'Create Post',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ArtbeatColors.warning,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommunityCard(BuildContext context, PostModel post) {
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(
+            context,
+            '/community/post',
+            arguments: {'postId': post.id},
+          ),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Author info
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ArtbeatColors.backgroundSecondary,
+                      ),
+                      child: ClipOval(
+                        child: post.authorProfileImageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: post.authorProfileImageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 1,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.person,
+                                      color: ArtbeatColors.textSecondary,
+                                      size: 16,
+                                    ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                color: ArtbeatColors.textSecondary,
+                                size: 16,
+                              ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            post.authorName.isNotEmpty
+                                ? post.authorName
+                                : 'Unknown User',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: ArtbeatColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            _formatTimeAgo(post.createdAt),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: ArtbeatColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Post content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Post text
+                      if (post.content.isNotEmpty)
+                        Text(
+                          post.content,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: ArtbeatColors.textPrimary,
+                            height: 1.4,
+                          ),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+
+                      const Spacer(),
+
+                      // Engagement stats
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.favorite_border,
+                                size: 14,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatCount(post.likesCount),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: ArtbeatColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.comment_outlined,
+                                size: 14,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatCount(post.commentsCount),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: ArtbeatColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.share_outlined,
+                                size: 14,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _formatCount(post.sharesCount),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: ArtbeatColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: ArtbeatColors.backgroundSecondary.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(ArtbeatColors.warning),
+        ),
+      ),
+    );
+  }
+
+  String _formatCount(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1)}K';
+    }
+    return count.toString();
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
+  }
+}

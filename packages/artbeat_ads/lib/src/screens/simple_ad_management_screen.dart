@@ -91,13 +91,56 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: ads.length,
-          itemBuilder: (context, index) {
-            final ad = ads[index];
-            return _buildPendingAdCard(ad);
-          },
+        return Column(
+          children: [
+            // Bulk actions header
+            if (ads.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  border: Border(
+                    bottom: BorderSide(color: Colors.orange.shade200),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.pending_actions, color: Colors.orange.shade700),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${ads.length} pending ads awaiting review',
+                      style: TextStyle(
+                        color: Colors.orange.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (ads.length > 1)
+                      ElevatedButton.icon(
+                        onPressed: () => _bulkApproveAds(ads),
+                        icon: const Icon(Icons.done_all, size: 16),
+                        label: const Text('Approve All'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            // Ads list
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: ads.length,
+                itemBuilder: (context, index) {
+                  final ad = ads[index];
+                  return _buildPendingAdCard(ad);
+                },
+              ),
+            ),
+          ],
         );
       },
     );
@@ -184,7 +227,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
             Row(
               children: [
                 // Ad preview
-                Container(
+                SizedBox(
                   width: 80,
                   height: 60,
                   child: SimpleAdDisplayWidget(ad: ad),
@@ -233,6 +276,48 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit_location':
+                        _editAdLocation(ad);
+                        break;
+                      case 'duplicate':
+                        _duplicateAd(ad);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit_location',
+                      child: Row(
+                        children: [
+                          Icon(Icons.location_on, size: 16),
+                          SizedBox(width: 8),
+                          Text('Edit Location'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'duplicate',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy, size: 16),
+                          SizedBox(width: 8),
+                          Text('Duplicate'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: const Icon(Icons.more_vert),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 TextButton(
                   onPressed: () => _rejectAd(ad),
                   child: const Text(
@@ -268,7 +353,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
             Row(
               children: [
                 // Ad preview
-                Container(
+                SizedBox(
                   width: 80,
                   height: 60,
                   child: SimpleAdDisplayWidget(ad: ad),
@@ -331,6 +416,48 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'edit_location':
+                        _editAdLocation(ad);
+                        break;
+                      case 'duplicate':
+                        _duplicateAd(ad);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit_location',
+                      child: Row(
+                        children: [
+                          Icon(Icons.location_on, size: 16),
+                          SizedBox(width: 8),
+                          Text('Edit Location'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'duplicate',
+                      child: Row(
+                        children: [
+                          Icon(Icons.copy, size: 16),
+                          SizedBox(width: 8),
+                          Text('Duplicate'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: const Icon(Icons.more_vert),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 if (ad.status == AdStatus.approved)
                   TextButton(
                     onPressed: () => _pauseAd(ad),
@@ -612,6 +739,150 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
     } catch (e) {
       // Fallback if date formatting fails
       return 'Dates: N/A';
+    }
+  }
+
+  Future<void> _duplicateAd(AdModel ad) async {
+    try {
+      await _adService.duplicateAd(ad.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ad duplicated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error duplicating ad: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editAdLocation(AdModel ad) async {
+    final result = await showDialog<AdLocation>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Ad Location'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: AdLocation.values.map((location) {
+              final isSelected = location == ad.location;
+              return ListTile(
+                title: Text(location.displayName),
+                subtitle: Text(location.description),
+                leading: Icon(
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey,
+                ),
+                onTap: () {
+                  Navigator.of(context).pop(location);
+                },
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result != ad.location) {
+      try {
+        await _adService.updateAdLocation(ad.id, result);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Ad location updated to ${result.displayName}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error updating location: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _bulkApproveAds(List<AdModel> ads) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bulk Approve Ads'),
+        content: Text(
+          'Are you sure you want to approve all ${ads.length} pending ads?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Approve All'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      int successCount = 0;
+      int failureCount = 0;
+
+      for (final ad in ads) {
+        try {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            await _adService.approveAd(ad.id, user.uid);
+            successCount++;
+          }
+        } catch (e) {
+          failureCount++;
+          debugPrint('Error approving ad ${ad.id}: $e');
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              successCount > 0
+                  ? 'Successfully approved $successCount ads${failureCount > 0 ? ", $failureCount failed" : ""}'
+                  : 'Failed to approve ads',
+            ),
+            backgroundColor: successCount > 0 ? Colors.green : Colors.red,
+          ),
+        );
+      }
     }
   }
 }

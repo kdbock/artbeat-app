@@ -20,7 +20,7 @@ class ArtworkCleanupService {
       // Get all artwork documents
       final snapshot = await _firestore.collection('artwork').get();
 
-      int totalArtwork = snapshot.docs.length;
+      final int totalArtwork = snapshot.docs.length;
       int brokenImages = 0;
       int fixedImages = 0;
 
@@ -109,7 +109,7 @@ class ArtworkCleanupService {
     try {
       final snapshot = await _firestore.collection('artwork').get();
 
-      int totalArtwork = snapshot.docs.length;
+      final int totalArtwork = snapshot.docs.length;
       int brokenArtwork = 0;
       int removedArtwork = 0;
 

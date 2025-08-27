@@ -23,6 +23,10 @@ class ArtistProfileModel {
   final Map<String, String> socialLinks;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isFollowing;
+  final int likesCount;
+  final int viewsCount;
+  final int artworksCount;
 
   ArtistProfileModel({
     required this.id,
@@ -34,7 +38,7 @@ class ArtistProfileModel {
     this.website,
     this.location,
     required this.userType,
-    this.subscriptionTier = SubscriptionTier.artistBasic,
+    this.subscriptionTier = SubscriptionTier.starter,
     this.isVerified = false,
     this.isFeatured = false,
     this.isPortfolioPublic = true,
@@ -43,6 +47,10 @@ class ArtistProfileModel {
     this.socialLinks = const {},
     required this.createdAt,
     required this.updatedAt,
+    this.isFollowing = false,
+    this.likesCount = 0,
+    this.viewsCount = 0,
+    this.artworksCount = 0,
   });
 
   /// Create from Firestore document
@@ -68,6 +76,10 @@ class ArtistProfileModel {
       socialLinks: _parseStringMap(data['socialLinks']),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      isFollowing: data['isFollowing'] as bool? ?? false,
+      likesCount: data['likesCount'] as int? ?? 0,
+      viewsCount: data['viewsCount'] as int? ?? 0,
+      artworksCount: data['artworksCount'] as int? ?? 0,
     );
   }
 
@@ -91,6 +103,10 @@ class ArtistProfileModel {
       'socialLinks': socialLinks,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'likesCount': likesCount,
+      'viewsCount': viewsCount,
+      'artworksCount': artworksCount,
+      // isFollowing is not stored in Firestore as it's user-specific
     };
   }
 
@@ -135,25 +151,27 @@ class ArtistProfileModel {
   /// Check if artist has a free subscription
   bool get isBasicSubscription =>
       subscriptionTier == SubscriptionTier.free ||
-      subscriptionTier == SubscriptionTier.artistBasic;
+      subscriptionTier == SubscriptionTier.starter;
 
   /// Check if artist has a pro subscription
-  bool get isProSubscription => subscriptionTier == SubscriptionTier.artistPro;
+  bool get isProSubscription => subscriptionTier == SubscriptionTier.creator;
 
   /// Check if artist has a gallery subscription
   bool get isGallerySubscription =>
-      subscriptionTier == SubscriptionTier.gallery;
+      subscriptionTier == SubscriptionTier.business;
 
   /// Get maximum number of artworks allowed for this subscription
   int get maxArtworkCount {
     switch (subscriptionTier) {
       case SubscriptionTier.free:
-      case SubscriptionTier.artistBasic:
+      case SubscriptionTier.starter:
         return 5;
-      case SubscriptionTier.artistPro:
+      case SubscriptionTier.creator:
         return 100;
-      case SubscriptionTier.gallery:
+      case SubscriptionTier.business:
         return 1000;
+      case SubscriptionTier.enterprise:
+        return 10000;
     }
   }
 
@@ -166,5 +184,56 @@ class ArtistProfileModel {
         .get();
 
     return (count.count ?? 0) < maxArtworkCount;
+  }
+
+  /// Create a copy of this model with the given fields replaced with new values
+  ArtistProfileModel copyWith({
+    String? id,
+    String? userId,
+    String? displayName,
+    String? bio,
+    String? profileImageUrl,
+    String? coverImageUrl,
+    String? website,
+    String? location,
+    UserType? userType,
+    SubscriptionTier? subscriptionTier,
+    bool? isVerified,
+    bool? isFeatured,
+    bool? isPortfolioPublic,
+    List<String>? mediums,
+    List<String>? styles,
+    Map<String, String>? socialLinks,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isFollowing,
+    int? likesCount,
+    int? viewsCount,
+    int? artworksCount,
+  }) {
+    return ArtistProfileModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      displayName: displayName ?? this.displayName,
+      bio: bio ?? this.bio,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      website: website ?? this.website,
+      location: location ?? this.location,
+      userType: userType ?? this.userType,
+      subscriptionTier: subscriptionTier ?? this.subscriptionTier,
+      isVerified: isVerified ?? this.isVerified,
+      isFeatured: isFeatured ?? this.isFeatured,
+      isPortfolioPublic: isPortfolioPublic ?? this.isPortfolioPublic,
+      mediums: mediums ?? this.mediums,
+      styles: styles ?? this.styles,
+      socialLinks: socialLinks ?? this.socialLinks,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isFollowing: isFollowing ?? this.isFollowing,
+      likesCount: likesCount ?? this.likesCount,
+      viewsCount: viewsCount ?? this.viewsCount,
+      artworksCount: artworksCount ?? this.artworksCount,
+    );
   }
 }

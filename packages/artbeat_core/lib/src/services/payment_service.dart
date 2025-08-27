@@ -580,16 +580,19 @@ class PaymentService {
     }
   }
 
-  /// Get price ID for subscription tier
+  /// Get price ID for subscription tier (2025 updated pricing)
   String _getPriceIdForTier(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.artistPro:
-        return 'price_artist_pro_monthly';
-      case SubscriptionTier.gallery:
-        return 'price_gallery_monthly';
+      case SubscriptionTier.starter:
+        return 'price_starter_monthly_499'; // $4.99/month
+      case SubscriptionTier.creator:
+        return 'price_creator_monthly_1299'; // $12.99/month
+      case SubscriptionTier.business:
+        return 'price_business_monthly_2999'; // $29.99/month
+      case SubscriptionTier.enterprise:
+        return 'price_enterprise_monthly_7999'; // $79.99/month
       case SubscriptionTier.free:
-      case SubscriptionTier.artistBasic:
-        throw Exception('Free tiers do not have price IDs');
+        throw Exception('Free tier does not have a price ID');
     }
   }
 
@@ -609,7 +612,7 @@ class PaymentService {
   }
 
   /// Get or create customer ID for the current user
-  Future<String> _getOrCreateCustomerId() async {
+  Future<String> getOrCreateCustomerId() async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) {
       throw Exception('User not authenticated');
@@ -642,7 +645,7 @@ class PaymentService {
   /// Get the user's default payment method ID
   Future<String?> getDefaultPaymentMethodId() async {
     try {
-      final customerId = await _getOrCreateCustomerId();
+      final customerId = await getOrCreateCustomerId();
       final paymentMethods = await getPaymentMethods(customerId);
 
       // Return the first payment method if available
@@ -651,6 +654,198 @@ class PaymentService {
     } catch (e) {
       debugPrint('Error getting default payment method: $e');
       return null;
+    }
+  }
+
+  /// Process an ad payment
+  Future<Map<String, dynamic>> processAdPayment({
+    required String adId,
+    required String paymentMethodId,
+    required double amount,
+    required String adType,
+    int? duration,
+    String? location,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/processAdPayment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userId': userId,
+          'adId': adId,
+          'amount': amount,
+          'paymentMethodId': paymentMethodId,
+          'adType': adType,
+          if (duration != null) 'duration': duration,
+          if (location != null) 'location': location,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process ad payment');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+
+      // Update ad status in Firestore to indicate payment completed
+      await _firestore.collection('ads').doc(adId).update({
+        'paymentStatus': 'paid',
+        'paymentIntentId': data['paymentIntentId'],
+        'paidAmount': amount,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return data;
+    } catch (e) {
+      debugPrint('Error processing ad payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Get ad pricing from the server
+  Future<Map<String, dynamic>> getAdPricing({
+    required String adType,
+    required int duration,
+    required String location,
+  }) async {
+    try {
+      final response = await _httpClient.get(
+        Uri.parse('$_baseUrl/getAdPricing').replace(
+          queryParameters: {
+            'adType': adType,
+            'duration': duration.toString(),
+            'location': location,
+          },
+        ),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get ad pricing');
+      }
+
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error getting ad pricing: $e');
+      rethrow;
+    }
+  }
+
+  /// Process enhanced gift payment with gift types
+  Future<Map<String, dynamic>> processEnhancedGiftPayment({
+    required String recipientId,
+    required String paymentMethodId,
+    required String giftType,
+    required double amount,
+    String? message,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/processGiftPayment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'senderId': userId,
+          'recipientId': recipientId,
+          'amount': amount,
+          'paymentMethodId': paymentMethodId,
+          'giftType': giftType,
+          if (message != null) 'message': message,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process gift payment');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+
+      // Create gift record in Firestore
+      await _firestore.collection('gifts').add({
+        'senderId': userId,
+        'recipientId': recipientId,
+        'amount': amount,
+        'giftType': giftType,
+        'paymentIntentId': data['paymentIntentId'],
+        'status': 'completed',
+        'message': message ?? '',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      return data;
+    } catch (e) {
+      debugPrint('Error processing enhanced gift payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Get available gift types and their prices
+  Map<String, double> getGiftTypes() {
+    return {
+      'Mini Palette': 5.00,
+      'Brush Pack': 10.00,
+      'Canvas Set': 15.00,
+      'Art Supplies': 25.00,
+      'Studio Time': 50.00,
+      'Premium Support': 100.00,
+    };
+  }
+
+  /// Create a new subscription for a customer
+  Future<Map<String, dynamic>> createSubscription({
+    required String customerId,
+    required SubscriptionTier tier,
+    String? paymentMethodId,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final priceId = _getPriceIdForTier(tier);
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/createSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'customerId': customerId,
+          'priceId': priceId,
+          'userId': userId,
+          if (paymentMethodId != null) 'paymentMethodId': paymentMethodId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create subscription');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+
+      // Store subscription in Firestore
+      await _firestore.collection('subscriptions').add({
+        'userId': userId,
+        'customerId': customerId,
+        'subscriptionId': data['subscriptionId'],
+        'tier': tier.apiName,
+        'status': data['status'],
+        'isActive': true,
+        'autoRenew': true,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return data;
+    } catch (e) {
+      debugPrint('Error creating subscription: $e');
+      rethrow;
     }
   }
 }

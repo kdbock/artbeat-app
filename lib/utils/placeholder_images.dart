@@ -3,16 +3,6 @@ import 'package:flutter/material.dart';
 
 /// Utility class for generating local placeholder images
 class PlaceholderImages {
-  static const List<Color> _colors = [
-    Color(0xFFFF6B6B), // Red
-    Color(0xFF4ECDC4), // Teal
-    Color(0xFF45B7D1), // Blue
-    Color(0xFF96CEB4), // Green
-    Color(0xFFFCEA2B), // Yellow
-    Color(0xFFFF8B94), // Pink
-    Color(0xFF95E1D3), // Mint
-    Color(0xFFFF677D), // Coral
-  ];
 
   static const List<String> _texts = [
     'Image 1',

@@ -83,7 +83,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             event.tags.any(
               (tag) => [
                 'featured',
-                'gallery',
+                'business',
                 'exhibition',
                 'opening',
               ].contains(tag.toLowerCase()),
@@ -1454,7 +1454,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
   IconData _getEventIcon(String category) {
     switch (category.toLowerCase()) {
       case 'exhibition':
-      case 'gallery':
+      case 'business':
         return Icons.museum;
       case 'workshop':
       case 'class':

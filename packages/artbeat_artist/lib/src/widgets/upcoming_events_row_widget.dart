@@ -121,7 +121,11 @@ class UpcomingEventsRowWidget extends StatelessWidget {
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(4.0),
                               ),
-                              child: event.imageUrl != null
+                              child: event.imageUrl != null &&
+                                      event.imageUrl!.isNotEmpty &&
+                                      Uri.tryParse(event.imageUrl!)
+                                              ?.hasScheme ==
+                                          true
                                   ? Image.network(
                                       event.imageUrl!,
                                       height: 120,

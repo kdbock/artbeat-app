@@ -8,19 +8,26 @@ class ArtbeatColors {
   static const Color accentYellow = Color(0xFFFFD700);
   static const Color white = Colors.white;
   static const Color black = Colors.black;
-  
+
   // Primary color getter (defaults to primaryPurple)
   static const Color primary = primaryPurple;
 
   // Accent Colors
   static const Color accent1 = Color(0xFF6C63FF);
   static const Color accent2 = Color(0xFF00BFA5);
+  static const Color accentOrange = Color(0xFFFF6B35);
+  static const Color accentGold = Color(0xFFFFD700);
+  static const Color primaryBlue = Color(0xFF007BFF);
 
   // Text Colors
   static const Color textPrimary = Color(0xFF212529);
   static const Color textSecondary = Color(0xFF666666);
   static const Color textWhite = Color.fromARGB(255, 26, 4, 43);
   static const Color textDisabled = Color(0xFFADB5BD);
+
+  // Gray Colors
+  static const Color lightGray = Color(0xFFF5F5F5);
+  static const Color darkGray = Color(0xFF666666);
 
   // Background Colors
   static const Color backgroundPrimary = Colors.white;

@@ -106,7 +106,7 @@ class ArtistProfileService {
         isPortfolioPublic: (data['isPortfolioPublic'] as bool?) ?? true,
         subscriptionTier: core.SubscriptionTier.values.firstWhere(
           (tier) => tier.name == data['subscriptionTier'],
-          orElse: () => core.SubscriptionTier.artistBasic,
+          orElse: () => core.SubscriptionTier.free,
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),
@@ -148,7 +148,7 @@ class ArtistProfileService {
         isPortfolioPublic: (data['isPortfolioPublic'] as bool?) ?? true,
         subscriptionTier: core.SubscriptionTier.values.firstWhere(
           (tier) => tier.apiName == data['subscriptionTier'],
-          orElse: () => core.SubscriptionTier.artistBasic,
+          orElse: () => core.SubscriptionTier.free,
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),

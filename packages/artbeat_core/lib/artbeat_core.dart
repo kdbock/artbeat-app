@@ -12,6 +12,9 @@ export 'src/theme/artbeat_components.dart' show ArtbeatComponents;
 export 'src/theme/artbeat_theme.dart' show ArtbeatTheme;
 export 'src/theme/artbeat_typography.dart' show ArtbeatTypography;
 
+// Export Models
+// Note: AchievementModel is now provided by artbeat_art_walk package
+
 // Export Core Services
 export 'src/services/config_service.dart' show ConfigService;
 export 'src/services/user_service.dart' show UserService;
@@ -27,6 +30,17 @@ export 'src/services/image_management_service.dart' show ImageManagementService;
 export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
 export 'src/services/firebase_storage_auth_service.dart'
     show FirebaseStorageAuthService;
+// 2025 Enhanced Services
+export 'src/services/ai_service.dart' show AIService;
+export 'src/services/ai_features_service.dart'
+    show AIFeaturesService, AIResult, AIFeatureAccess;
+export 'src/services/usage_tracking_service.dart' show UsageTrackingService;
+export 'src/services/subscription_migration_service.dart'
+    show SubscriptionMigrationService;
+export 'src/services/artist_feature_testing_service.dart'
+    show ArtistFeatureTestingService, TestResult;
+export 'src/services/universal_engagement_service.dart'
+    show UniversalEngagementService;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -39,6 +53,10 @@ export 'src/models/subscription_tier.dart' show SubscriptionTier;
 export 'src/models/payment_method_model.dart' show PaymentMethodModel;
 export 'src/models/feedback_model.dart'
     show FeedbackModel, FeedbackType, FeedbackPriority, FeedbackStatus;
+export 'src/models/engagement_model.dart'
+    show EngagementStats, EngagementType, EngagementModel;
+// 2025 Enhanced Models
+export 'src/models/feature_limits.dart' show FeatureLimits;
 
 // Export Core Widgets
 export 'src/widgets/artbeat_button.dart';
@@ -48,6 +66,8 @@ export 'src/widgets/artbeat_drawer.dart';
 export 'src/widgets/artbeat_drawer_items.dart';
 export 'src/widgets/art_capture_warning_dialog.dart';
 export 'src/widgets/loading_screen.dart';
+export 'src/widgets/universal_engagement_bar.dart' show UniversalEngagementBar;
+export 'src/widgets/universal_content_card.dart' show UniversalContentCard;
 export 'src/widgets/profile_tab_interface.dart';
 export 'src/widgets/featured_content_row_widget.dart';
 export 'src/widgets/network_error_widget.dart';
@@ -57,6 +77,10 @@ export 'src/widgets/enhanced_bottom_nav.dart';
 export 'src/widgets/artbeat_gradient_background.dart';
 export 'src/widgets/skeleton_widgets.dart';
 export 'src/widgets/secure_network_image.dart' show SecureNetworkImage;
+export 'src/widgets/artist_cta_widget.dart'
+    show ArtistCTAWidget, CompactArtistCTAWidget;
+// 2025 Enhanced Widgets
+export 'src/widgets/usage_limits_widget.dart' show UsageLimitsWidget;
 
 export 'src/widgets/user_avatar.dart';
 export 'src/widgets/optimized_image.dart';
@@ -82,10 +106,20 @@ export 'src/utils/env_loader.dart' show EnvLoader;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
-export 'src/screens/fluid_dashboard_screen.dart' show FluidDashboardScreen;
+export 'src/screens/fluid_dashboard_screen_refactored.dart'
+    show FluidDashboardScreen;
 export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
 export 'src/screens/auth_required_screen.dart' show AuthRequiredScreen;
 export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
+export 'src/screens/gift_purchase_screen.dart' show GiftPurchaseScreen;
+export 'src/screens/payment_management_screen.dart'
+    show PaymentManagementScreen;
+export 'src/screens/subscription_purchase_screen.dart'
+    show SubscriptionPurchaseScreen;
+export 'src/screens/subscription_plans_screen.dart'
+    show SubscriptionPlansScreen;
+export 'src/screens/simple_subscription_plans_screen.dart'
+    show SimpleSubscriptionPlansScreen;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;

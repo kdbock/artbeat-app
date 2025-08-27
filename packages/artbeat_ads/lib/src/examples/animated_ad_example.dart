@@ -11,54 +11,54 @@ class AnimatedAdExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Animated Ad Examples')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+      body: const SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Dashboard Banner Ad:',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Banner ad placement - automatically shows ads with image rotation
-            const SimpleAdPlacementWidget(
+            SimpleAdPlacementWidget(
               location: AdLocation.dashboard,
               showIfEmpty: true,
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
 
-            const Text(
+            Text(
               'Community Feed Ad:',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Feed ad placement - automatically shows ads with image rotation
-            const SimpleAdPlacementWidget(
+            SimpleAdPlacementWidget(
               location: AdLocation.communityFeed,
               showIfEmpty: true,
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
 
-            const Text(
+            Text(
               'Art Walk Dashboard Ad:',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
 
             // Art walk ad placement
-            const SimpleAdPlacementWidget(
+            SimpleAdPlacementWidget(
               location: AdLocation.artWalkDashboard,
               showIfEmpty: true,
             ),
 
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
 
-            const Card(
+            Card(
               child: Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(

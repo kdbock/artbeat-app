@@ -1,7 +1,7 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const stripe = require('stripe')(functions.config().stripe.secret_key);
-const cors = require('cors')({ origin: true });
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const stripe = require("stripe")(functions.config().stripe.secret_key);
+const cors = require("cors")({origin: true});
 
 admin.initializeApp();
 
@@ -11,22 +11,22 @@ admin.initializeApp();
 exports.createCustomer = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { email, userId } = request.body;
+      const {email, userId} = request.body;
 
       if (!email || !userId) {
-        return response.status(400).send({ 
-          error: 'Missing required fields' 
+        return response.status(400).send({
+          error: "Missing required fields",
         });
       }
 
       // Create customer
       const customer = await stripe.customers.create({
         email,
-        metadata: { 
+        metadata: {
           userId,
           firebaseUserId: userId,
         },
@@ -38,8 +38,8 @@ exports.createCustomer = functions.https.onRequest((request, response) => {
         success: true,
       });
     } catch (error) {
-      console.error('Error creating customer:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error creating customer:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -50,29 +50,29 @@ exports.createCustomer = functions.https.onRequest((request, response) => {
 exports.createSetupIntent = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { customerId } = request.body;
+      const {customerId} = request.body;
 
       if (!customerId) {
-        return response.status(400).send({ 
-          error: 'Missing customerId' 
+        return response.status(400).send({
+          error: "Missing customerId",
         });
       }
 
       const setupIntent = await stripe.setupIntents.create({
         customer: customerId,
-        payment_method_types: ['card'],
+        payment_method_types: ["card"],
       });
 
       response.status(200).send({
         clientSecret: setupIntent.client_secret,
       });
     } catch (error) {
-      console.error('Error creating setup intent:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error creating setup intent:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -83,29 +83,29 @@ exports.createSetupIntent = functions.https.onRequest((request, response) => {
 exports.getPaymentMethods = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { customerId } = request.body;
+      const {customerId} = request.body;
 
       if (!customerId) {
-        return response.status(400).send({ 
-          error: 'Missing customerId' 
+        return response.status(400).send({
+          error: "Missing customerId",
         });
       }
 
       const paymentMethods = await stripe.paymentMethods.list({
         customer: customerId,
-        type: 'card',
+        type: "card",
       });
 
       response.status(200).send({
         paymentMethods: paymentMethods.data,
       });
     } catch (error) {
-      console.error('Error getting payment methods:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error getting payment methods:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -116,24 +116,24 @@ exports.getPaymentMethods = functions.https.onRequest((request, response) => {
 exports.updateCustomer = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { customerId, defaultPaymentMethod } = request.body;
+      const {customerId, defaultPaymentMethod} = request.body;
 
       if (!customerId) {
-        return response.status(400).send({ 
-          error: 'Missing customerId' 
+        return response.status(400).send({
+          error: "Missing customerId",
         });
       }
 
       const customer = await stripe.customers.update(
         customerId,
-        { 
-          invoice_settings: { 
-            default_payment_method: defaultPaymentMethod 
-          } 
+        {
+          invoice_settings: {
+            default_payment_method: defaultPaymentMethod,
+          },
         }
       );
 
@@ -142,8 +142,8 @@ exports.updateCustomer = functions.https.onRequest((request, response) => {
         success: true,
       });
     } catch (error) {
-      console.error('Error updating customer:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error updating customer:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -154,15 +154,15 @@ exports.updateCustomer = functions.https.onRequest((request, response) => {
 exports.detachPaymentMethod = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { paymentMethodId } = request.body;
+      const {paymentMethodId} = request.body;
 
       if (!paymentMethodId) {
-        return response.status(400).send({ 
-          error: 'Missing paymentMethodId' 
+        return response.status(400).send({
+          error: "Missing paymentMethodId",
         });
       }
 
@@ -173,8 +173,8 @@ exports.detachPaymentMethod = functions.https.onRequest((request, response) => {
         success: true,
       });
     } catch (error) {
-      console.error('Error detaching payment method:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error detaching payment method:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -185,24 +185,24 @@ exports.detachPaymentMethod = functions.https.onRequest((request, response) => {
 exports.createSubscription = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { customerId, priceId, userId } = request.body;
+      const {customerId, priceId, userId} = request.body;
 
       if (!customerId || !priceId || !userId) {
-        return response.status(400).send({ 
-          error: 'Missing required parameters' 
+        return response.status(400).send({
+          error: "Missing required parameters",
         });
       }
 
       // Create subscription
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
-        items: [{ price: priceId }],
-        payment_behavior: 'default_incomplete',
-        expand: ['latest_invoice.payment_intent'],
+        items: [{price: priceId}],
+        payment_behavior: "default_incomplete",
+        expand: ["latest_invoice.payment_intent"],
         metadata: {
           userId,
           firebaseUserId: userId,
@@ -213,11 +213,11 @@ exports.createSubscription = functions.https.onRequest((request, response) => {
       response.status(200).send({
         subscriptionId: subscription.id,
         status: subscription.status,
-        clientSecret: subscription.latest_invoice.payment_intent?.client_secret ?? '',
+        clientSecret: subscription.latest_invoice.payment_intent?.client_secret ?? "",
       });
     } catch (error) {
-      console.error('Error creating subscription:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error creating subscription:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -228,22 +228,22 @@ exports.createSubscription = functions.https.onRequest((request, response) => {
 exports.cancelSubscription = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { subscriptionId } = request.body;
+      const {subscriptionId} = request.body;
 
       if (!subscriptionId) {
-        return response.status(400).send({ 
-          error: 'Missing subscription ID' 
+        return response.status(400).send({
+          error: "Missing subscription ID",
         });
       }
 
       // Cancel at period end to avoid immediate cancellation
       const subscription = await stripe.subscriptions.update(
         subscriptionId,
-        { cancel_at_period_end: true }
+        {cancel_at_period_end: true}
       );
 
       // Return cancellation details
@@ -253,8 +253,8 @@ exports.cancelSubscription = functions.https.onRequest((request, response) => {
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
     } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error cancelling subscription:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -265,23 +265,23 @@ exports.cancelSubscription = functions.https.onRequest((request, response) => {
 exports.changeSubscriptionTier = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { subscriptionId, newPriceId, userId, prorated } = request.body;
+      const {subscriptionId, newPriceId, userId, prorated} = request.body;
 
       if (!subscriptionId || !newPriceId || !userId) {
-        return response.status(400).send({ 
-          error: 'Missing required parameters' 
+        return response.status(400).send({
+          error: "Missing required parameters",
         });
       }
 
       // Get current subscription to verify ownership
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       if (subscription.metadata.userId !== userId) {
-        return response.status(403).send({ 
-          error: 'Not authorized to modify this subscription' 
+        return response.status(403).send({
+          error: "Not authorized to modify this subscription",
         });
       }
 
@@ -298,7 +298,7 @@ exports.changeSubscriptionTier = functions.https.onRequest((request, response) =
               price: newPriceId,
             },
           ],
-          proration_behavior: prorated ? 'create_prorations' : 'none',
+          proration_behavior: prorated ? "create_prorations" : "none",
           metadata: {
             userId,
             firebaseUserId: userId,
@@ -312,8 +312,8 @@ exports.changeSubscriptionTier = functions.https.onRequest((request, response) =
         status: updatedSubscription.status,
       });
     } catch (error) {
-      console.error('Error changing subscription tier:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error changing subscription tier:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });
@@ -324,23 +324,23 @@ exports.changeSubscriptionTier = functions.https.onRequest((request, response) =
 exports.requestRefund = functions.https.onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      if (request.method !== 'POST') {
-        return response.status(405).send({ error: 'Method Not Allowed' });
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
       }
 
-      const { paymentId, subscriptionId, userId, reason, additionalDetails } = request.body;
+      const {paymentId, subscriptionId, userId, reason, additionalDetails} = request.body;
 
       if (!paymentId || !subscriptionId || !userId || !reason) {
-        return response.status(400).send({ 
-          error: 'Missing required parameters' 
+        return response.status(400).send({
+          error: "Missing required parameters",
         });
       }
 
       // Verify subscription ownership
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       if (subscription.metadata.userId !== userId) {
-        return response.status(403).send({ 
-          error: 'Not authorized to request refund for this subscription' 
+        return response.status(403).send({
+          error: "Not authorized to request refund for this subscription",
         });
       }
 
@@ -351,12 +351,12 @@ exports.requestRefund = functions.https.onRequest((request, response) => {
           userId,
           subscriptionId,
           reason,
-          additionalDetails: additionalDetails || '',
-        }
+          additionalDetails: additionalDetails || "",
+        },
       });
 
       // Cancel subscription if active
-      if (['active', 'trialing'].includes(subscription.status)) {
+      if (["active", "trialing"].includes(subscription.status)) {
         await stripe.subscriptions.cancel(subscriptionId, {
           invoice_now: false,
           prorate: true,
@@ -368,8 +368,8 @@ exports.requestRefund = functions.https.onRequest((request, response) => {
         status: refund.status,
       });
     } catch (error) {
-      console.error('Error processing refund request:', error);
-      response.status(500).send({ error: error.message });
+      console.error("Error processing refund request:", error);
+      response.status(500).send({error: error.message});
     }
   });
 });

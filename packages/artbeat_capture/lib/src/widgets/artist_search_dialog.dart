@@ -134,10 +134,22 @@ class _ArtistSearchDialogState extends State<ArtistSearchDialog> {
                       (artist) => Card(
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: artist.profileImageUrl != null
+                            backgroundImage:
+                                artist.profileImageUrl != null &&
+                                    artist.profileImageUrl!.isNotEmpty &&
+                                    Uri.tryParse(
+                                          artist.profileImageUrl!,
+                                        )?.hasScheme ==
+                                        true
                                 ? NetworkImage(artist.profileImageUrl!)
                                 : null,
-                            child: artist.profileImageUrl == null
+                            child:
+                                artist.profileImageUrl == null ||
+                                    artist.profileImageUrl!.isEmpty ||
+                                    Uri.tryParse(
+                                          artist.profileImageUrl!,
+                                        )?.hasScheme !=
+                                        true
                                 ? const Icon(Icons.person)
                                 : null,
                           ),

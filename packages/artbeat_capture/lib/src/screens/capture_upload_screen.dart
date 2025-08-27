@@ -572,7 +572,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
 
                     // Art Type dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedArtType,
+                      initialValue: _selectedArtType,
                       decoration: const InputDecoration(
                         labelText: 'Art Type',
                         filled: true,
@@ -609,7 +609,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
 
                     // Art Medium dropdown
                     DropdownButtonFormField<String>(
-                      value: _selectedArtMedium,
+                      initialValue: _selectedArtMedium,
                       decoration: const InputDecoration(
                         labelText: 'Art Medium',
                         filled: true,

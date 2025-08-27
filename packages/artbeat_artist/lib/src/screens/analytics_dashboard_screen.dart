@@ -463,7 +463,9 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                       children: <Widget>[
                         AspectRatio(
                           aspectRatio: 1.2,
-                          child: artwork.imageUrl.isNotEmpty
+                          child: artwork.imageUrl.isNotEmpty &&
+                                  Uri.tryParse(artwork.imageUrl)?.hasScheme ==
+                                      true
                               ? Image.network(
                                   artwork.imageUrl,
                                   fit: BoxFit.cover,

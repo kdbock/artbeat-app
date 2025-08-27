@@ -16,6 +16,10 @@ class EventModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? contactEmail;
+  final double? price; // Event ticket price
+
+  // Computed property for attendees count
+  int get attendeesCount => attendeeIds.length;
 
   const EventModel({
     required this.id,
@@ -32,6 +36,7 @@ class EventModel {
     required this.createdAt,
     required this.updatedAt,
     this.contactEmail,
+    this.price,
   });
 
   /// Create an EventModel from a Firestore document
@@ -58,6 +63,7 @@ class EventModel {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       contactEmail: data['contactEmail'] as String?,
+      price: (data['price'] as num?)?.toDouble(),
     );
   }
 
@@ -76,6 +82,8 @@ class EventModel {
       'attendeeIds': attendeeIds,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'contactEmail': contactEmail,
+      'price': price,
     };
   }
 
@@ -93,6 +101,8 @@ class EventModel {
     List<String>? attendeeIds,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? contactEmail,
+    double? price,
   }) {
     return EventModel(
       id: id,
@@ -109,6 +119,8 @@ class EventModel {
       attendeeIds: attendeeIds ?? this.attendeeIds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      contactEmail: contactEmail ?? this.contactEmail,
+      price: price ?? this.price,
     );
   }
 }

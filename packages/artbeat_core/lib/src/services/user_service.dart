@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/user_model.dart';
 import '../models/user_type.dart';
+import 'package:artbeat_art_walk/src/models/achievement_model.dart';
 import '../storage/enhanced_storage_service.dart';
 
 class UserService extends ChangeNotifier {
@@ -24,6 +25,19 @@ class UserService extends ChangeNotifier {
 
   UserService._internal() {
     _logDebug('Initializing UserService');
+  }
+
+  Future<UserModel> getUserModel(String userId) async {
+    try {
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (!doc.exists) {
+        throw Exception('User document not found');
+      }
+      return UserModel.fromFirestore(doc);
+    } catch (e, stack) {
+      _logError('Error getting user model', e, stack);
+      rethrow;
+    }
   }
 
   void _logDebug(String message) {
@@ -102,31 +116,26 @@ class UserService extends ChangeNotifier {
 
   // User operations
   Future<UserModel?> getCurrentUserModel() async {
-    final user = currentUser;
-    if (user == null) {
-      _cachedUserModel = null;
-      _cachedUserId = null;
-      return null;
-    }
+    final user = _auth.currentUser;
+    if (user == null) return null;
+    return await getUserModel(user.uid);
+  }
 
-    // Return cached model if available and for the same user
-    if (_cachedUserModel != null && _cachedUserId == user.uid) {
-      debugPrint('👤 UserService: Returning cached user model');
-      return _cachedUserModel;
-    }
-
+  Future<List<AchievementModel>> getUserAchievements(String userId) async {
     try {
-      debugPrint('👤 UserService: Fetching user model from Firestore');
-      final doc = await _usersCollection.doc(user.uid).get();
-      if (doc.exists) {
-        _cachedUserModel = UserModel.fromDocumentSnapshot(doc);
-        _cachedUserId = user.uid;
-        return _cachedUserModel;
-      }
-      return null;
-    } catch (e, s) {
-      _logError('Error getting current user model', e, s);
-      return null;
+      final achievements = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('achievements')
+          .orderBy('unlockedAt', descending: true)
+          .get();
+
+      return achievements.docs
+          .map((doc) => AchievementModel.fromFirestore(doc))
+          .toList();
+    } catch (e, stack) {
+      _logError('Error getting user achievements', e, stack);
+      rethrow;
     }
   }
 

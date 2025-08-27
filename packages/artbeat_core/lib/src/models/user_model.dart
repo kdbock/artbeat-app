@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import 'user_type.dart';
 import 'capture_model.dart';
+import 'engagement_model.dart';
 
 class UserModel {
   final String id;
@@ -13,8 +14,7 @@ class UserModel {
   final String bio;
   final String location;
   final String profileImageUrl;
-  final List<String> followers;
-  final List<String> following;
+  final EngagementStats engagementStats;
   final List<CaptureModel> captures;
   final List<String> posts;
   final DateTime createdAt;
@@ -33,8 +33,7 @@ class UserModel {
     this.bio = '',
     this.location = '',
     this.profileImageUrl = '',
-    this.followers = const [],
-    this.following = const [],
+    EngagementStats? engagementStats,
     this.captures = const [],
     this.posts = const [],
     required this.createdAt,
@@ -44,12 +43,50 @@ class UserModel {
     this.experiencePoints = 0,
     this.level = 1,
     this.zipCode,
-  });
+  }) : engagementStats =
+           engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
+
+  // Factory constructor from Firestore document
+  factory UserModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return UserModel(
+      id: doc.id,
+      email: data['email'] as String,
+      username: data['username'] as String,
+      fullName: data['fullName'] as String,
+      bio: data['bio'] as String? ?? '',
+      location: data['location'] as String? ?? '',
+      profileImageUrl: data['profileImageUrl'] as String? ?? '',
+      engagementStats: EngagementStats.fromFirestore(
+        data['engagementStats'] as Map<String, dynamic>? ?? {},
+      ),
+      captures:
+          (data['captures'] as List<dynamic>?)
+              ?.map((e) => CaptureModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      posts:
+          (data['posts'] as List<dynamic>?)?.map((e) => e as String).toList() ??
+          [],
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      lastActive: (data['lastActive'] as Timestamp?)?.toDate(),
+      userType: data['userType'] as String?,
+      preferences: data['preferences'] as Map<String, dynamic>?,
+      experiencePoints: data['experiencePoints'] as int? ?? 0,
+      level: data['level'] as int? ?? 1,
+      zipCode: data['zipCode'] as String?,
+    );
+  }
 
   // Computed getters for counts
-  int get followersCount => followers.length;
-  int get followingCount => following.length;
+  int get connectionsCount => engagementStats.connectCount;
   int get postsCount => posts.length;
+
+  // Backward compatibility getters for migration period
+  int get followersCount => engagementStats.connectCount;
+  int get followingCount => 0; // Will be calculated from engagement service
+  List<String> get followers => []; // Legacy - use engagement service instead
+  List<String> get following => []; // Legacy - use engagement service instead
   int get capturesCount => captures.length;
 
   factory UserModel.fromDocumentSnapshot(DocumentSnapshot doc) {
@@ -76,8 +113,7 @@ class UserModel {
       bio: json['bio'] as String? ?? '',
       location: json['location'] as String? ?? '',
       profileImageUrl: finalImageUrl,
-      followers: List<String>.from(json['followers'] as List<dynamic>? ?? []),
-      following: List<String>.from(json['following'] as List<dynamic>? ?? []),
+      engagementStats: EngagementStats.fromFirestore(json),
       captures: (json['captures'] as List<dynamic>? ?? [])
           .map(
             (capture) => CaptureModel.fromJson(capture as Map<String, dynamic>),
@@ -104,8 +140,6 @@ class UserModel {
       bio: 'This is a placeholder bio for UI development',
       location: 'San Francisco, CA',
       profileImageUrl: '',
-      followers: [],
-      following: [],
       captures: [],
       posts: [],
       createdAt: DateTime.now(),
@@ -125,8 +159,7 @@ class UserModel {
       'bio': bio,
       'location': location,
       'profileImageUrl': profileImageUrl,
-      'followers': followers,
-      'following': following,
+      ...engagementStats.toFirestore(),
       'captures': captures.map((capture) => capture.toJson()).toList(),
       'posts': posts,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -150,8 +183,7 @@ class UserModel {
       'bio': bio,
       'location': location,
       'profileImageUrl': profileImageUrl,
-      'followers': followers,
-      'following': following,
+      ...engagementStats.toFirestore(),
       'captures': captures.map((capture) => capture.toJson()).toList(),
       'posts': posts,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -172,8 +204,7 @@ class UserModel {
     String? bio,
     String? location,
     String? profileImageUrl,
-    List<String>? followers,
-    List<String>? following,
+    EngagementStats? engagementStats,
     List<CaptureModel>? captures,
     List<String>? posts,
     DateTime? createdAt,
@@ -182,6 +213,7 @@ class UserModel {
     Map<String, dynamic>? preferences,
     int? experiencePoints,
     int? level,
+    String? zipCode,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -191,8 +223,7 @@ class UserModel {
       bio: bio ?? this.bio,
       location: location ?? this.location,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      followers: followers ?? this.followers,
-      following: following ?? this.following,
+      engagementStats: engagementStats ?? this.engagementStats,
       captures: captures ?? this.captures,
       posts: posts ?? this.posts,
       createdAt: createdAt ?? this.createdAt,
@@ -201,6 +232,7 @@ class UserModel {
       preferences: preferences ?? this.preferences,
       experiencePoints: experiencePoints ?? this.experiencePoints,
       level: level ?? this.level,
+      zipCode: zipCode ?? this.zipCode,
     );
   }
 

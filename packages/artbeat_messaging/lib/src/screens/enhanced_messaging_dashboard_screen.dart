@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/admin_messaging_service.dart';
 
-/// Enhanced Admin Messaging Dashboard Screen
+/// Messaging Dashboard Screen
 ///
-/// A comprehensive, dynamic dashboard for messaging administration featuring:
+/// A comprehensive, dynamic dashboard for messaging featuring:
 /// - Real-time messaging statistics and analytics
 /// - User activity monitoring and management
 /// - Message moderation tools
@@ -12,16 +12,15 @@ import '../services/admin_messaging_service.dart';
 /// - Modern, engaging UI with messaging brand colors
 /// - Interactive charts and visualizations
 /// - Quick action buttons for common admin tasks
-class EnhancedMessagingDashboardScreen extends StatefulWidget {
-  const EnhancedMessagingDashboardScreen({Key? key}) : super(key: key);
+class MessagingDashboardScreen extends StatefulWidget {
+  const MessagingDashboardScreen({Key? key}) : super(key: key);
 
   @override
-  State<EnhancedMessagingDashboardScreen> createState() =>
-      _EnhancedMessagingDashboardScreenState();
+  State<MessagingDashboardScreen> createState() =>
+      _MessagingDashboardScreenState();
 }
 
-class _EnhancedMessagingDashboardScreenState
-    extends State<EnhancedMessagingDashboardScreen>
+class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _animationController;

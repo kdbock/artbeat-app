@@ -310,7 +310,7 @@ class SecureFirebaseConfig {
     try {
       final token = await FirebaseAppCheck.instance.getToken();
       if (kDebugMode && token != null) {
-        print('🔐 Current App Check token: $token');
+        debugPrint('🔐 Current App Check token: $token');
       }
       return token;
     } catch (e) {

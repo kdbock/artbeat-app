@@ -43,7 +43,7 @@ class LocalGalleriesWidget extends StatelessWidget {
         StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('artistProfiles')
-              .where('userType', isEqualTo: 'gallery') // Filter for galleries
+              .where('userType', isEqualTo: 'business') // Filter for galleries
               .where('location', isEqualTo: zipCode)
               .limit(6)
               .snapshots(),

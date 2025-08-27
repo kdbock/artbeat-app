@@ -351,7 +351,8 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),
-                    child: artwork.imageUrl.isNotEmpty
+                    child: artwork.imageUrl.isNotEmpty &&
+                            Uri.tryParse(artwork.imageUrl)?.hasScheme == true
                         ? Image.network(
                             artwork.imageUrl,
                             width: double.infinity,

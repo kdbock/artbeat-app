@@ -16,12 +16,14 @@ class SubscriptionPlanValidator {
 
   /// Check if transition between tiers is valid
   Future<bool> canTransitionTo(
-      SubscriptionTier currentTier, SubscriptionTier targetTier) async {
+    SubscriptionTier currentTier,
+    SubscriptionTier targetTier,
+  ) async {
     try {
       // Downgrade checks
       if (targetTier.index < currentTier.index) {
         // Check for active commissions for galleries downgrading from premium
-        if (currentTier == SubscriptionTier.gallery) {
+        if (currentTier == SubscriptionTier.business) {
           final activeCommissions = await _hasActiveCommissions();
           if (activeCommissions) {
             return false;
@@ -29,8 +31,8 @@ class SubscriptionPlanValidator {
         }
 
         // Check artwork count for pro artists downgrading to basic
-        if (currentTier == SubscriptionTier.artistPro &&
-            (targetTier == SubscriptionTier.artistBasic ||
+        if (currentTier == SubscriptionTier.creator &&
+            (targetTier == SubscriptionTier.starter ||
                 targetTier == SubscriptionTier.free)) {
           final artworkCount = await _getArtworkCount();
           if (artworkCount > 5) {
@@ -88,7 +90,7 @@ class SubscriptionPlanValidator {
   /// Get capabilities for a subscription tier
   Map<String, dynamic> getTierCapabilities(SubscriptionTier tier) {
     switch (tier) {
-      case SubscriptionTier.gallery:
+      case SubscriptionTier.business:
         return {
           'maxArtists': -1, // Unlimited
           'maxArtworks': -1, // Unlimited
@@ -100,7 +102,7 @@ class SubscriptionPlanValidator {
           'bulkUpload': true,
           'commissionManagement': true,
         };
-      case SubscriptionTier.artistPro:
+      case SubscriptionTier.creator:
         return {
           'maxArtists': 1,
           'maxArtworks': -1, // Unlimited
@@ -112,7 +114,7 @@ class SubscriptionPlanValidator {
           'bulkUpload': false,
           'commissionManagement': true,
         };
-      case SubscriptionTier.artistBasic:
+      case SubscriptionTier.starter:
         return {
           'maxArtists': 1,
           'maxArtworks': 5,
@@ -135,6 +137,21 @@ class SubscriptionPlanValidator {
           'prioritySupport': false,
           'bulkUpload': false,
           'commissionManagement': false,
+        };
+      case SubscriptionTier.enterprise:
+        return {
+          'maxArtists': -1, // Unlimited
+          'maxArtworks': -1, // Unlimited
+          'canManageArtists': true,
+          'advancedAnalytics': true,
+          'eventCreation': true,
+          'customBranding': true,
+          'prioritySupport': true,
+          'bulkUpload': true,
+          'commissionManagement': true,
+          'whiteLabel': true,
+          'dedicatedSupport': true,
+          'sla': true,
         };
     }
   }

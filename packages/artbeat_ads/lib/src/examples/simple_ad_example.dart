@@ -24,7 +24,7 @@ class SimpleAdExample extends StatelessWidget {
               icon: const Icon(Icons.add),
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(
+                  MaterialPageRoute<void>(
                     builder: (context) => const SimpleAdCreateScreen(),
                   ),
                 );
@@ -34,7 +34,7 @@ class SimpleAdExample extends StatelessWidget {
               icon: const Icon(Icons.admin_panel_settings),
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(
+                  MaterialPageRoute<void>(
                     builder: (context) => const SimpleAdManagementScreen(),
                   ),
                 );

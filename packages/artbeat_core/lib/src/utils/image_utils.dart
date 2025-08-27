@@ -19,6 +19,23 @@ class ImageUtils {
     return url.startsWith('http://') || url.startsWith('https://');
   }
 
+  /// Checks if a URL is valid for Firebase Storage operations (refFromURL)
+  static bool isValidFirebaseStorageUrl(String? url) {
+    if (url == null || url.isEmpty) {
+      return false;
+    }
+
+    // Check if it's a valid HTTP/HTTPS URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return false;
+    }
+
+    // Check if it contains Firebase Storage domain patterns
+    return url.contains('firebasestorage.googleapis.com') ||
+        url.contains('storage.googleapis.com') ||
+        url.contains('storage.cloud.google.com');
+  }
+
   /// Creates a safe NetworkImage provider or returns null if URL is invalid
   static ImageProvider<Object>? safeNetworkImage(String? url) {
     if (isValidNetworkImageUrl(url)) {

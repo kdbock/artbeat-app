@@ -39,7 +39,9 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid == userId;
       allow update: if isAuthenticated() && (
         request.auth.uid == userId ||
-        isAdmin(request.auth.uid)
+        isAdmin(request.auth.uid) ||
+        // Allow updating engagement stats from any authenticated user
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['engagementStats']))
       );
       allow delete: if isAdmin(request.auth.uid);
       
@@ -273,6 +275,14 @@ service cloud.firestore {
     match /posts/{postId} {
       allow read: if true;
       allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
 
       match /comments/{commentId} {
         allow read: if true;
@@ -391,6 +401,41 @@ service cloud.firestore {
       );
       allow create: if isAuthenticated();
       allow update, delete: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // Universal engagement system
+    match /engagements/{engagementId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Notifications system
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.toUserId ||
+        request.auth.uid == resource.data.fromUserId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.toUserId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.toUserId ||
+        isAdmin(request.auth.uid)
+      );
     }
 
     // Admin collections

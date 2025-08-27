@@ -32,12 +32,15 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.ticketType.name);
-    _descriptionController =
-        TextEditingController(text: widget.ticketType.description);
-    _priceController =
-        TextEditingController(text: widget.ticketType.price.toString());
-    _quantityController =
-        TextEditingController(text: widget.ticketType.quantity.toString());
+    _descriptionController = TextEditingController(
+      text: widget.ticketType.description,
+    );
+    _priceController = TextEditingController(
+      text: widget.ticketType.price.toString(),
+    );
+    _quantityController = TextEditingController(
+      text: widget.ticketType.quantity.toString(),
+    );
     _selectedCategory = widget.ticketType.category;
     _benefits = List.from(widget.ticketType.benefits);
 
@@ -90,8 +93,8 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                   child: Text(
                     'Ticket Type',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -105,7 +108,7 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
 
             // Ticket category selection
             DropdownButtonFormField<TicketCategory>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: const InputDecoration(
                 labelText: 'Ticket Category',
                 border: OutlineInputBorder(),
@@ -171,11 +174,13 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                       border: const OutlineInputBorder(),
                       enabled: _selectedCategory != TicketCategory.free,
                     ),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d{0,2}')),
+                        RegExp(r'^\d*\.?\d{0,2}'),
+                      ),
                     ],
                     validator: (value) {
                       if (_selectedCategory != TicketCategory.free) {
@@ -218,9 +223,9 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                 _benefits.isNotEmpty) ...[
               Text(
                 'Benefits & Inclusions',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
 
@@ -232,8 +237,11 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
                     final benefit = entry.value;
                     return ListTile(
                       dense: true,
-                      leading: const Icon(Icons.check_circle,
-                          color: Colors.green, size: 20),
+                      leading: const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 20,
+                      ),
                       title: Text(benefit),
                       trailing: IconButton(
                         icon: const Icon(Icons.close, size: 18),
@@ -275,31 +283,37 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
 
             // Quick benefit suggestions for VIP tickets
             if (_selectedCategory == TicketCategory.vip) ...[
-              const Text('Quick add:',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text(
+                'Quick add:',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
               const SizedBox(height: 4),
               Wrap(
                 spacing: 8,
-                children: [
-                  'Early entry',
-                  'Meet & greet with artist',
-                  'Complimentary drinks',
-                  'Exclusive merchandise',
-                  'Private viewing area',
-                  'Artist workshop access',
-                ].map((benefit) {
-                  return ActionChip(
-                    label: Text(benefit, style: const TextStyle(fontSize: 12)),
-                    onPressed: () {
-                      if (!_benefits.contains(benefit)) {
-                        setState(() {
-                          _benefits.add(benefit);
-                        });
-                        _updateTicketType();
-                      }
-                    },
-                  );
-                }).toList(),
+                children:
+                    [
+                      'Early entry',
+                      'Meet & greet with artist',
+                      'Complimentary drinks',
+                      'Exclusive merchandise',
+                      'Private viewing area',
+                      'Artist workshop access',
+                    ].map((benefit) {
+                      return ActionChip(
+                        label: Text(
+                          benefit,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        onPressed: () {
+                          if (!_benefits.contains(benefit)) {
+                            setState(() {
+                              _benefits.add(benefit);
+                            });
+                            _updateTicketType();
+                          }
+                        },
+                      );
+                    }).toList(),
               ),
             ],
           ],

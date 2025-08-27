@@ -180,7 +180,7 @@ class SubscriptionService {
       };
 
       // Get current tier (default to basic)
-      SubscriptionTier tier = SubscriptionTier.artistBasic;
+      SubscriptionTier tier = SubscriptionTier.free;
       try {
         final subscription = await getUserSubscription();
         if (subscription != null) {

@@ -21,6 +21,7 @@ export 'src/widgets/missing_ad_widgets.dart'; // BannerAdWidget, FeedAdWidget, e
 export 'src/screens/simple_ad_create_screen.dart';
 export 'src/screens/simple_ad_management_screen.dart';
 export 'src/screens/simple_ad_statistics_screen.dart';
+export 'src/screens/ad_payment_screen.dart';
 
 // Examples
 export 'src/examples/simple_ad_example.dart';

@@ -67,8 +67,8 @@ class ArtistProfileModel {
           : <String, String>{},
       isVerified: map['isVerified'] is bool ? map['isVerified'] as bool : false,
       isFeatured: map['isFeatured'] is bool ? map['isFeatured'] as bool : false,
-      subscriptionTier: _tierFromString(
-          (map['subscriptionTier'] ?? 'artistBasic').toString()),
+      subscriptionTier:
+          _tierFromString((map['subscriptionTier'] ?? 'starter').toString()),
       createdAt: map['createdAt'] is Timestamp
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
@@ -110,20 +110,50 @@ class ArtistProfileModel {
 
   /// Map subscription tier to string for storage
   static String _tierToString(SubscriptionTier tier) {
-    switch (tier) {
-      case SubscriptionTier.artistBasic:
-        return 'artistBasic';
-      case SubscriptionTier.artistPro:
-        return 'artistPro';
-      case SubscriptionTier.gallery:
-        return 'gallery';
-      case SubscriptionTier.free:
-        return 'free';
-    }
+    return tier.apiName;
   }
 
   /// Parse tier from string, using legacy conversion when needed
   static SubscriptionTier _tierFromString(String tierString) {
     return SubscriptionTier.fromLegacyName(tierString);
+  }
+
+  /// Create a copy of this model with the given fields replaced with new values
+  ArtistProfileModel copyWith({
+    String? id,
+    String? userId,
+    String? displayName,
+    String? bio,
+    String? profileImageUrl,
+    String? coverImageUrl,
+    String? location,
+    UserType? userType,
+    SubscriptionTier? subscriptionTier,
+    bool? isVerified,
+    bool? isFeatured,
+    List<String>? mediums,
+    List<String>? styles,
+    Map<String, String>? socialLinks,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ArtistProfileModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      displayName: displayName ?? this.displayName,
+      bio: bio ?? this.bio,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      location: location ?? this.location,
+      userType: userType ?? this.userType,
+      subscriptionTier: subscriptionTier ?? this.subscriptionTier,
+      isVerified: isVerified ?? this.isVerified,
+      isFeatured: isFeatured ?? this.isFeatured,
+      mediums: mediums ?? this.mediums,
+      styles: styles ?? this.styles,
+      socialLinks: socialLinks ?? this.socialLinks,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 }

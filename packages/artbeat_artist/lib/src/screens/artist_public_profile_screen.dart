@@ -178,8 +178,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
     }
 
     final artist = _artistProfile!;
-    final bool isPremium =
-        artist.subscriptionTier != SubscriptionTier.artistBasic;
+    final bool isPremium = artist.subscriptionTier != SubscriptionTier.free;
     final socialLinks = artist.socialLinks;
 
     return Scaffold(
@@ -192,7 +191,8 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               background: artist.coverImageUrl != null &&
-                      artist.coverImageUrl!.isNotEmpty
+                      artist.coverImageUrl!.isNotEmpty &&
+                      Uri.tryParse(artist.coverImageUrl!)?.hasScheme == true
                   ? Image.network(
                       artist.coverImageUrl!,
                       fit: BoxFit.cover,
@@ -294,7 +294,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: artist.subscriptionTier ==
-                                  SubscriptionTier.artistPro
+                                  SubscriptionTier.creator
                               ? Colors.amber[100]
                               : Theme.of(context).colorScheme.primary.withAlpha(
                                   25), // Changed from withOpacity(0.1)
@@ -307,7 +307,7 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                               Icons.star,
                               size: 16,
                               color: artist.subscriptionTier ==
-                                      SubscriptionTier.artistPro
+                                      SubscriptionTier.creator
                                   ? Colors.amber[800]
                                   : Theme.of(context).colorScheme.primary,
                             ),
@@ -316,13 +316,13 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                               artist.userType == UserType.gallery
                                   ? 'Gallery Business'
                                   : artist.subscriptionTier ==
-                                          SubscriptionTier.artistPro
-                                      ? 'Gallery Plan'
-                                      : 'Pro Artist',
+                                          SubscriptionTier.creator
+                                      ? 'Creator Plan'
+                                      : artist.subscriptionTier.displayName,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: artist.subscriptionTier ==
-                                        SubscriptionTier.artistPro
+                                        SubscriptionTier.creator
                                     ? Colors.amber[800]
                                     : Theme.of(context).colorScheme.primary,
                               ),
@@ -516,10 +516,22 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                   // Image
                   SizedBox(
                     width: double.infinity,
-                    child: Image.network(
-                      artwork.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+                    child: artwork.imageUrl.isNotEmpty &&
+                            Uri.tryParse(artwork.imageUrl)?.hasScheme == true
+                        ? Image.network(
+                            artwork.imageUrl,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: Icon(
+                                Icons.image,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
                   ),
 
                   // For sale badge

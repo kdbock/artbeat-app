@@ -47,7 +47,7 @@ class ArtworkService {
 
       // Users on free/basic tier can only upload 5 artworks
       if (tier == SubscriptionTier.free ||
-          tier == SubscriptionTier.artistBasic) {
+          tier == SubscriptionTier.starter) {
         final snapshot = await _artworkCollection
             .where('userId', isEqualTo: userId)
             .count()

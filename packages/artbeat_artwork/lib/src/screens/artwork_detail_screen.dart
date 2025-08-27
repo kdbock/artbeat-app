@@ -2,14 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
-import 'package:artbeat_core/artbeat_core.dart'
-    show
-        ArtistProfileModel,
-        UserAvatar,
-        EnhancedUniversalHeader,
-        MainLayout,
-        ArtbeatColors,
-        SecureNetworkImage;
+import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
 import 'package:share_plus/share_plus.dart';
 
 /// Screen for viewing artwork details
@@ -35,7 +28,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
   bool _isLoading = true;
   ArtworkModel? _artwork;
   ArtistProfileModel? _artist;
-  bool _hasLiked = false;
   bool _isOwner = false;
 
   @override
@@ -75,8 +67,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       final artistProfile = await _subscriptionService
           .getArtistProfileById(artwork.artistProfileId);
 
-      // Check if user has liked this artwork
-      final hasLiked = await _artworkService.hasLiked(widget.artworkId);
+      // Check if user is the owner of this artwork
 
       // Check if current user is the owner of this artwork
       final currentUser = _auth.currentUser;
@@ -89,7 +80,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         setState(() {
           _artwork = artwork;
           _artist = artistProfile;
-          _hasLiked = hasLiked;
           _isOwner = isOwner;
           _isLoading = false;
         });
@@ -102,31 +92,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         setState(() {
           _isLoading = false;
         });
-      }
-    }
-  }
-
-  Future<void> _toggleLike() async {
-    if (_artwork == null) return;
-
-    try {
-      final result = await _artworkService.toggleLike(widget.artworkId);
-
-      if (mounted) {
-        setState(() {
-          _hasLiked = result;
-          if (result) {
-            _artwork = _artwork!.copyWith(likeCount: _artwork!.likeCount + 1);
-          } else {
-            _artwork = _artwork!.copyWith(likeCount: _artwork!.likeCount - 1);
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
       }
     }
   }
@@ -277,14 +242,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
               actions: [
-                if (!_isOwner) ...[
-                  IconButton(
-                    icon: Icon(
-                        _hasLiked ? Icons.favorite : Icons.favorite_border),
-                    color: _hasLiked ? Colors.red : null,
-                    onPressed: _toggleLike,
-                  ),
-                ],
                 IconButton(
                   icon: const Icon(Icons.share),
                   onPressed: _shareArtwork,
@@ -500,17 +457,32 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       ),
                     ],
 
-                    // Engagement stats
+                    // Universal engagement bar
                     const SizedBox(height: 24),
+                    UniversalEngagementBar(
+                      contentId: artwork.id,
+                      contentType: 'artwork',
+                      initialStats: artwork.engagementStats,
+                      showConnect:
+                          !_isOwner, // Allow connecting to artist if not owner
+                      targetUserId: artwork.userId,
+                    ),
+
+                    // View count (separate from engagement)
+                    const SizedBox(height: 16),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _buildStatItem(
-                            Icons.favorite, '${artwork.likeCount}', 'Likes'),
-                        _buildStatItem(
-                            Icons.visibility, '${artwork.viewCount}', 'Views'),
-                        _buildStatItem(Icons.comment, '${artwork.commentCount}',
-                            'Comments'),
+                        const Icon(Icons.visibility,
+                            size: 16, color: ArtbeatColors.darkGray),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${artwork.viewCount} views',
+                          style: const TextStyle(
+                            color: ArtbeatColors.darkGray,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
 
@@ -570,28 +542,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatItem(IconData icon, String count, String label) {
-    return Column(
-      children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
-        const SizedBox(height: 4),
-        Text(
-          count,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
     );
   }
 }

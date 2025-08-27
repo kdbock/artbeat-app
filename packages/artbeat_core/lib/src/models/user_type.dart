@@ -2,7 +2,7 @@
 enum UserType {
   regular('user'),
   artist('artist'),
-  gallery('gallery'),
+  gallery('business'),
   moderator('moderator'),
   admin('admin');
 
@@ -14,7 +14,7 @@ enum UserType {
     switch (value.toLowerCase()) {
       case 'artist':
         return UserType.artist;
-      case 'gallery':
+      case 'business':
         return UserType.gallery;
       case 'moderator':
         return UserType.moderator;

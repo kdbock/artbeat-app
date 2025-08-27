@@ -13,6 +13,8 @@ class ArtworkModel {
   final bool isSold;
   final String? galleryId;
   final int applauseCount;
+  final int viewsCount;
+  final String artistName;
 
   ArtworkModel({
     required this.id,
@@ -27,6 +29,8 @@ class ArtworkModel {
     required this.isSold,
     this.galleryId,
     required this.applauseCount,
+    this.viewsCount = 0,
+    this.artistName = 'Unknown Artist',
   });
 
   factory ArtworkModel.fromFirestore(DocumentSnapshot doc) {
@@ -44,6 +48,8 @@ class ArtworkModel {
       isSold: data['isSold'] as bool? ?? false,
       galleryId: data['galleryId'] as String?,
       applauseCount: data['applauseCount'] as int? ?? 0,
+      viewsCount: data['viewsCount'] as int? ?? 0,
+      artistName: data['artistName'] as String? ?? 'Unknown Artist',
     );
   }
 
@@ -60,6 +66,11 @@ class ArtworkModel {
       'isSold': isSold,
       if (galleryId != null) 'galleryId': galleryId,
       'applauseCount': applauseCount,
+      'viewsCount': viewsCount,
+      'artistName': artistName,
     };
   }
+
+  // Compatibility getter for dashboard
+  int get likesCount => applauseCount;
 }

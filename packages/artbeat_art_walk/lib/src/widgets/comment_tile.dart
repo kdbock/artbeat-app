@@ -47,10 +47,15 @@ class CommentTile extends StatelessWidget {
                 radius: isReply ? 14.0 : 18.0,
                 backgroundColor: Colors.grey.shade300,
                 backgroundImage:
-                    authorPhotoUrl != null && authorPhotoUrl!.isNotEmpty
-                        ? NetworkImage(authorPhotoUrl!)
-                        : null,
-                child: authorPhotoUrl == null || authorPhotoUrl!.isEmpty
+                    authorPhotoUrl != null &&
+                        authorPhotoUrl!.isNotEmpty &&
+                        Uri.tryParse(authorPhotoUrl!)?.hasScheme == true
+                    ? NetworkImage(authorPhotoUrl!)
+                    : null,
+                child:
+                    authorPhotoUrl == null ||
+                        authorPhotoUrl!.isEmpty ||
+                        Uri.tryParse(authorPhotoUrl!)?.hasScheme != true
                     ? Icon(
                         Icons.person,
                         size: isReply ? 16.0 : 20.0,
@@ -140,10 +145,7 @@ class CommentTile extends StatelessWidget {
                 if (onReply != null && !isReply)
                   TextButton.icon(
                     icon: const Icon(Icons.reply, size: 14),
-                    label: const Text(
-                      'Reply',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                    label: const Text('Reply', style: TextStyle(fontSize: 12)),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       minimumSize: Size.zero,

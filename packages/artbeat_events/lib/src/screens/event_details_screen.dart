@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/artbeat_event.dart';
@@ -595,7 +595,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   void _shareEvent() {
     final eventUrl = 'https://artbeat.app/events/${_event!.id}';
-    Share.share('Check out this event on ARTbeat! $eventUrl');
+    share_plus.Share.share('Check out this event on ARTbeat! $eventUrl');
   }
 
   Future<void> _handleMenuAction(String action) async {

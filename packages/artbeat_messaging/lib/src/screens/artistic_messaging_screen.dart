@@ -1883,7 +1883,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
         return Icons.palette;
       case 'collector':
         return Icons.collections;
-      case 'gallery':
+      case 'business':
         return Icons.museum;
       case 'group':
         return Icons.group;
@@ -1898,7 +1898,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
         return const Color(0xFF667eea);
       case 'collector':
         return const Color(0xFFf093fb);
-      case 'gallery':
+      case 'business':
         return const Color(0xFF4facfe);
       case 'group':
         return const Color(0xFF764ba2);
@@ -1913,7 +1913,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
         return 'Artist';
       case 'collector':
         return 'Collector';
-      case 'gallery':
+      case 'business':
         return 'Gallery';
       case 'group':
         return 'Group';

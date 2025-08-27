@@ -344,6 +344,50 @@ class SimpleAdService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Duplicate an existing ad
+  Future<String> duplicateAd(String adId) async {
+    try {
+      final originalAd = await getAd(adId);
+      if (originalAd == null) {
+        throw Exception('Original ad not found');
+      }
+
+      // Create a new ad with same properties but new ID and reset status
+      final duplicatedAd = AdModel(
+        id: '', // Will be assigned by Firestore
+        ownerId: originalAd.ownerId,
+        type: originalAd.type,
+        size: originalAd.size,
+        imageUrl: originalAd.imageUrl,
+        artworkUrls: originalAd.artworkUrls,
+        title: '${originalAd.title} (Copy)',
+        description: originalAd.description,
+        location: originalAd.location,
+        duration: originalAd.duration,
+        startDate: DateTime.now(),
+        endDate: DateTime.now().add(Duration(days: originalAd.duration.days)),
+        status: AdStatus.pending,
+        approvalId: null, // Reset approval
+        destinationUrl: originalAd.destinationUrl,
+        ctaText: originalAd.ctaText,
+      );
+
+      // Save to Firestore
+      final doc = await _adsRef.add(duplicatedAd.toMap());
+      notifyListeners();
+      return doc.id;
+    } catch (e) {
+      debugPrint('Error duplicating ad: $e');
+      rethrow;
+    }
+  }
+
+  /// Update ad location
+  Future<void> updateAdLocation(String adId, AdLocation newLocation) async {
+    await _adsRef.doc(adId).update({'location': newLocation.index});
+    notifyListeners();
+  }
+
   /// Get active ads count by location (for analytics)
   Future<int> getActiveAdsCount(AdLocation location) async {
     try {

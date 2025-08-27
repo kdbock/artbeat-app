@@ -9,5 +9,8 @@ export 'favorite_model.dart';
 export 'payment_method_model.dart';
 export 'user_type.dart'; // Add UserType export
 
+// Universal engagement system
+export 'engagement_model.dart';
+
 // Types
 export 'types/filter_types.dart';

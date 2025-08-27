@@ -8,7 +8,9 @@ import 'dart:math';
 class LocationUtils {
   static const String _zipCodeKey = 'user_zip_code';
 
-  static Future<Position> getCurrentPosition() async {
+  static Future<Position> getCurrentPosition({
+    Duration? timeoutDuration,
+  }) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -32,7 +34,12 @@ class LocationUtils {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return Geolocator.getCurrentPosition();
+    final locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      timeLimit: timeoutDuration,
+    );
+
+    return Geolocator.getCurrentPosition(locationSettings: locationSettings);
   }
 
   static Future<String> getZipCodeFromGeoPoint(
