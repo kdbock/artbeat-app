@@ -13,7 +13,7 @@ class ArtistFeatureTestingService {
   final UsageTrackingService _usageService = UsageTrackingService();
 
   /// Test results for different features
-  Map<String, TestResult> _testResults = {};
+  final Map<String, TestResult> _testResults = {};
 
   /// Test all features for a specific subscription tier
   Future<Map<String, TestResult>> testAllFeaturesForTier(

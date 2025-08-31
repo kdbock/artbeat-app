@@ -22,6 +22,8 @@ class DashboardUserSection extends StatelessWidget {
         user: viewModel.currentUser!,
         achievements: _convertAchievements(viewModel.achievements),
         onTap: () => _handleUserAction(context, 'profile'),
+        onProfileTap: () => _handleUserAction(context, 'profile'),
+        onAchievementsTap: () => _handleUserAction(context, 'achievements'),
       ),
     );
   }

@@ -533,7 +533,7 @@ class _AdminSecurityCenterScreenState extends State<AdminSecurityCenterScreen> {
                 'Timestamp: 2024-12-24 ${10 + index}:${(index * 3).toString().padLeft(2, '0')}:00'),
             Text('User: user_${index + 1}'),
             Text('IP Address: 192.168.1.${100 + index}'),
-            Text('User Agent: Mozilla/5.0...'),
+            const Text('User Agent: Mozilla/5.0...'),
             const Text('Additional Details: Success'),
           ],
         ),

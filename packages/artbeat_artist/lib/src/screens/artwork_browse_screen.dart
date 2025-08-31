@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart'
-    show EnhancedUniversalHeader, MainLayout;
+import 'package:artbeat_core/artbeat_core.dart' as core;
+import '../models/artwork_model.dart';
 
 /// Screen for browsing all artwork, with filtering options
 class ArtworkBrowseScreen extends StatefulWidget {
@@ -62,15 +61,40 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: const EnhancedUniversalHeader(
-          title: 'Browse Artwork',
-          showLogo: false,
+    return core.MainLayout(
+      currentIndex: -1, // No bottom navigation for this screen
+      appBar: const core.EnhancedUniversalHeader(
+        title: 'Browse Artwork',
+        showLogo: false,
+        showBackButton: true,
+      ),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              core.ArtbeatColors.backgroundSecondary,
+              core.ArtbeatColors.backgroundPrimary,
+            ],
+          ),
         ),
-        body: Column(
+        child: Column(
           children: [
+            // Subtitle section
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: const Text(
+                'Explore amazing artwork from talented artists',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
             // Search and filter section
             Container(
               padding: const EdgeInsets.all(16.0),
@@ -160,185 +184,123 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
                 ],
               ),
             ),
-            // Results section
+
+            // Artwork grid
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: _buildArtworkQuery(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+              child: _buildArtworkGrid(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline,
-                              color: Colors.red, size: 48),
-                          const SizedBox(height: 16),
-                          Text('Error: ${snapshot.error}'),
-                        ],
-                      ),
-                    );
-                  }
+  Widget _buildArtworkGrid() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _getArtworkStream(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.art_track,
-                              size: 72, color: Colors.grey.shade400),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'No artwork found',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Try changing your filters',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        }
 
-                  final artworks = snapshot.data!.docs
-                      .map((doc) => ArtworkModel.fromFirestore(doc))
-                      .toList();
+        final docs = snapshot.data?.docs ?? [];
+        if (docs.isEmpty) {
+          return const Center(
+            child: Text('No artwork found matching your criteria.'),
+          );
+        }
 
-                  return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
+        return GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.75,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            final artwork = ArtworkModel.fromMap({
+              'id': docs[index].id,
+              ...docs[index].data() as Map<String, dynamic>
+            });
+            return _buildArtworkCard(artwork);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildArtworkCard(ArtworkModel artwork) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 3,
+      child: InkWell(
+        onTap: () => _navigateToArtworkDetail(artwork.id),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Artwork image
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: artwork.imageUrl.isNotEmpty &&
+                            _isValidImageUrl(artwork.imageUrl)
+                        ? NetworkImage(artwork.imageUrl) as ImageProvider
+                        : const AssetImage('assets/default_artwork.png')
+                            as ImageProvider,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+
+            // Artwork details
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    artwork.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: artworks.length,
-                    itemBuilder: (context, index) {
-                      final artwork = artworks[index];
-                      return GestureDetector(
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          '/artist/artwork-detail',
-                          arguments: {'artworkId': artwork.id},
-                        ),
-                        child: Card(
-                          clipBehavior: Clip.antiAlias,
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Artwork image
-                              Expanded(
-                                child: Container(
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(artwork.imageUrl),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  child: !artwork.isForSale
-                                      ? Align(
-                                          alignment: Alignment.topRight,
-                                          child: Container(
-                                            margin: const EdgeInsets.all(8.0),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0,
-                                              vertical: 4.0,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red,
-                                              borderRadius:
-                                                  BorderRadius.circular(12.0),
-                                            ),
-                                            child: const Text(
-                                              'SOLD',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : null,
-                                ),
-                              ),
-                              // Artwork info
-                              Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      artwork.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    FutureBuilder<DocumentSnapshot>(
-                                      future: FirebaseFirestore.instance
-                                          .collection('artistProfiles')
-                                          .doc(artwork.artistProfileId)
-                                          .get(),
-                                      builder: (context, snapshot) {
-                                        String artistName = 'Unknown Artist';
-                                        if (snapshot.hasData &&
-                                            snapshot.data != null) {
-                                          final artistData = snapshot.data!
-                                              .data() as Map<String, dynamic>?;
-                                          if (artistData != null &&
-                                              artistData
-                                                  .containsKey('displayName')) {
-                                            artistName =
-                                                artistData['displayName']
-                                                    as String;
-                                          }
-                                        }
-                                        return Text(
-                                          artistName,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.grey.shade700,
-                                            fontSize: 14,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      artwork.price != null
-                                          ? '\$${artwork.price!.toStringAsFixed(2)}'
-                                          : 'Not for sale',
-                                      style: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    artwork.medium,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  if (artwork.isForSale && artwork.price != null)
+                    Text(
+                      '\$${artwork.price!.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                ],
               ),
             ),
           ],
@@ -347,31 +309,62 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
     );
   }
 
-  Stream<QuerySnapshot> _buildArtworkQuery() {
+  Stream<QuerySnapshot> _getArtworkStream() {
     Query query = FirebaseFirestore.instance.collection('artwork');
 
-    // Apply location filter
+    // Apply location filter if selected
     if (_selectedLocation != 'All') {
       query = query.where('location', isEqualTo: _selectedLocation);
     }
 
-    // Apply medium filter
+    // Apply medium filter if selected
     if (_selectedMedium != 'All') {
       query = query.where('medium', isEqualTo: _selectedMedium);
-    } // Apply search if provided
-    if (_searchController.text.isNotEmpty) {
-      // This is a simplistic approach - in a production app, you'd use a more sophisticated search
-      // like Algolia or Firebase's full-text search extension
-      // For now, we'll just search by title prefix
-      final searchText = _searchController.text.toLowerCase();
-      query = query
-          .where('title', isGreaterThanOrEqualTo: searchText)
-          .where('title', isLessThanOrEqualTo: '$searchText\uf8ff');
     }
 
-    // Sort by most recent
-    query = query.orderBy('createdAt', descending: true).limit(50);
+    // Apply search by title if provided
+    if (_searchController.text.isNotEmpty) {
+      // For a simple search, we can use where with field path
+      // This is not a full text search but works for exact matches
+      query = query
+          .where('title', isGreaterThanOrEqualTo: _searchController.text)
+          .where('title',
+              isLessThanOrEqualTo: '${_searchController.text}\uf8ff');
+    }
 
-    return query.snapshots();
+    // Sort by creation date (newest first)
+    return query.orderBy('createdAt', descending: true).snapshots();
+  }
+
+  void _navigateToArtworkDetail(String artworkId) {
+    Navigator.pushNamed(
+      context,
+      '/artist/artwork-detail',
+      arguments: {'artworkId': artworkId},
+    );
+  }
+
+  bool _isValidImageUrl(String? url) {
+    if (url == null || url.isEmpty || url.trim().isEmpty) return false;
+
+    // Check for invalid file URLs
+    if (url == 'file:///' || url.startsWith('file:///') && url.length <= 8) {
+      return false;
+    }
+
+    // Check for just the file scheme with no actual path
+    if (url == 'file://' || url == 'file:') {
+      return false;
+    }
+
+    // Check for malformed URLs that start with file:// but have no host
+    if (url.startsWith('file://') && !url.startsWith('file:///')) {
+      return false;
+    }
+
+    // Check for valid URL schemes
+    return url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        (url.startsWith('file:///') && url.length > 8);
   }
 }

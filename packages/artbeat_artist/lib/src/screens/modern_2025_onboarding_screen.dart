@@ -18,7 +18,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
   late Animation<double> _slideAnimation;
 
   int _currentPage = 0;
-  List<String> _selectedInterests = [];
+  final List<String> _selectedInterests = [];
   String _experienceLevel = '';
 
   // 2025 Standard: Personalization questions

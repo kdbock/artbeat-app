@@ -251,7 +251,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
       child: ListTile(
         leading: CircleAvatar(
           backgroundImage: artist.profileImageUrl != null
-              ? NetworkImage(artist.profileImageUrl!)
+              ? NetworkImage(artist.profileImageUrl!) as ImageProvider
               : null,
           child: artist.profileImageUrl == null
               ? const Icon(Icons.person)
@@ -263,8 +263,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         onTap: () {
           Navigator.pushNamed(
             context,
-            '/artist/profile',
-            arguments: {'artistId': artist.id},
+            '/artist/public-profile',
+            arguments: {'artistId': artist.userId},
           );
         },
       ),
@@ -282,7 +282,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   image: DecorationImage(
-                    image: NetworkImage(artwork.imageUrl),
+                    image: NetworkImage(artwork.imageUrl) as ImageProvider,
                     fit: BoxFit.cover,
                   ),
                 ),

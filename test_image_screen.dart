@@ -11,7 +11,7 @@ class TestImageScreen extends StatelessWidget {
         children: [
           const Text('Testing via.placeholder.com URLs:'),
           const SizedBox(height: 20),
-          Container(
+          SizedBox(
             width: 300,
             height: 200,
             child: Image.network(
@@ -36,7 +36,7 @@ class TestImageScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Container(
+          SizedBox(
             width: 300,
             height: 200,
             child: Image.network(

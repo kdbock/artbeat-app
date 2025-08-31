@@ -191,22 +191,22 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: const core.EnhancedUniversalHeader(
+    return core.MainLayout(
+      currentIndex: -1, // My Artwork doesn't use bottom navigation
+      appBar: core.EnhancedUniversalHeader(
         title: 'My Artwork',
-        showLogo: false,
+        showBackButton: true,
         showSearch: false,
         showDeveloperTools: false,
-        backgroundColor: Colors.transparent,
-        foregroundColor: core.ArtbeatColors.textPrimary,
+        actions: [
+          IconButton(
+            onPressed: _navigateToUpload,
+            icon: const Icon(Icons.add),
+            tooltip: 'Upload Artwork',
+          ),
+        ],
       ),
-      body: _buildBody(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToUpload,
-        backgroundColor: core.ArtbeatColors.primaryPurple,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      child: _buildBody(),
     );
   }
 

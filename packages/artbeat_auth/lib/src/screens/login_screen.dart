@@ -283,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 40,
                                 margin: const EdgeInsets.only(right: 8),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
+                                  gradient: const LinearGradient(
                                     colors: [
                                       ArtbeatColors.primaryPurple,
                                       ArtbeatColors.primaryGreen,
@@ -321,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 40,
                                 margin: const EdgeInsets.only(left: 8),
                                 decoration: BoxDecoration(
-                                  gradient: LinearGradient(
+                                  gradient: const LinearGradient(
                                     colors: [
                                       ArtbeatColors.primaryPurple,
                                       ArtbeatColors.primaryGreen,

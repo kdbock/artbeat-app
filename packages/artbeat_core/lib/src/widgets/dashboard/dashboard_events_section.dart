@@ -73,14 +73,49 @@ class DashboardEventsSection extends StatelessWidget {
             ],
           ),
         ),
-        ElevatedButton.icon(
-          onPressed: () => Navigator.pushNamed(context, '/events'),
-          icon: const Icon(Icons.explore, size: 16),
-          label: const Text('View All'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ArtbeatColors.error,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [ArtbeatColors.primaryPurple, ArtbeatColors.primaryGreen],
+            ),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.pushNamed(context, '/events'),
+              borderRadius: BorderRadius.circular(25),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.explore, color: Colors.white, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -241,6 +276,53 @@ class DashboardEventsSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Event image (if available and valid)
+                if (_isValidImageUrl(event.imageUrl))
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: FadeInImage(
+                      height: 80,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      placeholder: const AssetImage(
+                        'assets/default_profile.png',
+                      ),
+                      image: NetworkImage(event.imageUrl!),
+                      imageErrorBuilder: (context, error, stackTrace) {
+                        debugPrint('Error loading event image: $error');
+                        return Container(
+                          height: 80,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: ArtbeatColors.backgroundSecondary,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.event,
+                            color: ArtbeatColors.textSecondary,
+                            size: 32,
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                else
+                  Container(
+                    height: 80,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: ArtbeatColors.backgroundSecondary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.event,
+                      color: ArtbeatColors.textSecondary,
+                      size: 32,
+                    ),
+                  ),
+
+                const SizedBox(height: 6),
+
                 // Date badge
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -267,7 +349,7 @@ class DashboardEventsSection extends StatelessWidget {
                 Text(
                   event.title.isNotEmpty ? event.title : 'Untitled Event',
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: ArtbeatColors.textPrimary,
                   ),
@@ -278,7 +360,7 @@ class DashboardEventsSection extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 // Location
-                if (event.location?.isNotEmpty ?? false) ...[
+                if (event.location.isNotEmpty) ...[
                   Row(
                     children: [
                       const Icon(
@@ -289,9 +371,9 @@ class DashboardEventsSection extends StatelessWidget {
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
-                          event.location!,
+                          event.location,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             color: ArtbeatColors.textSecondary,
                           ),
                           maxLines: 1,
@@ -300,16 +382,16 @@ class DashboardEventsSection extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                 ],
 
                 // Description
-                if (event.description?.isNotEmpty ?? false) ...[
+                if (event.description.isNotEmpty) ...[
                   Flexible(
                     child: Text(
-                      event.description!,
+                      event.description,
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: ArtbeatColors.textPrimary,
                         height: 1.2,
                       ),
@@ -320,7 +402,7 @@ class DashboardEventsSection extends StatelessWidget {
                   const SizedBox(height: 4),
                 ],
 
-                // Attendees count
+                // Attendees count and price
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -328,14 +410,14 @@ class DashboardEventsSection extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.people_outline,
-                          size: 14,
+                          size: 12,
                           color: ArtbeatColors.textSecondary,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${event.attendeeIds?.length ?? 0} attending',
+                          '${event.attendeeIds.length} attending',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             color: ArtbeatColors.textSecondary,
                           ),
                         ),
@@ -345,7 +427,7 @@ class DashboardEventsSection extends StatelessWidget {
                       Text(
                         '\$${event.price!.toStringAsFixed(0)}',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: ArtbeatColors.primaryGreen,
                         ),
@@ -354,7 +436,7 @@ class DashboardEventsSection extends StatelessWidget {
                       const Text(
                         'Free',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: ArtbeatColors.primaryGreen,
                         ),
@@ -400,5 +482,33 @@ class DashboardEventsSection extends StatelessWidget {
     } else {
       return '${date.month}/${date.day}';
     }
+  }
+
+  bool _isValidImageUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+
+    // Check if it's a valid HTTP/HTTPS URL
+    final uri = Uri.tryParse(url);
+    if (uri == null) return false;
+
+    // Must have http or https scheme
+    if (!uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
+      return false;
+    }
+
+    // Must have a host
+    if (!uri.hasAuthority || uri.host.isEmpty) {
+      return false;
+    }
+
+    // Avoid localhost and placeholder URLs
+    if (uri.host == 'localhost' ||
+        uri.host == '127.0.0.1' ||
+        uri.host.contains('placeholder') ||
+        url.contains('placeholder_url_')) {
+      return false;
+    }
+
+    return true;
   }
 }

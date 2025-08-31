@@ -123,7 +123,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                       : 'Edit Event',
                   showLogo: false,
                   showDeveloperTools: true,
-                  onSearchPressed: () => _showSearchModal(context),
+                  onSearchPressed: (query) => _showSearchModal(context),
                   onProfilePressed: () => _showProfileMenu(context),
                   onMenuPressed: () => _openDrawer(context),
                   onDeveloperPressed: () => _showDeveloperTools(context),

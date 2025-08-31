@@ -36,7 +36,7 @@ class DashboardFeaturedPostsSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [
                         ArtbeatColors.primaryGreen,
                         ArtbeatColors.primaryPurple,
@@ -47,7 +47,7 @@ class DashboardFeaturedPostsSection extends StatelessWidget {
                   child: const Icon(Icons.star, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -72,7 +72,7 @@ class DashboardFeaturedPostsSection extends StatelessWidget {
                 TextButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, '/community/featured'),
-                  child: Text(
+                  child: const Text(
                     'View All',
                     style: TextStyle(
                       color: ArtbeatColors.primaryGreen,
@@ -186,14 +186,14 @@ class DashboardFeaturedPostsSection extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
-                            Row(
+                            const Row(
                               children: [
                                 Icon(
                                   Icons.star,
                                   size: 12,
                                   color: ArtbeatColors.featured,
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 Text(
                                   'Featured',
                                   style: TextStyle(

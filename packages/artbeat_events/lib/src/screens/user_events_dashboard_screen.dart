@@ -131,7 +131,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
               title: 'Discover Events',
               showLogo: false,
               showDeveloperTools: true,
-              onSearchPressed: () => _showSearchModal(context),
+              onSearchPressed: (String query) => _showSearchModal(context),
               onProfilePressed: () => _showProfileMenu(context),
               onMenuPressed: () => _openDrawer(context),
               backgroundColor: Colors.transparent,

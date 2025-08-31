@@ -22,7 +22,7 @@ class EnhancedUniversalHeader extends StatefulWidget
   final bool showDeveloperTools;
   final bool showBackButton;
   final VoidCallback? onMenuPressed;
-  final VoidCallback? onSearchPressed;
+  final Function(String)? onSearchPressed;
   final VoidCallback? onDeveloperPressed;
   final VoidCallback? onProfilePressed;
   final VoidCallback? onBackPressed;
@@ -170,7 +170,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
               onSubmitted: (value) {
                 if (value.isNotEmpty) {
                   // Handle search
-                  widget.onSearchPressed?.call();
+                  widget.onSearchPressed?.call(value);
                 }
               },
             ),
@@ -318,9 +318,12 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
   Widget _buildMessagingIcon() {
     return Consumer<MessagingProvider>(
       builder: (context, messagingProvider, child) {
-        debugPrint(
-          'MessagingIcon: hasUnread=${messagingProvider.hasUnreadMessages}, count=${messagingProvider.unreadCount}, initialized=${messagingProvider.isInitialized}, hasError=${messagingProvider.hasError}',
-        );
+        // Only log when there are actual changes to avoid spam
+        if (messagingProvider.hasUnreadMessages || messagingProvider.hasError) {
+          debugPrint(
+            'MessagingIcon: hasUnread=${messagingProvider.hasUnreadMessages}, count=${messagingProvider.unreadCount}, initialized=${messagingProvider.isInitialized}, hasError=${messagingProvider.hasError}',
+          );
+        }
 
         return Stack(
           children: [

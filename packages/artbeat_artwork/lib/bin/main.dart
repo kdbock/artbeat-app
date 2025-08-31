@@ -72,38 +72,42 @@ class ArtworkModuleHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ARTbeat Artwork Module'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Artwork Module Demo',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            // Navigation buttons to the artwork screens
-            ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const ArtworkBrowseScreen(),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: const EnhancedUniversalHeader(
+          title: 'ARTbeat Artwork Module',
+          showLogo: false,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Artwork Module Demo',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              // Navigation buttons to the artwork screens
+              ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const ArtworkBrowseScreen(),
+                  ),
                 ),
+                child: const Text('Browse Artwork'),
               ),
-              child: const Text('Browse Artwork'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const EnhancedArtworkUploadScreen(),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const EnhancedArtworkUploadScreen(),
+                  ),
                 ),
+                child: const Text('Upload Artwork'),
               ),
-              child: const Text('Upload Artwork'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -17,6 +17,8 @@ export 'src/services/capture_service.dart';
 export 'src/services/storage_service.dart';
 export 'src/services/camera_service.dart';
 
+export 'src/screens/capture_search_screen.dart';
+
 // Widgets
 export 'src/widgets/captures_grid.dart';
 export 'src/widgets/artist_search_dialog.dart';

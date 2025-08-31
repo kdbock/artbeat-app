@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_admin_model.dart';
-import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Detailed view of a user for admin management
@@ -42,15 +41,11 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: const AdminDrawer(),
-      appBar: AdminHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'User Details',
         showBackButton: true,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onBackPressed: () => Navigator.pop(context),
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
       ),
       body: Column(
         children: [

@@ -34,21 +34,21 @@ class AchievementInfoScreen extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
+              child: const Column(
                 children: [
                   Icon(
                     Icons.emoji_events,
                     size: 64,
                     color: ArtbeatColors.primaryPurple,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
+                  SizedBox(height: 16),
+                  Text(
                     'Welcome to ARTbeat Achievements!',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Discover art, earn experience, and unlock achievements as you explore the world of public art.',
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                     textAlign: TextAlign.center,
@@ -347,7 +347,7 @@ class AchievementInfoScreen extends StatelessWidget {
           Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: ArtbeatColors.primaryPurple,
               shape: BoxShape.circle,
             ),
@@ -356,7 +356,7 @@ class AchievementInfoScreen extends StatelessWidget {
           Expanded(child: Text(activity, style: const TextStyle(fontSize: 14))),
           Text(
             xp,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
               color: ArtbeatColors.primaryPurple,

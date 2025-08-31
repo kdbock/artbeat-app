@@ -180,7 +180,7 @@ class _UsageLimitsWidgetState extends State<UsageLimitsWidget> {
           ),
           if (approachingLimit) ...[
             const SizedBox(height: 4),
-            Text(
+            const Text(
               'Approaching limit',
               style: TextStyle(
                 color: Colors.orange,
@@ -191,7 +191,7 @@ class _UsageLimitsWidgetState extends State<UsageLimitsWidget> {
           ],
           if (percentage > 1.0) ...[
             const SizedBox(height: 4),
-            Text(
+            const Text(
               'Over limit - overage charges apply',
               style: TextStyle(
                 color: Colors.red,
@@ -209,7 +209,7 @@ class _UsageLimitsWidgetState extends State<UsageLimitsWidget> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'Unlimited',
             style: TextStyle(
               color: Colors.green,
@@ -272,7 +272,7 @@ class _UsageLimitsWidgetState extends State<UsageLimitsWidget> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'Unlimited',
             style: TextStyle(
               color: Colors.green,

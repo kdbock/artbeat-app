@@ -65,13 +65,10 @@ class _AdPaymentScreenState extends State<AdPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ad Payment'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      body: _isLoading
+    return MainLayout(
+      currentIndex: -1, // No bottom navigation for this screen
+      appBar: const EnhancedUniversalHeader(title: 'Ad Payment'),
+      child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),

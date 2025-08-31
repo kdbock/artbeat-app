@@ -45,6 +45,7 @@ class ExploreTab extends StatelessWidget {
                     ? Stack(
                         children: [
                           GoogleMap(
+                            key: const Key('explore_tab_map'),
                             initialCameraPosition: CameraPosition(
                               target: userLocation!,
                               zoom: 14,

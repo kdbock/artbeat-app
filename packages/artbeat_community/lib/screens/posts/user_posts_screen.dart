@@ -14,6 +14,7 @@ class UserPostsScreen extends StatefulWidget {
 class _UserPostsScreenState extends State<UserPostsScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, dynamic>> _userPosts = [];
   bool _isLoading = true;
   String? _error;
@@ -79,13 +80,18 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Posts'),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: 'My Posts',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
         backgroundColor: ArtbeatColors.backgroundPrimary,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: () {
               // Navigate to create post screen
               Navigator.pushNamed(context, '/create-post');
@@ -93,7 +99,8 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
           ),
         ],
       ),
-      body: _buildBody(),
+      drawer: const ArtbeatDrawer(),
+      child: _buildBody(),
     );
   }
 

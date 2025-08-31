@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 
@@ -15,6 +15,7 @@ class CommunityFeedScreen extends StatefulWidget {
 class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
   final CommunityService _communityService = CommunityService();
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<PostModel> _posts = [];
   List<BaseGroupPost> _groupPosts = [];
@@ -159,66 +160,67 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: const CommunityHeader(
-        title: 'Community Feed',
-        showBackButton: true,
-        showSearchIcon: true,
-        showMessagingIcon: true,
-        showDeveloperIcon: true,
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _loadPosts,
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _posts.isEmpty && _groupPosts.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No posts available',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: ArtbeatColors.textSecondary,
+    return core.MainLayout(
+      scaffoldKey: scaffoldKey,
+      currentIndex: 3, // Community tab in bottom navigation
+      appBar: const core.EnhancedUniversalHeader(title: 'Community Feed'),
+      child: Container(
+        color: Colors.grey[50],
+        child: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _loadPosts,
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _posts.isEmpty && _groupPosts.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No posts available',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: core.ArtbeatColors.textSecondary,
+                      ),
                     ),
-                  ),
-                )
-              : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _getTotalItemsWithAds(),
-                  itemBuilder: (context, index) {
-                    // Check if this position should show an ad
-                    if (_shouldShowAd(index)) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: InFeedAdWidget(
-                          analyticsLocation: 'community_feed_$index',
-                        ),
-                      );
-                    }
-
-                    // Get the actual post index
-                    final postIndex = _getPostIndex(index);
-
-                    if (postIndex < _posts.length) {
-                      final post = _posts[postIndex];
-                      return _buildPostCard(post, key: Key('post_${post.id}'));
-                    } else {
-                      final groupPostIndex = postIndex - _posts.length;
-                      if (groupPostIndex < _groupPosts.length) {
-                        final groupPost = _groupPosts[groupPostIndex];
-                        return _buildGroupPostCard(
-                          groupPost,
-                          key: Key('group_post_${groupPost.id}'),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _getTotalItemsWithAds(),
+                    itemBuilder: (context, index) {
+                      // Check if this position should show an ad
+                      if (_shouldShowAd(index)) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: InFeedAdWidget(
+                            analyticsLocation: 'community_feed_$index',
+                          ),
                         );
                       }
-                    }
 
-                    // Fallback - should not happen
-                    return const SizedBox.shrink();
-                  },
-                ),
+                      // Get the actual post index
+                      final postIndex = _getPostIndex(index);
+
+                      if (postIndex < _posts.length) {
+                        final post = _posts[postIndex];
+                        return _buildPostCard(
+                          post,
+                          key: Key('post_${post.id}'),
+                        );
+                      } else {
+                        final groupPostIndex = postIndex - _posts.length;
+                        if (groupPostIndex < _groupPosts.length) {
+                          final groupPost = _groupPosts[groupPostIndex];
+                          return _buildGroupPostCard(
+                            groupPost,
+                            key: Key('group_post_${groupPost.id}'),
+                          );
+                        }
+                      }
+
+                      // Fallback - should not happen
+                      return const SizedBox.shrink();
+                    },
+                  ),
+          ),
         ),
       ),
     );
@@ -272,7 +274,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                               const Icon(
                                 Icons.verified,
                                 size: 16,
-                                color: ArtbeatColors.primaryPurple,
+                                color: core.ArtbeatColors.primaryPurple,
                               ),
                             ],
                           ],
@@ -283,7 +285,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                             Text(
                               _formatDate(post.createdAt),
                               style: const TextStyle(
-                                color: ArtbeatColors.textSecondary,
+                                color: core.ArtbeatColors.textSecondary,
                                 fontSize: 12,
                               ),
                             ),
@@ -291,20 +293,20 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                               const Text(
                                 ' • ',
                                 style: TextStyle(
-                                  color: ArtbeatColors.textSecondary,
+                                  color: core.ArtbeatColors.textSecondary,
                                 ),
                               ),
                               const Icon(
                                 Icons.location_on,
                                 size: 12,
-                                color: ArtbeatColors.textSecondary,
+                                color: core.ArtbeatColors.textSecondary,
                               ),
                               const SizedBox(width: 2),
                               Expanded(
                                 child: Text(
                                   post.location,
                                   style: const TextStyle(
-                                    color: ArtbeatColors.textSecondary,
+                                    color: core.ArtbeatColors.textSecondary,
                                     fontSize: 12,
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -355,7 +357,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: ArtbeatColors.primaryPurple.withValues(
+                            color: core.ArtbeatColors.primaryPurple.withValues(
                               alpha: 0.1,
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -363,7 +365,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                           child: Text(
                             '#$tag',
                             style: const TextStyle(
-                              color: ArtbeatColors.primaryPurple,
+                              color: core.ArtbeatColors.primaryPurple,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -477,13 +479,15 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                      color: core.ArtbeatColors.primaryPurple.withValues(
+                        alpha: 0.1,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
                       'GROUP POST',
                       style: TextStyle(
-                        color: ArtbeatColors.primaryPurple,
+                        color: core.ArtbeatColors.primaryPurple,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -493,7 +497,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                   Text(
                     _formatDate(groupPost.createdAt),
                     style: const TextStyle(
-                      color: ArtbeatColors.textSecondary,
+                      color: core.ArtbeatColors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -529,7 +533,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                           const Icon(
                             Icons.verified,
                             size: 12,
-                            color: ArtbeatColors.primaryPurple,
+                            color: core.ArtbeatColors.primaryPurple,
                           ),
                       ],
                     ),
@@ -552,7 +556,7 @@ class _CommunityFeedScreenState extends State<CommunityFeedScreen> {
                       : groupPost.artworkDescription,
                   style: const TextStyle(
                     fontSize: 13,
-                    color: ArtbeatColors.textSecondary,
+                    color: core.ArtbeatColors.textSecondary,
                     fontStyle: FontStyle.italic,
                   ),
                 ),

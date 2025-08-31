@@ -46,7 +46,7 @@ class DashboardTrendingPostsSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -71,7 +71,7 @@ class DashboardTrendingPostsSection extends StatelessWidget {
                 TextButton(
                   onPressed: () =>
                       Navigator.pushNamed(context, '/community/trending'),
-                  child: Text(
+                  child: const Text(
                     'View All',
                     style: TextStyle(
                       color: ArtbeatColors.primaryPurple,
@@ -153,7 +153,7 @@ class DashboardTrendingPostsSection extends StatelessWidget {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.favorite,
                                   size: 12,
                                   color: ArtbeatColors.like,
@@ -161,13 +161,13 @@ class DashboardTrendingPostsSection extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   '${(index + 1) * 23}',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 10,
                                     color: ArtbeatColors.textSecondary,
                                   ),
                                 ),
                                 const Spacer(),
-                                Icon(
+                                const Icon(
                                   Icons.trending_up,
                                   size: 12,
                                   color: ArtbeatColors.primaryGreen,

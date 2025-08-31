@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/analytics_model.dart';
 import '../services/analytics_service.dart';
-import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Admin Analytics Screen
@@ -66,24 +66,17 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: const AdminDrawer(),
-      appBar: AdminHeader(
-        title: 'Analytics',
+    return MainLayout(
+      currentIndex: -1, // Admin screens don't use bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Admin Analytics',
         showBackButton: true,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onBackPressed: () => Navigator.pop(context),
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
       ),
-      body: Container(
+      drawer: const AdminDrawer(),
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,

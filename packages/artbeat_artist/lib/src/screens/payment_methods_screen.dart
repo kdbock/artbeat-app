@@ -234,18 +234,24 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment Methods'),
+    return core.MainLayout(
+      currentIndex: -1, // Payment methods don't use bottom navigation
+      appBar: core.EnhancedUniversalHeader(
+        title: 'Payment Methods',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: false,
+        actions: [
+          IconButton(
+            onPressed: _addPaymentMethod,
+            icon: const Icon(Icons.add),
+            tooltip: 'Add Payment Method',
+          ),
+        ],
       ),
-      body: _isLoading
+      child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildContent(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addPaymentMethod,
-        tooltip: 'Add Payment Method',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 

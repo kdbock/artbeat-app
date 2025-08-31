@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../widgets/community_header.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class StudioChatScreen extends StatefulWidget {
   final String studioId;
@@ -16,6 +16,7 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void dispose() {
@@ -43,15 +44,11 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CommunityHeader(
-        title: 'Studio Chat',
-        showBackButton: true,
-        showSearchIcon: false,
-        showMessagingIcon: true,
-        showDeveloperIcon: false,
-      ),
-      body: Column(
+    return core.MainLayout(
+      scaffoldKey: scaffoldKey,
+      currentIndex: -1, // Detail screen
+      appBar: const core.EnhancedUniversalHeader(title: 'Studio Chat'),
+      child: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(

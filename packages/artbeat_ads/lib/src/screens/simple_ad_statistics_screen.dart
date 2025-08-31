@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../services/simple_ad_service.dart';
 
 /// Simple ad statistics screen showing key metrics
@@ -53,11 +54,10 @@ class _SimpleAdStatisticsScreenState extends State<SimpleAdStatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ad Statistics'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+    return MainLayout(
+      currentIndex: -1, // No bottom navigation for this screen
+      appBar: EnhancedUniversalHeader(
+        title: 'Ad Statistics',
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -65,7 +65,7 @@ class _SimpleAdStatisticsScreenState extends State<SimpleAdStatisticsScreen> {
           ),
         ],
       ),
-      body: _isLoading
+      child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _statistics == null
           ? const Center(

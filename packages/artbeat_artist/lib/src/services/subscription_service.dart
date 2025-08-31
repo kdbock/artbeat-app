@@ -306,6 +306,24 @@ class SubscriptionService {
     }
   }
 
+  /// Get verified artists
+  Future<List<ArtistProfileModel>> getVerifiedArtists() async {
+    try {
+      final snapshot = await _firestore
+          .collection('artistProfiles')
+          .where('isVerified', isEqualTo: true)
+          .limit(20)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ArtistProfileModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting verified artists: $e');
+      return [];
+    }
+  }
+
   /// Get artist profile by ID
   Future<ArtistProfileModel?> getArtistProfileById(String id) async {
     try {

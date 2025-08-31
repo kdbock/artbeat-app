@@ -53,9 +53,13 @@ class _EventsScreenState extends State<EventsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Events'),
+    return MainLayout(
+      currentIndex: 2, // Events tab in bottom navigation
+      appBar: EnhancedUniversalHeader(
+        title: 'Events',
+        showBackButton: false,
+        showSearch: true,
+        showDeveloperTools: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -63,8 +67,7 @@ class _EventsScreenState extends State<EventsScreen> {
           ),
         ],
       ),
-      resizeToAvoidBottomInset: true,
-      body: _isLoading
+      child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadEvents,

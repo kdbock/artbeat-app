@@ -190,7 +190,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
               showLogo: false,
               showSearch: true,
               showDeveloperTools: true,
-              onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+              onSearchPressed: (query) => Navigator.pushNamed(context, '/search', arguments: {'query': query}),
               onMenuPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
               },

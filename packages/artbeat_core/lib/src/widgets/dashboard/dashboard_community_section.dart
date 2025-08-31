@@ -1,13 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_community/artbeat_community.dart' show PostModel;
+import 'package:artbeat_community/artbeat_community.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 
-class DashboardCommunitySection extends StatelessWidget {
+class DashboardCommunitySection extends StatefulWidget {
   final DashboardViewModel viewModel;
 
   const DashboardCommunitySection({Key? key, required this.viewModel})
     : super(key: key);
+
+  @override
+  State<DashboardCommunitySection> createState() =>
+      _DashboardCommunitySectionState();
+}
+
+class _DashboardCommunitySectionState extends State<DashboardCommunitySection> {
+  List<PostModel> _posts = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  Future<void> _loadPosts() async {
+    try {
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _error = null;
+        });
+      }
+
+      final communityService = context.read<CommunityService>();
+      final posts = await communityService.getPosts(limit: 5);
+
+      if (mounted) {
+        setState(() {
+          _posts = posts;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _posts = [];
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    // Cancel any ongoing operations if needed
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +99,7 @@ class DashboardCommunitySection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [ArtbeatColors.primaryGreen, ArtbeatColors.primaryPurple],
             ),
             borderRadius: BorderRadius.circular(8),
@@ -64,7 +116,7 @@ class DashboardCommunitySection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Upcoming Events',
+                'Community Posts',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -72,7 +124,7 @@ class DashboardCommunitySection extends StatelessWidget {
                 ),
               ),
               Text(
-                'See what the art community is talking about',
+                'See what the art community is sharing',
                 style: TextStyle(
                   fontSize: 14,
                   color: ArtbeatColors.textSecondary,
@@ -81,14 +133,49 @@ class DashboardCommunitySection extends StatelessWidget {
             ],
           ),
         ),
-        ElevatedButton.icon(
-          onPressed: () => Navigator.pushNamed(context, '/community'),
-          icon: const Icon(Icons.explore, size: 16),
-          label: const Text('View All'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ArtbeatColors.warning,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [ArtbeatColors.primaryPurple, ArtbeatColors.primaryGreen],
+            ),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.pushNamed(context, '/community/feed'),
+              borderRadius: BorderRadius.circular(25),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.explore, color: Colors.white, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -96,8 +183,15 @@ class DashboardCommunitySection extends StatelessWidget {
   }
 
   Widget _buildCommunityContent(BuildContext context) {
-    // Community highlights not implemented yet
-    final posts = <PostModel>[];
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+
+    if (_error != null) {
+      return _buildErrorState();
+    }
+
+    final posts = _posts;
 
     if (posts.isEmpty) {
       return _buildEmptyState(context);
@@ -269,9 +363,9 @@ class DashboardCommunitySection extends StatelessWidget {
                         color: ArtbeatColors.backgroundSecondary,
                       ),
                       child: ClipOval(
-                        child: post.authorProfileImageUrl.isNotEmpty
+                        child: post.userPhotoUrl.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: post.authorProfileImageUrl,
+                                imageUrl: post.userPhotoUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => const Center(
                                   child: CircularProgressIndicator(
@@ -300,8 +394,8 @@ class DashboardCommunitySection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            post.authorName.isNotEmpty
-                                ? post.authorName
+                            post.userName.isNotEmpty
+                                ? post.userName
                                 : 'Unknown User',
                             style: const TextStyle(
                               fontSize: 12,
@@ -376,7 +470,7 @@ class DashboardCommunitySection extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                _formatCount(post.commentsCount),
+                                _formatCount(post.commentCount),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: ArtbeatColors.textSecondary,
@@ -393,7 +487,7 @@ class DashboardCommunitySection extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                _formatCount(post.sharesCount),
+                                _formatCount(post.shareCount),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: ArtbeatColors.textSecondary,

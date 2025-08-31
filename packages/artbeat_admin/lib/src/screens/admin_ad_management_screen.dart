@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Admin Ad Management Screen
@@ -21,36 +22,43 @@ class _AdminAdManagementScreenState extends State<AdminAdManagementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Ad Management',
-          style: TextStyle(
-            fontFamily: 'Limelight',
-            color: Color(0xFF8C52FF),
-          ),
+    return DefaultTabController(
+      length: _tabs.length,
+      child: MainLayout(
+        currentIndex: -1,
+        appBar: const EnhancedUniversalHeader(
+          title: 'Ad Management',
+          showBackButton: false,
+          showSearch: true,
+          showDeveloperTools: true,
         ),
-        bottom: TabBar(
-          isScrollable: false,
-          tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
-          labelColor: const Color(0xFF8C52FF),
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF8C52FF),
+        drawer: const AdminDrawer(),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showCreateAdDialog(),
+          backgroundColor: const Color(0xFF8C52FF),
+          child: const Icon(Icons.add, color: Colors.white),
         ),
-      ),
-      drawer: const AdminDrawer(),
-      body: TabBarView(
-        children: [
-          _buildActiveAdsTab(),
-          _buildPendingReviewTab(),
-          _buildArchivedTab(),
-          _buildAnalyticsTab(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateAdDialog(),
-        backgroundColor: const Color(0xFF8C52FF),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Column(
+          children: [
+            TabBar(
+              isScrollable: false,
+              tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
+              labelColor: const Color(0xFF8C52FF),
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: const Color(0xFF8C52FF),
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildActiveAdsTab(),
+                  _buildPendingReviewTab(),
+                  _buildArchivedTab(),
+                  _buildAnalyticsTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

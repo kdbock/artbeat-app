@@ -13,6 +13,7 @@ class PostSearchScreen extends StatefulWidget {
 class _PostSearchScreenState extends State<PostSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, dynamic>> _searchResults = [];
   bool _isLoading = false;
   bool _hasSearched = false;
@@ -64,12 +65,18 @@ class _PostSearchScreenState extends State<PostSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Posts'),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Search Posts',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
         backgroundColor: ArtbeatColors.backgroundPrimary,
       ),
-      body: Column(
+      drawer: const ArtbeatDrawer(),
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),

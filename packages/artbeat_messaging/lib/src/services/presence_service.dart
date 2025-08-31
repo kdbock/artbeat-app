@@ -10,6 +10,7 @@ class PresenceService {
   Timer? _presenceTimer;
   StreamSubscription<User?>? _authSubscription;
   bool _isOnline = false;
+  DateTime? _lastDebugLog;
 
   PresenceService({FirebaseFirestore? firestore, FirebaseAuth? auth})
     : _firestore = firestore ?? FirebaseFirestore.instance,
@@ -152,20 +153,16 @@ class PresenceService {
     }
   }
 
-  /// Debug method to check online status
+  /// Debug method to check online status (only logs when there are issues)
   Future<void> _debugCheckOnlineStatus(String userId) async {
     try {
       // Check user document
       final userDoc = await _firestore.collection('users').doc(userId).get();
-      if (userDoc.exists) {
-        final userData = userDoc.data()!;
-        debugPrint(
-          'PresenceService Debug: User ${userData['displayName']} isOnline: ${userData['isOnline']}',
-        );
-      } else {
+      if (!userDoc.exists) {
         debugPrint(
           'PresenceService Debug: User document does not exist for $userId',
         );
+        return;
       }
 
       // Check artist profile
@@ -175,33 +172,35 @@ class PresenceService {
           .limit(1)
           .get();
 
-      if (artistQuery.docs.isNotEmpty) {
-        final artistData = artistQuery.docs.first.data();
-        debugPrint(
-          'PresenceService Debug: Artist ${artistData['displayName']} isOnline: ${artistData['isOnline']}',
-        );
-      } else {
+      if (artistQuery.docs.isEmpty) {
         debugPrint(
           'PresenceService Debug: No artist profile found for $userId',
         );
       }
 
-      // Check how many online users/artists exist
-      final onlineUsersQuery = await _firestore
-          .collection('users')
-          .where('isOnline', isEqualTo: true)
-          .get();
-      debugPrint(
-        'PresenceService Debug: Total online users: ${onlineUsersQuery.docs.length}',
-      );
+      // Only log counts periodically to avoid spam
+      final now = DateTime.now();
+      if (_lastDebugLog == null ||
+          now.difference(_lastDebugLog!).inMinutes >= 5) {
+        _lastDebugLog = now;
 
-      final onlineArtistsQuery = await _firestore
-          .collection('artistProfiles')
-          .where('isOnline', isEqualTo: true)
-          .get();
-      debugPrint(
-        'PresenceService Debug: Total online artists: ${onlineArtistsQuery.docs.length}',
-      );
+        final onlineUsersQuery = await _firestore
+            .collection('users')
+            .where('isOnline', isEqualTo: true)
+            .get();
+
+        final onlineArtistsQuery = await _firestore
+            .collection('artistProfiles')
+            .where('isOnline', isEqualTo: true)
+            .get();
+
+        debugPrint(
+          'PresenceService Debug: Total online users: ${onlineUsersQuery.docs.length}',
+        );
+        debugPrint(
+          'PresenceService Debug: Total online artists: ${onlineArtistsQuery.docs.length}',
+        );
+      }
     } catch (e) {
       debugPrint('PresenceService Debug: Error checking status: $e');
     }

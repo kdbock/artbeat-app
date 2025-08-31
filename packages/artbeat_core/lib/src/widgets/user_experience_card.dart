@@ -13,6 +13,8 @@ class UserExperienceCard extends StatefulWidget {
   final UserModel user;
   final List<AchievementBadgeData> achievements;
   final VoidCallback? onTap;
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onAchievementsTap;
   final bool showAnimations;
   final EdgeInsets margin;
 
@@ -21,6 +23,8 @@ class UserExperienceCard extends StatefulWidget {
     required this.user,
     this.achievements = const [],
     this.onTap,
+    this.onProfileTap,
+    this.onAchievementsTap,
     this.showAnimations = true,
     this.margin = const EdgeInsets.all(16),
   });
@@ -159,36 +163,46 @@ class _UserExperienceCardState extends State<UserExperienceCard>
   Widget _buildHeader() {
     return Row(
       children: [
-        // User avatar
-        _buildUserAvatar(),
-
-        const SizedBox(width: 16),
-
-        // User name and greeting
+        // User avatar and name - tappable for profile
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Welcome back,',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: ArtbeatColors.textSecondary,
-                  fontWeight: FontWeight.w500,
+          child: GestureDetector(
+            onTap: widget.onProfileTap,
+            child: Row(
+              children: [
+                // User avatar
+                _buildUserAvatar(),
+
+                const SizedBox(width: 16),
+
+                // User name and greeting
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Welcome back,',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: ArtbeatColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.user.fullName.isNotEmpty
+                            ? widget.user.fullName.split(' ').first
+                            : widget.user.username,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                widget.user.fullName.isNotEmpty
-                    ? widget.user.fullName.split(' ').first
-                    : widget.user.username,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.textPrimary,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -331,7 +345,7 @@ class _UserExperienceCardState extends State<UserExperienceCard>
             const SizedBox(width: 8),
             if (widget.achievements.isNotEmpty)
               GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/achievements'),
+                onTap: widget.onAchievementsTap,
                 child: const Text(
                   'View All',
                   style: TextStyle(
@@ -354,10 +368,13 @@ class _UserExperienceCardState extends State<UserExperienceCard>
               children: _recentAchievements.map((achievement) {
                 return Container(
                   margin: const EdgeInsets.only(right: 12),
-                  child: _buildMiniAchievementBadge(
-                    achievement.title,
-                    achievement.icon,
-                    achievement.description,
+                  child: GestureDetector(
+                    onTap: widget.onAchievementsTap,
+                    child: _buildMiniAchievementBadge(
+                      achievement.title,
+                      achievement.icon,
+                      achievement.description,
+                    ),
                   ),
                 );
               }).toList(),
@@ -680,21 +697,24 @@ class _UserExperienceCardState extends State<UserExperienceCard>
               ),
               if (widget.achievements.isNotEmpty) ...[
                 const SizedBox(width: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '$_unlockedCount badges',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: ArtbeatColors.primaryPurple,
-                      fontWeight: FontWeight.w600,
+                GestureDetector(
+                  onTap: widget.onAchievementsTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '$_unlockedCount badges',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: ArtbeatColors.primaryPurple,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

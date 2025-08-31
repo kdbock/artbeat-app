@@ -16,6 +16,43 @@ class ArtbeatDrawerItem {
 }
 
 class ArtbeatDrawerItems {
+  // Main Navigation Section
+  static const discoverConnect = ArtbeatDrawerItem(
+    title: 'Discover & Connect',
+    icon: Icons.explore_outlined,
+    route: '/dashboard',
+  );
+
+  static const findArtists = ArtbeatDrawerItem(
+    title: 'Find Artists',
+    icon: Icons.people_outline,
+    route: '/artist/browse',
+  );
+
+  static const featuredArtists = ArtbeatDrawerItem(
+    title: 'Featured Artists',
+    icon: Icons.star_outline,
+    route: '/artist/featured',
+  );
+
+  static const browseArtwork = ArtbeatDrawerItem(
+    title: 'Browse Artwork',
+    icon: Icons.image_outlined,
+    route: '/artwork/browse',
+  );
+
+  static const localScene = ArtbeatDrawerItem(
+    title: 'Local Scene',
+    icon: Icons.location_on_outlined,
+    route: '/events/discover',
+  );
+
+  static const myProfile = ArtbeatDrawerItem(
+    title: 'My Profile',
+    icon: Icons.person_outline,
+    route: '/profile/picture-viewer',
+  );
+
   // User Section
   static const viewProfile = ArtbeatDrawerItem(
     title: 'View Profile',
@@ -254,6 +291,15 @@ class ArtbeatDrawerItems {
   ];
 
   // Grouped items for drawer sections
+  static List<ArtbeatDrawerItem> get mainNavigationItems => [
+    discoverConnect,
+    findArtists,
+    featuredArtists,
+    browseArtwork,
+    localScene,
+    myProfile,
+  ];
+
   static List<ArtbeatDrawerItem> get userItems => [
     viewProfile,
     editProfile,

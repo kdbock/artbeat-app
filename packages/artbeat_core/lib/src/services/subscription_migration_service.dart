@@ -82,7 +82,7 @@ class SubscriptionMigrationService {
   /// Migrate all users in batches
   Future<void> migrateAllUsers() async {
     try {
-      final batchSize = 100;
+      const batchSize = 100;
       QueryDocumentSnapshot? lastDoc;
 
       while (true) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show CommissionStatus;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../../models/commission_model.dart';
 import '../../services/commission_service.dart';
 
@@ -13,6 +14,7 @@ class CommissionsScreen extends StatefulWidget {
 class _CommissionsScreenState extends State<CommissionsScreen>
     with SingleTickerProviderStateMixin {
   final CommissionService _commissionService = CommissionService();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late final TabController _tabController;
   List<CommissionModel> _commissions = [];
   bool _isLoading = true;
@@ -51,46 +53,59 @@ class _CommissionsScreenState extends State<CommissionsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Tabs for filtering commissions
-        TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Pending'),
-            Tab(text: 'Completed'),
-          ],
-        ),
-        // Commission list
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // Active commissions
-                    _buildCommissionList(
-                      _commissions
-                          .where((c) => c.status == CommissionStatus.active)
-                          .toList(),
-                    ),
-                    // Pending commissions
-                    _buildCommissionList(
-                      _commissions
-                          .where((c) => c.status == CommissionStatus.pending)
-                          .toList(),
-                    ),
-                    // Completed commissions
-                    _buildCommissionList(
-                      _commissions
-                          .where((c) => c.status == CommissionStatus.completed)
-                          .toList(),
-                    ),
-                  ],
-                ),
-        ),
-      ],
+    return core.MainLayout(
+      currentIndex: 3, // Community tab in bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: const core.EnhancedUniversalHeader(
+        title: 'Commissions',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
+      ),
+      drawer: const core.ArtbeatDrawer(),
+      child: Column(
+        children: [
+          // Tabs for filtering commissions
+          TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(text: 'Active'),
+              Tab(text: 'Pending'),
+              Tab(text: 'Completed'),
+            ],
+          ),
+          // Commission list
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Active commissions
+                      _buildCommissionList(
+                        _commissions
+                            .where((c) => c.status == CommissionStatus.active)
+                            .toList(),
+                      ),
+                      // Pending commissions
+                      _buildCommissionList(
+                        _commissions
+                            .where((c) => c.status == CommissionStatus.pending)
+                            .toList(),
+                      ),
+                      // Completed commissions
+                      _buildCommissionList(
+                        _commissions
+                            .where(
+                              (c) => c.status == CommissionStatus.completed,
+                            )
+                            .toList(),
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

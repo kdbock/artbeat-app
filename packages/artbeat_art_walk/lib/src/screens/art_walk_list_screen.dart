@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
 
 class ArtWalkListScreen extends StatefulWidget {
@@ -262,107 +263,124 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ArtWalkHeader(
-        title: 'Art Walks',
-        showSearch: true,
-        showChat: true,
-        showDeveloper: false,
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadArtWalks),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Tab Bar
-          Container(
-            color: const Color(
-              0xFF00838F,
-            ), // Art Walk header color - matches Welcome Travel user box teal
-            child: TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.white, // Text/Icon color
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              tabs: const [
-                Tab(text: 'My Walks'),
-                Tab(text: 'Popular'),
-                Tab(text: 'NC Regions'),
-              ],
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: 'Art Walks',
+          showLogo: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                // TODO: Implement search functionality
+              },
             ),
-          ),
-          // Tab Bar View
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // My Walks Tab
-                      Column(
-                        children: [
-                          if (_myWalks.isEmpty)
-                            _buildEmptyState(
-                              'You haven\'t created any art walks yet',
-                              'Create a walk to organize and share your favorite public art',
-                            )
-                          else
-                            Expanded(
-                              child: _buildWalksList(_myWalks, isMyWalks: true),
-                            ),
-
-                          // NC Regions promo banner
-                          _buildNCRegionsBanner(),
-                        ],
-                      ),
-
-                      // Popular Walks Tab
-                      Column(
-                        children: [
-                          if (_popularWalks.isEmpty)
-                            _buildEmptyState(
-                              'No popular walks found',
-                              'Be the first to create and share an art walk',
-                            )
-                          else
-                            Expanded(
-                              child: _buildWalksList(
-                                _popularWalks,
-                                isMyWalks: false,
+            IconButton(
+              icon: const Icon(Icons.chat),
+              onPressed: () => Navigator.pushNamed(context, '/messaging'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadArtWalks,
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            // Tab Bar
+            Container(
+              color: const Color(
+                0xFF00838F,
+              ), // Art Walk header color - matches Welcome Travel user box teal
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.white, // Text/Icon color
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                tabs: const [
+                  Tab(text: 'My Walks'),
+                  Tab(text: 'Popular'),
+                  Tab(text: 'NC Regions'),
+                ],
+              ),
+            ),
+            // Tab Bar View
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        // My Walks Tab
+                        Column(
+                          children: [
+                            if (_myWalks.isEmpty)
+                              _buildEmptyState(
+                                'You haven\'t created any art walks yet',
+                                'Create a walk to organize and share your favorite public art',
+                              )
+                            else
+                              Expanded(
+                                child: _buildWalksList(
+                                  _myWalks,
+                                  isMyWalks: true,
+                                ),
                               ),
-                            ),
 
-                          // NC Regions promo banner
-                          _buildNCRegionsBanner(),
-                        ],
-                      ),
+                            // NC Regions promo banner
+                            _buildNCRegionsBanner(),
+                          ],
+                        ),
 
-                      // NC Regions Tab
-                      _buildNCRegionsTab(),
-                    ],
-                  ),
-          ),
-        ],
+                        // Popular Walks Tab
+                        Column(
+                          children: [
+                            if (_popularWalks.isEmpty)
+                              _buildEmptyState(
+                                'No popular walks found',
+                                'Be the first to create and share an art walk',
+                              )
+                            else
+                              Expanded(
+                                child: _buildWalksList(
+                                  _popularWalks,
+                                  isMyWalks: false,
+                                ),
+                              ),
+
+                            // NC Regions promo banner
+                            _buildNCRegionsBanner(),
+                          ],
+                        ),
+
+                        // NC Regions Tab
+                        _buildNCRegionsTab(),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final result = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(builder: (_) => const CreateArtWalkScreen()),
+            );
+
+            if (result == true && mounted) {
+              _loadArtWalks();
+            }
+          },
+          child: const Icon(Icons.add),
+        ),
+        // Add the NC Regions banner below the app bar
+        bottomSheet:
+            _tabController.index ==
+                2 // Only show on NC Regions tab
+            ? _buildNCRegionsBanner()
+            : null,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(builder: (_) => const CreateArtWalkScreen()),
-          );
-
-          if (result == true && mounted) {
-            _loadArtWalks();
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
-      // Add the NC Regions banner below the app bar
-      bottomSheet:
-          _tabController.index ==
-              2 // Only show on NC Regions tab
-          ? _buildNCRegionsBanner()
-          : null,
     );
   }
 
@@ -450,7 +468,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                   width: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(imageUrl),
+                      image: NetworkImage(imageUrl) as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                     borderRadius: const BorderRadius.only(

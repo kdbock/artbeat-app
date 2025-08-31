@@ -11,6 +11,7 @@ class PortfoliosScreen extends StatefulWidget {
 
 class _PortfoliosScreenState extends State<PortfoliosScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Map<String, dynamic>> _portfolios = [];
   List<Map<String, dynamic>> _filteredPortfolios = [];
   bool _isLoading = true;
@@ -73,91 +74,116 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return MainLayout(
+        currentIndex: -1, // Not a main navigation screen
+        scaffoldKey: _scaffoldKey,
+        appBar: const EnhancedUniversalHeader(
+          title: 'Portfolios',
+          showBackButton: true,
+          showSearch: false,
+          showDeveloperTools: true,
+        ),
+        drawer: const ArtbeatDrawer(),
+        child: const Center(child: CircularProgressIndicator()),
+      );
     }
 
-    return CustomScrollView(
-      slivers: [
-        // Header with search and filter options
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SearchBar(
-              hintText: 'Search artists...',
-              leading: const Icon(Icons.search),
-              onChanged: (value) {
-                _performSearch(value);
-              },
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Portfolios',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
+      ),
+      drawer: const ArtbeatDrawer(),
+      child: CustomScrollView(
+        slivers: [
+          // Header with search and filter options
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SearchBar(
+                hintText: 'Search artists...',
+                leading: const Icon(Icons.search),
+                onChanged: (value) {
+                  _performSearch(value);
+                },
+              ),
             ),
           ),
-        ),
-        // Portfolio grid
-        SliverPadding(
-          padding: const EdgeInsets.all(16.0),
-          sliver: _filteredPortfolios.isEmpty
-              ? const SliverToBoxAdapter(
-                  child: Center(child: Text('No portfolios available')),
-                )
-              : SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.8,
-                    mainAxisSpacing: 16.0,
-                    crossAxisSpacing: 16.0,
-                  ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final portfolio = _filteredPortfolios[index];
-                    return Card(
-                      clipBehavior: Clip.antiAlias,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Portfolio cover image
-                          AspectRatio(
-                            aspectRatio: 1.0,
-                            child: portfolio['coverImageUrl'] != null
-                                ? ImageManagementService().getOptimizedImage(
-                                    imageUrl:
-                                        portfolio['coverImageUrl'] as String,
-                                    fit: BoxFit.cover,
-                                    isThumbnail: true,
-                                    errorWidget: Container(
+          // Portfolio grid
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: _filteredPortfolios.isEmpty
+                ? const SliverToBoxAdapter(
+                    child: Center(child: Text('No portfolios available')),
+                  )
+                : SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.8,
+                          mainAxisSpacing: 16.0,
+                          crossAxisSpacing: 16.0,
+                        ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final portfolio = _filteredPortfolios[index];
+                      return Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Portfolio cover image
+                            AspectRatio(
+                              aspectRatio: 1.0,
+                              child: portfolio['coverImageUrl'] != null
+                                  ? ImageManagementService().getOptimizedImage(
+                                      imageUrl:
+                                          portfolio['coverImageUrl'] as String,
+                                      fit: BoxFit.cover,
+                                      isThumbnail: true,
+                                      errorWidget: Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(Icons.broken_image),
+                                      ),
+                                    )
+                                  : Container(
                                       color: Colors.grey[200],
-                                      child: const Icon(Icons.broken_image),
+                                      child: const Icon(Icons.image),
                                     ),
-                                  )
-                                : Container(
-                                    color: Colors.grey[200],
-                                    child: const Icon(Icons.image),
-                                  ),
-                          ),
-                          // Artist info
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  (portfolio['username'] as String?) ??
-                                      'Artist',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '${portfolio['artworkCount'] ?? 0} works',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }, childCount: _filteredPortfolios.length),
-                ),
-        ),
-      ],
+                            // Artist info
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    (portfolio['username'] as String?) ??
+                                        'Artist',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${portfolio['artworkCount'] ?? 0} works',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }, childCount: _filteredPortfolios.length),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

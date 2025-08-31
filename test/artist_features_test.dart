@@ -28,14 +28,14 @@ void main() {
 
   group('Subscription Tier Features', () {
     test('should have correct features for Free tier', () {
-      final tier = SubscriptionTier.free;
+      const tier = SubscriptionTier.free;
       expect(tier.displayName, equals('Free'));
       expect(tier.monthlyPrice, equals(0.0));
       expect(tier.features, contains('Up to 3 artworks'));
     });
 
     test('should have correct features for Starter tier', () {
-      final tier = SubscriptionTier.starter;
+      const tier = SubscriptionTier.starter;
       expect(tier.displayName, equals('Starter'));
       expect(tier.monthlyPrice, equals(4.99));
       expect(tier.features, contains('Up to 25 artworks'));
@@ -44,7 +44,7 @@ void main() {
     });
 
     test('should have correct features for Creator tier', () {
-      final tier = SubscriptionTier.creator;
+      const tier = SubscriptionTier.creator;
       expect(tier.displayName, equals('Creator'));
       expect(tier.monthlyPrice, equals(12.99));
       expect(tier.features, contains('Up to 100 artworks'));
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('should have correct features for Business tier', () {
-      final tier = SubscriptionTier.business;
+      const tier = SubscriptionTier.business;
       expect(tier.displayName, equals('Business'));
       expect(tier.monthlyPrice, equals(29.99));
       expect(tier.features, contains('Unlimited artworks'));
@@ -68,7 +68,7 @@ void main() {
     });
 
     test('should have correct features for Enterprise tier', () {
-      final tier = SubscriptionTier.enterprise;
+      const tier = SubscriptionTier.enterprise;
       expect(tier.displayName, equals('Enterprise'));
       expect(tier.monthlyPrice, equals(79.99));
       expect(tier.features, contains('Everything unlimited'));

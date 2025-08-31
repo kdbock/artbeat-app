@@ -80,6 +80,30 @@ service cloud.firestore {
           request.auth.uid == userId
         );
       }
+
+      // User's achievements subcollection
+      match /achievements/{achievementId} {
+        allow read, list: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
+
+      // User's archived chats subcollection
+      match /archivedChats/{archivedChatId} {
+        allow read, list: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
     }
 
     // Artists collection rules
@@ -180,7 +204,13 @@ service cloud.firestore {
     match /artwork/{artworkId} {
       allow read, list: if true;
       allow create: if isAuthenticated() && isArtist(request.auth.uid);
-      allow update, delete: if isAuthenticated() && (
+      allow update: if isAuthenticated() && (
+        (isArtist(request.auth.uid) && request.auth.uid == resource.data.artistId) ||
+        isAdmin(request.auth.uid) ||
+        // Allow updating engagement stats (viewCount, appreciateCount, etc.) from any authenticated user
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'appreciateCount', 'shareCount', 'engagementStats', 'lastViewed']))
+      );
+      allow delete: if isAuthenticated() && (
         isArtist(request.auth.uid) && request.auth.uid == resource.data.artistId ||
         isAdmin(request.auth.uid)
       );
@@ -214,7 +244,7 @@ service cloud.firestore {
       );
     }
 
-    // Public Art
+    // Public Art (populated from captures)
     match /publicArt/{artId} {
       allow read: if true;
       allow create: if isAuthenticated();
@@ -392,6 +422,17 @@ service cloud.firestore {
         request.auth.uid == resource.data.ownerId ||
         isAdmin(request.auth.uid)
       );
+    }
+
+    // General analytics collection
+    match /analytics/{analyticsId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAdmin(request.auth.uid);
     }
 
     // Ad analytics collection

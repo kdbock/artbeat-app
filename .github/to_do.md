@@ -1,171 +1,488 @@
-# To Do List
+Header & Navigation Standardization Checklist
 
-## ✅ COMPLETED - Artist Approved Ads Implementation
+Task: For every screen in each package, update to MainLayout + EnhancedUniversalHeader (unless special case like TabBar or login).
 
-### ✅ Artist Approved Ads Screen - COMPLETED
+Check bottom navigation (currentIndex set correctly, -1 for non-nav screens).
 
-- ✅ Create artist approved ad button added to Artist Dashboard
-- ✅ Avatar/headshot image upload functionality
-- ✅ 4 artwork images upload for GIF animation
-- ✅ Tagline input field
-- ✅ Complete ad creation screen with preview
-- ✅ Firebase Storage integration for image uploads
-- ✅ Form validation and error handling
+Run flutter analyze after each package.
 
-### ✅ Artist Approved Ad Features - COMPLETED
+Document updated vs. Scaffold-kept screens.
 
-- ✅ Auto-playing GIF animation cycling through 4 artwork images
-- ✅ Configurable animation speed (500ms - 3000ms)
-- ✅ Artist avatar and tagline display
-- ✅ Click tracking and analytics
-- ✅ Responsive design for all screen sizes
-- ✅ Firebase Firestore backend integration
+Here’s a clean list of all Packages and their Screens that appear in your tree output:
 
-### ✅ Database Structure - COMPLETED
+artbeat_admin
+admin_ad_management_screen.dart
 
-- ✅ New `artist_approved_ads` collection created
-- ✅ Analytics tracking collection
-- ✅ Image storage in Firebase Storage
-- ✅ Ad approval/rejection workflow support
 
-Firebase database collection for ads:
+admin_advanced_content_management_screen.dart
 
-ads
 
-fbnTb1enwaKAF0ys0q4p
+admin_advanced_user_management_screen.dart
 
-nANXeC0kcf9stJmfrqSr
-nANXeC0kcf9stJmfrqSr
-approvalId
-null
-(null)
 
-ctaText
-"Do you dare?"
-(string)
+admin_analytics_screen.dart
 
-description
-"Ours is much… much higher. Only the boring stay dead."
-(string)
 
-destinationUrl
-"https://www.kristykelly.com"
-(string)
+admin_content_review_screen.dart
 
-duration
-(map)
 
-days
-30
-(number)
+admin_dashboard_screen.dart
 
-endDate
-September 11, 2025 at 7:49:11 PM UTC-4
-(timestamp)
 
-imageUrl
-"https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/debug_uploads%2Femergency_ad_1755042550028.jpg?alt=media&token=4ab16ba3-d6a5-4906-8ea5-062b42ef6006"
-(string)
+admin_data_management_screen.dart
 
-location
-0
-(number)
 
-ownerId
-"ARFuyX0C44PbYlHSUSlQx55b9vt2"
-(string)
+admin_enhanced_dashboard_screen.dart
 
-pricePerDay
-0
-(number)
 
-startDate
-August 12, 2025 at 7:49:11 PM UTC-4
-(timestamp)
+admin_financial_analytics_screen.dart
 
-status
-0
-(number)
 
-targetId
-null
-(null)
+admin_help_support_screen.dart
 
-title
-"What is your body count?"
-(string)
 
-type
-0
-(number)
+admin_login_screen.dart
 
-## ✅ COMPLETED - Banner Ad Placements
 
-### ✅ fluid_dashboard_screen.dart - COMPLETED
+admin_security_center_screen.dart
 
-- ✅ Ad space between user experience section and local capture
-- ✅ Ad space between Featured Artists and Artwork Gallery sections
-- ✅ Ad space between Upcoming Events section and Artist widget
-- ✅ 2 ad spaces beneath the artist widget
 
-### ✅ Community Feed Screen - COMPLETED
+admin_settings_screen.dart
 
-- ✅ In-feed ads implemented (square format)
-- ✅ Starting after 5 posts, then every 5 posts
-- ✅ Seamless integration with post feed
 
-## 🔄 PENDING - Additional Dashboard Ad Placements
+admin_system_alerts_screen.dart
 
-### ⏳ art_walks_dashboard_screen.dart - PENDING
 
-- ⏳ Place ad space at top of page, above the header bar
-- ⏳ Place ad space between Local Art Map section and Local Capture section
-- ⏳ Place ad space between Local Art Walks section and Art Walk Achievements section
-- ⏳ Place (2) ad spaces beneath the Art Walk Achievements section
+admin_user_detail_screen.dart
 
-### ⏳ Capture dashboard screen - PENDING
 
-- ⏳ Place ad space at top of page, above the header bar
-- ⏳ Place ad space after Your Impact section, above Your Recent Captures section
-- ⏳ Place ad space above Community Inspiration section
-- ⏳ Place (2) ad spaces beneath the Community Inspiration section
+admin_user_management_screen.dart
 
-### ⏳ Community Dashboard Screen - PENDING
 
-- ⏳ Place ad space at top of page, above the header bar
-- ⏳ Place ad space beneath Recent Posts section and above Artist widget
-- ⏳ Place ad space beneath Featured Artist Section and above Verified Artist Section
-- ⏳ Place (2) ad spaces beneath Artists section
 
-## ✅ COMPLETED - Additional Fixes
+artbeat_ads
+ad_payment_screen.dart
 
-### ✅ Admin Drawer Layout Fix - COMPLETED
 
-- ✅ Fixed RenderFlex overflow error (68 pixels)
-- ✅ Implemented responsive header sizing
-- ✅ Added flexible constraints for different screen sizes
-- ✅ Improved space management and layout structure
+simple_ad_create_screen.dart
 
-## 📋 Implementation Summary
 
-### Files Created:
+simple_ad_management_screen.dart
 
-- ✅ `packages/artbeat_ads/lib/src/models/ad_artist_approved_model.dart`
-- ✅ `packages/artbeat_ads/lib/src/services/ad_artist_approved_service.dart`
-- ✅ `packages/artbeat_ads/lib/src/widgets/artist_approved_ad_widget.dart`
-- ✅ `packages/artbeat_ads/lib/src/widgets/dashboard_ad_placement_widget.dart`
-- ✅ `packages/artbeat_ads/lib/src/screens/artist_approved_ad_create_screen.dart`
 
-### Files Modified:
+simple_ad_statistics_screen.dart
 
-- ✅ `packages/artbeat_ads/lib/artbeat_ads.dart` - Added exports
-- ✅ `packages/artbeat_ads/lib/src/models/ad_type.dart` - Added artistApproved type
-- ✅ `packages/artbeat_ads/lib/src/models/ad_location.dart` - Added new locations
-- ✅ `packages/artbeat_core/lib/src/screens/fluid_dashboard_screen.dart` - Added ad placements
-- ✅ `packages/artbeat_community/lib/src/screens/community_feed_screen.dart` - Added in-feed ads
-- ✅ `packages/artbeat_artist/lib/src/screens/artist_dashboard_screen.dart` - Added creation button
-- ✅ `packages/artbeat_admin/lib/src/widgets/admin_drawer.dart` - Fixed layout overflow
 
-### Documentation:
 
-- ✅ `ARTIST_APPROVED_ADS_IMPLEMENTATION.md` - Complete implementation guide
+artbeat_art_walk
+art_walk_dashboard_screen.dart
+
+
+art_walk_detail_screen.dart
+
+
+art_walk_edit_screen.dart
+
+
+art_walk_experience_screen.dart
+
+
+art_walk_list_screen.dart
+
+
+art_walk_map_screen.dart
+
+
+create_art_walk_screen.dart
+
+
+enhanced_art_walk_create_screen.dart
+
+
+enhanced_art_walk_experience_screen.dart
+
+
+my_captures_screen.dart
+
+
+
+artbeat_artist
+analytics_dashboard_screen.dart
+
+
+artist_approved_ads_screen.dart
+
+
+artist_browse_screen.dart
+
+
+artist_dashboard_screen.dart
+
+
+artist_journey_screen.dart
+
+
+artist_list_screen.dart
+
+
+artist_onboarding_screen.dart
+
+
+artist_profile_edit_screen.dart
+
+
+artist_public_profile_screen.dart
+
+
+artwork_browse_screen.dart
+
+
+commissions/commission_details_sheet.dart
+
+
+commissions/commissions_screen.dart
+
+
+event_creation_screen.dart
+
+
+events_screen.dart
+
+
+featured_artist_screen.dart
+
+
+gallery_analytics_dashboard_screen.dart
+
+
+gallery_artists_management_screen.dart
+
+
+modern_2025_onboarding_screen.dart
+
+
+my_artwork_screen.dart
+
+
+payment_methods_screen.dart
+
+
+payment_screen.dart
+
+
+refund_request_screen.dart
+
+
+subscription_analytics_screen.dart
+
+
+verified_artist_screen.dart
+
+
+
+artbeat_artwork
+artwork_browse_screen.dart
+
+
+artwork_detail_screen.dart
+
+
+artwork_edit_screen.dart
+
+
+artwork_upload_screen.dart
+
+
+enhanced_artwork_upload_screen.dart
+
+
+
+artbeat_auth
+forgot_password_screen.dart
+
+
+login_screen.dart
+
+
+register_screen.dart
+
+
+
+artbeat_capture
+admin_content_moderation_screen.dart
+
+
+camera_capture_screen.dart
+
+
+camera_only_screen.dart
+
+
+capture_confirmation_screen.dart
+
+
+capture_detail_screen.dart
+
+
+capture_details_screen.dart
+
+
+capture_upload_screen.dart
+
+
+captures_list_screen.dart
+
+
+enhanced_capture_dashboard_screen.dart
+
+
+terms_and_conditions_screen.dart
+
+
+
+artbeat_community
+commissions/commissions_screen.dart
+
+
+feed/artist_community_feed_screen.dart
+
+
+feed/comments_screen.dart
+
+
+feed/create_group_post_screen.dart
+
+
+feed/create_post_screen.dart
+
+
+feed/trending_content_screen.dart
+
+
+feed/unified_community_feed.dart
+
+
+gifts/gift_rules_screen.dart
+
+
+gifts/gifts_screen.dart
+
+
+home/canvas_feed_screen.dart
+
+
+moderation/moderation_queue_screen.dart
+
+
+portfolios/artist_portfolio_screen.dart
+
+
+portfolios/portfolios_screen.dart
+
+
+posts/user_posts_screen.dart
+
+
+search/post_search_screen.dart
+
+
+search/user_search_screen.dart
+
+
+settings/quiet_mode_screen.dart
+
+
+sponsorships/sponsorship_screen.dart
+
+
+studios/studio_chat_screen.dart
+
+
+studios/studios_screen.dart
+
+
+src/screens/community_artists_screen.dart
+
+
+src/screens/community_dashboard_screen.dart
+
+
+src/screens/community_feed_screen.dart
+
+
+
+artbeat_core
+auth_required_screen.dart
+
+
+fluid_dashboard_screen.dart
+
+
+fluid_dashboard_screen_refactored.dart
+
+
+gift_purchase_screen.dart
+
+
+migrate_dashboard.dart
+
+
+payment_management_screen.dart
+
+
+search_results_screen.dart
+
+
+simple_subscription_plans_screen.dart
+
+
+splash_screen.dart
+
+
+subscription_plans_screen.dart
+
+
+subscription_purchase_screen.dart
+
+
+system_settings_screen.dart
+
+
+
+artbeat_events
+create_event_screen.dart
+
+
+event_details_screen.dart
+
+
+event_details_wrapper.dart
+
+
+events_dashboard_screen.dart
+
+
+events_list_screen.dart
+
+
+my_tickets_screen.dart
+
+
+user_events_dashboard_screen.dart
+
+
+
+artbeat_messaging
+artistic_messaging_screen.dart
+
+
+blocked_users_screen.dart
+
+
+chat_info_screen.dart
+
+
+chat_list_screen.dart
+
+
+chat_notification_settings_screen.dart
+
+
+chat_screen.dart
+
+
+chat_search_screen.dart
+
+
+chat_settings_screen.dart
+
+
+chat_wallpaper_selection_screen.dart
+
+
+contact_selection_screen.dart
+
+
+enhanced_messaging_dashboard_screen.dart
+
+
+group_chat_screen.dart
+
+
+group_creation_screen.dart
+
+
+group_edit_screen.dart
+
+
+media_viewer_screen.dart
+
+
+messaging_dashboard_screen.dart
+
+
+user_profile_screen.dart
+
+
+
+artbeat_profile
+achievement_info_screen.dart
+
+
+achievements_screen.dart
+
+
+create_profile_screen.dart
+
+
+discover_screen.dart
+
+
+edit_profile_screen.dart
+
+
+favorite_detail_screen.dart
+
+
+favorites_screen.dart
+
+
+followers_list_screen.dart
+
+
+following_list_screen.dart
+
+
+profile_picture_viewer_screen.dart
+
+
+profile_tab.dart
+
+
+profile_view_screen.dart
+
+
+user_favorites_screen.dart
+
+
+
+artbeat_settings
+account_settings_screen.dart
+
+
+become_artist_screen.dart
+
+
+blocked_users_screen.dart
+
+
+notification_settings_screen.dart
+
+
+privacy_settings_screen.dart
+
+
+security_settings_screen.dart
+
+
+settings_screen.dart

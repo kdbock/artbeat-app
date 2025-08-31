@@ -8,6 +8,9 @@ import 'package:artbeat_profile/artbeat_profile.dart' as profile;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_events/artbeat_events.dart' as events;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
+import 'package:artbeat_community/artbeat_community.dart';
+import 'package:artbeat_capture/artbeat_capture.dart' as capture;
+import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 
 import '../guards/auth_guard.dart';
 import '../screens/enhanced_search_screen.dart';
@@ -85,6 +88,25 @@ class AppRouter {
           currentIndex: -1,
           child: const EnhancedSearchScreen(),
         );
+
+      case AppRoutes.artistSearch:
+      case AppRoutes.artistSearchShort:
+        return RouteUtils.createMainNavRoute(
+          currentIndex: -1,
+          child: const artist.ArtistBrowseScreen(),
+        );
+
+      case AppRoutes.trending:
+        return RouteUtils.createMainNavRoute(
+          currentIndex: -1,
+          child: const artist.ArtistBrowseScreen(), // Trending artists
+        );
+
+      case AppRoutes.local:
+        return RouteUtils.createMainNavRoute(
+          currentIndex: -1,
+          child: const events.EventsDashboardScreen(),
+        );
     }
 
     // Try specialized routes
@@ -101,6 +123,11 @@ class AppRouter {
     return routeName != AppRoutes.login &&
         routeName != AppRoutes.register &&
         routeName != AppRoutes.forgotPassword &&
+        routeName != AppRoutes.artistSearch &&
+        routeName != AppRoutes.artistSearchShort &&
+        routeName != AppRoutes.trending &&
+        routeName != AppRoutes.local &&
+        routeName != AppRoutes.artworkBrowse &&
         !routeName.startsWith('/public/');
   }
 
@@ -250,6 +277,12 @@ class AppRouter {
           child: const artist.ArtistBrowseScreen(),
         );
 
+      case AppRoutes.artistFeatured:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 3,
+          child: const artist.ArtistBrowseScreen(mode: 'featured'),
+        );
+
       case AppRoutes.artistApprovedAds:
         return RouteUtils.createComingSoonRoute('Approved Ads');
 
@@ -296,6 +329,15 @@ class AppRouter {
           ),
         );
 
+      case AppRoutes.artworkDetail:
+        final artworkId = RouteUtils.getArgument<String>(settings, 'artworkId');
+        if (artworkId == null) {
+          return RouteUtils.createErrorRoute('Artwork not found');
+        }
+        return RouteUtils.createSimpleRoute(
+          child: artwork.ArtworkDetailScreen(artworkId: artworkId),
+        );
+
       case AppRoutes.artworkFeatured:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Featured Artists'),
@@ -338,13 +380,13 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.communityDashboard:
         return RouteUtils.createSimpleRoute(
-          child: const Center(child: Text('Community Dashboard - Coming Soon')),
+          child: const CommunityDashboardScreen(),
         );
 
       case AppRoutes.communityFeed:
         return RouteUtils.createMainNavRoute(
           currentIndex: 2,
-          child: const Center(child: Text('Community Feed - Coming Soon')),
+          child: const UnifiedCommunityFeed(),
         );
 
       case AppRoutes.communityArtists:
@@ -392,6 +434,34 @@ class AppRouter {
           child: const Center(child: Text('Community Settings - Coming Soon')),
         );
 
+      case AppRoutes.communityCreate:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(
+            child: Text('Create Community Post - Coming Soon'),
+          ),
+        );
+
+      case AppRoutes.communityMessaging:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Community Messaging - Coming Soon')),
+        );
+
+      case AppRoutes.communityTrending:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Trending Posts - Coming Soon')),
+        );
+
+      case AppRoutes.communityFeatured:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Featured Posts - Coming Soon')),
+        );
+
+      case AppRoutes.community:
+        // Redirect to community dashboard
+        return RouteUtils.createSimpleRoute(
+          child: const CommunityDashboardScreen(),
+        );
+
       default:
         return RouteUtils.createNotFoundRoute('Community feature');
     }
@@ -407,13 +477,13 @@ class AppRouter {
 
       case AppRoutes.artWalkMap:
         return RouteUtils.createSimpleRoute(
-          child: const Center(child: Text('Art Walk Map - Coming Soon')),
+          child: const art_walk.ArtWalkMapScreen(),
         );
 
       case AppRoutes.artWalkList:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
-          child: const Center(child: Text('Art Walk List - Coming Soon')),
+          child: const art_walk.ArtWalkListScreen(),
         );
 
       case AppRoutes.artWalkDetail:
@@ -429,7 +499,31 @@ class AppRouter {
       case AppRoutes.artWalkCreate:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
-          child: const Center(child: Text('Create Art Walk - Coming Soon')),
+          child: const art_walk.CreateArtWalkScreen(),
+        );
+
+      case AppRoutes.artWalkSearch:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Art Walk Search - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkExplore:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Explore Art Walks - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkStart:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Start Art Walk - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkNearby:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Nearby Art Walks - Coming Soon')),
         );
 
       default:
@@ -442,18 +536,23 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.messaging:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Messaging - Coming Soon')),
+          child: const messaging.ArtisticMessagingScreen(),
         );
 
       case AppRoutes.messagingNew:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('New Message - Coming Soon')),
+          child: const messaging.ContactSelectionScreen(),
         );
 
       case AppRoutes.messagingChat:
-        return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Chat - Coming Soon')),
-        );
+        final args = settings.arguments as Map<String, dynamic>?;
+        final chat = args?['chat'] as messaging.ChatModel?;
+        if (chat != null) {
+          return RouteUtils.createMainLayoutRoute(
+            child: messaging.ChatScreen(chat: chat),
+          );
+        }
+        return RouteUtils.createNotFoundRoute('Chat not found');
 
       default:
         return RouteUtils.createNotFoundRoute('Messaging feature');
@@ -475,6 +574,16 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           child: const events.CreateEventScreen(),
         );
+
+      case AppRoutes.eventsDetail:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final eventId = args?['eventId'] as String?;
+        if (eventId != null) {
+          return RouteUtils.createMainNavRoute(
+            child: events.EventDetailsScreen(eventId: eventId),
+          );
+        }
+        return RouteUtils.createNotFoundRoute();
 
       default:
         return RouteUtils.createComingSoonRoute('Events');
@@ -528,7 +637,52 @@ class AppRouter {
 
       case AppRoutes.captureDashboard:
         return RouteUtils.createSimpleRoute(
-          child: const Center(child: Text('Capture Dashboard - Coming Soon')),
+          child: const capture.EnhancedCaptureDashboardScreen(),
+        );
+
+      case AppRoutes.captureSearch:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.CaptureSearchScreen(),
+        );
+
+      case AppRoutes.captureNearby:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Nearby Captures - Coming Soon')),
+        );
+
+      case AppRoutes.capturePopular:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Popular Captures - Coming Soon')),
+        );
+
+      case AppRoutes.captureMyCaptures:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('My Captures - Coming Soon')),
+        );
+
+      case AppRoutes.captureMap:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Capture Map - Coming Soon')),
+        );
+
+      case AppRoutes.captureGallery:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Capture Gallery - Coming Soon')),
+        );
+
+      case AppRoutes.captureEdit:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Edit Capture - Coming Soon')),
+        );
+
+      case AppRoutes.captureCreate:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Create Capture - Coming Soon')),
+        );
+
+      case AppRoutes.capturePublic:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.CapturesListScreen(),
         );
 
       default:
@@ -620,6 +774,11 @@ class AppRouter {
       case AppRoutes.developerFeedbackAdmin:
         return RouteUtils.createMainLayoutRoute(
           child: const core.DeveloperFeedbackAdminScreen(),
+        );
+
+      case AppRoutes.systemInfo:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('System Info - Coming Soon')),
         );
 
       default:

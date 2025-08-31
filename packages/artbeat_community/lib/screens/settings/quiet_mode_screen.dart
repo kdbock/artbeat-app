@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../widgets/community_header.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class QuietModeScreen extends StatefulWidget {
   const QuietModeScreen({super.key});
@@ -11,6 +11,7 @@ class QuietModeScreen extends StatefulWidget {
 }
 
 class _QuietModeScreenState extends State<QuietModeScreen> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isQuietModeEnabled = false;
   String _quietModeMessage = "";
 
@@ -50,15 +51,17 @@ class _QuietModeScreenState extends State<QuietModeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CommunityHeader(
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
         title: 'Quiet Mode',
         showBackButton: true,
-        showSearchIcon: false,
-        showMessagingIcon: false,
-        showDeveloperIcon: false,
+        showSearch: false,
+        showDeveloperTools: true,
       ),
-      body: Padding(
+      drawer: const ArtbeatDrawer(),
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

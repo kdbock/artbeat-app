@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Enhanced art walk experience screen with turn-by-turn navigation
 class EnhancedArtWalkExperienceScreen extends StatefulWidget {
@@ -443,254 +444,266 @@ class _EnhancedArtWalkExperienceScreenState
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: Text(widget.artWalk.title)),
-        body: const Center(child: CircularProgressIndicator()),
+      return MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: EnhancedUniversalHeader(
+            title: widget.artWalk.title,
+            showLogo: false,
+          ),
+          body: const Center(child: CircularProgressIndicator()),
+        ),
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.artWalk.title),
-        actions: [
-          if (_isNavigationMode)
-            IconButton(
-              icon: Icon(
-                _showCompactNavigation ? Icons.expand_more : Icons.expand_less,
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: widget.artWalk.title,
+          showLogo: false,
+          actions: [
+            if (_isNavigationMode)
+              IconButton(
+                icon: Icon(
+                  _showCompactNavigation
+                      ? Icons.expand_more
+                      : Icons.expand_less,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _showCompactNavigation = !_showCompactNavigation;
+                  });
+                },
               ),
+            IconButton(
+              icon: const Icon(Icons.info_outline),
               onPressed: () {
-                setState(() {
-                  _showCompactNavigation = !_showCompactNavigation;
-                });
-              },
-            ),
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('How to Use'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '• Tap "Start Navigation" for turn-by-turn directions',
-                      ),
-                      const Text('• Follow the blue route line'),
-                      const Text('• Tap markers to view art details'),
-                      const Text('• Mark art as visited when you reach it'),
-                      const Text('• Green markers = visited'),
-                      const Text('• Orange marker = next destination'),
-                      const Text('• Red markers = not yet visited'),
-                      if (_isNavigationMode) ...[
-                        const SizedBox(height: 8),
+                showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('How to Use'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         const Text(
-                          'Navigation Mode:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          '• Tap "Start Navigation" for turn-by-turn directions',
                         ),
-                        const Text('• Follow turn-by-turn instructions'),
-                        const Text(
-                          '• Tap expand/collapse button to adjust navigation view',
-                        ),
+                        const Text('• Follow the blue route line'),
+                        const Text('• Tap markers to view art details'),
+                        const Text('• Mark art as visited when you reach it'),
+                        const Text('• Green markers = visited'),
+                        const Text('• Orange marker = next destination'),
+                        const Text('• Red markers = not yet visited'),
+                        if (_isNavigationMode) ...[
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Navigation Mode:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const Text('• Follow turn-by-turn instructions'),
+                          const Text(
+                            '• Tap expand/collapse button to adjust navigation view',
+                          ),
+                        ],
                       ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Got it'),
+                      ),
                     ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Got it'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          // Map
-          GoogleMap(
-            onMapCreated: (controller) {
-              _mapController = controller;
-              _centerOnUserLocation();
-            },
-            initialCameraPosition: CameraPosition(
-              target: _currentPosition != null
-                  ? LatLng(
-                      _currentPosition!.latitude,
-                      _currentPosition!.longitude,
-                    )
-                  : _artPieces.isNotEmpty
-                  ? LatLng(
-                      _artPieces[0].location.latitude,
-                      _artPieces[0].location.longitude,
-                    )
-                  : const LatLng(35.5951, -82.5515),
-              zoom: 16.0,
+                );
+              },
             ),
-            markers: _markers,
-            polylines: _polylines,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
-          ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            // Map
+            GoogleMap(
+              onMapCreated: (controller) {
+                _mapController = controller;
+                _centerOnUserLocation();
+              },
+              initialCameraPosition: CameraPosition(
+                target: _currentPosition != null
+                    ? LatLng(
+                        _currentPosition!.latitude,
+                        _currentPosition!.longitude,
+                      )
+                    : _artPieces.isNotEmpty
+                    ? LatLng(
+                        _artPieces[0].location.latitude,
+                        _artPieces[0].location.longitude,
+                      )
+                    : const LatLng(35.5951, -82.5515),
+                zoom: 16.0,
+              ),
+              markers: _markers,
+              polylines: _polylines,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+            ),
 
-          // Progress card
-          if (!_isNavigationMode || _showCompactNavigation)
-            Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Progress: ${_visitedArtIds.length}/${_artPieces.length}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+            // Progress card
+            if (!_isNavigationMode || _showCompactNavigation)
+              Positioned(
+                top: 16,
+                left: 16,
+                right: 16,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Progress: ${_visitedArtIds.length}/${_artPieces.length}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
+                            if (_currentRoute != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue[50],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  _currentRoute!.formattedTotalDistance,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.blue[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: _artPieces.isEmpty
+                              ? 0.0
+                              : _visitedArtIds.length / _artPieces.length,
+                          backgroundColor: Colors.grey[300],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _isWalkCompleted ? Colors.green : Colors.blue,
                           ),
-                          if (_currentRoute != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                        ),
+                        if (!_isWalkCompleted && _artPieces.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Next: ${_artPieces[_getNextUnvisitedIndex()].title}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                        if (_isWalkCompleted) ...[
+                          const SizedBox(height: 8),
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 16,
                               ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue[50],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                _currentRoute!.formattedTotalDistance,
+                              SizedBox(width: 4),
+                              Text(
+                                'Walk Completed! 🎉',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.blue[700],
+                                  fontSize: 14,
+                                  color: Colors.green,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ),
+                            ],
+                          ),
                         ],
-                      ),
-                      const SizedBox(height: 8),
-                      LinearProgressIndicator(
-                        value: _artPieces.isEmpty
-                            ? 0.0
-                            : _visitedArtIds.length / _artPieces.length,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          _isWalkCompleted ? Colors.green : Colors.blue,
-                        ),
-                      ),
-                      if (!_isWalkCompleted && _artPieces.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          'Next: ${_artPieces[_getNextUnvisitedIndex()].title}',
-                          style: const TextStyle(fontSize: 14),
-                        ),
                       ],
-                      if (_isWalkCompleted) ...[
-                        const SizedBox(height: 8),
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 16,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Walk Completed! 🎉',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.green,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-          // Turn-by-turn navigation widget
-          if (_isNavigationMode)
+            // Turn-by-turn navigation widget
+            if (_isNavigationMode)
+              Positioned(
+                bottom: 100,
+                left: 0,
+                right: 0,
+                child: TurnByTurnNavigationWidget(
+                  navigationService: _navigationService,
+                  isCompact: _showCompactNavigation,
+                  onNextStep: () => _navigationService.nextStep(),
+                  onPreviousStep: () {
+                    // Implement previous step logic if needed
+                  },
+                  onStopNavigation: _stopNavigation,
+                ),
+              ),
+
+            // Navigation control button
             Positioned(
-              bottom: 100,
-              left: 0,
-              right: 0,
-              child: TurnByTurnNavigationWidget(
-                navigationService: _navigationService,
-                isCompact: _showCompactNavigation,
-                onNextStep: () => _navigationService.nextStep(),
-                onPreviousStep: () {
-                  // Implement previous step logic if needed
-                },
-                onStopNavigation: _stopNavigation,
+              bottom: 16,
+              left: 16,
+              right: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  if (!_isNavigationMode)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _startNavigation,
+                        icon: const Icon(Icons.navigation),
+                        label: const Text('Start Navigation'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: _stopNavigation,
+                        icon: const Icon(Icons.stop),
+                        label: const Text('Stop Navigation'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-
-          // Navigation control button
-          Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                if (!_isNavigationMode)
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _startNavigation,
-                      icon: const Icon(Icons.navigation),
-                      label: const Text('Start Navigation'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _stopNavigation,
-                      icon: const Icon(Icons.stop),
-                      label: const Text('Stop Navigation'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
+        floatingActionButton: _currentPosition != null
+            ? FloatingActionButton(
+                onPressed: _centerOnUserLocation,
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                tooltip: 'Center on my location',
+                child: const Icon(Icons.my_location),
+              )
+            : null,
       ),
-      floatingActionButton: _currentPosition != null
-          ? FloatingActionButton(
-              onPressed: _centerOnUserLocation,
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-              tooltip: 'Center on my location',
-              child: const Icon(Icons.my_location),
-            )
-          : null,
     );
   }
 

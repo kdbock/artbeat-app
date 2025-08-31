@@ -9,7 +9,7 @@ import 'package:artbeat_artist/src/services/artwork_service.dart';
 import 'package:artbeat_artist/src/models/artwork_model.dart';
 import 'package:artbeat_artist/src/services/subscription_service.dart'
     as artist_subscription;
-import 'package:artbeat_core/artbeat_core.dart' show EnhancedUniversalHeader;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 // Import provider for subscriptions
 
 /// Analytics Dashboard Screen for Artists with Pro and Gallery plans
@@ -124,48 +124,45 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        EnhancedUniversalHeader(
-          title: 'Analytics Dashboard',
-          showLogo: false,
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _loadData,
-            ),
-          ],
-        ),
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        _buildDateRangeSelector(),
-                        const SizedBox(height: 16),
-                        _buildOverviewMetrics(),
-                        const SizedBox(height: 24),
-                        _buildVisitorsChart(),
-                        const SizedBox(height: 24),
-                        if (_hasProAccess) ...<Widget>[
-                          _buildLocationBreakdown(),
-                          const SizedBox(height: 24),
-                          _buildTopArtworks(),
-                          const SizedBox(height: 24),
-                          _buildReferralSources(),
-                        ],
-                        if (!_hasProAccess) _buildSubscriptionUpgradeCard(),
-                      ],
-                    ),
-                  ),
+    return core.MainLayout(
+      currentIndex: -1,
+      appBar: core.EnhancedUniversalHeader(
+        title: 'Analytics Dashboard',
+        showLogo: false,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadData,
+          ),
+        ],
+      ),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadData,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildDateRangeSelector(),
+                    const SizedBox(height: 16),
+                    _buildOverviewMetrics(),
+                    const SizedBox(height: 24),
+                    _buildVisitorsChart(),
+                    const SizedBox(height: 24),
+                    if (_hasProAccess) ...<Widget>[
+                      _buildLocationBreakdown(),
+                      const SizedBox(height: 24),
+                      _buildTopArtworks(),
+                      const SizedBox(height: 24),
+                      _buildReferralSources(),
+                    ],
+                    if (!_hasProAccess) _buildSubscriptionUpgradeCard(),
+                  ],
                 ),
-        ),
-      ],
+              ),
+            ),
     );
   }
 

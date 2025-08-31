@@ -20,6 +20,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   List<File> _selectedImages = [];
   bool _isPublic = true;
@@ -245,9 +246,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Post'),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: 'Create Post',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _submitPost,
@@ -264,7 +270,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
         ],
       ),
-      body: Form(
+      drawer: const ArtbeatDrawer(),
+      child: Form(
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -412,9 +419,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 },
               ),
             ],
-          ),
-        ),
-      ),
-    );
+          ), // Column
+        ), // SingleChildScrollView
+      ), // Form
+    ); // MainLayout
   }
 }

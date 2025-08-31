@@ -228,30 +228,17 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      drawer: const core.ArtbeatDrawer(),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-        child: core.ArtbeatGradientBackground(
-          addShadow: true,
-          child: core.EnhancedUniversalHeader(
-            title: 'Artist Dashboard',
-            showLogo: false,
-            showSearch: false,
-            showDeveloperTools: true,
-            onProfilePressed: () =>
-                Navigator.pushNamed(context, '/artist/profile'),
-            onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-            backgroundColor: Colors.transparent,
-            foregroundColor: core.ArtbeatColors.textPrimary,
-            elevation: 0,
-          ),
-        ),
+    return core.MainLayout(
+      currentIndex: 1, // Artist Dashboard tab in bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: const core.EnhancedUniversalHeader(
+        title: 'Artist Dashboard',
+        showBackButton: false,
+        showSearch: false,
+        showDeveloperTools: true,
       ),
-      body: _buildDashboardContent(),
+      drawer: const core.ArtbeatDrawer(),
+      child: _buildDashboardContent(),
     );
   }
 

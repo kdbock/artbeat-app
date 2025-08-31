@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
-class DashboardHeroSection extends StatelessWidget {
+class DashboardHeroSection extends StatefulWidget {
   final DashboardViewModel viewModel;
   final VoidCallback onProfileMenuTap;
   final VoidCallback onFindArtTap;
@@ -15,6 +15,13 @@ class DashboardHeroSection extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<DashboardHeroSection> createState() => _DashboardHeroSectionState();
+}
+
+class _DashboardHeroSectionState extends State<DashboardHeroSection> {
+  static const String _mapKey = 'dashboard_hero_map';
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: 280,
@@ -25,12 +32,14 @@ class DashboardHeroSection extends StatelessWidget {
           Positioned.fill(
             child: ClipRRect(
               child: GoogleMap(
+                key: const Key(_mapKey),
                 initialCameraPosition: CameraPosition(
                   target:
-                      viewModel.mapLocation ?? const LatLng(35.7796, -78.6382),
+                      widget.viewModel.mapLocation ??
+                      const LatLng(35.7796, -78.6382),
                   zoom: 14.0,
                 ),
-                markers: viewModel.markers,
+                markers: widget.viewModel.markers,
                 myLocationEnabled: true,
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
@@ -52,7 +61,7 @@ class DashboardHeroSection extends StatelessWidget {
                     "stylers": [{"visibility": "off"}]
                   }
                 ]''',
-                onMapCreated: viewModel.onMapCreated,
+                onMapCreated: widget.viewModel.onMapCreated,
                 compassEnabled: false,
                 scrollGesturesEnabled: false,
                 rotateGesturesEnabled: false,
@@ -62,7 +71,7 @@ class DashboardHeroSection extends StatelessWidget {
           ),
 
           // Loading overlay
-          if (viewModel.isLoadingMap)
+          if (widget.viewModel.isLoadingMap)
             Positioned.fill(
               child: Container(
                 color: Colors.black45,
@@ -140,7 +149,7 @@ class DashboardHeroSection extends StatelessWidget {
           color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(20),
           child: InkWell(
-            onTap: onProfileMenuTap,
+            onTap: widget.onProfileMenuTap,
             borderRadius: BorderRadius.circular(20),
             child: Container(
               padding: const EdgeInsets.all(8),
@@ -196,7 +205,7 @@ class DashboardHeroSection extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onFindArtTap,
+          onTap: widget.onFindArtTap,
           borderRadius: BorderRadius.circular(25),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

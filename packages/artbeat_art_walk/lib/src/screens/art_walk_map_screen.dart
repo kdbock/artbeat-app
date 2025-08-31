@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:io' show Platform, SocketException;
+import 'dart:io' show SocketException;
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_capture/src/screens/capture_detail_screen.dart';
 
-/// Screen that displays a map with nearby public art and art walks
+/// Screen that displays a map with nearby captures and art walks
 class ArtWalkMapScreen extends StatefulWidget {
   const ArtWalkMapScreen({super.key});
 
@@ -16,30 +17,31 @@ class ArtWalkMapScreen extends StatefulWidget {
 }
 
 class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
-  final Completer<GoogleMapController> _mapControllerCompleter = Completer();
-  GoogleMapController? _mapController;
-  Timer? _locationUpdateTimer;
-  final Set<Marker> _markers = {};
-  final ArtWalkService _artWalkService = ArtWalkService();
-  final GoogleMapsService _mapsService = GoogleMapsService();
+  // Services
+  final CaptureService _captureService = CaptureService();
   final UserService _userService = UserService();
+
+  // Map controller and state
+  GoogleMapController? _mapController;
   Position? _currentPosition;
+  String _currentZipCode = '';
+  bool _hasMovedToUserLocation = false;
   bool _isLoading = true;
   bool _isSearchingZip = false;
   bool _hasMapError = false;
   String _mapErrorMessage = '';
-  List<PublicArtModel> _nearbyArt = [];
-  bool _showInfoCard = true;
-  String _currentZipCode = '';
-  String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
-  bool _hasMovedToUserLocation =
-      false; // Track if we've already moved to user location
-  bool _showCapturesSlider = false; // Track if captures slider is visible
+  bool _showCapturesSlider = false;
 
-  // Default to ZIP code 28501 (Kinston, NC) with better zoom
+  // Map data
+  final Set<Marker> _markers = <Marker>{};
+  List<CaptureModel> _nearbyCaptures = [];
+  String _artFilter = 'all'; // 'all', 'public', 'captures', 'my_captures'
+
+  // Location and timer
+  Timer? _locationUpdateTimer;
   static const CameraPosition _defaultLocation = CameraPosition(
-    target: LatLng(35.23838, -77.52658), // ZIP code 28501 (Kinston, NC)
-    zoom: 10.0, // Better initial zoom level
+    target: LatLng(35.23838, -77.52658), // Kinston, NC - 28501
+    zoom: 10.0,
   );
 
   @override
@@ -48,156 +50,43 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     _initializeMapsAndLocation();
   }
 
-  /// Initialize Google Maps and location services
+  @override
+  void dispose() {
+    _locationUpdateTimer?.cancel();
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  /// Initialize maps and location
   Future<void> _initializeMapsAndLocation() async {
     if (!mounted) return;
-    setState(() => _isLoading = true);
+
+    setState(() {
+      _isLoading = true;
+      _hasMapError = false;
+    });
 
     try {
-      // debugPrint('🗺️ Initializing Google Maps...');
-
-      // Check if we're running on an emulator to provide appropriate feedback
-      final isEmulator = await _checkIfEmulator();
-      if (isEmulator) {
-        // debugPrint('⚠️ Running on emulator - map performance may be limited');
-      }
-
-      // Initialize Maps with retry logic
-      final mapsInitialized = await _mapsService.initializeMaps();
-
-      if (!mapsInitialized) {
-        if (!mounted) return;
-        setState(() {
-          _hasMapError = true;
-          _mapErrorMessage = isEmulator
-              ? 'Maps initialization failed. Emulators may have performance issues with Google Maps.'
-              : 'Failed to initialize Google Maps. Please check your connectivity and try again.';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (mounted) {
-        setState(() {
-          _hasMapError = false;
-          _isLoading = false;
-        });
-      }
-
-      // debugPrint('✅ Maps initialized successfully');
-
-      // Load user's ZIP code first
-      await _loadUserZipCode();
-
-      // Location initialization will happen in _onMapCreated() after map is ready
-
-      // If we're on an emulator, reduce map resource usage
-      if (isEmulator && _mapController != null) {
-        // debugPrint('🗺️ Optimizing map settings for emulator');
-        try {
-          // Use a more modest zoom level to reduce tile loading
-          await _mapController!.moveCamera(CameraUpdate.zoomTo(10.0));
-
-          // Note: Traffic layer and map type are set in the GoogleMap widget
-          // We can't modify them directly through the controller
-        } catch (e) {
-          // debugPrint('⚠️ Error optimizing map for emulator: $e');
+      // Get user's saved ZIP code from profile
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userProfile = await _userService.getUserProfile(user.uid);
+        if (userProfile != null &&
+            userProfile['zipCode'] != null &&
+            userProfile['zipCode'].toString().isNotEmpty) {
+          _currentZipCode = userProfile['zipCode'].toString();
         }
       }
-    } catch (e) {
-      // debugPrint('❌ Error in map/location initialization: $e');
-      if (mounted) {
-        setState(() {
-          _hasMapError = true;
-          _mapErrorMessage =
-              'Google Maps initialization failed: ${e.toString().split('] ').last}';
-          _isLoading = false;
-        });
-      }
-    }
-  }
 
-  /// Check if running on an emulator
-  Future<bool> _checkIfEmulator() async {
-    try {
-      if (Platform.isAndroid) {
-        final deviceInfo = DeviceInfoPlugin();
-        final androidInfo = await deviceInfo.androidInfo;
-        return androidInfo.isPhysicalDevice == false ||
-            androidInfo.model.contains('sdk') ||
-            androidInfo.model.contains('emulator');
-      } else if (Platform.isIOS) {
-        final deviceInfo = DeviceInfoPlugin();
-        final iosInfo = await deviceInfo.iosInfo;
-        return !iosInfo.isPhysicalDevice;
-      }
-    } catch (e) {
-      // debugPrint('⚠️ Error checking if device is emulator: $e');
-    }
-    return false;
-  }
-
-  /// Load user's ZIP code from profile
-  Future<void> _loadUserZipCode() async {
-    try {
-      final user = await _userService.getCurrentUserModel();
-      if (user?.zipCode != null && user!.zipCode!.isNotEmpty) {
-        if (mounted) {
-          setState(() {
-            _currentZipCode = user.zipCode!;
-          });
-        }
-        // debugPrint('📍 Loaded user ZIP code: ${user.zipCode}');
-      } else {
-        // debugPrint(
-        //   '📍 No user ZIP code found, will use location-based detection',
-        // );
-      }
-    } catch (e) {
-      // debugPrint('❌ Error loading user ZIP code: $e');
-    }
-  }
-
-  Future<void> _initializeLocation() async {
-    if (!mounted) return;
-
-    try {
-      // Priority 1: Try to get user's current location
-      final currentLocationResult = await _tryGetCurrentLocation();
-
-      if (currentLocationResult != null) {
-        // Successfully got current location - use it
-        _currentPosition = currentLocationResult;
-        // debugPrint('🌍 Using current location: $_currentPosition');
-        await _moveMapToLocation(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-          15.0,
-        );
-
-        // Get ZIP code from coordinates if we don't have user's ZIP code
-        if (_currentZipCode.isEmpty) {
-          _currentZipCode = await _artWalkService.getZipCodeFromCoordinates(
-            _currentPosition!.latitude,
-            _currentPosition!.longitude,
-          );
-          // debugPrint('📍 Location-derived ZIP code: $_currentZipCode');
-
-          // Save the detected ZIP code to user profile if valid
-          if (_currentZipCode.isNotEmpty && _currentZipCode != '00000') {
-            _updateUserZipCode(_currentZipCode);
-          }
-        }
-
-        // Load nearby art based on current location
-        await _loadNearbyArt(
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-        );
+      // Priority 1: Try to get current location
+      final position = await _tryGetCurrentLocation();
+      if (position != null && mounted) {
+        setState(() => _currentPosition = position);
+        await _moveMapToLocation(position.latitude, position.longitude, 14.0);
+        await _loadNearbyCaptures(position.latitude, position.longitude);
         _startLocationUpdates();
       } else if (_currentZipCode.isNotEmpty) {
         // Priority 2: Use user's saved ZIP code
-        // debugPrint('📍 Using user profile ZIP code: $_currentZipCode');
         final coordinates = await _getCoordinatesFromZipCode(_currentZipCode);
         if (coordinates != null) {
           await _moveMapToLocation(
@@ -205,47 +94,43 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             coordinates.longitude,
             12.0,
           );
-          await _loadNearbyArt(coordinates.latitude, coordinates.longitude);
+          await _loadNearbyCaptures(
+            coordinates.latitude,
+            coordinates.longitude,
+          );
         } else {
           // Fallback to default location if ZIP code lookup fails
-          // debugPrint('📍 ZIP code lookup failed, using default location');
           await _moveMapToLocation(
             _defaultLocation.target.latitude,
             _defaultLocation.target.longitude,
             10.0,
           );
+          await _loadNearbyCaptures(
+            _defaultLocation.target.latitude,
+            _defaultLocation.target.longitude,
+          );
         }
       } else {
         // Priority 3: Use default location (Kinston, NC - 28501)
-        // debugPrint('📍 Using default location: Kinston, NC (28501)');
         await _moveMapToLocation(
           _defaultLocation.target.latitude,
           _defaultLocation.target.longitude,
           10.0,
         );
-        await _loadNearbyArt(
+        await _loadNearbyCaptures(
           _defaultLocation.target.latitude,
           _defaultLocation.target.longitude,
         );
       }
     } catch (e) {
-      // debugPrint('❌ Error initializing location: $e');
+      debugPrint('❌ Error initializing location: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Error getting location: ${e.toString().split('] ').last}',
-            ),
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        setState(() {
+          _hasMapError = true;
+          _mapErrorMessage =
+              'Error getting location: ${e.toString().split('] ').last}';
+        });
       }
-      // Fallback to default location on any error
-      await _moveMapToLocation(
-        _defaultLocation.target.latitude,
-        _defaultLocation.target.longitude,
-        10.0,
-      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -259,7 +144,6 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       // Check if location services are enabled
       final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        // debugPrint('📍 Location services are disabled');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -278,7 +162,6 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          // debugPrint('📍 Location permission denied');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -294,7 +177,6 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        // debugPrint('📍 Location permission permanently denied');
         return null;
       }
 
@@ -320,7 +202,6 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
       return position;
     } on TimeoutException {
-      // debugPrint('⌛ Timeout getting current location');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -333,9 +214,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       }
       return null;
     } catch (e) {
-      // debugPrint('❌ Error getting current location: $e');
       if (e is SocketException) {
-        // debugPrint('🌐 Network error while getting location data: $e');
         _showSnackBar('Network error. Using saved location or default.');
       }
       return null;
@@ -343,25 +222,13 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   }
 
   /// Get coordinates from ZIP code
-  Future<({double latitude, double longitude})?> _getCoordinatesFromZipCode(
-    String zipCode,
-  ) async {
+  Future<LatLng?> _getCoordinatesFromZipCode(String zipCode) async {
     try {
-      // You might want to implement a ZIP code to coordinates lookup
-      // For now, we'll use a simple lookup for common ZIP codes
-      // This could be enhanced with a proper geocoding service
-
-      // Special case for our default ZIP code
       if (zipCode == '28501') {
-        return (latitude: 35.23838, longitude: -77.52658);
+        return const LatLng(35.23838, -77.52658);
       }
-
-      // For other ZIP codes, you might want to use a geocoding service
-      // For now, return null to fall back to default location
-      // debugPrint('📍 ZIP code coordinate lookup not implemented for: $zipCode');
       return null;
     } catch (e) {
-      // debugPrint('❌ Error getting coordinates from ZIP code: $e');
       return null;
     }
   }
@@ -374,7 +241,6 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   ) async {
     if (_mapController != null && mounted && !_hasMovedToUserLocation) {
       try {
-        // debugPrint('🗺️ Moving map to location: $latitude, $longitude');
         await _mapController!
             .animateCamera(
               CameraUpdate.newCameraPosition(
@@ -384,225 +250,102 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             .timeout(const Duration(seconds: 3));
         _hasMovedToUserLocation = true;
       } catch (e) {
-        // debugPrint('⚠️ Error animating camera: $e');
+        debugPrint('⚠️ Error animating camera: $e');
       }
     }
   }
 
-  /// Load nearby art for given coordinates
-  Future<void> _loadNearbyArt(double latitude, double longitude) async {
+  /// Load nearby captures for given coordinates
+  Future<void> _loadNearbyCaptures(double latitude, double longitude) async {
     try {
-      _nearbyArt = await _artWalkService
-          .getPublicArtNearLocation(
-            latitude: latitude,
-            longitude: longitude,
-            radiusKm: 10.0,
-          )
-          .timeout(
-            const Duration(seconds: 15),
-            onTimeout: () {
-              // debugPrint('⚠️ Loading nearby art timed out, using cached data if available');
-              return _artWalkService.getCachedPublicArt();
-            },
+      // Get all captures and filter by location
+      final allCaptures = await _captureService.getAllCaptures(limit: 100);
+
+      // Filter captures by distance (within 10km radius)
+      final nearbyCaptures = <CaptureModel>[];
+      for (final capture in allCaptures) {
+        if (capture.location != null) {
+          final distance = Geolocator.distanceBetween(
+            latitude,
+            longitude,
+            capture.location!.latitude,
+            capture.location!.longitude,
           );
 
-      // debugPrint('🎨 Loaded ${_nearbyArt.length} nearby art pieces');
-      _updateMarkers();
+          // Convert distance from meters to kilometers
+          if (distance / 1000 <= 10.0) {
+            nearbyCaptures.add(capture);
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _nearbyCaptures = nearbyCaptures;
+        });
+        _updateMarkers();
+      }
     } catch (e) {
-      // debugPrint('❌ Error loading nearby art: $e');
-      _nearbyArt = [];
-      _updateMarkers();
+      debugPrint('❌ Error loading nearby captures: $e');
+      if (mounted) {
+        setState(() {
+          _nearbyCaptures = [];
+        });
+        _updateMarkers();
+      }
     }
   }
 
   /// Update user's ZIP code in profile
-  void _updateUserZipCode(String zipCode) async {
+  Future<void> _updateUserZipCode(String zipCode) async {
     try {
       await _userService.updateUserZipCode(zipCode);
-      // debugPrint('✅ Successfully updated user ZIP code to: $zipCode');
     } catch (e) {
-      // debugPrint('❌ Error updating user ZIP code: $e');
+      debugPrint('❌ Error updating user ZIP code: $e');
     }
   }
 
-  /// Update markers on the map based on nearby art
+  /// Update markers on the map based on nearby captures
   void _updateMarkers() {
     if (!mounted) return;
 
     setState(() {
       _markers.clear();
-      for (final art in _nearbyArt) {
-        _markers.add(
-          Marker(
-            markerId: MarkerId(art.id),
-            position: LatLng(art.location.latitude, art.location.longitude),
-            infoWindow: InfoWindow(
-              title: art.title,
-              snippet: art.artistName ?? 'Unknown Artist',
+      for (final capture in _nearbyCaptures) {
+        if (capture.location != null) {
+          _markers.add(
+            Marker(
+              markerId: MarkerId(capture.id),
+              position: LatLng(
+                capture.location!.latitude,
+                capture.location!.longitude,
+              ),
+              infoWindow: InfoWindow(
+                title: capture.title ?? 'Untitled',
+                snippet: capture.artistName ?? 'Unknown Artist',
+              ),
+              onTap: () => _onMarkerTapped(capture),
             ),
-            onTap: () => _onMarkerTapped(art),
-          ),
-        );
+          );
+        }
       }
     });
   }
 
-  /// Handle marker tap events
-  void _onMarkerTapped(PublicArtModel art) {
+  /// Handle marker tap
+  void _onMarkerTapped(CaptureModel capture) {
     if (!mounted) return;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ArtDetailBottomSheet(art: art),
+      builder: (context) => CaptureDetailBottomSheet(capture: capture),
     );
   }
 
-  /// Called when the map is created to initialize the controller
-  Future<void> _onMapCreated(GoogleMapController controller) async {
-    // debugPrint('🗺️ GoogleMap controller created successfully');
-    // debugPrint(
-    //   '🔑 Using API key: ${ConfigService.instance.googleMapsApiKey?.substring(0, 20)}...',
-    // );
-
-    _mapController = controller;
-    _mapControllerCompleter.complete(controller);
-
-    // Test if the map can load tiles by checking if we can get the camera position
-    try {
-      final position = await controller.getLatLng(
-        const ScreenCoordinate(x: 100, y: 100),
-      );
-      // debugPrint('🗺️ Map tiles loading properly - test coordinate: $position');
-      // Suppress unused variable warning - position is used in debugPrint
-      // ignore: unused_local_variable
-      position;
-    } catch (e) {
-      // debugPrint('⚠️ Map tiles may not be loading: $e');
-      if (mounted) {
-        _showSnackBar(
-          'Map tiles not loading properly. This may be an API key issue.',
-        );
-      }
-    }
-
-    // If we already have user location, move to it immediately
-    if (_currentPosition != null && !_hasMovedToUserLocation) {
-      // debugPrint('🗺️ Moving map to existing user location');
-      try {
-        await controller.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: LatLng(
-                _currentPosition!.latitude,
-                _currentPosition!.longitude,
-              ),
-              zoom: 15.0,
-            ),
-          ),
-        );
-        _hasMovedToUserLocation = true;
-      } catch (e) {
-        // debugPrint('⚠️ Error moving to existing location: $e');
-      }
-    }
-
-    // Initialize location after map is ready (this will get location if we don't have it)
-    await _initializeLocation();
-  }
-
-  /// Start periodic location updates
-  void _startLocationUpdates() {
-    _locationUpdateTimer?.cancel();
-    _locationUpdateTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) => _refreshLocation(),
-    );
-  }
-
-  /// Refresh the current location and update nearby art
-  Future<void> _refreshLocation() async {
-    if (!mounted) return;
-    try {
-      final newPosition = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-
-      if (!mounted) return;
-      setState(() => _currentPosition = newPosition);
-      await _updateNearbyArt();
-    } catch (e) {
-      // debugPrint('Error updating location: $e');
-    }
-  }
-
-  /// Update the current location and nearby art
-  Future<void> _updateNearbyArt() async {
-    if (!mounted || _currentPosition == null) return;
-
-    try {
-      List<PublicArtModel> nearbyArt = [];
-
-      switch (_artFilter) {
-        case 'all':
-          nearbyArt = await _artWalkService.getCombinedArtNearLocation(
-            latitude: _currentPosition!.latitude,
-            longitude: _currentPosition!.longitude,
-            radiusKm: 10.0,
-            includeUserCaptures: true,
-          );
-          break;
-        case 'public':
-          nearbyArt = await _artWalkService.getPublicArtNearLocation(
-            latitude: _currentPosition!.latitude,
-            longitude: _currentPosition!.longitude,
-            radiusKm: 10.0,
-          );
-          break;
-        case 'captures':
-          // Get all public art (community + user's own)
-          final allCaptures = await _artWalkService
-              .getPublicArtNearLocationWithFilter(
-                latitude: _currentPosition!.latitude,
-                longitude: _currentPosition!.longitude,
-                radiusKm: 10.0,
-                includeUserOnly: false, // Gets all public art
-              );
-          // debugPrint('🔍 [DEBUG] all captures length: ${allCaptures.length}');
-          nearbyArt =
-              allCaptures; // Already PublicArtModel, no conversion needed
-          break;
-        case 'my_captures':
-          // debugPrint('🔍 [DEBUG] Filter my_captures selected');
-          final captures = await _artWalkService
-              .getPublicArtNearLocationWithFilter(
-                latitude: _currentPosition!.latitude,
-                longitude: _currentPosition!.longitude,
-                radiusKm: 10.0,
-                includeUserOnly: true,
-              );
-          // debugPrint('🔍 [DEBUG] my_captures docs count: ${captures.length}');
-          nearbyArt = captures; // Already PublicArtModel, no conversion needed
-          break;
-      }
-
-      if (!mounted) return;
-      setState(() {
-        _nearbyArt = nearbyArt;
-        _updateMarkers();
-      });
-    } catch (e) {
-      // debugPrint('Error updating nearby art: $e');
-    }
-  }
-
-  /// Show a snackbar message safely
+  /// Show snackbar
   void _showSnackBar(String message, {Duration? duration}) {
     if (!mounted) return;
-
-    // Use a local variable to avoid BuildContext async gap issues
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     scaffoldMessenger.showSnackBar(
       SnackBar(
@@ -612,218 +355,180 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     );
   }
 
-  /// Show filter dialog for art types
-  void _showFilterDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Filter Art'),
-        content: RadioGroup<String>(
-          groupValue: _artFilter,
-          onChanged: (value) {
-            Navigator.of(context).pop();
-            _changeFilter(value!);
-          },
-          child: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<String>(
-                title: Text('All Art'),
-                subtitle: Text('Public art + captured art'),
-                value: 'all',
-              ),
-              RadioListTile<String>(
-                title: Text('Public Art Only'),
-                subtitle: Text('Curated public art pieces'),
-                value: 'public',
-              ),
-              RadioListTile<String>(
-                title: Text('Community Captures'),
-                subtitle: Text('Art captured by community'),
-                value: 'captures',
-              ),
-              RadioListTile<String>(
-                title: Text('My Captures'),
-                subtitle: Text('Art you\'ve captured'),
-                value: 'my_captures',
-              ),
-            ],
-          ),
-        ),
-      ),
+  /// Start location updates
+  void _startLocationUpdates() {
+    _locationUpdateTimer?.cancel();
+    _locationUpdateTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _refreshLocation(),
     );
   }
 
-  /// Change the art filter and refresh the map
+  /// Refresh location
+  Future<void> _refreshLocation() async {
+    if (!mounted) return;
+    try {
+      final newPosition = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (!mounted) return;
+      setState(() => _currentPosition = newPosition);
+      await _updateNearbyCaptures();
+    } catch (e) {
+      debugPrint('❌ Error refreshing location: $e');
+    }
+  }
+
+  /// Update nearby captures based on current position and filter
+  Future<void> _updateNearbyCaptures() async {
+    if (!mounted || _currentPosition == null) return;
+    try {
+      List<CaptureModel> nearbyCaptures = [];
+      final user = FirebaseAuth.instance.currentUser;
+
+      switch (_artFilter) {
+        case 'all':
+          // Get all captures
+          final allCaptures = await _captureService.getAllCaptures(limit: 100);
+          nearbyCaptures = _filterCapturesByDistance(
+            allCaptures,
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          );
+          break;
+        case 'public':
+          // Get only public captures
+          final publicCaptures = await _captureService.getPublicCaptures(
+            limit: 100,
+          );
+          nearbyCaptures = _filterCapturesByDistance(
+            publicCaptures,
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          );
+          break;
+        case 'captures':
+          // Get all captures (same as 'all' for now)
+          final allCaptures = await _captureService.getAllCaptures(limit: 100);
+          nearbyCaptures = _filterCapturesByDistance(
+            allCaptures,
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          );
+          break;
+        case 'my_captures':
+          // Get only user's captures
+          if (user != null) {
+            final userCaptures = await _captureService.getCapturesForUser(
+              user.uid,
+            );
+            nearbyCaptures = _filterCapturesByDistance(
+              userCaptures,
+              _currentPosition!.latitude,
+              _currentPosition!.longitude,
+            );
+          }
+          break;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _nearbyCaptures = nearbyCaptures;
+      });
+      _updateMarkers();
+    } catch (e) {
+      debugPrint('❌ Error updating nearby captures: $e');
+    }
+  }
+
+  /// Filter captures by distance from given coordinates
+  List<CaptureModel> _filterCapturesByDistance(
+    List<CaptureModel> captures,
+    double latitude,
+    double longitude,
+  ) {
+    final nearbyCaptures = <CaptureModel>[];
+    for (final capture in captures) {
+      if (capture.location != null) {
+        final distance = Geolocator.distanceBetween(
+          latitude,
+          longitude,
+          capture.location!.latitude,
+          capture.location!.longitude,
+        );
+
+        // Convert distance from meters to kilometers
+        if (distance / 1000 <= 10.0) {
+          nearbyCaptures.add(capture);
+        }
+      }
+    }
+    return nearbyCaptures;
+  }
+
+  /// Change filter
   void _changeFilter(String newFilter) {
     setState(() {
       _artFilter = newFilter;
     });
-    _updateNearbyArt();
-  }
-
-  /// Handle ZIP code search submission
-  Future<void> _handleZipCodeSearch(String zipCode) async {
-    if (!mounted) return;
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final mapController = _mapController;
-
-    setState(() {
-      _isSearchingZip = true;
-      _currentZipCode = zipCode;
-    });
-
-    try {
-      // Convert ZIP code to coordinates
-      final coordinates = await LocationUtils.getCoordinatesFromZipCode(
-        zipCode,
-      );
-      if (coordinates == null) {
-        if (mounted) {
-          _showSnackBar('Invalid ZIP code or unable to find location');
-        }
-        return;
-      }
-
-      // Get nearby art from the service using the actual coordinates
-      final nearbyArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
-        radiusKm: 10.0,
-      );
-
-      if (!mounted) return;
-
-      setState(() {
-        _nearbyArt = nearbyArt;
-        _updateMarkers();
-      });
-
-      // Update user's ZIP code if they searched for a valid one
-      if (zipCode.isNotEmpty && zipCode != '00000') {
-        _updateUserZipCode(zipCode);
-      }
-
-      if (nearbyArt.isNotEmpty && mapController != null) {
-        final firstArt = nearbyArt.first;
-        await mapController.animateCamera(
-          CameraUpdate.newLatLngZoom(
-            LatLng(firstArt.location.latitude, firstArt.location.longitude),
-            13.0,
-          ),
-        );
-      } else {
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('No public art found in this area'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      // debugPrint('Error searching by ZIP code: $e');
-      if (mounted) {
-        _showSnackBar('Error searching location: ${e.toString()}');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSearchingZip = false);
-      }
-    }
+    _updateNearbyCaptures();
   }
 
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 1, // Art Walk is index 1
+      currentIndex: 2, // Art Walk tab
+      drawer: const ArtbeatDrawer(),
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: const ArtWalkHeader(
+        appBar: EnhancedUniversalHeader(
           title: 'Art Walk Map',
-          showSearch: true,
-          showChat: true,
-          showDeveloper: false,
+          showLogo: false,
+          showSearch: false,
+          onMenuPressed: () => Scaffold.of(context).openDrawer(),
+          actions: const [],
         ),
-        drawer: const ArtbeatDrawer(),
         body: Stack(
           children: [
+            // Google Map
             GoogleMap(
               initialCameraPosition: _defaultLocation,
-              onMapCreated: _onMapCreated,
               markers: _markers,
+              onMapCreated: (GoogleMapController controller) {
+                _mapController = controller;
+              },
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
-              mapType: MapType.normal,
               zoomControlsEnabled: false,
-              compassEnabled: true,
-              trafficEnabled: false,
-              buildingsEnabled: true,
-              indoorViewEnabled: false,
-              // Add error handling for API key issues
-              onTap: (LatLng position) {
-                // debugPrint('🗺️ Map tapped at: $position');
-              },
+              mapToolbarEnabled: false,
             ),
 
-            // Floating Create Art Walk Button with label
-            Positioned(
-              right: 16,
-              bottom: 120, // Above bottom navigation
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Tooltip(
-                    message: 'Create a new art walk',
-                    child: FloatingActionButton(
-                      heroTag: 'createArtWalk',
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/art-walk/create');
-                      },
-                      backgroundColor: Colors.purple,
-                      child: const Icon(Icons.route, color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black87,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Create Walk',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Loading indicator
             if (_isLoading || _isSearchingZip)
-              const Center(child: CircularProgressIndicator()),
+              Container(
+                color: Colors.black54,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+
+            // Error message
             if (_hasMapError)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+              Container(
+                color: Colors.black54,
+                child: Center(
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(
                         Icons.error_outline,
-                        color: Colors.red,
-                        size: 48,
+                        color: Colors.white,
+                        size: 64,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         _mapErrorMessage,
+                        style: const TextStyle(color: Colors.white),
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
@@ -834,245 +539,170 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                   ),
                 ),
               ),
-            // Unified Control Bar with Search and Action Buttons
+
+            // ZIP code search bar
             Positioned(
-              top: MediaQuery.of(context).padding.top + 80,
+              top: 16,
               left: 16,
               right: 16,
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
+                      blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    // Search bar
-                    Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[300]!),
-                      ),
-                      child: TextField(
-                        controller: TextEditingController(
-                          text: _currentZipCode,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Enter ZIP code to search...',
-                          prefixIcon: Icon(Icons.search, size: 20),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          hintStyle: TextStyle(fontSize: 14),
-                        ),
-                        style: const TextStyle(fontSize: 14),
-                        onSubmitted: _handleZipCodeSearch,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Action buttons row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Gallery toggle
-                        _buildActionButton(
-                          icon: Icons.view_carousel,
-                          label: 'Gallery',
-                          isActive: _showCapturesSlider,
-                          onPressed: () {
-                            setState(() {
-                              _showCapturesSlider = !_showCapturesSlider;
-                            });
-                          },
-                          tooltip: _showCapturesSlider
-                              ? 'Hide art gallery'
-                              : 'Show art gallery',
-                        ),
-                        // Filter
-                        _buildActionButton(
-                          icon: Icons.filter_list,
-                          label: 'Filter',
-                          isActive: false,
-                          onPressed: _showFilterDialog,
-                          tooltip: 'Filter art types',
-                        ),
-                        // Zoom In
-                        _buildActionButton(
-                          icon: Icons.zoom_in,
-                          label: 'Zoom In',
-                          isActive: false,
-                          onPressed: () async {
-                            if (_mapController != null) {
-                              await _mapController!.animateCamera(
-                                CameraUpdate.zoomIn(),
-                              );
-                            }
-                          },
-                          tooltip: 'Zoom in on map',
-                        ),
-                        // Zoom Out
-                        _buildActionButton(
-                          icon: Icons.zoom_out,
-                          label: 'Zoom Out',
-                          isActive: false,
-                          onPressed: () async {
-                            if (_mapController != null) {
-                              await _mapController!.animateCamera(
-                                CameraUpdate.zoomOut(),
-                              );
-                            }
-                          },
-                          tooltip: 'Zoom out on map',
-                        ),
-                        // My Location
-                        _buildActionButton(
-                          icon: Icons.my_location,
-                          label: 'Location',
-                          isActive: false,
-                          onPressed: () async {
-                            if (_currentPosition != null &&
-                                _mapController != null) {
-                              await _mapController!.animateCamera(
-                                CameraUpdate.newLatLng(
-                                  LatLng(
-                                    _currentPosition!.latitude,
-                                    _currentPosition!.longitude,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          tooltip: 'Go to my location',
-                        ),
-                      ],
-                    ),
-                  ],
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Enter ZIP code (current: $_currentZipCode)',
+                    border: InputBorder.none,
+                    suffixIcon: const Icon(Icons.search),
+                  ),
+                  onSubmitted: (zipCode) async {
+                    if (zipCode.isNotEmpty) {
+                      setState(() => _isSearchingZip = true);
+                      final coordinates = await _getCoordinatesFromZipCode(
+                        zipCode,
+                      );
+                      if (coordinates != null) {
+                        await _moveMapToLocation(
+                          coordinates.latitude,
+                          coordinates.longitude,
+                          12.0,
+                        );
+                        await _loadNearbyCaptures(
+                          coordinates.latitude,
+                          coordinates.longitude,
+                        );
+                        await _updateUserZipCode(zipCode);
+                        setState(() => _currentZipCode = zipCode);
+                      } else {
+                        _showSnackBar('ZIP code not found');
+                      }
+                      setState(() => _isSearchingZip = false);
+                    }
+                  },
                 ),
               ),
             ),
 
-            // Captures Slider with header
+            // Filter buttons
+            Positioned(
+              bottom: 100,
+              left: 16,
+              right: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildFilterButton('All', 'all'),
+                  _buildFilterButton('Public', 'public'),
+                  _buildFilterButton('Captures', 'captures'),
+                  _buildFilterButton('Mine', 'my_captures'),
+                ],
+              ),
+            ),
+
+            // Action buttons
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Toggle captures slider
+                  FloatingActionButton(
+                    heroTag: 'toggle_slider',
+                    mini: true,
+                    onPressed: () {
+                      setState(() {
+                        _showCapturesSlider = !_showCapturesSlider;
+                      });
+                    },
+                    child: Icon(_showCapturesSlider ? Icons.close : Icons.list),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // My location button
+                  FloatingActionButton(
+                    heroTag: 'my_location',
+                    mini: true,
+                    onPressed: _currentPosition != null
+                        ? () {
+                            _mapController?.animateCamera(
+                              CameraUpdate.newCameraPosition(
+                                CameraPosition(
+                                  target: LatLng(
+                                    _currentPosition!.latitude,
+                                    _currentPosition!.longitude,
+                                  ),
+                                  zoom: 15.0,
+                                ),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Icon(Icons.my_location),
+                  ),
+                ],
+              ),
+            ),
+
+            // Captures slider
             if (_showCapturesSlider)
               Positioned(
-                top: MediaQuery.of(context).padding.top + 180,
+                bottom: 0,
                 left: 0,
                 right: 0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with instruction
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            size: 16,
-                            color: Colors.purple,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _nearbyArt.isNotEmpty
-                                  ? 'Tap any art piece to view details and location'
-                                  : 'No art found in this area. Try changing your filter or location.',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          if (_nearbyArt.isNotEmpty)
-                            Text(
-                              '${_nearbyArt.length} found',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.purple,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                        ],
-                      ),
+                child: Container(
+                  height: 200,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
                     ),
-                    const SizedBox(height: 8),
-                    if (_nearbyArt.isNotEmpty)
-                      _buildCapturesSlider()
-                    else
+                  ),
+                  child: Column(
+                    children: [
                       Container(
-                        height: 120,
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.search_off,
-                                size: 32,
-                                color: Colors.grey[400],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'No art pieces found',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Try adjusting your filters or location',
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Nearby Captures (${_nearbyCaptures.length})',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() => _showCapturesSlider = false);
+                              },
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
-                ),
-              ),
-            if (_showInfoCard)
-              Positioned(
-                bottom: 100, // Increased to account for bottom navigation
-                left: 16,
-                right: 16,
-                child: ArtWalkInfoCard(
-                  onDismiss: () => setState(() => _showInfoCard = false),
+                      Expanded(
+                        child: _nearbyCaptures.isEmpty
+                            ? const Center(
+                                child: Text('No captures found nearby'),
+                              )
+                            : ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: _nearbyCaptures.length,
+                                itemBuilder: (context, index) {
+                                  final capture = _nearbyCaptures[index];
+                                  return _buildCaptureCard(capture);
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],
@@ -1081,165 +711,183 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     );
   }
 
-  /// Build action button for the unified control bar
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required bool isActive,
-    required VoidCallback onPressed,
-    required String tooltip,
-  }) {
-    return Tooltip(
-      message: tooltip,
+  Widget _buildFilterButton(String label, String filter) {
+    final isSelected = _artFilter == filter;
+    return ElevatedButton(
+      onPressed: () => _changeFilter(filter),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isSelected ? ArtbeatColors.primary : Colors.white,
+        foregroundColor: isSelected ? Colors.white : ArtbeatColors.primary,
+        elevation: 2,
+      ),
+      child: Text(label),
+    );
+  }
+
+  Widget _buildCaptureCard(CaptureModel capture) {
+    return Container(
+      width: 120,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      child: Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(4),
+                ),
+                child: OptimizedImage(
+                  imageUrl: capture.thumbnailUrl ?? capture.imageUrl,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    capture.title ?? 'Untitled',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (capture.artistName != null)
+                    Text(
+                      capture.artistName!,
+                      style: const TextStyle(fontSize: 10),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet for capture details
+class CaptureDetailBottomSheet extends StatelessWidget {
+  final CaptureModel capture;
+
+  const CaptureDetailBottomSheet({super.key, required this.capture});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Handle bar
           Container(
             width: 40,
-            height: 40,
+            height: 4,
+            margin: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
-              color: isActive ? Colors.purple : Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isActive ? Colors.purple : Colors.grey[300]!,
-                width: 1,
-              ),
-            ),
-            child: IconButton(
-              onPressed: onPressed,
-              icon: Icon(
-                icon,
-                size: 20,
-                color: isActive ? Colors.white : Colors.grey[700],
-              ),
-              padding: EdgeInsets.zero,
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: isActive ? Colors.purple : Colors.grey[600],
+
+          // Image
+          if (capture.imageUrl.isNotEmpty)
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: OptimizedImage(
+                imageUrl: capture.imageUrl,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  capture.title ?? 'Untitled',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                if (capture.artistName != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'by ${capture.artistName}',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+                if (capture.description != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    capture.description!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+                if (capture.locationName != null) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on, size: 16),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          capture.locationName!,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Close'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Navigate to capture detail screen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) =>
+                                CaptureDetailScreen(capture: capture),
+                          ),
+                        );
+                      },
+                      child: const Text('View Details'),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
-  }
-
-  /// Build horizontal slider showing captures visible on the map
-  Widget _buildCapturesSlider() {
-    return SizedBox(
-      height: 120,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _nearbyArt.length,
-        itemBuilder: (context, index) {
-          final art = _nearbyArt[index];
-          return Container(
-            width: 100,
-            margin: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: () {
-                // Move map to this art piece
-                if (_mapController != null) {
-                  _mapController!.animateCamera(
-                    CameraUpdate.newCameraPosition(
-                      CameraPosition(
-                        target: LatLng(
-                          art.location.latitude,
-                          art.location.longitude,
-                        ),
-                        zoom: 17.0,
-                      ),
-                    ),
-                  );
-                }
-                // Show art details
-                _onMarkerTapped(art);
-              },
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Art image
-                    Expanded(
-                      flex: 3,
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(8),
-                          ),
-                          color: Colors.grey[200],
-                        ),
-                        child: art.imageUrl.isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(8),
-                                ),
-                                child: Image.network(
-                                  art.imageUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey[300],
-                                      child: const Icon(
-                                        Icons.broken_image,
-                                        color: Colors.grey,
-                                        size: 24,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              )
-                            : Container(
-                                color: Colors.grey[300],
-                                child: const Icon(
-                                  Icons.image,
-                                  color: Colors.grey,
-                                  size: 24,
-                                ),
-                              ),
-                      ),
-                    ),
-                    // Art title
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Text(
-                          art.title,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _locationUpdateTimer?.cancel();
-    _mapController?.dispose();
-    super.dispose();
   }
 }

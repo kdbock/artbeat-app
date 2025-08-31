@@ -12,8 +12,6 @@ import '../widgets/dashboard/dashboard_community_section.dart';
 import '../widgets/dashboard/dashboard_events_section.dart';
 import '../widgets/dashboard/dashboard_profile_menu.dart';
 import '../widgets/dashboard/dashboard_app_explanation.dart';
-import '../widgets/dashboard/dashboard_trending_posts_section.dart';
-import '../widgets/dashboard/dashboard_featured_posts_section.dart';
 import '../widgets/dashboard/dashboard_artist_cta_section.dart';
 
 /// Fluid Dashboard Screen - Refactored for better maintainability
@@ -73,7 +71,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             showDeveloperTools: false,
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
-            onSearchPressed: () => _handleSearch(context),
+            onSearchPressed: (String query) => _handleSearch(context, query),
             onProfilePressed: () => _showProfileMenu(context),
             onMenuPressed: () => _openDrawer(),
           ),
@@ -150,47 +148,37 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
             child: BannerAdWidget(location: AdLocation.artWalkDashboard),
           ),
 
-          // 8. Trending posts
-          SliverToBoxAdapter(
-            child: DashboardTrendingPostsSection(viewModel: viewModel),
-          ),
-
-          // 9. Featured posts
-          SliverToBoxAdapter(
-            child: DashboardFeaturedPostsSection(viewModel: viewModel),
-          ),
-
-          // 10. Ad3
+          // 8. Ad3
           const SliverToBoxAdapter(
             child: BannerAdWidget(location: AdLocation.dashboard),
           ),
 
-          // 11. Featured events
+          // 9. Featured events
           SliverToBoxAdapter(
             child: DashboardEventsSection(viewModel: viewModel),
           ),
 
-          // 12. Upcoming events (using community section for now)
+          // 10. Upcoming events (using community section for now)
           SliverToBoxAdapter(
             child: DashboardCommunitySection(viewModel: viewModel),
           ),
 
-          // 13. Ad4
+          // 11. Ad4
           const SliverToBoxAdapter(
             child: BannerAdWidget(location: AdLocation.artWalkDashboard),
           ),
 
-          // 14. Are you an artist section
+          // 12. Are you an artist section
           SliverToBoxAdapter(
             child: DashboardArtistCtaSection(viewModel: viewModel),
           ),
 
-          // 15. Ad5
+          // 13. Ad5
           const SliverToBoxAdapter(
             child: BannerAdWidget(location: AdLocation.dashboard),
           ),
 
-          // 16. Ad6
+          // 14. Ad6
           const SliverToBoxAdapter(
             child: BannerAdWidget(location: AdLocation.artWalkDashboard),
           ),
@@ -211,9 +199,9 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
     );
   }
 
-  void _handleSearch(BuildContext context) {
-    // Navigate to search screen
-    Navigator.pushNamed(context, '/search');
+  void _handleSearch(BuildContext context, String query) {
+    // Navigate to search screen, optionally passing the search query
+    Navigator.pushNamed(context, '/search', arguments: {'query': query});
   }
 
   void _navigateToArtWalk(BuildContext context) {

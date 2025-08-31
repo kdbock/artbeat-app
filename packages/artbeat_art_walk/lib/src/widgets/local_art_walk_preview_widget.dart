@@ -117,6 +117,7 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
         child: Stack(
           children: [
             GoogleMap(
+              key: const Key('art_walk_preview_map'),
               initialCameraPosition: CameraPosition(
                 target: LatLng(lat, lng),
                 zoom: 14,

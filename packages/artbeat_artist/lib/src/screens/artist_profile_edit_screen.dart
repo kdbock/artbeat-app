@@ -267,13 +267,17 @@ class _ArtistProfileEditScreenState extends State<ArtistProfileEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_artistProfile == null
+    return core.MainLayout(
+      currentIndex: -1, // Artist profile editing doesn't use bottom navigation
+      appBar: core.EnhancedUniversalHeader(
+        title: _artistProfile == null
             ? 'Create Artist Profile'
-            : 'Edit Artist Profile'),
+            : 'Edit Artist Profile',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: false,
       ),
-      body: _isLoading
+      child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),

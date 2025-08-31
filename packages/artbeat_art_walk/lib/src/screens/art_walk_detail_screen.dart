@@ -373,36 +373,49 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        key: ValueKey('loading'),
-        appBar: ArtWalkHeader(
-          title: 'Art Walk Details',
-          showBackButton: true,
-          showSearch: false,
-          showChat: true,
-          showDeveloper: false,
+      return MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          key: const ValueKey('loading'),
+          appBar: EnhancedUniversalHeader(
+            title: 'Art Walk Details',
+            showLogo: false,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.chat),
+                onPressed: () => Navigator.pushNamed(context, '/messaging'),
+              ),
+            ],
+          ),
+          body: const Center(child: CircularProgressIndicator()),
         ),
-        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_walk == null) {
-      return const Scaffold(
-        key: ValueKey('not_found'),
-        appBar: ArtWalkHeader(
-          title: 'Art Walk Details',
-          showBackButton: true,
-          showSearch: false,
-          showChat: true,
-          showDeveloper: false,
-        ),
-        body: Center(child: Text('Art walk not found')),
-      );
+      return MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          key: const ValueKey('not_found'),
+          appBar: EnhancedUniversalHeader(
+            title: 'Art Walk Details',
+            showLogo: false,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.chat),
+                onPressed: () => Navigator.pushNamed(context, '/messaging'),
+              ),
+            ],
+          ),
+        body: const Center(child: Text('Art walk not found')),
+      ));
     }
 
-    return Scaffold(
-      key: ValueKey('art_walk_${_walk!.id}'),
-      body: CustomScrollView(
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        key: ValueKey('art_walk_${_walk!.id}'),
+        body: CustomScrollView(
         key: ValueKey('scroll_view_${_walk!.id}'),
         slivers: [
           // App bar with image - using Art Walk colors
@@ -709,6 +722,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

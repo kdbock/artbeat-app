@@ -4,12 +4,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatComponents, CommunityProvider;
+    show
+        ArtbeatColors,
+        ArtbeatComponents,
+        CommunityProvider,
+        MainLayout,
+        EnhancedUniversalHeader,
+        ArtbeatDrawer;
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 import '../../widgets/critique_card.dart';
-import '../../widgets/community_header.dart';
 import '../../widgets/post_detail_modal.dart';
 import 'create_post_screen.dart';
 
@@ -22,6 +27,7 @@ class UnifiedCommunityFeed extends StatefulWidget {
 
 class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   final ScrollController _scrollController = ScrollController();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final List<PostModel> _posts = [];
   final Map<String, List<CommentModel>> _postComments = {};
   final Map<String, bool> _postExpansionState = {};
@@ -453,41 +459,52 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ArtbeatColors.backgroundSecondary,
-      appBar: const CommunityHeader(
+    return MainLayout(
+      currentIndex: 3, // Community tab in bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
         title: 'Community Feed',
         showBackButton: false,
-        showSearchIcon: true,
-        showMessagingIcon: true,
-        showDeveloperIcon: true,
+        showSearch: true,
+        showDeveloperTools: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.message, color: Colors.white),
+            onPressed: () =>
+                Navigator.pushNamed(context, '/community/messaging'),
+          ),
+        ],
       ),
-      body: Column(
-        children: [
-          // Create post button section
-          Container(
-            color: ArtbeatColors.white,
-            padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _navigateToCreatePost,
-                icon: const Icon(Icons.add_circle_outline),
-                label: const Text('Create Post'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ArtbeatColors.primaryPurple,
-                  foregroundColor: ArtbeatColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+      drawer: const ArtbeatDrawer(),
+      child: Container(
+        color: ArtbeatColors.backgroundSecondary,
+        child: Column(
+          children: [
+            // Create post button section
+            Container(
+              color: ArtbeatColors.white,
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _navigateToCreatePost,
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: const Text('Create Post'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ArtbeatColors.primaryPurple,
+                    foregroundColor: ArtbeatColors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          // Body content
-          Expanded(child: _buildBody()),
-        ],
+            // Body content
+            Expanded(child: _buildBody()),
+          ],
+        ),
       ),
     );
   }

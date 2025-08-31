@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/analytics_model.dart';
 import '../services/enhanced_analytics_service.dart';
-import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Admin Financial Analytics Screen
@@ -75,18 +75,11 @@ class _AdminFinancialAnalyticsScreenState
       key: _scaffoldKey,
       backgroundColor: Colors.white,
       drawer: const AdminDrawer(),
-      appBar: AdminHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'Financial Analytics',
         showBackButton: true,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onBackPressed: () => Navigator.pop(context),
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
       ),
       body: Container(
         decoration: BoxDecoration(

@@ -29,7 +29,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
     return core.MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: core.EnhancedUniversalHeader(
+        appBar: const core.EnhancedUniversalHeader(
           title: 'Become an Artist',
           showLogo: false,
           showBackButton: true,

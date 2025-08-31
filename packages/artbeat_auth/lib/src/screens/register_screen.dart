@@ -649,7 +649,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Container(
                       height: 44,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
                             ArtbeatColors.primaryPurple,
                             ArtbeatColors.primaryGreen,

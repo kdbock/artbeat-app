@@ -25,6 +25,7 @@ class ArtistCommunityFeedScreen extends StatefulWidget {
 class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   // State variables
   final List<ArtistGroupPost> _posts = [];
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = false;
   bool _hasError = false;
   String? _errorMessage;
@@ -382,24 +383,6 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
     } catch (e) {
       // debugPrint('Failed to update share count: $e');
     }
-  }
-
-  void _openDeveloperTools(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Developer Tools'),
-        content: const Text(
-          'Developer tools will be available in a future update.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildArtistHeader() {
@@ -836,40 +819,23 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.artist.displayName}\'s Feed'),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF9C27B0), // Purple
-                Color(0xFF4CAF50), // Green
-              ],
-            ),
-          ),
-        ),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: '${widget.artist.displayName}\'s Feed',
+        showBackButton: true,
+        showSearch: true,
+        showDeveloperTools: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () => Navigator.pushNamed(context, '/search'),
-          ),
           IconButton(
             icon: const Icon(Icons.message, color: Colors.white),
             onPressed: () => Navigator.pushNamed(context, '/messaging'),
           ),
-          IconButton(
-            icon: const Icon(Icons.developer_mode, color: Colors.white),
-            onPressed: () => _openDeveloperTools(context),
-          ),
         ],
       ),
-      body: Container(
+      drawer: const ArtbeatDrawer(),
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,

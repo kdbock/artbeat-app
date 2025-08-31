@@ -321,21 +321,21 @@ class FinancialAnalyticsService {
 
       // Subscription revenue
       for (var doc in results[0].docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
         totalRevenue += amount;
       }
 
       // Event revenue
       for (var doc in results[1].docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         final price = (data['price'] as num?)?.toDouble() ?? 0.0;
         totalRevenue += price;
       }
 
       // Commission revenue
       for (var doc in results[2].docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         final salePrice = (data['salePrice'] as num?)?.toDouble() ?? 0.0;
         final commissionRate =
             (data['commissionRate'] as num?)?.toDouble() ?? 0.1;

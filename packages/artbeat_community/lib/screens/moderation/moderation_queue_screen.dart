@@ -13,6 +13,7 @@ class ModerationQueueScreen extends StatefulWidget {
 
 class _ModerationQueueScreenState extends State<ModerationQueueScreen>
     with SingleTickerProviderStateMixin {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
 
   // Content to moderate
@@ -429,51 +430,72 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Moderation Queue'),
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(text: 'Posts (${_flaggedPosts.length})'),
-              Tab(text: 'Comments (${_flaggedComments.length})'),
-            ],
-          ),
-        ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Moderation Queue',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
+      ),
+      drawer: const ArtbeatDrawer(),
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              TabBar(
                 controller: _tabController,
-                children: [
-                  // Posts tab
-                  _flaggedPosts.isEmpty
-                      ? const Center(child: Text('No flagged posts to review'))
-                      : ListView.builder(
-                          itemCount: _flaggedPosts.length,
-                          itemBuilder: (context, index) {
-                            return _buildPostItem(_flaggedPosts[index]);
-                          },
-                        ),
-
-                  // Comments tab
-                  _flaggedComments.isEmpty
-                      ? const Center(
-                          child: Text('No flagged comments to review'),
-                        )
-                      : ListView.builder(
-                          itemCount: _flaggedComments.length,
-                          itemBuilder: (context, index) {
-                            return _buildCommentItem(_flaggedComments[index]);
-                          },
-                        ),
+                tabs: [
+                  Tab(text: 'Posts (${_flaggedPosts.length})'),
+                  Tab(text: 'Comments (${_flaggedComments.length})'),
                 ],
               ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _loadModerationQueue,
-          tooltip: 'Refresh',
-          child: const Icon(Icons.refresh),
-        ),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : TabBarView(
+                        controller: _tabController,
+                        children: [
+                          // Posts tab
+                          _flaggedPosts.isEmpty
+                              ? const Center(
+                                  child: Text('No flagged posts to review'),
+                                )
+                              : ListView.builder(
+                                  itemCount: _flaggedPosts.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildPostItem(_flaggedPosts[index]);
+                                  },
+                                ),
+
+                          // Comments tab
+                          _flaggedComments.isEmpty
+                              ? const Center(
+                                  child: Text('No flagged comments to review'),
+                                )
+                              : ListView.builder(
+                                  itemCount: _flaggedComments.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildCommentItem(
+                                      _flaggedComments[index],
+                                    );
+                                  },
+                                ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: _loadModerationQueue,
+              tooltip: 'Refresh',
+              child: const Icon(Icons.refresh),
+            ),
+          ),
+        ],
       ),
     );
   }

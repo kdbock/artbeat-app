@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/community_service.dart';
 import '../../models/post_model.dart';
 import '../../models/group_models.dart';
-import '../../widgets/community_header.dart';
 
 class CommunityDashboardScreen extends StatefulWidget {
   const CommunityDashboardScreen({Key? key}) : super(key: key);
@@ -44,7 +43,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
     // Mark community as visited when this screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<CommunityProvider>().markCommunityAsVisited();
+        context.read<core.CommunityProvider>().markCommunityAsVisited();
       }
     });
   }
@@ -350,76 +349,57 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
+    return core.MainLayout(
       currentIndex: 3, // Community is index 3
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Colors.grey[50],
-        drawer: const ArtbeatDrawer(),
-        appBar: CommunityHeader(
-          title: 'Community Canvas',
-          showBackButton: false,
-          showSearchIcon: true,
-          showMessagingIcon: true,
-          showDeveloperIcon: true,
-          onSearchPressed: () {
-            Navigator.pushNamed(context, '/community/search');
-          },
-          onMessagingPressed: () {
-            Navigator.pushNamed(context, '/messaging');
-          },
-          onDeveloperPressed: () => _showDeveloperTools(),
-        ),
-        body: RefreshIndicator(
-          onRefresh: _loadAllData,
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Online Artists Section
-                _buildOnlineArtistsSection(),
+      scaffoldKey: _scaffoldKey,
+      appBar: const core.EnhancedUniversalHeader(title: 'Community Canvas'),
+      child: RefreshIndicator(
+        onRefresh: _loadAllData,
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Online Artists Section
+              _buildOnlineArtistsSection(),
 
-                // Ad placement beneath online artists section
-                const BannerAdWidget(
-                  location: AdLocation.communityOnlineArtists,
-                ),
-                const SizedBox(height: 16),
+              // Ad placement beneath online artists section
+              const BannerAdWidget(location: AdLocation.communityOnlineArtists),
+              const SizedBox(height: 16),
 
-                // Recent Posts Section
-                _buildRecentPostsSection(),
+              // Recent Posts Section
+              _buildRecentPostsSection(),
 
-                // Ad placement beneath recent posts section
-                const BannerAdWidget(location: AdLocation.communityRecentPosts),
-                const SizedBox(height: 16),
+              // Ad placement beneath recent posts section
+              const BannerAdWidget(location: AdLocation.communityRecentPosts),
+              const SizedBox(height: 16),
 
-                // Are You An Artist Widget
-                _buildAreYouAnArtistSection(),
+              // Are You An Artist Widget
+              _buildAreYouAnArtistSection(),
 
-                // Featured Artists Section
-                _buildFeaturedArtistsSection(),
+              // Featured Artists Section
+              _buildFeaturedArtistsSection(),
 
-                // Ad placement beneath featured artists section
-                const BannerAdWidget(
-                  location: AdLocation.communityFeaturedArtists,
-                ),
-                const SizedBox(height: 16),
+              // Ad placement beneath featured artists section
+              const BannerAdWidget(
+                location: AdLocation.communityFeaturedArtists,
+              ),
+              const SizedBox(height: 16),
 
-                // Verified Artists Section
-                _buildVerifiedArtistsSection(),
+              // Verified Artists Section
+              _buildVerifiedArtistsSection(),
 
-                // Ad placement beneath verified artists section
-                const BannerAdWidget(
-                  location: AdLocation.communityVerifiedArtists,
-                ),
-                const SizedBox(height: 16),
+              // Ad placement beneath verified artists section
+              const BannerAdWidget(
+                location: AdLocation.communityVerifiedArtists,
+              ),
+              const SizedBox(height: 16),
 
-                // Artists Section
-                _buildArtistsSection(),
+              // Artists Section
+              _buildArtistsSection(),
 
-                const SizedBox(height: 120), // Bottom padding for navigation
-              ],
-            ),
+              const SizedBox(height: 120), // Bottom padding for navigation
+            ],
           ),
         ),
       ),
@@ -441,7 +421,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                   width: 4,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: ArtbeatColors.primaryGreen,
+                    color: core.ArtbeatColors.primaryGreen,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -451,7 +431,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
+                    color: core.ArtbeatColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
@@ -466,7 +446,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                     '${_onlineArtists.length} online',
                     style: const TextStyle(
                       fontSize: 14,
-                      color: ArtbeatColors.primaryGreen,
+                      color: core.ArtbeatColors.primaryGreen,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -513,7 +493,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                       child: Text(
                         'No artists online right now',
                         style: TextStyle(
-                          color: ArtbeatColors.textSecondary,
+                          color: core.ArtbeatColors.textSecondary,
                           fontSize: 14,
                         ),
                       ),
@@ -562,8 +542,9 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                                 )?.hasScheme ==
                                                 true)
                                         ? NetworkImage(
-                                            artist['avatar'] as String,
-                                          )
+                                                artist['avatar'] as String,
+                                              )
+                                              as ImageProvider
                                         : null,
                                     child:
                                         (artist['avatar'] == null ||
@@ -583,7 +564,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                       width: 16,
                                       height: 16,
                                       decoration: BoxDecoration(
-                                        color: ArtbeatColors.primaryGreen,
+                                        color: core.ArtbeatColors.primaryGreen,
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: Colors.white,
@@ -641,7 +622,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                   width: 4,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: ArtbeatColors.primaryPurple,
+                    color: core.ArtbeatColors.primaryPurple,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -651,7 +632,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
+                    color: core.ArtbeatColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
@@ -695,7 +676,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                       child: Text(
                         'No recent posts available',
                         style: TextStyle(
-                          color: ArtbeatColors.textSecondary,
+                          color: core.ArtbeatColors.textSecondary,
                           fontSize: 14,
                         ),
                       ),
@@ -931,7 +912,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                 style: const TextStyle(
                   fontSize: 13,
                   height: 1.4,
-                  color: ArtbeatColors.textPrimary,
+                  color: core.ArtbeatColors.textPrimary,
                 ),
                 maxLines: 6,
                 overflow: TextOverflow.ellipsis,
@@ -949,7 +930,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: ArtbeatColors.textSecondary,
+                      color: core.ArtbeatColors.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -1042,15 +1023,15 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
   Color _getPostAccentColor(String postType) {
     switch (postType) {
       case 'ARTWORK':
-        return ArtbeatColors.primaryPurple;
+        return core.ArtbeatColors.primaryPurple;
       case 'EVENT':
-        return ArtbeatColors.primaryGreen;
+        return core.ArtbeatColors.primaryGreen;
       case 'ART WALK':
         return Colors.blue;
       case 'OPPORTUNITY':
         return Colors.orange;
       default:
-        return ArtbeatColors.textSecondary;
+        return core.ArtbeatColors.textSecondary;
     }
   }
 
@@ -1059,7 +1040,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
       margin: const EdgeInsets.only(top: 8),
       color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: new CompactArtistCTAWidget(),
+      child: const core.CompactArtistCTAWidget(),
     );
   }
 
@@ -1067,7 +1048,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
     return _buildArtistSection(
       title: 'Featured Artists',
       artists: _featuredArtists,
-      color: ArtbeatColors.accentYellow,
+      color: core.ArtbeatColors.accentYellow,
       showFollowers: true,
       isLoading: _isLoadingFeaturedArtists,
     );
@@ -1077,7 +1058,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
     return _buildArtistSection(
       title: 'Verified Artists',
       artists: _verifiedArtists,
-      color: ArtbeatColors.primaryGreen,
+      color: core.ArtbeatColors.primaryGreen,
       showFollowers: true,
       showVerifiedBadge: true,
       isLoading: _isLoadingVerifiedArtists,
@@ -1088,7 +1069,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
     return _buildArtistSection(
       title: 'Artists',
       artists: _artists,
-      color: ArtbeatColors.primaryPurple,
+      color: core.ArtbeatColors.primaryPurple,
       showFollowers: true,
       isLoading: _isLoadingArtists,
     );
@@ -1127,7 +1108,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
+                    color: core.ArtbeatColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
@@ -1213,7 +1194,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                       child: Text(
                         'No ${title.toLowerCase()} available',
                         style: const TextStyle(
-                          color: ArtbeatColors.textSecondary,
+                          color: core.ArtbeatColors.textSecondary,
                           fontSize: 14,
                         ),
                       ),
@@ -1273,8 +1254,9 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                                   )?.hasScheme ==
                                                   true)
                                           ? NetworkImage(
-                                              artist['avatar'] as String,
-                                            )
+                                                  artist['avatar'] as String,
+                                                )
+                                                as ImageProvider
                                           : null,
                                       child:
                                           (artist['avatar'] == null ||
@@ -1312,7 +1294,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: ArtbeatColors.textPrimary,
+                                    color: core.ArtbeatColors.textPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1325,7 +1307,7 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                                     artist['specialty'] as String,
                                     style: const TextStyle(
                                       fontSize: 10,
-                                      color: ArtbeatColors.textSecondary,
+                                      color: core.ArtbeatColors.textSecondary,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1354,97 +1336,6 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showDeveloperTools() {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: ArtbeatColors.primaryPurple,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.developer_mode,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Developer Tools',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: ArtbeatColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(
-                Icons.settings,
-                color: ArtbeatColors.textSecondary,
-              ),
-              title: const Text('Community Settings'),
-              subtitle: const Text('Manage community preferences'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to community settings
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.bug_report,
-                color: ArtbeatColors.textSecondary,
-              ),
-              title: const Text('Report Issue'),
-              subtitle: const Text('Send feedback or report bugs'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to feedback screen
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.info,
-                color: ArtbeatColors.textSecondary,
-              ),
-              title: const Text('About Community'),
-              subtitle: const Text('Version info and credits'),
-              onTap: () {
-                Navigator.pop(context);
-                // Show about dialog
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
       ),
     );
   }

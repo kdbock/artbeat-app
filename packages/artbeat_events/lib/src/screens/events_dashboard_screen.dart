@@ -187,7 +187,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
               title: 'Events',
               showLogo: false,
               showDeveloperTools: true,
-              onSearchPressed: () => _showSearchModal(context),
+              onSearchPressed: (String query) => _showSearchModal(context),
               onProfilePressed: () => _showProfileMenu(context),
               onMenuPressed: () => _openDrawer(context),
               onDeveloperPressed: () => _showDeveloperTools(context),
@@ -709,7 +709,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                 const SizedBox(height: 24),
 
                 // Artist CTA widget
-                new CompactArtistCTAWidget(),
+                const CompactArtistCTAWidget(),
                 const SizedBox(height: 24),
 
                 // Getting Started (for new users)

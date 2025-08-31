@@ -118,7 +118,7 @@ class UserService extends ChangeNotifier {
   Future<UserModel?> getCurrentUserModel() async {
     final user = _auth.currentUser;
     if (user == null) return null;
-    return await getUserModel(user.uid);
+    return getUserModel(user.uid);
   }
 
   Future<List<AchievementModel>> getUserAchievements(String userId) async {

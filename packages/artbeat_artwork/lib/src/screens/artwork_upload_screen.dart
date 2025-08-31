@@ -11,7 +11,8 @@ import 'package:artbeat_core/artbeat_core.dart'
         SubscriptionTier,
         ArtbeatColors,
         EnhancedUniversalHeader,
-        EnhancedStorageService;
+        EnhancedStorageService,
+        MainLayout;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
@@ -400,28 +401,33 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Upload Artwork',
-          showLogo: false,
+      return const MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: EnhancedUniversalHeader(
+            title: 'Upload Artwork',
+            showLogo: false,
+          ),
+          body: Center(child: CircularProgressIndicator()),
         ),
-        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     // Show upgrade prompt if user can't upload more artwork
     if (!_canUpload && widget.artworkId == null) {
-      return Scaffold(
-        appBar: const EnhancedUniversalHeader(
-          title: 'Upload Artwork',
-          showLogo: false,
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+      return MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: const EnhancedUniversalHeader(
+            title: 'Upload Artwork',
+            showLogo: false,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                 const Icon(Icons.lock, size: 72, color: Colors.grey),
                 const SizedBox(height: 24),
                 const Text(
@@ -452,18 +458,21 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
                   ),
                   child: const Text('Upgrade Now'),
                 ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       );
     }
 
-    return Scaffold(
-      appBar: EnhancedUniversalHeader(
-        title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
-        showLogo: false,
-      ),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
+          showLogo: false,
+        ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -486,7 +495,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
                               image: FileImage(_imageFile!),
                               fit: BoxFit.cover,
                             )
-                          : _imageUrl != null
+                          : _imageUrl != null && _isValidImageUrl(_imageUrl)
                               ? DecorationImage(
                                   image: NetworkImage(_imageUrl!),
                                   fit: BoxFit.cover,
@@ -740,6 +749,30 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
           ),
         ),
       ),
-    );
+    ));
+  }
+
+  bool _isValidImageUrl(String? url) {
+    if (url == null || url.isEmpty || url.trim().isEmpty) return false;
+
+    // Check for invalid file URLs
+    if (url == 'file:///' || url.startsWith('file:///') && url.length <= 8) {
+      return false;
+    }
+
+    // Check for just the file scheme with no actual path
+    if (url == 'file://' || url == 'file:') {
+      return false;
+    }
+
+    // Check for malformed URLs that start with file:// but have no host
+    if (url.startsWith('file://') && !url.startsWith('file:///')) {
+      return false;
+    }
+
+    // Check for valid URL schemes
+    return url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        (url.startsWith('file:///') && url.length > 8);
   }
 }

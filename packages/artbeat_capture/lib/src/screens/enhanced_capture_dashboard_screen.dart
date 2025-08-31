@@ -512,7 +512,7 @@ class _EnhancedCaptureDashboardScreenState
               showLogo: false,
               showSearch: true,
               showDeveloperTools: true,
-              onSearchPressed: () => _showSearchModal(context),
+              onSearchPressed: (String query) => _showSearchModal(context),
               onProfilePressed: () => _showProfileMenu(context),
               onMenuPressed: () => _openDrawer(context),
               backgroundColor: Colors.transparent,
@@ -812,10 +812,10 @@ class _EnhancedCaptureDashboardScreenState
                           ),
 
                           // Artist CTA widget
-                          SliverToBoxAdapter(
+                          const SliverToBoxAdapter(
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: new CompactArtistCTAWidget(),
+                              child: CompactArtistCTAWidget(),
                             ),
                           ),
                         ],

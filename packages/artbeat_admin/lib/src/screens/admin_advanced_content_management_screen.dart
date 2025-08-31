@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/content_model.dart';
 import '../services/content_review_service.dart';
 import '../models/content_review_model.dart';
-import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
-import '../utils/image_utils.dart';
 
 /// Advanced Content Management Screen with AI-powered moderation
 ///
@@ -258,24 +257,25 @@ class _AdminAdvancedContentManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: const AdminDrawer(),
-      appBar: AdminHeader(
+    return MainLayout(
+      currentIndex: -1, // Admin screens don't use bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
         title: 'Advanced Content Management',
         showBackButton: true,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onBackPressed: () => Navigator.pop(context),
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
+        actions: [
+          if (!_isSelectionMode)
+            IconButton(
+              onPressed: () => _showCreateContentDialog(),
+              icon: const Icon(Icons.add),
+              tooltip: 'Create Content',
+            ),
+        ],
       ),
-      body: Container(
+      drawer: const AdminDrawer(),
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -305,12 +305,6 @@ class _AdminAdvancedContentManagementScreenState
           ),
         ),
       ),
-      floatingActionButton: _isSelectionMode
-          ? _buildBulkActionsFAB()
-          : FloatingActionButton(
-              onPressed: () => _showCreateContentDialog(),
-              child: const Icon(Icons.add),
-            ),
     );
   }
 
@@ -838,9 +832,9 @@ class _AdminAdvancedContentManagementScreenState
                   ),
             ),
             const SizedBox(height: 16),
-            Container(
+            const SizedBox(
               height: 200,
-              child: const Center(
+              child: Center(
                 child: Text('Engagement chart would go here'),
               ),
             ),
@@ -1003,9 +997,9 @@ class _AdminAdvancedContentManagementScreenState
                   ),
             ),
             const SizedBox(height: 16),
-            Container(
+            const SizedBox(
               height: 200,
-              child: const Center(
+              child: Center(
                 child: Text('Content trends chart would go here'),
               ),
             ),
@@ -1032,9 +1026,9 @@ class _AdminAdvancedContentManagementScreenState
             const Text(
                 'Content that achieved viral status in the last 30 days'),
             const SizedBox(height: 16),
-            Container(
+            const SizedBox(
               height: 150,
-              child: const Center(
+              child: Center(
                 child: Text('Viral content analysis would go here'),
               ),
             ),

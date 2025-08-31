@@ -51,6 +51,7 @@ class AppRoutes {
   static const String artistSearch = '/artist/search';
   static const String artistSearchShort = '/artist-search';
   static const String artistBrowse = '/artist/browse';
+  static const String artistFeatured = '/artist/featured';
 
   // Artwork routes
   static const String artworkUpload = '/artwork/upload';
@@ -60,6 +61,7 @@ class AppRoutes {
   static const String artworkRecent = '/artwork/recent';
   static const String artworkTrending = '/artwork/trending';
   static const String artworkEdit = '/artwork/edit';
+  static const String artworkDetail = '/artwork/detail';
 
   // Gallery routes
   static const String galleryArtistsManagement = '/gallery/artists-management';
@@ -74,6 +76,15 @@ class AppRoutes {
   static const String captureCamera = '/capture/camera';
   static const String captureDetail = '/capture/detail';
   static const String captureDashboard = '/capture/dashboard';
+  static const String captureSearch = '/capture/search';
+  static const String captureNearby = '/capture/nearby';
+  static const String capturePopular = '/capture/popular';
+  static const String captureMyCaptures = '/capture/my-captures';
+  static const String captureMap = '/capture/map';
+  static const String captureGallery = '/capture/gallery';
+  static const String captureEdit = '/capture/edit';
+  static const String captureCreate = '/capture/create';
+  static const String capturePublic = '/capture/public';
 
   // Art Walk routes
   static const String artWalkMap = '/art-walk/map';
@@ -88,6 +99,9 @@ class AppRoutes {
   static const String enhancedCreateArtWalk = '/enhanced-create-art-walk';
   static const String enhancedArtWalkExperience =
       '/enhanced-art-walk-experience';
+  static const String artWalkExplore = '/art-walk/explore';
+  static const String artWalkStart = '/art-walk/start';
+  static const String artWalkNearby = '/art-walk/nearby';
 
   // Community routes
   static const String communityDashboard = '/community/dashboard';
@@ -102,6 +116,11 @@ class AppRoutes {
   static const String communityModeration = '/community/moderation';
   static const String communitySponsorships = '/community/sponsorships';
   static const String communitySettings = '/community/settings';
+  static const String communityCreate = '/community/create';
+  static const String communityMessaging = '/community/messaging';
+  static const String communityTrending = '/community/trending';
+  static const String communityFeatured = '/community/featured';
+  static const String community = '/community';
 
   // Events routes
   static const String events = '/events';
@@ -118,6 +137,10 @@ class AppRoutes {
   static const String eventsNearby = '/events/nearby';
   static const String eventsPopular = '/events/popular';
   static const String eventsVenues = '/events/venues';
+  static const String eventsBrowse = '/events/browse';
+  static const String eventsTickets = '/events/tickets';
+  static const String eventsSaved = '/events/saved';
+  static const String eventsHistory = '/events/history';
 
   // Messaging routes
   static const String messaging = '/messaging';
@@ -155,6 +178,7 @@ class AppRoutes {
   static const String notifications = '/notifications';
   static const String dev = '/dev';
   static const String developerFeedbackAdmin = '/developer-feedback-admin';
+  static const String systemInfo = '/system/info';
   static const String support = '/support';
   static const String search = '/search';
   static const String searchResults = '/search/results';
@@ -203,6 +227,7 @@ class AppRoutes {
     artworkRecent,
     artworkTrending,
     artworkEdit,
+    artworkDetail,
     galleryArtistsManagement,
     galleryAnalytics,
     subscriptionComparison,
@@ -211,6 +236,15 @@ class AppRoutes {
     captureCamera,
     captureDetail,
     captureDashboard,
+    captureSearch,
+    captureNearby,
+    capturePopular,
+    captureMyCaptures,
+    captureMap,
+    captureGallery,
+    captureEdit,
+    captureCreate,
+    capturePublic,
     artWalkMap,
     artWalkList,
     artWalkDetail,
@@ -220,8 +254,12 @@ class AppRoutes {
     artWalkDashboard,
     artWalkMyWalks,
     artWalkMyCaptures,
+    artWalkSearch,
     enhancedCreateArtWalk,
     enhancedArtWalkExperience,
+    artWalkExplore,
+    artWalkStart,
+    artWalkNearby,
     communityDashboard,
     communityFeed,
     communityArtists,
@@ -234,6 +272,11 @@ class AppRoutes {
     communityModeration,
     communitySponsorships,
     communitySettings,
+    communityCreate,
+    communityMessaging,
+    communityTrending,
+    communityFeatured,
+    community,
     events,
     eventsDiscover,
     eventsDashboard,
@@ -248,6 +291,10 @@ class AppRoutes {
     eventsNearby,
     eventsPopular,
     eventsVenues,
+    eventsBrowse,
+    eventsTickets,
+    eventsSaved,
+    eventsHistory,
     messaging,
     messagingNew,
     messagingChat,
@@ -278,6 +325,7 @@ class AppRoutes {
     dev,
     feedback,
     developerFeedbackAdmin,
+    systemInfo,
     support,
     search,
     searchResults,

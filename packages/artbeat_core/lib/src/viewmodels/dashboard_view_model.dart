@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
 import 'package:artbeat_core/artbeat_core.dart';
-import '../utils/location_utils.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist_profile;
 import 'package:artbeat_events/artbeat_events.dart' as eventLib;
@@ -29,7 +28,7 @@ class DashboardViewModel extends ChangeNotifier {
   bool _isLoadingArtists = true;
   bool _isLoadingLocation = true;
   bool _isMapPreviewReady = false;
-  bool _isLoadingMap = false;
+  final bool _isLoadingMap = false;
   bool _isLoadingAchievements = true;
   bool _isLoadingLocalCaptures = true;
 
@@ -42,7 +41,7 @@ class DashboardViewModel extends ChangeNotifier {
   String? _localCapturesError;
 
   List<EventModel> _events = [];
-  List<EventModel> _upcomingEvents = [];
+  final List<EventModel> _upcomingEvents = [];
   List<ArtworkModel> _artwork = [];
   List<ArtistProfileModel> _artists = [];
   Set<Marker> _markers = {};
@@ -83,13 +82,14 @@ class DashboardViewModel extends ChangeNotifier {
         _loadLocation(),
         _loadAchievements(),
         _loadLocalCaptures(),
+        // _loadPosts(), // TODO: Implement posts loading
       ]);
     } catch (e, stack) {
       debugPrint('❌ Error initializing dashboard: $e');
       debugPrint('❌ Stack trace: $stack');
     } finally {
       _isInitializing = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -101,7 +101,17 @@ class DashboardViewModel extends ChangeNotifier {
     _isLoadingLocation = true;
     _isLoadingAchievements = true;
     _isLoadingLocalCaptures = true;
-    notifyListeners();
+    _safeNotifyListeners();
+  }
+
+  /// Safely notify listeners, catching disposal errors
+  void _safeNotifyListeners() {
+    try {
+      notifyListeners();
+    } catch (e) {
+      // Ignore errors if widget is disposed
+      debugPrint('⚠️ Attempted to notify listeners on disposed ViewModel');
+    }
   }
 
   Future<void> _loadCurrentUser() async {
@@ -236,27 +246,38 @@ class DashboardViewModel extends ChangeNotifier {
       _isLoadingArtwork = true;
       notifyListeners();
 
-      final artworks = await _artworkService.getFeaturedArtwork();
-      _artwork = artworks
+      // Try featured artwork first, fallback to public artwork
+      var artworkServiceModels = await _artworkService.getFeaturedArtwork();
+      if (artworkServiceModels.isEmpty) {
+        debugPrint('No featured artwork found, loading public artwork...');
+        artworkServiceModels = await _artworkService.getAllPublicArtwork(
+          limit: 10,
+        );
+      }
+
+      // Convert artworkLib.ArtworkModel to core ArtworkModel
+      _artwork = artworkServiceModels
           .map(
             (a) => ArtworkModel(
               id: a.id,
               title: a.title,
               description: a.description,
-              artistId: a.id, // Using artwork id as artist id for now
-              medium: 'digital', // Default medium
-              tags: const <String>[], // Empty tags list
+              artistId: a.userId, // Use userId as artistId
               imageUrl: a.imageUrl,
-              price: 0.0, // Default price
-              isSold: false, // Default not sold
-              applauseCount: 0, // Default applause count
-              createdAt: DateTime.now(),
-              viewsCount: 0, // Default views count
-              artistName: 'Featured Artist', // Default artist name
+              price: a.price ?? 0.0,
+              medium: a.medium,
+              tags: a.tags ?? [],
+              createdAt: a.createdAt,
+              isSold: a.isSold,
+              applauseCount: a.likesCount,
+              viewsCount: a.viewCount,
+              artistName: 'Artist', // Will be loaded separately if needed
             ),
           )
           .toList();
+
       _artworkError = null;
+      debugPrint('✅ Loaded ${_artwork.length} artworks successfully');
     } catch (e) {
       debugPrint('Error loading artwork: $e');
       _artworkError = e.toString();
@@ -341,17 +362,17 @@ class DashboardViewModel extends ChangeNotifier {
       _isLoadingLocation = true;
       notifyListeners();
 
-      // Use LocationUtils with a shorter timeout and better error handling
+      // Use LocationUtils with increased timeout for better reliability
       final position =
           await LocationUtils.getCurrentPosition(
-            timeoutDuration: const Duration(seconds: 5), // Reduced timeout
+            timeoutDuration: const Duration(seconds: 10), // Increased timeout
           ).timeout(
-            const Duration(seconds: 8), // Overall timeout
+            const Duration(seconds: 15), // Overall timeout
             onTimeout: () {
-              debugPrint('⚠️ Location request timed out after 8 seconds');
+              debugPrint('⚠️ Location request timed out after 15 seconds');
               throw TimeoutException(
                 'Location request timed out',
-                const Duration(seconds: 8),
+                const Duration(seconds: 15),
               );
             },
           );

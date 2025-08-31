@@ -12,7 +12,7 @@ class ArtistCTAWidget extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showDismiss;
 
-  ArtistCTAWidget({super.key, this.onTap, this.showDismiss = true});
+  const ArtistCTAWidget({super.key, this.onTap, this.showDismiss = true});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +65,7 @@ class ArtistCTAWidget extends StatelessWidget {
                             color: ArtbeatColors.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.palette_outlined,
                             color: ArtbeatColors.primary,
                             size: 24,
@@ -100,7 +100,7 @@ class ArtistCTAWidget extends StatelessWidget {
                             onPressed: () {
                               // TODO: Implement dismiss functionality
                             },
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.close,
                               color: ArtbeatColors.textSecondary,
                               size: 20,
@@ -208,7 +208,7 @@ class ArtistCTAWidget extends StatelessWidget {
 class CompactArtistCTAWidget extends StatelessWidget {
   final VoidCallback? onTap;
 
-  CompactArtistCTAWidget({super.key, this.onTap});
+  const CompactArtistCTAWidget({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +250,7 @@ class CompactArtistCTAWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.palette_outlined,
                       color: ArtbeatColors.primary,
                       size: 20,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:artbeat_core/artbeat_core.dart' show EnhancedUniversalHeader;
+import 'package:artbeat_core/artbeat_core.dart'
+    show EnhancedUniversalHeader, MainLayout;
 import '../models/artwork_model.dart';
 
 /// Screen for browsing all artwork, with filtering options
@@ -63,83 +64,86 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: EnhancedUniversalHeader(
-        title: 'Browse Artwork',
-        showLogo: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-            tooltip: 'Filter',
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search artwork...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: 'Browse Artwork',
+          showLogo: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.filter_list),
+              onPressed: _showFilterDialog,
+              tooltip: 'Filter',
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            // Search bar
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search artwork...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      _performSearch();
+                    },
+                  ),
                 ),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    _performSearch();
-                  },
-                ),
+                onSubmitted: (_) => _performSearch(),
               ),
-              onSubmitted: (_) => _performSearch(),
             ),
-          ),
 
-          // Filter chips
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                const Text('Filters:',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(width: 8),
-                if (_selectedLocation != 'All')
-                  Chip(
-                    label: Text(_selectedLocation),
-                    deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () {
-                      setState(() {
-                        _selectedLocation = 'All';
-                      });
-                      _performSearch();
-                    },
-                  ),
-                const SizedBox(width: 8),
-                if (_selectedMedium != 'All')
-                  Chip(
-                    label: Text(_selectedMedium),
-                    deleteIcon: const Icon(Icons.close, size: 18),
-                    onDeleted: () {
-                      setState(() {
-                        _selectedMedium = 'All';
-                      });
-                      _performSearch();
-                    },
-                  ),
-              ],
+            // Filter chips
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  const Text('Filters:',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  if (_selectedLocation != 'All')
+                    Chip(
+                      label: Text(_selectedLocation),
+                      deleteIcon: const Icon(Icons.close, size: 18),
+                      onDeleted: () {
+                        setState(() {
+                          _selectedLocation = 'All';
+                        });
+                        _performSearch();
+                      },
+                    ),
+                  const SizedBox(width: 8),
+                  if (_selectedMedium != 'All')
+                    Chip(
+                      label: Text(_selectedMedium),
+                      deleteIcon: const Icon(Icons.close, size: 18),
+                      onDeleted: () {
+                        setState(() {
+                          _selectedMedium = 'All';
+                        });
+                        _performSearch();
+                      },
+                    ),
+                ],
+              ),
             ),
-          ),
 
-          // Results
-          Expanded(
-            child: _buildArtworkGrid(),
-          ),
-        ],
+            // Results
+            Expanded(
+              child: _buildArtworkGrid(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -200,11 +204,48 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(artwork.imageUrl),
-                    fit: BoxFit.cover,
-                  ),
+                  color: Colors.grey.shade200,
                 ),
+                child: _isValidImageUrl(artwork.imageUrl)
+                    ? Image.network(
+                        artwork.imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint(
+                              '❌ Error loading artwork image: ${artwork.imageUrl} - Error: $error');
+                          return const Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          );
+                        },
+                      )
+                    : Builder(
+                        builder: (context) {
+                          // Only log non-empty invalid URLs to reduce spam
+                          if (artwork.imageUrl.isNotEmpty) {
+                            debugPrint(
+                                '⚠️ Invalid artwork image URL: ${artwork.imageUrl}');
+                          }
+                          return const Center(
+                            child: Icon(
+                              Icons.image,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
 
@@ -366,5 +407,29 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
       '/artist/artwork-detail',
       arguments: {'artworkId': artworkId},
     );
+  }
+
+  bool _isValidImageUrl(String? url) {
+    if (url == null || url.isEmpty || url.trim().isEmpty) return false;
+
+    // Check for invalid file URLs
+    if (url == 'file:///' || url.startsWith('file:///') && url.length <= 8) {
+      return false;
+    }
+
+    // Check for just the file scheme with no actual path
+    if (url == 'file://' || url == 'file:') {
+      return false;
+    }
+
+    // Check for malformed URLs that start with file:// but have no host
+    if (url.startsWith('file://') && !url.startsWith('file:///')) {
+      return false;
+    }
+
+    // Check for valid URL schemes
+    return url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        (url.startsWith('file:///') && url.length > 8);
   }
 }

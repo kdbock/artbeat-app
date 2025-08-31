@@ -143,7 +143,7 @@ void main() {
     });
 
     test('Overage pricing constants are correct', () {
-      final overagePricing = FeatureLimits.overagePricing;
+      const overagePricing = FeatureLimits.overagePricing;
       expect(overagePricing['artwork'], equals(0.99));
       expect(overagePricing['storageGB'], equals(0.49));
       expect(overagePricing['aiCredit'], equals(0.05));

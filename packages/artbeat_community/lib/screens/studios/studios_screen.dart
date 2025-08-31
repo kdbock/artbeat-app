@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../../models/studio_model.dart';
 import '../../services/firestore_service.dart';
 import 'studio_chat_screen.dart';
@@ -15,6 +16,7 @@ class _StudiosScreenState extends State<StudiosScreen> {
   List<StudioModel> _studios = [];
   List<StudioModel> _filteredStudios = [];
   bool _isLoading = true;
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -63,107 +65,114 @@ class _StudiosScreenState extends State<StudiosScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return CustomScrollView(
-      slivers: [
-        // Search bar
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SearchBar(
-              hintText: 'Search studios...',
-              leading: const Icon(Icons.search),
-              onChanged: (value) {
-                _performSearch(value);
-              },
+    return core.MainLayout(
+      scaffoldKey: scaffoldKey,
+      currentIndex: 3, // Community tab in bottom navigation
+      appBar: const core.EnhancedUniversalHeader(title: 'Studios'),
+      child: CustomScrollView(
+        slivers: [
+          // Search bar
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: SearchBar(
+                hintText: 'Search studios...',
+                leading: const Icon(Icons.search),
+                onChanged: (value) {
+                  _performSearch(value);
+                },
+              ),
             ),
           ),
-        ),
-        // Studios grid
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: _filteredStudios.isEmpty
-              ? const SliverToBoxAdapter(
-                  child: Center(child: Text('No studios available')),
-                )
-              : SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16.0,
-                    crossAxisSpacing: 16.0,
-                    childAspectRatio: 1.0,
-                  ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final studio = _filteredStudios[index];
-                    return InkWell(
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (context) =>
-                              StudioChatScreen(studioId: studio.id),
+          // Studios grid
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: _filteredStudios.isEmpty
+                ? const SliverToBoxAdapter(
+                    child: Center(child: Text('No studios available')),
+                  )
+                : SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16.0,
+                          crossAxisSpacing: 16.0,
+                          childAspectRatio: 1.0,
                         ),
-                      ),
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Privacy indicator
-                              Icon(
-                                studio.privacyType == 'public'
-                                    ? Icons.public
-                                    : Icons.lock,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(height: 8),
-                              // Studio name
-                              Text(
-                                studio.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              // Member count
-                              Text(
-                                '${studio.memberList.length} members',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              // Tags
-                              if (studio.tags.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 4,
-                                  runSpacing: 4,
-                                  children: studio.tags
-                                      .take(2)
-                                      .map(
-                                        (tag) => Chip(
-                                          label: Text(
-                                            tag,
-                                            style: const TextStyle(
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                          materialTapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-                              ],
-                            ],
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final studio = _filteredStudios[index];
+                      return InkWell(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (context) =>
+                                StudioChatScreen(studioId: studio.id),
                           ),
                         ),
-                      ),
-                    );
-                  }, childCount: _filteredStudios.length),
-                ),
-        ),
-      ],
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Privacy indicator
+                                Icon(
+                                  studio.privacyType == 'public'
+                                      ? Icons.public
+                                      : Icons.lock,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(height: 8),
+                                // Studio name
+                                Text(
+                                  studio.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                // Member count
+                                Text(
+                                  '${studio.memberList.length} members',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                // Tags
+                                if (studio.tags.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 4,
+                                    runSpacing: 4,
+                                    children: studio.tags
+                                        .take(2)
+                                        .map(
+                                          (tag) => Chip(
+                                            label: Text(
+                                              tag,
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }, childCount: _filteredStudios.length),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../../models/post_model.dart';
 import '../../widgets/post_card.dart';
 
@@ -13,6 +14,7 @@ class TrendingContentScreen extends StatefulWidget {
 
 class _TrendingContentScreenState extends State<TrendingContentScreen> {
   final ScrollController _scrollController = ScrollController();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<PostModel> _trendingPosts = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
@@ -212,9 +214,17 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Trending Content')),
-      body: Column(
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Trending Content',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
+      ),
+      drawer: const ArtbeatDrawer(),
+      child: Column(
         children: [
           // Filter options
           Padding(

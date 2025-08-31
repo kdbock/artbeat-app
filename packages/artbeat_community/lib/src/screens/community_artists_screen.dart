@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class CommunityArtistsScreen extends StatefulWidget {
   const CommunityArtistsScreen({super.key});
@@ -15,6 +15,7 @@ class _CommunityArtistsScreenState extends State<CommunityArtistsScreen> {
   late bool showFollowers;
   late bool showDistance;
   late bool showVerifiedBadge;
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void didChangeDependencies() {
@@ -26,7 +27,7 @@ class _CommunityArtistsScreenState extends State<CommunityArtistsScreen> {
     artists =
         (args?['artists'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
         [];
-    color = args?['color'] as Color? ?? ArtbeatColors.primaryPurple;
+    color = args?['color'] as Color? ?? core.ArtbeatColors.primaryPurple;
     showFollowers = args?['showFollowers'] as bool? ?? false;
     showDistance = args?['showDistance'] as bool? ?? false;
     showVerifiedBadge = args?['showVerifiedBadge'] as bool? ?? false;
@@ -34,61 +35,38 @@ class _CommunityArtistsScreenState extends State<CommunityArtistsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF9C27B0), // Purple
-                Color(0xFF4CAF50), // Green
-              ],
-            ),
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: artists.isEmpty
-            ? Center(
-                child: Text(
-                  'No ${title.toLowerCase()} available',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: ArtbeatColors.textSecondary,
+    return core.MainLayout(
+      scaffoldKey: scaffoldKey,
+      currentIndex: -1, // Detail screen
+      appBar: core.EnhancedUniversalHeader(title: title),
+      child: Container(
+        color: Colors.grey[50],
+        child: SafeArea(
+          child: artists.isEmpty
+              ? Center(
+                  child: Text(
+                    'No ${title.toLowerCase()} available',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: core.ArtbeatColors.textSecondary,
+                    ),
                   ),
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.8,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: artists.length,
+                  itemBuilder: (context, index) {
+                    final artist = artists[index];
+                    return _buildArtistCard(artist);
+                  },
                 ),
-              )
-            : GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.8,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: artists.length,
-                itemBuilder: (context, index) {
-                  final artist = artists[index];
-                  return _buildArtistCard(artist);
-                },
-              ),
+        ),
       ),
     );
   }

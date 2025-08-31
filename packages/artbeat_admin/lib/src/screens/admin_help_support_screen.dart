@@ -244,11 +244,11 @@ class _AdminHelpSupportScreenState extends State<AdminHelpSupportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.emergency, color: Colors.red),
-                    const SizedBox(width: 8),
-                    const Text(
+                    Icon(Icons.emergency, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text(
                       'Emergency Support',
                       style: TextStyle(
                         fontSize: 18,
@@ -677,23 +677,23 @@ class _AdminHelpSupportScreenState extends State<AdminHelpSupportScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
+              const TextField(
                 decoration: InputDecoration(
                   labelText: 'Subject',
                   hintText: 'Brief description of the issue',
                 ),
               ),
-              SizedBox(height: 16),
-              TextField(
+              const SizedBox(height: 16),
+              const TextField(
                 decoration: InputDecoration(
                   labelText: 'Description',
                   hintText: 'Detailed description of the problem',
                 ),
                 maxLines: 4,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Priority',
                 ),
                 items: ['Low', 'Medium', 'High', 'Critical']

@@ -3,7 +3,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 import '../models/user_admin_model.dart';
 import '../services/admin_service.dart';
 import '../services/cohort_analytics_service.dart';
-import '../widgets/admin_header.dart';
+
 import '../widgets/admin_drawer.dart';
 import 'admin_user_detail_screen.dart';
 
@@ -243,24 +243,25 @@ class _AdminAdvancedUserManagementScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: const AdminDrawer(),
-      appBar: AdminHeader(
+    return MainLayout(
+      currentIndex: -1, // Admin screens don't use bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
         title: 'Advanced User Management',
         showBackButton: true,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onBackPressed: () => Navigator.pop(context),
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
+        actions: [
+          if (!_isSelectionMode)
+            IconButton(
+              onPressed: () => _showCreateUserDialog(),
+              icon: const Icon(Icons.person_add),
+              tooltip: 'Add User',
+            ),
+        ],
       ),
-      body: Container(
+      drawer: const AdminDrawer(),
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -289,12 +290,6 @@ class _AdminAdvancedUserManagementScreenState
           ),
         ),
       ),
-      floatingActionButton: _isSelectionMode
-          ? _buildBulkActionsFAB()
-          : FloatingActionButton(
-              onPressed: () => _showCreateUserDialog(),
-              child: const Icon(Icons.person_add),
-            ),
     );
   }
 
@@ -707,9 +702,9 @@ class _AdminAdvancedUserManagementScreenState
                   ),
             ),
             const SizedBox(height: 16),
-            Container(
+            const SizedBox(
               height: 200,
-              child: const Center(
+              child: Center(
                 child: Text('User growth chart would go here'),
               ),
             ),
@@ -770,9 +765,9 @@ class _AdminAdvancedUserManagementScreenState
                   ),
             ),
             const SizedBox(height: 16),
-            Container(
+            const SizedBox(
               height: 200,
-              child: const Center(
+              child: Center(
                 child: Text('Retention cohort table would go here'),
               ),
             ),

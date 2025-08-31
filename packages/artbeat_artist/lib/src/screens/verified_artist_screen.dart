@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
-/// Screen for browsing artists
-class ArtistBrowseScreen extends StatefulWidget {
-  final String mode;
-
-  const ArtistBrowseScreen({super.key, this.mode = 'all'});
+/// Screen for browsing verified artists
+class VerifiedArtistScreen extends StatefulWidget {
+  const VerifiedArtistScreen({super.key});
 
   @override
-  State<ArtistBrowseScreen> createState() => _ArtistBrowseScreenState();
+  State<VerifiedArtistScreen> createState() => _VerifiedArtistScreenState();
 }
 
-class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
+class _VerifiedArtistScreenState extends State<VerifiedArtistScreen> {
   final SubscriptionService _subscriptionService = SubscriptionService();
 
   bool _isLoading = true;
@@ -44,7 +42,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
   @override
   void initState() {
     super.initState();
-    _loadArtists();
+    _loadVerifiedArtists();
   }
 
   @override
@@ -53,23 +51,39 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
     super.dispose();
   }
 
-  Future<void> _loadArtists() async {
+  Future<void> _loadVerifiedArtists() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Get all artists with current filters
-      final artists = await _subscriptionService.getAllArtists(
-        searchQuery: _searchController.text,
-        medium: _selectedMedium != 'All' ? _selectedMedium : null,
-        style: _selectedStyle != 'All' ? _selectedStyle : null,
-      );
+      // Get verified artists with current filters
+      final artists = await _subscriptionService.getVerifiedArtists();
 
-      // Filter for featured artists if mode is 'featured'
-      final filteredArtists = widget.mode == 'featured'
-          ? artists.where((artist) => artist.isFeatured).toList()
-          : artists;
+      // Apply client-side filtering for medium and style
+      var filteredArtists = artists;
+
+      if (_selectedMedium != 'All') {
+        filteredArtists = filteredArtists
+            .where((artist) => artist.mediums.contains(_selectedMedium))
+            .toList();
+      }
+
+      if (_selectedStyle != 'All') {
+        filteredArtists = filteredArtists
+            .where((artist) => artist.styles.contains(_selectedStyle))
+            .toList();
+      }
+
+      // Apply search filter
+      if (_searchController.text.isNotEmpty) {
+        final query = _searchController.text.toLowerCase();
+        filteredArtists = filteredArtists
+            .where((artist) =>
+                artist.displayName.toLowerCase().contains(query) ||
+                (artist.bio?.toLowerCase().contains(query) ?? false))
+            .toList();
+      }
 
       if (mounted) {
         setState(() {
@@ -80,7 +94,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading artists: $e')),
+          SnackBar(content: Text('Error loading verified artists: $e')),
         );
         setState(() {
           _isLoading = false;
@@ -90,7 +104,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
   }
 
   void _applyFilters() {
-    _loadArtists();
+    _loadVerifiedArtists();
   }
 
   @override
@@ -118,8 +132,8 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    core.ArtbeatColors.primaryPurple,
-                    core.ArtbeatColors.secondaryTeal
+                    core.ArtbeatColors.verified,
+                    core.ArtbeatColors.primaryBlue
                   ],
                 ),
                 borderRadius: BorderRadius.only(
@@ -135,12 +149,10 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                         icon: const Icon(Icons.arrow_back, color: Colors.white),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
-                      Expanded(
+                      const Expanded(
                         child: Text(
-                          widget.mode == 'featured'
-                              ? 'Featured Artists'
-                              : 'Find Artists',
-                          style: const TextStyle(
+                          'Verified Artists',
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -152,13 +164,11 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
                     child: Text(
-                      widget.mode == 'featured'
-                          ? 'Discover featured artists and their amazing work'
-                          : 'Discover talented artists in your community',
-                      style: const TextStyle(
+                      'Explore artists who have been verified for authenticity and quality',
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
@@ -176,13 +186,13 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search artists...',
+                  hintText: 'Search verified artists...',
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
                     onPressed: () {
                       _searchController.clear();
-                      _loadArtists();
+                      _loadVerifiedArtists();
                     },
                   ),
                   border: OutlineInputBorder(
@@ -193,7 +203,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                 ),
                 onChanged: (value) {
                   if (value.isEmpty || value.length > 2) {
-                    _loadArtists();
+                    _loadVerifiedArtists();
                   }
                 },
               ),
@@ -225,7 +235,21 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _artists.isEmpty
-                      ? const Center(child: Text('No artists found'))
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.verified_user,
+                                  size: 64, color: Colors.grey),
+                              SizedBox(height: 16),
+                              Text(
+                                'No verified artists found',
+                                style:
+                                    TextStyle(fontSize: 18, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        )
                       : ListView.builder(
                           itemCount: _artists.length,
                           itemBuilder: (context, index) {
@@ -316,59 +340,52 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
                   ),
                 ),
 
-                // Premium badge
-                if (artist.subscriptionTier != core.SubscriptionTier.free)
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: artist.subscriptionTier ==
-                                core.SubscriptionTier.business
-                            ? Colors.amber
-                            : Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.star,
-                            size: 16,
+                // Verified badge (prominent)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: core.ArtbeatColors.verified,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'Verified',
+                          style: TextStyle(
                             color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            artist.subscriptionTier ==
-                                    core.SubscriptionTier.business
-                                ? 'Business'
-                                : artist.subscriptionTier.displayName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+                ),
 
-                // Verified badge
-                if (artist.isVerified)
+                // Featured badge (if also featured)
+                if (artist.isFeatured)
                   Positioned(
                     top: 10,
                     left: 10,
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Colors.blueAccent,
+                        color: Colors.amber,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.check,
+                        Icons.star,
                         size: 16,
                         color: Colors.white,
                       ),
@@ -466,7 +483,7 @@ class _ArtistBrowseScreenState extends State<ArtistBrowseScreen> {
         String tempStyle = _selectedStyle;
 
         return AlertDialog(
-          title: const Text('Filter Artists'),
+          title: const Text('Filter Verified Artists'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,

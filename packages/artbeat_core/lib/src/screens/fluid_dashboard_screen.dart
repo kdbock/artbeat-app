@@ -58,6 +58,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
         onMenuPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
+        onSearchPressed: (query) => _handleSearch(context, query),
         backgroundColor: Colors.white,
         foregroundColor: ArtbeatColors.textPrimary,
         elevation: 0,
@@ -328,5 +329,14 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   void _navigateToArtWalk(BuildContext context) {
     // Navigate to art walk dashboard
     Navigator.pushNamed(context, '/art-walk/dashboard');
+  }
+
+  void _handleSearch(BuildContext context, String query) {
+    // Navigate to search results screen with the query
+    Navigator.pushNamed(
+      context,
+      '/search/results',
+      arguments: {'query': query},
+    );
   }
 }

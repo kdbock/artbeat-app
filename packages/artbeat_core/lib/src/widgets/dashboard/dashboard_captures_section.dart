@@ -47,7 +47,7 @@ class DashboardCapturesSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [ArtbeatColors.primaryGreen, ArtbeatColors.primaryPurple],
             ),
             borderRadius: BorderRadius.circular(8),
@@ -329,7 +329,9 @@ class DashboardCapturesSection extends StatelessWidget {
                         color: ArtbeatColors.backgroundSecondary,
                         image: capture.imageUrl.isNotEmpty
                             ? DecorationImage(
-                                image: NetworkImage(capture.imageUrl),
+                                image:
+                                    NetworkImage(capture.imageUrl)
+                                        as ImageProvider,
                                 fit: BoxFit.cover,
                               )
                             : null,

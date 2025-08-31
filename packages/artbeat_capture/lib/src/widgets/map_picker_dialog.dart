@@ -8,11 +8,7 @@ class MapPickerDialog extends StatefulWidget {
   final GeoPoint? initialLocation;
   final String? initialAddress;
 
-  const MapPickerDialog({
-    super.key,
-    this.initialLocation,
-    this.initialAddress,
-  });
+  const MapPickerDialog({super.key, this.initialLocation, this.initialAddress});
 
   @override
   State<MapPickerDialog> createState() => _MapPickerDialogState();
@@ -115,8 +111,10 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
         body: Stack(
           children: [
             GoogleMap(
+              key: const Key('map_picker_dialog_map'),
               initialCameraPosition: CameraPosition(
-                target: _selectedLocation ??
+                target:
+                    _selectedLocation ??
                     const LatLng(37.7749, -122.4194), // Default to SF
                 zoom: 15,
               ),
@@ -141,9 +139,7 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.my_location),
               ),

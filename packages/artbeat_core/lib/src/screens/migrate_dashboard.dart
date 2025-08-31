@@ -92,7 +92,7 @@ class DashboardMigrationExample {
 
   /// Example of how to customize a section
   static Widget buildCustomDashboard(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: SafeArea(
         child: CustomScrollView(
           slivers: [

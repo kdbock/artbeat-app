@@ -13,6 +13,7 @@ class UserSearchScreen extends StatefulWidget {
 class _UserSearchScreenState extends State<UserSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<UserModel> _searchResults = [];
   bool _isLoading = false;
   bool _hasSearched = false;
@@ -63,12 +64,18 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Users'),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Search Users',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
         backgroundColor: ArtbeatColors.backgroundPrimary,
       ),
-      body: Column(
+      drawer: const ArtbeatDrawer(),
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),

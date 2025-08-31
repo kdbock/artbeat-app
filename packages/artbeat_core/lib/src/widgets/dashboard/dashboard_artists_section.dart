@@ -247,7 +247,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/artists/search'),
+              onPressed: () => Navigator.pushNamed(context, '/artist/search'),
               icon: const Icon(Icons.search, size: 16),
               label: const Text('Find Artists'),
               style: ElevatedButton.styleFrom(
@@ -295,14 +295,14 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                     onTap: () => Navigator.pushNamed(
                       context,
                       '/artist/public-profile',
-                      arguments: {'artistId': artist.id},
+                      arguments: {'artistId': artist.userId},
                     ),
                     child: Container(
                       width: 50,
                       height: 50,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
                             ArtbeatColors.primaryPurple,
                             ArtbeatColors.primaryGreen,
@@ -353,7 +353,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                   onTap: () => Navigator.pushNamed(
                     context,
                     '/artist/public-profile',
-                    arguments: {'artistId': artist.id},
+                    arguments: {'artistId': artist.userId},
                   ),
                   child: Text(
                     artist.displayName.isNotEmpty

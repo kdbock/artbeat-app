@@ -440,7 +440,7 @@ class _ArtisticMessagingScreenState extends State<ArtisticMessagingScreen>
             showSearch: true,
             showBackButton: true,
             showDeveloperTools: false,
-            onSearchPressed: () => _showSearchModal(context),
+            onSearchPressed: (String query) => _showSearchModal(context),
             onProfilePressed: () => _showProfileMenu(context),
             backgroundColor: Colors.transparent,
             foregroundColor: ArtbeatColors.textPrimary,

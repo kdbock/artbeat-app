@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/admin_stats_model.dart';
 import '../models/recent_activity_model.dart';
 import '../services/admin_service.dart';
 import '../services/recent_activity_service.dart';
-import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
 import 'admin_user_management_screen.dart';
 import 'admin_content_review_screen.dart';
@@ -101,23 +101,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: const AdminDrawer(),
-      appBar: AdminHeader(
-        title: 'Dashboard',
+    return MainLayout(
+      currentIndex: -1, // Admin screens don't use bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Admin Dashboard',
         showBackButton: false,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
       ),
-      body: Container(
+      drawer: const AdminDrawer(),
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,

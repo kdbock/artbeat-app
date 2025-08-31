@@ -439,9 +439,13 @@ class _GalleryAnalyticsDashboardScreenState
     final totalPaidCommission = _commissionMetrics['paidCommission'] ?? 0.0;
 
     // FIX: Add missing return for premium gallery analytics UI
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gallery Analytics'),
+    return core.MainLayout(
+      currentIndex: -1, // Gallery analytics doesn't use bottom navigation
+      appBar: core.EnhancedUniversalHeader(
+        title: 'Gallery Analytics',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: false,
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.calendar_today),
@@ -484,7 +488,7 @@ class _GalleryAnalyticsDashboardScreenState
           ),
         ],
       ),
-      body: RefreshIndicator(
+      child: RefreshIndicator(
         onRefresh: _checkSubscriptionAndLoadData,
         child: SingleChildScrollView(
           child: Padding(

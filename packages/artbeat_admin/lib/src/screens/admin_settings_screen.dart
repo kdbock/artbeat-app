@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/admin_settings_model.dart';
 import '../services/admin_settings_service.dart';
-import '../widgets/admin_header.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Admin Settings Screen
@@ -97,22 +97,14 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: Colors.white,
-      drawer: const AdminDrawer(),
-      appBar: AdminHeader(
-        title: 'Settings',
+    return MainLayout(
+      currentIndex: -1, // Admin screens don't use bottom navigation
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: 'Admin Settings',
         showBackButton: true,
         showSearch: true,
-        showChat: true,
-        showDeveloper: true,
-        onBackPressed: () => Navigator.pop(context),
-        onMenuPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
-        onSearchPressed: () => Navigator.pushNamed(context, '/search'),
-        onChatPressed: () => Navigator.pushNamed(context, '/messaging'),
+        showDeveloperTools: true,
         actions: [
           if (_hasUnsavedChanges)
             TextButton(
@@ -124,7 +116,8 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
             ),
         ],
       ),
-      body: Container(
+      drawer: const AdminDrawer(),
+      child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -143,12 +136,6 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
                   : _buildSettingsContent(),
         ),
       ),
-      floatingActionButton: _hasUnsavedChanges
-          ? FloatingActionButton(
-              onPressed: _saveSettings,
-              child: const Icon(Icons.save),
-            )
-          : null,
     );
   }
 

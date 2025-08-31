@@ -807,7 +807,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         Navigator.pushNamed(
                           context,
                           '/artist/public-profile',
-                          arguments: {'artistId': artist.id},
+                          arguments: {'artistId': artist.userId},
                         );
                       },
                       trailing: ElevatedButton(

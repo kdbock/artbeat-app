@@ -605,18 +605,19 @@ class _EnhancedArtWalkCreateScreenState
           Navigator.of(context).pop();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk',
+      child: MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: EnhancedUniversalHeader(
+            title: widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk',
+            showLogo: false,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.chat),
+                onPressed: () => Navigator.pushNamed(context, '/messaging'),
+              ),
+            ],
           ),
-          backgroundColor: EnhancedCreateColors.primaryIndigo,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          leading: CloseButton(
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
-        ),
         body: FadeTransition(
           opacity: _fadeAnimation,
           child: SlideTransition(
@@ -625,7 +626,7 @@ class _EnhancedArtWalkCreateScreenState
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildForm() {
@@ -907,7 +908,10 @@ class _EnhancedArtWalkCreateScreenState
             leading:
                 art.imageUrl.isNotEmpty &&
                     Uri.tryParse(art.imageUrl)?.hasScheme == true
-                ? CircleAvatar(backgroundImage: NetworkImage(art.imageUrl))
+                ? CircleAvatar(
+                    backgroundImage:
+                        NetworkImage(art.imageUrl) as ImageProvider,
+                  )
                 : const CircleAvatar(child: Icon(Icons.art_track)),
             title: Text(art.title),
             subtitle: Text(art.artistName ?? 'Unknown Artist'),

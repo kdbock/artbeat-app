@@ -186,7 +186,8 @@ class GroupPostCard extends StatelessWidget {
                   post.imageUrls[index].isNotEmpty &&
                       Uri.tryParse(post.imageUrls[index])?.hasScheme == true
                   ? DecorationImage(
-                      image: NetworkImage(post.imageUrls[index]),
+                      image:
+                          NetworkImage(post.imageUrls[index]) as ImageProvider,
                       fit: BoxFit.cover,
                     )
                   : null,

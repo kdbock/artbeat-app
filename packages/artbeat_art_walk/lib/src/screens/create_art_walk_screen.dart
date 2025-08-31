@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
@@ -300,132 +301,136 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ArtWalkHeader(
-        title: widget.artWalkId != null
-            ? 'Edit Art Walk'
-            : 'Create New Art Walk',
-        showBackButton: true,
-        showSearch: false,
-        showChat: true,
-        showDeveloper: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline, color: Color(0xFF00BF63)),
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) => ArtWalkInfoCard(
-                  onDismiss: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              CreateArtWalkColors.backgroundGradientStart,
-              CreateArtWalkColors.backgroundGradientEnd,
-            ],
-          ),
+    return MainLayout(
+      currentIndex: -1,
+      child: Scaffold(
+        appBar: EnhancedUniversalHeader(
+          title: widget.artWalkId != null
+              ? 'Edit Art Walk'
+              : 'Create New Art Walk',
+          showLogo: false,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.chat),
+              onPressed: () => Navigator.pushNamed(context, '/messaging'),
+            ),
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () {
+                showDialog<void>(
+                  context: context,
+                  builder: (context) => ArtWalkInfoCard(
+                    onDismiss: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
         ),
-        child: _isLoading && _availablePublicArt.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      TextFormField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(
-                          labelText: 'Art Walk Title',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a title';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: const InputDecoration(
-                          labelText: 'Description',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a description';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Make this Art Walk public?'),
-                          Switch(
-                            value: _isPublic,
-                            onChanged: (value) {
-                              setState(() {
-                                _isPublic = value;
-                              });
-                            },
-                            activeThumbColor: CreateArtWalkColors.accentGold,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                CreateArtWalkColors.backgroundGradientStart,
+                CreateArtWalkColors.backgroundGradientEnd,
+              ],
+            ),
+          ),
+          child: _isLoading && _availablePublicArt.isEmpty
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        TextFormField(
+                          controller: _titleController,
+                          decoration: const InputDecoration(
+                            labelText: 'Art Walk Title',
+                            border: OutlineInputBorder(),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildCoverImagePicker(),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Select Public Art Pieces',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildPublicArtSelectionList(),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
-                          backgroundColor: CreateArtWalkColors.accentGold,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 4,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a title';
+                            }
+                            return null;
+                          },
                         ),
-                        child: _isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : const Text(
-                                'Create Art Walk',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _descriptionController,
+                          decoration: const InputDecoration(
+                            labelText: 'Description',
+                            border: OutlineInputBorder(),
+                          ),
+                          maxLines: 3,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a description';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Make this Art Walk public?'),
+                            Switch(
+                              value: _isPublic,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isPublic = value;
+                                });
+                              },
+                              activeThumbColor: CreateArtWalkColors.accentGold,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildCoverImagePicker(),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Select Public Art Pieces',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildPublicArtSelectionList(),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 50),
+                            backgroundColor: CreateArtWalkColors.accentGold,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: _isLoading
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : const Text(
+                                  'Create Art Walk',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+        ),
       ),
     );
   }

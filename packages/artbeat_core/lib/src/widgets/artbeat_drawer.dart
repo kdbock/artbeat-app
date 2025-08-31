@@ -146,6 +146,12 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/notifications',
       '/search',
       '/search/results',
+      '/art-search',
+      '/art-walk-search',
+      '/local',
+      '/location-search',
+      '/trending',
+      '/artist-search',
       '/feedback',
       '/developer-feedback-admin',
     };
@@ -164,7 +170,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       }
     } else {
       // Show "Coming Soon" dialog for unimplemented routes
-      showDialog(
+      showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Coming Soon'),
@@ -346,6 +352,13 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
                   ],
                 ),
               ), // <-- closes DrawerHeader
+              // Main Navigation Section
+              _buildSectionHeader('Navigation'),
+              ...ArtbeatDrawerItems.mainNavigationItems.map(
+                (item) => _buildDrawerItem(context, item),
+              ),
+              const Divider(),
+
               // User Section
               _buildSectionHeader('User'),
               ...ArtbeatDrawerItems.userItems.map(

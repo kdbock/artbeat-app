@@ -68,15 +68,23 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _loadArtists,
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? _buildErrorWidget()
-              : _artists.isEmpty
-                  ? _buildEmptyWidget()
-                  : _buildArtistsList(),
+    return MainLayout(
+      currentIndex: -1,
+      appBar: EnhancedUniversalHeader(
+        title: widget.title ?? 'Artists',
+        showLogo: false,
+        showBackButton: true,
+      ),
+      child: RefreshIndicator(
+        onRefresh: _loadArtists,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? _buildErrorWidget()
+                : _artists.isEmpty
+                    ? _buildEmptyWidget()
+                    : _buildArtistsList(),
+      ),
     );
   }
 
@@ -147,7 +155,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
           Navigator.pushNamed(
             context,
             '/artist/public-profile',
-            arguments: {'artistId': artist.id},
+            arguments: {'artistId': artist.userId},
           );
         },
         borderRadius: BorderRadius.circular(8),
@@ -224,7 +232,7 @@ class _ArtistListScreenState extends State<ArtistListScreen> {
                   Navigator.pushNamed(
                     context,
                     '/artist/public-profile',
-                    arguments: {'artistId': artist.id},
+                    arguments: {'artistId': artist.userId},
                   );
                 },
                 icon: const Icon(

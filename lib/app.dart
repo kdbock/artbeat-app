@@ -8,7 +8,6 @@ import 'package:artbeat_community/artbeat_community.dart';
 import 'package:artbeat_events/artbeat_events.dart' as events;
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
-import 'package:artbeat_artist/artbeat_artist.dart';
 import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 
 import 'src/widgets/error_boundary.dart';
@@ -131,12 +130,12 @@ class MyApp extends StatelessWidget {
                 update:
                     (
                       _,
-                      eventService,
-                      artworkService,
-                      artWalkService,
-                      subscriptionService,
-                      userService,
-                      captureService,
+                      events.EventService eventService,
+                      ArtworkService artworkService,
+                      ArtWalkService artWalkService,
+                      core.SubscriptionService subscriptionService,
+                      core.UserService userService,
+                      capture.CaptureService captureService,
                       previous,
                     ) =>
                         previous ??

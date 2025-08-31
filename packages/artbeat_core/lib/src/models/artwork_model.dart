@@ -48,7 +48,7 @@ class ArtworkModel {
       isSold: data['isSold'] as bool? ?? false,
       galleryId: data['galleryId'] as String?,
       applauseCount: data['applauseCount'] as int? ?? 0,
-      viewsCount: data['viewsCount'] as int? ?? 0,
+      viewsCount: data['viewsCount'] as int? ?? data['viewCount'] as int? ?? 0,
       artistName: data['artistName'] as String? ?? 'Unknown Artist',
     );
   }

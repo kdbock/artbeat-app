@@ -25,6 +25,7 @@ class CreateGroupPostScreen extends StatefulWidget {
 class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
   final _formKey = GlobalKey<FormState>();
   final _contentController = TextEditingController();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _isLoading = false;
@@ -41,9 +42,14 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Create ${widget.groupType.title} Post'),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: 'Create ${widget.groupType.title} Post',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
         backgroundColor: _getGroupColor(),
         foregroundColor: Colors.white,
         actions: [
@@ -68,7 +74,8 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
           ),
         ],
       ),
-      body: Form(
+      drawer: const ArtbeatDrawer(),
+      child: Form(
         key: _formKey,
         child: Column(
           children: [

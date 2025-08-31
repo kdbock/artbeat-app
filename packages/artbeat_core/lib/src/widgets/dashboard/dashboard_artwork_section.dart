@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:artbeat_community/artbeat_community.dart' as community;
+import 'package:artbeat_artist/artbeat_artist.dart' as artist;
+import 'package:share_plus/share_plus.dart';
 
 class DashboardArtworkSection extends StatelessWidget {
   final DashboardViewModel viewModel;
@@ -46,9 +49,7 @@ class DashboardArtworkSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [ArtbeatColors.primaryGreen, ArtbeatColors.primaryPurple],
-            ),
+            gradient: ArtbeatColors.primaryGradient,
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(Icons.palette, color: Colors.white, size: 20),
@@ -76,14 +77,49 @@ class DashboardArtworkSection extends StatelessWidget {
             ],
           ),
         ),
-        ElevatedButton.icon(
-          onPressed: () => Navigator.pushNamed(context, '/artwork/gallery'),
-          icon: const Icon(Icons.explore, size: 16),
-          label: const Text('View All'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ArtbeatColors.primaryBlue,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [ArtbeatColors.primaryGreen, ArtbeatColors.primaryPurple],
+            ),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.pushNamed(context, '/artwork/browse'),
+              borderRadius: BorderRadius.circular(25),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.explore, color: Colors.white, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -176,17 +212,17 @@ class DashboardArtworkSection extends StatelessWidget {
         color: ArtbeatColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Center(
+      child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.palette_outlined,
               color: ArtbeatColors.textSecondary,
               size: 48,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            SizedBox(height: 16),
+            Text(
               'No artwork available',
               style: TextStyle(
                 color: ArtbeatColors.textPrimary,
@@ -194,20 +230,10 @@ class DashboardArtworkSection extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Check back soon for featured artwork!',
               style: TextStyle(color: ArtbeatColors.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/artwork/upload'),
-              icon: const Icon(Icons.add, size: 16),
-              label: const Text('Upload Art'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ArtbeatColors.primaryBlue,
-                foregroundColor: Colors.white,
-              ),
             ),
           ],
         ),
@@ -217,9 +243,9 @@ class DashboardArtworkSection extends StatelessWidget {
 
   Widget _buildArtworkCard(BuildContext context, ArtworkModel artworkItem) {
     return Container(
-      width: 150,
+      width: 180,
+      height: 200,
       decoration: BoxDecoration(
-        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -240,113 +266,122 @@ class DashboardArtworkSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                // Artwork image
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: ArtbeatColors.backgroundSecondary,
-                    ),
-                    child: artworkItem.imageUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: artworkItem.imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
+                // Artwork image (full background)
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: ArtbeatColors.backgroundSecondary,
+                  ),
+                  child: _isValidImageUrl(artworkItem.imageUrl)
+                      ? CachedNetworkImage(
+                          imageUrl: artworkItem.imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          errorWidget: (context, url, error) {
+                            debugPrint(
+                              '❌ Error loading artwork image: $url - Error: $error',
+                            );
+                            return const Icon(
                               Icons.image,
                               color: ArtbeatColors.textSecondary,
                               size: 32,
-                            ),
-                          )
-                        : const Icon(
-                            Icons.image,
-                            color: ArtbeatColors.textSecondary,
-                            size: 32,
-                          ),
-                  ),
+                            );
+                          },
+                        )
+                      : Builder(
+                          builder: (context) {
+                            // Only log invalid URLs in debug mode to reduce spam
+                            if (artworkItem.imageUrl.isNotEmpty) {
+                              debugPrint(
+                                '⚠️ Invalid artwork image URL: ${artworkItem.imageUrl}',
+                              );
+                            }
+                            return const Icon(
+                              Icons.image,
+                              color: ArtbeatColors.textSecondary,
+                              size: 32,
+                            );
+                          },
+                        ),
                 ),
 
-                // Artwork info
-                Expanded(
-                  flex: 2,
+                // Bottom gradient overlay for title and engagement
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
                   child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.7),
+                        ],
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         // Title
                         Text(
-                          artworkItem.title.isNotEmpty
-                              ? artworkItem.title
-                              : 'Untitled',
+                          artworkItem.title.toString(),
                           style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: ArtbeatColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black,
+                                offset: Offset(1, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
 
-                        // Artist name
-                        Text(
-                          'by ${artworkItem.artistName}',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: ArtbeatColors.textSecondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-
-                        const Spacer(),
-
-                        // Engagement stats
+                        // Engagement icons row
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.favorite_border,
-                                  size: 12,
-                                  color: ArtbeatColors.textSecondary,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  _formatCount(artworkItem.likesCount),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: ArtbeatColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+                            // Appreciate (Heart/Palette)
+                            _buildEngagementButton(
+                              Icons.palette_outlined,
+                              artworkItem.likesCount,
+                              () => _handleAppreciate(context, artworkItem),
                             ),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.remove_red_eye_outlined,
-                                  size: 12,
-                                  color: ArtbeatColors.textSecondary,
-                                ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  _formatCount(artworkItem.viewsCount),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: ArtbeatColors.textSecondary,
-                                  ),
-                                ),
-                              ],
+
+                            // Discuss (Comment)
+                            _buildEngagementButton(
+                              Icons.chat_bubble_outline,
+                              0, // Comments count - would need to be added to model
+                              () => _handleDiscuss(context, artworkItem),
+                            ),
+
+                            // Amplify (Share)
+                            _buildEngagementButton(
+                              Icons.share_outlined,
+                              0, // Shares count - would need to be added to model
+                              () => _handleAmplify(context, artworkItem),
+                            ),
+
+                            // Views
+                            _buildEngagementButton(
+                              Icons.remove_red_eye_outlined,
+                              artworkItem.viewsCount,
+                              null, // No action for views
                             ),
                           ],
                         ),
@@ -360,6 +395,121 @@ class DashboardArtworkSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildEngagementButton(IconData icon, int count, VoidCallback? onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: Colors.white),
+            if (count > 0) ...[
+              const SizedBox(width: 4),
+              Text(
+                _formatCount(count),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleAppreciate(BuildContext context, ArtworkModel artwork) async {
+    try {
+      final engagementService = UniversalEngagementService();
+      await engagementService.toggleEngagement(
+        contentId: artwork.id.toString(),
+        contentType: 'artwork',
+        engagementType: EngagementType.appreciate,
+      );
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Artwork appreciated!')));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+    }
+  }
+
+  void _handleDiscuss(BuildContext context, ArtworkModel artwork) async {
+    try {
+      // Get the artist profile first
+      final artistProfileService = artist.ArtistProfileService();
+      final artistProfile = await artistProfileService.getArtistProfileByUserId(
+        artwork.artistId.toString(),
+      );
+
+      if (artistProfile != null) {
+        // Navigate to artist community feed
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) =>
+                community.ArtistCommunityFeedScreen(artist: artistProfile),
+          ),
+        );
+      } else {
+        // Fallback to artwork detail if artist not found
+        Navigator.pushNamed(
+          context,
+          '/artwork/detail',
+          arguments: {'artworkId': artwork.id.toString()},
+        );
+      }
+    } catch (e) {
+      // Fallback to artwork detail on error
+      Navigator.pushNamed(
+        context,
+        '/artwork/detail',
+        arguments: {'artworkId': artwork.id.toString()},
+      );
+    }
+  }
+
+  void _handleAmplify(BuildContext context, ArtworkModel artwork) async {
+    try {
+      // Create share content
+      final shareText =
+          '${artwork.title} by ${artwork.artistName}\n\n'
+          '${artwork.description}\n\n'
+          'Discover amazing art on ARTbeat!\n'
+          'https://artbeat.app/artwork/${artwork.id}';
+
+      // Share the artwork
+      await Share.share(shareText);
+
+      // Track the share as an engagement
+      final engagementService = UniversalEngagementService();
+      await engagementService.toggleEngagement(
+        contentId: artwork.id.toString(),
+        contentType: 'artwork',
+        engagementType: EngagementType.amplify,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Artwork shared successfully!')),
+      );
+    } catch (e) {
+      debugPrint('Error sharing artwork: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
+    }
   }
 
   Widget _buildSkeletonCard() {
@@ -385,5 +535,29 @@ class DashboardArtworkSection extends StatelessWidget {
       return '${(count / 1000).toStringAsFixed(1)}K';
     }
     return count.toString();
+  }
+
+  bool _isValidImageUrl(String? url) {
+    if (url == null || url.isEmpty || url.trim().isEmpty) return false;
+
+    // Check for invalid file URLs
+    if (url == 'file:///' || url.startsWith('file:///') && url.length <= 8) {
+      return false;
+    }
+
+    // Check for just the file scheme with no actual path
+    if (url == 'file://' || url == 'file:') {
+      return false;
+    }
+
+    // Check for malformed URLs that start with file:// but have no host
+    if (url.startsWith('file://') && !url.startsWith('file:///')) {
+      return false;
+    }
+
+    // Check for valid URL schemes
+    return url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        (url.startsWith('file:///') && url.length > 8);
   }
 }

@@ -337,9 +337,13 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.eventId == null ? 'Create Event' : 'Edit Event'),
+    return core.MainLayout(
+      currentIndex: 2, // Events tab in bottom navigation
+      appBar: core.EnhancedUniversalHeader(
+        title: widget.eventId == null ? 'Create Event' : 'Edit Event',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: false,
         actions: [
           TextButton(
             onPressed: _saveEvent,
@@ -347,7 +351,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           ),
         ],
       ),
-      body: Form(
+      child: Form(
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),

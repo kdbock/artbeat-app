@@ -52,8 +52,9 @@ class UserModel {
     return UserModel(
       id: doc.id,
       email: data['email'] as String,
-      username: data['username'] as String,
-      fullName: data['fullName'] as String,
+      username: data['username'] as String? ?? '',
+      fullName:
+          data['fullName'] as String? ?? data['displayName'] as String? ?? '',
       bio: data['bio'] as String? ?? '',
       location: data['location'] as String? ?? '',
       profileImageUrl: data['profileImageUrl'] as String? ?? '',

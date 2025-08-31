@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../models/artwork_model.dart';
-import '../../models/user_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import '../../models/artwork_model.dart' as community;
+import '../../models/user_model.dart' as community;
 import '../../widgets/artwork_card_widget.dart';
 
 class ArtistPortfolioScreen extends StatelessWidget {
   final String artistName;
-  final UserModel artist;
-  final List<ArtworkModel> artworks;
+  final community.UserModel artist;
+  final List<community.ArtworkModel> artworks;
 
-  const ArtistPortfolioScreen(
-      {super.key, required this.artistName, required this.artist, required this.artworks});
+  const ArtistPortfolioScreen({
+    super.key,
+    required this.artistName,
+    required this.artist,
+    required this.artworks,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('$artistName\'s Portfolio'),
+    return MainLayout(
+      currentIndex: -1, // Not a main navigation screen
+      appBar: EnhancedUniversalHeader(
+        title: '$artistName\'s Portfolio',
+        showBackButton: true,
+        showSearch: false,
+        showDeveloperTools: true,
       ),
-      body: artworks.isEmpty
-          ? const Center(
-              child: Text('No artworks available'),
-            )
+      drawer: const ArtbeatDrawer(),
+      child: artworks.isEmpty
+          ? const Center(child: Text('No artworks available'))
           : GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
