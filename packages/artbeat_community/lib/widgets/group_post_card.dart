@@ -12,6 +12,7 @@ class GroupPostCard extends StatelessWidget {
   final VoidCallback onFeature;
   final VoidCallback onGift;
   final VoidCallback onShare;
+  final bool isCompact;
 
   const GroupPostCard({
     super.key,
@@ -22,137 +23,57 @@ class GroupPostCard extends StatelessWidget {
     required this.onFeature,
     required this.onGift,
     required this.onShare,
+    this.isCompact = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
+    // Wrap the existing content inside UniversalContentCard using customContent
+    return UniversalContentCard(
+      contentId: post.id,
+      contentType: _getContentType(),
+      title: post.content.isNotEmpty
+          ? (post.content.length > 80
+                ? '${post.content.substring(0, 77)}...'
+                : post.content)
+          : '',
+      description: post.content.isNotEmpty ? post.content : null,
+      imageUrl: post.imageUrls.isNotEmpty ? post.imageUrls.first : null,
+      authorName: post.userName,
+      authorImageUrl: post.userPhotoUrl,
+      authorId: post.userId,
+      createdAt: post.createdAt,
+      engagementStats: EngagementStats(
+        appreciateCount: post.applauseCount,
+        discussCount: post.commentCount,
+        amplifyCount: post.shareCount,
+        lastUpdated: DateTime.now(),
+      ),
+      tags: post.tags,
+      isCompact: isCompact,
+      showGift: true,
+      showConnect: false,
+      onDiscuss: onComment,
+      onGift: onGift,
+      onAmplify: onShare,
+      customContent: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
           _buildContent(),
           if (post.imageUrls.isNotEmpty) _buildImages(),
           _buildSpecializedContent(),
           _buildHashtags(),
-          _buildActions(),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage:
-                post.userPhotoUrl.isNotEmpty &&
-                    Uri.tryParse(post.userPhotoUrl)?.hasScheme == true
-                ? NetworkImage(post.userPhotoUrl)
-                : null,
-            child:
-                post.userPhotoUrl.isEmpty ||
-                    Uri.tryParse(post.userPhotoUrl)?.hasScheme != true
-                ? const Icon(Icons.person, size: 20)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      post.userName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    if (post.isUserVerified) ...[
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified,
-                        size: 16,
-                        color: ArtbeatColors.primaryPurple,
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Text(
-                      DateFormat('MMM d, y • h:mm a').format(post.createdAt),
-                      style: const TextStyle(
-                        color: ArtbeatColors.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                    if (post.location.isNotEmpty) ...[
-                      const Text(
-                        ' • ',
-                        style: TextStyle(color: ArtbeatColors.textSecondary),
-                      ),
-                      const Icon(
-                        Icons.location_on,
-                        size: 12,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          post.location,
-                          style: const TextStyle(
-                            color: ArtbeatColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          _buildGroupBadge(),
-        ],
-      ),
-    );
+  String _getContentType() {
+    // Map group types to a generic 'post' contentType for universal card
+    return 'post';
   }
 
-  Widget _buildGroupBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getGroupColor().withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getGroupColor().withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(_getGroupIcon(), size: 12, color: _getGroupColor()),
-          const SizedBox(width: 4),
-          Text(
-            _getGroupLabel(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: _getGroupColor(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Group badge and legacy action helpers removed - UI now uses UniversalContentCard
 
   Widget _buildContent() {
     if (post.content.isEmpty) return const SizedBox.shrink();
@@ -493,50 +414,7 @@ class GroupPostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActions() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey.withValues(alpha: 0.2), width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          _buildActionButton(
-            label: 'Appreciate',
-            count: post.applauseCount,
-            onTap: onAppreciate,
-            color: Colors.red,
-          ),
-          _buildActionButton(
-            label: 'Comment',
-            count: post.commentCount,
-            onTap: onComment,
-            color: ArtbeatColors.primaryPurple,
-          ),
-          _buildActionButton(
-            label: 'Feature',
-            count: 0, // Feature doesn't have a count
-            onTap: onFeature,
-            color: ArtbeatColors.accentYellow,
-          ),
-          _buildActionButton(
-            label: 'Gift',
-            count: 0, // Gift doesn't have a count
-            onTap: onGift,
-            color: ArtbeatColors.primaryGreen,
-          ),
-          _buildActionButton(
-            label: 'Share',
-            count: post.shareCount,
-            onTap: onShare,
-            color: ArtbeatColors.secondaryTeal,
-          ),
-        ],
-      ),
-    );
-  }
+  // Legacy action row removed; engagement handled by UniversalEngagementBar
 
   Widget _buildActionButton({
     required String label,
@@ -644,4 +522,6 @@ class GroupPostCard extends StatelessWidget {
         return 'WANTED';
     }
   }
+
+  // Removed legacy helpers - group visuals handled by UniversalContentCard/customContent
 }

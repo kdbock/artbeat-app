@@ -4,11 +4,9 @@
 export 'analytics_dashboard_screen.dart';
 export 'artist_browse_screen.dart';
 export 'artist_dashboard_screen.dart';
-export 'artist_journey_screen.dart';
 export 'artist_onboarding_screen.dart';
 export 'artist_profile_edit_screen.dart';
 export 'artist_public_profile_screen.dart';
-export 'artwork_browse_screen.dart';
 export 'event_creation_screen.dart';
 export 'events_screen.dart';
 export 'featured_artist_screen.dart';

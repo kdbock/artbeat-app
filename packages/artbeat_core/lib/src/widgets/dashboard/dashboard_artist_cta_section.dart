@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+// ...existing code...
 
 class DashboardArtistCtaSection extends StatelessWidget {
   final DashboardViewModel viewModel;
@@ -128,7 +129,8 @@ class DashboardArtistCtaSection extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pushNamed(context, '/artists'),
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/artist/browse'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.white,
                       side: const BorderSide(color: Colors.white, width: 2),

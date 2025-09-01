@@ -22,7 +22,10 @@ class UniversalContentCard extends StatelessWidget {
   final VoidCallback? onAuthorTap;
   final VoidCallback? onDiscuss;
   final VoidCallback? onAmplify;
+  final VoidCallback? onGift;
   final bool showConnect;
+  final bool showGift;
+  final bool showCommentPrompt;
   final bool isCompact;
   final Widget? customContent;
   final List<String>? tags;
@@ -44,7 +47,10 @@ class UniversalContentCard extends StatelessWidget {
     this.onAuthorTap,
     this.onDiscuss,
     this.onAmplify,
+    this.onGift,
     this.showConnect = false,
+    this.showGift = false,
+    this.showCommentPrompt = false,
     this.isCompact = false,
     this.customContent,
     this.tags,
@@ -81,10 +87,46 @@ class UniversalContentCard extends StatelessWidget {
               initialStats: engagementStats,
               onDiscuss: onDiscuss,
               onAmplify: onAmplify,
+              onGift: onGift,
               showConnect: showConnect,
+              showGift: showGift,
               isCompact: isCompact,
               targetUserId: authorId,
             ),
+            // Optional quick comment prompt under engagement bar
+            if (showCommentPrompt && onDiscuss != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: GestureDetector(
+                  onTap: onDiscuss,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ArtbeatColors.lightGray,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 18,
+                          color: ArtbeatColors.darkGray,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Write a comment...',
+                            style: TextStyle(color: ArtbeatColors.darkGray),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -135,23 +177,26 @@ class UniversalContentCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Text(
-                      _getContentTypeLabel(),
-                      style: TextStyle(
-                        color: _getContentTypeColor(),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                    // Hide the content-type label for plain posts — posts are posts.
+                    if (contentType.isNotEmpty && contentType != 'post') ...[
+                      Text(
+                        _getContentTypeLabel(),
+                        style: TextStyle(
+                          color: _getContentTypeColor(),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text(
-                      '•',
-                      style: TextStyle(
-                        color: ArtbeatColors.darkGray,
-                        fontSize: 12,
+                      const SizedBox(width: 4),
+                      const Text(
+                        '•',
+                        style: TextStyle(
+                          color: ArtbeatColors.darkGray,
+                          fontSize: 12,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
+                      const SizedBox(width: 4),
+                    ],
                     Text(
                       _formatTimestamp(createdAt),
                       style: const TextStyle(
@@ -165,19 +210,7 @@ class UniversalContentCard extends StatelessWidget {
             ),
           ),
 
-          // Content type icon
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _getContentTypeColor().withAlpha(51),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              _getContentTypeIcon(),
-              size: 16,
-              color: _getContentTypeColor(),
-            ),
-          ),
+          // Removed content-type icon - cards now show a cleaner header
         ],
       ),
     );
@@ -295,23 +328,6 @@ class UniversalContentCard extends StatelessWidget {
         return ArtbeatColors.primaryBlue;
       default:
         return ArtbeatColors.darkGray;
-    }
-  }
-
-  IconData _getContentTypeIcon() {
-    switch (contentType) {
-      case 'post':
-        return Icons.article_outlined;
-      case 'artwork':
-        return Icons.palette_outlined;
-      case 'art_walk':
-        return Icons.map_outlined;
-      case 'event':
-        return Icons.event_outlined;
-      case 'profile':
-        return Icons.person_outline;
-      default:
-        return Icons.content_copy_outlined;
     }
   }
 

@@ -38,6 +38,20 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     if (widget.chat.isGroup) {
       return widget.chat.groupName ?? 'Group Chat';
     }
+
+    // Handle edge cases for participant IDs
+    if (widget.chat.participantIds.isEmpty) {
+      return 'Unknown User';
+    }
+
+    if (widget.chat.participantIds.length == 1) {
+      // Only one participant, might be the current user
+      final name = await chatService.getUserDisplayName(
+        widget.chat.participantIds.first,
+      );
+      return name ?? 'Unknown User';
+    }
+
     final otherParticipantId = widget.chat.participantIds.firstWhere(
       (id) => id != chatService.currentUserId,
       orElse: () => widget.chat.participantIds.first,
@@ -51,6 +65,17 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     if (widget.chat.isGroup) {
       return widget.chat.groupImage;
     }
+
+    // Handle edge cases for participant IDs
+    if (widget.chat.participantIds.isEmpty) {
+      return null;
+    }
+
+    if (widget.chat.participantIds.length == 1) {
+      // Only one participant, might be the current user
+      return chatService.getUserPhotoUrl(widget.chat.participantIds.first);
+    }
+
     final otherParticipantId = widget.chat.participantIds.firstWhere(
       (id) => id != chatService.currentUserId,
       orElse: () => widget.chat.participantIds.first,
@@ -461,7 +486,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
     final theme = Theme.of(context);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight + 4),
         child: ArtbeatGradientBackground(
@@ -469,8 +493,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
           child: FutureBuilder<String>(
             future: _chatName,
             builder: (context, snapshot) {
+              final title = snapshot.hasError
+                  ? 'Chat'
+                  : snapshot.data ?? 'Loading...';
               return EnhancedUniversalHeader(
-                title: snapshot.data ?? 'Loading...',
+                title: title,
                 showLogo: false,
                 backgroundColor: Colors.transparent,
                 foregroundColor: ArtbeatColors.textPrimary,
@@ -514,8 +541,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                 imageSnapshot.data == null ||
                                     imageSnapshot.data!.isEmpty
                                 ? Text(
-                                    snapshot.data?.isNotEmpty == true
-                                        ? snapshot.data![0].toUpperCase()
+                                    title.isNotEmpty
+                                        ? title[0].toUpperCase()
                                         : '?',
                                     style: const TextStyle(
                                       color: Colors.white,

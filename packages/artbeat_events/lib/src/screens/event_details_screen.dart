@@ -67,9 +67,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_event?.title ?? 'Event Details'),
+    return MainLayout(
+      currentIndex: 4, // Events tab
+      appBar: EnhancedUniversalHeader(
+        title: _event?.title ?? 'Event Details',
         actions: [
           if (_event != null) ...[
             IconButton(onPressed: _shareEvent, icon: const Icon(Icons.share)),
@@ -105,7 +106,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
           ],
         ],
       ),
-      body: _buildBody(),
+      child: _buildBody(),
     );
   }
 

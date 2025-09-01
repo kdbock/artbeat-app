@@ -17,6 +17,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   bool _isLoading = false;
+  String? _selectedPlan;
 
   @override
   void dispose() {
@@ -295,88 +296,85 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
   Widget _buildAccountChangesPage() {
     return Padding(
       padding: const EdgeInsets.all(24.0),
-      child: Column(
-        children: [
-          const Text(
-            'What Changes in Your Account',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'What Changes in Your Account',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Here\'s what happens when you become an artist',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
+            const SizedBox(height: 8),
+            Text(
+              'Here\'s what happens when you become an artist',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: Column(
-              children: [
-                _buildChangeItem(
-                  icon: Icons.account_circle,
-                  title: 'Account Type',
-                  before: 'Art Enthusiast',
-                  after: 'Artist',
-                  color: Colors.blue,
-                ),
-                const SizedBox(height: 20),
-                _buildChangeItem(
-                  icon: Icons.dashboard,
-                  title: 'Dashboard',
-                  before: 'Discover & Browse',
-                  after: 'Artist Management Hub',
-                  color: Colors.green,
-                ),
-                const SizedBox(height: 20),
-                _buildChangeItem(
-                  icon: Icons.menu,
-                  title: 'Navigation',
-                  before: 'Basic Features',
-                  after: 'Artist Tools & Analytics',
-                  color: Colors.orange,
-                ),
-                const SizedBox(height: 20),
-                _buildChangeItem(
-                  icon: Icons.star,
-                  title: 'Profile',
-                  before: 'Basic Profile',
-                  after: 'Professional Artist Gallery',
-                  color: Colors.purple,
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.shade200),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green.shade700),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Don\'t worry! You can always switch back to a regular user account if needed.',
-                          style: TextStyle(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+            const SizedBox(height: 32),
+            _buildChangeItem(
+              icon: Icons.account_circle,
+              title: 'Account Type',
+              before: 'Art Enthusiast',
+              after: 'Artist',
+              color: Colors.blue,
+            ),
+            const SizedBox(height: 20),
+            _buildChangeItem(
+              icon: Icons.dashboard,
+              title: 'Dashboard',
+              before: 'Discover & Browse',
+              after: 'Artist Management Hub',
+              color: Colors.green,
+            ),
+            const SizedBox(height: 20),
+            _buildChangeItem(
+              icon: Icons.menu,
+              title: 'Navigation',
+              before: 'Basic Features',
+              after: 'Artist Tools & Analytics',
+              color: Colors.orange,
+            ),
+            const SizedBox(height: 20),
+            _buildChangeItem(
+              icon: Icons.star,
+              title: 'Profile',
+              before: 'Basic Profile',
+              after: 'Professional Artist Gallery',
+              color: Colors.purple,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green.shade700),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Don\'t worry! You can always switch back to a regular user account if needed.',
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -499,7 +497,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Start free and upgrade anytime as you grow',
+            'Start free and upgrade anytime — plans built for creators in 2025',
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey.shade600,
@@ -508,34 +506,79 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
           ),
           const SizedBox(height: 32),
           Expanded(
-            child: Column(
+            child: ListView(
               children: [
                 _buildPlanPreview(
-                  title: 'Artist Basic',
+                  title: 'Free Plan',
                   price: 'Free',
-                  description: 'Perfect for getting started',
+                  description:
+                      'Perfect for getting started with your artistic journey',
                   features: [
-                    'Artist profile & gallery',
-                    'Up to 5 artwork listings',
-                    'Basic analytics',
-                    'Community access',
+                    'Up to 3 artworks',
+                    '0.5GB storage',
+                    '5 AI credits/month',
+                    'Basic community access',
+                    'Mobile app access',
                   ],
                   isRecommended: true,
+                  isSelected: _selectedPlan == 'Free Plan',
+                  onTap: () => _onPlanTap('Free Plan'),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _buildPlanPreview(
-                  title: 'Artist Pro',
-                  price: '\$9.99/month',
-                  description: 'For serious artists',
+                  title: 'Starter Plan',
+                  price: '\$4.99/month',
+                  description:
+                      'Ideal for artists ready to sell their first pieces',
                   features: [
-                    'Unlimited artwork listings',
-                    'Featured placement',
-                    'Advanced analytics',
-                    'Event creation',
+                    'Up to 25 artworks',
+                    '5GB storage',
+                    '50 AI credits/month',
+                    'Basic analytics',
+                    'Email support',
                   ],
                   isRecommended: false,
+                  isSelected: _selectedPlan == 'Starter Plan',
+                  onTap: () => _onPlanTap('Starter Plan'),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 12),
+                _buildPlanPreview(
+                  title: 'Creator Plan',
+                  price: '\$12.99/month',
+                  description: 'For established artists growing their business',
+                  features: [
+                    'Up to 100 artworks',
+                    '25GB storage',
+                    '200 AI credits/month',
+                    'Advanced analytics',
+                    'Featured placement',
+                    'Event creation',
+                    'Priority support',
+                  ],
+                  isRecommended: false,
+                  isSelected: _selectedPlan == 'Creator Plan',
+                  onTap: () => _onPlanTap('Creator Plan'),
+                ),
+                const SizedBox(height: 12),
+                _buildPlanPreview(
+                  title: 'Business Plan',
+                  price: '\$29.99/month',
+                  description: 'For galleries and professional art businesses',
+                  features: [
+                    'Unlimited artworks',
+                    '100GB storage',
+                    '500 AI credits/month',
+                    'Team collaboration (5 users)',
+                    'Custom branding',
+                    'API access',
+                    'Advanced reporting',
+                    'Dedicated support',
+                  ],
+                  isRecommended: false,
+                  isSelected: _selectedPlan == 'Business Plan',
+                  onTap: () => _onPlanTap('Business Plan'),
+                ),
+                const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -549,7 +592,7 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'You can start with the free plan and upgrade anytime. No commitment required!',
+                          'If you\'re unsure which plan fits, complete the modern onboarding for a personalized recommendation.',
                           style: TextStyle(
                             color: Colors.blue.shade700,
                             fontWeight: FontWeight.w500,
@@ -573,106 +616,129 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
     required String description,
     required List<String> features,
     required bool isRecommended,
+    bool isSelected = false,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return Material(
+      color: isSelected
+          ? Theme.of(context).primaryColor.withValues(alpha: 0.04)
+          : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isRecommended
-              ? Theme.of(context).primaryColor
-              : Colors.grey.shade300,
-          width: isRecommended ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (isRecommended) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'RECOMMENDED',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                price,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
-                ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : (isRecommended
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey.shade300),
+              width: isSelected ? 2.5 : (isRecommended ? 2 : 1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          ...features
-              .map((feature) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.check,
-                          size: 16,
-                          color: Colors.green.shade600,
+                        Row(
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (isRecommended) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'RECOMMENDED',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                        const SizedBox(width: 8),
                         Text(
-                          feature,
-                          style: const TextStyle(fontSize: 14),
+                          description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       ],
                     ),
-                  ))
-              .toList(),
-        ],
+                  ),
+                  Text(
+                    price,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ...features
+                  .map((feature) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(
+                                Icons.check,
+                                size: 14,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                feature,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -751,20 +817,88 @@ class _ArtistJourneyScreenState extends State<ArtistJourneyScreen> {
       }
 
       if (mounted) {
-        // Navigate to the detailed onboarding process
+        // Step 1: Modern onboarding
+        await Navigator.push<void>(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => Modern2025OnboardingScreen(
+              // After completion, go to artist profile setup
+              key: UniqueKey(),
+            ),
+          ),
+        );
+
+        // Step 2: Artist profile setup
         await Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
             builder: (context) => ArtistOnboardingScreen(
               user: userData,
               onComplete: () {
-                // After onboarding, go to modern subscription experience
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const Modern2025OnboardingScreen(),
-                  ),
-                );
+                // After profile setup, go to dashboard or next step
+                Navigator.pushReplacementNamed(context, '/dashboard');
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onPlanTap(String planName) {
+    setState(() {
+      _selectedPlan = planName;
+    });
+
+    // Immediately proceed to modern onboarding with preselected plan
+    _startArtistJourneyWithPlan(planName);
+  }
+
+  Future<void> _startArtistJourneyWithPlan(String planName) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User not logged in');
+      }
+
+      final userService = core.UserService();
+      final userData = await userService.getUserById(user.uid);
+      if (userData == null) throw Exception('User data not found');
+
+      if (mounted) {
+        await Navigator.push<void>(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => Modern2025OnboardingScreen(
+              key: UniqueKey(),
+              preselectedPlan: planName,
+            ),
+          ),
+        );
+
+        await Navigator.push<void>(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => ArtistOnboardingScreen(
+              user: userData,
+              onComplete: () {
+                Navigator.pushReplacementNamed(context, '/dashboard');
               },
             ),
           ),

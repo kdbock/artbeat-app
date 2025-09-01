@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_artist/src/screens/screens.dart';
+import 'package:artbeat_artwork/src/screens/artwork_browse_screen.dart';
 
 // Get Firebase configuration from ConfigService
 final firebaseConfig = ConfigService.instance.firebaseConfig;

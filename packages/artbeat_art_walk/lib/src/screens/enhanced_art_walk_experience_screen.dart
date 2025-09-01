@@ -450,6 +450,23 @@ class _EnhancedArtWalkExperienceScreenState
           appBar: EnhancedUniversalHeader(
             title: widget.artWalk.title,
             showLogo: false,
+            showBackButton: true,
+            backgroundGradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.topRight,
+              colors: [
+                Color(0xFF4FB3BE), // Light Teal
+                Color(0xFFFF9E80), // Light Orange/Peach
+              ],
+            ),
+            titleGradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.topRight,
+              colors: [
+                Color(0xFF4FB3BE), // Light Teal
+                Color(0xFFFF9E80), // Light Orange/Peach
+              ],
+            ),
           ),
           body: const Center(child: CircularProgressIndicator()),
         ),
@@ -462,6 +479,23 @@ class _EnhancedArtWalkExperienceScreenState
         appBar: EnhancedUniversalHeader(
           title: widget.artWalk.title,
           showLogo: false,
+          showBackButton: true,
+          backgroundGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
+          ),
+          titleGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
+          ),
           actions: [
             if (_isNavigationMode)
               IconButton(

@@ -17,52 +17,22 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
 
   List<ArtWalkModel> _myWalks = [];
   List<ArtWalkModel> _popularWalks = [];
-  List<ArtWalkModel> _regionFilteredWalks = [];
-  String? _selectedRegion;
-
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _loadArtWalks();
-    _determineUserRegion();
   }
 
-  String? _mapZipCodeToRegion(String zipCode) {
-    // Map zip codes to regions - this is a simplified mapping for North Carolina regions
-    // Charlotte area zip codes (280xx-282xx)
-    if (zipCode.startsWith('280') ||
-        zipCode.startsWith('281') ||
-        zipCode.startsWith('282')) {
-      return 'charlotte';
-    }
-    // Raleigh area zip codes (275xx-278xx)
-    else if (zipCode.startsWith('275') ||
-        zipCode.startsWith('276') ||
-        zipCode.startsWith('277') ||
-        zipCode.startsWith('278')) {
-      return 'raleigh';
-    }
-    // Asheville area zip codes (287xx-288xx)
-    else if (zipCode.startsWith('287') || zipCode.startsWith('288')) {
-      return 'asheville';
-    }
-    // For any other zip codes (including out-of-state like 94108), default to "All Regions"
-    return null;
-  }
-
-  Future<void> _determineUserRegion() async {
-    try {
-      final zipCode = await LocationUtils.getZipCodeFromCurrentPosition();
-      if (mounted && zipCode.isNotEmpty) {
-        setState(() {
-          _selectedRegion = _mapZipCodeToRegion(zipCode);
-        });
-      }
-    } catch (e) {
-      // debugPrint('Error determining user region: $e');
+  @override
+  void didUpdateWidget(covariant ArtWalkListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Recreate TabController if length changed during hot reload
+    if (_tabController.length != 2) {
+      _tabController.dispose();
+      _tabController = TabController(length: 2, vsync: this);
     }
   }
 
@@ -160,107 +130,6 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     }
   }
 
-  // Handle art walks filtered by region
-  void _handleRegionFilteredArtWalks(List<ArtWalkModel> artWalks) {
-    if (mounted) {
-      setState(() {
-        _regionFilteredWalks = artWalks;
-      });
-    }
-  }
-
-  // Build tab for browsing by NC regions
-  Widget _buildNCRegionsTab() {
-    return Column(
-      children: [
-        // Region filter widget at the top
-        Container(
-          padding: const EdgeInsets.all(16),
-          child: DropdownButtonFormField<String>(
-            initialValue: _selectedRegion,
-            decoration: const InputDecoration(
-              labelText: 'Filter by Region',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(value: null, child: Text('All Regions')),
-              DropdownMenuItem(value: 'charlotte', child: Text('Charlotte')),
-              DropdownMenuItem(value: 'raleigh', child: Text('Raleigh')),
-              DropdownMenuItem(value: 'asheville', child: Text('Asheville')),
-            ],
-            onChanged: (String? value) {
-              setState(() {
-                _selectedRegion = value;
-              });
-              _handleRegionFilteredArtWalks([]);
-            },
-          ),
-        ),
-
-        // Art walks filtered by region
-        Expanded(
-          child: _regionFilteredWalks.isEmpty
-              ? _buildEmptyState(
-                  'No art walks found in this region',
-                  'Try selecting a different region, or create a new art walk',
-                )
-              : _buildWalksList(_regionFilteredWalks, isMyWalks: false),
-        ),
-      ],
-    );
-  }
-
-  // Build a banner to promote NC region-based exploration
-  Widget _buildNCRegionsBanner() {
-    return GestureDetector(
-      onTap: () {
-        _tabController.animateTo(2); // Switch to NC Regions tab
-      },
-      child: Card(
-        margin: const EdgeInsets.all(16.0),
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            gradient: LinearGradient(
-              colors: [Colors.green.shade100, Colors.green.shade300],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          padding: const EdgeInsets.all(16.0),
-          child: const Row(
-            children: [
-              Icon(Icons.map_outlined, size: 40, color: Colors.green),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Explore NC by Region',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Discover art walks in different regions of North Carolina',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.arrow_forward_ios),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -269,17 +138,23 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
         appBar: EnhancedUniversalHeader(
           title: 'Art Walks',
           showLogo: false,
+          backgroundGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
+          ),
+          titleGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
+          ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                // TODO: Implement search functionality
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.chat),
-              onPressed: () => Navigator.pushNamed(context, '/messaging'),
-            ),
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _loadArtWalks,
@@ -301,7 +176,6 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                 tabs: const [
                   Tab(text: 'My Walks'),
                   Tab(text: 'Popular'),
-                  Tab(text: 'NC Regions'),
                 ],
               ),
             ),
@@ -327,9 +201,6 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                                   isMyWalks: true,
                                 ),
                               ),
-
-                            // NC Regions promo banner
-                            _buildNCRegionsBanner(),
                           ],
                         ),
 
@@ -348,14 +219,8 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
                                   isMyWalks: false,
                                 ),
                               ),
-
-                            // NC Regions promo banner
-                            _buildNCRegionsBanner(),
                           ],
                         ),
-
-                        // NC Regions Tab
-                        _buildNCRegionsTab(),
                       ],
                     ),
             ),
@@ -374,12 +239,6 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
           },
           child: const Icon(Icons.add),
         ),
-        // Add the NC Regions banner below the app bar
-        bottomSheet:
-            _tabController.index ==
-                2 // Only show on NC Regions tab
-            ? _buildNCRegionsBanner()
-            : null,
       ),
     );
   }

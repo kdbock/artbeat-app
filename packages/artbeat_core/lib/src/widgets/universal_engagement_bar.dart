@@ -49,6 +49,10 @@ class _UniversalEngagementBarState extends State<UniversalEngagementBar> {
     super.initState();
     _stats = widget.initialStats;
     _loadEngagementStates();
+    // Debug: log incoming compact mode and ids to diagnose layout choices
+    debugPrint(
+      'UniversalEngagementBar init - contentId=${widget.contentId} contentType=${widget.contentType} isCompact=${widget.isCompact}',
+    );
   }
 
   Future<void> _loadEngagementStates() async {
@@ -169,6 +173,10 @@ class _UniversalEngagementBarState extends State<UniversalEngagementBar> {
 
   @override
   Widget build(BuildContext context) {
+    // Debug: confirm build sees the compact flag
+    debugPrint(
+      'UniversalEngagementBar build - contentId=${widget.contentId} contentType=${widget.contentType} isCompact=${widget.isCompact}',
+    );
     if (widget.isCompact) {
       return _buildCompactBar();
     }
@@ -394,7 +402,7 @@ class _UniversalEngagementBarState extends State<UniversalEngagementBar> {
         if (isActive) {
           return 'You appreciated this • $count total';
         } else {
-          return count > 0 
+          return count > 0
               ? 'Appreciate this artist • $count appreciations'
               : 'Appreciate this artist';
         }
@@ -402,20 +410,20 @@ class _UniversalEngagementBarState extends State<UniversalEngagementBar> {
         if (isActive) {
           return 'You are connected • $count connections';
         } else {
-          return count > 0 
+          return count > 0
               ? 'Connect with this artist • $count connections'
               : 'Connect with this artist';
         }
       case EngagementType.discuss:
-        return count > 0 
+        return count > 0
             ? 'Join the discussion • $count comments'
             : 'Start a discussion';
       case EngagementType.amplify:
-        return count > 0 
+        return count > 0
             ? 'Amplify this artist • $count amplifications'
             : 'Amplify this artist';
       case EngagementType.gift:
-        return count > 0 
+        return count > 0
             ? 'Send a gift • $count gifts received'
             : 'Send a gift to this artist';
     }
@@ -430,55 +438,60 @@ class _UniversalEngagementBarState extends State<UniversalEngagementBar> {
       child: GestureDetector(
         onTap: _isLoading ? null : (widget.onGift ?? () => _handleGiftAction()),
         child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color: hasGifts ? color.withAlpha(51) : color.withAlpha(25),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: hasGifts ? color : color.withAlpha(77),
-            width: hasGifts ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.card_giftcard,
-              size: 18,
-              color: hasGifts ? color : color.withAlpha(179),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            color: hasGifts ? color.withAlpha(51) : color.withAlpha(25),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: hasGifts ? color : color.withAlpha(77),
+              width: hasGifts ? 2 : 1,
             ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _stats.giftCount > 0 ? _stats.giftCount.toString() : 'Gift',
-                    style: TextStyle(
-                      color: hasGifts ? color : color.withAlpha(179),
-                      fontSize: 12,
-                      fontWeight: hasGifts ? FontWeight.w600 : FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (_stats.totalGiftValue > 0)
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.card_giftcard,
+                size: 18,
+                color: hasGifts ? color : color.withAlpha(179),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     Text(
-                      '\$${_stats.totalGiftValue.toStringAsFixed(0)}',
+                      _stats.giftCount > 0
+                          ? _stats.giftCount.toString()
+                          : 'Gift',
                       style: TextStyle(
                         color: hasGifts ? color : color.withAlpha(179),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        fontWeight: hasGifts
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                ],
+                    if (_stats.totalGiftValue > 0)
+                      Text(
+                        '\$${_stats.totalGiftValue.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: hasGifts ? color : color.withAlpha(179),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
   void _handleGiftAction() {

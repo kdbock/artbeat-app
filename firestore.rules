@@ -41,7 +41,12 @@ service cloud.firestore {
         request.auth.uid == userId ||
         isAdmin(request.auth.uid) ||
         // Allow updating engagement stats from any authenticated user
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['engagementStats']))
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['engagementStats'])) ||
+        // Allow updating presence/online status fields
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastSeen', 'lastActive'])) ||
+        // Allow updating presence fields along with other allowed fields
+        (request.resource.data.diff(resource.data).affectedKeys().hasAny(['isOnline', 'lastSeen', 'lastActive']) &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastSeen', 'lastActive', 'engagementStats']))
       );
       allow delete: if isAdmin(request.auth.uid);
       
@@ -93,13 +98,18 @@ service cloud.firestore {
         );
       }
 
-      // User's archived chats subcollection
-      match /archivedChats/{archivedChatId} {
-        allow read, list: if isAuthenticated() && (
+      // User's notifications subcollection (for messaging notifications)
+      match /notifications/{notificationId} {
+        allow read: if isAuthenticated() && (
           isAdmin(request.auth.uid) || 
           request.auth.uid == userId
         );
-        allow write: if isAuthenticated() && (
+        allow create: if isAuthenticated();
+        allow update: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow delete: if isAuthenticated() && (
           isAdmin(request.auth.uid) || 
           request.auth.uid == userId
         );
@@ -176,6 +186,18 @@ service cloud.firestore {
           isAdmin(request.auth.uid)
         );
       }
+
+      // Typing status subcollection
+      match /typing/{document=**} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds ||
+          isAdmin(request.auth.uid)
+        );
+        allow write: if isAuthenticated() && (
+          request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds ||
+          isAdmin(request.auth.uid)
+        );
+      }
     }
 
     // Message stats
@@ -236,12 +258,69 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.creatorId ||
-        isAdmin(request.auth.uid)
+        isAdmin(request.auth.uid) ||
+        // Allow updating engagement stats (viewCount, appreciateCount, etc.) from any authenticated user
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount', 'appreciateCount', 'shareCount', 'engagementStats', 'lastViewed', 'rating', 'ratingCount']))
       );
       allow delete: if isAuthenticated() && (
         request.auth.uid == resource.data.creatorId ||
         isAdmin(request.auth.uid)
       );
+
+      // Art walk comments subcollection
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && (
+          request.auth.uid == request.resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update, delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+
+        // Nested comment replies
+        match /comments/{replyId} {
+          allow read: if true;
+          allow create: if isAuthenticated() && (
+            request.auth.uid == request.resource.data.userId ||
+            isAdmin(request.auth.uid)
+          );
+          allow update, delete: if isAuthenticated() && (
+            request.auth.uid == resource.data.userId ||
+            isAdmin(request.auth.uid)
+          );
+        }
+      }
+
+      // Art walk ratings subcollection
+      match /ratings/{ratingId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && (
+          request.auth.uid == request.resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update, delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
+
+      // Art walk visits subcollection (tracks which art pieces user has visited)
+      match /visits/{visitId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == request.resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update, delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
     }
 
     // Public Art (populated from captures)
@@ -477,6 +556,32 @@ service cloud.firestore {
         request.auth.uid == resource.data.toUserId ||
         isAdmin(request.auth.uid)
       );
+    }
+
+    // Top-level comments collection (for community feed)
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update, delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Nested comment replies
+      match /comments/{replyId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && (
+          request.auth.uid == request.resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update, delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
     }
 
     // Admin collections

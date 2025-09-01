@@ -33,6 +33,8 @@ class EnhancedUniversalHeader extends StatefulWidget
   final bool hasNotifications;
   final int notificationCount;
   final double? titleFontSize;
+  final Gradient? backgroundGradient;
+  final Gradient? titleGradient;
 
   const EnhancedUniversalHeader({
     super.key,
@@ -53,6 +55,8 @@ class EnhancedUniversalHeader extends StatefulWidget
     this.hasNotifications = false,
     this.notificationCount = 0,
     this.titleFontSize,
+    this.backgroundGradient,
+    this.titleGradient,
   });
 
   @override
@@ -106,7 +110,10 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: widget.backgroundColor ?? Colors.transparent,
+        gradient: widget.backgroundGradient,
+        color: widget.backgroundGradient == null
+            ? (widget.backgroundColor ?? Colors.transparent)
+            : null,
       ),
       child: SafeArea(
         bottom: false,
@@ -247,25 +254,40 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
         ),
       );
     } else if (widget.title != null) {
+      final textStyle = TextStyle(
+        color: widget.titleGradient == null
+            ? (widget.foregroundColor ?? ArtbeatColors.textPrimary)
+            : null,
+        fontWeight: FontWeight.w900,
+        fontSize: widget.titleFontSize ?? 24,
+        letterSpacing: 1.2,
+        shadows: widget.titleGradient == null
+            ? [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  offset: const Offset(1, 1),
+                  blurRadius: 2,
+                ),
+              ]
+            : null,
+      );
+
+      final textWidget = Text(
+        widget.title!,
+        style: textStyle,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+      );
+
       return Center(
-        child: Text(
-          widget.title!,
-          style: TextStyle(
-            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-            fontWeight: FontWeight.w900,
-            fontSize: widget.titleFontSize ?? 24,
-            letterSpacing: 1.2,
-            shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                offset: const Offset(1, 1),
-                blurRadius: 2,
-              ),
-            ],
-          ),
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-        ),
+        child: widget.titleGradient != null
+            ? ShaderMask(
+                shaderCallback: (bounds) => widget.titleGradient!.createShader(
+                  Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                ),
+                child: textWidget,
+              )
+            : textWidget,
       );
     } else {
       return const SizedBox.shrink();

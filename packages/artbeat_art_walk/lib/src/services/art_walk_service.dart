@@ -35,6 +35,8 @@ class ArtWalkService {
       .collection('artWalks');
   final CollectionReference _publicArtCollection = FirebaseFirestore.instance
       .collection('publicArt');
+  final CollectionReference _capturesCollection = FirebaseFirestore.instance
+      .collection('captures');
 
   /// Using secure DirectionsService for getting walking directions with API key protection
 
@@ -46,10 +48,6 @@ class ArtWalkService {
 
   /// Instance of achievement service from art walk package
   final AchievementService _achievementService = AchievementService();
-
-  /// Collection reference for captured art
-  final CollectionReference _capturesCollection = FirebaseFirestore.instance
-      .collection('captures');
 
   /// Get current user ID
   String? getCurrentUserId() {
@@ -442,10 +440,24 @@ class ArtWalkService {
 
       for (final artId in walk.artworkIds) {
         try {
-          final artDoc = await _capturesCollection.doc(artId).get();
+          // First try to get from publicArt collection
+          var artDoc = await _publicArtCollection.doc(artId).get();
           if (artDoc.exists) {
             artPieces.add(PublicArtModel.fromFirestore(artDoc));
+            continue;
           }
+
+          // If not found in publicArt, try captures collection
+          artDoc = await _capturesCollection.doc(artId).get();
+          if (artDoc.exists) {
+            artPieces.add(PublicArtModel.fromFirestore(artDoc));
+            continue;
+          }
+
+          // If not found in either collection, log warning
+          _logger.w(
+            'Art piece $artId not found in publicArt or captures collections',
+          );
         } catch (artError) {
           _logger.w('Error getting art piece $artId: $artError');
           // Continue with other art pieces

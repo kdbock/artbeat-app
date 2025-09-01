@@ -378,18 +378,12 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
                           // Navigate to user profile
                           debugPrint('Navigate to user profile: $userId');
                         },
-                        onApplause: (post) {
-                          // Handle applause action
-                          debugPrint('Applause for post: ${post.id}');
-                        },
+                        // legacy applause removed - engagement handled by UniversalEngagementBar
                         onComment: (postId) {
                           // Navigate to comments screen
                           debugPrint('Navigate to comments for post: $postId');
                         },
-                        onShare: (post) {
-                          // Handle share action
-                          debugPrint('Share post: ${post.id}');
-                        },
+                        // legacy share removed - engagement handled by UniversalEngagementBar
                         onToggleExpand: () {
                           // Toggle expanded view
                           debugPrint('Toggle expand for post: ${post.id}');

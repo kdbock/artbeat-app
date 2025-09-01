@@ -18,7 +18,6 @@ class CommunityDashboardScreen extends StatefulWidget {
 class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
   final ScrollController _scrollController = ScrollController();
   final CommunityService _communityService = CommunityService();
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Data lists
   List<Map<String, dynamic>> _onlineArtists = [];
@@ -349,58 +348,49 @@ class _CommunityDashboardScreenState extends State<CommunityDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return core.MainLayout(
-      currentIndex: 3, // Community is index 3
-      scaffoldKey: _scaffoldKey,
-      appBar: const core.EnhancedUniversalHeader(title: 'Community Canvas'),
-      child: RefreshIndicator(
-        onRefresh: _loadAllData,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Online Artists Section
-              _buildOnlineArtistsSection(),
+    return RefreshIndicator(
+      onRefresh: _loadAllData,
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Online Artists Section
+            _buildOnlineArtistsSection(),
 
-              // Ad placement beneath online artists section
-              const BannerAdWidget(location: AdLocation.communityOnlineArtists),
-              const SizedBox(height: 16),
+            // Ad placement beneath online artists section
+            const BannerAdWidget(location: AdLocation.communityOnlineArtists),
+            const SizedBox(height: 16),
 
-              // Recent Posts Section
-              _buildRecentPostsSection(),
+            // Recent Posts Section
+            _buildRecentPostsSection(),
 
-              // Ad placement beneath recent posts section
-              const BannerAdWidget(location: AdLocation.communityRecentPosts),
-              const SizedBox(height: 16),
+            // Ad placement beneath recent posts section
+            const BannerAdWidget(location: AdLocation.communityRecentPosts),
+            const SizedBox(height: 16),
 
-              // Are You An Artist Widget
-              _buildAreYouAnArtistSection(),
+            // Are You An Artist Widget
+            _buildAreYouAnArtistSection(),
 
-              // Featured Artists Section
-              _buildFeaturedArtistsSection(),
+            // Featured Artists Section
+            _buildFeaturedArtistsSection(),
 
-              // Ad placement beneath featured artists section
-              const BannerAdWidget(
-                location: AdLocation.communityFeaturedArtists,
-              ),
-              const SizedBox(height: 16),
+            // Ad placement beneath featured artists section
+            const BannerAdWidget(location: AdLocation.communityFeaturedArtists),
+            const SizedBox(height: 16),
 
-              // Verified Artists Section
-              _buildVerifiedArtistsSection(),
+            // Verified Artists Section
+            _buildVerifiedArtistsSection(),
 
-              // Ad placement beneath verified artists section
-              const BannerAdWidget(
-                location: AdLocation.communityVerifiedArtists,
-              ),
-              const SizedBox(height: 16),
+            // Ad placement beneath verified artists section
+            const BannerAdWidget(location: AdLocation.communityVerifiedArtists),
+            const SizedBox(height: 16),
 
-              // Artists Section
-              _buildArtistsSection(),
+            // Artists Section
+            _buildArtistsSection(),
 
-              const SizedBox(height: 120), // Bottom padding for navigation
-            ],
-          ),
+            const SizedBox(height: 120), // Bottom padding for navigation
+          ],
         ),
       ),
     );

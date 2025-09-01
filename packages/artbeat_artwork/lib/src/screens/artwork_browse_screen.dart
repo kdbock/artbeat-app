@@ -65,85 +65,101 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Browse Artwork',
-          showLogo: false,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_list),
-              onPressed: _showFilterDialog,
-              tooltip: 'Filter',
-            ),
+      currentIndex:
+          0, // Dashboard tab - artwork browsing is accessed from dashboard
+      appBar: EnhancedUniversalHeader(
+        title: 'Browse Artwork',
+        showLogo: false,
+        showBackButton: true,
+        backgroundGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF7B2FF2), // Purple
+            Color(0xFF00FF87), // Green
           ],
         ),
-        body: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search artwork...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () {
-                      _searchController.clear();
+        titleGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF7B2FF2), // Purple
+            Color(0xFF00FF87), // Green
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.white),
+            onPressed: _showFilterDialog,
+            tooltip: 'Filter',
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search artwork...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _searchController.clear();
+                    _performSearch();
+                  },
+                ),
+              ),
+              onSubmitted: (_) => _performSearch(),
+            ),
+          ),
+
+          // Filter chips
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                const Text('Filters:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                if (_selectedLocation != 'All')
+                  Chip(
+                    label: Text(_selectedLocation),
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    onDeleted: () {
+                      setState(() {
+                        _selectedLocation = 'All';
+                      });
                       _performSearch();
                     },
                   ),
-                ),
-                onSubmitted: (_) => _performSearch(),
-              ),
+                const SizedBox(width: 8),
+                if (_selectedMedium != 'All')
+                  Chip(
+                    label: Text(_selectedMedium),
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                    onDeleted: () {
+                      setState(() {
+                        _selectedMedium = 'All';
+                      });
+                      _performSearch();
+                    },
+                  ),
+              ],
             ),
+          ),
 
-            // Filter chips
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  const Text('Filters:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  if (_selectedLocation != 'All')
-                    Chip(
-                      label: Text(_selectedLocation),
-                      deleteIcon: const Icon(Icons.close, size: 18),
-                      onDeleted: () {
-                        setState(() {
-                          _selectedLocation = 'All';
-                        });
-                        _performSearch();
-                      },
-                    ),
-                  const SizedBox(width: 8),
-                  if (_selectedMedium != 'All')
-                    Chip(
-                      label: Text(_selectedMedium),
-                      deleteIcon: const Icon(Icons.close, size: 18),
-                      onDeleted: () {
-                        setState(() {
-                          _selectedMedium = 'All';
-                        });
-                        _performSearch();
-                      },
-                    ),
-                ],
-              ),
-            ),
-
-            // Results
-            Expanded(
-              child: _buildArtworkGrid(),
-            ),
-          ],
-        ),
+          // Results
+          Expanded(
+            child: _buildArtworkGrid(),
+          ),
+        ],
       ),
     );
   }

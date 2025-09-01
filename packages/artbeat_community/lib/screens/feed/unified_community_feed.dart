@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:share_plus/share_plus.dart';
+// share_plus import removed; sharing is handled in engagement bar or other flows
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show
-        ArtbeatColors,
-        ArtbeatComponents,
-        CommunityProvider,
-        MainLayout,
-        EnhancedUniversalHeader,
-        ArtbeatDrawer;
+    show ArtbeatColors, ArtbeatComponents, CommunityProvider;
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
-import '../../widgets/critique_card.dart';
+import '../../widgets/post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import 'create_post_screen.dart';
 
 class UnifiedCommunityFeed extends StatefulWidget {
-  const UnifiedCommunityFeed({super.key});
+  const UnifiedCommunityFeed({super.key, this.scrollToPostId});
+
+  final String? scrollToPostId;
 
   @override
   State<UnifiedCommunityFeed> createState() => _UnifiedCommunityFeedState();
@@ -27,16 +23,18 @@ class UnifiedCommunityFeed extends StatefulWidget {
 
 class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   final ScrollController _scrollController = ScrollController();
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
   final List<PostModel> _posts = [];
   final Map<String, List<CommentModel>> _postComments = {};
   final Map<String, bool> _postExpansionState = {};
+  final Map<String, GlobalKey> _postKeys = {};
 
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasError = false;
   String? _errorMessage;
   DocumentSnapshot? _lastDocument;
+  String? _scrollToPostId;
+  String? _highlightedPostId;
 
   static const int _postsPerPage = 10;
 
@@ -46,6 +44,7 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _scrollToPostId = widget.scrollToPostId;
     _loadPosts();
 
     // Mark community as visited when this screen loads
@@ -54,6 +53,20 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
         context.read<CommunityProvider>().markCommunityAsVisited();
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arguments =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (arguments != null && arguments.containsKey('scrollToPostId')) {
+      final postId = arguments['scrollToPostId'] as String?;
+      debugPrint('UnifiedCommunityFeed: Received scrollToPostId: $postId');
+      setState(() {
+        _scrollToPostId = postId;
+      });
+    }
   }
 
   @override
@@ -172,6 +185,12 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
             _posts.addAll(enrichedPosts);
             _isLoading = false;
           });
+
+          if (_scrollToPostId != null) {
+            // Ensure the post is present in the loaded list; if not, try to fetch it and
+            // insert it in the correct sorted position, then scroll to it.
+            _ensurePostLoadedAndScroll(_scrollToPostId!);
+          }
         }
       } else {
         debugPrint('No posts found');
@@ -190,6 +209,65 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  void _scrollToPost(String postId) {
+    debugPrint(
+      'UnifiedCommunityFeed: _scrollToPost called for postId: $postId',
+    );
+
+    final postIndex = _posts.indexWhere((p) => p.id == postId);
+    debugPrint('UnifiedCommunityFeed: Post $postId found at index: $postIndex');
+
+    if (postIndex != -1) {
+      // Set highlight before scrolling so the animated container reflects the state
+      if (mounted) {
+        setState(() {
+          _highlightedPostId = postId;
+        });
+      }
+
+      // Use post-frame callback to ensure the list has been rebuilt
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        // Calculate the actual list index (accounting for ads)
+        final listIndex = _getListIndexForPost(postIndex);
+        debugPrint(
+          'UnifiedCommunityFeed: Calculated list index for post $postId: $listIndex',
+        );
+
+        // Scroll to the calculated position
+        if (_scrollController.hasClients) {
+          // Estimate item height (post + padding + potential ad)
+          const double estimatedItemHeight =
+              200.0; // Adjust based on your post height
+          final double targetOffset = listIndex * estimatedItemHeight;
+
+          debugPrint(
+            'UnifiedCommunityFeed: Scrolling to offset: $targetOffset',
+          );
+
+          _scrollController.animateTo(
+            targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+
+        // Clear highlight after a short delay
+        Future<void>.delayed(const Duration(milliseconds: 2400)).then((_) {
+          if (mounted) {
+            setState(() {
+              // Only clear if still highlighting the same post
+              if (_highlightedPostId == postId) _highlightedPostId = null;
+            });
+          }
+        });
+      });
+    } else {
+      debugPrint('UnifiedCommunityFeed: Post $postId not found in _posts list');
     }
   }
 
@@ -304,136 +382,113 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     }
   }
 
-  Future<void> _handleApplause(PostModel post) async {
-    debugPrint('_handleApplause called for post ${post.id}');
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      debugPrint('User not authenticated');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please sign in to applaud posts')),
-        );
+  /// Fetch a single post by id from Firestore, enrich it and insert into _posts
+  /// in the correct sorted position (by createdAt desc) if not already present.
+  Future<PostModel?> _fetchPostById(String postId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(postId)
+          .get();
+      if (!doc.exists) return null;
+
+      var post = PostModel.fromFirestore(doc);
+
+      // Enrich user photo if missing
+      if (post.userPhotoUrl.isEmpty && post.userId.isNotEmpty) {
+        try {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(post.userId)
+              .get();
+          if (userDoc.exists) {
+            final userData = userDoc.data() as Map<String, dynamic>;
+            final photoUrl = userData['profileImageUrl'] as String? ?? '';
+            final isVerified = userData['isVerified'] as bool? ?? false;
+            if (photoUrl.isNotEmpty) {
+              post = post.copyWith(
+                userPhotoUrl: photoUrl,
+                isUserVerified: isVerified,
+              );
+            }
+          }
+        } catch (e) {
+          debugPrint('Error enriching post $postId user data: $e');
+        }
       }
+
+      return post;
+    } catch (e) {
+      debugPrint('Error fetching post $postId: $e');
+      return null;
+    }
+  }
+
+  /// Ensure the requested post is loaded into the list and then scroll to it.
+  Future<void> _ensurePostLoadedAndScroll(String postId) async {
+    debugPrint(
+      'UnifiedCommunityFeed: _ensurePostLoadedAndScroll called for postId: $postId',
+    );
+
+    // Already loaded?
+    final existingIndex = _posts.indexWhere((p) => p.id == postId);
+    if (existingIndex != -1) {
+      debugPrint(
+        'UnifiedCommunityFeed: Post $postId already exists at index $existingIndex',
+      );
+      // Already present - scroll to it
+      _scrollToPost(postId);
       return;
     }
 
-    try {
-      debugPrint('Processing applause for post ${post.id} by user ${user.uid}');
-      final postRef = FirebaseFirestore.instance
-          .collection('posts')
-          .doc(post.id);
+    debugPrint(
+      'UnifiedCommunityFeed: Post $postId not found in current list, fetching...',
+    );
 
-      final applauseRef = postRef.collection('applause').doc(user.uid);
-      final applauseDoc = await applauseRef.get();
-
-      int currentApplause = 0;
-      if (applauseDoc.exists) {
-        currentApplause = (applauseDoc.data()?['count'] as int?) ?? 0;
-        debugPrint('User has already applauded $currentApplause times');
-      } else {
-        debugPrint('First applause from this user');
-      }
-
-      // Increment applause (max 5 per user)
-      if (currentApplause < PostModel.maxApplausePerUser) {
-        debugPrint(
-          'Adding applause (current: $currentApplause, max: ${PostModel.maxApplausePerUser})',
-        );
-        await FirebaseFirestore.instance.runTransaction((transaction) async {
-          final postSnapshot = await transaction.get(postRef);
-          final currentTotalApplause =
-              (postSnapshot.data()?['applauseCount'] as int?) ?? 0;
-
-          transaction.update(postRef, {
-            'applauseCount': currentTotalApplause + 1,
-          });
-
-          transaction.set(applauseRef, {
-            'count': currentApplause + 1,
-            'lastApplauseAt': FieldValue.serverTimestamp(),
-          });
-        });
-
-        // Update local state
-        setState(() {
-          final index = _posts.indexWhere((p) => p.id == post.id);
-          if (index != -1) {
-            _posts[index] = post.copyWith(
-              engagementStats: post.engagementStats.copyWith(
-                appreciateCount: post.applauseCount + 1,
-                lastUpdated: DateTime.now(),
-              ),
-            );
-            debugPrint(
-              'Updated local post applause count to ${_posts[index].applauseCount}',
-            );
-          }
-        });
-
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('👏 Applause added!')));
-        }
-      } else {
-        debugPrint('Max applause reached for this user');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'You\'ve reached the maximum applause for this post',
-              ),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('Error adding applause: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error adding applause: $e')));
-      }
+    // Try fetching the post directly
+    final fetched = await _fetchPostById(postId);
+    if (fetched == null) {
+      debugPrint('UnifiedCommunityFeed: Failed to fetch post $postId');
+      return;
     }
-  }
 
-  Future<void> _handleShare(PostModel post) async {
-    try {
-      String shareText = '${post.content}\n\nShared from ARTbeat';
-      if (post.imageUrls.isNotEmpty) {
-        shareText += '\n\nCheck out this post!';
-      }
+    debugPrint(
+      'UnifiedCommunityFeed: Successfully fetched post $postId, inserting into list',
+    );
 
-      await SharePlus.instance.share(ShareParams(text: shareText));
-
-      // Update share count
-      final postRef = FirebaseFirestore.instance
-          .collection('posts')
-          .doc(post.id);
-
-      await postRef.update({'shareCount': FieldValue.increment(1)});
-
-      // Update local state
+    // Insert maintaining createdAt desc order
+    int insertIndex = _posts.indexWhere(
+      (p) => p.createdAt.isBefore(fetched.createdAt),
+    );
+    if (insertIndex == -1) {
+      // append at end
       setState(() {
-        final index = _posts.indexWhere((p) => p.id == post.id);
-        if (index != -1) {
-          _posts[index] = post.copyWith(
-            engagementStats: post.engagementStats.copyWith(
-              amplifyCount: post.shareCount + 1,
-              lastUpdated: DateTime.now(),
-            ),
-          );
-        }
+        _posts.add(fetched);
       });
-    } catch (e) {
-      debugPrint('Error sharing post: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error sharing post: $e')));
-      }
+      debugPrint('UnifiedCommunityFeed: Added post $postId to end of list');
+    } else {
+      setState(() {
+        _posts.insert(insertIndex, fetched);
+      });
+      debugPrint(
+        'UnifiedCommunityFeed: Inserted post $postId at index $insertIndex',
+      );
+    }
+
+    // Load comments for the inserted post
+    await _fetchCommentsForPost(fetched.id);
+
+    // Wait for the widget tree to rebuild after setState
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+
+    // Now scroll to the post
+    if (mounted) {
+      debugPrint('UnifiedCommunityFeed: Scrolling to post $postId');
+      _scrollToPost(postId);
     }
   }
+
+  // Legacy applause/share handlers removed; engagement is handled by UniversalEngagementBar
 
   void _navigateToComments(PostModel post) {
     debugPrint('_navigateToComments called for post ${post.id}');
@@ -459,52 +514,34 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 3, // Community tab in bottom navigation
-      scaffoldKey: _scaffoldKey,
-      appBar: EnhancedUniversalHeader(
-        title: 'Community Feed',
-        showBackButton: false,
-        showSearch: true,
-        showDeveloperTools: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.message, color: Colors.white),
-            onPressed: () =>
-                Navigator.pushNamed(context, '/community/messaging'),
-          ),
-        ],
-      ),
-      drawer: const ArtbeatDrawer(),
-      child: Container(
-        color: ArtbeatColors.backgroundSecondary,
-        child: Column(
-          children: [
-            // Create post button section
-            Container(
-              color: ArtbeatColors.white,
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _navigateToCreatePost,
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Create Post'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ArtbeatColors.primaryPurple,
-                    foregroundColor: ArtbeatColors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+    return Container(
+      color: ArtbeatColors.backgroundSecondary,
+      child: Column(
+        children: [
+          // Create post button section
+          Container(
+            color: ArtbeatColors.white,
+            padding: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _navigateToCreatePost,
+                icon: const Icon(Icons.add_circle_outline),
+                label: const Text('Create Post'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ArtbeatColors.primaryPurple,
+                  foregroundColor: ArtbeatColors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
             ),
-            // Body content
-            Expanded(child: _buildBody()),
-          ],
-        ),
+          ),
+          // Body content
+          Expanded(child: _buildBody()),
+        ],
       ),
     );
   }
@@ -667,19 +704,56 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
 
           final post = _posts[postIndex];
           final comments = _postComments[post.id] ?? [];
+          _postKeys.putIfAbsent(post.id, () => GlobalKey());
 
           return Padding(
+            key: _postKeys[post.id],
             padding: const EdgeInsets.only(bottom: 24),
-            child: CritiqueCard(
-              post: post,
-              currentUserId: _currentUserId,
-              comments: comments,
-              onUserTap: (userId) => _handleUserTap(userId),
-              onApplause: (post) => _handleApplause(post),
-              onComment: (postId) => _navigateToComments(post),
-              onShare: (post) => _handleShare(post),
-              isExpanded: _postExpansionState[post.id] ?? false,
-              onToggleExpand: () => _togglePostExpansion(post.id),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeInOut,
+              decoration: BoxDecoration(
+                color: post.id == _highlightedPostId
+                    ? ArtbeatColors.primaryPurple.withValues(alpha: 0.06)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: post.id == _highlightedPostId
+                    ? Border.all(
+                        color: ArtbeatColors.primaryPurple.withValues(
+                          alpha: 0.4,
+                        ),
+                        width: 2,
+                      )
+                    : Border.all(color: Colors.transparent),
+                boxShadow: post.id == _highlightedPostId
+                    ? [
+                        BoxShadow(
+                          color: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.12,
+                          ),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: PostCard(
+                post: post,
+                currentUserId: _currentUserId,
+                comments: comments,
+                onUserTap: (userId) => _handleUserTap(userId),
+                onComment: (postId) => _navigateToComments(post),
+                onFeature: null,
+                onGift: null,
+                isExpanded: _postExpansionState[post.id] ?? false,
+                onToggleExpand: () => _togglePostExpansion(post.id),
+              ),
             ),
           );
         },
@@ -737,5 +811,14 @@ class _UnifiedCommunityFeedState extends State<UnifiedCommunityFeed> {
     // Calculate how many ads appear before this index
     final adsBeforeIndex = ((listIndex - 5) / 6).floor() + 1;
     return listIndex - adsBeforeIndex;
+  }
+
+  /// Get the list index for a given post index (accounting for ads)
+  int _getListIndexForPost(int postIndex) {
+    if (postIndex < 5) return postIndex;
+
+    // Calculate how many ads should appear before this post
+    final adsBeforePost = (postIndex / 5).floor();
+    return postIndex + adsBeforePost;
   }
 }

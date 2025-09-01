@@ -13,11 +13,10 @@ export 'src/screens/analytics_dashboard_screen.dart';
 export 'src/screens/artist_approved_ads_screen.dart';
 export 'src/screens/artist_browse_screen.dart';
 export 'src/screens/artist_dashboard_screen.dart';
-export 'src/screens/artist_journey_screen.dart';
 export 'src/screens/artist_onboarding_screen.dart';
 export 'src/screens/artist_profile_edit_screen.dart';
 export 'src/screens/artist_public_profile_screen.dart';
-export 'src/screens/artwork_browse_screen.dart';
+// import removed: use artwork_browse_screen from artbeat_artwork package instead
 export 'src/screens/event_creation_screen.dart';
 export 'src/screens/events_screen.dart';
 export 'src/screens/gallery_analytics_dashboard_screen.dart';

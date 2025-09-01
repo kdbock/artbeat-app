@@ -4,7 +4,9 @@ import 'artist_profile_edit_screen.dart';
 
 /// Modern 2025 onboarding with AI-driven personalization and micro-interactions
 class Modern2025OnboardingScreen extends StatefulWidget {
-  const Modern2025OnboardingScreen({super.key});
+  final String? preselectedPlan;
+
+  const Modern2025OnboardingScreen({super.key, this.preselectedPlan});
 
   @override
   State<Modern2025OnboardingScreen> createState() =>
@@ -20,6 +22,8 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
   int _currentPage = 0;
   final List<String> _selectedInterests = [];
   String _experienceLevel = '';
+  String? _selectedPlanName;
+  bool _isProcessingPlan = false;
 
   // 2025 Standard: Personalization questions
   final List<String> _artistInterests = [
@@ -57,6 +61,16 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
     );
     _animationController.forward();
+
+    // If a plan is preselected from a previous screen, set selection and
+    // jump to the pricing page to show it.
+    if (widget.preselectedPlan != null) {
+      _selectedPlanName = widget.preselectedPlan;
+      // schedule to run after first frame to avoid page controller issues
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _pageController.jumpToPage(3);
+      });
+    }
   }
 
   @override
@@ -119,7 +133,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         return Transform.translate(
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
-            opacity: _slideAnimation.value,
+            opacity: _slideAnimation.value.clamp(0.0, 1.0),
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -249,7 +263,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         return Transform.translate(
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
-            opacity: _slideAnimation.value,
+            opacity: _slideAnimation.value.clamp(0.0, 1.0),
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -351,7 +365,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         return Transform.translate(
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
-            opacity: _slideAnimation.value,
+            opacity: _slideAnimation.value.clamp(0.0, 1.0),
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
@@ -464,6 +478,8 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
   Widget _buildPricingScreen() {
     // AI-recommended plan based on user input
     final recommendedPlan = _getRecommendedPlan();
+    // Ensure there's a selected plan name (use recommended if none)
+    _selectedPlanName ??= recommendedPlan['name'] as String;
 
     return AnimatedBuilder(
       animation: _slideAnimation,
@@ -471,146 +487,179 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         return Transform.translate(
           offset: Offset(0, 50 * (1 - _slideAnimation.value)),
           child: Opacity(
-            opacity: _slideAnimation.value,
+            opacity: _slideAnimation.value.clamp(0.0, 1.0),
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Perfect plan for you',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Based on your interests: ${_selectedInterests.take(2).join(", ")}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // AI recommendation card
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                          Colors.purple.shade50,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Theme.of(context)
-                            .primaryColor
-                            .withValues(alpha: 0.3),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.auto_awesome,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'AI Recommended',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          recommendedPlan['name'] as String,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          recommendedPlan['price'] as String,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          recommendedPlan['description'] as String,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Feature preview
-                  const Text(
-                    'What you\'ll get:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: (recommendedPlan['features'] as List).length,
-                      itemBuilder: (context, index) {
-                        final feature = (recommendedPlan['features']
-                            as List)[index] as String;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.check,
-                                  size: 16,
-                                  color: Colors.green.shade700,
-                                ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Perfect plan for you',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Based on your interests: ${_selectedInterests.take(2).join(", ")}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+
+                          // AI recommendation card
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Theme.of(context)
+                                      .primaryColor
+                                      .withValues(alpha: 0.1),
+                                  Colors.purple.shade50,
+                                ],
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  feature,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .primaryColor
+                                    .withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.auto_awesome,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'AI Recommended',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  recommendedPlan['name'] as String,
                                   style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  recommendedPlan['price'] as String,
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  recommendedPlan['description'] as String,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+                          // Feature preview
+                          const Text(
+                            'What you\'ll get:',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Plan selection
+                          const Text(
+                            'Choose a plan',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Plan cards
+                          Column(
+                            children: [
+                              for (final tier in [
+                                SubscriptionTier.free,
+                                SubscriptionTier.starter,
+                                SubscriptionTier.creator,
+                                SubscriptionTier.business,
+                              ])
+                                _buildSelectablePlanCard(
+                                  details: SubscriptionService()
+                                      .getSubscriptionDetails(tier),
+                                  tier: tier,
+                                ),
                             ],
                           ),
-                        );
-                      },
+                          const SizedBox(height: 12),
+
+                          // Selected plan features (non-scrollable list inside scroll view)
+                          Column(
+                            children:
+                                (recommendedPlan['features'] as List).map((f) {
+                              final feature = f as String;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 24,
+                                      height: 24,
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade100,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.check,
+                                        size: 16,
+                                        color: Colors.green.shade700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        feature,
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -620,6 +669,144 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
         );
       },
     );
+  }
+
+  Widget _buildSelectablePlanCard(
+      {required Map<String, dynamic> details, required SubscriptionTier tier}) {
+    final name = details['name'] as String? ?? '';
+    final priceRaw = details['price'];
+    final price = priceRaw is num
+        ? '\$${priceRaw.toString()}'
+        : (priceRaw?.toString() ?? '');
+    final features = (details['features'] as List?) ?? [];
+
+    final isSelected = _selectedPlanName == name;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: isSelected
+            ? Theme.of(context).primaryColor.withValues(alpha: 0.04)
+            : Colors.transparent,
+        child: InkWell(
+          onTap: () => setState(() => _selectedPlanName = name),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey.shade300,
+                  width: isSelected ? 2 : 1),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(name,
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w700)),
+                          const SizedBox(width: 8),
+                          Text(price,
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ...features
+                          .take(2)
+                          .map((f) => Text(f as String,
+                              style: TextStyle(color: Colors.grey.shade600)))
+                          .toList(),
+                    ],
+                  ),
+                ),
+                Icon(isSelected ? Icons.check_circle : Icons.chevron_right,
+                    color: isSelected
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey.shade400),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  SubscriptionTier? _tierForPlanName(String name) {
+    switch (name.toLowerCase()) {
+      case 'free':
+      case 'free plan':
+        return SubscriptionTier.free;
+      case 'starter':
+      case 'starter plan':
+        return SubscriptionTier.starter;
+      case 'creator':
+      case 'creator plan':
+        return SubscriptionTier.creator;
+      case 'business':
+      case 'business plan':
+        return SubscriptionTier.business;
+      default:
+        return null;
+    }
+  }
+
+  Future<void> _completeOnboarding() async {
+    // Confirm with the user before making subscription changes
+    if (_selectedPlanName != null) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Confirm Plan'),
+          content: Text(
+              'Switch to "$_selectedPlanName"? This will update your subscription.'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel')),
+            ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Confirm')),
+          ],
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      final tier = _tierForPlanName(_selectedPlanName!);
+      if (tier != null) {
+        setState(() => _isProcessingPlan = true);
+        final result = await SubscriptionService()
+            .changeTierWithValidation(tier, validateOnly: false);
+        setState(() => _isProcessingPlan = false);
+
+        if ((result['isValid'] as bool? ?? false) == false) {
+          final msg = result['message'] ?? 'Failed to change plan';
+          if (mounted)
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(msg.toString())));
+          return;
+        }
+      }
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Plan updated — continuing to profile setup')));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+              builder: (context) => const ArtistProfileEditScreen()));
+    }
   }
 
   Map<String, dynamic> _getRecommendedPlan() {
@@ -725,7 +912,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
           Expanded(
             flex: _currentPage == 0 ? 1 : 2,
             child: ElevatedButton(
-              onPressed: _getNextButtonAction(),
+              onPressed: _isProcessingPlan ? null : _getNextButtonAction(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
@@ -735,7 +922,16 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                 ),
                 elevation: 0,
               ),
-              child: Text(_getNextButtonText()),
+              child: _isProcessingPlan && _currentPage == 3
+                  ? SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Text(_getNextButtonText()),
             ),
           ),
         ],
@@ -765,15 +961,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                 )
             : null;
       case 3:
-        return () {
-          // Complete onboarding and navigate to artist profile
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute<void>(
-              builder: (context) => const ArtistProfileEditScreen(),
-            ),
-          );
-        };
+        return () => _completeOnboarding();
       default:
         return null;
     }

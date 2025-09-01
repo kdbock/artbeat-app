@@ -110,15 +110,30 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ArtbeatColors.backgroundPrimary,
-      appBar: AppBar(
-        title: const Text('Local Captures'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: ArtbeatColors.textPrimary,
+    return core.MainLayout(
+      currentIndex: 2, // Art Walk/Capture tab
+      appBar: const core.EnhancedUniversalHeader(
+        title: 'Local Captures',
+        showLogo: false,
+        showBackButton: true,
+        backgroundGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF4FB3BE), // Light Teal
+            Color(0xFFFF9E80), // Light Orange/Peach
+          ],
+        ),
+        titleGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF4FB3BE), // Light Teal
+            Color(0xFFFF9E80), // Light Orange/Peach
+          ],
+        ),
       ),
-      body: _isLoading
+      child: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(

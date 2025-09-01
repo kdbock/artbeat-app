@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/admin_messaging_service.dart';
+import '../utils/messaging_navigation_helper.dart';
 
 /// Messaging Dashboard Screen
 ///
@@ -1076,12 +1077,33 @@ class _MessagingDashboardScreenState extends State<MessagingDashboardScreen>
     switch (action) {
       case 'message':
         // Navigate to chat with user
+        final userId = user['id'] as String?;
+        if (userId != null) {
+          MessagingNavigationHelper.navigateToUserChat(context, userId);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to start chat: User ID not found'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         break;
       case 'view':
         // Show user profile
+        final userId = user['id'] as String?;
+        if (userId != null) {
+          MessagingNavigationHelper.navigateToUserProfile(context, userId);
+        }
         break;
       case 'moderate':
         // Show moderation options
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Moderation features coming soon'),
+            backgroundColor: Colors.blue,
+          ),
+        );
         break;
     }
   }

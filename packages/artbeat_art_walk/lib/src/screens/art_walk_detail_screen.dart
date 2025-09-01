@@ -286,7 +286,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     Navigator.pushNamed(
       context,
       '/enhanced-art-walk-experience',
-      arguments: {'artWalkId': _walk!.id, 'artWalk': _walk!},
+      arguments: {'walkId': _walk!.id, 'artWalk': _walk!},
     ).then((completed) {
       // If the walk was completed, refresh the state
       if (completed == true) {
@@ -407,8 +407,9 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
               ),
             ],
           ),
-        body: const Center(child: Text('Art walk not found')),
-      ));
+          body: const Center(child: Text('Art walk not found')),
+        ),
+      );
     }
 
     return MainLayout(
@@ -416,313 +417,322 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
       child: Scaffold(
         key: ValueKey('art_walk_${_walk!.id}'),
         body: CustomScrollView(
-        key: ValueKey('scroll_view_${_walk!.id}'),
-        slivers: [
-          // App bar with image - using Art Walk colors
-          SliverAppBar(
-            expandedHeight: 200.0,
-            pinned: true,
-            backgroundColor: const Color(
-              0xFF00838F,
-            ), // Art Walk header color - matches Welcome Travel user box teal
-            foregroundColor: Colors.white, // Art Walk text/icon color
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                _walk!.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Limelight',
-                  fontWeight: FontWeight.normal,
+          key: ValueKey('scroll_view_${_walk!.id}'),
+          slivers: [
+            // App bar with image - using Art Walk colors
+            SliverAppBar(
+              expandedHeight: 200.0,
+              pinned: true,
+              backgroundColor: const Color(
+                0xFF00838F,
+              ), // Art Walk header color - matches Welcome Travel user box teal
+              foregroundColor: Colors.white, // Art Walk text/icon color
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  _walk!.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'Limelight',
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
+                background: _buildDetailBackground(),
               ),
-              background: _buildDetailBackground(),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.share, color: Colors.white),
+                  onPressed: _shareArtWalk,
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.chat_bubble_outline,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/messaging'),
+                  tooltip: 'Messages',
+                ),
+              ],
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.share, color: Colors.white),
-                onPressed: _shareArtWalk,
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.chat_bubble_outline,
-                  color: Colors.white,
-                ),
-                onPressed: () => Navigator.pushNamed(context, '/messaging'),
-                tooltip: 'Messages',
-              ),
-            ],
-          ),
 
-          // Content
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Stats and info card
-                Card(
-                  margin: const EdgeInsets.all(16),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _walk!.description,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Stats row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildStat(
-                              Icons.photo,
-                              '${_artPieces.length}',
-                              'Artworks',
-                            ),
-                            if (_artPieces.length > 1)
-                              _buildStat(
-                                Icons.straighten,
-                                '${_calculateTotalDistance().toStringAsFixed(1)} mi',
-                                'Distance',
-                              ),
-                            if (_walk!.estimatedDuration != null)
-                              _buildStat(
-                                Icons.access_time,
-                                '${_walk!.estimatedDuration!.round()} min',
-                                'Duration',
-                              )
-                            else if (_artPieces.length > 1)
-                              _buildStat(
-                                Icons.access_time,
-                                '${(_calculateTotalDistance() * 19).round()} min',
-                                'Est. Time',
-                              ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Starting point information
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.blue[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue[200]!),
+            // Content
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Stats and info card
+                  Card(
+                    margin: const EdgeInsets.all(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _walk!.description,
+                            style: const TextStyle(fontSize: 16),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 16),
+
+                          // Stats row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Row(
+                              _buildStat(
+                                Icons.photo,
+                                '${_artPieces.length}',
+                                'Artworks',
+                              ),
+                              if (_artPieces.length > 1)
+                                _buildStat(
+                                  Icons.straighten,
+                                  '${_calculateTotalDistance().toStringAsFixed(1)} mi',
+                                  'Distance',
+                                ),
+                              if (_walk!.estimatedDuration != null)
+                                _buildStat(
+                                  Icons.access_time,
+                                  '${_walk!.estimatedDuration!.round()} min',
+                                  'Duration',
+                                )
+                              else if (_artPieces.length > 1)
+                                _buildStat(
+                                  Icons.access_time,
+                                  '${(_calculateTotalDistance() * 19).round()} min',
+                                  'Est. Time',
+                                ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Starting point information
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[50],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue[200]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.my_location,
+                                      color: Colors.blue[600],
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Starting Point',
+                                      style: TextStyle(
+                                        color: Colors.blue[600],
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Your current location will be used as the starting point. The app will guide you through each art piece in order.',
+                                  style: TextStyle(
+                                    color: Colors.blue[700],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                if (_artPieces.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'First stop: ${_artPieces.first.title}',
+                                    style: TextStyle(
+                                      color: Colors.blue[700],
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Start art walk with navigation button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _startNavigation,
+                              icon: const Icon(Icons.navigation),
+                              label: const Text(
+                                'Start Art Walk with Navigation',
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Helper text
+                          Text(
+                            'Get turn-by-turn directions to each art piece',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontStyle: FontStyle.italic,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          // Complete art walk button (only show if not already completed)
+                          if (!_hasCompletedWalk) ...[
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: _isCompletingWalk
+                                    ? null
+                                    : _completeArtWalk,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: _isCompletingWalk
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Icon(Icons.check_circle),
+                                label: Text(
+                                  _isCompletingWalk
+                                      ? 'Completing...'
+                                      : 'Complete Art Walk',
+                                ),
+                              ),
+                            ),
+                          ],
+                          // Show completed status if walk is completed
+                          if (_hasCompletedWalk) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: Colors.green.shade200,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    Icons.my_location,
-                                    color: Colors.blue[600],
+                                    Icons.check_circle,
+                                    color: Colors.green.shade700,
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Starting Point',
+                                    'Completed',
                                     style: TextStyle(
-                                      color: Colors.blue[600],
+                                      color: Colors.green.shade700,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 16,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Your current location will be used as the starting point. The app will guide you through each art piece in order.',
-                                style: TextStyle(
-                                  color: Colors.blue[700],
-                                  fontSize: 14,
-                                ),
-                              ),
-                              if (_artPieces.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Text(
-                                  'First stop: ${_artPieces.first.title}',
-                                  style: TextStyle(
-                                    color: Colors.blue[700],
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Start art walk with navigation button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _startNavigation,
-                            icon: const Icon(Icons.navigation),
-                            label: const Text('Start Art Walk with Navigation'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              textStyle: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
                             ),
-                          ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Map preview
+                  Container(
+                    height: 250,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: _markers.isNotEmpty
+                              ? _markers.first.position
+                              : const LatLng(
+                                  37.7749,
+                                  -122.4194,
+                                ), // Default to SF
+                          zoom: 13,
                         ),
+                        markers: _markers,
+                        polylines: _polylines,
+                        liteModeEnabled: true,
+                        zoomControlsEnabled: false,
+                        scrollGesturesEnabled: false,
+                        rotateGesturesEnabled: false,
+                        zoomGesturesEnabled: false,
+                        tiltGesturesEnabled: false,
+                        myLocationButtonEnabled: false,
+                      ),
+                    ),
+                  ),
 
-                        const SizedBox(height: 8),
-
-                        // Helper text
-                        Text(
-                          'Get turn-by-turn directions to each art piece',
+                  // Art pieces list
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Art in this Walk',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
-                          textAlign: TextAlign.center,
                         ),
-
-                        // Complete art walk button (only show if not already completed)
-                        if (!_hasCompletedWalk) ...[
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _isCompletingWalk
-                                  ? null
-                                  : _completeArtWalk,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.white,
-                              ),
-                              icon: _isCompletingWalk
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Icon(Icons.check_circle),
-                              label: Text(
-                                _isCompletingWalk
-                                    ? 'Completing...'
-                                    : 'Complete Art Walk',
-                              ),
-                            ),
-                          ),
-                        ],
-                        // Show completed status if walk is completed
-                        if (_hasCompletedWalk) ...[
-                          const SizedBox(height: 12),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade50,
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.green.shade200),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green.shade700,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Completed',
-                                  style: TextStyle(
-                                    color: Colors.green.shade700,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        const SizedBox(height: 8),
+                        ..._artPieces.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final art = entry.value;
+                          return _buildArtCard(
+                            art,
+                            index,
+                            key: ValueKey('art_${art.id}'),
+                          );
+                        }),
                       ],
                     ),
                   ),
-                ),
-
-                // Map preview
-                Container(
-                  height: 250,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: _markers.isNotEmpty
-                            ? _markers.first.position
-                            : const LatLng(37.7749, -122.4194), // Default to SF
-                        zoom: 13,
-                      ),
-                      markers: _markers,
-                      polylines: _polylines,
-                      liteModeEnabled: true,
-                      zoomControlsEnabled: false,
-                      scrollGesturesEnabled: false,
-                      rotateGesturesEnabled: false,
-                      zoomGesturesEnabled: false,
-                      tiltGesturesEnabled: false,
-                      myLocationButtonEnabled: false,
-                    ),
-                  ),
-                ),
-
-                // Art pieces list
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Art in this Walk',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ..._artPieces.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final art = entry.value;
-                        return _buildArtCard(
-                          art,
-                          index,
-                          key: ValueKey('art_${art.id}'),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Comment section
-          SliverToBoxAdapter(
-            child: ArtWalkCommentSection(
-              artWalkId: widget.walkId,
-              artWalkTitle: _walk!.title,
+            // Comment section
+            SliverToBoxAdapter(
+              child: ArtWalkCommentSection(
+                artWalkId: widget.walkId,
+                artWalkTitle: _walk!.title,
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

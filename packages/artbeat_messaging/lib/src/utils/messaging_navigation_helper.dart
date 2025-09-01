@@ -49,7 +49,7 @@ class MessagingNavigationHelper {
       final chat = await chatService.createOrGetChat(userId);
 
       if (context.mounted) {
-        Navigator.pushNamed(
+        Navigator.pushReplacementNamed(
           context,
           '/messaging/chat',
           arguments: {'chat': chat},

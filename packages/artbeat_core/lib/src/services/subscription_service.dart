@@ -233,17 +233,38 @@ class SubscriptionService extends ChangeNotifier {
             .limit(1)
             .get();
 
+        DocumentReference artistRef;
+
         if (artistQuery.docs.isEmpty) {
-          throw Exception('Artist profile not found');
+          // Create a minimal artist profile for the user so subscription changes succeed.
+          final displayName = _auth.currentUser?.displayName ?? '';
+          artistRef = _firestore.collection('artistProfiles').doc();
+          transaction.set(artistRef, {
+            'userId': userId,
+            'displayName': displayName,
+            'userType': UserType.artist.name,
+            'subscriptionTier': newTier.apiName,
+            'isVerified': false,
+            'isFeatured': false,
+            'isPortfolioPublic': true,
+            'mediums': <String>[],
+            'styles': <String>[],
+            'socialLinks': <String, String>{},
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+            'likesCount': 0,
+            'viewsCount': 0,
+            'artworksCount': 0,
+          });
+        } else {
+          artistRef = artistQuery.docs.first.reference;
+
+          // Update subscription tier in artist profile
+          transaction.update(artistRef, {
+            'subscriptionTier': newTier.apiName,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
         }
-
-        final artistRef = artistQuery.docs.first.reference;
-
-        // Update subscription tier in artist profile
-        transaction.update(artistRef, {
-          'subscriptionTier': newTier.apiName,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
 
         // Update subscriptions collection
         final subscriptionQuery = await _firestore
@@ -308,17 +329,37 @@ class SubscriptionService extends ChangeNotifier {
             .limit(1)
             .get();
 
+        DocumentReference artistRef;
+
         if (artistQuery.docs.isEmpty) {
-          throw Exception('Artist profile not found');
+          final displayName = _auth.currentUser?.displayName ?? '';
+          artistRef = _firestore.collection('artistProfiles').doc();
+          transaction.set(artistRef, {
+            'userId': userId,
+            'displayName': displayName,
+            'userType': UserType.artist.name,
+            'subscriptionTier': newTier.apiName,
+            'isVerified': false,
+            'isFeatured': false,
+            'isPortfolioPublic': true,
+            'mediums': <String>[],
+            'styles': <String>[],
+            'socialLinks': <String, String>{},
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+            'likesCount': 0,
+            'viewsCount': 0,
+            'artworksCount': 0,
+          });
+        } else {
+          artistRef = artistQuery.docs.first.reference;
+
+          // Update subscription tier in artist profile
+          transaction.update(artistRef, {
+            'subscriptionTier': newTier.apiName,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
         }
-
-        final artistRef = artistQuery.docs.first.reference;
-
-        // Update subscription tier in artist profile
-        transaction.update(artistRef, {
-          'subscriptionTier': newTier.apiName,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
 
         // Update subscriptions collection
         final subscriptionQuery = await _firestore

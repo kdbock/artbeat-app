@@ -8,3 +8,4 @@ export 'gift_card_widget.dart';
 export 'art_critique_slider.dart';
 export 'community_header.dart';
 export 'post_detail_modal.dart';
+export 'post_card.dart';

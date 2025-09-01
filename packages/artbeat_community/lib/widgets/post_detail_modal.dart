@@ -175,9 +175,12 @@ class _PostDetailModalState extends State<PostDetailModal> {
 
   Future<void> _loadComments() async {
     try {
+      // Load comments from the post's comments subcollection to respect
+      // Firestore security rules which allow access to posts/{postId}/comments
       final commentsSnapshot = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.post.id)
           .collection('comments')
-          .where('postId', isEqualTo: widget.post.id)
           .orderBy('createdAt', descending: false)
           .get();
 
@@ -236,8 +239,18 @@ class _PostDetailModalState extends State<PostDetailModal> {
         'isReported': false,
       };
 
-      // Add comment to Firestore
-      await FirebaseFirestore.instance.collection('comments').add(commentData);
+      // Add comment to the post's comments subcollection
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.post.id)
+          .collection('comments')
+          .add(commentData);
+
+      // Increment the comment count on the parent post document
+      await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.post.id)
+          .update({'commentCount': FieldValue.increment(1)});
 
       // Clear input and reply state
       _commentController.clear();
@@ -311,7 +324,10 @@ class _PostDetailModalState extends State<PostDetailModal> {
 
   Future<void> _submitCommentReport(CommentModel comment) async {
     try {
+      // Update the comment document in the post's comments subcollection
       await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.post.id)
           .collection('comments')
           .doc(comment.id)
           .update({'isReported': true});
@@ -474,6 +490,7 @@ class _PostDetailModalState extends State<PostDetailModal> {
                         onFeature: () => _handleFeature(widget.post),
                         onGift: () => _handleGift(widget.post),
                         onShare: () => _handleShare(widget.post),
+                        isCompact: true,
                       ),
                     ),
                   ),

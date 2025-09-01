@@ -8,6 +8,7 @@ import '../widgets/enhanced_universal_header.dart';
 import '../viewmodels/dashboard_view_model.dart';
 import '../widgets/main_layout.dart';
 import '../widgets/dashboard/dashboard_hero_section.dart';
+import '../widgets/dashboard/dashboard_community_section.dart';
 
 /// Fluid Dashboard Screen - Clean and Simple
 ///
@@ -104,6 +105,12 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
               onFindArtTap: () => _navigateToArtWalk(context),
             ),
           ),
+
+          // Community section (for authenticated users)
+          if (viewModel.isAuthenticated)
+            SliverToBoxAdapter(
+              child: DashboardCommunitySection(viewModel: viewModel),
+            ),
 
           // User experience card (for logged in users)
           if (viewModel.isAuthenticated && viewModel.currentUser != null)
@@ -254,7 +261,7 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
                 title: 'Artists',
                 subtitle: 'Connect with creators',
                 color: ArtbeatColors.primaryPurple,
-                onTap: () => Navigator.pushNamed(context, '/artists'),
+                onTap: () => Navigator.pushNamed(context, '/artist/browse'),
               ),
               _buildNavigationCard(
                 icon: Icons.palette,
@@ -299,7 +306,20 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: color, size: 32),
+              ShaderMask(
+                shaderCallback: (bounds) =>
+                    const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF00FF87), // Green
+                        Color(0xFF7B2FF2), // Purple
+                      ],
+                    ).createShader(
+                      Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                    ),
+                child: Icon(icon, color: Colors.white, size: 32),
+              ),
               const SizedBox(height: 12),
               Text(
                 title,

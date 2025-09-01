@@ -36,8 +36,12 @@ class _CaptureSearchScreenState extends State<CaptureSearchScreen> {
       _results = allCaptures.where((capture) {
         final title = (capture.title ?? '').toLowerCase();
         final location = (capture.locationName ?? '').toLowerCase();
-        final tags = (capture.tags ?? []).map((t) => t.toString().toLowerCase()).join(' ');
-        return title.contains(query) || location.contains(query) || tags.contains(query);
+        final tags = (capture.tags ?? [])
+            .map((t) => t.toString().toLowerCase())
+            .join(' ');
+        return title.contains(query) ||
+            location.contains(query) ||
+            tags.contains(query);
       }).toList();
     } catch (e) {
       _results = [];
@@ -78,8 +82,7 @@ class _CaptureSearchScreenState extends State<CaptureSearchScreen> {
               child: const Text('Search'),
             ),
             const SizedBox(height: 16),
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator()),
+            if (_isLoading) const Center(child: CircularProgressIndicator()),
             if (_hasSearched && !_isLoading)
               Expanded(
                 child: _results.isEmpty
@@ -98,7 +101,10 @@ class _CaptureSearchScreenState extends State<CaptureSearchScreen> {
                                   fit: BoxFit.cover,
                                   errorWidget: Container(
                                     color: Colors.grey[300],
-                                    child: const Icon(Icons.broken_image, color: Colors.grey),
+                                    child: const Icon(
+                                      Icons.broken_image,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ),
                               ),

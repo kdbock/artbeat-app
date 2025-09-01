@@ -78,8 +78,7 @@ class AppRouter {
         );
 
       case AppRoutes.artworkBrowse:
-        return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
+        return RouteUtils.createSimpleRoute(
           child: const artwork.ArtworkBrowseScreen(),
         );
 
@@ -203,6 +202,10 @@ class AppRouter {
   /// Handles artist-related routes
   Route<dynamic>? _handleArtistRoutes(RouteSettings settings) {
     switch (settings.name) {
+      case '/artist/signup':
+        return RouteUtils.createMainLayoutRoute(
+          child: artist.Modern2025OnboardingScreen(),
+        );
       case AppRoutes.artistDashboard:
         return RouteUtils.createMainNavRoute(
           child: const artist.ArtistDashboardScreen(),
@@ -309,7 +312,7 @@ class AppRouter {
         );
 
       case AppRoutes.artworkBrowse:
-        return RouteUtils.createMainLayoutRoute(
+        return RouteUtils.createSimpleRoute(
           child: const artwork.ArtworkBrowseScreen(),
         );
 
@@ -379,14 +382,28 @@ class AppRouter {
   Route<dynamic>? _handleCommunityRoutes(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.communityDashboard:
-        return RouteUtils.createSimpleRoute(
+        return RouteUtils.createMainNavRoute(
+          currentIndex: 3,
+          appBar: const core.EnhancedUniversalHeader(title: 'Community Canvas'),
           child: const CommunityDashboardScreen(),
         );
 
       case AppRoutes.communityFeed:
+        // Use createMainNavRoute to ensure proper MainLayout wrapping
         return RouteUtils.createMainNavRoute(
-          currentIndex: 2,
-          child: const UnifiedCommunityFeed(),
+          currentIndex: 3,
+          appBar: const core.EnhancedUniversalHeader(
+            title: 'Community Feed',
+            showBackButton: false,
+            showSearch: true,
+            showDeveloperTools: true,
+          ),
+          child: UnifiedCommunityFeed(
+            scrollToPostId: settings.arguments is Map<String, dynamic>
+                ? (settings.arguments as Map<String, dynamic>)['scrollToPostId']
+                      as String?
+                : null,
+          ),
         );
 
       case AppRoutes.communityArtists:
@@ -493,13 +510,34 @@ class AppRouter {
         }
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
-          child: const Center(child: Text('Art Walk Detail - Coming Soon')),
+          child: art_walk.ArtWalkDetailScreen(walkId: walkId),
         );
 
       case AppRoutes.artWalkCreate:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
           child: const art_walk.CreateArtWalkScreen(),
+        );
+
+      case AppRoutes.enhancedArtWalkExperience:
+        final walkId = RouteUtils.getArgument<String>(settings, 'walkId');
+        if (walkId == null) {
+          return RouteUtils.createErrorRoute('Art walk ID is required');
+        }
+        // For now, create a placeholder - the screen will load the art walk data
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: art_walk.EnhancedArtWalkExperienceScreen(
+            artWalkId: walkId,
+            artWalk: art_walk.ArtWalkModel(
+              id: walkId,
+              title: 'Loading...',
+              description: '',
+              userId: '',
+              artworkIds: [],
+              createdAt: DateTime.now(),
+            ),
+          ),
         );
 
       case AppRoutes.artWalkSearch:
@@ -554,6 +592,17 @@ class AppRouter {
         }
         return RouteUtils.createNotFoundRoute('Chat not found');
 
+      case AppRoutes.messagingUserChat:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final userId = args?['userId'] as String?;
+        if (userId != null && userId.isNotEmpty) {
+          // Create a temporary screen that will handle the chat creation
+          return RouteUtils.createMainLayoutRoute(
+            child: _UserChatLoader(userId: userId),
+          );
+        }
+        return RouteUtils.createNotFoundRoute('User chat not found');
+
       default:
         return RouteUtils.createNotFoundRoute('Messaging feature');
     }
@@ -566,7 +615,7 @@ class AppRouter {
       case AppRoutes.eventsDiscover:
       case AppRoutes.eventsDashboard:
       case AppRoutes.eventsArtistDashboard:
-        return RouteUtils.createMainNavRoute(
+        return RouteUtils.createSimpleRoute(
           child: const events.EventsDashboardScreen(),
         );
 
@@ -579,7 +628,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         final eventId = args?['eventId'] as String?;
         if (eventId != null) {
-          return RouteUtils.createMainNavRoute(
+          return RouteUtils.createSimpleRoute(
             child: events.EventDetailsScreen(eventId: eventId),
           );
         }
@@ -787,5 +836,51 @@ class AppRouter {
           child: const core.SplashScreen(),
         );
     }
+  }
+}
+
+/// Temporary widget to handle user chat navigation
+class _UserChatLoader extends StatefulWidget {
+  final String userId;
+
+  const _UserChatLoader({required this.userId});
+
+  @override
+  State<_UserChatLoader> createState() => _UserChatLoaderState();
+}
+
+class _UserChatLoaderState extends State<_UserChatLoader> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateToChat();
+  }
+
+  Future<void> _navigateToChat() async {
+    try {
+      // Use the MessagingNavigationHelper to navigate to the chat
+      await messaging.MessagingNavigationHelper.navigateToUserChat(
+        context,
+        widget.userId,
+      );
+
+      // Navigation is now using pushReplacementNamed, so we don't need to pop
+      // The loader screen will be replaced by the chat screen
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating chat: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

@@ -181,7 +181,8 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
   Future<void> _pickCoverImage() async {
     final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.front,
     );
     if (pickedFile != null) {
       // Launch cropper for optimal visual
@@ -190,14 +191,14 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
         uiSettings: [
           AndroidUiSettings(
-            toolbarTitle: 'Crop Cover Image',
+            toolbarTitle: 'Crop ARTBeat Selfie',
             toolbarColor: Colors.black,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.ratio16x9,
             lockAspectRatio: false,
           ),
           IOSUiSettings(
-            title: 'Crop Cover Image',
+            title: 'Crop ARTBeat Selfie',
             aspectRatioLockEnabled: false,
           ),
         ],
@@ -309,11 +310,24 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
               ? 'Edit Art Walk'
               : 'Create New Art Walk',
           showLogo: false,
+          showBackButton: true,
+          backgroundGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
+          ),
+          titleGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
+          ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.chat),
-              onPressed: () => Navigator.pushNamed(context, '/messaging'),
-            ),
             IconButton(
               icon: const Icon(Icons.info_outline),
               onPressed: () {
@@ -440,10 +454,20 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Cover Image (Optional)',
-          style: Theme.of(context).textTheme.titleMedium,
+          'ARTBeat Selfie (Optional)',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: Colors.blue[900]),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
+        Text(
+          'Upload a selfie of you on your art walk! You may be on a Featured ART Walk!',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+        const SizedBox(height: 12),
         GestureDetector(
           onTap: _pickCoverImage,
           child: Container(
@@ -462,9 +486,9 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                        Icon(Icons.camera_alt, size: 40, color: Colors.grey),
                         SizedBox(height: 8),
-                        Text('Tap to select an image'),
+                        Text('Tap to take a selfie'),
                       ],
                     ),
                   ),

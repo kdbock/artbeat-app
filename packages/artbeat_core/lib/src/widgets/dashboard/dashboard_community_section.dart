@@ -341,11 +341,14 @@ class _DashboardCommunitySectionState extends State<DashboardCommunitySection> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => Navigator.pushNamed(
-            context,
-            '/community/post',
-            arguments: {'postId': post.id},
-          ),
+          onTap: () {
+            debugPrint('DashboardCommunitySection: Tapping post ${post.id}');
+            Navigator.pushNamed(
+              context,
+              '/community/feed',
+              arguments: {'scrollToPostId': post.id},
+            );
+          },
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(12),

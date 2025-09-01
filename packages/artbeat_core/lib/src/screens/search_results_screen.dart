@@ -144,7 +144,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: -1,
+      currentIndex: -1, // Not a bottom nav screen, hides bottom nav
       appBar: const EnhancedUniversalHeader(
         title: 'Search Results',
         showLogo: false,

@@ -22,6 +22,7 @@ class ArtWalkNavigationService {
   int _currentStepIndex = 0;
   Position? _lastKnownPosition;
   Timer? _locationUpdateTimer;
+  StreamSubscription<Position>? _locationSubscription;
 
   ArtWalkNavigationService({DirectionsService? directionsService})
     : _directionsService = directionsService ?? DirectionsService();
@@ -190,10 +191,12 @@ class ArtWalkNavigationService {
       locationSettings: locationSettings,
     );
 
-    locationStream.listen((Position position) {
-      _lastKnownPosition = position;
-      _locationUpdateController.add(position);
-      _processLocationUpdate(position);
+    _locationSubscription = locationStream.listen((Position position) {
+      if (!_locationUpdateController.isClosed) {
+        _lastKnownPosition = position;
+        _locationUpdateController.add(position);
+        _processLocationUpdate(position);
+      }
     });
   }
 
@@ -230,7 +233,9 @@ class ArtWalkNavigationService {
       currentPosition: _lastKnownPosition,
     );
 
-    _navigationUpdateController.add(update);
+    if (!_navigationUpdateController.isClosed) {
+      _navigationUpdateController.add(update);
+    }
   }
 
   /// Calculate distance from a point to a polyline
@@ -286,6 +291,7 @@ class ArtWalkNavigationService {
   /// Dispose of resources
   void dispose() {
     _locationUpdateTimer?.cancel();
+    _locationSubscription?.cancel();
     _navigationUpdateController.close();
     _locationUpdateController.close();
   }

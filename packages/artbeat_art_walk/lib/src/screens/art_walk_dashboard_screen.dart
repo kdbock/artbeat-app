@@ -41,6 +41,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   List<ArtWalkModel> _allUserWalks = [];
   List<AchievementModel> _artWalkAchievements = [];
   UserModel? _currentUser;
+  bool _isDisposed = false;
 
   final ArtWalkService _artWalkService = ArtWalkService();
   final AchievementService _achievementService = AchievementService();
@@ -55,6 +56,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
   @override
   void dispose() {
+    _isDisposed = true;
     _mapController?.dispose();
     super.dispose();
   }
@@ -72,7 +74,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   Future<void> _loadCurrentUser() async {
     try {
       final user = await _userService.getCurrentUserModel();
-      if (mounted) {
+      if (!_isDisposed && mounted) {
         setState(() => _currentUser = user);
       }
     } catch (e) {
@@ -101,7 +103,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         ),
       );
 
-      if (mounted) {
+      if (!_isDisposed && mounted) {
         _updateMapPosition(position.latitude, position.longitude);
       }
     } catch (e) {
@@ -115,7 +117,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     try {
       // Load all public captures for discovery
       final captures = await _captureService.getAllCaptures(limit: 50);
-      if (mounted) {
+      if (!_isDisposed && mounted) {
         setState(() => _localCaptures = captures);
       }
     } catch (e) {
@@ -127,7 +129,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     try {
       // Load all public art walks for discovery
       final walks = await _artWalkService.getPopularArtWalks(limit: 20);
-      if (mounted) {
+      if (!_isDisposed && mounted) {
         setState(() => _allUserWalks = walks);
       }
     } catch (e) {
@@ -142,7 +144,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         final achievements = await _achievementService.getUserAchievements(
           userId: userId,
         );
-        if (mounted) {
+        if (!_isDisposed && mounted) {
           setState(() => _artWalkAchievements = achievements);
         }
       }
@@ -167,6 +169,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   }
 
   void _updateMapPosition(double latitude, double longitude) {
+    if (_isDisposed) return;
     setState(() {
       _currentPosition = _createPosition(latitude, longitude);
     });
@@ -174,7 +177,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   }
 
   void _updateMapMarkers() {
-    if (!mounted || _currentPosition == null) return;
+    if (!mounted || _currentPosition == null || _isDisposed) return;
 
     final Set<Marker> markers = {
       // User location marker
@@ -308,59 +311,111 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                       ),
                     ],
                   ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDeveloperTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Icon(icon, color: ArtWalkColors.textSecondary),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: ArtWalkColors.textPrimary,
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(context); // Close the bottom sheet
+                            // Navigate to create art walk with this capture pre-selected
+                            Navigator.pushNamed(
+                              context,
+                              '/art-walk/create',
+                              arguments: {'preSelectedCapture': capture},
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: ArtWalkColors.accentOrange.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: ArtWalkColors.accentOrange.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ShaderMask(
+                                  shaderCallback: (bounds) =>
+                                      const LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Color(0xFFFF7043), // Orange
+                                          Color(0xFFFF9E80), // Light Orange
+                                        ],
+                                      ).createShader(
+                                        Rect.fromLTWH(
+                                          0,
+                                          0,
+                                          bounds.width,
+                                          bounds.height,
+                                        ),
+                                      ),
+                                  child: const Icon(
+                                    Icons.add_location,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Add to Art Walk',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: ArtWalkColors.textPrimary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: ArtWalkColors.textSecondary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => Navigator.pop(context),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.close, color: Colors.grey, size: 20),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Close',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.chevron_right,
-                  color: ArtWalkColors.textSecondary,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -501,68 +556,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
-  Widget _buildSearchTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: ArtWalkColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: ArtWalkColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildDiscoveryTile({
     required IconData icon,
     required String title,
@@ -629,6 +622,27 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 1,
+      appBar: const EnhancedUniversalHeader(
+        title: 'Art Walk',
+        showLogo: false,
+        showBackButton: true,
+        backgroundGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF4FB3BE), // Light Teal
+            Color(0xFFFF9E80), // Light Orange/Peach
+          ],
+        ),
+        titleGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF4FB3BE), // Light Teal
+            Color(0xFFFF9E80), // Light Orange/Peach
+          ],
+        ),
+      ),
       child: Scaffold(
         body: Container(
           decoration: const BoxDecoration(
@@ -636,8 +650,8 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFF7B2FF2), // Purple
-                Color(0xFF00FF87), // Green
+                Color(0xFF4FB3BE), // Light Teal
+                Color(0xFFFF9E80), // Light Orange
                 ArtWalkColors.backgroundGradientStart,
                 ArtWalkColors.backgroundGradientEnd,
               ],
@@ -820,27 +834,142 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Local Captures',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: ArtWalkColors.textPrimary,
+                Expanded(
+                  child: const Text(
+                    'Captures',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ArtWalkColors.textPrimary,
+                    ),
                   ),
                 ),
                 const Spacer(),
-                if (_localCaptures.isNotEmpty)
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/capture/public'),
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        color: ArtWalkColors.primaryTeal,
-                        fontWeight: FontWeight.w600,
+                if (_localCaptures.isNotEmpty) ...[
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/capture/public'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtWalkColors.primaryTeal.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) =>
+                                  const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF00FF87), // Green
+                                      Color(0xFF7B2FF2), // Purple
+                                    ],
+                                  ).createShader(
+                                    Rect.fromLTWH(
+                                      0,
+                                      0,
+                                      bounds.width,
+                                      bounds.height,
+                                    ),
+                                  ),
+                              child: const Icon(
+                                Icons.visibility,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'View All',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: ArtWalkColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/art-walk/create'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtWalkColors.accentOrange.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: ArtWalkColors.accentOrange.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) =>
+                                  const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFFFF7043), // Orange
+                                      Color(0xFFFF9E80), // Light Orange
+                                    ],
+                                  ).createShader(
+                                    Rect.fromLTWH(
+                                      0,
+                                      0,
+                                      bounds.width,
+                                      bounds.height,
+                                    ),
+                                  ),
+                              child: const Icon(
+                                Icons.add_location,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              'Create Walk',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: ArtWalkColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -999,14 +1128,64 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 ),
                 const Spacer(),
                 if (_allUserWalks.isNotEmpty)
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/art-walk/list'),
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        color: ArtWalkColors.primaryTeal,
-                        fontWeight: FontWeight.w600,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/art-walk/list'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtWalkColors.primaryTeal.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) =>
+                                  const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF00FF87), // Green
+                                      Color(0xFF7B2FF2), // Purple
+                                    ],
+                                  ).createShader(
+                                    Rect.fromLTWH(
+                                      0,
+                                      0,
+                                      bounds.width,
+                                      bounds.height,
+                                    ),
+                                  ),
+                              child: const Icon(
+                                Icons.visibility,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'View All',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: ArtWalkColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1212,14 +1391,64 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 ),
                 if (_artWalkAchievements.isNotEmpty) ...[
                   const SizedBox(width: 8),
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.pushNamed(context, '/achievements'),
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        color: ArtWalkColors.primaryTeal,
-                        fontWeight: FontWeight.w600,
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/achievements'),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtWalkColors.primaryTeal.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) =>
+                                  const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFF00FF87), // Green
+                                      Color(0xFF7B2FF2), // Purple
+                                    ],
+                                  ).createShader(
+                                    Rect.fromLTWH(
+                                      0,
+                                      0,
+                                      bounds.width,
+                                      bounds.height,
+                                    ),
+                                  ),
+                              child: const Icon(
+                                Icons.visibility,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'View All',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: ArtWalkColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

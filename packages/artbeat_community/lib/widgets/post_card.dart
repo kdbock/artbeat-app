@@ -10,9 +10,8 @@ class PostCard extends StatelessWidget {
   final String currentUserId;
   final List<CommentModel> comments;
   final void Function(String) onUserTap;
-  final void Function(PostModel) onApplause; // Legacy - will be removed
   final void Function(String) onComment;
-  final void Function(PostModel) onShare; // Legacy - will be removed
+  // Removed legacy onApplause and onShare callbacks; use UniversalEngagementBar via UniversalContentCard
   final void Function(PostModel)? onFeature;
   final void Function(PostModel)? onGift;
   final bool isExpanded;
@@ -24,9 +23,7 @@ class PostCard extends StatelessWidget {
     required this.currentUserId,
     required this.comments,
     required this.onUserTap,
-    required this.onApplause,
     required this.onComment,
-    required this.onShare,
     this.onFeature,
     this.onGift,
     this.isExpanded = false,
@@ -41,8 +38,11 @@ class PostCard extends StatelessWidget {
     return UniversalContentCard(
       contentId: post.id,
       contentType: 'post',
-      title: post.content,
-      description: post.content.length > 100 ? null : post.content,
+      // Use a short title and full description to avoid duplication in the UI
+      title: post.content.length > 80
+          ? '${post.content.substring(0, 77)}...'
+          : post.content,
+      description: post.content.isNotEmpty ? post.content : null,
       imageUrl: post.imageUrls.isNotEmpty ? post.imageUrls.first : null,
       authorName: post.userName,
       authorImageUrl: post.userPhotoUrl,
@@ -50,10 +50,16 @@ class PostCard extends StatelessWidget {
       createdAt: post.createdAt,
       engagementStats: post.engagementStats,
       tags: post.tags,
-      onTap: onToggleExpand,
+      // Tapping a post should open the post detail modal (navigate to comments)
+      // The feed passes onComment to open the detail view; keep onToggleExpand
+      // for explicit expand controls if needed.
+      onTap: () => onComment(post.id),
       onAuthorTap: () => onUserTap(post.userId),
       onDiscuss: () => onComment(post.id),
-      onAmplify: () => onShare(post), // Legacy callback
+      onAmplify:
+          null, // use engagement bar's default amplify behavior or pass a handler via props if needed
+      onGift: () => onGift?.call(post),
+      showGift: true,
       isCompact: !isExpanded,
     );
   }

@@ -105,9 +105,8 @@ class MyApp extends StatelessWidget {
                 create: (_) => capture.CaptureService(),
                 lazy: true,
               ),
-              ChangeNotifierProvider<core.SubscriptionService>(
-                create: (_) => core.SubscriptionService(),
-                lazy: true,
+              ChangeNotifierProvider<core.SubscriptionService>.value(
+                value: core.SubscriptionService(),
               ),
               // Dashboard ViewModel - Create after required services
               ChangeNotifierProxyProvider6<

@@ -482,12 +482,27 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       currentIndex: 2, // Art Walk tab
       drawer: const ArtbeatDrawer(),
       child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Art Walk Map',
-          showLogo: false,
-          showSearch: false,
-          onMenuPressed: () => Scaffold.of(context).openDrawer(),
-          actions: const [],
+        appBar: AppBar(
+          title: const Text('Art Walk Map'),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF4FB3BE), // Light Teal
+                  Color(0xFFFF9E80), // Light Orange/Peach
+                ],
+              ),
+            ),
+          ),
         ),
         body: Stack(
           children: [
