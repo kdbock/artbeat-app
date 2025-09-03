@@ -457,15 +457,13 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       ),
                     ],
 
-                    // Universal engagement bar
+                    // Content engagement bar
                     const SizedBox(height: 24),
-                    UniversalEngagementBar(
+                    ContentEngagementBar(
                       contentId: artwork.id,
                       contentType: 'artwork',
                       initialStats: artwork.engagementStats,
-                      showConnect:
-                          !_isOwner, // Allow connecting to artist if not owner
-                      targetUserId: artwork.userId,
+                      showSecondaryActions: true,
                     ),
 
                     // View count (separate from engagement)

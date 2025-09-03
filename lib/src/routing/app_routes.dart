@@ -24,6 +24,9 @@ class AppRoutes {
   static const String notificationSettings = '/settings/notifications';
   static const String privacySettings = '/settings/privacy';
   static const String securitySettings = '/settings/security';
+  static const String paymentSettings = '/settings/payment';
+
+  // Capture routes
   static const String help = '/support';
   static const String feedback = '/feedback';
 
@@ -52,6 +55,9 @@ class AppRoutes {
   static const String artistSearchShort = '/artist-search';
   static const String artistBrowse = '/artist/browse';
   static const String artistFeatured = '/artist/featured';
+  static const String artistEarnings = '/artist/earnings';
+  static const String artistPayoutRequest = '/artist/payout-request';
+  static const String artistPayoutAccounts = '/artist/payout-accounts';
 
   // Artwork routes
   static const String artworkUpload = '/artwork/upload';
@@ -70,6 +76,11 @@ class AppRoutes {
   // Subscription routes
   static const String subscriptionComparison = '/subscription/comparison';
   static const String subscriptionPlans = '/subscription/plans';
+
+  // Payment routes
+  static const String paymentMethods = '/payment/methods';
+  static const String paymentRefund = '/payment/refund';
+  static const String adPayment = '/ads/payment';
 
   // Capture routes
   static const String captures = '/captures';
@@ -164,6 +175,7 @@ class AppRoutes {
   static const String adminAdReview = '/admin/ad-review';
   static const String adminAdManagement = '/admin/ad-management';
   static const String adminMessaging = '/admin/messaging';
+  static const String adminCoupons = '/admin/coupons';
 
   // Settings routes
   static const String settings = '/settings';
@@ -220,6 +232,10 @@ class AppRoutes {
     artistSearch,
     artistSearchShort,
     artistBrowse,
+    artistFeatured,
+    artistEarnings,
+    artistPayoutRequest,
+    artistPayoutAccounts,
     artworkUpload,
     artworkBrowse,
     artworkSearch,
@@ -232,6 +248,9 @@ class AppRoutes {
     galleryAnalytics,
     subscriptionComparison,
     subscriptionPlans,
+    paymentMethods,
+    paymentRefund,
+    adPayment,
     captures,
     captureCamera,
     captureDetail,
@@ -314,11 +333,13 @@ class AppRoutes {
     adminAdReview,
     adminAdManagement,
     adminMessaging,
+    adminCoupons,
     settings,
     settingsAccount,
     settingsPrivacy,
     settingsNotifications,
     settingsSecurity,
+    paymentSettings,
     achievements,
     achievementsInfo,
     notifications,

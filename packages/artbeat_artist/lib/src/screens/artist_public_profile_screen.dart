@@ -5,7 +5,8 @@ import 'package:artbeat_core/artbeat_core.dart'
         SubscriptionTier,
         ArtistProfileModel,
         UserAvatar,
-        EnhancedUniversalHeader;
+        EnhancedUniversalHeader,
+        EnhancedGiftPurchaseScreen;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
@@ -278,6 +279,37 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                               child: Text(
                                 _isFollowing ? 'Following' : 'Follow',
                               ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Engagement buttons row
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildEngagementButton(
+                                  icon: Icons.card_giftcard,
+                                  label: 'Gift',
+                                  color: Colors.amber,
+                                  onTap: () => _handleGiftAction(),
+                                ),
+                                _buildEngagementButton(
+                                  icon: Icons.attach_money,
+                                  label: 'Sponsor',
+                                  color: Colors.green,
+                                  onTap: () => _handleSponsorAction(),
+                                ),
+                                _buildEngagementButton(
+                                  icon: Icons.message,
+                                  label: 'Message',
+                                  color: Colors.blue,
+                                  onTap: () => _handleMessageAction(),
+                                ),
+                                _buildEngagementButton(
+                                  icon: Icons.work,
+                                  label: 'Commission',
+                                  color: Colors.purple,
+                                  onTap: () => _handleCommissionAction(),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -588,6 +620,88 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildEngagementButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: color.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleGiftAction() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: _artistProfile!.userId,
+          recipientName: _artistProfile!.displayName,
+        ),
+      ),
+    );
+  }
+
+  void _handleSponsorAction() {
+    Navigator.pushNamed(
+      context,
+      '/sponsorship/create',
+      arguments: {
+        'artistId': _artistProfile!.userId,
+        'artistName': _artistProfile!.displayName,
+      },
+    );
+  }
+
+  void _handleMessageAction() {
+    Navigator.pushNamed(
+      context,
+      '/messaging/conversation',
+      arguments: {
+        'recipientId': _artistProfile!.userId,
+        'recipientName': _artistProfile!.displayName,
+      },
+    );
+  }
+
+  void _handleCommissionAction() {
+    Navigator.pushNamed(
+      context,
+      '/commission/request',
+      arguments: {
+        'artistId': _artistProfile!.userId,
+        'artistName': _artistProfile!.displayName,
+      },
     );
   }
 }

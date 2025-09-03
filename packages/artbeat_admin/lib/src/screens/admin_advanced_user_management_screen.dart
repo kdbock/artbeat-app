@@ -922,14 +922,6 @@ class _AdminAdvancedUserManagementScreenState
     );
   }
 
-  Widget _buildBulkActionsFAB() {
-    return FloatingActionButton.extended(
-      onPressed: () => _showBulkActionsDialog(),
-      icon: const Icon(Icons.edit),
-      label: Text('${_selectedUserIds.length} Selected'),
-    );
-  }
-
   Widget _buildErrorWidget() {
     return Center(
       child: Column(
@@ -1049,10 +1041,6 @@ class _AdminAdvancedUserManagementScreenState
 
   void _showUserActions(UserModel user) {
     // Implementation for user actions menu
-  }
-
-  void _showBulkActionsDialog() {
-    // Implementation for bulk actions dialog
   }
 
   void _showCreateUserDialog() {

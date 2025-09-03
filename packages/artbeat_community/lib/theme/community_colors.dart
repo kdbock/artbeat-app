@@ -4,8 +4,8 @@ import 'package:artbeat_core/artbeat_core.dart';
 /// Custom colors for the community module
 class CommunityColors {
   // Primary colors
-  static const primary = Color(0xFF8C52FF);
-  static const secondary = Color(0xFF00BF63);
+  static const primary = Color(0xFF800020); // Burgundy
+  static const secondary = Color(0xFFFFD700); // Gold
 
   // Interactive states
   static const applause = Color(0xFFFFB74D);
@@ -30,7 +30,7 @@ class CommunityColors {
   static const textSecondary = Color(0xFF666666);
   static const textHint = Color(0xFF999999);
   static const comment = Color(0xFF757575);
-  static const mention = ArtbeatColors.primaryPurple;
+  static const mention = Color(0xFF800020); // Burgundy for mentions
   static const hashtag = Color(0xFF42A5F5);
 
   // Status colors
@@ -62,5 +62,23 @@ class CommunityColors {
     colors: [Color(0xFFFF6B6B), Color(0xFFFF4081)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+  );
+
+  // Community header and button gradient - Burgundy to Gold
+  static const communityGradient = LinearGradient(
+    colors: [Color(0xFF800020), Color(0xFFFFD700)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // Community background gradient
+  static const communityBackgroundGradient = LinearGradient(
+    colors: [
+      Color(0x33800020), // Burgundy with alpha
+      Color(0x33FFD700), // Gold with alpha
+      Colors.white,
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
   );
 }

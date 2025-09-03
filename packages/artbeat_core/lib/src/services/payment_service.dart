@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/subscription_tier.dart';
 import '../models/payment_method_model.dart';
 import '../models/gift_model.dart';
+import '../models/gift_subscription_model.dart';
 import '../utils/env_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -419,6 +420,20 @@ class PaymentService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      // Create earnings transaction for the recipient
+      await _createEarningsTransaction(
+        artistId: gift.recipientId,
+        type: 'gift',
+        amount: gift.amount,
+        fromUserId: gift.senderId,
+        description: 'Gift received: ${gift.giftType}',
+        metadata: {
+          'giftType': gift.giftType,
+          'paymentIntentId': data['paymentIntentId'],
+          if (message != null) 'message': message,
+        },
+      );
+
       return data;
     } catch (e) {
       debugPrint('Error processing gift payment: $e');
@@ -804,6 +819,7 @@ class PaymentService {
     required String customerId,
     required SubscriptionTier tier,
     String? paymentMethodId,
+    String? couponCode,
   }) async {
     try {
       final userId = _auth.currentUser?.uid;
@@ -820,6 +836,7 @@ class PaymentService {
           'priceId': priceId,
           'userId': userId,
           if (paymentMethodId != null) 'paymentMethodId': paymentMethodId,
+          if (couponCode != null) 'couponCode': couponCode,
         }),
       );
 
@@ -829,7 +846,7 @@ class PaymentService {
 
       final data = json.decode(response.body) as Map<String, dynamic>;
 
-      // Store subscription in Firestore
+      // Store subscription in Firestore with coupon information
       await _firestore.collection('subscriptions').add({
         'userId': userId,
         'customerId': customerId,
@@ -838,6 +855,11 @@ class PaymentService {
         'status': data['status'],
         'isActive': true,
         'autoRenew': true,
+        'couponCode': couponCode,
+        'couponId': data['couponId'],
+        'originalPrice': tier.monthlyPrice,
+        'discountedPrice': data['discountedPrice'] ?? tier.monthlyPrice,
+        'revenue': data['revenue'] ?? tier.monthlyPrice, // Track actual revenue
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
@@ -845,6 +867,464 @@ class PaymentService {
       return data;
     } catch (e) {
       debugPrint('Error creating subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a custom subscription with specific price
+  Future<Map<String, dynamic>> createCustomSubscription({
+    required String customerId,
+    required String paymentMethodId,
+    required double priceAmount,
+    required String currency,
+    Map<String, String>? metadata,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/createCustomSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'customerId': customerId,
+          'paymentMethodId': paymentMethodId,
+          'priceAmount': (priceAmount * 100).round(), // Convert to cents
+          'currency': currency,
+          'userId': userId,
+          'metadata': metadata ?? {},
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create custom subscription');
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+      return data;
+    } catch (e) {
+      debugPrint('Error creating custom subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Pause a subscription
+  Future<void> pauseSubscription(String subscriptionId) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/pauseSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'subscriptionId': subscriptionId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to pause subscription');
+      }
+
+      // Update subscription in Firestore
+      final subscriptionQuery = await _firestore
+          .collection('subscriptions')
+          .where('subscriptionId', isEqualTo: subscriptionId)
+          .get();
+
+      for (final doc in subscriptionQuery.docs) {
+        await doc.reference.update({
+          'status': 'paused',
+          'pausedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Error pausing subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Resume a paused subscription
+  Future<void> resumeSubscription(String subscriptionId) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/resumeSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'subscriptionId': subscriptionId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to resume subscription');
+      }
+
+      // Update subscription in Firestore
+      final subscriptionQuery = await _firestore
+          .collection('subscriptions')
+          .where('subscriptionId', isEqualTo: subscriptionId)
+          .get();
+
+      for (final doc in subscriptionQuery.docs) {
+        await doc.reference.update({
+          'status': 'active',
+          'resumedAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      debugPrint('Error resuming subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Update subscription price
+  Future<void> updateSubscriptionPrice({
+    required String subscriptionId,
+    required double newPriceAmount,
+  }) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/updateSubscriptionPrice'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'subscriptionId': subscriptionId,
+          'newPriceAmount': (newPriceAmount * 100).round(), // Convert to cents
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update subscription price');
+      }
+    } catch (e) {
+      debugPrint('Error updating subscription price: $e');
+      rethrow;
+    }
+  }
+
+  /// Create an earnings transaction for an artist
+  Future<void> _createEarningsTransaction({
+    required String artistId,
+    required String type,
+    required double amount,
+    required String fromUserId,
+    required String description,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      // Get sender's name
+      final senderDoc = await _firestore
+          .collection('users')
+          .doc(fromUserId)
+          .get();
+      final senderName =
+          senderDoc.data()?['displayName'] as String? ?? 'Anonymous';
+
+      // Create earnings transaction
+      final transactionRef = _firestore
+          .collection('earnings_transactions')
+          .doc();
+      await transactionRef.set({
+        'id': transactionRef.id,
+        'artistId': artistId,
+        'type': type,
+        'amount': amount,
+        'fromUserId': fromUserId,
+        'fromUserName': senderName,
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'completed',
+        'description': description,
+        'metadata': metadata ?? {},
+      });
+
+      // Update artist earnings totals
+      await _updateArtistEarnings(artistId, type, amount);
+    } catch (e) {
+      debugPrint('Error creating earnings transaction: $e');
+      rethrow;
+    }
+  }
+
+  /// Update artist earnings totals
+  Future<void> _updateArtistEarnings(
+    String artistId,
+    String type,
+    double amount,
+  ) async {
+    try {
+      final earningsRef = _firestore
+          .collection('artist_earnings')
+          .doc(artistId);
+
+      await _firestore.runTransaction((transaction) async {
+        final earningsDoc = await transaction.get(earningsRef);
+
+        if (!earningsDoc.exists) {
+          // Create initial earnings record
+          final currentMonth = DateTime.now().month.toString();
+          transaction.set(earningsRef, {
+            'artistId': artistId,
+            'totalEarnings': amount,
+            'availableBalance': amount,
+            'pendingBalance': 0.0,
+            'giftEarnings': type == 'gift' ? amount : 0.0,
+            'sponsorshipEarnings': type == 'sponsorship' ? amount : 0.0,
+            'commissionEarnings': type == 'commission' ? amount : 0.0,
+            'subscriptionEarnings': type == 'subscription' ? amount : 0.0,
+            'lastUpdated': FieldValue.serverTimestamp(),
+            'monthlyBreakdown': {currentMonth: amount},
+            'recentTransactions': <Map<String, dynamic>>[],
+          });
+        } else {
+          // Update existing earnings
+          final currentMonth = DateTime.now().month.toString();
+          final currentData = earningsDoc.data()!;
+          final monthlyBreakdown = Map<String, double>.from(
+            currentData['monthlyBreakdown'] as Map<String, dynamic>? ?? {},
+          );
+
+          monthlyBreakdown[currentMonth] =
+              (monthlyBreakdown[currentMonth] ?? 0.0) + amount;
+
+          final updates = {
+            'totalEarnings': FieldValue.increment(amount),
+            'availableBalance': FieldValue.increment(amount),
+            'lastUpdated': FieldValue.serverTimestamp(),
+            'monthlyBreakdown': monthlyBreakdown,
+          };
+
+          // Update specific earning type
+          switch (type) {
+            case 'gift':
+              updates['giftEarnings'] = FieldValue.increment(amount);
+              break;
+            case 'sponsorship':
+              updates['sponsorshipEarnings'] = FieldValue.increment(amount);
+              break;
+            case 'commission':
+              updates['commissionEarnings'] = FieldValue.increment(amount);
+              break;
+            case 'subscription':
+              updates['subscriptionEarnings'] = FieldValue.increment(amount);
+              break;
+          }
+
+          transaction.update(earningsRef, updates);
+        }
+      });
+    } catch (e) {
+      debugPrint('Error updating artist earnings: $e');
+      rethrow;
+    }
+  }
+
+  /// Get sponsorship analytics for an artist
+  Future<Map<String, dynamic>> getSponsorshipAnalytics({
+    required String artistId,
+    String timeframe = 'month',
+  }) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/getSponsorshipAnalytics'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'artistId': artistId, 'timeframe': timeframe}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get sponsorship analytics');
+      }
+
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error getting sponsorship analytics: $e');
+      rethrow;
+    }
+  }
+
+  /// Process custom gift payment with flexible amounts
+  Future<Map<String, dynamic>> processCustomGiftPayment({
+    required String recipientId,
+    required double amount,
+    required String paymentMethodId,
+    String? message,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/processCustomGiftPayment'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'senderId': userId,
+          'recipientId': recipientId,
+          'amount': amount,
+          'paymentMethodId': paymentMethodId,
+          if (message != null) 'message': message,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process custom gift payment');
+      }
+
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error processing custom gift payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a gift subscription for recurring payments
+  Future<Map<String, dynamic>> createGiftSubscription({
+    required String recipientId,
+    required double amount,
+    required SubscriptionFrequency frequency,
+    required String paymentMethodId,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Map frequency to Stripe interval
+      String interval;
+      int intervalCount = 1;
+      switch (frequency) {
+        case SubscriptionFrequency.weekly:
+          interval = 'week';
+          break;
+        case SubscriptionFrequency.biweekly:
+          interval = 'week';
+          intervalCount = 2;
+          break;
+        case SubscriptionFrequency.monthly:
+          interval = 'month';
+          break;
+      }
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/createGiftSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'senderId': userId,
+          'recipientId': recipientId,
+          'amount': amount,
+          'interval': interval,
+          'intervalCount': intervalCount,
+          'paymentMethodId': paymentMethodId,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to create gift subscription');
+      }
+
+      return json.decode(response.body) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error creating gift subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Pause a gift subscription
+  Future<void> pauseGiftSubscription(String stripeSubscriptionId) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/pauseGiftSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'subscriptionId': stripeSubscriptionId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to pause gift subscription');
+      }
+    } catch (e) {
+      debugPrint('Error pausing gift subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Resume a gift subscription
+  Future<void> resumeGiftSubscription(String stripeSubscriptionId) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/resumeGiftSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'subscriptionId': stripeSubscriptionId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to resume gift subscription');
+      }
+    } catch (e) {
+      debugPrint('Error resuming gift subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Cancel a gift subscription
+  Future<void> cancelGiftSubscription(String stripeSubscriptionId) async {
+    try {
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/cancelGiftSubscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'subscriptionId': stripeSubscriptionId}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to cancel gift subscription');
+      }
+    } catch (e) {
+      debugPrint('Error cancelling gift subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Create a free subscription using a coupon (no payment required)
+  Future<Map<String, dynamic>> createFreeSubscription({
+    required String customerId,
+    required SubscriptionTier tier,
+    required String couponId,
+    required String couponCode,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Create a mock subscription record for free access
+      final subscriptionData = {
+        'subscriptionId':
+            'free_${userId}_${DateTime.now().millisecondsSinceEpoch}',
+        'status': 'active',
+        'couponId': couponId,
+        'discountedPrice': 0.0,
+        'revenue': 0.0, // No revenue for free subscriptions
+      };
+
+      // Store subscription in Firestore
+      await _firestore.collection('subscriptions').add({
+        'userId': userId,
+        'customerId': customerId,
+        'subscriptionId': subscriptionData['subscriptionId'],
+        'tier': tier.apiName,
+        'status': subscriptionData['status'],
+        'isActive': true,
+        'autoRenew': false, // Free subscriptions don't auto-renew
+        'couponCode': couponCode,
+        'couponId': couponId,
+        'originalPrice': tier.monthlyPrice,
+        'discountedPrice': 0.0,
+        'revenue': 0.0, // Track as zero revenue for analytics
+        'isFree': true, // Flag to identify free subscriptions
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return subscriptionData;
+    } catch (e) {
+      debugPrint('Error creating free subscription: $e');
       rethrow;
     }
   }

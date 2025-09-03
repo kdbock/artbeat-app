@@ -2,7 +2,7 @@ name: artbeat
 description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
 publish_to: "none"
 
-version: 1.1.0+35
+version: 1.1.1+36
 
 environment:
   sdk: "^3.8.0"
@@ -41,14 +41,14 @@ dependencies:
     path: packages/artbeat_events
 
   # Firebase
-  firebase_core: ^3.14.0
-  firebase_auth: ^5.6.0
-  cloud_firestore: ^5.6.9
-  firebase_storage: ^12.4.7
-  firebase_analytics: ^11.5.0
-  firebase_app_check: ^0.3.2+7
-  firebase_messaging: ^15.2.7
-  firebase_data_connect: ^0.1.5+1 # Added for Data Connect support
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.1
+  cloud_firestore: ^6.0.0
+  firebase_storage: ^13.0.0
+  firebase_analytics: ^12.0.0
+  firebase_app_check: ^0.4.0
+  firebase_messaging: ^16.0.0
+  firebase_data_connect: ^0.2.0+1
 
   # Permissions
   permission_handler: ^12.0.1
@@ -75,6 +75,7 @@ dependencies:
   image_cropper: ^9.1.0
   geolocator: ^14.0.1
   flutter_local_notifications: ^18.0.1
+  logging: ^1.2.0
 
 flutter:
   uses-material-design: true

@@ -80,11 +80,11 @@ class UserModel {
   }
 
   // Computed getters for counts
-  int get connectionsCount => engagementStats.connectCount;
+  int get connectionsCount => engagementStats.followCount;
   int get postsCount => posts.length;
 
   // Backward compatibility getters for migration period
-  int get followersCount => engagementStats.connectCount;
+  int get followersCount => engagementStats.followCount;
   int get followingCount => 0; // Will be calculated from engagement service
   List<String> get followers => []; // Legacy - use engagement service instead
   List<String> get following => []; // Legacy - use engagement service instead

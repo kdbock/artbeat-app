@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../theme/community_colors.dart';
 
 /// Screen for viewing user's own posts
 class UserPostsScreen extends StatefulWidget {
@@ -88,7 +89,9 @@ class _UserPostsScreenState extends State<UserPostsScreen> {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
-        backgroundColor: ArtbeatColors.backgroundPrimary,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: CommunityColors.communityGradient,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: Colors.white),

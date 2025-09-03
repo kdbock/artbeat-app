@@ -280,12 +280,12 @@ class ArtworkModel {
   }
 
   // Backward compatibility getters for migration period
-  int get likeCount => engagementStats.appreciateCount;
-  int get commentCount => engagementStats.discussCount;
-  int get applauseCount => engagementStats.appreciateCount;
+  int get likeCount => engagementStats.likeCount;
+  int get commentCount => engagementStats.commentCount;
+  int get applauseCount => engagementStats.likeCount;
 
   // Dashboard compatibility getters
-  int get likesCount => engagementStats.appreciateCount;
+  int get likesCount => engagementStats.likeCount;
   int get viewsCount => viewCount;
 
   // Artist name getter - this would need to be populated from artist profile data

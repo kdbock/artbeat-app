@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import '../../theme/community_colors.dart';
 
 class StudioChatScreen extends StatefulWidget {
   final String studioId;
@@ -47,7 +48,16 @@ class _StudioChatScreenState extends State<StudioChatScreen> {
     return core.MainLayout(
       scaffoldKey: scaffoldKey,
       currentIndex: -1, // Detail screen
-      appBar: const core.EnhancedUniversalHeader(title: 'Studio Chat'),
+      appBar: const core.EnhancedUniversalHeader(
+        title: 'Studio Chat',
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
+      ),
       child: Column(
         children: [
           Expanded(

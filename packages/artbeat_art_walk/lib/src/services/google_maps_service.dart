@@ -143,7 +143,7 @@ class GoogleMapsService {
           // Use a more compatible renderer for emulators
           final renderer = _isEmulator
               ? AndroidMapRenderer
-                    .legacy // Better for emulators
+                    .latest // Use latest renderer for all devices
               : AndroidMapRenderer.latest; // Better for physical devices
 
           debugPrint('🗺️ Using renderer: $renderer');
@@ -177,7 +177,7 @@ class GoogleMapsService {
             try {
               final fallbackImplementation = GoogleMapsFlutterAndroid();
               await fallbackImplementation.initializeWithRenderer(
-                AndroidMapRenderer.legacy,
+                AndroidMapRenderer.latest,
               );
               _initialized = true;
               _initializing = false;

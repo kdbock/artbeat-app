@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/post_model.dart';
 import '../services/community_service.dart';
+import '../theme/community_colors.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 /// Horizontal scrolling slider displaying art awaiting critique
@@ -74,13 +75,37 @@ class _ArtCritiqueSliderState extends State<ArtCritiqueSlider> {
                 ),
               ),
               if (widget.onViewAllPressed != null)
-                TextButton(
-                  onPressed: widget.onViewAllPressed,
-                  child: const Text(
-                    'View All',
-                    style: TextStyle(
-                      color: ArtbeatColors.primary,
-                      fontWeight: FontWeight.w600,
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: CommunityColors.communityGradient,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: widget.onViewAllPressed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text(
+                      'View All',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

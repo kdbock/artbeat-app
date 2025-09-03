@@ -35,6 +35,18 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
   ];
   final List<String> _timeFilters = ['All', 'Today', 'This Week', 'This Month'];
   bool _showFilters = false;
+  bool _debugMode = false;
+  // Issue reporting state
+  final TextEditingController _issueTitleController = TextEditingController();
+  final TextEditingController _issueDescriptionController =
+      TextEditingController();
+  String _selectedIssueType = 'Bug Report';
+
+  void _debugLog(String message) {
+    if (_debugMode) {
+      developer.log('DEBUG: $message');
+    }
+  }
 
   @override
   void initState() {
@@ -51,7 +63,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
 
       // Query for upcoming public events
       final now = DateTime.now();
-      developer.log('DEBUG: Current time: $now');
+      _debugLog('Current time: $now');
 
       // First, let's try a simple query to see if we get any events at all
       final allEventsQuery = await _firestore
@@ -59,8 +71,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
           .limit(5)
           .get();
 
-      developer.log(
-        'DEBUG: All events query returned ${allEventsQuery.docs.length} documents',
+      _debugLog(
+        'All events query returned ${allEventsQuery.docs.length} documents',
       );
 
       // Now try with just the isPublic filter
@@ -70,8 +82,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
           .limit(5)
           .get();
 
-      developer.log(
-        'DEBUG: Public events query returned ${publicEventsQuery.docs.length} documents',
+      _debugLog(
+        'Public events query returned ${publicEventsQuery.docs.length} documents',
       );
 
       // Finally, try the full query
@@ -83,18 +95,18 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
           .limit(10)
           .get();
 
-      developer.log('DEBUG: Query returned ${query.docs.length} documents');
+      _debugLog('Query returned ${query.docs.length} documents');
 
       final events = query.docs.map((doc) {
-        developer.log('DEBUG: Processing document ${doc.id}');
+        _debugLog('Processing document ${doc.id}');
         final data = doc.data();
-        developer.log('DEBUG: Document data: $data');
+        _debugLog('Document data: $data');
         return ArtbeatEvent.fromFirestore(doc);
       }).toList();
 
-      developer.log('DEBUG: Processed ${events.length} events');
+      _debugLog('Processed ${events.length} events');
       for (final event in events) {
-        developer.log('DEBUG: Event: ${event.title} at ${event.dateTime}');
+        _debugLog('Event: ${event.title} at ${event.dateTime}');
       }
 
       setState(() {
@@ -104,7 +116,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
       });
       _applyFilters();
     } on FirebaseException catch (e) {
-      developer.log('DEBUG: Error loading events: $e');
+      _debugLog('Error loading events: $e');
       setState(() {
         _error = 'Failed to load events: ${e.toString()}';
         _isLoading = false;
@@ -178,18 +190,32 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
         key: _scaffoldKey,
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE74C3C), // Red
+                  Color(0xFF3498DB), // Light Blue
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
             child: EnhancedUniversalHeader(
               title: 'Events',
               showLogo: false,
               showDeveloperTools: true,
               onSearchPressed: (String query) => _showSearchModal(context),
               onProfilePressed: () => _showProfileMenu(context),
-              onMenuPressed: () => _openDrawer(context),
               onDeveloperPressed: () => _showDeveloperTools(context),
               backgroundColor: Colors.transparent,
               foregroundColor: ArtbeatColors.textPrimary,
@@ -200,7 +226,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                         ? Icons.filter_list
                         : Icons.filter_list_outlined,
                     color: _showFilters
-                        ? ArtbeatColors.primaryPurple
+                        ? const Color(0xFFE74C3C)
                         : ArtbeatColors.textPrimary,
                   ),
                   onPressed: () {
@@ -219,8 +245,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                ArtbeatColors.backgroundPrimary,
-                ArtbeatColors.backgroundSecondary,
+                Color(0xFFFFF5F5), // Very light red tint
+                Color(0xFFF0F8FF), // Very light blue tint
               ],
             ),
           ),
@@ -228,10 +254,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
         ),
       ),
     );
-  }
-
-  void _openDrawer(BuildContext context) {
-    _scaffoldKey.currentState?.openDrawer();
   }
 
   void _showSearchModal(BuildContext context) {
@@ -855,13 +877,13 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-            ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
+            const Color(0xFFE74C3C).withValues(alpha: 0.1), // Red
+            const Color(0xFF3498DB).withValues(alpha: 0.1), // Light Blue
           ],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: ArtbeatColors.primaryPurple.withValues(alpha: 0.2),
+          color: const Color(0xFFE74C3C).withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -945,7 +967,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: ArtbeatColors.primaryPurple, size: 20),
+            Icon(icon, color: const Color(0xFFE74C3C), size: 20),
             const SizedBox(height: 8),
             Text(
               value,
@@ -993,9 +1015,41 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
             ),
           ],
         ),
-        TextButton(
-          onPressed: () => Navigator.pushNamed(context, '/events/all'),
-          child: const Text('View All'),
+        Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
+              ],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ElevatedButton(
+            onPressed: () => Navigator.pushNamed(context, '/events/all'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              shadowColor: Colors.transparent,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              'View All',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ),
         ),
       ],
     );
@@ -1380,7 +1434,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
         child: const Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(
-              ArtbeatColors.primaryPurple,
+              Color(0xFFE74C3C), // Red
             ),
           ),
         ),
@@ -1870,15 +1924,15 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'exhibition':
-        return ArtbeatColors.primaryPurple;
+        return const Color(0xFFE74C3C); // Red
       case 'workshop':
-        return ArtbeatColors.primaryGreen;
+        return const Color(0xFF3498DB); // Light Blue
       case 'tour':
-        return ArtbeatColors.secondaryTeal;
+        return const Color(0xFF5DADE2); // Lighter Blue
       case 'concert':
-        return ArtbeatColors.accentYellow;
+        return const Color(0xFFE67E22); // Orange
       case 'business':
-        return ArtbeatColors.primaryPurple;
+        return const Color(0xFFE74C3C); // Red
       default:
         return ArtbeatColors.textSecondary;
     }
@@ -2040,7 +2094,7 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                       color: ArtbeatColors.secondaryTeal,
                       onTap: () {
                         Navigator.pop(context);
-                        // TODO: Add event settings
+                        _showEventSettings(context);
                       },
                     ),
                     _buildDeveloperOption(
@@ -2235,5 +2289,846 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
         ],
       ),
     );
+  }
+
+  void _showEventSettings(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.settings,
+                      color: ArtbeatColors.secondaryTeal,
+                      size: 24,
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Event Settings',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: ArtbeatColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Configure events module preferences',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: ArtbeatColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Settings options
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    // Display Settings Section
+                    _buildSettingsSectionHeader('Display Settings'),
+                    _buildSettingsToggle(
+                      icon: Icons.filter_list,
+                      title: 'Show Filters',
+                      subtitle: 'Display category and time filters',
+                      value: _showFilters,
+                      onChanged: (value) {
+                        setState(() {
+                          _showFilters = value;
+                        });
+                      },
+                    ),
+                    _buildSettingsToggle(
+                      icon: Icons.visibility,
+                      title: 'Debug Mode',
+                      subtitle: 'Show debug information in logs',
+                      value: _debugMode,
+                      onChanged: (value) {
+                        setState(() {
+                          _debugMode = value;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Debug mode ${value ? 'enabled' : 'disabled'}',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Data Management Section
+                    _buildSettingsSectionHeader('Data Management'),
+                    _buildSettingsOption(
+                      icon: Icons.refresh,
+                      title: 'Refresh Events',
+                      subtitle: 'Reload all event data',
+                      color: ArtbeatColors.primaryPurple,
+                      onTap: () {
+                        Navigator.pop(context);
+                        _loadEvents();
+                      },
+                    ),
+                    _buildSettingsOption(
+                      icon: Icons.clear_all,
+                      title: 'Clear Cache',
+                      subtitle: 'Clear local event cache',
+                      color: ArtbeatColors.error,
+                      onTap: () {
+                        setState(() {
+                          _events.clear();
+                          _filteredEvents.clear();
+                          _error = null;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Event cache cleared')),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Module Configuration Section
+                    _buildSettingsSectionHeader('Module Configuration'),
+                    _buildSettingsOption(
+                      icon: Icons.info,
+                      title: 'Module Info',
+                      subtitle: 'View module version and status',
+                      color: ArtbeatColors.secondaryTeal,
+                      onTap: () {
+                        _showModuleInfo(context);
+                      },
+                    ),
+                    _buildSettingsOption(
+                      icon: Icons.bug_report,
+                      title: 'Report Issue',
+                      subtitle: 'Report a problem with events',
+                      color: ArtbeatColors.accentOrange,
+                      onTap: () {
+                        _showIssueReportingDialog(context);
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Advanced Settings Section
+                    _buildSettingsSectionHeader('Advanced'),
+                    _buildSettingsOption(
+                      icon: Icons.storage,
+                      title: 'Database Stats',
+                      subtitle: 'View Firestore usage statistics',
+                      color: ArtbeatColors.primaryGreen,
+                      onTap: () {
+                        _showDatabaseStats(context);
+                      },
+                    ),
+                    _buildSettingsOption(
+                      icon: Icons.restore,
+                      title: 'Reset to Defaults',
+                      subtitle: 'Reset all settings to default values',
+                      color: ArtbeatColors.error,
+                      onTap: () {
+                        _showResetConfirmation(context);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              // Save Button
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ArtbeatColors.secondaryTeal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: ArtbeatColors.textPrimary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsToggle({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => onChanged(!value),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.secondaryTeal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: ArtbeatColors.secondaryTeal,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: value,
+                  onChanged: onChanged,
+                  activeThumbColor: ArtbeatColors.secondaryTeal,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showModuleInfo(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Events Module Info'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Version: 1.0.0'),
+            SizedBox(height: 8),
+            Text('Status: Active'),
+            SizedBox(height: 8),
+            Text('Features:'),
+            Text('• Event browsing and filtering'),
+            Text('• Event creation and management'),
+            Text('• Firebase integration'),
+            Text('• Real-time updates'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDatabaseStats(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Database Statistics'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Total Events: ${_events.length}'),
+            const SizedBox(height: 8),
+            Text('Filtered Events: ${_filteredEvents.length}'),
+            const SizedBox(height: 8),
+            const Text('Firestore Collections: events'),
+            const SizedBox(height: 8),
+            const Text('Cache Status: Active'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showResetConfirmation(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Settings'),
+        content: const Text(
+          'This will reset all event settings to their default values. This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _selectedCategory = 'All';
+                _selectedTimeFilter = 'All';
+                _showFilters = false;
+              });
+              _applyFilters();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Settings reset to defaults')),
+              );
+            },
+            child: const Text('Reset', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showIssueReportingDialog(BuildContext context) {
+    // Reset form state
+    _issueTitleController.clear();
+    _issueDescriptionController.clear();
+    _selectedIssueType = 'Bug Report';
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        maxChildSize: 0.95,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.bug_report,
+                      color: ArtbeatColors.accentOrange,
+                      size: 24,
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Report Issue',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: ArtbeatColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Help us improve the events experience',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: ArtbeatColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Form content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Issue Type Dropdown
+                      const Text(
+                        'Issue Type',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: DropdownButton<String>(
+                          value: _selectedIssueType,
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'Bug Report',
+                              child: Text('🐛 Bug Report'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Feature Request',
+                              child: Text('✨ Feature Request'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Performance Issue',
+                              child: Text('⚡ Performance Issue'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'UI/UX Issue',
+                              child: Text('🎨 UI/UX Issue'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Other',
+                              child: Text('📝 Other'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedIssueType = value!;
+                            });
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Title Field
+                      const Text(
+                        'Title',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _issueTitleController,
+                        decoration: InputDecoration(
+                          hintText: 'Brief description of the issue',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        maxLength: 100,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Description Field
+                      const Text(
+                        'Description',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _issueDescriptionController,
+                        decoration: InputDecoration(
+                          hintText:
+                              'Please provide detailed information about the issue...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        maxLines: 6,
+                        maxLength: 1000,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // System Information
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'System Information (automatically included)',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: ArtbeatColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Events Module: v1.0.0',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              'Total Events: ${_events.length}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              'Debug Mode: ${_debugMode ? 'Enabled' : 'Disabled'}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              'Platform: ${Theme.of(context).platform}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: ArtbeatColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Action Buttons
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await _submitIssueReport(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ArtbeatColors.accentOrange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Submit Report',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitIssueReport(BuildContext context) async {
+    final title = _issueTitleController.text.trim();
+    final description = _issueDescriptionController.text.trim();
+
+    if (title.isEmpty || description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in both title and description'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Create issue report data
+    final issueReport = {
+      'type': _selectedIssueType,
+      'title': title,
+      'description': description,
+      'timestamp': DateTime.now(),
+      'systemInfo': {
+        'eventsModuleVersion': '1.0.0',
+        'totalEvents': _events.length,
+        'debugMode': _debugMode,
+        'platform': Theme.of(context).platform.toString(),
+        'flutterVersion': 'Unknown', // Could be obtained from package info
+      },
+      'userId': FirebaseAuth.instance.currentUser?.uid,
+    };
+
+    // Send issue report to Firebase Firestore
+    try {
+      await _firestore.collection('issue_reports').add({
+        ...issueReport,
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Log successful submission for debugging
+      _debugLog('Issue report submitted successfully: ${issueReport['title']}');
+
+      if (context.mounted) {
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Thank you! Your issue report has been submitted successfully.',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on FirebaseException catch (e) {
+      _debugLog('Failed to submit issue report: $e');
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to submit report: ${e.message ?? 'Unknown error'}',
+            ),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () async {
+                await _submitIssueReport(context);
+              },
+            ),
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      _debugLog('Unexpected error submitting issue report: $e');
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('An unexpected error occurred. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+
+    // Clear form
+    _issueTitleController.clear();
+    _issueDescriptionController.clear();
+    _selectedIssueType = 'Bug Report';
   }
 }

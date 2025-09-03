@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logging/logging.dart';
 import '../models/subscription_tier.dart';
 
 /// Service to handle migration from old pricing to 2025 industry standard pricing
 /// Ensures smooth transition for existing users while implementing new features
 class SubscriptionMigrationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger('SubscriptionMigrationService');
 
   /// Migrate user from legacy subscription tier to new 2025 tier
   Future<bool> migrateUserSubscription(String userId) async {
@@ -74,7 +76,7 @@ class SubscriptionMigrationService {
 
       return true;
     } catch (e) {
-      print('Error migrating user subscription: $e');
+      _logger.severe('Error migrating user subscription', e);
       return false;
     }
   }
@@ -112,9 +114,9 @@ class SubscriptionMigrationService {
         await Future<void>.delayed(const Duration(milliseconds: 100));
       }
 
-      print('Migration completed successfully');
+      _logger.info('Migration completed successfully');
     } catch (e) {
-      print('Error in batch migration: $e');
+      _logger.severe('Error in batch migration', e);
     }
   }
 
@@ -129,7 +131,7 @@ class SubscriptionMigrationService {
       final migrationVersion = userData['migrationVersion'] as int? ?? 0;
       return migrationVersion < 2025;
     } catch (e) {
-      print('Error checking migration status: $e');
+      _logger.severe('Error checking migration status', e);
       return false;
     }
   }
@@ -175,7 +177,7 @@ class SubscriptionMigrationService {
             .toList(),
       };
     } catch (e) {
-      print('Error getting migration stats: $e');
+      _logger.severe('Error getting migration stats', e);
       return {};
     }
   }
@@ -315,7 +317,7 @@ class SubscriptionMigrationService {
         });
       }
     } catch (e) {
-      print('Error processing grandfather expirations: $e');
+      _logger.severe('Error processing grandfather expirations', e);
     }
   }
 }

@@ -11,6 +11,6 @@ export 'main_layout.dart';
 
 export 'optimized_image.dart';
 
-// Universal engagement system
-export 'universal_engagement_bar.dart';
+// Content engagement system
+export 'content_engagement_bar.dart';
 export 'universal_content_card.dart';

@@ -18,6 +18,7 @@ import '../models/public_art_model.dart';
 import '../models/art_walk_model.dart';
 import '../models/comment_model.dart';
 import '../models/achievement_model.dart';
+import '../models/capture_model.dart';
 import '../services/art_walk_cache_service.dart';
 import '../services/rewards_service.dart';
 import '../services/achievement_service.dart';
@@ -450,14 +451,18 @@ class ArtWalkService {
           // If not found in publicArt, try captures collection
           artDoc = await _capturesCollection.doc(artId).get();
           if (artDoc.exists) {
-            artPieces.add(PublicArtModel.fromFirestore(artDoc));
+            final capture = CaptureModel.fromFirestore(
+              artDoc as DocumentSnapshot<Map<String, dynamic>>,
+            );
+            // Convert CaptureModel to PublicArtModel for consistency
+            final publicArt = _convertCaptureToPublicArt(capture);
+            artPieces.add(publicArt);
             continue;
           }
 
-          // If not found in either collection, log warning
-          _logger.w(
-            'Art piece $artId not found in publicArt or captures collections',
-          );
+          // If not found in either collection, skip silently
+          // Art pieces may have been deleted, which is normal
+          continue;
         } catch (artError) {
           _logger.w('Error getting art piece $artId: $artError');
           // Continue with other art pieces
@@ -1265,6 +1270,56 @@ class ArtWalkService {
     }
   }
 
+  /// Clean up invalid artwork IDs from art walks
+  Future<void> cleanupInvalidArtworkIds() async {
+    try {
+      final userId = getCurrentUserId();
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get all art walks by the user
+      final artWalksSnapshot = await _artWalksCollection
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      for (final artWalkDoc in artWalksSnapshot.docs) {
+        final artWalk = ArtWalkModel.fromFirestore(artWalkDoc);
+        final List<String> validArtworkIds = [];
+
+        // Check each artwork ID
+        for (final artId in artWalk.artworkIds) {
+          // Check if exists in publicArt
+          final publicArtDoc = await _publicArtCollection.doc(artId).get();
+          if (publicArtDoc.exists) {
+            validArtworkIds.add(artId);
+            continue;
+          }
+
+          // Check if exists in captures
+          final captureDoc = await _capturesCollection.doc(artId).get();
+          if (captureDoc.exists) {
+            validArtworkIds.add(artId);
+            continue;
+          }
+
+          // If not found in either, skip (invalid)
+          _logger.d('Removing invalid art piece $artId from art walk ${artWalk.id}');
+        }
+
+        // Update the art walk with only valid IDs
+        if (validArtworkIds.length != artWalk.artworkIds.length) {
+          await _artWalksCollection.doc(artWalk.id).update({
+            'artworkIds': validArtworkIds,
+          });
+          _logger.i('Cleaned up art walk ${artWalk.id}: removed ${artWalk.artworkIds.length - validArtworkIds.length} invalid IDs');
+        }
+      }
+    } catch (e) {
+      _logger.e('Error cleaning up invalid artwork IDs: $e');
+    }
+  }
+
   /// Calculate distance between points on art walk
   double calculateDistance(List<LatLng> points) {
     double totalDistance = 0.0;
@@ -1480,5 +1535,31 @@ class ArtWalkService {
       _logger.e('Error toggling comment like: $e');
       return false;
     }
+  }
+
+  /// Convert CaptureModel to PublicArtModel for consistency
+  PublicArtModel _convertCaptureToPublicArt(CaptureModel capture) {
+    return PublicArtModel(
+      id: capture.id,
+      userId: capture.userId,
+      title: capture.title ?? 'Untitled Capture',
+      description: capture.description ?? '',
+      imageUrl: capture.imageUrl,
+      artistName: capture.artistName,
+      location:
+          capture.location ??
+          const GeoPoint(0, 0), // Default location if not available
+      address: capture.locationName,
+      tags: capture.tags ?? [],
+      artType: capture.artType,
+      isVerified: false, // Captures are not pre-verified
+      viewCount: 0, // Captures don't track views
+      likeCount: 0, // Captures don't track likes
+      usersFavorited: [], // Captures don't track favorites
+      createdAt: Timestamp.fromDate(capture.createdAt),
+      updatedAt: capture.updatedAt != null
+          ? Timestamp.fromDate(capture.updatedAt!)
+          : null,
+    );
   }
 }

@@ -6,6 +6,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../models/group_models.dart';
+import '../../theme/community_colors.dart';
 
 /// Screen for creating posts in different group types
 class CreateGroupPostScreen extends StatefulWidget {
@@ -50,7 +51,12 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
-        backgroundColor: _getGroupColor(),
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: const LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         foregroundColor: Colors.white,
         actions: [
           TextButton(
@@ -607,8 +613,8 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
           generateThumbnail: true,
         );
 
-        if (result['url'] != null) {
-          imageUrls.add(result['url']!);
+        if (result['imageUrl'] != null) {
+          imageUrls.add(result['imageUrl']!);
         }
       }
 

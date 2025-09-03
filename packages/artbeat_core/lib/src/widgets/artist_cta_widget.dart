@@ -116,20 +116,20 @@ class ArtistCTAWidget extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildFeature(
-                          icon: Icons.storefront_outlined,
-                          text: 'Sell art',
+                          icon: Icons.card_giftcard_outlined,
+                          text: 'Receive gifts',
                         ),
                         _buildFeature(
-                          icon: Icons.analytics_outlined,
-                          text: 'Track sales',
+                          icon: Icons.attach_money_outlined,
+                          text: 'Get sponsored',
                         ),
                         _buildFeature(
-                          icon: Icons.groups_outlined,
-                          text: 'Build audience',
+                          icon: Icons.work_outline,
+                          text: 'Commissions',
                         ),
                         _buildFeature(
                           icon: Icons.trending_up_outlined,
-                          text: 'Grow income',
+                          text: 'Earn income',
                         ),
                       ],
                     ),
@@ -166,7 +166,7 @@ class ArtistCTAWidget extends StatelessWidget {
                     // Subtitle
                     Center(
                       child: Text(
-                        'Join thousands of artists already earning on ARTbeat',
+                        'Join artists earning through gifts, sponsorships & commissions',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: ArtbeatColors.textSecondary,
                         ),

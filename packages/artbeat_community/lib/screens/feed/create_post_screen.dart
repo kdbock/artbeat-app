@@ -4,9 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../../services/community_service.dart';
 import '../../services/storage_service.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import '../../theme/community_colors.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -254,19 +255,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: const LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _submitPost,
-            child: _isLoading
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Text('Post', style: TextStyle(color: Colors.white)),
+            style: TextButton.styleFrom(
+              backgroundColor: _isLoading ? Colors.grey : null,
+              foregroundColor: _isLoading ? Colors.white : Colors.white,
+            ),
+            child: Text(_isLoading ? 'Posting...' : 'Post'),
           ),
         ],
       ),

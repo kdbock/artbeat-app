@@ -12,8 +12,6 @@ class CohortAnalyticsService {
     CohortPeriod period = CohortPeriod.monthly,
   }) async {
     try {
-      final List<CohortData> cohorts = [];
-
       switch (period) {
         case CohortPeriod.weekly:
           return await _getWeeklyCohorts(startDate, endDate);

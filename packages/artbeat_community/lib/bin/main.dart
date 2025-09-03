@@ -20,14 +20,14 @@ void main() async {
     // Check if Firebase is already initialized to avoid duplicate initialization
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
-      options: FirebaseOptions(
-        apiKey: config['apiKey'] ?? '',
-        appId: config['appId'] ?? '',
-        messagingSenderId: config['messagingSenderId'] ?? '',
-        projectId: config['projectId'] ?? '',
-        storageBucket: config['storageBucket'] ?? '',
-      ),
-    );
+        options: FirebaseOptions(
+          apiKey: config['apiKey'] ?? '',
+          appId: config['appId'] ?? '',
+          messagingSenderId: config['messagingSenderId'] ?? '',
+          projectId: config['projectId'] ?? '',
+          storageBucket: config['storageBucket'] ?? '',
+        ),
+      );
     } else {
       debugPrint('Firebase already initialized, using existing app instance');
     }
@@ -132,8 +132,8 @@ class CommunityModuleHome extends StatelessWidget {
             _buildSectionCard(context, [
               _buildNavButton(
                 context,
-                'Unified Community Feed',
-                const UnifiedCommunityFeed(),
+                'Unified Community Hub',
+                const UnifiedCommunityHub(),
                 Icons.view_stream,
               ),
               _buildNavButton(

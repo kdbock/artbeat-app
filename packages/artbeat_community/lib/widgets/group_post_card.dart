@@ -44,9 +44,9 @@ class GroupPostCard extends StatelessWidget {
       authorId: post.userId,
       createdAt: post.createdAt,
       engagementStats: EngagementStats(
-        appreciateCount: post.applauseCount,
-        discussCount: post.commentCount,
-        amplifyCount: post.shareCount,
+        likeCount: post.applauseCount,
+        commentCount: post.commentCount,
+        shareCount: post.shareCount,
         lastUpdated: DateTime.now(),
       ),
       tags: post.tags,
@@ -415,113 +415,6 @@ class GroupPostCard extends StatelessWidget {
   }
 
   // Legacy action row removed; engagement handled by UniversalEngagementBar
-
-  Widget _buildActionButton({
-    required String label,
-    required int count,
-    required VoidCallback onTap,
-    required Color color,
-  }) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildActionIcon(label, color),
-              const SizedBox(height: 2),
-              if (count > 0)
-                Text(
-                  count.toString(),
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w600,
-                    color: color,
-                  ),
-                ),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 8,
-                  color: ArtbeatColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionIcon(String label, Color color) {
-    IconData iconData;
-    switch (label.toLowerCase()) {
-      case 'appreciate':
-        iconData = Icons.favorite_border;
-        break;
-      case 'comment':
-        iconData = Icons.chat_bubble_outline;
-        break;
-      case 'feature':
-        iconData = Icons.star_border;
-        break;
-      case 'gift':
-        iconData = Icons.card_giftcard;
-        break;
-      case 'share':
-        iconData = Icons.share;
-        break;
-      default:
-        iconData = Icons.help_outline;
-    }
-
-    return Icon(iconData, size: 18, color: color);
-  }
-
-  Color _getGroupColor() {
-    switch (groupType) {
-      case GroupType.artist:
-        return ArtbeatColors.primaryPurple;
-      case GroupType.event:
-        return ArtbeatColors.primaryGreen;
-      case GroupType.artWalk:
-        return ArtbeatColors.secondaryTeal;
-      case GroupType.artistWanted:
-        return ArtbeatColors.accentYellow;
-    }
-  }
-
-  IconData _getGroupIcon() {
-    switch (groupType) {
-      case GroupType.artist:
-        return Icons.palette;
-      case GroupType.event:
-        return Icons.event;
-      case GroupType.artWalk:
-        return Icons.directions_walk;
-      case GroupType.artistWanted:
-        return Icons.work;
-    }
-  }
-
-  String _getGroupLabel() {
-    switch (groupType) {
-      case GroupType.artist:
-        return 'ARTIST';
-      case GroupType.event:
-        return 'EVENT';
-      case GroupType.artWalk:
-        return 'ART WALK';
-      case GroupType.artistWanted:
-        return 'WANTED';
-    }
-  }
 
   // Removed legacy helpers - group visuals handled by UniversalContentCard/customContent
 }

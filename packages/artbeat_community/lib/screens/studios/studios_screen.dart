@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../../models/studio_model.dart';
 import '../../services/firestore_service.dart';
+import '../../theme/community_colors.dart';
 import 'studio_chat_screen.dart';
 
 class StudiosScreen extends StatefulWidget {
@@ -68,7 +69,16 @@ class _StudiosScreenState extends State<StudiosScreen> {
     return core.MainLayout(
       scaffoldKey: scaffoldKey,
       currentIndex: 3, // Community tab in bottom navigation
-      appBar: const core.EnhancedUniversalHeader(title: 'Studios'),
+      appBar: const core.EnhancedUniversalHeader(
+        title: 'Studios',
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
+      ),
       child: CustomScrollView(
         slivers: [
           // Search bar

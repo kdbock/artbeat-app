@@ -78,6 +78,23 @@ class _CaptureConfirmationScreenState extends State<CaptureConfirmationScreen> {
       appBar: const core.EnhancedUniversalHeader(
         title: 'Review Capture',
         showLogo: false,
+        showBackButton: true,
+        backgroundGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
+          ],
+        ),
+        titleGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

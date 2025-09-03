@@ -41,9 +41,11 @@ class EngagementMigrationService {
 
       // Initialize engagement stats
       final stats = EngagementStats(
-        appreciateCount: postData['applauseCount'] as int? ?? 0,
-        discussCount: postData['commentCount'] as int? ?? 0,
-        amplifyCount: postData['shareCount'] as int? ?? 0,
+        likeCount:
+            (postData['applauseCount'] as int? ?? 0) +
+            (postData['likeCount'] as int? ?? 0),
+        commentCount: postData['commentCount'] as int? ?? 0,
+        shareCount: postData['shareCount'] as int? ?? 0,
         lastUpdated: DateTime.now(),
       );
 
@@ -61,7 +63,7 @@ class EngagementMigrationService {
   Future<void> _migrateArtworks() async {
     debugPrint('🔄 Migrating artwork engagements...');
 
-    final artworksQuery = _firestore.collection('artworks');
+    final artworksQuery = _firestore.collection('artwork');
     final artworksSnapshot = await artworksQuery.get();
 
     for (final artworkDoc in artworksSnapshot.docs) {
@@ -70,10 +72,10 @@ class EngagementMigrationService {
 
       // Initialize engagement stats
       final stats = EngagementStats(
-        appreciateCount:
+        likeCount:
             (artworkData['likeCount'] as int? ?? 0) +
             (artworkData['applauseCount'] as int? ?? 0),
-        discussCount: artworkData['commentCount'] as int? ?? 0,
+        commentCount: artworkData['commentCount'] as int? ?? 0,
         lastUpdated: DateTime.now(),
       );
 
@@ -96,9 +98,10 @@ class EngagementMigrationService {
 
       // Initialize engagement stats (art walks mainly have views)
       final stats = EngagementStats(
-        appreciateCount: 0, // Start fresh for art walks
-        discussCount: 0,
-        amplifyCount: 0,
+        likeCount: 0, // Start fresh for art walks
+        commentCount: 0,
+        shareCount: 0,
+        seenCount: 0, // Art walks will track views as 'seen'
         lastUpdated: DateTime.now(),
       );
 
@@ -121,9 +124,12 @@ class EngagementMigrationService {
 
       // Initialize engagement stats
       final stats = EngagementStats(
-        appreciateCount: 0, // Start fresh for events
-        discussCount: 0,
-        amplifyCount: 0,
+        likeCount: 0, // Start fresh for events
+        commentCount: 0,
+        shareCount: 0,
+        seenCount: 0, // Events will track views as 'seen'
+        rateCount: 0, // Events can be rated
+        reviewCount: 0, // Events can be reviewed
         lastUpdated: DateTime.now(),
       );
 
@@ -156,7 +162,7 @@ class EngagementMigrationService {
 
       // Initialize engagement stats for user profile
       final stats = EngagementStats(
-        connectCount: followers.length,
+        followCount: followers.length,
         lastUpdated: DateTime.now(),
       );
 
@@ -198,14 +204,14 @@ class EngagementMigrationService {
     String toUserId,
   ) async {
     try {
-      final engagementId = '${toUserId}_${fromUserId}_connect';
+      final engagementId = '${toUserId}_${fromUserId}_follow';
 
       final engagement = EngagementModel(
         id: engagementId,
         contentId: toUserId,
         contentType: 'profile',
         userId: fromUserId,
-        type: EngagementType.connect,
+        type: EngagementType.follow,
         createdAt: DateTime.now(),
       );
 
@@ -226,14 +232,14 @@ class EngagementMigrationService {
   ) async {
     try {
       final engagementId =
-          '${contentId}_${userId}_appreciate_${DateTime.now().millisecondsSinceEpoch}';
+          '${contentId}_${userId}_like_${DateTime.now().millisecondsSinceEpoch}';
 
       final engagement = EngagementModel(
         id: engagementId,
         contentId: contentId,
         contentType: contentType,
         userId: userId,
-        type: EngagementType.appreciate,
+        type: EngagementType.like,
         createdAt: DateTime.now(),
       );
 
@@ -281,7 +287,7 @@ class EngagementMigrationService {
   }
 
   Future<void> _cleanupArtworkFields() async {
-    final artworksQuery = _firestore.collection('artworks');
+    final artworksQuery = _firestore.collection('artwork');
     final artworksSnapshot = await artworksQuery.get();
 
     for (final artworkDoc in artworksSnapshot.docs) {
@@ -327,7 +333,7 @@ class EngagementMigrationService {
 
       if (postsSnapshot.docs.isNotEmpty) {
         final postData = postsSnapshot.docs.first.data();
-        if (!postData.containsKey('appreciateCount')) {
+        if (!postData.containsKey('likeCount')) {
           debugPrint('❌ Posts missing new engagement stats');
           return false;
         }

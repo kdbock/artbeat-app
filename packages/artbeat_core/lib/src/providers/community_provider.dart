@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,8 +7,12 @@ class CommunityProvider extends ChangeNotifier {
   int _unreadCount = 0;
   User? _currentUser;
   Stream<int>? _unreadStream;
+  StreamSubscription<int>? _unreadSubscription;
+  StreamSubscription<User?>? _authSubscription;
+  bool _mounted = true;
 
   int get unreadCount => _unreadCount;
+  bool get mounted => _mounted;
 
   CommunityProvider() {
     _initializeUser();
@@ -15,11 +20,13 @@ class CommunityProvider extends ChangeNotifier {
 
   void _initializeUser() {
     _currentUser = FirebaseAuth.instance.currentUser;
-    FirebaseAuth.instance.authStateChanges().listen((user) {
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (!_mounted) return; // Check if still mounted
       _currentUser = user;
       if (user != null) {
         _listenToUnreadCount();
       } else {
+        _unreadSubscription?.cancel();
         _unreadCount = 0;
         notifyListeners();
       }
@@ -33,14 +40,19 @@ class CommunityProvider extends ChangeNotifier {
   void _listenToUnreadCount() {
     if (_currentUser == null) return;
 
+    // Cancel existing subscription
+    _unreadSubscription?.cancel();
+
     _unreadStream = _getUnreadPostsCount(_currentUser!.uid);
-    _unreadStream!.listen(
+    _unreadSubscription = _unreadStream!.listen(
       (count) {
+        if (!mounted) return; // Check if still mounted
         _unreadCount = count;
         notifyListeners();
       },
       onError: (Object error) {
         debugPrint('Error listening to unread count: $error');
+        if (!mounted) return; // Check if still mounted
         _unreadCount = 0;
         notifyListeners();
       },
@@ -96,6 +108,9 @@ class CommunityProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _mounted = false;
+    _unreadSubscription?.cancel();
+    _authSubscription?.cancel();
     super.dispose();
   }
 }

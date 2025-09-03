@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart'; // Only import local AuthService
 import '../constants/routes.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, ArtbeatInput, ArtbeatButton, EnhancedUniversalHeader;
+    show ArtbeatColors, ArtbeatInput, ArtbeatButton;
 import 'package:artbeat_core/src/utils/location_utils.dart' show LocationUtils;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 import 'package:artbeat_core/artbeat_core.dart' show UserService;

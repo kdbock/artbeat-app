@@ -248,6 +248,13 @@ class ArtbeatDrawerItems {
     color: ArtbeatColors.primaryPurple,
   );
 
+  static const couponManagement = ArtbeatDrawerItem(
+    title: 'Coupon Management',
+    icon: Icons.discount_outlined,
+    route: '/admin/coupons',
+    color: ArtbeatColors.primaryPurple,
+  );
+
   // Logout
   static const signOut = ArtbeatDrawerItem(
     title: 'Sign Out',
@@ -287,6 +294,7 @@ class ArtbeatDrawerItems {
     adminReviewAds,
     userManagement,
     contentModeration,
+    couponManagement,
     systemSettings,
   ];
 
@@ -346,6 +354,7 @@ class ArtbeatDrawerItems {
     adminReviewAds,
     userManagement,
     contentModeration,
+    couponManagement,
     systemSettings,
   ];
 }

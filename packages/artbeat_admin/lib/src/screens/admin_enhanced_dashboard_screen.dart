@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/analytics_model.dart';
-import '../models/admin_stats_model.dart';
 import '../models/recent_activity_model.dart';
-import '../services/admin_service.dart';
 import '../services/recent_activity_service.dart';
 import '../services/enhanced_analytics_service.dart';
 import '../widgets/admin_drawer.dart';
@@ -31,7 +29,6 @@ class AdminEnhancedDashboardScreen extends StatefulWidget {
 
 class _AdminEnhancedDashboardScreenState
     extends State<AdminEnhancedDashboardScreen> with TickerProviderStateMixin {
-  final AdminService _adminService = AdminService();
   final RecentActivityService _activityService = RecentActivityService();
   final EnhancedAnalyticsService _analyticsService = EnhancedAnalyticsService();
   final ScrollController _scrollController = ScrollController();
@@ -39,10 +36,9 @@ class _AdminEnhancedDashboardScreenState
 
   late TabController _tabController;
 
-  AdminStatsModel? _stats;
   AnalyticsModel? _analytics;
   List<RecentActivityModel> _recentActivities = [];
-  bool _isLoading = true;
+  final bool _isLoading = true;
   bool _isLoadingActivities = true;
   bool _isLoadingAnalytics = true;
   String? _error;
@@ -63,35 +59,9 @@ class _AdminEnhancedDashboardScreenState
 
   Future<void> _loadDashboardData() async {
     await Future.wait([
-      _loadStats(),
       _loadRecentActivities(),
       _loadAnalytics(),
     ]);
-  }
-
-  Future<void> _loadStats() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final stats = await _adminService.getAdminStats();
-
-      if (mounted) {
-        setState(() {
-          _stats = stats;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _isLoading = false;
-        });
-      }
-    }
   }
 
   Future<void> _loadRecentActivities() async {

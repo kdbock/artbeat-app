@@ -35,9 +35,7 @@ class _AdminAdvancedContentManagementScreenState
 
   List<ContentModel> _content = [];
   List<ContentModel> _filteredContent = [];
-  Map<String, dynamic> _analytics = {};
   bool _isLoading = true;
-  bool _isLoadingAnalytics = true;
   String? _error;
 
   // Filters
@@ -68,10 +66,7 @@ class _AdminAdvancedContentManagementScreenState
   }
 
   Future<void> _loadData() async {
-    await Future.wait([
-      _loadContent(),
-      _loadContentAnalytics(),
-    ]);
+    await _loadContent();
   }
 
   Future<void> _loadContent() async {
@@ -96,32 +91,6 @@ class _AdminAdvancedContentManagementScreenState
         setState(() {
           _error = e.toString();
           _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadContentAnalytics() async {
-    try {
-      setState(() {
-        _isLoadingAnalytics = true;
-      });
-
-      final analytics = await _contentService.getContentAnalytics(
-        startDate: DateTime.now().subtract(const Duration(days: 30)),
-        endDate: DateTime.now(),
-      );
-
-      if (mounted) {
-        setState(() {
-          _analytics = analytics;
-          _isLoadingAnalytics = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoadingAnalytics = false;
         });
       }
     }
@@ -368,10 +337,6 @@ class _AdminAdvancedContentManagementScreenState
   }
 
   Widget _buildAnalyticsTab() {
-    if (_isLoadingAnalytics) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -1292,14 +1257,6 @@ class _AdminAdvancedContentManagementScreenState
     );
   }
 
-  Widget _buildBulkActionsFAB() {
-    return FloatingActionButton.extended(
-      onPressed: () => _showBulkActionsDialog(),
-      icon: const Icon(Icons.edit),
-      label: Text('${_selectedContentIds.length} Selected'),
-    );
-  }
-
   Widget _buildErrorWidget() {
     return Center(
       child: Column(
@@ -1444,10 +1401,6 @@ class _AdminAdvancedContentManagementScreenState
 
   void _showContentActions(ContentModel content) {
     // Implementation for content actions menu
-  }
-
-  void _showBulkActionsDialog() {
-    // Implementation for bulk actions dialog
   }
 
   void _showCreateContentDialog() {

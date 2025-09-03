@@ -57,9 +57,24 @@ class _CaptureSearchScreenState extends State<CaptureSearchScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search Captures'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.topRight,
+              colors: [
+                ArtbeatColors.primaryPurple,
+                Colors.pink,
+              ],
+            ),
+          ),
+        ),
+        foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

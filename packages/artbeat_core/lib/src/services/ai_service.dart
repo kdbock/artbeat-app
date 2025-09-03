@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:logging/logging.dart';
 import '../models/subscription_tier.dart';
 import '../models/feature_limits.dart';
 
@@ -10,6 +11,7 @@ import '../models/feature_limits.dart';
 class AIService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Logger _logger = Logger('AIService');
 
   static const String _openaiApiUrl =
       'https://api.openai.com/v1/chat/completions';
@@ -89,7 +91,7 @@ class AIService {
         return data;
       }).toList();
     } catch (e) {
-      print('Error getting recommendations: $e');
+      _logger.severe('Error getting recommendations', e);
       return [];
     }
   }
@@ -166,7 +168,7 @@ class AIService {
         throw Exception('AI service error: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error generating smart tags: $e');
+      _logger.severe('Error generating smart tags', e);
       // Fallback to basic tags based on title/description
       return _generateFallbackTags(title, description);
     }
@@ -190,7 +192,7 @@ class AIService {
       // Return processed image URL
       return '${imageUrl}_processed';
     } catch (e) {
-      print('Error removing background: $e');
+      _logger.severe('Error removing background', e);
       return null;
     }
   }
@@ -256,7 +258,7 @@ class AIService {
 
       return null;
     } catch (e) {
-      print('Error generating description: $e');
+      _logger.severe('Error generating description', e);
       return null;
     }
   }
@@ -287,7 +289,7 @@ class AIService {
 
       return insights;
     } catch (e) {
-      print('Error getting performance insights: $e');
+      _logger.severe('Error getting performance insights', e);
       return {};
     }
   }
@@ -324,7 +326,7 @@ class AIService {
       return limits.hasUnlimitedAICredits ||
           (currentCredits as int) < limits.aiCredits;
     } catch (e) {
-      print('Error checking AI credits: $e');
+      _logger.severe('Error checking AI credits', e);
       return false;
     }
   }

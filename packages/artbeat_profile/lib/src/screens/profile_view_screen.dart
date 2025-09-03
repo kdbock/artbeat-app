@@ -190,7 +190,11 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
               showLogo: false,
               showSearch: true,
               showDeveloperTools: true,
-              onSearchPressed: (query) => Navigator.pushNamed(context, '/search', arguments: {'query': query}),
+              onSearchPressed: (query) => Navigator.pushNamed(
+                context,
+                '/search',
+                arguments: {'query': query},
+              ),
               onMenuPressed: () {
                 _scaffoldKey.currentState?.openDrawer();
               },
@@ -293,16 +297,14 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                 style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               const SizedBox(height: 16),
-              // Universal engagement stats for profile
-              UniversalEngagementBar(
+              // Content engagement bar for profile
+              ContentEngagementBar(
                 contentId: widget.userId,
                 contentType: 'profile',
                 initialStats:
                     _userModel?.engagementStats ??
                     EngagementStats(lastUpdated: DateTime.now()),
-                showConnect: !widget
-                    .isCurrentUser, // Only show connect if not viewing own profile
-                targetUserId: widget.userId,
+                showSecondaryActions: !widget.isCurrentUser,
               ),
 
               const SizedBox(height: 16),

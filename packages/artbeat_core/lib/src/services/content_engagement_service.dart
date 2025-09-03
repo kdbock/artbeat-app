@@ -2,10 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/engagement_model.dart';
+import 'engagement_config_service.dart';
 
-/// Universal engagement service for all ARTbeat content types
-/// Handles Appreciate, Connect, Discuss, Amplify, and Gift actions
-class UniversalEngagementService extends ChangeNotifier {
+/// Content-specific engagement service for ARTbeat content types
+/// Replaces UniversalEngagementService with content-specific engagement handling
+class ContentEngagementService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -19,6 +20,16 @@ class UniversalEngagementService extends ChangeNotifier {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('User must be authenticated to engage with content');
+    }
+
+    // Validate engagement type is allowed for content type
+    if (!EngagementConfigService.isEngagementTypeAvailable(
+      contentType,
+      engagementType,
+    )) {
+      throw Exception(
+        'Engagement type ${engagementType.value} not available for content type $contentType',
+      );
     }
 
     try {
@@ -167,13 +178,98 @@ class UniversalEngagementService extends ChangeNotifier {
     }
   }
 
-  /// Get user's connections (people they've connected with)
-  Future<List<String>> getUserConnections(String userId) async {
+  /// Track 'seen' engagement automatically
+  Future<void> trackSeenEngagement({
+    required String contentId,
+    required String contentType,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    // Only track if 'seen' is available for this content type
+    if (!EngagementConfigService.isEngagementTypeAvailable(
+      contentType,
+      EngagementType.seen,
+    )) {
+      return;
+    }
+
+    try {
+      final engagementRef = _firestore
+          .collection('engagements')
+          .doc('${contentId}_${user.uid}_seen');
+
+      // Check if already seen
+      final existingDoc = await engagementRef.get();
+      if (existingDoc.exists) return;
+
+      final contentRef = _firestore
+          .collection(_getCollectionName(contentType))
+          .doc(contentId);
+
+      await _firestore.runTransaction((transaction) async {
+        final contentSnapshot = await transaction.get(contentRef);
+        if (!contentSnapshot.exists) return;
+
+        final contentData = contentSnapshot.data() as Map<String, dynamic>;
+        final currentStats = EngagementStats.fromFirestore(
+          contentData['engagementStats'] as Map<String, dynamic>? ??
+              contentData,
+        );
+
+        // Create seen engagement
+        final engagement = EngagementModel(
+          id: engagementRef.id,
+          contentId: contentId,
+          contentType: contentType,
+          userId: user.uid,
+          type: EngagementType.seen,
+          createdAt: DateTime.now(),
+        );
+
+        transaction.set(engagementRef, engagement.toFirestore());
+
+        // Update content stats
+        final newStats = currentStats.copyWith(
+          seenCount: currentStats.seenCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+        transaction.update(contentRef, {
+          'engagementStats': newStats.toFirestore(),
+        });
+      });
+    } catch (e) {
+      debugPrint('Error tracking seen engagement: $e');
+      // Don't throw - seen tracking is not critical
+    }
+  }
+
+  /// Get user's followers (people who follow them)
+  Future<List<String>> getUserFollowers(String userId) async {
+    try {
+      final query = _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: userId)
+          .where('type', isEqualTo: EngagementType.follow.value)
+          .where('contentType', isEqualTo: 'profile');
+
+      final snapshot = await query.get();
+      return snapshot.docs
+          .map((doc) => doc.data()['userId'] as String)
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting user followers: $e');
+      return [];
+    }
+  }
+
+  /// Get user's following (people they follow)
+  Future<List<String>> getUserFollowing(String userId) async {
     try {
       final query = _firestore
           .collection('engagements')
           .where('userId', isEqualTo: userId)
-          .where('type', isEqualTo: EngagementType.connect.value)
+          .where('type', isEqualTo: EngagementType.follow.value)
           .where('contentType', isEqualTo: 'profile');
 
       final snapshot = await query.get();
@@ -181,19 +277,8 @@ class UniversalEngagementService extends ChangeNotifier {
           .map((doc) => doc.data()['contentId'] as String)
           .toList();
     } catch (e) {
-      debugPrint('Error getting user connections: $e');
+      debugPrint('Error getting user following: $e');
       return [];
-    }
-  }
-
-  /// Get user's connection count
-  Future<int> getUserConnectionCount(String userId) async {
-    try {
-      final connections = await getUserConnections(userId);
-      return connections.length;
-    } catch (e) {
-      debugPrint('Error getting connection count: $e');
-      return 0;
     }
   }
 
@@ -204,13 +289,18 @@ class UniversalEngagementService extends ChangeNotifier {
       case 'post':
         return 'posts';
       case 'artwork':
-        return 'artwork'; // Fixed: should be singular to match actual collection
+        return 'artwork';
+      case 'capture':
+        return 'captures'; // Assuming captures have their own collection
       case 'art_walk':
-        return 'artWalks'; // Fixed: should match Firestore collection name (camelCase)
+        return 'artWalks';
       case 'event':
         return 'events';
       case 'profile':
+      case 'artist':
         return 'users';
+      case 'comment':
+        return 'comments';
       default:
         throw Exception('Unknown content type: $contentType');
     }
@@ -218,24 +308,44 @@ class UniversalEngagementService extends ChangeNotifier {
 
   EngagementStats _incrementStat(EngagementStats stats, EngagementType type) {
     switch (type) {
-      case EngagementType.appreciate:
+      case EngagementType.like:
         return stats.copyWith(
-          appreciateCount: stats.appreciateCount + 1,
+          likeCount: stats.likeCount + 1,
           lastUpdated: DateTime.now(),
         );
-      case EngagementType.connect:
+      case EngagementType.comment:
         return stats.copyWith(
-          connectCount: stats.connectCount + 1,
+          commentCount: stats.commentCount + 1,
           lastUpdated: DateTime.now(),
         );
-      case EngagementType.discuss:
+      case EngagementType.reply:
         return stats.copyWith(
-          discussCount: stats.discussCount + 1,
+          replyCount: stats.replyCount + 1,
           lastUpdated: DateTime.now(),
         );
-      case EngagementType.amplify:
+      case EngagementType.share:
         return stats.copyWith(
-          amplifyCount: stats.amplifyCount + 1,
+          shareCount: stats.shareCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.seen:
+        return stats.copyWith(
+          seenCount: stats.seenCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.rate:
+        return stats.copyWith(
+          rateCount: stats.rateCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.review:
+        return stats.copyWith(
+          reviewCount: stats.reviewCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.follow:
+        return stats.copyWith(
+          followCount: stats.followCount + 1,
           lastUpdated: DateTime.now(),
         );
       case EngagementType.gift:
@@ -243,35 +353,68 @@ class UniversalEngagementService extends ChangeNotifier {
           giftCount: stats.giftCount + 1,
           lastUpdated: DateTime.now(),
         );
+      case EngagementType.sponsor:
+        return stats.copyWith(
+          sponsorCount: stats.sponsorCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.message:
+        return stats.copyWith(
+          messageCount: stats.messageCount + 1,
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.commission:
+        return stats.copyWith(
+          commissionCount: stats.commissionCount + 1,
+          lastUpdated: DateTime.now(),
+        );
     }
   }
 
   EngagementStats _decrementStat(EngagementStats stats, EngagementType type) {
     switch (type) {
-      case EngagementType.appreciate:
+      case EngagementType.like:
         return stats.copyWith(
-          appreciateCount: (stats.appreciateCount - 1)
+          likeCount: (stats.likeCount - 1).clamp(0, double.infinity).toInt(),
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.comment:
+        return stats.copyWith(
+          commentCount: (stats.commentCount - 1)
               .clamp(0, double.infinity)
               .toInt(),
           lastUpdated: DateTime.now(),
         );
-      case EngagementType.connect:
+      case EngagementType.reply:
         return stats.copyWith(
-          connectCount: (stats.connectCount - 1)
+          replyCount: (stats.replyCount - 1).clamp(0, double.infinity).toInt(),
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.share:
+        return stats.copyWith(
+          shareCount: (stats.shareCount - 1).clamp(0, double.infinity).toInt(),
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.seen:
+        return stats.copyWith(
+          seenCount: (stats.seenCount - 1).clamp(0, double.infinity).toInt(),
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.rate:
+        return stats.copyWith(
+          rateCount: (stats.rateCount - 1).clamp(0, double.infinity).toInt(),
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.review:
+        return stats.copyWith(
+          reviewCount: (stats.reviewCount - 1)
               .clamp(0, double.infinity)
               .toInt(),
           lastUpdated: DateTime.now(),
         );
-      case EngagementType.discuss:
+      case EngagementType.follow:
         return stats.copyWith(
-          discussCount: (stats.discussCount - 1)
-              .clamp(0, double.infinity)
-              .toInt(),
-          lastUpdated: DateTime.now(),
-        );
-      case EngagementType.amplify:
-        return stats.copyWith(
-          amplifyCount: (stats.amplifyCount - 1)
+          followCount: (stats.followCount - 1)
               .clamp(0, double.infinity)
               .toInt(),
           lastUpdated: DateTime.now(),
@@ -281,93 +424,27 @@ class UniversalEngagementService extends ChangeNotifier {
           giftCount: (stats.giftCount - 1).clamp(0, double.infinity).toInt(),
           lastUpdated: DateTime.now(),
         );
-    }
-  }
-
-  /// Send a gift engagement (requires payment processing)
-  Future<bool> sendGift({
-    required String contentId,
-    required String contentType,
-    required String recipientUserId,
-    required String giftType,
-    required double amount,
-    String? message,
-    String? paymentMethodId,
-  }) async {
-    final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('User must be authenticated to send gifts');
-    }
-
-    try {
-      // Create engagement record with gift metadata
-      final engagementRef = _firestore
-          .collection('engagements')
-          .doc(
-            '${contentId}_${user.uid}_gift_${DateTime.now().millisecondsSinceEpoch}',
-          );
-
-      final contentRef = _firestore
-          .collection(_getCollectionName(contentType))
-          .doc(contentId);
-
-      await _firestore.runTransaction((transaction) async {
-        final contentSnapshot = await transaction.get(contentRef);
-        if (!contentSnapshot.exists) {
-          throw Exception('Content not found');
-        }
-
-        final contentData = contentSnapshot.data() as Map<String, dynamic>;
-        final currentStats = EngagementStats.fromFirestore(
-          contentData['engagementStats'] as Map<String, dynamic>? ??
-              contentData,
-        );
-
-        // Create gift engagement record
-        final engagement = EngagementModel(
-          id: engagementRef.id,
-          contentId: contentId,
-          contentType: contentType,
-          userId: user.uid,
-          type: EngagementType.gift,
-          createdAt: DateTime.now(),
-          metadata: {
-            'giftType': giftType,
-            'amount': amount,
-            'message': message,
-            'paymentMethodId': paymentMethodId,
-            'recipientUserId': recipientUserId,
-          },
-        );
-
-        // Update engagement stats
-        final updatedStats = currentStats.copyWith(
-          giftCount: currentStats.giftCount + 1,
-          totalGiftValue: currentStats.totalGiftValue + amount,
+      case EngagementType.sponsor:
+        return stats.copyWith(
+          sponsorCount: (stats.sponsorCount - 1)
+              .clamp(0, double.infinity)
+              .toInt(),
           lastUpdated: DateTime.now(),
         );
-
-        // Save engagement and update content stats
-        transaction.set(engagementRef, engagement.toFirestore());
-        transaction.update(contentRef, {
-          'engagementStats': updatedStats.toFirestore(),
-        });
-      });
-
-      // Create notification
-      await _createEngagementNotification(
-        contentId: contentId,
-        contentType: contentType,
-        engagementType: EngagementType.gift,
-        fromUserId: user.uid,
-        toUserId: recipientUserId,
-      );
-
-      notifyListeners();
-      return true;
-    } catch (e) {
-      debugPrint('Error sending gift: $e');
-      return false;
+      case EngagementType.message:
+        return stats.copyWith(
+          messageCount: (stats.messageCount - 1)
+              .clamp(0, double.infinity)
+              .toInt(),
+          lastUpdated: DateTime.now(),
+        );
+      case EngagementType.commission:
+        return stats.copyWith(
+          commissionCount: (stats.commissionCount - 1)
+              .clamp(0, double.infinity)
+              .toInt(),
+          lastUpdated: DateTime.now(),
+        );
     }
   }
 

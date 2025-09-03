@@ -177,7 +177,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     GeoPoint location,
   ) async {
     try {
-      final artworksRef = FirebaseFirestore.instance.collection('artworks');
+      final artworksRef = FirebaseFirestore.instance.collection('artwork');
       final snapshot = await artworksRef
           .where('isPublic', isEqualTo: true)
           .orderBy('createdAt', descending: true)
@@ -810,50 +810,135 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                           arguments: {'artistId': artist.userId},
                         );
                       },
-                      trailing: ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            // Replace with your actual logic to check if following
-                            final isCurrentlyFollowing =
-                                await _artistSubscriptionService
-                                    .isFollowingArtist(
-                                      artistProfileId: artist.id,
-                                    );
-
-                            if (isCurrentlyFollowing) {
-                              await _artistSubscriptionService.unfollowArtist(
-                                artistProfileId: artist.id,
-                              );
-                            } else {
-                              await _artistSubscriptionService.followArtist(
-                                artistProfileId: artist.id,
-                              );
-                            }
-
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isCurrentlyFollowing
-                                      ? 'You have unfollowed ${artist.displayName}'
-                                      : 'You are now following ${artist.displayName}',
-                                ),
-                              ),
-                            );
-                          } catch (e) {
-                            if (!mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
-                            );
-                          }
-                        },
-                        child: const Text('Follow'),
+                      trailing: _FollowButton(
+                        artistProfile: artist,
+                        subscriptionService: _artistSubscriptionService,
                       ),
                     );
                   },
                 ),
         ),
       ],
+    );
+  }
+}
+
+class _FollowButton extends StatefulWidget {
+  final ArtistProfileModel artistProfile;
+  final artist.SubscriptionService subscriptionService;
+
+  const _FollowButton({
+    required this.artistProfile,
+    required this.subscriptionService,
+  });
+
+  @override
+  State<_FollowButton> createState() => _FollowButtonState();
+}
+
+class _FollowButtonState extends State<_FollowButton> {
+  bool _isFollowing = false;
+  bool _isLoading = true;
+  bool _isUpdating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFollowStatus();
+  }
+
+  Future<void> _checkFollowStatus() async {
+    try {
+      final isFollowing = await widget.subscriptionService.isFollowingArtist(
+        artistProfileId: widget.artistProfile.id,
+      );
+      if (mounted) {
+        setState(() {
+          _isFollowing = isFollowing;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleFollow() async {
+    if (_isUpdating) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+
+    try {
+      final newFollowState = await widget.subscriptionService
+          .toggleFollowArtist(artistProfileId: widget.artistProfile.id);
+
+      if (mounted) {
+        setState(() {
+          _isFollowing = newFollowState;
+          _isUpdating = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              newFollowState
+                  ? 'You are now following ${widget.artistProfile.displayName}'
+                  : 'You have unfollowed ${widget.artistProfile.displayName}',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const SizedBox(
+        width: 80,
+        height: 36,
+        child: Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    return ElevatedButton(
+      onPressed: _isUpdating ? null : _toggleFollow,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _isFollowing
+            ? Colors.grey[300]
+            : Theme.of(context).primaryColor,
+        foregroundColor: _isFollowing ? Colors.black87 : Colors.white,
+        minimumSize: const Size(80, 36),
+      ),
+      child: _isUpdating
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Text(_isFollowing ? 'Following' : 'Follow'),
     );
   }
 }

@@ -362,6 +362,11 @@ class SubscriptionService {
       final userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('User must be logged in');
 
+      debugPrint(
+          'Following artist: userId=$userId, artistProfileId=$artistProfileId');
+
+      // First, create the follow relationship
+      debugPrint('Creating artistFollows document...');
       await _firestore
           .collection('artistFollows')
           .doc('${userId}_$artistProfileId')
@@ -370,14 +375,17 @@ class SubscriptionService {
         'artistProfileId': artistProfileId,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      debugPrint('artistFollows document created successfully');
 
       // Update follower count
+      debugPrint('Updating follower count...');
       await _firestore
           .collection('artistProfiles')
           .doc(artistProfileId)
           .update({
         'followerCount': FieldValue.increment(1),
       });
+      debugPrint('Follower count updated successfully');
     } catch (e) {
       debugPrint('Error following artist: $e');
       rethrow;
@@ -390,18 +398,26 @@ class SubscriptionService {
       final userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('User must be logged in');
 
+      debugPrint(
+          'Unfollowing artist: userId=$userId, artistProfileId=$artistProfileId');
+
+      // First, delete the follow relationship
+      debugPrint('Deleting artistFollows document...');
       await _firestore
           .collection('artistFollows')
           .doc('${userId}_$artistProfileId')
           .delete();
+      debugPrint('artistFollows document deleted successfully');
 
       // Update follower count
+      debugPrint('Updating follower count...');
       await _firestore
           .collection('artistProfiles')
           .doc(artistProfileId)
           .update({
         'followerCount': FieldValue.increment(-1),
       });
+      debugPrint('Follower count updated successfully');
     } catch (e) {
       debugPrint('Error unfollowing artist: $e');
       rethrow;

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 class TestImageScreen extends StatelessWidget {
   const TestImageScreen({super.key});
+
+  static final Logger _logger = Logger('TestImageScreen');
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class TestImageScreen extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               },
               errorBuilder: (context, error, stackTrace) {
-                print('Error loading image: $error');
+                _logger.severe('Error loading image: $error');
                 return Container(
                   color: Colors.red,
                   child: const Center(
@@ -47,7 +50,7 @@ class TestImageScreen extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               },
               errorBuilder: (context, error, stackTrace) {
-                print('Error loading image: $error');
+                _logger.severe('Error loading image: $error');
                 return Container(
                   color: Colors.red,
                   child: const Center(

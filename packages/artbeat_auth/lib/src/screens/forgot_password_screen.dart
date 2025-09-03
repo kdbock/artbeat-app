@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show
-        ArtbeatColors,
-        ArtbeatInput,
-        ArtbeatButton,
-        ButtonVariant,
-        EnhancedUniversalHeader;
+    show ArtbeatColors, ArtbeatInput, ArtbeatButton, ButtonVariant;
 import 'package:artbeat_core/src/utils/color_extensions.dart';
 
 /// Forgot password screen with email reset functionality

@@ -445,7 +445,23 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
       appBar: core.EnhancedUniversalHeader(
         title: 'Upload Capture',
         showLogo: false,
-        backgroundColor: CaptureUploadColors.primaryDeepOrange,
+        showBackButton: true,
+        backgroundGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
+          ],
+        ),
+        titleGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
+          ],
+        ),
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -471,13 +487,14 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
         ],
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              CaptureUploadColors.backgroundGradientStart,
-              CaptureUploadColors.backgroundGradientEnd,
+              core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+              Colors.pink.withValues(alpha: 0.1),
+              Colors.white,
             ],
           ),
         ),

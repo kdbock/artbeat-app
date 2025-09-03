@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
+import '../../theme/community_colors.dart';
 
 class ModerationQueueScreen extends StatefulWidget {
   const ModerationQueueScreen({super.key});
@@ -437,6 +438,13 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: Stack(

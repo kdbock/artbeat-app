@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/engagement_model.dart';
 import '../theme/artbeat_colors.dart';
-import 'universal_engagement_bar.dart';
+
+import 'content_engagement_bar.dart';
 import 'optimized_image.dart';
 
 /// Universal content card that can display any ARTbeat content type
@@ -81,17 +82,16 @@ class UniversalContentCard extends StatelessWidget {
             if (tags != null && tags!.isNotEmpty) _buildTags(context),
 
             // Engagement bar
-            UniversalEngagementBar(
+            ContentEngagementBar(
               contentId: contentId,
               contentType: contentType,
               initialStats: engagementStats,
-              onDiscuss: onDiscuss,
-              onAmplify: onAmplify,
-              onGift: onGift,
-              showConnect: showConnect,
-              showGift: showGift,
               isCompact: isCompact,
-              targetUserId: authorId,
+              customHandlers: {
+                if (onDiscuss != null) EngagementType.comment: onDiscuss,
+                if (onAmplify != null) EngagementType.share: onAmplify,
+                if (onGift != null) EngagementType.gift: onGift,
+              },
             ),
             // Optional quick comment prompt under engagement bar
             if (showCommentPrompt && onDiscuss != null)
@@ -108,8 +108,8 @@ class UniversalContentCard extends StatelessWidget {
                       color: ArtbeatColors.lightGray,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Row(
-                      children: const [
+                    child: const Row(
+                      children: [
                         Icon(
                           Icons.chat_bubble_outline,
                           size: 18,

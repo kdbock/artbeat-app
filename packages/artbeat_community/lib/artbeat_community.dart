@@ -12,6 +12,7 @@ export 'models/artwork_model.dart';
 export 'models/studio_model.dart';
 export 'models/gift_model_export.dart'; // Use export file to avoid conflicts
 export 'models/commission_model.dart';
+export 'models/direct_commission_model.dart';
 export 'models/sponsor_model.dart';
 
 // Services
@@ -19,6 +20,7 @@ export 'services/services.dart';
 export 'services/community_service.dart';
 export 'services/storage_service.dart';
 export 'services/commission_service.dart';
+export 'services/direct_commission_service.dart';
 export 'services/stripe_service.dart';
 
 // Widgets

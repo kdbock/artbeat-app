@@ -4,10 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart';
-// Using ArtistProfileModel from artbeat_core to avoid conflicts
 import '../../models/group_models.dart';
 import '../../widgets/group_post_card.dart';
 import '../../widgets/post_detail_modal.dart';
+import '../../theme/community_colors.dart';
 import 'create_group_post_screen.dart';
 
 /// Screen showing an individual artist's community feed
@@ -260,92 +260,33 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   }
 
   void _handleGift(BaseGroupPost post) {
-    // Show dialog to select and send a virtual gift
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        String? selectedGift;
-        return AlertDialog(
-          title: const Text('Send a Gift'),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  DropdownButton<String>(
-                    value: selectedGift,
-                    hint: const Text(
-                      'Select a gift',
-                      style: TextStyle(color: ArtbeatColors.textPrimary),
-                    ),
-                    style: const TextStyle(color: ArtbeatColors.textPrimary),
-                    dropdownColor: ArtbeatColors.surface,
-                    items: const [
-                      DropdownMenuItem(
-                        value: '🌟',
-                        child: Text(
-                          'Star',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: '🎨',
-                        child: Text(
-                          'Palette',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: '💐',
-                        child: Text(
-                          'Bouquet',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: '👏',
-                        child: Text(
-                          'Applause',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) => setState(() => selectedGift = value),
-                  ),
-                ],
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedGift == null) return;
-                // Save gift to Firestore (as a subcollection 'gifts')
-                final postRef = FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(post.id);
-                final user = FirebaseAuth.instance.currentUser;
-                if (user != null) {
-                  await postRef.collection('gifts').add({
-                    'gift': selectedGift,
-                    'fromUserId': user.uid,
-                    'timestamp': FieldValue.serverTimestamp(),
-                  });
-                }
-                Navigator.pop(context);
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Gift sent!')));
-              },
-              child: const Text('Send'),
-            ),
-          ],
-        );
-      },
+    // Navigate to enhanced gift purchasing flow for the artist
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: post.userId,
+          recipientName: post.userName,
+        ),
+      ),
+    );
+  }
+
+  void _handleSponsor(BaseGroupPost post) {
+    // Navigate to sponsorship screen for the artist
+    Navigator.pushNamed(
+      context,
+      '/sponsorship/create',
+      arguments: {'artistId': post.userId, 'artistName': post.userName},
+    );
+  }
+
+  void _handleCommission(BaseGroupPost post) {
+    // Navigate to commission request screen for the artist
+    Navigator.pushNamed(
+      context,
+      '/commission/request',
+      arguments: {'artistId': post.userId, 'artistName': post.userName},
     );
   }
 
@@ -385,19 +326,327 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
     }
   }
 
+  void _handleDirectMessage() {
+    // Navigate to direct messaging with this artist
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && currentUser.uid != widget.artist.userId) {
+      // Create or navigate to chat with this artist
+      Navigator.pushNamed(
+        context,
+        '/chat',
+        arguments: {
+          'recipientId': widget.artist.userId,
+          'recipientName': widget.artist.displayName,
+          'recipientAvatar': widget.artist.profileImageUrl,
+        },
+      );
+    }
+  }
+
+  void _handleArtistLike() {
+    // Handle liking the artist profile
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('❤️ Liked ${widget.artist.displayName}!'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleArtistFollow() {
+    // Handle following the artist
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('👤 Following ${widget.artist.displayName}!'),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _handleArtistGift() {
+    // Show gift options dialog
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.card_giftcard, color: ArtbeatColors.accentGold),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Send Gift to ${widget.artist.displayName}',
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Show your appreciation with a virtual gift!',
+              style: TextStyle(color: ArtbeatColors.textSecondary),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildGiftOption('🌟', 'Star'),
+                _buildGiftOption('🎨', 'Palette'),
+                _buildGiftOption('💐', 'Bouquet'),
+                _buildGiftOption('👏', 'Applause'),
+                _buildGiftOption('🎁', 'Gift Box'),
+                _buildGiftOption('💝', 'Heart'),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleArtistSponsor() {
+    // Handle sponsoring the artist
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(
+              Icons.volunteer_activism,
+              color: ArtbeatColors.primaryGreen,
+            ),
+            const SizedBox(width: 8),
+            Text('Sponsor ${widget.artist.displayName}'),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Support this artist\'s creative journey!',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Choose a sponsorship tier:',
+              style: TextStyle(color: ArtbeatColors.textSecondary),
+            ),
+            SizedBox(height: 16),
+            // Add sponsorship tier options here
+            Text('🥉 Bronze Supporter - \$5/month'),
+            SizedBox(height: 8),
+            Text('🥈 Silver Patron - \$15/month'),
+            SizedBox(height: 8),
+            Text('🥇 Gold Benefactor - \$50/month'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🎉 Thank you for sponsoring ${widget.artist.displayName}!',
+                  ),
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ArtbeatColors.primaryGreen,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Sponsor'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleCommissionRequest() {
+    // Show commission request dialog or navigate to commission form
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.palette, color: ArtbeatColors.accentGold),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Commission ${widget.artist.displayName}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: ArtbeatColors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ArtbeatColors.accentGold.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: ArtbeatColors.accentGold.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: ArtbeatColors.success,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${widget.artist.displayName} is available for commissions!',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: ArtbeatColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Project Details',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: ArtbeatColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText:
+                      'Describe your commission project, style preferences, size, timeline, and budget...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  filled: true,
+                  fillColor: ArtbeatColors.surface,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Reference Images (Optional)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: ArtbeatColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: ArtbeatColors.textSecondary.withValues(alpha: 0.3),
+                  ),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.image,
+                      color: ArtbeatColors.textSecondary,
+                      size: 24,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Upload reference images',
+                        style: TextStyle(
+                          color: ArtbeatColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.add_photo_alternate,
+                      color: ArtbeatColors.primaryPurple,
+                      size: 24,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // TODO: Implement commission request submission with form data
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🎨 Commission request sent to ${widget.artist.displayName}! '
+                    'They\'ll respond within 24-48 hours.',
+                  ),
+                  duration: const Duration(seconds: 4),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ArtbeatColors.primaryPurple,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text('Send Request'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildArtistHeader() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-            ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
-          ],
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: [
           Row(
@@ -410,7 +659,11 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                     ? NetworkImage(widget.artist.profileImageUrl!)
                     : null,
                 child: widget.artist.profileImageUrl?.isNotEmpty != true
-                    ? const Icon(Icons.person, size: 40)
+                    ? const Icon(
+                        Icons.person,
+                        size: 40,
+                        color: ArtbeatColors.textSecondary,
+                      )
                     : null,
               ),
               const SizedBox(width: 16),
@@ -422,23 +675,39 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                   children: [
                     // Show verification badge if verified
                     if (widget.artist.isVerified) ...[
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.verified,
-                            size: 20,
-                            color: ArtbeatColors.primaryPurple,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtbeatColors.success.withValues(alpha: 0.1),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(12),
                           ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Verified Artist',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: ArtbeatColors.primaryPurple,
+                          border: Border.all(
+                            color: ArtbeatColors.success.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.verified,
+                              size: 16,
+                              color: ArtbeatColors.success,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 4),
+                            Text(
+                              'Verified Artist',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: ArtbeatColors.success,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 8),
                     ],
@@ -469,7 +738,7 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                         widget.artist.bio!,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: ArtbeatColors.textSecondary,
+                          color: ArtbeatColors.textPrimary,
                         ),
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
@@ -493,11 +762,91 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                   (medium) => _buildTag(medium, ArtbeatColors.primaryPurple),
                 ),
                 ...widget.artist.styles.map(
-                  (style) => _buildTag(style, ArtbeatColors.primaryGreen),
+                  (style) => _buildTag(style, ArtbeatColors.accentGold),
                 ),
               ],
             ),
           ],
+
+          // Enhanced Artist Engagement Bar
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: ArtbeatColors.backgroundSecondary.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: ArtbeatColors.textSecondary.withValues(alpha: 0.1),
+              ),
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(width: 16),
+                  // Like/Follow Artist
+                  _buildModernEngagementButton(
+                    icon: Icons.favorite,
+                    label: 'Like',
+                    color: Colors.red,
+                    onPressed: () => _handleArtistLike(),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Follow Artist
+                  if (!_isCurrentUserArtist) ...[
+                    _buildModernEngagementButton(
+                      icon: Icons.person_add,
+                      label: 'Follow',
+                      color: ArtbeatColors.primaryPurple,
+                      onPressed: () => _handleArtistFollow(),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+
+                  // Gift to Artist
+                  _buildModernEngagementButton(
+                    icon: Icons.card_giftcard,
+                    label: 'Gift',
+                    color: ArtbeatColors.accentGold,
+                    onPressed: () => _handleArtistGift(),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Sponsor Artist
+                  _buildModernEngagementButton(
+                    icon: Icons.volunteer_activism,
+                    label: 'Sponsor',
+                    color: ArtbeatColors.primaryGreen,
+                    onPressed: () => _handleArtistSponsor(),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Message Artist
+                  if (!_isCurrentUserArtist) ...[
+                    _buildModernEngagementButton(
+                      icon: Icons.message,
+                      label: 'Message',
+                      color: ArtbeatColors.secondaryTeal,
+                      onPressed: _handleDirectMessage,
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+
+                  // Commission Request
+                  _buildModernEngagementButton(
+                    icon: Icons.palette,
+                    label: 'Commission',
+                    color: ArtbeatColors.accentOrange,
+                    onPressed: _handleCommissionRequest,
+                  ),
+                  const SizedBox(width: 16),
+                ],
+              ),
+            ),
+          ),
 
           // Create Post Button (only for the artist viewing their own feed)
           if (_isCurrentUserArtist) ...[
@@ -532,7 +881,7 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
@@ -541,6 +890,83 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernEngagementButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 70, // Fixed width to prevent overflow
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGiftOption(String emoji, String name) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '🎁 Sent $emoji $name to ${widget.artist.displayName}!',
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: ArtbeatColors.textSecondary.withValues(alpha: 0.3),
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 12,
+                color: ArtbeatColors.textSecondary,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -819,32 +1245,64 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1, // Not a main navigation screen
-      scaffoldKey: _scaffoldKey,
-      appBar: EnhancedUniversalHeader(
-        title: '${widget.artist.displayName}\'s Feed',
-        showBackButton: true,
-        showSearch: true,
-        showDeveloperTools: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.message, color: Colors.white),
-            onPressed: () => Navigator.pushNamed(context, '/messaging'),
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: CommunityColors.communityGradient,
           ),
-        ],
-      ),
-      drawer: const ArtbeatDrawer(),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
-              ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Header row with back button, title, and actions
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${widget.artist.displayName}\'s Feed',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      onPressed: () {
+                        // TODO: Implement search
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.message, color: Colors.white),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, '/messaging'),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
+        ),
+        toolbarHeight: 64, // Height for header
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: CommunityColors.communityBackgroundGradient,
         ),
         child: Column(
           children: [
@@ -878,14 +1336,59 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                           final post = _posts[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
-                            child: GroupPostCard(
-                              post: post,
-                              groupType: GroupType.artist,
-                              onAppreciate: () => _handleAppreciate(post),
-                              onComment: () => _handleComment(post),
-                              onFeature: () => _handleFeature(post),
-                              onGift: () => _handleGift(post),
-                              onShare: () => _handleShare(post),
+                            child: Column(
+                              children: [
+                                GroupPostCard(
+                                  post: post,
+                                  groupType: GroupType.artist,
+                                  onAppreciate: () => _handleAppreciate(post),
+                                  onComment: () => _handleComment(post),
+                                  onFeature: () => _handleFeature(post),
+                                  onGift: () => _handleGift(post),
+                                  onShare: () => _handleShare(post),
+                                ),
+                                // Additional engagement buttons for artist posts
+                                if (!_isCurrentUserArtist ||
+                                    post.userId !=
+                                        FirebaseAuth.instance.currentUser?.uid)
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        _buildEngagementButton(
+                                          icon: Icons.attach_money,
+                                          label: 'Sponsor',
+                                          color: Colors.green,
+                                          onTap: () => _handleSponsor(post),
+                                        ),
+                                        _buildEngagementButton(
+                                          icon: Icons.work_outline,
+                                          label: 'Commission',
+                                          color: Colors.purple,
+                                          onTap: () => _handleCommission(post),
+                                        ),
+                                        _buildEngagementButton(
+                                          icon: Icons.message_outlined,
+                                          label: 'Message',
+                                          color: Colors.blue,
+                                          onTap: () => _handleDirectMessage(),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
                             ),
                           );
                         },
@@ -894,6 +1397,40 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEngagementButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

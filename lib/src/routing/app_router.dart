@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_auth/artbeat_auth.dart' as auth;
@@ -8,9 +9,10 @@ import 'package:artbeat_profile/artbeat_profile.dart' as profile;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_events/artbeat_events.dart' as events;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
-import 'package:artbeat_community/artbeat_community.dart';
+import 'package:artbeat_community/artbeat_community.dart' as community;
 import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 
 import '../guards/auth_guard.dart';
 import '../screens/enhanced_search_screen.dart';
@@ -38,6 +40,9 @@ class AppRouter {
 
     // Core routes
     switch (routeName) {
+      case AppRoutes.splash:
+        return RouteUtils.createSimpleRoute(child: const core.SplashScreen());
+
       case AppRoutes.dashboard:
         return RouteUtils.createSimpleRoute(
           child: const core.FluidDashboardScreen(),
@@ -119,7 +124,8 @@ class AppRouter {
   }
 
   bool _isProtectedRoute(String routeName) {
-    return routeName != AppRoutes.login &&
+    return routeName != AppRoutes.splash &&
+        routeName != AppRoutes.login &&
         routeName != AppRoutes.register &&
         routeName != AppRoutes.forgotPassword &&
         routeName != AppRoutes.artistSearch &&
@@ -204,7 +210,7 @@ class AppRouter {
     switch (settings.name) {
       case '/artist/signup':
         return RouteUtils.createMainLayoutRoute(
-          child: artist.Modern2025OnboardingScreen(),
+          child: const artist.Modern2025OnboardingScreen(),
         );
       case AppRoutes.artistDashboard:
         return RouteUtils.createMainNavRoute(
@@ -270,14 +276,43 @@ class AppRouter {
         );
 
       case AppRoutes.artistFeed:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artistUserId = args?['artistUserId'] as String?;
+        if (artistUserId != null) {
+          // For now, create a loading screen that will fetch the artist data
+          return RouteUtils.createMainLayoutRoute(
+            child: _ArtistFeedLoader(artistUserId: artistUserId),
+          );
+        }
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Artist Feed - Coming Soon')),
+          child: const Center(child: Text('Artist not found')),
         );
 
       case AppRoutes.artistBrowse:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 3,
           child: const artist.ArtistBrowseScreen(),
+        );
+
+      case AppRoutes.artistEarnings:
+        return RouteUtils.createMainLayoutRoute(
+          child: const artist.ArtistEarningsDashboard(),
+        );
+
+      case AppRoutes.artistPayoutRequest:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final availableBalance = args?['availableBalance'] as double? ?? 0.0;
+        final onPayoutRequested = args?['onPayoutRequested'] as VoidCallback?;
+        return RouteUtils.createMainLayoutRoute(
+          child: artist.PayoutRequestScreen(
+            availableBalance: availableBalance,
+            onPayoutRequested: onPayoutRequested ?? () {},
+          ),
+        );
+
+      case AppRoutes.artistPayoutAccounts:
+        return RouteUtils.createMainLayoutRoute(
+          child: const artist.PayoutAccountsScreen(),
         );
 
       case AppRoutes.artistFeatured:
@@ -384,26 +419,14 @@ class AppRouter {
       case AppRoutes.communityDashboard:
         return RouteUtils.createMainNavRoute(
           currentIndex: 3,
-          appBar: const core.EnhancedUniversalHeader(title: 'Community Canvas'),
-          child: const CommunityDashboardScreen(),
+          child: const community.UnifiedCommunityHub(),
         );
 
       case AppRoutes.communityFeed:
         // Use createMainNavRoute to ensure proper MainLayout wrapping
         return RouteUtils.createMainNavRoute(
           currentIndex: 3,
-          appBar: const core.EnhancedUniversalHeader(
-            title: 'Community Feed',
-            showBackButton: false,
-            showSearch: true,
-            showDeveloperTools: true,
-          ),
-          child: UnifiedCommunityFeed(
-            scrollToPostId: settings.arguments is Map<String, dynamic>
-                ? (settings.arguments as Map<String, dynamic>)['scrollToPostId']
-                      as String?
-                : null,
-          ),
+          child: const community.UnifiedCommunityHub(),
         );
 
       case AppRoutes.communityArtists:
@@ -428,7 +451,8 @@ class AppRouter {
 
       case AppRoutes.communityGifts:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Gifts - Coming Soon')),
+          appBar: RouteUtils.createAppBar('Gift Artists'),
+          child: const Center(child: Text('Select an artist to send a gift')),
         );
 
       case AppRoutes.communityPortfolios:
@@ -443,7 +467,7 @@ class AppRouter {
 
       case AppRoutes.communitySponsorships:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Sponsorships - Coming Soon')),
+          child: const community.EnhancedSponsorshipScreen(),
         );
 
       case AppRoutes.communitySettings:
@@ -476,7 +500,7 @@ class AppRouter {
       case AppRoutes.community:
         // Redirect to community dashboard
         return RouteUtils.createSimpleRoute(
-          child: const CommunityDashboardScreen(),
+          child: const community.UnifiedCommunityHub(),
         );
 
       default:
@@ -644,8 +668,13 @@ class AppRouter {
     // Fallback for admin routes
     switch (settings.name) {
       case AppRoutes.adminDashboard:
-        return RouteUtils.createSimpleRoute(
-          child: const Center(child: Text('Admin Dashboard - Coming Soon')),
+        return RouteUtils.createMainLayoutRoute(
+          child: const admin.AdminDashboardScreen(),
+        );
+
+      case AppRoutes.adminCoupons:
+        return RouteUtils.createMainLayoutRoute(
+          child: const core.CouponManagementScreen(),
         );
 
       case AppRoutes.adminUsers:
@@ -665,10 +694,25 @@ class AppRouter {
 
   /// Handles settings-related routes
   Route<dynamic>? _handleSettingsRoutes(RouteSettings settings) {
-    final feature = settings.name!.split('/').last;
-    return RouteUtils.createComingSoonRoute(
-      '${feature[0].toUpperCase()}${feature.substring(1)} Settings',
-    );
+    switch (settings.name) {
+      case AppRoutes.settingsAccount:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Account Settings'),
+          child: const Center(child: Text('Account Settings - Coming Soon')),
+        );
+
+      case AppRoutes.paymentSettings:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Payment Settings'),
+          child: const artist.PaymentMethodsScreen(),
+        );
+
+      default:
+        final feature = settings.name!.split('/').last;
+        return RouteUtils.createComingSoonRoute(
+          '${feature[0].toUpperCase()}${feature.substring(1)} Settings',
+        );
+    }
   }
 
   /// Handles capture-related routes
@@ -676,7 +720,8 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.captures:
         return RouteUtils.createMainNavRoute(
-          child: const Center(child: Text('My Captures - Coming Soon')),
+          currentIndex: 2,
+          child: const capture.EnhancedCaptureDashboardScreen(),
         );
 
       case AppRoutes.captureCamera:
@@ -685,7 +730,8 @@ class AppRouter {
         );
 
       case AppRoutes.captureDashboard:
-        return RouteUtils.createSimpleRoute(
+        return RouteUtils.createMainNavRoute(
+          currentIndex: 2,
           child: const capture.EnhancedCaptureDashboardScreen(),
         );
 
@@ -760,6 +806,12 @@ class AppRouter {
           child: const Center(child: Text('Ad Statistics - Coming Soon')),
         );
 
+      case AppRoutes.adPayment:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Ad Payment'),
+          child: const Center(child: Text('Ad Payment - Coming Soon')),
+        );
+
       default:
         return RouteUtils.createNotFoundRoute('Ad feature');
     }
@@ -779,6 +831,18 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Subscription Plans'),
           child: const core.SimpleSubscriptionPlansScreen(),
+        );
+
+      case AppRoutes.paymentMethods:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Payment Methods'),
+          child: const artist.PaymentMethodsScreen(),
+        );
+
+      case AppRoutes.paymentRefund:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Refunds'),
+          child: const Center(child: Text('Refund management coming soon')),
         );
 
       default:
@@ -836,6 +900,116 @@ class AppRouter {
           child: const core.SplashScreen(),
         );
     }
+  }
+}
+
+/// Widget that loads artist profile data and then shows the artist feed
+class _ArtistFeedLoader extends StatefulWidget {
+  final String artistUserId;
+
+  const _ArtistFeedLoader({required this.artistUserId});
+
+  @override
+  State<_ArtistFeedLoader> createState() => _ArtistFeedLoaderState();
+}
+
+class _ArtistFeedLoaderState extends State<_ArtistFeedLoader> {
+  core.ArtistProfileModel? _artistProfile;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArtistProfile();
+  }
+
+  Future<void> _loadArtistProfile() async {
+    try {
+      setState(() => _isLoading = true);
+
+      // Try to get artist profile from artistProfiles collection
+      final artistDoc = await FirebaseFirestore.instance
+          .collection('artistProfiles')
+          .where('userId', isEqualTo: widget.artistUserId)
+          .limit(1)
+          .get();
+
+      if (artistDoc.docs.isNotEmpty) {
+        _artistProfile = core.ArtistProfileModel.fromFirestore(
+          artistDoc.docs.first,
+        );
+      } else {
+        // If no artist profile found, try to get basic user info
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.artistUserId)
+            .get();
+
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          _artistProfile = core.ArtistProfileModel(
+            id: widget.artistUserId,
+            userId: widget.artistUserId,
+            displayName:
+                (userData['displayName'] as String?) ?? 'Unknown Artist',
+            bio: userData['bio'] as String?,
+            profileImageUrl: userData['profileImageUrl'] as String?,
+            location: userData['location'] as String?,
+            userType: core.UserType.artist,
+            createdAt:
+                (userData['createdAt'] as Timestamp?)?.toDate() ??
+                DateTime.now(),
+            updatedAt:
+                (userData['updatedAt'] as Timestamp?)?.toDate() ??
+                DateTime.now(),
+            mediums: [],
+            styles: [],
+          );
+        } else {
+          _error = 'Artist not found';
+        }
+      }
+    } catch (e) {
+      _error = 'Failed to load artist: $e';
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(_error!, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadArtistProfile,
+                child: const Text('Try Again'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_artistProfile == null) {
+      return const Scaffold(body: Center(child: Text('Artist not found')));
+    }
+
+    return community.ArtistCommunityFeedScreen(artist: _artistProfile!);
   }
 }
 

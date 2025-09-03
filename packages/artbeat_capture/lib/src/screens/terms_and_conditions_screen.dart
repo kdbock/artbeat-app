@@ -28,6 +28,7 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
       appBar: const EnhancedUniversalHeader(
         title: 'Terms & Conditions',
         showLogo: false,
+        showBackButton: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -39,8 +40,8 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
             end: Alignment.bottomRight,
             colors: [
               ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+              Colors.pink.withValues(alpha: 0.05),
               Colors.white,
-              ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -294,18 +295,32 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 2,
-                      child: ElevatedButton.icon(
-                        onPressed: _hasAcceptedTerms
-                            ? _acceptTermsAndProceed
-                            : null,
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Accept & Continue'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ArtbeatColors.primaryGreen,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.topRight,
+                            colors: [
+                              ArtbeatColors.primaryPurple,
+                              Colors.pink,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ElevatedButton.icon(
+                          onPressed: _hasAcceptedTerms
+                              ? _acceptTermsAndProceed
+                              : null,
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Accept & Continue'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            shadowColor: Colors.transparent,
                           ),
                         ),
                       ),

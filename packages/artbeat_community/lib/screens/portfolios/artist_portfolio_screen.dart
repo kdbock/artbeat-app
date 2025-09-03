@@ -3,6 +3,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 import '../../models/artwork_model.dart' as community;
 import '../../models/user_model.dart' as community;
 import '../../widgets/artwork_card_widget.dart';
+import '../../theme/community_colors.dart';
 
 class ArtistPortfolioScreen extends StatelessWidget {
   final String artistName;
@@ -25,6 +26,13 @@ class ArtistPortfolioScreen extends StatelessWidget {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: const LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: artworks.isEmpty

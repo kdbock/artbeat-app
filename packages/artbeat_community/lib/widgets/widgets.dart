@@ -1,6 +1,7 @@
 // Widgets barrel file for artbeat_community
 export 'applause_button.dart';
 export 'artwork_card_widget.dart';
+export 'enhanced_artwork_card.dart';
 export 'avatar_widget.dart';
 export 'canvas_feed.dart';
 export 'feedback_thread_widget.dart';

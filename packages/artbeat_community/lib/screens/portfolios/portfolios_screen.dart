@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import '../../theme/community_colors.dart';
 
 class PortfoliosScreen extends StatefulWidget {
   const PortfoliosScreen({super.key});
@@ -82,6 +83,13 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
           showBackButton: true,
           showSearch: false,
           showDeveloperTools: true,
+          backgroundGradient: CommunityColors.communityGradient,
+          titleGradient: LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          foregroundColor: Colors.white,
         ),
         drawer: const ArtbeatDrawer(),
         child: const Center(child: CircularProgressIndicator()),
@@ -96,6 +104,13 @@ class _PortfoliosScreenState extends State<PortfoliosScreen> {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: CustomScrollView(

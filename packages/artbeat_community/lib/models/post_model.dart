@@ -57,9 +57,9 @@ class PostModel {
       location: post.location,
       createdAt: post.createdAt,
       engagementStats: EngagementStats(
-        appreciateCount: post.applauseCount,
-        discussCount: post.commentCount,
-        amplifyCount: post.shareCount,
+        likeCount: post.applauseCount,
+        commentCount: post.commentCount,
+        shareCount: post.shareCount,
         lastUpdated: post.createdAt,
       ),
       isPublic: post.isPublic,
@@ -167,12 +167,12 @@ class PostModel {
   String get authorProfileImageUrl => userPhotoUrl;
 
   // Backward compatibility getters for migration period
-  int get applauseCount => engagementStats.appreciateCount;
-  int get commentCount => engagementStats.discussCount;
-  int get shareCount => engagementStats.amplifyCount;
+  int get applauseCount => engagementStats.likeCount;
+  int get commentCount => engagementStats.commentCount;
+  int get shareCount => engagementStats.shareCount;
 
   // Dashboard compatibility getters
-  int get likesCount => engagementStats.appreciateCount;
-  int get commentsCount => engagementStats.discussCount;
-  int get sharesCount => engagementStats.amplifyCount;
+  int get likesCount => engagementStats.likeCount;
+  int get commentsCount => engagementStats.commentCount;
+  int get sharesCount => engagementStats.shareCount;
 }

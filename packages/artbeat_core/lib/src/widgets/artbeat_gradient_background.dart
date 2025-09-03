@@ -15,6 +15,7 @@ class ArtbeatGradientBackground extends StatelessWidget {
   final AlignmentGeometry end;
   final bool addShadow;
   final BorderRadius? borderRadius;
+  final LinearGradient? gradient;
 
   const ArtbeatGradientBackground({
     super.key,
@@ -24,13 +25,14 @@ class ArtbeatGradientBackground extends StatelessWidget {
     this.end = Alignment.bottomRight,
     this.addShadow = false,
     this.borderRadius,
+    this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: gradient ?? LinearGradient(
           begin: begin,
           end: end,
           colors: [
@@ -68,6 +70,7 @@ class ArtbeatGradientBackgroundCompact extends StatelessWidget {
   final double intensity;
   final double? height;
   final EdgeInsets? padding;
+  final LinearGradient? gradient;
 
   const ArtbeatGradientBackgroundCompact({
     super.key,
@@ -75,6 +78,7 @@ class ArtbeatGradientBackgroundCompact extends StatelessWidget {
     this.intensity = 0.8,
     this.height,
     this.padding,
+    this.gradient,
   });
 
   @override
@@ -83,7 +87,7 @@ class ArtbeatGradientBackgroundCompact extends StatelessWidget {
       height: height,
       padding: padding,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: gradient ?? LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [

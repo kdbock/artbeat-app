@@ -120,16 +120,16 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
-            Color(0xFF4FB3BE), // Light Teal
-            Color(0xFFFF9E80), // Light Orange/Peach
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
           ],
         ),
         titleGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
-            Color(0xFF4FB3BE), // Light Teal
-            Color(0xFFFF9E80), // Light Orange/Peach
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
           ],
         ),
       ),
@@ -137,7 +137,7 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
           ? const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  ArtbeatColors.primaryGreen,
+                  core.ArtbeatColors.primaryPurple,
                 ),
               ),
             )

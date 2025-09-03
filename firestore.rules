@@ -98,6 +98,18 @@ service cloud.firestore {
         );
       }
 
+      // User's favorites subcollection
+      match /favorites/{favoriteId} {
+        allow read, list: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
+
       // User's notifications subcollection (for messaging notifications)
       match /notifications/{notificationId} {
         allow read: if isAuthenticated() && (
@@ -110,6 +122,30 @@ service cloud.firestore {
           request.auth.uid == userId
         );
         allow delete: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
+
+      // User's archived chats subcollection
+      match /archivedChats/{chatId} {
+        allow read: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+      }
+
+      // User's calendar settings subcollection
+      match /calendarSettings/{document=**} {
+        allow read: if isAuthenticated() && (
+          isAdmin(request.auth.uid) || 
+          request.auth.uid == userId
+        );
+        allow write: if isAuthenticated() && (
           isAdmin(request.auth.uid) || 
           request.auth.uid == userId
         );
@@ -146,7 +182,9 @@ service cloud.firestore {
         // Allow users to update their own artist profile or artists to update theirs
         request.auth.uid == resource.data.userId ||
         (isArtist(request.auth.uid) && request.auth.uid == resource.data.userId) ||
-        isAdmin(request.auth.uid)
+        isAdmin(request.auth.uid) ||
+        // Allow updating follower count when following/unfollowing artists
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['followerCount']))
       );
       allow delete: if isAdmin(request.auth.uid);
     }
@@ -195,6 +233,18 @@ service cloud.firestore {
         );
         allow write: if isAuthenticated() && (
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participantIds ||
+          isAdmin(request.auth.uid)
+        );
+      }
+
+      // Chat notification settings subcollection
+      match /notificationSettings/{userId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow write: if isAuthenticated() && (
+          request.auth.uid == userId ||
           isAdmin(request.auth.uid)
         );
       }
@@ -247,7 +297,9 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow update: if isAuthenticated() && (
         request.auth.uid == resource.data.userId ||
-        isAdmin(request.auth.uid)
+        isAdmin(request.auth.uid) ||
+        // Allow updating coupon-related fields
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['couponCode', 'couponId', 'originalPrice', 'discountedPrice', 'isFree']))
       );
       allow delete: if isAdmin(request.auth.uid);
     }
@@ -367,6 +419,184 @@ service cloud.firestore {
       allow delete: if isAdmin(request.auth.uid);
     }
 
+    // Direct Commissions (High-value custom artwork transactions)
+    match /directCommissions/{commissionId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.clientId ||
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.clientId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.clientId ||
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAdmin(request.auth.uid);
+
+      // Commission messages subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.clientId ||
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.clientId ||
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update: if isAuthenticated() && (
+          request.auth.uid == resource.data.senderId ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.senderId ||
+          isAdmin(request.auth.uid)
+        );
+      }
+
+      // Commission files subcollection
+      match /files/{fileId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.clientId ||
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.clientId ||
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update: if isAuthenticated() && (
+          request.auth.uid == resource.data.uploadedBy ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.uploadedBy ||
+          isAdmin(request.auth.uid)
+        );
+      }
+
+      // Commission milestones subcollection
+      match /milestones/{milestoneId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.clientId ||
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == get(/databases/$(database)/documents/directCommissions/$(commissionId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+      }
+    }
+
+    // Artist Commission Settings
+    match /artistCommissionSettings/{settingsId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Coupons collection
+    match /coupons/{couponId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.createdBy ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.createdBy ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
+    // Gift Campaigns collection
+    match /giftCampaigns/{campaignId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Gift contributions subcollection
+      match /contributions/{contributionId} {
+        allow read: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          request.auth.uid == get(/databases/$(database)/documents/giftCampaigns/$(campaignId)).data.artistId ||
+          isAdmin(request.auth.uid)
+        );
+        allow create: if isAuthenticated() && (
+          request.auth.uid == request.resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
+    }
+
+    // Gift Subscriptions collection
+    match /giftSubscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.supporterId ||
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.supporterId ||
+        isAdmin(request.auth.uid)
+      );
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.supporterId ||
+        request.auth.uid == resource.data.artistId ||
+        isAdmin(request.auth.uid)
+      );
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.supporterId ||
+        isAdmin(request.auth.uid)
+      );
+    }
+
     // Captures
     match /captures/{captureId} {
       allow read, list: if isAuthenticated();
@@ -392,6 +622,23 @@ service cloud.firestore {
         request.auth.uid == resource.data.userId ||
         isAdmin(request.auth.uid)
       );
+
+      // Applause subcollection
+      match /applause/{userId} {
+        allow read: if true;
+        allow create: if isAuthenticated() && (
+          request.auth.uid == userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow update: if isAuthenticated() && (
+          request.auth.uid == userId ||
+          isAdmin(request.auth.uid)
+        );
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
 
       match /comments/{commentId} {
         allow read: if true;

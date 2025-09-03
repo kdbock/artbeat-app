@@ -6,6 +6,7 @@ import '../models/post_model.dart';
 import '../models/group_models.dart';
 import '../models/comment_model.dart';
 import '../widgets/group_post_card.dart';
+import '../theme/community_colors.dart';
 
 class PostDetailModal extends StatefulWidget {
   final BaseGroupPost post;
@@ -119,9 +120,9 @@ class _PostDetailModalState extends State<PostDetailModal> {
           location: wrapper.location,
           createdAt: wrapper.createdAt,
           engagementStats: EngagementStats(
-            appreciateCount: wrapper.applauseCount,
-            discussCount: _comments.length, // Use current comment count
-            amplifyCount: wrapper.shareCount,
+            likeCount: wrapper.applauseCount,
+            commentCount: _comments.length, // Use current comment count
+            shareCount: wrapper.shareCount,
             lastUpdated: DateTime.now(),
           ),
           isPublic: wrapper.isPublic,
@@ -418,14 +419,7 @@ class _PostDetailModalState extends State<PostDetailModal> {
           // Header with gradient
           Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF9C27B0), // Purple
-                  Color(0xFF4CAF50), // Green
-                ],
-              ),
+              gradient: CommunityColors.communityGradient,
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

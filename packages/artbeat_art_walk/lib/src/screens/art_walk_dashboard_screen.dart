@@ -625,8 +625,8 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       appBar: const EnhancedUniversalHeader(
         title: 'Art Walk',
         showLogo: false,
-        showBackButton: true,
-        backgroundGradient: const LinearGradient(
+        showBackButton: false,
+        backgroundGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
@@ -634,7 +634,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             Color(0xFFFF9E80), // Light Orange/Peach
           ],
         ),
-        titleGradient: const LinearGradient(
+        titleGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
@@ -834,8 +834,8 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: const Text(
+                const Expanded(
+                  child: Text(
                     'Captures',
                     style: TextStyle(
                       fontSize: 18,

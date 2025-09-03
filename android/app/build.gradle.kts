@@ -54,8 +54,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 24  // Android 7.0 (2016) - Explicit minimum for Firebase compatibility
         targetSdk = flutter.targetSdkVersion
-        versionCode = 35
-        versionName = "1.1.0"
+        versionCode = 36
+        versionName = "1.1.1"
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")

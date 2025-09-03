@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show CommissionStatus;
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../../models/commission_model.dart';
 import '../../services/commission_service.dart';
+import '../../theme/community_colors.dart';
 
 class CommissionsScreen extends StatefulWidget {
   const CommissionsScreen({super.key});
@@ -35,8 +37,19 @@ class _CommissionsScreenState extends State<CommissionsScreen>
   Future<void> _loadCommissions() async {
     setState(() => _isLoading = true);
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please sign in to view commissions')),
+          );
+        }
+        return;
+      }
+
       final commissions = await _commissionService.getCommissionsByUser(
-        'userId',
+        user.uid,
       );
       setState(() {
         _commissions = commissions;
@@ -45,9 +58,19 @@ class _CommissionsScreenState extends State<CommissionsScreen>
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
+
+      // Provide more user-friendly error messages
+      String errorMessage = 'Error loading commissions';
+      if (e.toString().contains('permission-denied')) {
+        errorMessage =
+            'You need to be an artist or gallery to view commissions';
+      } else if (e.toString().contains('not-found')) {
+        errorMessage = 'No commissions found';
+      }
+
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error loading commissions: $e')));
+      ).showSnackBar(SnackBar(content: Text('$errorMessage: ${e.toString()}')));
     }
   }
 
@@ -61,6 +84,13 @@ class _CommissionsScreenState extends State<CommissionsScreen>
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const core.ArtbeatDrawer(),
       child: Column(

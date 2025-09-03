@@ -481,47 +481,37 @@ class _EnhancedCaptureDashboardScreenState
     );
   }
 
-  void _openDrawer(BuildContext context) {
-    final scaffoldState = Scaffold.maybeOf(context);
-    if (scaffoldState != null && scaffoldState.hasDrawer) {
-      scaffoldState.openDrawer();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Navigation drawer not available'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 2, // Capture is index 2
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Capture',
-              showLogo: false,
-              showSearch: true,
-              showDeveloperTools: true,
-              onSearchPressed: (String query) => _showSearchModal(context),
-              onProfilePressed: () => _showProfileMenu(context),
-              onMenuPressed: () => _openDrawer(context),
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              elevation: 0,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: ArtbeatGradientBackground(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [ArtbeatColors.primaryPurple, Colors.pink],
+          ),
+          addShadow: true,
+          child: EnhancedUniversalHeader(
+            title: 'Art Capture',
+            showLogo: false,
+            showSearch: true,
+            showDeveloperTools: true,
+            showBackButton: false,
+            onSearchPressed: (String query) => _showSearchModal(context),
+            onProfilePressed: () => _showProfileMenu(context),
+            backgroundColor: Colors.transparent,
+            foregroundColor: ArtbeatColors.textPrimary,
+            elevation: 0,
             ),
           ),
         ),
-        body: Container(
+      body: Container(
           constraints: const BoxConstraints.expand(),
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -818,17 +808,15 @@ class _EnhancedCaptureDashboardScreenState
                               child: CompactArtistCTAWidget(),
                             ),
                           ),
-                        ],
 
-                        // Bottom padding
-                        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                          // Bottom padding
+                          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                        ],
                       ],
                     ),
                   ),
-          ),
-        ),
-      ),
-    );
+                ),
+              ));
   }
 
   Widget _buildStatCard({

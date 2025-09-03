@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logging/logging.dart';
 import '../models/subscription_tier.dart';
 import '../models/feature_limits.dart';
 
@@ -8,6 +9,7 @@ import '../models/feature_limits.dart';
 class UsageTrackingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Logger _logger = Logger('UsageTrackingService');
 
   /// Get current usage for a user
   Future<Map<String, int>> getCurrentUsage(String userId) async {
@@ -25,7 +27,7 @@ class UsageTrackingService {
         'storageUsedMB': userData['storageUsedMB'] as int? ?? 0,
       };
     } catch (e) {
-      print('Error getting current usage: $e');
+      _logger.severe('Error getting current usage', e);
       return {
         'artworks': 0,
         'aiCredits': 0,
@@ -68,7 +70,7 @@ class UsageTrackingService {
           return true;
       }
     } catch (e) {
-      print('Error checking action permission: $e');
+      _logger.severe('Error checking action permission', e);
       return false;
     }
   }
@@ -107,7 +109,7 @@ class UsageTrackingService {
         await _trackOverageIfNeeded(userId, feature, amount);
       }
     } catch (e) {
-      print('Error tracking usage: $e');
+      _logger.severe('Error tracking usage', e);
     }
   }
 
@@ -173,7 +175,7 @@ class UsageTrackingService {
         },
       };
     } catch (e) {
-      print('Error getting usage stats: $e');
+      _logger.severe('Error getting usage stats', e);
       return {};
     }
   }
@@ -224,7 +226,7 @@ class UsageTrackingService {
         additionalStorageGB: storageOverageGB,
       );
     } catch (e) {
-      print('Error calculating overage costs: $e');
+      _logger.severe('Error calculating overage costs', e);
       return 0.0;
     }
   }
@@ -252,7 +254,7 @@ class UsageTrackingService {
         await _sendLimitWarningNotifications(userId, notifications);
       }
     } catch (e) {
-      print('Error checking limit warnings: $e');
+      _logger.severe('Error checking limit warnings', e);
     }
   }
 
@@ -324,7 +326,7 @@ class UsageTrackingService {
         });
       }
     } catch (e) {
-      print('Error tracking overage: $e');
+      _logger.severe('Error tracking overage', e);
     }
   }
 

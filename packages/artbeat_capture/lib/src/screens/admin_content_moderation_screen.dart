@@ -397,15 +397,23 @@ class _AdminContentModerationScreenState
         title: 'Content Moderation',
         showLogo: false,
         showBackButton: true,
-        onMenuPressed: () {
-          // Open the drawer if available
-          if (Scaffold.of(context).hasDrawer) {
-            Scaffold.of(context).openDrawer();
-          }
-        },
-        onBackPressed: () {
-          Navigator.of(context).pop();
-        },
+        backgroundGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
+          ],
+        ),
+        titleGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            core.ArtbeatColors.primaryPurple,
+            Colors.pink,
+          ],
+        ),
+        onBackPressed: () => Navigator.of(context).pop(),
       ),
       body: Column(
         children: [

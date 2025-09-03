@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../../models/post_model.dart';
 import '../../widgets/post_card.dart';
+import '../../theme/community_colors.dart';
 
 class TrendingContentScreen extends StatefulWidget {
   const TrendingContentScreen({super.key});
@@ -215,13 +216,20 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: -1, // Not a main navigation screen
+      currentIndex: 3, // Community tab in bottom navigation
       scaffoldKey: _scaffoldKey,
       appBar: const EnhancedUniversalHeader(
         title: 'Trending Content',
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: Column(

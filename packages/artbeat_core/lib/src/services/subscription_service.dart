@@ -6,8 +6,11 @@ import '../models/artist_profile_model.dart';
 import '../models/subscription_tier.dart';
 import '../models/subscription_model.dart';
 import '../models/user_type.dart';
+import '../models/coupon_model.dart';
 import 'subscription_plan_validator.dart';
 import 'subscription_validation_service.dart';
+import 'coupon_service.dart';
+import 'payment_service.dart';
 
 /// Service for managing subscriptions
 class SubscriptionService extends ChangeNotifier {
@@ -418,6 +421,233 @@ class SubscriptionService extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error checking capability $capability: $e');
       return false;
+    }
+  }
+
+  // ===== COUPON METHODS =====
+
+  /// Create a subscription with coupon support
+  Future<Map<String, dynamic>> createSubscriptionWithCoupon({
+    required SubscriptionTier tier,
+    String? couponCode,
+    String? paymentMethodId,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        return {'success': false, 'message': 'User not authenticated'};
+      }
+
+      final couponService = CouponService();
+      final paymentService = PaymentService();
+
+      // Get or create customer
+      var customerId = await _getOrCreateCustomerId();
+      if (customerId == null) {
+        return {
+          'success': false,
+          'message': 'Failed to create payment customer',
+        };
+      }
+
+      Map<String, dynamic>? couponResult;
+
+      // Validate coupon if provided
+      if (couponCode != null && couponCode.isNotEmpty) {
+        try {
+          couponResult = await couponService.applyCoupon(
+            couponCode: couponCode,
+            tier: tier,
+            originalPrice: tier.monthlyPrice,
+          );
+        } catch (e) {
+          return {'success': false, 'message': e.toString()};
+        }
+      }
+
+      final coupon = couponResult?['coupon'] as CouponModel?;
+      final isFree = couponResult?['isFree'] as bool? ?? false;
+
+      Map<String, dynamic> subscriptionResult;
+
+      if (isFree && coupon != null) {
+        // Create free subscription
+        subscriptionResult = await paymentService.createFreeSubscription(
+          customerId: customerId,
+          tier: tier,
+          couponId: coupon.id,
+          couponCode: coupon.code,
+        );
+
+        // Redeem the coupon
+        await couponService.redeemCoupon(coupon.id);
+      } else {
+        // Create paid subscription (with or without discount)
+        subscriptionResult = await paymentService.createSubscription(
+          customerId: customerId,
+          tier: tier,
+          paymentMethodId: paymentMethodId,
+          couponCode: couponCode,
+        );
+
+        // Redeem coupon if used
+        if (coupon != null) {
+          await couponService.redeemCoupon(coupon.id);
+        }
+      }
+
+      // Update user profile with new subscription tier
+      await _updateUserSubscriptionTier(tier);
+
+      return {
+        'success': true,
+        'message': isFree
+            ? 'Free subscription activated successfully!'
+            : 'Subscription created successfully!',
+        'subscription': subscriptionResult,
+        'couponApplied': coupon != null,
+        'isFree': isFree,
+      };
+    } catch (e) {
+      debugPrint('Error creating subscription with coupon: $e');
+      return {'success': false, 'message': 'Failed to create subscription: $e'};
+    }
+  }
+
+  /// Validate a coupon for a specific subscription tier
+  Future<Map<String, dynamic>> validateCouponForSubscription({
+    required String couponCode,
+    required SubscriptionTier tier,
+  }) async {
+    try {
+      final couponService = CouponService();
+
+      final couponResult = await couponService.applyCoupon(
+        couponCode: couponCode,
+        tier: tier,
+        originalPrice: tier.monthlyPrice,
+      );
+
+      final coupon = couponResult['coupon'] as CouponModel;
+      final discountedPrice = couponResult['discountedPrice'] as double;
+      final discountAmount = couponResult['discountAmount'] as double;
+      final isFree = couponResult['isFree'] as bool;
+
+      return {
+        'valid': true,
+        'coupon': coupon,
+        'originalPrice': tier.monthlyPrice,
+        'discountedPrice': discountedPrice,
+        'discountAmount': discountAmount,
+        'isFree': isFree,
+        'message': isFree
+            ? '🎉 Full access granted! No payment required.'
+            : '✅ Coupon applied! ${discountAmount.toStringAsFixed(2)} discount.',
+      };
+    } catch (e) {
+      return {'valid': false, 'message': e.toString()};
+    }
+  }
+
+  /// Get user's coupon usage history
+  Future<List<Map<String, dynamic>>> getUserCouponHistory() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return [];
+
+      // Get user's subscriptions with coupons
+      final subscriptionsSnapshot = await _firestore
+          .collection('subscriptions')
+          .where('userId', isEqualTo: user.uid)
+          .where('couponId', isNull: false)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final couponService = CouponService();
+      final history = <Map<String, dynamic>>[];
+
+      for (final doc in subscriptionsSnapshot.docs) {
+        final data = doc.data();
+        final couponId = data['couponId'] as String?;
+        final couponCode = data['couponCode'] as String?;
+
+        if (couponId != null) {
+          final coupon = await couponService.getCoupon(couponId);
+          if (coupon != null) {
+            history.add({
+              'subscriptionId': doc.id,
+              'coupon': coupon,
+              'couponCode': couponCode,
+              'tier': data['tier'],
+              'originalPrice': data['originalPrice'] ?? 0.0,
+              'discountedPrice': data['discountedPrice'] ?? 0.0,
+              'revenue': data['revenue'] ?? 0.0,
+              'isFree': data['isFree'] ?? false,
+              'createdAt': data['createdAt'],
+            });
+          }
+        }
+      }
+
+      return history;
+    } catch (e) {
+      debugPrint('Error getting coupon history: $e');
+      return [];
+    }
+  }
+
+  /// Helper method to get or create customer ID
+  Future<String?> _getOrCreateCustomerId() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return null;
+
+      // Check if user already has a customer ID
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        final data = userDoc.data();
+        final customerId = data?['stripeCustomerId'] as String?;
+        if (customerId != null) return customerId;
+      }
+
+      // Create new customer
+      final paymentService = PaymentService();
+      final customerId = await paymentService.createCustomer(
+        email: user.email ?? '',
+        name: user.displayName ?? 'ARTbeat User',
+      );
+
+      return customerId;
+    } catch (e) {
+      debugPrint('Error getting/creating customer ID: $e');
+      return null;
+    }
+  }
+
+  /// Helper method to update user's subscription tier
+  Future<void> _updateUserSubscriptionTier(SubscriptionTier tier) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // Update artist profile if it exists
+      final artistQuery = await _firestore
+          .collection('artistProfiles')
+          .where('userId', isEqualTo: user.uid)
+          .limit(1)
+          .get();
+
+      if (artistQuery.docs.isNotEmpty) {
+        await _firestore
+            .collection('artistProfiles')
+            .doc(artistQuery.docs.first.id)
+            .update({
+              'subscriptionTier': tier.apiName,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+      }
+    } catch (e) {
+      debugPrint('Error updating user subscription tier: $e');
     }
   }
 }

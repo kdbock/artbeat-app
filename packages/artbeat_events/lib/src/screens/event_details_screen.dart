@@ -596,6 +596,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
 
   void _shareEvent() {
     final eventUrl = 'https://artbeat.app/events/${_event!.id}';
+    // ignore: deprecated_member_use
     share_plus.Share.share('Check out this event on ARTbeat! $eventUrl');
   }
 

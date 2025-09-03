@@ -923,7 +923,7 @@ class _Modern2025OnboardingScreenState extends State<Modern2025OnboardingScreen>
                 elevation: 0,
               ),
               child: _isProcessingPlan && _currentPage == 3
-                  ? SizedBox(
+                  ? const SizedBox(
                       height: 18,
                       width: 18,
                       child: CircularProgressIndicator(

@@ -110,10 +110,6 @@ class UserService extends ChangeNotifier {
   String? get currentUserId => currentUser?.uid;
   Stream<User?> get authStateChanges => auth.authStateChanges();
 
-  // Cache for current user model
-  UserModel? _cachedUserModel;
-  String? _cachedUserId;
-
   // User operations
   Future<UserModel?> getCurrentUserModel() async {
     final user = _auth.currentUser;
@@ -162,8 +158,6 @@ class UserService extends ChangeNotifier {
       if (user != null) {
         await user.reload();
         // Clear cache to force fresh fetch
-        _cachedUserModel = null;
-        _cachedUserId = null;
       }
       notifyListeners();
     } catch (e, s) {
@@ -173,8 +167,7 @@ class UserService extends ChangeNotifier {
 
   /// Clear the cached user model
   void clearUserCache() {
-    _cachedUserModel = null;
-    _cachedUserId = null;
+    // Cache clearing no longer needed
   }
 
   Future<Map<String, dynamic>?> getUserProfile(String userId) async {
@@ -745,6 +738,30 @@ class UserService extends ChangeNotifier {
     } catch (e, s) {
       _logError('Error checking username availability', e, s);
       return false;
+    }
+  }
+
+  /// Get users by role (e.g., 'artist', 'collector')
+  Future<List<Map<String, dynamic>>> getUsersByRole(String role) async {
+    try {
+      final query = await _usersCollection
+          .where('userType', isEqualTo: role)
+          .where('isActive', isEqualTo: true)
+          .orderBy('displayName')
+          .limit(50)
+          .get();
+
+      return query.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          data['uid'] = doc.id;
+          return data;
+        }
+        return <String, dynamic>{'uid': doc.id};
+      }).toList();
+    } catch (e, s) {
+      _logError('Error getting users by role', e, s);
+      return [];
     }
   }
 }

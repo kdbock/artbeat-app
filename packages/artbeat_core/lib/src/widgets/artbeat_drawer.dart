@@ -129,6 +129,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/admin/dashboard',
       '/admin/users',
       '/admin/moderation',
+      '/admin/coupons',
       '/settings/account',
       '/settings/notifications',
       '/settings/privacy',

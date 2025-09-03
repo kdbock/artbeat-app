@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:artbeat_community/artbeat_community.dart';
-import 'package:share_plus/share_plus.dart';
 
 class DashboardArtistsSection extends StatefulWidget {
   final DashboardViewModel viewModel;
@@ -16,8 +14,6 @@ class DashboardArtistsSection extends StatefulWidget {
 }
 
 class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
-  // Track appreciate states for each artist
-  final Map<String, bool> _appreciateStates = {};
   // Track loading states for each artist
   final Map<String, bool> _loadingStates = {};
 
@@ -173,7 +169,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
 
   Widget _buildLoadingState() {
     return SizedBox(
-      height: 140, // Updated to match new card height
+      height: 160, // Updated to match new card height
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -190,7 +186,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
 
   Widget _buildErrorState() {
     return Container(
-      height: 140, // Updated to match new card height
+      height: 160, // Updated to match new card height
       decoration: BoxDecoration(
         color: ArtbeatColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(12),
@@ -217,7 +213,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
 
   Widget _buildEmptyState(BuildContext context) {
     return Container(
-      height: 140, // Updated to match new card height
+      height: 160, // Updated to match new card height
       decoration: BoxDecoration(
         color: ArtbeatColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(12),
@@ -264,7 +260,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
   Widget _buildArtistCard(BuildContext context, ArtistProfileModel artist) {
     return Container(
       width: 150,
-      height: 140, // Increased to accommodate new layout
+      height: 160, // Increased to accommodate larger avatar
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -283,12 +279,12 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Top row: Appreciate icon, Avatar, Gift icon
+              // Top row: Follow icon, Avatar, Commission icon
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Appreciate icon (left of avatar)
-                  _buildAppreciateButton(context, artist),
+                  // Follow icon (left of avatar)
+                  _buildFollowButton(context, artist),
 
                   // Avatar (center)
                   GestureDetector(
@@ -298,8 +294,11 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                       arguments: {'artistId': artist.userId},
                     ),
                     child: Container(
-                      width: 50,
-                      height: 50,
+                      width: 65,
+                      height: 65,
+                      margin: const EdgeInsets.only(
+                        top: 8,
+                      ), // Move down slightly
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
@@ -342,12 +341,26 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                     ),
                   ),
 
-                  // Gift icon (right of avatar)
-                  _buildGiftButton(context, artist),
+                  // Commission icon (right of avatar)
+                  _buildCommissionButton(context, artist),
                 ],
               ),
 
+              // Follower count (beneath follow button)
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  '${_formatFollowerCount(artist.followersCount)} followers',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: ArtbeatColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
               // Artist name (links to profile)
+              const SizedBox(height: 4),
               Center(
                 child: GestureDetector(
                   onTap: () => Navigator.pushNamed(
@@ -370,21 +383,6 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                   ),
                 ),
               ),
-
-              // Bottom row: Connect, Discuss, Amplify
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Connect (Follow)
-                  _buildConnectButton(context, artist),
-
-                  // Discuss (Community Feed)
-                  _buildDiscussButton(context, artist),
-
-                  // Amplify (Share)
-                  _buildAmplifyButton(context, artist),
-                ],
-              ),
             ],
           ),
         ),
@@ -392,27 +390,24 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
     );
   }
 
-  Widget _buildAppreciateButton(
-    BuildContext context,
-    ArtistProfileModel artist,
-  ) {
-    final isAppreciated = _appreciateStates[artist.userId] ?? false;
+  Widget _buildFollowButton(BuildContext context, ArtistProfileModel artist) {
+    final isFollowing = artist.isFollowing;
     final isLoading = _loadingStates[artist.userId] ?? false;
 
     return GestureDetector(
-      onTap: isLoading ? null : () => _handleAppreciateAction(context, artist),
+      onTap: isLoading ? null : () => _handleFollowAction(context, artist),
       child: Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: isAppreciated
-              ? ArtbeatColors.accentYellow.withValues(alpha: 0.2)
-              : ArtbeatColors.accentYellow.withValues(alpha: 0.1),
+          color: isFollowing
+              ? ArtbeatColors.primaryPurple.withValues(alpha: 0.1)
+              : Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isAppreciated
-                ? ArtbeatColors.accentYellow
-                : ArtbeatColors.accentYellow.withValues(alpha: 0.3),
-            width: isAppreciated ? 1.5 : 1,
+            color: isFollowing
+                ? ArtbeatColors.primaryPurple
+                : Colors.grey.withValues(alpha: 0.3),
+            width: isFollowing ? 1.5 : 1,
           ),
         ),
         child: isLoading
@@ -422,125 +417,41 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    ArtbeatColors.accentYellow,
-                  ),
-                ),
-              )
-            : Icon(
-                isAppreciated ? Icons.palette : Icons.palette_outlined,
-                size: 16,
-                color: ArtbeatColors.accentYellow,
-              ),
-      ),
-    );
-  }
-
-  Widget _buildGiftButton(BuildContext context, ArtistProfileModel artist) {
-    return GestureDetector(
-      onTap: () => _handleGiftAction(context, artist),
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: ArtbeatColors.accentGold.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: ArtbeatColors.accentGold.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: const Icon(
-          Icons.card_giftcard,
-          size: 16,
-          color: ArtbeatColors.accentGold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildConnectButton(BuildContext context, ArtistProfileModel artist) {
-    final isLoading = _loadingStates[artist.userId] ?? false;
-
-    return GestureDetector(
-      onTap: isLoading ? null : () => _handleConnectAction(context, artist),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: artist.isFollowing
-              ? ArtbeatColors.primaryPurple.withValues(alpha: 0.2)
-              : ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: artist.isFollowing
-                ? ArtbeatColors.primaryPurple
-                : ArtbeatColors.primaryPurple.withValues(alpha: 0.3),
-            width: artist.isFollowing ? 1.5 : 1,
-          ),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
                     ArtbeatColors.primaryPurple,
                   ),
                 ),
               )
             : Icon(
-                artist.isFollowing ? Icons.link : Icons.link_outlined,
-                size: 14,
-                color: ArtbeatColors.primaryPurple,
+                isFollowing ? Icons.person_remove : Icons.person_add,
+                size: 16,
+                color: isFollowing ? ArtbeatColors.primaryPurple : Colors.grey,
               ),
       ),
     );
   }
 
-  Widget _buildDiscussButton(BuildContext context, ArtistProfileModel artist) {
+  Widget _buildCommissionButton(
+    BuildContext context,
+    ArtistProfileModel artist,
+  ) {
     return GestureDetector(
-      onTap: () => _handleDiscussAction(context, artist),
+      onTap: () => _handleCommissionAction(context, artist),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
+          color: Colors.purple.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: ArtbeatColors.primaryGreen.withValues(alpha: 0.3),
+            color: Colors.purple.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
-        child: const Icon(
-          Icons.chat_bubble_outline,
-          size: 14,
-          color: ArtbeatColors.primaryGreen,
-        ),
+        child: const Icon(Icons.work, size: 16, color: Colors.purple),
       ),
     );
   }
 
-  Widget _buildAmplifyButton(BuildContext context, ArtistProfileModel artist) {
-    return GestureDetector(
-      onTap: () => _handleAmplifyAction(context, artist),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: ArtbeatColors.accentOrange.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: ArtbeatColors.accentOrange.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: const Icon(
-          Icons.share_outlined,
-          size: 14,
-          color: ArtbeatColors.accentOrange,
-        ),
-      ),
-    );
-  }
-
-  void _handleAppreciateAction(
+  void _handleFollowAction(
     BuildContext context,
     ArtistProfileModel artist,
   ) async {
@@ -551,91 +462,19 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
     });
 
     try {
-      // Toggle appreciate state using the universal engagement service
-      final engagementService = UniversalEngagementService();
-      final newState = await engagementService.toggleEngagement(
-        contentId: artist.userId,
-        contentType: 'profile',
-        engagementType: EngagementType.appreciate,
-      );
-
-      // Update local state
-      if (mounted) {
-        setState(() {
-          _appreciateStates[artist.userId] = newState;
-        });
-      }
-
-      // Show feedback
-      if (mounted) {
-        final message = newState
-            ? 'Appreciated ${artist.displayName}'
-            : 'Removed appreciation for ${artist.displayName}';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 1),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to appreciate: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loadingStates[artist.userId] = false;
-        });
-      }
-    }
-  }
-
-  void _handleGiftAction(BuildContext context, ArtistProfileModel artist) {
-    if (_loadingStates[artist.userId] == true) return;
-
-    // Navigate to gift purchasing flow using direct navigation
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => GiftPurchaseScreen(
-          recipientId: artist.userId,
-          recipientName: artist.displayName,
-        ),
-      ),
-    );
-  }
-
-  void _handleConnectAction(
-    BuildContext context,
-    ArtistProfileModel artist,
-  ) async {
-    if (_loadingStates[artist.userId] == true) return;
-
-    setState(() {
-      _loadingStates[artist.userId] = true;
-    });
-
-    try {
-      // Toggle follow/connect status using the universal engagement service
-      final engagementService = UniversalEngagementService();
+      // Toggle follow status using the content engagement service
+      final engagementService = ContentEngagementService();
       await engagementService.toggleEngagement(
         contentId: artist.userId,
         contentType: 'profile',
-        engagementType: EngagementType.connect,
+        engagementType: EngagementType.follow,
       );
 
       // Show feedback
       if (mounted) {
         final message = artist.isFollowing
-            ? 'Disconnected from ${artist.displayName}'
-            : 'Connected with ${artist.displayName}';
+            ? 'Unfollowed ${artist.displayName}'
+            : 'Following ${artist.displayName}';
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -648,7 +487,7 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to connect: ${e.toString()}'),
+            content: Text('Failed to follow: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -662,61 +501,25 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
     }
   }
 
-  void _handleDiscussAction(BuildContext context, ArtistProfileModel artist) {
-    // Navigate to the artist's specific community feed
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (context) => ArtistCommunityFeedScreen(artist: artist),
-      ),
-    );
-  }
-
-  void _handleAmplifyAction(
+  void _handleCommissionAction(
     BuildContext context,
     ArtistProfileModel artist,
   ) async {
-    try {
-      // Handle sharing functionality using engagement service
-      final engagementService = UniversalEngagementService();
-      await engagementService.toggleEngagement(
-        contentId: artist.userId,
-        contentType: 'profile',
-        engagementType: EngagementType.amplify,
-      );
+    // Navigate to commission request screen
+    Navigator.pushNamed(
+      context,
+      '/commission/request',
+      arguments: {'artistId': artist.userId, 'artistName': artist.displayName},
+    );
+  }
 
-      // Create share content
-      final shareText =
-          '🎨 Check out ${artist.displayName} on ARTbeat! '
-          '${artist.bio?.isNotEmpty == true ? '\n\n"${artist.bio}"' : ''}'
-          '\n\nDownload ARTbeat to discover amazing local artists!';
-
-      // Share using share_plus package
-      await SharePlus.instance.share(
-        ShareParams(
-          text: shareText,
-          subject: 'Discover ${artist.displayName} on ARTbeat',
-        ),
-      );
-
-      // Show sharing success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Shared ${artist.displayName}\'s profile'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to share: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+  String _formatFollowerCount(int count) {
+    if (count >= 1000000) {
+      return '${(count / 1000000).toStringAsFixed(1)}M';
+    } else if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1)}K';
+    } else {
+      return count.toString();
     }
   }
 }

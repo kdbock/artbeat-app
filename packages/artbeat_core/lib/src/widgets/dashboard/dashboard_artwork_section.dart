@@ -358,30 +358,31 @@ class DashboardArtworkSection extends StatelessWidget {
                           children: [
                             // Appreciate (Heart/Palette)
                             _buildEngagementButton(
-                              Icons.palette_outlined,
+                              Icons.favorite_outline,
                               artworkItem.likesCount,
                               () => _handleAppreciate(context, artworkItem),
                             ),
 
-                            // Discuss (Comment)
+                            // Gift to Artist
                             _buildEngagementButton(
-                              Icons.chat_bubble_outline,
-                              0, // Comments count - would need to be added to model
-                              () => _handleDiscuss(context, artworkItem),
+                              Icons.card_giftcard,
+                              0,
+                              () => _handleGiftArtist(context, artworkItem),
                             ),
 
-                            // Amplify (Share)
+                            // Commission Artist
+                            _buildEngagementButton(
+                              Icons.work_outline,
+                              0,
+                              () =>
+                                  _handleCommissionArtist(context, artworkItem),
+                            ),
+
+                            // Share
                             _buildEngagementButton(
                               Icons.share_outlined,
-                              0, // Shares count - would need to be added to model
+                              0,
                               () => _handleAmplify(context, artworkItem),
-                            ),
-
-                            // Views
-                            _buildEngagementButton(
-                              Icons.remove_red_eye_outlined,
-                              artworkItem.viewsCount,
-                              null, // No action for views
                             ),
                           ],
                         ),
@@ -429,11 +430,11 @@ class DashboardArtworkSection extends StatelessWidget {
 
   void _handleAppreciate(BuildContext context, ArtworkModel artwork) async {
     try {
-      final engagementService = UniversalEngagementService();
+      final engagementService = ContentEngagementService();
       await engagementService.toggleEngagement(
         contentId: artwork.id.toString(),
         contentType: 'artwork',
-        engagementType: EngagementType.appreciate,
+        engagementType: EngagementType.like,
       );
 
       ScaffoldMessenger.of(
@@ -491,14 +492,15 @@ class DashboardArtworkSection extends StatelessWidget {
           'https://artbeat.app/artwork/${artwork.id}';
 
       // Share the artwork
+      // ignore: deprecated_member_use
       await Share.share(shareText);
 
       // Track the share as an engagement
-      final engagementService = UniversalEngagementService();
+      final engagementService = ContentEngagementService();
       await engagementService.toggleEngagement(
         contentId: artwork.id.toString(),
         contentType: 'artwork',
-        engagementType: EngagementType.amplify,
+        engagementType: EngagementType.share,
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -510,6 +512,34 @@ class DashboardArtworkSection extends StatelessWidget {
         context,
       ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
     }
+  }
+
+  void _handleGiftArtist(BuildContext context, ArtworkModel artwork) async {
+    // Navigate to enhanced gift purchasing flow for the artist
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: artwork.artistId,
+          recipientName: artwork.artistName,
+        ),
+      ),
+    );
+  }
+
+  void _handleCommissionArtist(
+    BuildContext context,
+    ArtworkModel artwork,
+  ) async {
+    // Navigate to commission request screen for the artist
+    Navigator.pushNamed(
+      context,
+      '/commission/request',
+      arguments: {
+        'artistId': artwork.artistId,
+        'artistName': artwork.artistName,
+      },
+    );
   }
 
   Widget _buildSkeletonCard() {

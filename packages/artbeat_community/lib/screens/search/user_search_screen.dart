@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../theme/community_colors.dart';
 
 /// Screen for searching users in the community
 class UserSearchScreen extends StatefulWidget {
@@ -72,7 +73,13 @@ class _UserSearchScreenState extends State<UserSearchScreen> {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
-        backgroundColor: ArtbeatColors.backgroundPrimary,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: Column(

@@ -346,6 +346,10 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                   ),
                   const SizedBox(height: 24),
 
+                  // Quick Actions Section
+                  _buildQuickActionsSection(context),
+                  const SizedBox(height: 24),
+
                   // Artist Marketing Section
                   _buildArtistMarketingSection(context),
                   const SizedBox(height: 24),
@@ -400,6 +404,116 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                context,
+                title: 'Earnings Dashboard',
+                subtitle: 'View earnings & payouts',
+                icon: Icons.account_balance_wallet,
+                color: Colors.green,
+                onTap: () => Navigator.pushNamed(context, '/artist/earnings'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                context,
+                title: 'Upload Artwork',
+                subtitle: 'Add new artwork',
+                icon: Icons.add_photo_alternate,
+                color: Colors.blue,
+                onTap: () => Navigator.pushNamed(context, '/artwork/upload'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                context,
+                title: 'Analytics',
+                subtitle: 'View performance',
+                icon: Icons.analytics,
+                color: Colors.purple,
+                onTap: () => Navigator.pushNamed(context, '/artist/analytics'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                context,
+                title: 'Profile Settings',
+                subtitle: 'Edit your profile',
+                icon: Icons.person_outline,
+                color: Colors.orange,
+                onTap: () =>
+                    Navigator.pushNamed(context, '/artist/profile-edit'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundColor: color.withValues(alpha: 0.1),
+                child: Icon(icon, color: color),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );

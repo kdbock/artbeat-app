@@ -7,6 +7,8 @@ export 'src/models/artist_profile_model.dart'
 export 'src/models/commission_model.dart';
 export 'src/models/gallery_invitation_model.dart';
 export 'src/models/subscription_model.dart';
+export 'src/models/earnings_model.dart';
+export 'src/models/payout_model.dart';
 
 // Screens
 export 'src/screens/analytics_dashboard_screen.dart';
@@ -28,9 +30,15 @@ export 'src/screens/payment_screen.dart';
 export 'src/screens/refund_request_screen.dart';
 export 'src/screens/subscription_analytics_screen.dart';
 
+// Earnings screens
+export 'src/screens/earnings/artist_earnings_dashboard.dart';
+export 'src/screens/earnings/payout_request_screen.dart';
+export 'src/screens/earnings/payout_accounts_screen.dart';
+
 // Services
 export 'src/services/analytics_service.dart';
 export 'src/services/artist_profile_service.dart';
 export 'src/services/subscription_service.dart';
 export 'src/services/gallery_invitation_service.dart';
 export 'src/services/event_service.dart';
+export 'src/services/earnings_service.dart';

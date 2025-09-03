@@ -15,6 +15,7 @@ export 'subscription_validation_service.dart';
 export 'image_management_service.dart';
 export 'enhanced_storage_service.dart';
 
-// Universal engagement system
-export 'universal_engagement_service.dart';
+// Content engagement system
+export 'content_engagement_service.dart';
+export 'engagement_config_service.dart';
 export 'engagement_migration_service.dart';

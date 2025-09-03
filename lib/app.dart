@@ -57,6 +57,11 @@ class MyApp extends StatelessWidget {
                 create: (_) => core.ArtbeatTheme.lightTheme,
                 lazy: false,
               ),
+              // Content Engagement Service
+              ChangeNotifierProvider<core.ContentEngagementService>(
+                create: (_) => core.ContentEngagementService(),
+                lazy: true,
+              ),
               ChangeNotifierProvider<messaging.ChatService>(
                 create: (_) => messaging.ChatService(),
                 lazy: true, // Changed to lazy to prevent early Firebase access

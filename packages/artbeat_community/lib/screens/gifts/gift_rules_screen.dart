@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import '../../theme/community_colors.dart';
 
 class GiftRulesScreen extends StatelessWidget {
   const GiftRulesScreen({super.key});
@@ -13,6 +14,13 @@ class GiftRulesScreen extends StatelessWidget {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: SingleChildScrollView(

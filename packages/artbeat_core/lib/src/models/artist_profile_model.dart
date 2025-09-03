@@ -27,6 +27,7 @@ class ArtistProfileModel {
   final int likesCount;
   final int viewsCount;
   final int artworksCount;
+  final int followersCount;
 
   ArtistProfileModel({
     required this.id,
@@ -51,6 +52,7 @@ class ArtistProfileModel {
     this.likesCount = 0,
     this.viewsCount = 0,
     this.artworksCount = 0,
+    this.followersCount = 0,
   });
 
   /// Create from Firestore document
@@ -80,6 +82,8 @@ class ArtistProfileModel {
       likesCount: data['likesCount'] as int? ?? 0,
       viewsCount: data['viewsCount'] as int? ?? 0,
       artworksCount: data['artworksCount'] as int? ?? 0,
+      followersCount:
+          data['followersCount'] as int? ?? data['followerCount'] as int? ?? 0,
     );
   }
 
@@ -106,6 +110,7 @@ class ArtistProfileModel {
       'likesCount': likesCount,
       'viewsCount': viewsCount,
       'artworksCount': artworksCount,
+      'followersCount': followersCount,
       // isFollowing is not stored in Firestore as it's user-specific
     };
   }
@@ -210,6 +215,7 @@ class ArtistProfileModel {
     int? likesCount,
     int? viewsCount,
     int? artworksCount,
+    int? followersCount,
   }) {
     return ArtistProfileModel(
       id: id ?? this.id,
@@ -234,6 +240,7 @@ class ArtistProfileModel {
       likesCount: likesCount ?? this.likesCount,
       viewsCount: viewsCount ?? this.viewsCount,
       artworksCount: artworksCount ?? this.artworksCount,
+      followersCount: followersCount ?? this.followersCount,
     );
   }
 }

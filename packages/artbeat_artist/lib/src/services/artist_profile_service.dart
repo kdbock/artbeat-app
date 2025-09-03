@@ -64,6 +64,7 @@ class ArtistProfileService {
         subscriptionTier: subscriptionTier,
         createdAt: now,
         updatedAt: now,
+        followersCount: 0,
       );
     } catch (e) {
       throw Exception('Error creating artist profile: $e');
@@ -110,6 +111,9 @@ class ArtistProfileService {
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+        followersCount: (data['followersCount'] as int?) ??
+            (data['followerCount'] as int?) ??
+            0,
       );
     } catch (e) {
       throw Exception('Error getting artist profile: $e');
@@ -152,6 +156,9 @@ class ArtistProfileService {
         ),
         createdAt: (data['createdAt'] as Timestamp).toDate(),
         updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+        followersCount: (data['followersCount'] as int?) ??
+            (data['followerCount'] as int?) ??
+            0,
       );
     } catch (e) {
       throw Exception('Error getting artist profile by ID: $e');

@@ -46,7 +46,7 @@ class _MainLayoutState extends State<MainLayout> {
         case 2:
           Navigator.of(
             context,
-          ).pushNamedAndRemoveUntil('/capture/dashboard', (route) => false);
+          ).pushNamedAndRemoveUntil('/captures', (route) => false);
           break;
         case 3:
           Navigator.of(

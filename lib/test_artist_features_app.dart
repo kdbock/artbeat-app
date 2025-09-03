@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logging/logging.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 /// Test app to verify all artist features work properly
@@ -369,6 +370,7 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
 
 /// Quick test function that can be called from anywhere
 Future<void> runQuickFeatureTest({String? userId}) async {
+  final logger = Logger('QuickFeatureTest');
   try {
     final testingService = ArtistFeatureTestingService();
 
@@ -378,19 +380,19 @@ Future<void> runQuickFeatureTest({String? userId}) async {
       userId: userId,
     );
 
-    print('\n🧪 QUICK ARTIST FEATURES TEST');
-    print('=' * 40);
+    logger.info('\n🧪 QUICK ARTIST FEATURES TEST');
+    logger.info('=' * 40);
 
     results.forEach((feature, result) {
       final status = result.passed ? '✅' : '❌';
-      print('$status $feature: ${result.message}');
+      logger.info('$status $feature: ${result.message}');
     });
 
     final passed = results.values.where((r) => r.passed).length;
     final total = results.length;
-    print('=' * 40);
-    print('RESULT: $passed/$total tests passed');
+    logger.info('=' * 40);
+    logger.info('RESULT: $passed/$total tests passed');
   } catch (e) {
-    print('❌ Quick test failed: $e');
+    logger.severe('❌ Quick test failed', e);
   }
 }

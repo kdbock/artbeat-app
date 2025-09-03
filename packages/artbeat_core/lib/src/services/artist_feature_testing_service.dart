@@ -211,7 +211,7 @@ class ArtistFeatureTestingService {
   Future<TestResult> _testBasicAnalytics(String userId) async {
     try {
       // Test if user has access to basic analytics
-      final analyticsQuery = await _firestore
+      await _firestore
           .collection('analytics')
           .where('userId', isEqualTo: userId)
           .limit(1)
@@ -304,10 +304,7 @@ class ArtistFeatureTestingService {
   Future<TestResult> _testAdvancedAnalytics(String userId) async {
     try {
       // Test if advanced analytics are available
-      final analyticsDoc = await _firestore
-          .collection('advanced_analytics')
-          .doc(userId)
-          .get();
+      await _firestore.collection('advanced_analytics').doc(userId).get();
 
       // Advanced analytics access is available regardless of existing data
       return TestResult.passed('Advanced analytics access verified');

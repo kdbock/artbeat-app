@@ -22,6 +22,7 @@ export 'src/services/connectivity_service.dart' show ConnectivityService;
 export 'src/services/subscription_service.dart' show SubscriptionService;
 export 'src/services/artist_service.dart' show ArtistService;
 export 'src/services/payment_service.dart' show PaymentService;
+export 'src/services/sponsorship_service.dart' show SponsorshipService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
 export 'src/services/feedback_service.dart' show FeedbackService;
@@ -39,8 +40,18 @@ export 'src/services/subscription_migration_service.dart'
     show SubscriptionMigrationService;
 export 'src/services/artist_feature_testing_service.dart'
     show ArtistFeatureTestingService, TestResult;
-export 'src/services/universal_engagement_service.dart'
-    show UniversalEngagementService;
+
+export 'src/services/content_engagement_service.dart'
+    show ContentEngagementService;
+export 'src/services/engagement_config_service.dart'
+    show EngagementConfigService;
+export 'src/services/enhanced_gift_service.dart' show EnhancedGiftService;
+
+// Export Enhanced Gift Screens
+export 'src/screens/enhanced_gift_purchase_screen.dart'
+    show EnhancedGiftPurchaseScreen;
+export 'src/screens/gift_campaign_screen.dart' show GiftCampaignScreen;
+export 'src/screens/gift_subscription_screen.dart' show GiftSubscriptionScreen;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -55,6 +66,13 @@ export 'src/models/feedback_model.dart'
     show FeedbackModel, FeedbackType, FeedbackPriority, FeedbackStatus;
 export 'src/models/engagement_model.dart'
     show EngagementStats, EngagementType, EngagementModel;
+export 'src/models/sponsorship_model.dart'
+    show
+        SponsorshipModel,
+        SponsorshipTier,
+        SponsorshipStatus,
+        SponsorshipBenefit,
+        SponsorshipPayment;
 // 2025 Enhanced Models
 export 'src/models/feature_limits.dart' show FeatureLimits;
 
@@ -66,7 +84,8 @@ export 'src/widgets/artbeat_drawer.dart';
 export 'src/widgets/artbeat_drawer_items.dart';
 export 'src/widgets/art_capture_warning_dialog.dart';
 export 'src/widgets/loading_screen.dart';
-export 'src/widgets/universal_engagement_bar.dart' show UniversalEngagementBar;
+
+export 'src/widgets/content_engagement_bar.dart' show ContentEngagementBar;
 export 'src/widgets/universal_content_card.dart' show UniversalContentCard;
 export 'src/widgets/profile_tab_interface.dart';
 export 'src/widgets/featured_content_row_widget.dart';
@@ -120,6 +139,7 @@ export 'src/screens/subscription_plans_screen.dart'
     show SubscriptionPlansScreen;
 export 'src/screens/simple_subscription_plans_screen.dart'
     show SimpleSubscriptionPlansScreen;
+export 'src/screens/coupon_management_screen.dart' show CouponManagementScreen;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;

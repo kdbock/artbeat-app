@@ -250,8 +250,6 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       case art_walk_model.AchievementType.masterCurator:
         return [const Color(0xFFFFD700), const Color(0xFFB7950B)];
     }
-    // Default fallback
-    return [const Color(0xFFCD7F32), const Color(0xFFA05B20)];
   }
 
   @override

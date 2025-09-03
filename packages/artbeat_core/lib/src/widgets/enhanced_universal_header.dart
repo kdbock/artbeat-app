@@ -22,7 +22,7 @@ class EnhancedUniversalHeader extends StatefulWidget
   final bool showDeveloperTools;
   final bool showBackButton;
   final VoidCallback? onMenuPressed;
-  final Function(String)? onSearchPressed;
+  final void Function(String)? onSearchPressed;
   final VoidCallback? onDeveloperPressed;
   final VoidCallback? onProfilePressed;
   final VoidCallback? onBackPressed;

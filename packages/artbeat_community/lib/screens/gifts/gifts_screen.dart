@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../../widgets/gift_card_widget.dart';
+import '../../theme/community_colors.dart';
 import 'gift_rules_screen.dart';
 
 class GiftsScreen extends StatefulWidget {
@@ -57,6 +58,13 @@ class _GiftsScreenState extends State<GiftsScreen> {
           showBackButton: true,
           showSearch: false,
           showDeveloperTools: true,
+          backgroundGradient: CommunityColors.communityGradient,
+          titleGradient: LinearGradient(
+            colors: [Colors.white, Colors.white],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          foregroundColor: Colors.white,
         ),
         drawer: const ArtbeatDrawer(),
         child: const Center(child: CircularProgressIndicator()),
@@ -71,6 +79,13 @@ class _GiftsScreenState extends State<GiftsScreen> {
         showBackButton: true,
         showSearch: false,
         showDeveloperTools: true,
+        backgroundGradient: CommunityColors.communityGradient,
+        titleGradient: LinearGradient(
+          colors: [Colors.white, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        foregroundColor: Colors.white,
       ),
       drawer: const ArtbeatDrawer(),
       child: CustomScrollView(

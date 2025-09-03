@@ -46,13 +46,20 @@ class EngagementModel {
   }
 }
 
-/// The five universal engagement types for ARTbeat
+/// Content-specific engagement types for ARTbeat
 enum EngagementType {
-  appreciate('appreciate'), // Replaces like, applause, fan, rate
-  connect('connect'), // Replaces follow, fan of, subscribe
-  discuss('discuss'), // Replaces comment, review
-  amplify('amplify'), // Replaces share, repost
-  gift('gift'); // Send monetary appreciation
+  like('like'),
+  comment('comment'),
+  reply('reply'),
+  share('share'),
+  seen('seen'),
+  rate('rate'),
+  review('review'),
+  follow('follow'),
+  gift('gift'),
+  sponsor('sponsor'),
+  message('message'),
+  commission('commission'); // available for commission
 
   const EngagementType(this.value);
   final String value;
@@ -60,94 +67,162 @@ enum EngagementType {
   static EngagementType fromString(String value) {
     return EngagementType.values.firstWhere(
       (type) => type.value == value,
-      orElse: () => EngagementType.appreciate,
+      orElse: () => EngagementType.like,
     );
   }
 
   /// Get display name for UI
   String get displayName {
     switch (this) {
-      case EngagementType.appreciate:
-        return 'Appreciate';
-      case EngagementType.connect:
-        return 'Connect';
-      case EngagementType.discuss:
-        return 'Discuss';
-      case EngagementType.amplify:
-        return 'Amplify';
+      case EngagementType.like:
+        return 'Like';
+      case EngagementType.comment:
+        return 'Comment';
+      case EngagementType.reply:
+        return 'Reply';
+      case EngagementType.share:
+        return 'Share';
+      case EngagementType.seen:
+        return 'Seen';
+      case EngagementType.rate:
+        return 'Rate';
+      case EngagementType.review:
+        return 'Review';
+      case EngagementType.follow:
+        return 'Follow';
       case EngagementType.gift:
         return 'Gift';
+      case EngagementType.sponsor:
+        return 'Sponsor';
+      case EngagementType.message:
+        return 'Message';
+      case EngagementType.commission:
+        return 'Commission';
     }
   }
 
   /// Get icon name for UI
   String get iconName {
     switch (this) {
-      case EngagementType.appreciate:
-        return 'palette'; // or 'heart'
-      case EngagementType.connect:
-        return 'link';
-      case EngagementType.discuss:
-        return 'chat_bubble';
-      case EngagementType.amplify:
-        return 'campaign'; // megaphone icon
+      case EngagementType.like:
+        return 'favorite'; // heart icon
+      case EngagementType.comment:
+        return 'chat_bubble_outline'; // chat bubble
+      case EngagementType.reply:
+        return 'reply'; // reply arrow
+      case EngagementType.share:
+        return 'share'; // share icon
+      case EngagementType.seen:
+        return 'visibility'; // eye icon
+      case EngagementType.rate:
+        return 'star_border'; // star for rating
+      case EngagementType.review:
+        return 'rate_review'; // review icon
+      case EngagementType.follow:
+        return 'person_add'; // follow icon
       case EngagementType.gift:
         return 'card_giftcard'; // gift icon
+      case EngagementType.sponsor:
+        return 'volunteer_activism'; // sponsor icon
+      case EngagementType.message:
+        return 'message'; // message icon
+      case EngagementType.commission:
+        return 'palette'; // commission icon (more art-related)
     }
   }
 
   /// Get past tense for notifications
   String get pastTense {
     switch (this) {
-      case EngagementType.appreciate:
-        return 'appreciated';
-      case EngagementType.connect:
-        return 'connected with';
-      case EngagementType.discuss:
-        return 'discussed';
-      case EngagementType.amplify:
-        return 'amplified';
+      case EngagementType.like:
+        return 'liked';
+      case EngagementType.comment:
+        return 'commented on';
+      case EngagementType.reply:
+        return 'replied to';
+      case EngagementType.share:
+        return 'shared';
+      case EngagementType.seen:
+        return 'viewed';
+      case EngagementType.rate:
+        return 'rated';
+      case EngagementType.review:
+        return 'reviewed';
+      case EngagementType.follow:
+        return 'followed';
       case EngagementType.gift:
         return 'sent a gift to';
+      case EngagementType.sponsor:
+        return 'sponsored';
+      case EngagementType.message:
+        return 'messaged';
+      case EngagementType.commission:
+        return 'requested a commission from';
     }
   }
 }
 
 /// Engagement statistics for any content
 class EngagementStats {
-  final int appreciateCount;
-  final int connectCount;
-  final int discussCount;
-  final int amplifyCount;
+  final int likeCount;
+  final int commentCount;
+  final int replyCount;
+  final int shareCount;
+  final int seenCount;
+  final int rateCount;
+  final int reviewCount;
+  final int followCount;
   final int giftCount;
+  final int sponsorCount;
+  final int messageCount;
+  final int commissionCount;
   final double totalGiftValue; // Total monetary value of gifts received
+  final double
+  totalSponsorValue; // Total monetary value of sponsorships received
   final DateTime lastUpdated;
 
   EngagementStats({
-    this.appreciateCount = 0,
-    this.connectCount = 0,
-    this.discussCount = 0,
-    this.amplifyCount = 0,
+    this.likeCount = 0,
+    this.commentCount = 0,
+    this.replyCount = 0,
+    this.shareCount = 0,
+    this.seenCount = 0,
+    this.rateCount = 0,
+    this.reviewCount = 0,
+    this.followCount = 0,
     this.giftCount = 0,
+    this.sponsorCount = 0,
+    this.messageCount = 0,
+    this.commissionCount = 0,
     this.totalGiftValue = 0.0,
+    this.totalSponsorValue = 0.0,
     required this.lastUpdated,
   });
 
   factory EngagementStats.fromFirestore(Map<String, dynamic> data) {
     return EngagementStats(
-      // New universal fields with backward compatibility fallbacks
-      appreciateCount:
+      // New fields with backward compatibility fallbacks
+      likeCount:
+          data['likeCount'] as int? ??
           data['appreciateCount'] as int? ??
           data['applauseCount'] as int? ??
-          data['likeCount'] as int? ??
           0,
-      connectCount: data['connectCount'] as int? ?? 0,
-      discussCount:
-          data['discussCount'] as int? ?? data['commentCount'] as int? ?? 0,
-      amplifyCount:
-          data['amplifyCount'] as int? ?? data['shareCount'] as int? ?? 0,
+      commentCount:
+          data['commentCount'] as int? ?? data['discussCount'] as int? ?? 0,
+      replyCount: data['replyCount'] as int? ?? 0,
+      shareCount:
+          data['shareCount'] as int? ?? data['amplifyCount'] as int? ?? 0,
+      seenCount: data['seenCount'] as int? ?? 0,
+      rateCount: data['rateCount'] as int? ?? 0,
+      reviewCount: data['reviewCount'] as int? ?? 0,
+      followCount:
+          data['followCount'] as int? ?? data['connectCount'] as int? ?? 0,
       giftCount: data['giftCount'] as int? ?? 0,
+      sponsorCount: data['sponsorCount'] as int? ?? 0,
+      messageCount: data['messageCount'] as int? ?? 0,
+      commissionCount: data['commissionCount'] as int? ?? 0,
       totalGiftValue: (data['totalGiftValue'] as num?)?.toDouble() ?? 0.0,
+      totalSponsorValue: (data['totalSponsorValue'] as num?)?.toDouble() ?? 0.0,
       lastUpdated:
           (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
@@ -155,12 +230,20 @@ class EngagementStats {
 
   factory EngagementStats.fromMap(Map<String, dynamic> data) {
     return EngagementStats(
-      appreciateCount: data['appreciateCount'] as int? ?? 0,
-      connectCount: data['connectCount'] as int? ?? 0,
-      discussCount: data['discussCount'] as int? ?? 0,
-      amplifyCount: data['amplifyCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      commentCount: data['commentCount'] as int? ?? 0,
+      replyCount: data['replyCount'] as int? ?? 0,
+      shareCount: data['shareCount'] as int? ?? 0,
+      seenCount: data['seenCount'] as int? ?? 0,
+      rateCount: data['rateCount'] as int? ?? 0,
+      reviewCount: data['reviewCount'] as int? ?? 0,
+      followCount: data['followCount'] as int? ?? 0,
       giftCount: data['giftCount'] as int? ?? 0,
+      sponsorCount: data['sponsorCount'] as int? ?? 0,
+      messageCount: data['messageCount'] as int? ?? 0,
+      commissionCount: data['commissionCount'] as int? ?? 0,
       totalGiftValue: (data['totalGiftValue'] as num?)?.toDouble() ?? 0.0,
+      totalSponsorValue: (data['totalSponsorValue'] as num?)?.toDouble() ?? 0.0,
       lastUpdated: data['lastUpdated'] is Timestamp
           ? (data['lastUpdated'] as Timestamp).toDate()
           : DateTime.tryParse(data['lastUpdated'] as String? ?? '') ??
@@ -170,65 +253,122 @@ class EngagementStats {
 
   Map<String, dynamic> toFirestore() {
     return {
-      'appreciateCount': appreciateCount,
-      'connectCount': connectCount,
-      'discussCount': discussCount,
-      'amplifyCount': amplifyCount,
+      'likeCount': likeCount,
+      'commentCount': commentCount,
+      'replyCount': replyCount,
+      'shareCount': shareCount,
+      'seenCount': seenCount,
+      'rateCount': rateCount,
+      'reviewCount': reviewCount,
+      'followCount': followCount,
       'giftCount': giftCount,
+      'sponsorCount': sponsorCount,
+      'messageCount': messageCount,
+      'commissionCount': commissionCount,
       'totalGiftValue': totalGiftValue,
+      'totalSponsorValue': totalSponsorValue,
       'lastUpdated': Timestamp.fromDate(lastUpdated),
     };
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'appreciateCount': appreciateCount,
-      'connectCount': connectCount,
-      'discussCount': discussCount,
-      'amplifyCount': amplifyCount,
+      'likeCount': likeCount,
+      'commentCount': commentCount,
+      'replyCount': replyCount,
+      'shareCount': shareCount,
+      'seenCount': seenCount,
+      'rateCount': rateCount,
+      'reviewCount': reviewCount,
+      'followCount': followCount,
       'giftCount': giftCount,
+      'sponsorCount': sponsorCount,
+      'messageCount': messageCount,
+      'commissionCount': commissionCount,
       'totalGiftValue': totalGiftValue,
+      'totalSponsorValue': totalSponsorValue,
       'lastUpdated': lastUpdated.toIso8601String(),
     };
   }
 
   EngagementStats copyWith({
-    int? appreciateCount,
-    int? connectCount,
-    int? discussCount,
-    int? amplifyCount,
+    int? likeCount,
+    int? commentCount,
+    int? replyCount,
+    int? shareCount,
+    int? seenCount,
+    int? rateCount,
+    int? reviewCount,
+    int? followCount,
     int? giftCount,
+    int? sponsorCount,
+    int? messageCount,
+    int? commissionCount,
     double? totalGiftValue,
+    double? totalSponsorValue,
     DateTime? lastUpdated,
   }) {
     return EngagementStats(
-      appreciateCount: appreciateCount ?? this.appreciateCount,
-      connectCount: connectCount ?? this.connectCount,
-      discussCount: discussCount ?? this.discussCount,
-      amplifyCount: amplifyCount ?? this.amplifyCount,
+      likeCount: likeCount ?? this.likeCount,
+      commentCount: commentCount ?? this.commentCount,
+      replyCount: replyCount ?? this.replyCount,
+      shareCount: shareCount ?? this.shareCount,
+      seenCount: seenCount ?? this.seenCount,
+      rateCount: rateCount ?? this.rateCount,
+      reviewCount: reviewCount ?? this.reviewCount,
+      followCount: followCount ?? this.followCount,
       giftCount: giftCount ?? this.giftCount,
+      sponsorCount: sponsorCount ?? this.sponsorCount,
+      messageCount: messageCount ?? this.messageCount,
+      commissionCount: commissionCount ?? this.commissionCount,
       totalGiftValue: totalGiftValue ?? this.totalGiftValue,
+      totalSponsorValue: totalSponsorValue ?? this.totalSponsorValue,
       lastUpdated: lastUpdated ?? this.lastUpdated,
     );
   }
 
   /// Get total engagement count
   int get totalEngagement =>
-      appreciateCount + connectCount + discussCount + amplifyCount + giftCount;
+      likeCount +
+      commentCount +
+      replyCount +
+      shareCount +
+      seenCount +
+      rateCount +
+      reviewCount +
+      followCount +
+      giftCount +
+      sponsorCount +
+      messageCount +
+      commissionCount;
 
   /// Get count for specific engagement type
   int getCount(EngagementType type) {
     switch (type) {
-      case EngagementType.appreciate:
-        return appreciateCount;
-      case EngagementType.connect:
-        return connectCount;
-      case EngagementType.discuss:
-        return discussCount;
-      case EngagementType.amplify:
-        return amplifyCount;
+      case EngagementType.like:
+        return likeCount;
+      case EngagementType.comment:
+        return commentCount;
+      case EngagementType.reply:
+        return replyCount;
+      case EngagementType.share:
+        return shareCount;
+      case EngagementType.seen:
+        return seenCount;
+      case EngagementType.rate:
+        return rateCount;
+      case EngagementType.review:
+        return reviewCount;
+      case EngagementType.follow:
+        return followCount;
       case EngagementType.gift:
         return giftCount;
+      case EngagementType.sponsor:
+        return sponsorCount;
+      case EngagementType.message:
+        return messageCount;
+      case EngagementType.commission:
+        return commissionCount;
     }
   }
 }
