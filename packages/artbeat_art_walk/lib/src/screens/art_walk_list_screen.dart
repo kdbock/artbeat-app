@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:share_plus/share_plus.dart' as share_plus;
+import '../widgets/art_walk_drawer.dart';
 
 class ArtWalkListScreen extends StatefulWidget {
   const ArtWalkListScreen({super.key});
@@ -10,53 +10,31 @@ class ArtWalkListScreen extends StatefulWidget {
   State<ArtWalkListScreen> createState() => _ArtWalkListScreenState();
 }
 
-class _ArtWalkListScreenState extends State<ArtWalkListScreen>
-    with SingleTickerProviderStateMixin {
+class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
   final ArtWalkService _artWalkService = ArtWalkService();
-  bool _isLoading = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  List<ArtWalkModel> _myWalks = [];
-  List<ArtWalkModel> _popularWalks = [];
-  late TabController _tabController;
+  List<ArtWalkModel> _artWalks = [];
+  List<ArtWalkModel> _filteredWalks = [];
+  bool _isLoading = true;
+  String _searchQuery = '';
+  String _selectedFilter = 'All';
+
+  final List<String> _filterOptions = ['All', 'My Walks', 'Popular', 'Nearby'];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _loadArtWalks();
+    _loadData();
   }
 
-  @override
-  void didUpdateWidget(covariant ArtWalkListScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Recreate TabController if length changed during hot reload
-    if (_tabController.length != 2) {
-      _tabController.dispose();
-      _tabController = TabController(length: 2, vsync: this);
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadArtWalks() async {
+  Future<void> _loadData() async {
     setState(() => _isLoading = true);
 
     try {
-      final userId = _artWalkService.getCurrentUserId();
-      if (userId != null) {
-        _myWalks = await _artWalkService.getUserArtWalks(userId);
-      }
-
-      _popularWalks = await _artWalkService.getPopularArtWalks();
+      await _loadArtWalks();
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading art walks: ${e.toString()}')),
-      );
+      // debugPrint('Error loading data: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -64,385 +42,522 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen>
     }
   }
 
-  Future<void> _shareArtWalk(ArtWalkModel walk) async {
+  Future<void> _loadArtWalks() async {
     try {
-      await share_plus.SharePlus.instance.share(
-        share_plus.ShareParams(
-          text: 'Check out this Art Walk: "${walk.title}" on ARTbeat!',
-        ),
-      );
-
-      // Record the share
-      await _artWalkService.recordArtWalkShare(walk.id);
+      final walks = await _artWalkService.getPopularArtWalks(limit: 50);
+      if (mounted) {
+        setState(() {
+          _artWalks = walks;
+          _applyFilters();
+        });
+      }
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));
+      // debugPrint('Error loading art walks: $e');
     }
   }
 
-  Future<void> _editArtWalk(ArtWalkModel walk) async {
-    final result = await Navigator.pushNamed(
-      context,
-      '/art-walk/edit',
-      arguments: {'walkId': walk.id, 'artWalk': walk},
-    );
+  void _applyFilters() {
+    List<ArtWalkModel> filtered = _artWalks;
 
-    if (result == true && mounted) {
-      _loadArtWalks(); // Refresh the list after editing
+    // Apply search filter
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered
+          .where(
+            (walk) =>
+                walk.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                walk.description.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+          )
+          .toList();
     }
-  }
 
-  Future<void> _deleteArtWalk(ArtWalkModel walk) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Art Walk'),
-        content: Text('Are you sure you want to delete "${walk.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    try {
-      await _artWalkService.deleteArtWalk(walk.id);
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Art walk deleted')));
-      _loadArtWalks(); // Refresh the list
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error deleting art walk: ${e.toString()}')),
-      );
+    // Apply category filter
+    switch (_selectedFilter) {
+      case 'My Walks':
+        final userId = _artWalkService.getCurrentUserId();
+        if (userId != null) {
+          filtered = filtered.where((walk) => walk.userId == userId).toList();
+        }
+        break;
+      case 'Popular':
+        filtered.sort((a, b) => b.viewCount.compareTo(a.viewCount));
+        break;
+      case 'Nearby':
+        // For now, just show all - could be enhanced with location filtering
+        break;
     }
+
+    setState(() => _filteredWalks = filtered);
   }
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Art Walks',
-          showLogo: false,
-          backgroundGradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.topRight,
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: 'Art Walks',
+        showLogo: false,
+        scaffoldKey: _scaffoldKey,
+        showBackButton: true,
+        backgroundGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF4FB3BE), // Light Teal
+            Color(0xFFFF9E80), // Light Orange/Peach
+          ],
+        ),
+        titleGradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [
+            Color(0xFF4FB3BE), // Light Teal
+            Color(0xFFFF9E80), // Light Orange/Peach
+          ],
+        ),
+      ),
+      drawer: const ArtWalkDrawer(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF4FB3BE), // Light Teal
-              Color(0xFFFF9E80), // Light Orange/Peach
+              ArtWalkColors.backgroundGradientStart,
+              ArtWalkColors.backgroundGradientEnd,
             ],
           ),
-          titleGradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.topRight,
-            colors: [
-              Color(0xFF4FB3BE), // Light Teal
-              Color(0xFFFF9E80), // Light Orange/Peach
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              onPressed: _loadArtWalks,
-            ),
-          ],
         ),
-        body: Column(
-          children: [
-            // Tab Bar
-            Container(
-              color: const Color(
-                0xFF00838F,
-              ), // Art Walk header color - matches Welcome Travel user box teal
-              child: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.white, // Text/Icon color
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                tabs: const [
-                  Tab(text: 'My Walks'),
-                  Tab(text: 'Popular'),
-                ],
-              ),
-            ),
-            // Tab Bar View
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        // My Walks Tab
-                        Column(
-                          children: [
-                            if (_myWalks.isEmpty)
-                              _buildEmptyState(
-                                'You haven\'t created any art walks yet',
-                                'Create a walk to organize and share your favorite public art',
-                              )
-                            else
-                              Expanded(
-                                child: _buildWalksList(
-                                  _myWalks,
-                                  isMyWalks: true,
-                                ),
-                              ),
-                          ],
-                        ),
-
-                        // Popular Walks Tab
-                        Column(
-                          children: [
-                            if (_popularWalks.isEmpty)
-                              _buildEmptyState(
-                                'No popular walks found',
-                                'Be the first to create and share an art walk',
-                              )
-                            else
-                              Expanded(
-                                child: _buildWalksList(
-                                  _popularWalks,
-                                  isMyWalks: false,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            final result = await Navigator.push<bool>(
-              context,
-              MaterialPageRoute(builder: (_) => const CreateArtWalkScreen()),
-            );
-
-            if (result == true && mounted) {
-              _loadArtWalks();
-            }
-          },
-          child: const Icon(Icons.add),
-        ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _buildContent(),
       ),
     );
   }
 
-  Widget _buildEmptyState(String title, String description) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.route, size: 80, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            _tabController.index ==
-                    0 // Only show on My Walks tab
-                ? ElevatedButton.icon(
-                    onPressed: () async {
-                      // Added async
-                      await Navigator.push(
-                        // Added await
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) => const CreateArtWalkScreen(),
-                        ),
-                      );
-                      // Potentially refresh if needed, though FAB already does
-                      if (mounted) {
-                        // Added mounted check
-                        _loadArtWalks();
-                      }
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create Art Walk'),
-                  )
-                : const SizedBox.shrink(),
-          ],
+  Widget _buildContent() {
+    return Column(
+      children: [
+        _buildSearchAndFilterBar(),
+        Expanded(
+          child: _filteredWalks.isEmpty
+              ? _buildEmptyState()
+              : _buildWalksList(),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildWalksList(List<ArtWalkModel> walks, {required bool isMyWalks}) {
-    return RefreshIndicator(
-      onRefresh: _loadArtWalks,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(8.0),
-        itemCount: walks.length,
-        itemBuilder: (context, index) {
-          final walk = walks[index];
-          return _buildWalkCard(walk, isMyWalks);
-        },
-      ),
-    );
-  }
-
-  Widget _buildWalkCard(ArtWalkModel walk, bool isMyWalk) {
-    final String? imageUrl = walk.imageUrls.isNotEmpty
-        ? walk.imageUrls.first
-        : null;
-    final bool hasValidImage =
-        imageUrl != null &&
-        imageUrl.isNotEmpty &&
-        Uri.tryParse(imageUrl)?.hasScheme == true;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+  Widget _buildSearchAndFilterBar() {
+    return Container(
+      padding: const EdgeInsets.all(16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cover image
-          hasValidImage
-              ? Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl) as ImageProvider,
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(4),
-                      topRight: Radius.circular(4),
-                    ),
-                  ),
-                )
-              : Container(
-                  height: 100,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(4),
-                      topRight: Radius.circular(4),
-                    ),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.map, size: 40, color: Colors.grey),
-                  ),
+          // Search bar
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Search art walks...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: ArtWalkColors.primaryTeal.withValues(alpha: 0.3),
                 ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  walk.title,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: ArtWalkColors.primaryTeal.withValues(alpha: 0.3),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  walk.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-
-                // Stats row
-                Row(
-                  children: [
-                    Icon(
-                      Icons.photo_library_outlined, // Changed for clarity
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Text('${walk.artworkIds.length} artworks'),
-                  ],
-                ),
-              ],
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: ArtWalkColors.primaryTeal),
+              ),
+              filled: true,
+              fillColor: Colors.white,
             ),
+            onChanged: (value) {
+              setState(() => _searchQuery = value);
+              _applyFilters();
+            },
           ),
-
-          // Action buttons
-          OverflowBar(
-            alignment: MainAxisAlignment.end,
-            children: [
-              TextButton.icon(
-                onPressed: () => _shareArtWalk(walk),
-                icon: const Icon(Icons.share, size: 18),
-                label: const Text('Share'),
-              ),
-              TextButton.icon(
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => ArtWalkDetailScreen(walkId: walk.id),
+          const SizedBox(height: 12),
+          // Filter chips
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _filterOptions.map((filter) {
+                final isSelected = _selectedFilter == filter;
+                return Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(filter),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() => _selectedFilter = filter);
+                      _applyFilters();
+                    },
+                    backgroundColor: Colors.white,
+                    selectedColor: ArtWalkColors.primaryTeal.withValues(
+                      alpha: 0.1,
                     ),
-                  );
-                  if (mounted) {
-                    _loadArtWalks(); // Refresh after viewing details, in case of changes
-                  }
-                },
-                icon: const Icon(Icons.visibility, size: 18),
-                label: const Text('View'),
-              ),
-              if (isMyWalk) ...[
-                TextButton.icon(
-                  onPressed: () => _editArtWalk(walk),
-                  icon: const Icon(
-                    Icons.edit_outlined,
-                    color: Colors.blue,
-                    size: 18,
+                    checkmarkColor: ArtWalkColors.primaryTeal,
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? ArtWalkColors.primaryTeal
+                          : ArtWalkColors.textPrimary,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
                   ),
-                  label: const Text(
-                    'Edit',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () => _deleteArtWalk(walk),
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.red,
-                    size: 18,
-                  ),
-                  label: const Text(
-                    'Delete',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
-            ],
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildWalksList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _filteredWalks.length,
+      itemBuilder: (context, index) {
+        final walk = _filteredWalks[index];
+        return _buildWalkCard(walk);
+      },
+    );
+  }
+
+  Widget _buildWalkCard(ArtWalkModel walk) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: () => _navigateToWalkDetail(walk.id),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Cover image with overlay
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                children: [
+                  // Cover image
+                  () {
+                    // Debug logging
+                    debugPrint(
+                      'ArtWalk ${walk.title}: coverImageUrl=${walk.coverImageUrl}, imageUrls=${walk.imageUrls.length}',
+                    );
+
+                    if (walk.coverImageUrl != null &&
+                        walk.coverImageUrl!.isNotEmpty) {
+                      debugPrint('Using coverImageUrl: ${walk.coverImageUrl}');
+                      return SecureNetworkImage(
+                        imageUrl: walk.coverImageUrl!,
+                        fit: BoxFit.cover,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        placeholder: Container(
+                          decoration: BoxDecoration(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              color: ArtWalkColors.primaryTeal,
+                              size: 48,
+                            ),
+                          ),
+                        ),
+                        errorWidget: Container(
+                          decoration: BoxDecoration(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: ArtWalkColors.textSecondary,
+                              size: 48,
+                            ),
+                          ),
+                        ),
+                      );
+                    } else if (walk.imageUrls.isNotEmpty) {
+                      debugPrint('Using imageUrls[0]: ${walk.imageUrls.first}');
+                      return SecureNetworkImage(
+                        imageUrl: walk.imageUrls.first,
+                        fit: BoxFit.cover,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        placeholder: Container(
+                          decoration: BoxDecoration(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.image,
+                              color: ArtWalkColors.primaryTeal,
+                              size: 48,
+                            ),
+                          ),
+                        ),
+                        errorWidget: Container(
+                          decoration: BoxDecoration(
+                            color: ArtWalkColors.primaryTeal.withValues(
+                              alpha: 0.1,
+                            ),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              color: ArtWalkColors.textSecondary,
+                              size: 48,
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      debugPrint('No image available for ${walk.title}');
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: ArtWalkColors.primaryTeal.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.map,
+                            color: ArtWalkColors.primaryTeal,
+                            size: 48,
+                          ),
+                        ),
+                      );
+                    }
+                  }(),
+                  // Gradient overlay
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.6),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Title and stats overlay
+                  Positioned(
+                    bottom: 12,
+                    left: 12,
+                    right: 12,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          walk.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              color: Colors.white.withValues(alpha: 0.8),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                walk.zipCode ?? 'Location not specified',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Description
+                  Text(
+                    walk.description,
+                    style: TextStyle(
+                      color: ArtWalkColors.textSecondary,
+                      fontSize: 14,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                  // Stats and actions
+                  Row(
+                    children: [
+                      // Art pieces count
+                      _buildStatItem(
+                        icon: Icons.image,
+                        label: '${walk.artworkIds.length} pieces',
+                      ),
+                      const SizedBox(width: 16),
+                      // Views count
+                      _buildStatItem(
+                        icon: Icons.visibility,
+                        label: '${walk.viewCount} views',
+                      ),
+                      const Spacer(),
+                      // Action button
+                      ElevatedButton.icon(
+                        onPressed: () => _navigateToWalkDetail(walk.id),
+                        icon: const Icon(Icons.explore, size: 16),
+                        label: const Text('Explore'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ArtWalkColors.primaryTeal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem({required IconData icon, required String label}) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: ArtWalkColors.textSecondary),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(color: ArtWalkColors.textSecondary, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.map_outlined,
+            size: 64,
+            color: ArtWalkColors.textSecondary.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _searchQuery.isNotEmpty
+                ? 'No art walks found for "$_searchQuery"'
+                : 'No art walks available',
+            style: TextStyle(color: ArtWalkColors.textSecondary, fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _searchQuery.isNotEmpty
+                ? 'Try adjusting your search terms'
+                : 'Create your first art walk to get started',
+            style: TextStyle(
+              color: ArtWalkColors.textSecondary.withValues(alpha: 0.7),
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (_searchQuery.isEmpty) ...[
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _navigateToCreateWalk,
+              icon: const Icon(Icons.add),
+              label: const Text('Create Art Walk'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtWalkColors.primaryTeal,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _navigateToWalkDetail(String walkId) {
+    Navigator.pushNamed(
+      context,
+      '/art-walk/detail',
+      arguments: {'walkId': walkId},
+    );
+  }
+
+  void _navigateToCreateWalk() {
+    Navigator.pushNamed(context, '/art-walk/create');
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_capture/src/services/capture_service.dart';
 import 'package:artbeat_capture/src/services/storage_service.dart';
 
@@ -75,6 +76,7 @@ class _CaptureConfirmationScreenState extends State<CaptureConfirmationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const CaptureDrawer(),
       appBar: const core.EnhancedUniversalHeader(
         title: 'Review Capture',
         showLogo: false,
@@ -82,18 +84,12 @@ class _CaptureConfirmationScreenState extends State<CaptureConfirmationScreen> {
         backgroundGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         titleGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
       ),
       body: Padding(

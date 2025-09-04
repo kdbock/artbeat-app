@@ -8,10 +8,7 @@ import 'event_details_screen.dart';
 class EventDetailsWrapper extends StatefulWidget {
   final String eventId;
 
-  const EventDetailsWrapper({
-    super.key,
-    required this.eventId,
-  });
+  const EventDetailsWrapper({super.key, required this.eventId});
 
   @override
   State<EventDetailsWrapper> createState() => _EventDetailsWrapperState();
@@ -51,37 +48,79 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const MainLayout(
-        currentIndex: 3, // Events tab
-        child: Scaffold(
-          appBar: EnhancedUniversalHeader(
-            title: 'Loading Event...',
-            showLogo: false,
+      return MainLayout(
+        currentIndex: 4, // Events index
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE74C3C), // Red
+                  Color(0xFF3498DB), // Light Blue
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const EnhancedUniversalHeader(
+              title: 'Loading Event...',
+              showLogo: false,
+              showBackButton: true,
+            ),
           ),
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
+        ),
+        child: const Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }
 
     if (_error != null) {
       return MainLayout(
-        currentIndex: 3, // Events tab
-        child: Scaffold(
-          appBar: const EnhancedUniversalHeader(
-            title: 'Event Not Found',
-            showLogo: false,
+        currentIndex: 4, // Events index
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE74C3C), // Red
+                  Color(0xFF3498DB), // Light Blue
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const EnhancedUniversalHeader(
+              title: 'Event Not Found',
+              showLogo: false,
+              showBackButton: true,
+            ),
           ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Colors.grey,
-                ),
+                const Icon(Icons.error_outline, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
                 Text(
                   _error!,
@@ -102,21 +141,41 @@ class _EventDetailsWrapperState extends State<EventDetailsWrapper> {
 
     if (_event == null) {
       return MainLayout(
-        currentIndex: 3, // Events tab
-        child: Scaffold(
-          appBar: const EnhancedUniversalHeader(
-            title: 'Event Not Found',
-            showLogo: false,
+        currentIndex: 4, // Events index
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFE74C3C), // Red
+                  Color(0xFF3498DB), // Light Blue
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const EnhancedUniversalHeader(
+              title: 'Event Not Found',
+              showLogo: false,
+              showBackButton: true,
+            ),
           ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
           body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.event_busy,
-                  size: 64,
-                  color: Colors.grey,
-                ),
+                const Icon(Icons.event_busy, size: 64, color: Colors.grey),
                 const SizedBox(height: 16),
                 const Text(
                   'Event not found or no longer available',

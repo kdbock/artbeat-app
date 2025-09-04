@@ -108,12 +108,6 @@ class AdminDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.dashboard_customize,
-                      title: 'Enhanced Dashboard',
-                      route: '/admin/enhanced-dashboard',
-                    ),
-                    _buildDrawerItem(
-                      context,
                       icon: Icons.attach_money,
                       title: 'Financial Analytics',
                       route: '/admin/financial-analytics',
@@ -125,15 +119,9 @@ class AdminDrawer extends StatelessWidget {
                     _buildSectionHeader('User Management'),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.people,
+                      icon: Icons.manage_accounts,
                       title: 'User Management',
                       route: '/admin/user-management',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.manage_accounts,
-                      title: 'Advanced User Management',
-                      route: '/admin/advanced-user-management',
                     ),
 
                     const Divider(height: 16),
@@ -191,6 +179,12 @@ class AdminDrawer extends StatelessWidget {
                       icon: Icons.notifications,
                       title: 'System Alerts',
                       route: '/admin/alerts',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.sync_alt,
+                      title: 'Data Migration',
+                      route: '/admin/migration',
                     ),
                     _buildDrawerItem(
                       context,

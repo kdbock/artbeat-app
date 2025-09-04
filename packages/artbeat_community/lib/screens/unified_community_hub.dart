@@ -13,6 +13,7 @@ import '../../models/commission_model.dart';
 import '../../services/commission_service.dart';
 import '../../widgets/post_card.dart';
 import '../../widgets/post_detail_modal.dart';
+import '../../widgets/community_drawer.dart';
 
 // Tab-specific version of commissions content (without MainLayout)
 class CommissionsTab extends StatefulWidget {
@@ -212,6 +213,7 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
     with TickerProviderStateMixin {
   late TabController _tabController;
   bool _isDisposed = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -258,82 +260,52 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: Container(
+    return MainLayout(
+      currentIndex: 3,
+      drawer: const CommunityDrawer(),
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
+        title: 'Community',
+        showLogo: false,
+        showBackButton: false,
+        scaffoldKey: _scaffoldKey,
+        backgroundGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [CommunityColors.primary, CommunityColors.secondary],
+        ),
+        titleGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [CommunityColors.primary, CommunityColors.secondary],
+        ),
+      ),
+      child: Scaffold(
+        body: Container(
           decoration: const BoxDecoration(
-            gradient: CommunityColors.communityGradient,
+            gradient: CommunityColors.communityBackgroundGradient,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
+          child: TabBarView(
+            controller: _tabController,
             children: [
-              // Header row with back button, title, and search
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.search, color: Colors.white),
-                      onPressed: () {
-                        // TODO: Implement search
-                      },
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
+              CommunityDiscoverTab(
+                onNavigateToTab: (index) => _tabController.animateTo(index),
               ),
-              // TabBar with community gradient background
-              Container(
-                color: Colors.white.withValues(alpha: 0.1),
-                child: TabBar(
-                  controller: _tabController,
-                  indicatorColor: Colors.white,
-                  indicatorWeight: 2,
-                  labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
-                  labelPadding: EdgeInsets.zero,
-                  tabs: const [
-                    Tab(text: 'Explore'),
-                    Tab(text: 'Art Feed'),
-                    Tab(text: 'Commissions'),
-                  ],
-                ),
-              ),
+              const CommunityFeedTab(),
+              const CommissionsTab(),
             ],
           ),
         ),
-        toolbarHeight: 96, // Height for header + tabs
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: CommunityColors.communityBackgroundGradient,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            // TODO: Implement create post functionality
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Create post - Coming soon!')),
+            );
+          },
+          backgroundColor: ArtbeatColors.primaryPurple,
+          child: const Icon(Icons.add, color: Colors.white),
         ),
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            CommunityDiscoverTab(
-              onNavigateToTab: (index) => _tabController.animateTo(index),
-            ),
-            const CommunityFeedTab(),
-            const CommissionsTab(),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement create post functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create post - Coming soon!')),
-          );
-        },
-        backgroundColor: ArtbeatColors.primaryPurple,
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

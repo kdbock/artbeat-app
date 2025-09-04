@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_capture/src/screens/capture_detail_screen.dart';
+import '../widgets/art_walk_drawer.dart';
 
 /// Screen that displays a map with nearby captures and art walks
 class ArtWalkMapScreen extends StatefulWidget {
@@ -480,7 +481,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 2, // Art Walk tab
-      drawer: const ArtbeatDrawer(),
+      drawer: const ArtWalkDrawer(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Art Walk Map'),

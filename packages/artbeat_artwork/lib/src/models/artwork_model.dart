@@ -1,6 +1,61 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
+/// Moderation status for artwork
+enum ArtworkModerationStatus {
+  pending,
+  approved,
+  rejected,
+  flagged,
+  underReview;
+
+  String get displayName {
+    switch (this) {
+      case ArtworkModerationStatus.pending:
+        return 'Pending Review';
+      case ArtworkModerationStatus.approved:
+        return 'Approved';
+      case ArtworkModerationStatus.rejected:
+        return 'Rejected';
+      case ArtworkModerationStatus.flagged:
+        return 'Flagged';
+      case ArtworkModerationStatus.underReview:
+        return 'Under Review';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case ArtworkModerationStatus.pending:
+        return 'pending';
+      case ArtworkModerationStatus.approved:
+        return 'approved';
+      case ArtworkModerationStatus.rejected:
+        return 'rejected';
+      case ArtworkModerationStatus.flagged:
+        return 'flagged';
+      case ArtworkModerationStatus.underReview:
+        return 'underReview';
+    }
+  }
+
+  static ArtworkModerationStatus fromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return ArtworkModerationStatus.approved;
+      case 'rejected':
+        return ArtworkModerationStatus.rejected;
+      case 'flagged':
+        return ArtworkModerationStatus.flagged;
+      case 'underreview':
+        return ArtworkModerationStatus.underReview;
+      case 'pending':
+      default:
+        return ArtworkModerationStatus.pending;
+    }
+  }
+}
+
 /// Model representing an artwork item in the ARTbeat platform
 class ArtworkModel {
   /// Unique identifier for the artwork
@@ -90,6 +145,18 @@ class ArtworkModel {
   /// Timestamp of the last update
   final DateTime updatedAt;
 
+  /// Moderation status of the artwork
+  final ArtworkModerationStatus moderationStatus;
+
+  /// Whether the artwork has been flagged for review
+  final bool flagged;
+
+  /// Timestamp when the artwork was flagged
+  final DateTime? flaggedAt;
+
+  /// Notes from moderators
+  final String? moderationNotes;
+
   ArtworkModel({
     required this.id,
     required this.userId,
@@ -120,6 +187,10 @@ class ArtworkModel {
     EngagementStats? engagementStats,
     required this.createdAt,
     required this.updatedAt,
+    this.moderationStatus = ArtworkModerationStatus.approved,
+    this.flagged = false,
+    this.flaggedAt,
+    this.moderationNotes,
   })  :
         // Create defensive copies of all lists to prevent external modification
         additionalImageUrls = List.unmodifiable(additionalImageUrls),
@@ -177,6 +248,12 @@ class ArtworkModel {
       engagementStats: EngagementStats.fromFirestore(data),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      moderationStatus: ArtworkModerationStatus.fromString(
+        data['moderationStatus'] as String? ?? 'approved',
+      ),
+      flagged: (data['flagged'] as bool?) ?? false,
+      flaggedAt: (data['flaggedAt'] as Timestamp?)?.toDate(),
+      moderationNotes: data['moderationNotes'] as String?,
     );
   }
 
@@ -211,6 +288,10 @@ class ArtworkModel {
       ...engagementStats.toFirestore(),
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
+      'moderationStatus': moderationStatus.value,
+      'flagged': flagged,
+      'flaggedAt': flaggedAt != null ? Timestamp.fromDate(flaggedAt!) : null,
+      'moderationNotes': moderationNotes,
     };
   }
 
@@ -245,6 +326,10 @@ class ArtworkModel {
     EngagementStats? engagementStats,
     DateTime? createdAt,
     DateTime? updatedAt,
+    ArtworkModerationStatus? moderationStatus,
+    bool? flagged,
+    DateTime? flaggedAt,
+    String? moderationNotes,
   }) {
     return ArtworkModel(
       id: id ?? this.id,
@@ -276,6 +361,10 @@ class ArtworkModel {
       engagementStats: engagementStats ?? this.engagementStats,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      moderationStatus: moderationStatus ?? this.moderationStatus,
+      flagged: flagged ?? this.flagged,
+      flaggedAt: flaggedAt ?? this.flaggedAt,
+      moderationNotes: moderationNotes ?? this.moderationNotes,
     );
   }
 

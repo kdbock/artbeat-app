@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_capture/artbeat_capture.dart';
 import '../services/capture_service.dart';
 
 /// Admin screen for moderating pending captures
@@ -393,6 +394,7 @@ class _AdminContentModerationScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const CaptureDrawer(),
       appBar: core.EnhancedUniversalHeader(
         title: 'Content Moderation',
         showLogo: false,
@@ -400,18 +402,12 @@ class _AdminContentModerationScreenState
         backgroundGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         titleGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         onBackPressed: () => Navigator.of(context).pop(),
       ),

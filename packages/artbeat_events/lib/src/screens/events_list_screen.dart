@@ -236,34 +236,56 @@ class _EventsListScreenState extends State<EventsListScreen>
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 3, // Events tab
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: _getTitle(),
-          showLogo: false,
-          showBackButton: widget.showBackButton,
-          onBackPressed: () => Navigator.of(context).pop(),
-          actions: [
-            if (widget.showCreateButton)
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const CreateEventScreen(),
-                      fullscreenDialog: true,
-                    ),
-                  );
-                  if (result == true && mounted) {
-                    _loadEvents();
-                  }
-                },
+      currentIndex: 4, // Events index
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 2),
               ),
-          ],
+            ],
+          ),
+          child: EnhancedUniversalHeader(
+            title: _getTitle(),
+            showLogo: false,
+            showBackButton: widget.showBackButton,
+            onBackPressed: () => Navigator.of(context).pop(),
+            backgroundColor: Colors.transparent,
+            foregroundColor: ArtbeatColors.textPrimary,
+            actions: [
+              if (widget.showCreateButton)
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CreateEventScreen(),
+                        fullscreenDialog: true,
+                      ),
+                    );
+                    if (result == true && mounted) {
+                      _loadEvents();
+                    }
+                  },
+                ),
+            ],
+          ),
         ),
-        body: _buildBody(),
       ),
+      child: Scaffold(backgroundColor: Colors.transparent, body: _buildBody()),
     );
   }
 

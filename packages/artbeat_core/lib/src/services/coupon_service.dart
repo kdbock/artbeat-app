@@ -190,6 +190,44 @@ class CouponService extends ChangeNotifier {
     });
   }
 
+  /// Update a coupon's details
+  Future<void> updateCoupon(CouponModel coupon) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    // Verify ownership
+    final couponDoc = await _firestore
+        .collection('coupons')
+        .doc(coupon.id)
+        .get();
+    if (!couponDoc.exists) throw Exception('Coupon not found');
+
+    final existingCoupon = CouponModel.fromFirestore(couponDoc);
+    if (existingCoupon.createdBy != user.uid) {
+      throw Exception('You can only update coupons you created');
+    }
+
+    // Validate coupon parameters based on type
+    _validateCouponParameters(
+      coupon.type,
+      coupon.discountAmount,
+      coupon.discountPercentage,
+    );
+
+    // Check if code already exists (if changed)
+    if (coupon.code != existingCoupon.code) {
+      final codeExists = await _getCouponByCode(coupon.code);
+      if (codeExists != null) {
+        throw Exception('Coupon code already exists');
+      }
+    }
+
+    await _firestore.collection('coupons').doc(coupon.id).update({
+      ...coupon.toFirestore(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
   /// Delete a coupon
   Future<void> deleteCoupon(String couponId) async {
     final user = _auth.currentUser;
@@ -239,7 +277,7 @@ class CouponService extends ChangeNotifier {
   }) async {
     final code = await generateUniqueCode();
 
-    return await createCoupon(
+    return createCoupon(
       code: code,
       title: title,
       description: description,
@@ -261,7 +299,7 @@ class CouponService extends ChangeNotifier {
   }) async {
     final code = await generateUniqueCode();
 
-    return await createCoupon(
+    return createCoupon(
       code: code,
       title: title,
       description: description,
@@ -284,7 +322,7 @@ class CouponService extends ChangeNotifier {
   }) async {
     final code = await generateUniqueCode();
 
-    return await createCoupon(
+    return createCoupon(
       code: code,
       title: title,
       description: description,

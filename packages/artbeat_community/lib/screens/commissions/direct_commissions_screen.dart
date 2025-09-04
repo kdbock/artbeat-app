@@ -376,9 +376,11 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                      border: Border.all(
+                        color: statusColor.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Text(
                       commission.status.displayName,
@@ -506,7 +508,9 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
         LinearProgressIndicator(
           value: progress,
           backgroundColor: Colors.grey.shade300,
-          valueColor: AlwaysStoppedAnimation<Color>(CommunityColors.primary),
+          valueColor: const AlwaysStoppedAnimation<Color>(
+            CommunityColors.primary,
+          ),
         ),
       ],
     );
@@ -620,7 +624,7 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
   void _openCommissionDetail(DirectCommissionModel commission) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<CommissionDetailScreen>(
         builder: (context) => CommissionDetailScreen(commission: commission),
       ),
     ).then((_) => _loadCommissions());

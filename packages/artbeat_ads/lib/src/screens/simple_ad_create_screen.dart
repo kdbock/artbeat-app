@@ -10,6 +10,7 @@ import '../models/ad_size.dart';
 import '../models/ad_location.dart';
 import '../models/ad_status.dart';
 import '../models/ad_duration.dart';
+import '../models/image_fit.dart';
 import '../services/simple_ad_service.dart';
 
 /// Simplified unified ad creation screen for all user types
@@ -30,6 +31,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
   AdType _selectedType = AdType.banner_ad;
   AdSize _selectedSize = AdSize.small;
   AdLocation _selectedLocation = AdLocation.dashboard;
+  ImageFit _selectedImageFit = ImageFit.cover;
   int _selectedDays = 7;
 
   List<File> _selectedImages = [];
@@ -120,6 +122,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         ctaText: _ctaTextController.text.trim().isEmpty
             ? null
             : _ctaTextController.text.trim(),
+        imageFit: _selectedImageFit,
       );
 
       // Create ad with images using SimpleAdService
@@ -177,6 +180,11 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
               // Ad Size Selection
               _buildSectionTitle('Ad Size & Pricing'),
               _buildAdSizeSelector(),
+              const SizedBox(height: 24),
+
+              // Image Fit Selection
+              _buildSectionTitle('Image Display Mode'),
+              _buildImageFitSelector(),
               const SizedBox(height: 24),
 
               // Location Selection
@@ -303,6 +311,40 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageFitSelector() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: ImageFit.values.map((fit) {
+            return RadioListTile<ImageFit>(
+              value: fit,
+              groupValue: _selectedImageFit,
+              onChanged: (ImageFit? value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedImageFit = value;
+                  });
+                }
+              },
+              title: Text(
+                fit.displayName,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Text(
+                _getImageFitDescription(fit),
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
               ),
             );
           }).toList(),
@@ -694,6 +736,23 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         return 'Horizontal banner displayed at top/bottom of screens';
       case AdType.feed_ad:
         return 'Integrated into content feeds and lists';
+    }
+  }
+
+  String _getImageFitDescription(ImageFit fit) {
+    switch (fit) {
+      case ImageFit.cover:
+        return 'Fills entire ad space, may crop image';
+      case ImageFit.contain:
+        return 'Fits image within ad space, may show empty areas';
+      case ImageFit.fill:
+        return 'Stretches image to fill ad space exactly';
+      case ImageFit.fitWidth:
+        return 'Fits image width, may crop height';
+      case ImageFit.fitHeight:
+        return 'Fits image height, may crop width';
+      case ImageFit.none:
+        return 'Shows original image size and aspect ratio';
     }
   }
 }

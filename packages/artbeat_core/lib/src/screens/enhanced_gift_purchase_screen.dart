@@ -4,7 +4,6 @@ import '../services/enhanced_gift_service.dart';
 import '../services/payment_service.dart';
 import '../models/gift_campaign_model.dart';
 import '../models/gift_subscription_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 /// Enhanced screen for purchasing gifts with custom amounts, campaigns, and subscriptions
 class EnhancedGiftPurchaseScreen extends StatefulWidget {
@@ -28,7 +27,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
     with SingleTickerProviderStateMixin {
   final EnhancedGiftService _giftService = EnhancedGiftService();
   final PaymentService _paymentService = PaymentService();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _customAmountController = TextEditingController();
 
@@ -66,55 +64,63 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Send Gift to ${widget.recipientName}'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          onTap: (index) {
-            setState(() {
-              switch (index) {
-                case 0:
-                  _giftMode = 'preset';
-                  break;
-                case 1:
-                  _giftMode = 'custom';
-                  break;
-                case 2:
-                  _giftMode = 'subscription';
-                  break;
-              }
-              _selectedAmount = 0.0;
-              _selectedPresetGift = null;
-              _customAmountController.clear();
-            });
-          },
-          tabs: const [
-            Tab(text: 'Preset Gifts'),
-            Tab(text: 'Custom Amount'),
-            Tab(text: 'Subscription'),
-          ],
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Send Gift to ${widget.recipientName}'),
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+          bottom: TabBar(
+            controller: _tabController,
+            onTap: (index) {
+              setState(() {
+                switch (index) {
+                  case 0:
+                    _giftMode = 'preset';
+                    break;
+                  case 1:
+                    _giftMode = 'custom';
+                    break;
+                  case 2:
+                    _giftMode = 'subscription';
+                    break;
+                }
+                _selectedAmount = 0.0;
+                _selectedPresetGift = null;
+                _customAmountController.clear();
+              });
+            },
+            tabs: const [
+              Tab(text: 'Preset Gifts'),
+              Tab(text: 'Custom Amount'),
+              Tab(text: 'Subscription'),
+            ],
+          ),
         ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildPresetGiftsTab(),
-                      _buildCustomAmountTab(),
-                      _buildSubscriptionTab(),
-                    ],
-                  ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SafeArea(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _buildPresetGiftsTab(),
+                          _buildCustomAmountTab(),
+                          _buildSubscriptionTab(),
+                        ],
+                      ),
+                    ),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: _buildBottomSection(),
+                      ),
+                    ),
+                  ],
                 ),
-                _buildBottomSection(),
-              ],
-            ),
+              ),
+      ),
     );
   }
 
@@ -313,17 +319,29 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
-                  ...SubscriptionFrequency.values.map(
-                    (frequency) => RadioListTile<SubscriptionFrequency>(
-                      title: Text(frequency.name.toUpperCase()),
-                      subtitle: Text(_getFrequencyDescription(frequency)),
-                      value: frequency,
-                      groupValue: _subscriptionFrequency,
-                      onChanged: (value) {
-                        setState(() {
-                          _subscriptionFrequency = value!;
-                        });
-                      },
+                  SegmentedButton<SubscriptionFrequency>(
+                    segments: SubscriptionFrequency.values
+                        .map(
+                          (frequency) => ButtonSegment<SubscriptionFrequency>(
+                            value: frequency,
+                            label: Text(
+                              frequency.name.toUpperCase(),
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    selected: {_subscriptionFrequency},
+                    onSelectionChanged: (selected) {
+                      setState(() {
+                        _subscriptionFrequency = selected.first;
+                      });
+                    },
+                    style: ButtonStyle(
+                      padding: WidgetStateProperty.all(
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      ),
+                      minimumSize: WidgetStateProperty.all(const Size(0, 36)),
                     ),
                   ),
                 ],
@@ -873,17 +891,6 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
         return 'Your custom gift of \$${_selectedAmount.toStringAsFixed(2)} has been sent to ${widget.recipientName}. They will receive a notification about your thoughtful gift!';
       default:
         return 'Your ${_selectedPresetGift} gift has been sent to ${widget.recipientName}. They will receive a notification about your thoughtful gift!';
-    }
-  }
-
-  String _getFrequencyDescription(SubscriptionFrequency frequency) {
-    switch (frequency) {
-      case SubscriptionFrequency.weekly:
-        return 'Every week';
-      case SubscriptionFrequency.biweekly:
-        return 'Every 2 weeks';
-      case SubscriptionFrequency.monthly:
-        return 'Every month';
     }
   }
 

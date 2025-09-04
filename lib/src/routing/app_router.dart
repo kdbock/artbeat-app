@@ -13,6 +13,7 @@ import 'package:artbeat_community/artbeat_community.dart' as community;
 import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
+import 'package:artbeat_ads/artbeat_ads.dart' as ads;
 
 import '../guards/auth_guard.dart';
 import '../screens/enhanced_search_screen.dart';
@@ -648,6 +649,17 @@ class AppRouter {
           child: const events.CreateEventScreen(),
         );
 
+      case AppRoutes.myEvents:
+        return RouteUtils.createSimpleRoute(
+          child: const events.UserEventsDashboardScreen(),
+        );
+
+      case AppRoutes.myTickets:
+        final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+        return RouteUtils.createSimpleRoute(
+          child: events.MyTicketsScreen(userId: currentUserId),
+        );
+
       case AppRoutes.eventsDetail:
         final args = settings.arguments as Map<String, dynamic>?;
         final eventId = args?['eventId'] as String?;
@@ -665,26 +677,34 @@ class AppRouter {
 
   /// Handles admin-related routes
   Route<dynamic>? _handleAdminRoutes(RouteSettings settings) {
-    // Fallback for admin routes
-    switch (settings.name) {
-      case AppRoutes.adminDashboard:
-        return RouteUtils.createMainLayoutRoute(
-          child: const admin.AdminDashboardScreen(),
-        );
+    // First try to use the admin package's route generator
+    final adminRoute = admin.AdminRoutes.generateRoute(settings);
+    if (adminRoute != null) {
+      return adminRoute;
+    }
 
+    // Fallback for admin routes not handled by the admin package
+    switch (settings.name) {
       case AppRoutes.adminCoupons:
         return RouteUtils.createMainLayoutRoute(
           child: const core.CouponManagementScreen(),
         );
 
-      case AppRoutes.adminUsers:
+      case AppRoutes.adminCouponManagement:
         return RouteUtils.createSimpleRoute(
-          child: const Center(child: Text('User Management - Coming Soon')),
+          child: const admin.AdminCouponManagementScreen(),
+        );
+
+      case AppRoutes.adminUsers:
+        // Redirect to the proper admin user management route
+        return RouteUtils.createSimpleRoute(
+          child: const admin.AdminAdvancedUserManagementScreen(),
         );
 
       case AppRoutes.adminModeration:
-        return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Content Moderation - Coming Soon')),
+        // Redirect to the proper admin content review route
+        return RouteUtils.createSimpleRoute(
+          child: const admin.EnhancedAdminContentReviewScreen(),
         );
 
       default:
@@ -726,7 +746,7 @@ class AppRouter {
 
       case AppRoutes.captureCamera:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Camera Capture - Coming Soon')),
+          child: const capture.BasicCaptureScreen(),
         );
 
       case AppRoutes.captureDashboard:
@@ -742,17 +762,22 @@ class AppRouter {
 
       case AppRoutes.captureNearby:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Nearby Captures - Coming Soon')),
+          child: const capture.CapturesListScreen(),
         );
 
       case AppRoutes.capturePopular:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Popular Captures - Coming Soon')),
+          child: const capture.CapturesListScreen(),
         );
 
       case AppRoutes.captureMyCaptures:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('My Captures - Coming Soon')),
+          child: const capture.MyCapturesScreen(),
+        );
+
+      case AppRoutes.capturePending:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.MyCapturesScreen(),
         );
 
       case AppRoutes.captureMap:
@@ -760,9 +785,29 @@ class AppRouter {
           child: const Center(child: Text('Capture Map - Coming Soon')),
         );
 
+      case AppRoutes.captureBrowse:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.CapturesListScreen(),
+        );
+
+      case AppRoutes.captureApproved:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.MyCapturesScreen(),
+        );
+
+      case AppRoutes.captureSettings:
+        return RouteUtils.createMainLayoutRoute(
+          child: const Center(child: Text('Capture Settings - Coming Soon')),
+        );
+
+      case AppRoutes.captureAdminModeration:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.AdminContentModerationScreen(),
+        );
+
       case AppRoutes.captureGallery:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Capture Gallery - Coming Soon')),
+          child: const capture.CapturesListScreen(),
         );
 
       case AppRoutes.captureEdit:
@@ -772,7 +817,7 @@ class AppRouter {
 
       case AppRoutes.captureCreate:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Create Capture - Coming Soon')),
+          child: const capture.CameraCaptureScreen(),
         );
 
       case AppRoutes.capturePublic:
@@ -797,13 +842,13 @@ class AppRouter {
       case AppRoutes.adsManagement:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Ad Management'),
-          child: const Center(child: Text('Ad Management - Coming Soon')),
+          child: const ads.SimpleAdManagementScreen(),
         );
 
       case AppRoutes.adsStatistics:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Ad Statistics'),
-          child: const Center(child: Text('Ad Statistics - Coming Soon')),
+          child: const ads.SimpleAdStatisticsScreen(),
         );
 
       case AppRoutes.adPayment:

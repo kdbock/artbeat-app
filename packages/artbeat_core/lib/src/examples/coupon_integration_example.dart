@@ -248,7 +248,7 @@ class CreateBetaAccessCouponExample {
   static Future<String> createBetaAccessCoupon() async {
     final couponService = CouponService();
 
-    return await couponService.createFullAccessCoupon(
+    return couponService.createFullAccessCoupon(
       title: 'Beta Tester Access',
       description:
           'Full access to all features for beta testers. No payment required.',
@@ -262,7 +262,7 @@ class CreateBetaAccessCouponExample {
   static Future<String> createReferralCoupon() async {
     final couponService = CouponService();
 
-    return await couponService.createFullAccessCoupon(
+    return couponService.createFullAccessCoupon(
       title: 'Referral Bonus',
       description:
           'Free access for successful referrals. Thank you for spreading the word!',
@@ -274,7 +274,7 @@ class CreateBetaAccessCouponExample {
   static Future<String> createLimitedTimeOffer() async {
     final couponService = CouponService();
 
-    return await couponService.createPercentageDiscountCoupon(
+    return couponService.createPercentageDiscountCoupon(
       title: 'Launch Special',
       description: '50% off your first year! Limited time offer.',
       discountPercentage: 50,

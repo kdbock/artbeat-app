@@ -35,6 +35,7 @@ export 'widgets/group_feed_widget.dart';
 export 'widgets/group_post_card.dart';
 export 'widgets/create_post_fab.dart';
 export 'widgets/artist_list_widget.dart';
+export 'widgets/community_drawer.dart';
 
 // Controllers
 export 'controllers/controllers.dart';

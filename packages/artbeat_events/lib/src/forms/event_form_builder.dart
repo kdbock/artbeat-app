@@ -115,21 +115,37 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
       appBar: widget.useEnhancedUniversalHeader
           ? PreferredSize(
               preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-              child: ArtbeatGradientBackground(
-                addShadow: true,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFE74C3C), // Red
+                      Color(0xFF3498DB), // Light Blue
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: EnhancedUniversalHeader(
                   title: widget.initialEvent == null
                       ? 'Create Event'
                       : 'Edit Event',
                   showLogo: false,
                   showDeveloperTools: true,
+                  showBackButton: true,
+                  onBackPressed: () => Navigator.of(context).pop(),
                   onSearchPressed: (query) => _showSearchModal(context),
                   onProfilePressed: () => _showProfileMenu(context),
-                  onMenuPressed: () => _openDrawer(context),
                   onDeveloperPressed: () => _showDeveloperTools(context),
                   backgroundColor: Colors.transparent,
                   foregroundColor: ArtbeatColors.textPrimary,
-                  elevation: 0,
                   actions: [
                     TextButton(
                       onPressed: _submitForm,
@@ -931,11 +947,6 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
         );
 
     widget.onEventCreated(event);
-  }
-
-  // Header callback methods
-  void _openDrawer(BuildContext context) {
-    // Create event screen doesn't use drawer, but method needed for header
   }
 
   void _showSearchModal(BuildContext context) {

@@ -1,5 +1,60 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Moderation status for comments
+enum CommentModerationStatus {
+  pending,
+  approved,
+  rejected,
+  flagged,
+  underReview;
+
+  String get displayName {
+    switch (this) {
+      case CommentModerationStatus.pending:
+        return 'Pending Review';
+      case CommentModerationStatus.approved:
+        return 'Approved';
+      case CommentModerationStatus.rejected:
+        return 'Rejected';
+      case CommentModerationStatus.flagged:
+        return 'Flagged';
+      case CommentModerationStatus.underReview:
+        return 'Under Review';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case CommentModerationStatus.pending:
+        return 'pending';
+      case CommentModerationStatus.approved:
+        return 'approved';
+      case CommentModerationStatus.rejected:
+        return 'rejected';
+      case CommentModerationStatus.flagged:
+        return 'flagged';
+      case CommentModerationStatus.underReview:
+        return 'underReview';
+    }
+  }
+
+  static CommentModerationStatus fromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return CommentModerationStatus.approved;
+      case 'rejected':
+        return CommentModerationStatus.rejected;
+      case 'flagged':
+        return CommentModerationStatus.flagged;
+      case 'underreview':
+        return CommentModerationStatus.underReview;
+      case 'pending':
+      default:
+        return CommentModerationStatus.pending;
+    }
+  }
+}
+
 class CommentModel {
   final String id;
   final String postId;
@@ -10,6 +65,10 @@ class CommentModel {
   final Timestamp createdAt;
   final String userName;
   final String userAvatarUrl;
+  final CommentModerationStatus moderationStatus;
+  final bool flagged;
+  final DateTime? flaggedAt;
+  final String? moderationNotes;
 
   CommentModel({
     required this.id,
@@ -21,6 +80,10 @@ class CommentModel {
     required this.createdAt,
     required this.userName,
     required this.userAvatarUrl,
+    this.moderationStatus = CommentModerationStatus.approved,
+    this.flagged = false,
+    this.flaggedAt,
+    this.moderationNotes,
   });
 
   factory CommentModel.fromFirestore(DocumentSnapshot doc) {
@@ -35,6 +98,12 @@ class CommentModel {
       createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
       userName: (data['userName'] as String?) ?? '',
       userAvatarUrl: (data['userAvatarUrl'] as String?) ?? '',
+      moderationStatus: CommentModerationStatus.fromString(
+        data['moderationStatus'] as String? ?? 'approved',
+      ),
+      flagged: (data['flagged'] as bool?) ?? false,
+      flaggedAt: (data['flaggedAt'] as Timestamp?)?.toDate(),
+      moderationNotes: data['moderationNotes'] as String?,
     );
   }
 
@@ -48,6 +117,10 @@ class CommentModel {
       'createdAt': createdAt,
       'userName': userName,
       'userAvatarUrl': userAvatarUrl,
+      'moderationStatus': moderationStatus.value,
+      'flagged': flagged,
+      'flaggedAt': flaggedAt != null ? Timestamp.fromDate(flaggedAt!) : null,
+      'moderationNotes': moderationNotes,
     };
   }
 }

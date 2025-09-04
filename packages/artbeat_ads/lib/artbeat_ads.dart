@@ -7,6 +7,7 @@ export 'src/models/ad_size.dart';
 export 'src/models/ad_status.dart';
 export 'src/models/ad_location.dart';
 export 'src/models/ad_duration.dart';
+export 'src/models/image_fit.dart';
 
 // Simplified Services
 export 'src/services/simple_ad_service.dart';

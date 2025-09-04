@@ -31,6 +31,7 @@ export 'src/services/image_management_service.dart' show ImageManagementService;
 export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
 export 'src/services/firebase_storage_auth_service.dart'
     show FirebaseStorageAuthService;
+export 'src/services/coupon_service.dart' show CouponService;
 // 2025 Enhanced Services
 export 'src/services/ai_service.dart' show AIService;
 export 'src/services/ai_features_service.dart'
@@ -73,6 +74,8 @@ export 'src/models/sponsorship_model.dart'
         SponsorshipStatus,
         SponsorshipBenefit,
         SponsorshipPayment;
+export 'src/models/coupon_model.dart'
+    show CouponModel, CouponType, CouponStatus;
 // 2025 Enhanced Models
 export 'src/models/feature_limits.dart' show FeatureLimits;
 

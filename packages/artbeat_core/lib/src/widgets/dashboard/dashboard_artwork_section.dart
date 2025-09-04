@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:artbeat_community/artbeat_community.dart' as community;
-import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:share_plus/share_plus.dart';
 
 class DashboardArtworkSection extends StatelessWidget {
@@ -444,41 +442,6 @@ class DashboardArtworkSection extends StatelessWidget {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
-    }
-  }
-
-  void _handleDiscuss(BuildContext context, ArtworkModel artwork) async {
-    try {
-      // Get the artist profile first
-      final artistProfileService = artist.ArtistProfileService();
-      final artistProfile = await artistProfileService.getArtistProfileByUserId(
-        artwork.artistId.toString(),
-      );
-
-      if (artistProfile != null) {
-        // Navigate to artist community feed
-        Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-            builder: (context) =>
-                community.ArtistCommunityFeedScreen(artist: artistProfile),
-          ),
-        );
-      } else {
-        // Fallback to artwork detail if artist not found
-        Navigator.pushNamed(
-          context,
-          '/artwork/detail',
-          arguments: {'artworkId': artwork.id.toString()},
-        );
-      }
-    } catch (e) {
-      // Fallback to artwork detail on error
-      Navigator.pushNamed(
-        context,
-        '/artwork/detail',
-        arguments: {'artworkId': artwork.id.toString()},
-      );
     }
   }
 

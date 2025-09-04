@@ -5,12 +5,14 @@ A comprehensive admin dashboard package for the ARTbeat application, providing f
 ## Features
 
 ### 🎯 **Core Admin Dashboard**
+
 - Real-time statistics overview
 - User activity monitoring
 - Quick action tiles
 - Modern Material Design UI
 
 ### 👥 **User Management**
+
 - View all users with filtering and sorting
 - Change user types (Regular, Artist, Gallery, Moderator, Admin)
 - Suspend/unsuspend users with reasons
@@ -20,12 +22,14 @@ A comprehensive admin dashboard package for the ARTbeat application, providing f
 - Experience points and level management
 
 ### 📊 **Analytics & Reporting**
+
 - User registration trends
 - Activity statistics
 - Content metrics
 - User type distribution
 
 ### 🔧 **Admin Tools**
+
 - User creation with full profile data
 - Admin notes and flags system
 - Content management capabilities
@@ -52,7 +56,7 @@ import 'package:artbeat_admin/artbeat_admin.dart';
 Navigator.push(
   context,
   MaterialPageRoute(
-    builder: (context) => const AdminDashboardScreen(),
+    builder: (context) => const AdminEnhancedDashboardScreen(),
   ),
 );
 ```

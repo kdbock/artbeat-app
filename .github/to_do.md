@@ -189,3 +189,7 @@ Event feature
 Implement calendar system that works with google map system already in place that shows near the time of the event.
 
 add ability for artist to create and manage art classes. 
+
+user competition - when user uploads capture - notification in feed, when user acheives level - notication in feed, when user completes art walk - notification in feed. Figure out ways to celebrate user achievements in a public visible way.
+
+ranking screen, and widget for dashboards. 

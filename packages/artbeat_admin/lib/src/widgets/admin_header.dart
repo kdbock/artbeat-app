@@ -239,7 +239,7 @@ class _AdminHeaderState extends State<AdminHeader> {
               title: const Text('User Management'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/users');
+                Navigator.pushNamed(context, '/admin/user-management');
               },
             ),
             ListTile(

@@ -119,27 +119,41 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 4, // Events index
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Discover Events',
-              showLogo: false,
-              showDeveloperTools: true,
-              onSearchPressed: (String query) => _showSearchModal(context),
-              onProfilePressed: () => _showProfileMenu(context),
-              onMenuPressed: () => _openDrawer(context),
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              elevation: 0,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
+              ],
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: EnhancedUniversalHeader(
+            title: 'Discover Events',
+            showLogo: false,
+            showDeveloperTools: true,
+            showBackButton: true,
+            onBackPressed: () => Navigator.of(context).pop(),
+            onSearchPressed: (String query) => _showSearchModal(context),
+            onProfilePressed: () => _showProfileMenu(context),
+            backgroundColor: Colors.transparent,
+            foregroundColor: ArtbeatColors.textPrimary,
           ),
         ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -160,13 +174,6 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
         ),
       ),
     );
-  }
-
-  void _openDrawer(BuildContext context) {
-    final scaffoldState = Scaffold.maybeOf(context);
-    if (scaffoldState != null && scaffoldState.hasDrawer) {
-      scaffoldState.openDrawer();
-    }
   }
 
   void _showSearchModal(BuildContext context) {

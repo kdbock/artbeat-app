@@ -459,12 +459,12 @@ class DirectCommissionService {
 
   /// Alias for getArtistCommissionSettings for backward compatibility
   Future<ArtistCommissionSettings?> getArtistSettings(String artistId) async {
-    return await getArtistCommissionSettings(artistId);
+    return getArtistCommissionSettings(artistId);
   }
 
   /// Alias for updateArtistCommissionSettings for backward compatibility
   Future<void> updateArtistSettings(ArtistCommissionSettings settings) async {
-    return await updateArtistCommissionSettings(settings);
+    return updateArtistCommissionSettings(settings);
   }
 
   /// Calculate commission price based on specs and artist settings

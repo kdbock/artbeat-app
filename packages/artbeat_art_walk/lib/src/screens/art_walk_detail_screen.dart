@@ -5,6 +5,7 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:logger/logger.dart';
 import 'dart:math';
+import '../widgets/art_walk_drawer.dart';
 
 final Logger _logger = Logger();
 
@@ -375,6 +376,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_isLoading) {
       return MainLayout(
         currentIndex: -1,
+        drawer: const ArtWalkDrawer(),
         child: Scaffold(
           key: const ValueKey('loading'),
           appBar: EnhancedUniversalHeader(
@@ -395,6 +397,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     if (_walk == null) {
       return MainLayout(
         currentIndex: -1,
+        drawer: const ArtWalkDrawer(),
         child: Scaffold(
           key: const ValueKey('not_found'),
           appBar: EnhancedUniversalHeader(
@@ -414,6 +417,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
 
     return MainLayout(
       currentIndex: -1,
+      drawer: const ArtWalkDrawer(),
       child: Scaffold(
         key: ValueKey('art_walk_${_walk!.id}'),
         body: CustomScrollView(

@@ -52,21 +52,12 @@ class UserService extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Since this is a singleton, we try to prevent disposal but handle it gracefully
-    try {
-      _logDebug('Dispose called - attempting to prevent for singleton');
-      // For singleton pattern, we don't want to dispose, but Flutter requires it
-      // So we call super but catch any subsequent usage errors
-      super.dispose();
-    } catch (e) {
-      _logDebug('Dispose error caught (expected for singleton): $e');
-    }
-  }
-
-  @override
-  void notifyListeners() {
-    // For singleton, always notify listeners
-    super.notifyListeners();
+    // Since this is a singleton, we should never dispose it
+    // But we need to call super.dispose() to satisfy @mustCallSuper
+    _logDebug(
+      'Dispose called on singleton UserService - calling super but service remains active',
+    );
+    super.dispose();
   }
 
   // Firebase initialization

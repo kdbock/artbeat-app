@@ -21,7 +21,6 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
   late final TabController _tabController;
 
   DirectCommissionModel? _commission;
-  bool _isLoading = false;
   String? _currentUserId;
 
   @override
@@ -147,7 +146,7 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      color: statusColor.withOpacity(0.1),
+      color: statusColor.withValues(alpha: 0.1),
       child: Row(
         children: [
           Icon(_getStatusIcon(status), color: statusColor, size: 24),
@@ -166,7 +165,7 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
                 Text(
                   _getStatusDescription(status),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: statusColor.withOpacity(0.8),
+                    color: statusColor.withValues(alpha: 0.8),
                   ),
                 ),
               ],
@@ -305,7 +304,7 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
                         _formatDateTime(message.timestamp),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: isCurrentUser
-                              ? Colors.white.withOpacity(0.7)
+                              ? Colors.white.withValues(alpha: 0.7)
                               : Colors.grey.shade500,
                         ),
                       ),
@@ -417,9 +416,11 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
+                        color: statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: statusColor.withOpacity(0.3)),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         milestone.status.displayName,

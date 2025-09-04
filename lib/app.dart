@@ -44,9 +44,8 @@ class MyApp extends StatelessWidget {
           child: MultiProvider(
             providers: [
               // Core providers
-              ChangeNotifierProvider<core.UserService>(
-                create: (_) => core.UserService(),
-                lazy: true, // Changed to lazy to prevent early Firebase access
+              ChangeNotifierProvider<core.UserService>.value(
+                value: core.UserService(),
               ),
               Provider<AuthService>(create: (_) => AuthService(), lazy: true),
               ChangeNotifierProvider<core.ConnectivityService>(

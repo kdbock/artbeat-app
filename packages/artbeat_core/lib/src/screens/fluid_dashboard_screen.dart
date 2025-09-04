@@ -122,8 +122,14 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
 
           // Ad placement
           if (viewModel.isAuthenticated)
-            const SliverToBoxAdapter(
-              child: BannerAdWidget(location: AdLocation.dashboard),
+            SliverToBoxAdapter(
+              child: Center(
+                child: BannerAdWidget(
+                  location: AdLocation.dashboard,
+                  maxWidth:
+                      400, // Allow full responsive width for better display
+                ),
+              ),
             ),
 
           // Navigation sections

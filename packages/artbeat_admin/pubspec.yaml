@@ -13,6 +13,8 @@ dependencies:
     sdk: flutter
   artbeat_core:
     path: ../artbeat_core
+  artbeat_ads:
+    path: ../artbeat_ads
   firebase_core: ^4.0.0
   firebase_auth: ^6.0.1
   cloud_firestore: ^6.0.0
@@ -22,6 +24,8 @@ dependencies:
   jwt_decoder: ^2.0.1
   uuid: ^4.2.1
   image_picker: ^1.1.2
+  http: ^1.2.1
+  logging: ^1.2.0
 
 flutter:
   uses-material-design: true

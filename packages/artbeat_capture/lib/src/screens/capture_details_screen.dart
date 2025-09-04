@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 import 'capture_confirmation_screen.dart';
 
@@ -216,6 +217,7 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const CaptureDrawer(),
       appBar: const core.EnhancedUniversalHeader(
         title: 'Add Details',
         showLogo: false,
@@ -223,18 +225,12 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
         backgroundGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         titleGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
       ),
       body: Form(

@@ -39,3 +39,4 @@ export 'src/utils/event_utils.dart';
 // Widgets
 export 'src/widgets/event_card.dart';
 export 'src/widgets/ticket_purchase_sheet.dart';
+export 'src/widgets/events_drawer.dart';

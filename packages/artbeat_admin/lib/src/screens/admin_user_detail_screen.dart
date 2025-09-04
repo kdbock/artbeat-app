@@ -577,19 +577,28 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
           children: [
             Icon(icon, size: 24, color: color),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 12),
-              textAlign: TextAlign.center,
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(fontSize: 12),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
             ),
           ],
         ),

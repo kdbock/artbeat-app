@@ -141,12 +141,35 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 3, // Events tab
-      child: Scaffold(
-        appBar: const EnhancedUniversalHeader(
-          title: 'My Tickets',
-          showLogo: false,
+      currentIndex: 4, // Events index
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const EnhancedUniversalHeader(
+            title: 'My Tickets',
+            showLogo: false,
+          ),
         ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

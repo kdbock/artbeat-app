@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../services/admin_service.dart';
-import 'admin_dashboard_screen.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({Key? key}) : super(key: key);
@@ -43,10 +42,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       if (!mounted) return;
 
       if (hasAdminAccess) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(
-              builder: (context) => const AdminDashboardScreen()),
-        );
+        Navigator.of(context).pushReplacementNamed('/admin/dashboard');
       } else {
         // Sign out if not an admin
         await FirebaseAuth.instance.signOut();

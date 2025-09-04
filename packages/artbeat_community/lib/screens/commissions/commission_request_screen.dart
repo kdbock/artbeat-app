@@ -251,7 +251,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<CommissionType>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Type',
@@ -412,7 +412,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: DropdownButtonFormField<String>(
-                            value: _selectedColorScheme,
+                            initialValue: _selectedColorScheme,
                             decoration: const InputDecoration(
                               border: OutlineInputBorder(),
                               labelText: 'Color Scheme',
@@ -434,7 +434,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: _deliveryFormat,
+                      initialValue: _deliveryFormat,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Delivery Format',

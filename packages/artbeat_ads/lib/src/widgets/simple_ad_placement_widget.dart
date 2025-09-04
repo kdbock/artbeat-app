@@ -74,8 +74,11 @@ class SimpleAdPlacementWidget extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(8.0),
       child: Container(
-        width: 320,
+        width: double.infinity, // Allow full width instead of fixed 320
         height: 50, // Default to small ad size
+        constraints: const BoxConstraints(
+          maxWidth: 400,
+        ), // Max width constraint
         decoration: BoxDecoration(
           color: Colors.grey.shade100,
           borderRadius: BorderRadius.circular(8),
@@ -124,8 +127,13 @@ class AdSpaceWidget extends StatelessWidget {
 
               // Show placeholder for development/testing
               return Container(
-                width: width ?? 320,
+                width:
+                    width ??
+                    double.infinity, // Allow full width instead of fixed 320
                 height: height ?? 50,
+                constraints: BoxConstraints(
+                  maxWidth: width ?? 400,
+                ), // Max width constraint
                 margin: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade50,

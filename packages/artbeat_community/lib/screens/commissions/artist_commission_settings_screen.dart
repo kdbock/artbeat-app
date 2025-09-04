@@ -20,7 +20,6 @@ class _ArtistCommissionSettingsScreenState
   final _basePriceController = TextEditingController();
   final _termsController = TextEditingController();
 
-  ArtistCommissionSettings? _settings;
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -75,7 +74,6 @@ class _ArtistCommissionSettingsScreenState
       final settings = await _commissionService.getArtistSettings(user.uid);
 
       setState(() {
-        _settings = settings;
         if (settings != null) {
           _acceptingCommissions = settings.acceptingCommissions;
           _availableTypes = List.from(settings.availableTypes);
@@ -300,7 +298,7 @@ Please contact me with any questions before placing your commission request.
                   onChanged: (value) {
                     setState(() => _acceptingCommissions = value);
                   },
-                  activeColor: Colors.green,
+                  activeThumbColor: Colors.green,
                 ),
               ],
             ),

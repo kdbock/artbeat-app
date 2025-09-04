@@ -7,19 +7,43 @@ class BannerAdWidget extends StatelessWidget {
   final AdLocation location;
   final bool showAtTop;
   final EdgeInsets? padding;
+  final double? maxWidth;
 
   const BannerAdWidget({
     super.key,
     required this.location,
     this.showAtTop = true,
     this.padding,
+    this.maxWidth,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SimpleAdPlacementWidget(
-      location: location,
-      padding: padding ?? const EdgeInsets.all(8.0),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive width based on screen size
+        final screenWidth = MediaQuery.of(context).size.width;
+        final availableWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : screenWidth - 32; // Account for padding
+
+        // Use the smaller of maxWidth (if provided) or available width
+        final adWidth = maxWidth != null
+            ? maxWidth!.clamp(200.0, availableWidth)
+            : availableWidth.clamp(
+                200.0,
+                400.0,
+              ); // Allow up to 400px for better display
+
+        return SizedBox(
+          width: adWidth,
+          child: SimpleAdPlacementWidget(
+            location: location,
+            padding: padding ?? const EdgeInsets.all(8.0),
+            showIfEmpty: true, // Show placeholder when no ads are available
+          ),
+        );
+      },
     );
   }
 }

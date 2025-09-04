@@ -169,8 +169,8 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
           borderRadius: BorderRadius.circular(8),
           gradient: LinearGradient(
             colors: [
-              CommunityColors.primary.withOpacity(0.1),
-              CommunityColors.secondary.withOpacity(0.1),
+              CommunityColors.primary.withValues(alpha: 0.1),
+              CommunityColors.secondary.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -182,7 +182,11 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.palette, size: 32, color: CommunityColors.primary),
+                const Icon(
+                  Icons.palette,
+                  size: 32,
+                  color: CommunityColors.primary,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -320,7 +324,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                     Icons.list,
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<DirectCommissionsScreen>(
                         builder: (context) => const DirectCommissionsScreen(),
                       ),
                     ),
@@ -346,7 +350,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                       Icons.settings,
                       () => Navigator.push(
                         context,
-                        MaterialPageRoute(
+                        MaterialPageRoute<ArtistCommissionSettingsScreen>(
                           builder: (context) =>
                               const ArtistCommissionSettingsScreen(),
                         ),
@@ -394,7 +398,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.brush, color: CommunityColors.primary),
+                const Icon(Icons.brush, color: CommunityColors.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Artist Dashboard',
@@ -451,7 +455,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
               ElevatedButton.icon(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  MaterialPageRoute<ArtistCommissionSettingsScreen>(
                     builder: (context) =>
                         const ArtistCommissionSettingsScreen(),
                   ),
@@ -490,7 +494,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                   TextButton(
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<DirectCommissionsScreen>(
                         builder: (context) => const DirectCommissionsScreen(),
                       ),
                     ),
@@ -533,7 +537,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: statusColor.withOpacity(0.1),
+        backgroundColor: statusColor.withValues(alpha: 0.1),
         child: Icon(
           _getStatusIcon(commission.status),
           color: statusColor,
@@ -609,7 +613,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
               onPressed: _isArtist
                   ? () => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<ArtistCommissionSettingsScreen>(
                         builder: (context) =>
                             const ArtistCommissionSettingsScreen(),
                       ),
@@ -683,7 +687,7 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
   void _setupArtistProfile() {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<ArtistCommissionSettingsScreen>(
         builder: (context) => const ArtistCommissionSettingsScreen(),
       ),
     ).then((_) => _loadData());

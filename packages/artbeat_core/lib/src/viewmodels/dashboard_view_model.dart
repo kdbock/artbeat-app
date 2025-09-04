@@ -182,7 +182,7 @@ class DashboardViewModel extends ChangeNotifier {
       debugPrint('❌ Error refreshing dashboard: $e');
       debugPrint('❌ Stack trace: $stack');
     } finally {
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -202,14 +202,14 @@ class DashboardViewModel extends ChangeNotifier {
       _achievements = [];
     } finally {
       _isLoadingAchievements = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> _loadEvents() async {
     try {
       _isLoadingEvents = true;
-      notifyListeners();
+      _safeNotifyListeners();
 
       final events = await _eventService.getUpcomingPublicEvents();
       _events = events
@@ -237,14 +237,14 @@ class DashboardViewModel extends ChangeNotifier {
       _events = [];
     } finally {
       _isLoadingEvents = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> _loadArtwork() async {
     try {
       _isLoadingArtwork = true;
-      notifyListeners();
+      _safeNotifyListeners();
 
       // Try featured artwork first, fallback to public artwork
       var artworkServiceModels = await _artworkService.getFeaturedArtwork();
@@ -284,14 +284,14 @@ class DashboardViewModel extends ChangeNotifier {
       _artwork = [];
     } finally {
       _isLoadingArtwork = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> _loadArtists() async {
     try {
       _isLoadingArtists = true;
-      notifyListeners();
+      _safeNotifyListeners();
 
       final profileService = artist_profile.ArtistProfileService();
       final featuredArtists = await profileService.getFeaturedArtists(
@@ -311,14 +311,14 @@ class DashboardViewModel extends ChangeNotifier {
       _artists = [];
     } finally {
       _isLoadingArtists = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> _loadLocalCaptures() async {
     try {
       _isLoadingLocalCaptures = true;
-      notifyListeners();
+      _safeNotifyListeners();
 
       // Get all captures
       final allCaptures = await _captureService.getAllCaptures();
@@ -353,14 +353,14 @@ class DashboardViewModel extends ChangeNotifier {
       _localCaptures = [];
     } finally {
       _isLoadingLocalCaptures = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
   Future<void> _loadLocation() async {
     try {
       _isLoadingLocation = true;
-      notifyListeners();
+      _safeNotifyListeners();
 
       // Use LocationUtils with increased timeout for better reliability
       final position =
@@ -403,7 +403,7 @@ class DashboardViewModel extends ChangeNotifier {
       }
     } finally {
       _isLoadingLocation = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -448,11 +448,11 @@ class DashboardViewModel extends ChangeNotifier {
 
       _markers = newMarkers;
       _isMapPreviewReady = true;
-      notifyListeners();
+      _safeNotifyListeners();
     } catch (e) {
       debugPrint('Error loading nearby art markers: $e');
       _isMapPreviewReady = false;
-      notifyListeners();
+      _safeNotifyListeners();
     }
   }
 
@@ -468,7 +468,7 @@ class DashboardViewModel extends ChangeNotifier {
       _artists = _artists
           .map((a) => a.id == artistId ? a.copyWith(isFollowing: true) : a)
           .toList();
-      notifyListeners();
+      _safeNotifyListeners();
 
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
@@ -480,7 +480,7 @@ class DashboardViewModel extends ChangeNotifier {
       _artists = _artists
           .map((a) => a.id == artistId ? a.copyWith(isFollowing: false) : a)
           .toList();
-      notifyListeners();
+      _safeNotifyListeners();
       rethrow;
     }
   }
@@ -495,7 +495,7 @@ class DashboardViewModel extends ChangeNotifier {
       _artists = _artists
           .map((a) => a.id == artistId ? a.copyWith(isFollowing: false) : a)
           .toList();
-      notifyListeners();
+      _safeNotifyListeners();
 
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
@@ -507,7 +507,7 @@ class DashboardViewModel extends ChangeNotifier {
       _artists = _artists
           .map((a) => a.id == artistId ? a.copyWith(isFollowing: true) : a)
           .toList();
-      notifyListeners();
+      _safeNotifyListeners();
       rethrow;
     }
   }
@@ -515,6 +515,6 @@ class DashboardViewModel extends ChangeNotifier {
   /// Handles when the Google Map is created - currently not used
   void onMapCreated(GoogleMapController controller) {
     // Map controller initialization
-    notifyListeners();
+    _safeNotifyListeners();
   }
 }

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import '../models/artbeat_event.dart';
+import '../widgets/events_drawer.dart';
 import 'dart:developer' as developer;
 
 /// Central events dashboard screen - entry point for events tab
@@ -186,59 +187,58 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
 
     return MainLayout(
       currentIndex: 4, // Events index
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFE74C3C), // Red
-                  Color(0xFF3498DB), // Light Blue
-                ],
+      drawer: const EventsDrawer(),
+      scaffoldKey: _scaffoldKey,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 2),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+            ],
+          ),
+          child: EnhancedUniversalHeader(
+            title: 'Events',
+            showLogo: false,
+            showDeveloperTools: true,
+            scaffoldKey: _scaffoldKey,
+            onSearchPressed: (String query) => _showSearchModal(context),
+            onProfilePressed: () => _showProfileMenu(context),
+            onDeveloperPressed: () => _showDeveloperTools(context),
+            backgroundColor: Colors.transparent,
+            foregroundColor: ArtbeatColors.textPrimary,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _showFilters ? Icons.filter_list : Icons.filter_list_outlined,
+                  color: _showFilters
+                      ? const Color(0xFFE74C3C)
+                      : ArtbeatColors.textPrimary,
                 ),
-              ],
-            ),
-            child: EnhancedUniversalHeader(
-              title: 'Events',
-              showLogo: false,
-              showDeveloperTools: true,
-              onSearchPressed: (String query) => _showSearchModal(context),
-              onProfilePressed: () => _showProfileMenu(context),
-              onDeveloperPressed: () => _showDeveloperTools(context),
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              actions: [
-                IconButton(
-                  icon: Icon(
-                    _showFilters
-                        ? Icons.filter_list
-                        : Icons.filter_list_outlined,
-                    color: _showFilters
-                        ? const Color(0xFFE74C3C)
-                        : ArtbeatColors.textPrimary,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _showFilters = !_showFilters;
-                    });
-                  },
-                ),
-              ],
-            ),
+                onPressed: () {
+                  setState(() {
+                    _showFilters = !_showFilters;
+                  });
+                },
+              ),
+            ],
           ),
         ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
         body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(

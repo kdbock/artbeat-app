@@ -442,7 +442,7 @@ class SubscriptionService extends ChangeNotifier {
       final paymentService = PaymentService();
 
       // Get or create customer
-      var customerId = await _getOrCreateCustomerId();
+      final customerId = await _getOrCreateCustomerId();
       if (customerId == null) {
         return {
           'success': false,

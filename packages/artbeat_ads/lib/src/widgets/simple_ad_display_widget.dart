@@ -5,6 +5,7 @@ import 'dart:async';
 
 import '../models/ad_model.dart';
 import '../models/ad_size.dart';
+import '../models/image_fit.dart';
 
 /// Simplified ad display widget that handles image rotation and click actions
 class SimpleAdDisplayWidget extends StatefulWidget {
@@ -83,170 +84,251 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _handleTap,
-      child: Container(
-        width: widget.ad.size.width.toDouble(),
-        height: widget.ad.size.height.toDouble(),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Main ad content
-            ClipRRect(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive dimensions
+        final availableWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.of(context).size.width - 32; // Account for padding
+
+        final availableHeight = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : widget.ad.size.height.toDouble();
+
+        // Maintain aspect ratio while respecting constraints
+        final aspectRatio = widget.ad.size.width / widget.ad.size.height;
+        final constrainedWidth = availableWidth.clamp(
+          200.0,
+          400.0,
+        ); // Allow up to 400px for better display
+        final constrainedHeight = (constrainedWidth / aspectRatio).clamp(
+          50.0,
+          availableHeight,
+        );
+
+        return GestureDetector(
+          onTap: _handleTap,
+          child: Container(
+            width: constrainedWidth,
+            height: constrainedHeight,
+            decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              child: _buildAdContent(),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-
-            // Close button (if enabled)
-            if (widget.showCloseButton)
-              Positioned(
-                top: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
+            child: Stack(
+              children: [
+                // Main ad content
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: _buildAdContent(),
                 ),
-              ),
 
-            // Image rotation indicator (if multiple images)
-            if (widget.ad.artworkUrls.length > 1)
-              Positioned(
-                bottom: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
+                // Close button (if enabled)
+                if (widget.showCloseButton)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(12),
+
+                // Image rotation indicator (if multiple images)
+                if (widget.ad.artworkUrls.length > 1)
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${_currentImageIndex + 1}/${widget.ad.artworkUrls.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    '${_currentImageIndex + 1}/${widget.ad.artworkUrls.length}',
-                    style: const TextStyle(color: Colors.white, fontSize: 10),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildAdContent() {
-    return SizedBox(
-      width: double.infinity,
-      height: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background image
-          CachedNetworkImage(
-            imageUrl: _currentImageUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey.shade200,
-              child: const Center(child: CircularProgressIndicator()),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background image
+            CachedNetworkImage(
+              imageUrl: _currentImageUrl,
+              width: constraints.maxWidth,
+              height: constraints.maxHeight,
+              fit: widget.ad.imageFit.boxFit,
+              placeholder: (context, url) => Container(
+                color: Colors.grey.shade200,
+                child: const Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey.shade200,
+                child: const Center(
+                  child: Icon(Icons.error, color: Colors.grey),
+                ),
+              ),
             ),
-            errorWidget: (context, url, error) => Container(
-              color: Colors.grey.shade200,
-              child: const Center(child: Icon(Icons.error, color: Colors.grey)),
-            ),
-          ),
 
-          // Overlay content for larger ads
-          if (widget.ad.size.height >= 100) _buildOverlayContent(),
-        ],
-      ),
+            // Overlay content for larger ads (only show if we have meaningful space)
+            if (constraints.maxHeight >= 100)
+              LayoutBuilder(
+                builder: (context, overlayConstraints) {
+                  // Only show overlay if we have at least 40px height and 60px width
+                  final hasEnoughSpace =
+                      overlayConstraints.maxHeight >= 40 &&
+                      overlayConstraints.maxWidth >= 60;
+                  return hasEnoughSpace
+                      ? _buildOverlayContent()
+                      : const SizedBox.shrink();
+                },
+              ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildOverlayContent() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Text(
-              widget.ad.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive sizes based on available space
+        final availableHeight = constraints.maxHeight;
+        final availableWidth = constraints.maxWidth;
+
+        // Determine if we have enough space for different elements
+        final hasSpaceForTitle = availableHeight > 30;
+        final hasSpaceForDescription = availableHeight > 60;
+        final hasSpaceForCTA =
+            availableHeight > 80 &&
+            widget.ad.ctaText != null &&
+            widget.ad.ctaText!.isNotEmpty;
+
+        // Calculate responsive font sizes
+        final titleFontSize = availableHeight > 50
+            ? 14.0
+            : (availableHeight > 35 ? 12.0 : 10.0);
+        final descriptionFontSize = availableHeight > 70 ? 12.0 : 10.0;
+        final ctaFontSize = availableHeight > 80 ? 10.0 : 8.0;
+
+        // Calculate responsive padding
+        final horizontalPadding = availableWidth > 100 ? 8.0 : 4.0;
+        final verticalPadding = availableHeight > 50 ? 8.0 : 4.0;
+
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
             ),
-
-            // Description (only for large ads)
-            if (widget.ad.size.height >= 200)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  widget.ad.description,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-            // CTA button
-            if (widget.ad.ctaText != null && widget.ad.ctaText!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    widget.ad.ctaText!,
-                    style: const TextStyle(
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: verticalPadding,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min, // Important: minimize space usage
+              children: [
+                // Title (only if we have space)
+                if (hasSpaceForTitle)
+                  Text(
+                    widget.ad.title,
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 10,
                       fontWeight: FontWeight.bold,
+                      fontSize: titleFontSize,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                // Description (only for large ads with enough space)
+                if (hasSpaceForDescription)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: Text(
+                      widget.ad.description,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: descriptionFontSize,
+                      ),
+                      maxLines: availableHeight > 80 ? 2 : 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-              ),
-          ],
-        ),
-      ),
+
+                // CTA button (only if we have space and CTA text exists)
+                if (hasSpaceForCTA)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: availableWidth > 120 ? 12 : 8,
+                        vertical: availableHeight > 90 ? 4 : 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(
+                          availableHeight > 90 ? 16 : 12,
+                        ),
+                      ),
+                      child: Text(
+                        widget.ad.ctaText!,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: ctaFontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

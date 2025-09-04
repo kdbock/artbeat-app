@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import '../screens/admin_login_screen.dart';
-import '../screens/admin_dashboard_screen.dart';
 import '../screens/admin_enhanced_dashboard_screen.dart';
 import '../screens/admin_financial_analytics_screen.dart';
 import '../screens/admin_advanced_user_management_screen.dart';
 import '../screens/admin_advanced_content_management_screen.dart';
-import '../screens/admin_user_management_screen.dart';
 import '../screens/admin_user_detail_screen.dart';
-import '../screens/admin_content_review_screen.dart';
+import '../screens/enhanced_admin_content_review_screen.dart';
 import '../screens/admin_analytics_screen.dart';
 import '../screens/admin_settings_screen.dart';
-import '../screens/admin_ad_management_screen.dart';
+import '../screens/admin_coupon_management_screen.dart';
 import '../screens/admin_security_center_screen.dart';
 import '../screens/admin_data_management_screen.dart';
 import '../screens/admin_system_alerts_screen.dart';
 import '../screens/admin_help_support_screen.dart';
+import '../screens/migration_screen.dart';
 import '../models/user_admin_model.dart';
 
 /// Admin routing configuration for the ARTbeat admin system
@@ -27,23 +27,27 @@ class AdminRoutes {
       '/admin/advanced-user-management';
   static const String userDetail = '/admin/user-detail';
   static const String contentReview = '/admin/content-review';
+  static const String enhancedContentReview = '/admin/enhanced-content-review';
   static const String advancedContentManagement =
       '/admin/advanced-content-management';
   static const String analytics = '/admin/analytics';
   static const String adminSettings = '/admin/settings';
   static const String adManagement = '/admin/ad-management';
+  static const String couponManagement = '/admin/coupon-management';
   static const String securityCenter = '/admin/security';
   static const String dataManagement = '/admin/data';
   static const String systemAlerts = '/admin/alerts';
   static const String helpSupport = '/admin/help';
+  static const String migration = '/admin/migration';
   static const String login = '/admin/login';
 
   /// Generate routes for the admin system
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case dashboard:
+        // Redirect to enhanced dashboard
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminDashboardScreen(),
+          builder: (_) => const AdminEnhancedDashboardScreen(),
           settings: settings,
         );
 
@@ -60,8 +64,9 @@ class AdminRoutes {
         );
 
       case userManagement:
+        // Redirect to advanced user management
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminUserManagementScreen(),
+          builder: (_) => const AdminAdvancedUserManagementScreen(),
           settings: settings,
         );
 
@@ -83,7 +88,13 @@ class AdminRoutes {
 
       case contentReview:
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminContentReviewScreen(),
+          builder: (_) => const EnhancedAdminContentReviewScreen(),
+          settings: settings,
+        );
+
+      case enhancedContentReview:
+        return MaterialPageRoute<void>(
+          builder: (_) => const EnhancedAdminContentReviewScreen(),
           settings: settings,
         );
 
@@ -107,7 +118,13 @@ class AdminRoutes {
 
       case adManagement:
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminAdManagementScreen(),
+          builder: (_) => const SimpleAdManagementScreen(),
+          settings: settings,
+        );
+
+      case couponManagement:
+        return MaterialPageRoute<void>(
+          builder: (_) => const AdminCouponManagementScreen(),
           settings: settings,
         );
 
@@ -135,6 +152,12 @@ class AdminRoutes {
           settings: settings,
         );
 
+      case migration:
+        return MaterialPageRoute<void>(
+          builder: (_) => const MigrationScreen(),
+          settings: settings,
+        );
+
       case login:
         return MaterialPageRoute<void>(
           builder: (_) => const AdminLoginScreen(),
@@ -142,7 +165,8 @@ class AdminRoutes {
         );
 
       default:
-        return _errorRoute('Route not found: ${settings.name}');
+        // Return null for unrecognized admin routes so main app can handle them
+        return null;
     }
   }
 
@@ -234,6 +258,14 @@ class AdminRoutes {
         category: AdminRouteCategory.content,
       ),
       const AdminRoute(
+        name: 'Enhanced Content Review',
+        route: enhancedContentReview,
+        icon: Icons.admin_panel_settings,
+        description:
+            'Advanced content moderation with bulk operations and filtering',
+        category: AdminRouteCategory.content,
+      ),
+      const AdminRoute(
         name: 'Advanced Content Management',
         route: advancedContentManagement,
         icon: Icons.content_copy,
@@ -287,6 +319,13 @@ class AdminRoutes {
         route: helpSupport,
         icon: Icons.help_outline,
         description: 'Documentation, tutorials, and support resources',
+        category: AdminRouteCategory.system,
+      ),
+      const AdminRoute(
+        name: 'Data Migration',
+        route: migration,
+        icon: Icons.sync_alt,
+        description: 'Migrate data to standardized moderation status',
         category: AdminRouteCategory.system,
       ),
     ];

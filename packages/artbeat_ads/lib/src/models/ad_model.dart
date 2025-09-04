@@ -4,6 +4,7 @@ import 'ad_status.dart';
 import 'ad_location.dart';
 import 'ad_duration.dart';
 import 'ad_size.dart';
+import 'image_fit.dart';
 
 /// Simplified Ad model for the new ad system
 class AdModel {
@@ -24,6 +25,7 @@ class AdModel {
   final String? approvalId;
   final String? destinationUrl; // External URL to drive traffic to
   final String? ctaText; // Call-to-action text (e.g., "Shop Now", "Learn More")
+  final ImageFit imageFit; // How the image should be fitted in the ad space
 
   /// Price per day is determined by ad size
   double get pricePerDay => size.pricePerDay;
@@ -45,6 +47,8 @@ class AdModel {
     this.approvalId,
     this.destinationUrl,
     this.ctaText,
+    this.imageFit =
+        ImageFit.cover, // Default to cover for backward compatibility
   });
 
   factory AdModel.fromMap(Map<String, dynamic> map, String id) {
@@ -128,6 +132,20 @@ class AdModel {
       safeStatus = AdStatus.pending;
     }
 
+    // Parse imageFit with safe fallback
+    ImageFit safeImageFit;
+    try {
+      final rawImageFit = map['imageFit'];
+      final intImageFit = rawImageFit is int
+          ? rawImageFit
+          : int.tryParse(rawImageFit.toString()) ?? 0;
+      safeImageFit = intImageFit >= 0 && intImageFit < ImageFit.values.length
+          ? ImageFit.values[intImageFit]
+          : ImageFit.cover;
+    } catch (e) {
+      safeImageFit = ImageFit.cover;
+    }
+
     return AdModel(
       id: id,
       ownerId: map['ownerId']?.toString() ?? '',
@@ -145,6 +163,7 @@ class AdModel {
       approvalId: map['approvalId']?.toString(),
       destinationUrl: map['destinationUrl']?.toString(),
       ctaText: map['ctaText']?.toString(),
+      imageFit: safeImageFit,
     );
   }
 
@@ -164,5 +183,6 @@ class AdModel {
     'approvalId': approvalId,
     'destinationUrl': destinationUrl,
     'ctaText': ctaText,
+    'imageFit': imageFit.index,
   };
 }

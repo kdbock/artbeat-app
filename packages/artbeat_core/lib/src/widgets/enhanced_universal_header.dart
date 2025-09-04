@@ -35,6 +35,7 @@ class EnhancedUniversalHeader extends StatefulWidget
   final double? titleFontSize;
   final Gradient? backgroundGradient;
   final Gradient? titleGradient;
+  final GlobalKey<ScaffoldState>? scaffoldKey;
 
   const EnhancedUniversalHeader({
     super.key,
@@ -57,6 +58,7 @@ class EnhancedUniversalHeader extends StatefulWidget
     this.titleFontSize,
     this.backgroundGradient,
     this.titleGradient,
+    this.scaffoldKey,
   });
 
   @override
@@ -426,10 +428,31 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     if (scaffoldState != null && scaffoldState.hasDrawer) {
       scaffoldState.openDrawer();
     } else {
+      // Try alternative approach - look for Scaffold in parent contexts
+      BuildContext? ctx = context;
+      ScaffoldState? foundScaffold;
+
+      // Try up to 5 levels up in the widget tree
+      for (int i = 0; i < 5 && ctx != null; i++) {
+        foundScaffold = Scaffold.maybeOf(ctx);
+        if (foundScaffold != null && foundScaffold.hasDrawer) {
+          foundScaffold.openDrawer();
+          return;
+        }
+        // Get the element and try to find parent
+        final element = ctx as Element?;
+        ctx = element?.findAncestorWidgetOfExactType<Scaffold>() != null
+            ? ctx
+            : null;
+      }
+
+      // If still not found, show debug info
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Navigation menu coming soon!'),
-          duration: const Duration(seconds: 2),
+          content: Text(
+            'Drawer not found. Scaffold: ${scaffoldState != null}, hasDrawer: ${scaffoldState?.hasDrawer ?? false}',
+          ),
+          duration: const Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),

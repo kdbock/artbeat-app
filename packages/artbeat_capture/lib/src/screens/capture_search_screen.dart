@@ -55,6 +55,7 @@ class _CaptureSearchScreenState extends State<CaptureSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const CaptureDrawer(),
       appBar: AppBar(
         title: const Text('Search Captures'),
         flexibleSpace: Container(
@@ -62,10 +63,7 @@ class _CaptureSearchScreenState extends State<CaptureSearchScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.topRight,
-              colors: [
-                ArtbeatColors.primaryPurple,
-                Colors.pink,
-              ],
+              colors: [ArtbeatColors.primaryPurple, Colors.pink],
             ),
           ),
         ),

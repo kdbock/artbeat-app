@@ -13,6 +13,7 @@ export 'src/screens/capture_upload_screen.dart';
 export 'src/screens/capture_details_screen.dart';
 export 'src/screens/capture_confirmation_screen.dart';
 export 'src/screens/admin_content_moderation_screen.dart';
+export 'src/screens/my_captures_screen.dart';
 export 'src/services/capture_service.dart';
 export 'src/services/storage_service.dart';
 export 'src/services/camera_service.dart';
@@ -23,6 +24,7 @@ export 'src/screens/capture_search_screen.dart';
 export 'src/widgets/captures_grid.dart';
 export 'src/widgets/artist_search_dialog.dart';
 export 'src/widgets/map_picker_dialog.dart';
+export 'src/widgets/capture_drawer.dart';
 
 // Models and Utils
 export 'src/models/media_capture.dart';

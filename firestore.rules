@@ -8,7 +8,7 @@ service cloud.firestore {
     // Admin function using database-based role check for security
     function isAdmin(userId) {
       return exists(/databases/$(database)/documents/users/$(userId)) &&
-             get(/databases/$(database)/documents/users/$(userId)).data.isAdmin == true;
+             get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin';
     }
 
 
@@ -829,6 +829,21 @@ service cloud.firestore {
           isAdmin(request.auth.uid)
         );
       }
+    }
+
+    // Content Reviews (Admin only)
+    match /content_reviews/{reviewId} {
+      allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // Content Review Logs (Admin only)
+    match /content_review_logs/{logId} {
+      allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // Content collection (Admin only for moderation)
+    match /content/{contentId} {
+      allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);
     }
 
     // Admin collections

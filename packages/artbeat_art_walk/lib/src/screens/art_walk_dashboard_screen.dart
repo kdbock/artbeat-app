@@ -5,6 +5,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
+import '../widgets/art_walk_drawer.dart';
 
 // Art Walk specific colors
 class ArtWalkColors {
@@ -42,6 +43,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   List<AchievementModel> _artWalkAchievements = [];
   UserModel? _currentUser;
   bool _isDisposed = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final ArtWalkService _artWalkService = ArtWalkService();
   final AchievementService _achievementService = AchievementService();
@@ -622,10 +624,13 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: 1,
-      appBar: const EnhancedUniversalHeader(
+      drawer: const ArtWalkDrawer(),
+      scaffoldKey: _scaffoldKey,
+      appBar: EnhancedUniversalHeader(
         title: 'Art Walk',
         showLogo: false,
         showBackButton: false,
+        scaffoldKey: _scaffoldKey,
         backgroundGradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,

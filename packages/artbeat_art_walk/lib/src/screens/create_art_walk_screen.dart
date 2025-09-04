@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for GeoPoint
 import 'package:image_cropper/image_cropper.dart';
+import '../widgets/art_walk_drawer.dart';
 
 // Create Art Walk specific colors
 class CreateArtWalkColors {
@@ -304,6 +305,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   Widget build(BuildContext context) {
     return MainLayout(
       currentIndex: -1,
+      drawer: const ArtWalkDrawer(),
       child: Scaffold(
         appBar: EnhancedUniversalHeader(
           title: widget.artWalkId != null

@@ -68,43 +68,69 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 4, // Events tab
-      appBar: EnhancedUniversalHeader(
-        title: _event?.title ?? 'Event Details',
-        actions: [
-          if (_event != null) ...[
-            IconButton(onPressed: _shareEvent, icon: const Icon(Icons.share)),
-            PopupMenuButton<String>(
-              onSelected: _handleMenuAction,
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'add_to_calendar',
-                  child: ListTile(
-                    leading: Icon(Icons.calendar_today),
-                    title: Text('Add to Calendar'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'set_reminder',
-                  child: ListTile(
-                    leading: Icon(Icons.notifications),
-                    title: Text('Set Reminder'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'report',
-                  child: ListTile(
-                    leading: Icon(Icons.flag),
-                    title: Text('Report Event'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ),
+      currentIndex: 4, // Events index
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
               ],
             ),
-          ],
-        ],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: EnhancedUniversalHeader(
+            title: _event?.title ?? 'Event Details',
+            showLogo: false,
+            actions: [
+              if (_event != null) ...[
+                IconButton(
+                  onPressed: _shareEvent,
+                  icon: const Icon(Icons.share),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: _handleMenuAction,
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'add_to_calendar',
+                      child: ListTile(
+                        leading: Icon(Icons.calendar_today),
+                        title: Text('Add to Calendar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'set_reminder',
+                      child: ListTile(
+                        leading: Icon(Icons.notifications),
+                        title: Text('Set Reminder'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: ListTile(
+                        leading: Icon(Icons.flag),
+                        title: Text('Report Event'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
       child: _buildBody(),
     );

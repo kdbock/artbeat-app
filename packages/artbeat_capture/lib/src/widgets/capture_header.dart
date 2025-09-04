@@ -168,7 +168,7 @@ class _CaptureHeaderState extends State<CaptureHeader> {
     if (scaffoldState != null && scaffoldState.hasDrawer) {
       scaffoldState.openDrawer();
     } else {
-      // Show package-specific drawer/menu
+      // Fallback: Show package-specific drawer/menu
       _showPackageMenu();
     }
   }

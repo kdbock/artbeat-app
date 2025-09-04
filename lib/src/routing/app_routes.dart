@@ -91,6 +91,11 @@ class AppRoutes {
   static const String captureNearby = '/capture/nearby';
   static const String capturePopular = '/capture/popular';
   static const String captureMyCaptures = '/capture/my-captures';
+  static const String capturePending = '/capture/pending';
+  static const String captureApproved = '/capture/approved';
+  static const String captureBrowse = '/capture/browse';
+  static const String captureSettings = '/capture/settings';
+  static const String captureAdminModeration = '/capture/admin/moderation';
   static const String captureMap = '/capture/map';
   static const String captureGallery = '/capture/gallery';
   static const String captureEdit = '/capture/edit';
@@ -176,6 +181,7 @@ class AppRoutes {
   static const String adminAdManagement = '/admin/ad-management';
   static const String adminMessaging = '/admin/messaging';
   static const String adminCoupons = '/admin/coupons';
+  static const String adminCouponManagement = '/admin/coupon-management';
 
   // Settings routes
   static const String settings = '/settings';
@@ -334,6 +340,7 @@ class AppRoutes {
     adminAdManagement,
     adminMessaging,
     adminCoupons,
+    adminCouponManagement,
     settings,
     settingsAccount,
     settingsPrivacy,

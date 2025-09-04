@@ -68,7 +68,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         }
       }
     } catch (error) {
-      debugPrint('Error loading user model: $error');
+      debugPrint('❌ Error loading user model: $error');
     }
   }
 
@@ -91,70 +91,34 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/artist/public-profile',
       '/artist/analytics',
       '/artist/artwork',
-      '/artist/feed',
       '/artist/browse',
-      '/artist/approved-ads',
       '/artwork/upload',
       '/artwork/browse',
-      '/artwork/edit',
-      '/artwork/featured',
-      '/artwork/search',
-      '/artwork/recent',
-      '/artwork/trending',
       '/gallery/artists-management',
       '/gallery/analytics',
-      '/community/dashboard',
       '/community/feed',
-      '/community/artists',
-      '/community/search',
-      '/community/posts',
-      '/community/studios',
-      '/community/gifts',
-      '/community/portfolios',
-      '/community/moderation',
-      '/community/sponsorships',
-      '/community/settings',
       '/art-walk/map',
       '/art-walk/list',
-      '/art-walk/detail',
       '/art-walk/create',
-      '/messaging',
-      '/messaging/new',
-      '/messaging/chat',
-      '/events',
       '/events/discover',
-      '/events/dashboard',
-      '/events/artist-dashboard',
-      '/events/create',
       '/admin/dashboard',
-      '/admin/users',
-      '/admin/moderation',
-      '/admin/coupons',
+      '/admin/enhanced-dashboard',
+      '/admin/user-management',
+      '/admin/content-review',
+      '/admin/advanced-content-management',
+      '/admin/ad-management',
+      '/admin/analytics',
+      '/admin/financial-analytics',
+      '/admin/settings',
       '/settings/account',
       '/settings/notifications',
       '/settings/privacy',
       '/settings/security',
       '/captures',
-      '/capture/camera',
-      '/capture/dashboard',
-      '/ads/create',
-      '/ads/management',
-      '/ads/statistics',
-      '/subscription/comparison',
-      '/subscription/plans',
       '/achievements',
-      '/achievements/info',
-      '/notifications',
-      '/search',
-      '/search/results',
-      '/art-search',
-      '/art-walk-search',
-      '/local',
-      '/location-search',
-      '/trending',
-      '/artist-search',
+      '/favorites',
+      '/support',
       '/feedback',
-      '/developer-feedback-admin',
     };
 
     if (implementedRoutes.contains(route)) {
@@ -199,256 +163,206 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
     }
   }
 
+  String? _getUserRole() {
+    final userModel = _cachedUserModel;
+    if (userModel != null) {
+      // Use the proper role detection methods from UserModel
+      if (userModel.isAdmin) return 'admin';
+      if (userModel.isArtist) return 'artist';
+      if (userModel.isGallery) return 'gallery';
+      if (userModel.isModerator) return 'moderator';
+    }
+    return null; // Regular user
+  }
+
   @override
   Widget build(BuildContext context) {
+    final userRole = _getUserRole();
+    final drawerItems = ArtbeatDrawerItems.getItemsForRole(userRole);
+
     return Drawer(
       backgroundColor: Colors.white,
       elevation: 2.0,
       child: Container(
         decoration: const BoxDecoration(color: Colors.white),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.zero,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white,
-                      ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
-                      const Color(
-                        0xFF4A90E2,
-                      ).withValues(alpha: 0.2), // Blue accent
-                      Colors.white.withValues(alpha: 0.95),
-                      ArtbeatColors.primaryGreen.withValues(alpha: 0.12),
-                      Colors.white,
-                    ],
-                    stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      blurRadius: 4,
-                      offset: const Offset(-1, -1),
-                    ),
-                    BoxShadow(
-                      color: ArtbeatColors.primaryPurple.withValues(
-                        alpha: 0.05,
-                      ),
-                      blurRadius: 8,
-                      offset: const Offset(1, 1),
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    // Logo on the right side
-                    Positioned(
-                      right: 16,
-                      top: 16,
-                      child: Opacity(
-                        opacity: 0.25,
-                        child: Image.asset(
-                          'assets/images/artbeat_logo.png',
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-                    // User info
-                    StreamBuilder<User?>(
-                      stream: FirebaseAuth.instance.userChanges(),
-                      builder: (context, snapshot) {
-                        final user = snapshot.data;
+        child: Column(
+          children: [
+            // Header
+            _buildDrawerHeader(),
 
-                        if (user == null) {
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              left: 16,
-                              right: 100,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const UserAvatar(
-                                  displayName: 'Guest',
-                                  radius: 30,
-                                ),
-                                const SizedBox(height: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Guest User',
-                                      style: ArtbeatTypography
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: ArtbeatColors.textPrimary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Not signed in',
-                                      style: ArtbeatTypography
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(
-                                            color: ArtbeatColors.textSecondary,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+            // Navigation Items
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: drawerItems.length,
+                itemBuilder: (context, index) {
+                  final item = drawerItems[index];
 
-                        // Use cached user model to prevent repeated queries
-                        final userModel = _cachedUserModel;
-                        final displayName =
-                            userModel?.fullName ?? user.displayName ?? 'User';
-                        final profileImageUrl = userModel?.profileImageUrl;
-
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 100),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              UserAvatar(
-                                imageUrl: profileImageUrl,
-                                displayName: displayName,
-                                radius: 28,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                displayName,
-                                style: ArtbeatTypography.textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: ArtbeatColors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                user.email ?? '',
-                                style: ArtbeatTypography.textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: ArtbeatColors.textSecondary,
-                                    ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ), // <-- closes DrawerHeader
-              // Main Navigation Section
-              _buildSectionHeader('Navigation'),
-              ...ArtbeatDrawerItems.mainNavigationItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // User Section
-              _buildSectionHeader('User'),
-              ...ArtbeatDrawerItems.userItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // Artist Section
-              _buildSectionHeader('Artist'),
-              ...ArtbeatDrawerItems.artistItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // Events Section
-              _buildSectionHeader('Events'),
-              ...ArtbeatDrawerItems.eventsItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // Gallery Section
-              _buildSectionHeader('Gallery'),
-              ...ArtbeatDrawerItems.galleryItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // Settings Section
-              _buildSectionHeader('Settings'),
-              ...ArtbeatDrawerItems.settingsItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // Ads Section
-              _buildSectionHeader('Ads'),
-              ...ArtbeatDrawerItems.adItems.map(
-                (item) => _buildDrawerItem(context, item),
-              ),
-              const Divider(),
-
-              // Admin Section
-              _buildSectionHeader('Admin'),
-              ...ArtbeatDrawerItems.adminItems
-                  .where((item) => !item.route.contains('/ad-'))
-                  .map((item) => _buildDrawerItem(context, item)),
-              const Divider(),
-
-              ListTile(
-                leading: Icon(
-                  ArtbeatDrawerItems.signOut.icon,
-                  color: ArtbeatDrawerItems.signOut.color,
-                ),
-                title: Text(
-                  ArtbeatDrawerItems.signOut.title,
-                  style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
-                    color: ArtbeatDrawerItems.signOut.color,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () async {
-                  Navigator.pop(context); // Close drawer
-                  await FirebaseAuth.instance.signOut();
-                  if (mounted) {
-                    setState(() => _cachedUserModel = null);
-                    Navigator.pushReplacementNamed(
-                      context,
-                      ArtbeatDrawerItems.signOut.route,
+                  // Add divider before sign out
+                  if (item.route == '/login') {
+                    return Column(
+                      children: [
+                        const Divider(height: 1),
+                        const SizedBox(height: 8),
+                        _buildDrawerItem(context, item),
+                      ],
                     );
                   }
+
+                  return _buildDrawerItem(context, item);
                 },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: ArtbeatTypography.textTheme.titleSmall?.copyWith(
-          color: ArtbeatColors.primaryPurple,
-          fontWeight: FontWeight.bold,
+  Widget _buildDrawerHeader() {
+    return Container(
+      height: 140, // Increased height to accommodate content
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            ArtbeatColors.primaryPurple.withValues(alpha: 0.15),
+            const Color(0xFF4A90E2).withValues(alpha: 0.2),
+            Colors.white.withValues(alpha: 0.95),
+            ArtbeatColors.primaryGreen.withValues(alpha: 0.12),
+            Colors.white,
+          ],
+          stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
         ),
+      ),
+      child: Stack(
+        children: [
+          // Logo on the right side
+          Positioned(
+            right: 0,
+            top: 8,
+            child: Opacity(
+              opacity: 0.25,
+              child: Image.asset(
+                'assets/images/artbeat_logo.png',
+                width: 50,
+                height: 50,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+
+          // User info section
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.userChanges(),
+            builder: (context, snapshot) {
+              final user = snapshot.data;
+              if (user == null) {
+                return Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 80),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const UserAvatar(displayName: 'Guest', radius: 14),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Guest User',
+                        style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
+                          color: ArtbeatColors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                        maxLines: 1,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Not signed in',
+                        style: ArtbeatTypography.textTheme.bodySmall?.copyWith(
+                          color: ArtbeatColors.textSecondary,
+                          fontSize: 8,
+                        ),
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Use cached user model to prevent repeated queries
+              final userModel = _cachedUserModel;
+              final displayName =
+                  userModel?.fullName ?? user.displayName ?? 'User';
+              final profileImageUrl = userModel?.profileImageUrl;
+
+              return Padding(
+                padding: const EdgeInsets.only(left: 16, right: 80),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    UserAvatar(
+                      imageUrl: profileImageUrl,
+                      displayName: displayName,
+                      radius: 14,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      displayName,
+                      style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
+                        color: ArtbeatColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      user.email ?? '',
+                      style: ArtbeatTypography.textTheme.bodySmall?.copyWith(
+                        color: ArtbeatColors.textSecondary,
+                        fontSize: 8,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    // Show user role badge if applicable
+                    if (_getUserRole() != null) ...[
+                      const SizedBox(height: 3),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          _getUserRole()!.toUpperCase(),
+                          style: ArtbeatTypography.textTheme.bodySmall
+                              ?.copyWith(
+                                color: ArtbeatColors.primaryPurple,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 6,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -475,6 +389,17 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         ),
         selected: isCurrentRoute,
         onTap: () async {
+          // Handle sign out specially
+          if (item.route == '/login' && item.title == 'Sign Out') {
+            Navigator.pop(context); // Close drawer
+            await FirebaseAuth.instance.signOut();
+            if (mounted) {
+              setState(() => _cachedUserModel = null);
+              Navigator.pushReplacementNamed(context, '/login');
+            }
+            return;
+          }
+
           Navigator.pop(context); // Close drawer first
           if (!isCurrentRoute) {
             // Add a small delay to ensure drawer is fully closed

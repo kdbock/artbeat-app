@@ -481,13 +481,12 @@ class _EnhancedCaptureDashboardScreenState
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
+      drawer: const CaptureDrawer(),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(kToolbarHeight + 4),
         child: ArtbeatGradientBackground(
@@ -508,315 +507,303 @@ class _EnhancedCaptureDashboardScreenState
             backgroundColor: Colors.transparent,
             foregroundColor: ArtbeatColors.textPrimary,
             elevation: 0,
-            ),
           ),
         ),
+      ),
       body: Container(
-          constraints: const BoxConstraints.expand(),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
-                Colors.white,
-                ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
-              ],
-            ),
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+              Colors.white,
+              ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
+            ],
           ),
-          child: SafeArea(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
-                    onRefresh: _refreshData,
-                    child: CustomScrollView(
-                      controller: _scrollController,
-                      slivers: [
-                        // Header Section
+        ),
+        child: SafeArea(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _refreshData,
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    slivers: [
+                      // Header Section
+                      SliverToBoxAdapter(
+                        child: Container(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Welcome message
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ArtbeatColors.primaryGreen.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      ArtbeatColors.primaryPurple.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: ArtbeatColors.primaryGreen
+                                        .withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    const Icon(
+                                      Icons.camera_alt,
+                                      size: 48,
+                                      color: ArtbeatColors.primaryGreen,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Ready to Capture Art?',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: ArtbeatColors.textPrimary,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Discover and document public art to help build our community map',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(
+                                            color: ArtbeatColors.textSecondary,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // Main action button
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  onPressed: _openTermsAndConditionsScreen,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: ArtbeatColors.primaryGreen,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    elevation: 2,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.assignment_turned_in,
+                                    size: 24,
+                                  ),
+                                  label: const Text(
+                                    'Start Capture',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 32),
+
+                              // Stats section
+                              if (_currentUser != null) ...[
+                                Text(
+                                  'Your Impact',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ArtbeatColors.textPrimary,
+                                      ),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Captures',
+                                        value: _totalUserCaptures.toString(),
+                                        icon: Icons.camera_alt,
+                                        color: ArtbeatColors.primaryGreen,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: _buildStatCard(
+                                        title: 'Community Views',
+                                        value: _totalCommunityViews.toString(),
+                                        icon: Icons.visibility,
+                                        color: ArtbeatColors.primaryPurple,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+
+                              // Ad placement beneath stats section
+                              if (_currentUser != null)
+                                const BannerAdWidget(
+                                  location: AdLocation.captureStats,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Recent captures section
+                      if (_recentCaptures.isNotEmpty)
                         SliverToBoxAdapter(
-                          child: Container(
+                          child: Padding(
                             padding: const EdgeInsets.all(24.0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Welcome message
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(24),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        ArtbeatColors.primaryGreen.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        ArtbeatColors.primaryPurple.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: ArtbeatColors.primaryGreen
-                                          .withValues(alpha: 0.3),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      const Icon(
-                                        Icons.camera_alt,
-                                        size: 48,
-                                        color: ArtbeatColors.primaryGreen,
+                                Text(
+                                  'Your Recent Captures',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ArtbeatColors.textPrimary,
                                       ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'Ready to Capture Art?',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                              color: ArtbeatColors.textPrimary,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Discover and document public art to help build our community map',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                              color:
-                                                  ArtbeatColors.textSecondary,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
                                 ),
-
-                                const SizedBox(height: 24),
-
-                                // Main action button
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton.icon(
-                                    onPressed: _openTermsAndConditionsScreen,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          ArtbeatColors.primaryGreen,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      elevation: 2,
-                                    ),
-                                    icon: const Icon(
-                                      Icons.assignment_turned_in,
-                                      size: 24,
-                                    ),
-                                    label: const Text(
-                                      'Start Capture',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(height: 32),
-
-                                // Stats section
-                                if (_currentUser != null) ...[
-                                  Text(
-                                    'Your Impact',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: ArtbeatColors.textPrimary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildStatCard(
-                                          title: 'Captures',
-                                          value: _totalUserCaptures.toString(),
-                                          icon: Icons.camera_alt,
-                                          color: ArtbeatColors.primaryGreen,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: _buildStatCard(
-                                          title: 'Community Views',
-                                          value: _totalCommunityViews
-                                              .toString(),
-                                          icon: Icons.visibility,
-                                          color: ArtbeatColors.primaryPurple,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-
-                                // Ad placement beneath stats section
-                                if (_currentUser != null)
-                                  const BannerAdWidget(
-                                    location: AdLocation.captureStats,
-                                  ),
                               ],
                             ),
                           ),
                         ),
 
-                        // Recent captures section
-                        if (_recentCaptures.isNotEmpty)
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Your Recent Captures',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: ArtbeatColors.textPrimary,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        // Recent captures grid
-                        if (_recentCaptures.isNotEmpty)
-                          SliverPadding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24.0,
-                            ),
-                            sliver: SliverGrid(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 16,
-                                    mainAxisSpacing: 16,
-                                    childAspectRatio: 1,
-                                  ),
-                              delegate: SliverChildBuilderDelegate((
-                                context,
-                                index,
-                              ) {
-                                final capture = _recentCaptures[index];
-                                return _buildCaptureCard(capture);
-                              }, childCount: _recentCaptures.length),
-                            ),
-                          ),
-
-                        // Ad placement beneath recent captures section
-                        if (_recentCaptures.isNotEmpty)
-                          const SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: BannerAdWidget(
-                                location: AdLocation.captureRecent,
-                              ),
-                            ),
-                          ),
-
-                        // Community inspiration section
-                        if (_communityCaptures.isNotEmpty) ...[
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Community Inspiration',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: ArtbeatColors.textPrimary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'See what others are discovering in your area',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          color: ArtbeatColors.textSecondary,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: 200,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24.0,
+                      // Recent captures grid
+                      if (_recentCaptures.isNotEmpty)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          sliver: SliverGrid(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 16,
+                                  mainAxisSpacing: 16,
+                                  childAspectRatio: 1,
                                 ),
-                                itemCount: _communityCaptures.length,
-                                itemBuilder: (context, index) {
-                                  final capture = _communityCaptures[index];
-                                  return Container(
-                                    width: 160,
-                                    margin: const EdgeInsets.only(right: 16),
-                                    child: _buildCommunityCard(capture),
-                                  );
-                                },
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final capture = _recentCaptures[index];
+                              return _buildCaptureCard(capture);
+                            }, childCount: _recentCaptures.length),
+                          ),
+                        ),
+
+                      // Ad placement beneath recent captures section
+                      if (_recentCaptures.isNotEmpty)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: BannerAdWidget(
+                              location: AdLocation.captureRecent,
+                            ),
+                          ),
+                        ),
+
+                      // Community inspiration section
+                      if (_communityCaptures.isNotEmpty) ...[
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Community Inspiration',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: ArtbeatColors.textPrimary,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'See what others are discovering in your area',
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: ArtbeatColors.textSecondary,
+                                      ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SliverToBoxAdapter(
+                          child: SizedBox(
+                            height: 200,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0,
                               ),
+                              itemCount: _communityCaptures.length,
+                              itemBuilder: (context, index) {
+                                final capture = _communityCaptures[index];
+                                return Container(
+                                  width: 160,
+                                  margin: const EdgeInsets.only(right: 16),
+                                  child: _buildCommunityCard(capture),
+                                );
+                              },
                             ),
                           ),
+                        ),
 
-                          // Ad placement beneath community inspiration section
-                          const SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: BannerAdWidget(
-                                location: AdLocation.captureCommunity,
-                              ),
+                        // Ad placement beneath community inspiration section
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16.0),
+                            child: BannerAdWidget(
+                              location: AdLocation.captureCommunity,
                             ),
                           ),
+                        ),
 
-                          // Artist CTA widget
-                          const SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8.0),
-                              child: CompactArtistCTAWidget(),
-                            ),
+                        // Artist CTA widget
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: CompactArtistCTAWidget(),
                           ),
+                        ),
 
-                          // Bottom padding
-                          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                        ],
+                        // Bottom padding
+                        const SliverToBoxAdapter(child: SizedBox(height: 100)),
                       ],
-                    ),
+                    ],
                   ),
                 ),
-              ));
+        ),
+      ),
+    );
   }
 
   Widget _buildStatCard({

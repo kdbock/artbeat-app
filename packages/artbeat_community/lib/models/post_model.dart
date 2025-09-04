@@ -2,6 +2,61 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'group_models.dart';
 
+/// Moderation status for posts
+enum PostModerationStatus {
+  pending,
+  approved,
+  rejected,
+  flagged,
+  underReview;
+
+  String get displayName {
+    switch (this) {
+      case PostModerationStatus.pending:
+        return 'Pending Review';
+      case PostModerationStatus.approved:
+        return 'Approved';
+      case PostModerationStatus.rejected:
+        return 'Rejected';
+      case PostModerationStatus.flagged:
+        return 'Flagged';
+      case PostModerationStatus.underReview:
+        return 'Under Review';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case PostModerationStatus.pending:
+        return 'pending';
+      case PostModerationStatus.approved:
+        return 'approved';
+      case PostModerationStatus.rejected:
+        return 'rejected';
+      case PostModerationStatus.flagged:
+        return 'flagged';
+      case PostModerationStatus.underReview:
+        return 'underReview';
+    }
+  }
+
+  static PostModerationStatus fromString(String status) {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return PostModerationStatus.approved;
+      case 'rejected':
+        return PostModerationStatus.rejected;
+      case 'flagged':
+        return PostModerationStatus.flagged;
+      case 'underreview':
+        return PostModerationStatus.underReview;
+      case 'pending':
+      default:
+        return PostModerationStatus.pending;
+    }
+  }
+}
+
 /// Model class for posts in the community feed
 class PostModel {
   final String id;
@@ -20,6 +75,10 @@ class PostModel {
   final List<String>? mentionedUsers;
   final Map<String, dynamic>? metadata;
   final bool isUserVerified;
+  final PostModerationStatus moderationStatus;
+  final bool flagged;
+  final DateTime? flaggedAt;
+  final String? moderationNotes;
 
   // Legacy constant for backward compatibility during migration
   static const int maxApplausePerUser = 5;
@@ -41,6 +100,10 @@ class PostModel {
     this.mentionedUsers,
     this.metadata,
     this.isUserVerified = false,
+    this.moderationStatus = PostModerationStatus.approved,
+    this.flagged = false,
+    this.flaggedAt,
+    this.moderationNotes,
   }) : engagementStats =
            engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
@@ -64,6 +127,8 @@ class PostModel {
       ),
       isPublic: post.isPublic,
       isUserVerified: post.isUserVerified,
+      moderationStatus: PostModerationStatus.approved,
+      flagged: false,
     );
   }
 
@@ -95,6 +160,12 @@ class PostModel {
           : null,
       metadata: data['metadata'] as Map<String, dynamic>?,
       isUserVerified: (data['isUserVerified'] as bool?) ?? false,
+      moderationStatus: PostModerationStatus.fromString(
+        data['moderationStatus'] as String? ?? 'approved',
+      ),
+      flagged: (data['flagged'] as bool?) ?? false,
+      flaggedAt: (data['flaggedAt'] as Timestamp?)?.toDate(),
+      moderationNotes: data['moderationNotes'] as String?,
     );
 
     return result;
@@ -116,6 +187,10 @@ class PostModel {
       'isPublic': isPublic,
       'mentionedUsers': mentionedUsers,
       'metadata': metadata,
+      'moderationStatus': moderationStatus.value,
+      'flagged': flagged,
+      'flaggedAt': flaggedAt != null ? Timestamp.fromDate(flaggedAt!) : null,
+      'moderationNotes': moderationNotes,
     };
   }
 
@@ -136,6 +211,10 @@ class PostModel {
     bool? isUserVerified,
     List<String>? mentionedUsers,
     Map<String, dynamic>? metadata,
+    PostModerationStatus? moderationStatus,
+    bool? flagged,
+    DateTime? flaggedAt,
+    String? moderationNotes,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -154,6 +233,10 @@ class PostModel {
       isUserVerified: isUserVerified ?? this.isUserVerified,
       mentionedUsers: mentionedUsers ?? this.mentionedUsers,
       metadata: metadata ?? this.metadata,
+      moderationStatus: moderationStatus ?? this.moderationStatus,
+      flagged: flagged ?? this.flagged,
+      flaggedAt: flaggedAt ?? this.flaggedAt,
+      moderationNotes: moderationNotes ?? this.moderationNotes,
     );
   }
 

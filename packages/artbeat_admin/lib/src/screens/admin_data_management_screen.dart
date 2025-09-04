@@ -205,6 +205,18 @@ class _AdminDataManagementScreenState extends State<AdminDataManagementScreen> {
                     child: const Text('Sync'),
                   ),
                 ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.sync_alt, color: Color(0xFF8C52FF)),
+                  title: const Text('Moderation Status Migration'),
+                  subtitle:
+                      const Text('Migrate to standardized moderation status'),
+                  trailing: ElevatedButton(
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/admin/migration'),
+                    child: const Text('Migrate'),
+                  ),
+                ),
               ],
             ),
           ),
