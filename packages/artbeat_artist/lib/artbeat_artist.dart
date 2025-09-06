@@ -4,7 +4,6 @@ library;
 // Models
 export 'src/models/artist_profile_model.dart'
     hide ArtistProfileModel; // Hide to avoid conflict with core
-export 'src/models/commission_model.dart';
 export 'src/models/gallery_invitation_model.dart';
 export 'src/models/subscription_model.dart';
 export 'src/models/earnings_model.dart';
@@ -40,5 +39,18 @@ export 'src/services/analytics_service.dart';
 export 'src/services/artist_profile_service.dart';
 export 'src/services/subscription_service.dart';
 export 'src/services/gallery_invitation_service.dart';
-export 'src/services/event_service.dart';
+export 'src/services/event_service_adapter.dart';
 export 'src/services/earnings_service.dart';
+export 'src/services/integration_service.dart'; // NEW: Cross-package integration
+
+// Phase 1 Enhanced Services
+export 'src/services/navigation_service.dart';
+export 'src/services/community_service.dart';
+export 'src/services/offline_data_provider.dart';
+export 'src/services/filter_service.dart';
+export 'src/services/subscription_validation_service.dart';
+export 'src/services/subscription_plan_validator.dart';
+
+// Deprecated Services (for migration)
+export 'src/services/artist_service.dart';
+export 'src/services/artwork_service.dart';

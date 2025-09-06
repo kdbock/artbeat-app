@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
-import 'package:artbeat_core/artbeat_core.dart' show SubscriptionTier, EnhancedStorageService;
+import 'package:artbeat_core/artbeat_core.dart'
+    show SubscriptionTier, EnhancedStorageService;
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 
 /// Service for managing artwork
@@ -46,8 +47,7 @@ class ArtworkService {
       final tier = await _getCurrentUserTier();
 
       // Users on free/basic tier can only upload 5 artworks
-      if (tier == SubscriptionTier.free ||
-          tier == SubscriptionTier.starter) {
+      if (tier == SubscriptionTier.free || tier == SubscriptionTier.starter) {
         final snapshot = await _artworkCollection
             .where('userId', isEqualTo: userId)
             .count()
@@ -106,7 +106,7 @@ class ArtworkService {
 
       final imageUrl = uploadResult['imageUrl']!;
       final thumbnailUrl = uploadResult['thumbnailUrl'];
-      
+
       debugPrint('✅ Artwork image uploaded successfully');
       debugPrint('📊 Original: ${uploadResult['originalSize']}');
       debugPrint('📊 Compressed: ${uploadResult['compressedSize']}');
@@ -305,6 +305,36 @@ class ArtworkService {
     } catch (e) {
       debugPrint('Error updating artwork: $e');
       throw Exception('Failed to update artwork: $e');
+    }
+  }
+
+  /// Update artwork moderation status (admin only)
+  Future<void> updateArtworkModeration({
+    required String artworkId,
+    required ArtworkModerationStatus status,
+    String? notes,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{
+        'moderationStatus': status.value,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      if (notes != null && notes.isNotEmpty) {
+        updateData['moderationNotes'] = notes;
+      }
+
+      // If rejecting, also mark as flagged
+      if (status == ArtworkModerationStatus.rejected) {
+        updateData['flagged'] = true;
+        updateData['flaggedAt'] = FieldValue.serverTimestamp();
+      }
+
+      // Update Firestore document
+      await _artworkCollection.doc(artworkId).update(updateData);
+    } catch (e) {
+      debugPrint('Error updating artwork moderation: $e');
+      throw Exception('Failed to update artwork moderation: $e');
     }
   }
 
@@ -527,6 +557,230 @@ class ArtworkService {
         debugPrint('Fallback query also failed: $fallbackError');
         return [];
       }
+    }
+  }
+
+  /// Advanced search with multiple filters
+  Future<List<ArtworkModel>> advancedSearchArtwork({
+    String? query,
+    String? location,
+    String? medium,
+    List<String>? styles,
+    double? minPrice,
+    double? maxPrice,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool? isForSale,
+    bool? isFeatured,
+    int limit = 50,
+  }) async {
+    try {
+      Query queryRef = _artworkCollection.where('isPublic', isEqualTo: true);
+
+      // Apply filters
+      if (location != null && location != 'All') {
+        queryRef = queryRef.where('location', isEqualTo: location);
+      }
+
+      if (medium != null && medium != 'All') {
+        queryRef = queryRef.where('medium', isEqualTo: medium);
+      }
+
+      if (isForSale != null) {
+        queryRef = queryRef.where('isForSale', isEqualTo: isForSale);
+      }
+
+      if (isFeatured != null) {
+        queryRef = queryRef.where('isFeatured', isEqualTo: isFeatured);
+      }
+
+      // Get results
+      final snapshot = await queryRef
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      List<ArtworkModel> artworks =
+          snapshot.docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
+
+      // Apply client-side filters that Firestore doesn't support well
+      if (query != null && query.isNotEmpty) {
+        final lowercaseQuery = query.toLowerCase();
+        artworks = artworks.where((artwork) {
+          return artwork.title.toLowerCase().contains(lowercaseQuery) ||
+              artwork.description.toLowerCase().contains(lowercaseQuery) ||
+              artwork.medium.toLowerCase().contains(lowercaseQuery) ||
+              artwork.styles.any(
+                  (style) => style.toLowerCase().contains(lowercaseQuery)) ||
+              (artwork.tags?.any(
+                      (tag) => tag.toLowerCase().contains(lowercaseQuery)) ??
+                  false) ||
+              (artwork.materials?.toLowerCase().contains(lowercaseQuery) ??
+                  false);
+        }).toList();
+      }
+
+      if (styles != null && styles.isNotEmpty) {
+        artworks = artworks.where((artwork) {
+          return styles.any((style) => artwork.styles.contains(style));
+        }).toList();
+      }
+
+      if (minPrice != null) {
+        artworks = artworks
+            .where((artwork) =>
+                artwork.price != null && artwork.price! >= minPrice)
+            .toList();
+      }
+
+      if (maxPrice != null) {
+        artworks = artworks
+            .where((artwork) =>
+                artwork.price != null && artwork.price! <= maxPrice)
+            .toList();
+      }
+
+      if (startDate != null) {
+        artworks = artworks
+            .where((artwork) => artwork.createdAt.isAfter(startDate))
+            .toList();
+      }
+
+      if (endDate != null) {
+        artworks = artworks
+            .where((artwork) => artwork.createdAt.isBefore(endDate))
+            .toList();
+      }
+
+      // Track search analytics
+      if (query != null && query.isNotEmpty) {
+        await _trackSearchAnalytics(query, artworks.length);
+      }
+
+      return artworks;
+    } catch (e) {
+      debugPrint('Error in advanced search: $e');
+      return [];
+    }
+  }
+
+  /// Track search analytics
+  Future<void> _trackSearchAnalytics(String query, int resultCount) async {
+    try {
+      final userId = getCurrentUserId();
+      await FirebaseFirestore.instance.collection('search_analytics').add({
+        'query': query,
+        'resultCount': resultCount,
+        'userId': userId,
+        'timestamp': FieldValue.serverTimestamp(),
+        'searchType': 'artwork',
+      });
+    } catch (e) {
+      debugPrint('Error tracking search analytics: $e');
+      // Non-critical error, don't throw
+    }
+  }
+
+  /// Save a search query for the current user
+  Future<void> saveSearch(
+      String searchName, Map<String, dynamic> searchCriteria) async {
+    final userId = getCurrentUserId();
+    if (userId == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('saved_searches').add({
+        'userId': userId,
+        'name': searchName,
+        'criteria': searchCriteria,
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastUsed': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('Error saving search: $e');
+      throw Exception('Failed to save search');
+    }
+  }
+
+  /// Get saved searches for the current user
+  Future<List<Map<String, dynamic>>> getSavedSearches() async {
+    final userId = getCurrentUserId();
+    if (userId == null) return [];
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('saved_searches')
+          .where('userId', isEqualTo: userId)
+          .orderBy('lastUsed', descending: true)
+          .get();
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return {
+          'id': doc.id,
+          ...data,
+        };
+      }).toList();
+    } catch (e) {
+      debugPrint('Error getting saved searches: $e');
+      return [];
+    }
+  }
+
+  /// Delete a saved search
+  Future<void> deleteSavedSearch(String searchId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('saved_searches')
+          .doc(searchId)
+          .delete();
+    } catch (e) {
+      debugPrint('Error deleting saved search: $e');
+      throw Exception('Failed to delete saved search');
+    }
+  }
+
+  /// Update last used timestamp for a saved search
+  Future<void> updateSavedSearchUsage(String searchId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('saved_searches')
+          .doc(searchId)
+          .update({
+        'lastUsed': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('Error updating saved search usage: $e');
+    }
+  }
+
+  /// Get search suggestions based on popular searches
+  Future<List<String>> getSearchSuggestions() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('search_analytics')
+          .orderBy('timestamp', descending: true)
+          .limit(100)
+          .get();
+
+      final queries = snapshot.docs
+          .map((doc) => doc.data()['query'] as String?)
+          .where((query) => query != null && query.isNotEmpty)
+          .cast<String>()
+          .toList();
+
+      // Count frequency and return most popular
+      final frequency = <String, int>{};
+      for (final query in queries) {
+        frequency[query] = (frequency[query] ?? 0) + 1;
+      }
+
+      final sortedQueries = frequency.keys.toList()
+        ..sort((a, b) => frequency[b]!.compareTo(frequency[a]!));
+
+      return sortedQueries.take(10).toList();
+    } catch (e) {
+      debugPrint('Error getting search suggestions: $e');
+      return [];
     }
   }
 }

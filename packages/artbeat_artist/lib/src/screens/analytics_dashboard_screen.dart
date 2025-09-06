@@ -10,6 +10,7 @@ import 'package:artbeat_artist/src/models/artwork_model.dart';
 import 'package:artbeat_artist/src/services/subscription_service.dart'
     as artist_subscription;
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 // Import provider for subscriptions
 
 /// Analytics Dashboard Screen for Artists with Pro and Gallery plans
@@ -463,9 +464,10 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
                           child: artwork.imageUrl.isNotEmpty &&
                                   Uri.tryParse(artwork.imageUrl)?.hasScheme ==
                                       true
-                              ? Image.network(
-                                  artwork.imageUrl,
+                              ? SecureNetworkImage(
+                                  imageUrl: artwork.imageUrl,
                                   fit: BoxFit.cover,
+                                  enableThumbnailFallback: true,
                                 )
                               : Container(
                                   color: Colors.grey[300],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/subscription_tier.dart';
 import '../theme/artbeat_colors.dart';
+import '../widgets/usage_limits_widget.dart';
 import 'subscription_purchase_screen.dart';
 
 /// Screen showing all available subscription plans for comparison
@@ -84,6 +86,11 @@ class SubscriptionPlansScreen extends StatelessWidget {
 
               // Benefits section
               _buildBenefitsSection(context),
+
+              const SizedBox(height: 24),
+
+              // Usage Limits Widget - Shows current plan limitations
+              _buildUsageLimitsSection(context),
 
               const SizedBox(height: 24),
 
@@ -278,6 +285,43 @@ class SubscriptionPlansScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ..._buildBenefitsList(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUsageLimitsSection(BuildContext context) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Plan Limits & Features',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: ArtbeatColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'See what\'s included in each plan and upgrade when you need more.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: ArtbeatColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            UsageLimitsWidget(
+              userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+              onUpgradePressed: () {
+                // Navigate to subscription upgrade flow
+                Navigator.of(context).pushNamed('/subscription-plans');
+              },
+            ),
           ],
         ),
       ),

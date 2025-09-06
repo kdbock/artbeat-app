@@ -7,6 +7,7 @@ import 'package:artbeat_core/artbeat_core.dart'
         UserAvatar,
         EnhancedUniversalHeader,
         EnhancedGiftPurchaseScreen;
+import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
@@ -197,6 +198,27 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                   ? Image.network(
                       artist.coverImageUrl!,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Icon(
+                              Icons.broken_image,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      },
                     )
                   : Container(
                       color: Colors.grey[300],
@@ -550,9 +572,26 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
                     width: double.infinity,
                     child: artwork.imageUrl.isNotEmpty &&
                             Uri.tryParse(artwork.imageUrl)?.hasScheme == true
-                        ? Image.network(
-                            artwork.imageUrl,
+                        ? SecureNetworkImage(
+                            imageUrl: artwork.imageUrl,
                             fit: BoxFit.cover,
+                            enableThumbnailFallback: true,
+                            errorWidget: Container(
+                              color: Colors.grey[300],
+                              child: const Center(
+                                child: Icon(
+                                  Icons.broken_image,
+                                  size: 50,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                            placeholder: Container(
+                              color: Colors.grey[300],
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
                           )
                         : Container(
                             color: Colors.grey[300],

@@ -1,0 +1,241 @@
+# ARTbeat Art Walk Enhanced Security Rules
+# Enhanced Firestore security rules with comprehensive validation for Art Walk operations
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Enhanced security functions
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isAdmin(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+             get(/databases/$(database)/documents/users/$(userId)).data.userType == 'admin';
+    }
+
+    function isValidUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Input validation functions
+    function isValidArtWalkTitle(title) {
+      return title is string && 
+             title.size() >= 3 && 
+             title.size() <= 100 &&
+             !hasProhibitedContent(title);
+    }
+
+    function isValidArtWalkDescription(description) {
+      return description is string && 
+             description.size() <= 2000 &&
+             !hasProhibitedContent(description);
+    }
+
+    function isValidZipCode(zipCode) {
+      return zipCode is string && 
+             zipCode.matches('^\\d{5}(-\\d{4})?$');
+    }
+
+    function isValidComment(content) {
+      return content is string && 
+             content.size() > 0 && 
+             content.size() <= 500 &&
+             !hasProhibitedContent(content);
+    }
+
+    function hasProhibitedContent(text) {
+      return text.matches('.*<script.*') ||
+             text.matches('.*javascript:.*') ||
+             text.matches('.*vbscript:.*') ||
+             text.matches('.*on\\w+\\s*=.*');
+    }
+
+    function isValidTags(tags) {
+      return tags is list && 
+             tags.size() <= 10 &&
+             tags.hasAll([string]) &&
+             tags.hasAll([x.size() <= 30]);
+    }
+
+    // Rate limiting check (basic implementation)
+    function isWithinRateLimit(userId, operation) {
+      // This would ideally check against a rate limiting subcollection
+      // For now, we allow the request and rely on client-side rate limiting
+      return true;
+    }
+
+    // Enhanced Art Walks rules with comprehensive validation
+    match /artWalks/{walkId} {
+      // Public read access for discovery
+      allow read: if true;
+      
+      // Create rules with comprehensive validation
+      allow create: if isAuthenticated() && 
+        isValidUser(request.resource.data.creatorId) &&
+        isValidArtWalkTitle(request.resource.data.title) &&
+        isValidArtWalkDescription(request.resource.data.description) &&
+        (request.resource.data.zipCode == null || 
+         isValidZipCode(request.resource.data.zipCode)) &&
+        (request.resource.data.tags == null || 
+         isValidTags(request.resource.data.tags)) &&
+        request.resource.data.keys().hasAll(['title', 'description', 'creatorId', 'createdAt']) &&
+        request.resource.data.createdAt is timestamp &&
+        isWithinRateLimit(request.auth.uid, 'createArtWalk');
+      
+      // Update rules - only creator or admin can update
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == resource.data.creatorId &&
+         // Validate updated fields
+         (request.resource.data.title == resource.data.title || 
+          isValidArtWalkTitle(request.resource.data.title)) &&
+         (request.resource.data.description == resource.data.description || 
+          isValidArtWalkDescription(request.resource.data.description)) &&
+         (request.resource.data.zipCode == resource.data.zipCode || 
+          request.resource.data.zipCode == null || 
+          isValidZipCode(request.resource.data.zipCode)) &&
+         // Prevent unauthorized field changes
+         request.resource.data.creatorId == resource.data.creatorId &&
+         request.resource.data.createdAt == resource.data.createdAt) ||
+        isAdmin(request.auth.uid) ||
+        // Allow engagement updates from any authenticated user
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'viewCount', 'appreciateCount', 'shareCount', 'engagementStats', 
+          'lastViewed', 'rating', 'ratingCount'
+        ]))
+      );
+      
+      // Delete rules - only creator or admin
+      allow delete: if isAuthenticated() && (
+        request.auth.uid == resource.data.creatorId ||
+        isAdmin(request.auth.uid)
+      );
+
+      // Enhanced comment rules with validation
+      match /comments/{commentId} {
+        allow read: if true;
+        
+        allow create: if isAuthenticated() && 
+          isValidUser(request.resource.data.userId) &&
+          isValidComment(request.resource.data.content) &&
+          request.resource.data.keys().hasAll(['userId', 'content', 'createdAt']) &&
+          request.resource.data.createdAt is timestamp &&
+          isWithinRateLimit(request.auth.uid, 'createComment');
+        
+        allow update: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        ) && (
+          // Only allow content updates
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'updatedAt']) &&
+          isValidComment(request.resource.data.content)
+        );
+        
+        allow delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+
+        // Nested comment replies with same validation
+        match /comments/{replyId} {
+          allow read: if true;
+          
+          allow create: if isAuthenticated() && 
+            isValidUser(request.resource.data.userId) &&
+            isValidComment(request.resource.data.content) &&
+            request.resource.data.keys().hasAll(['userId', 'content', 'createdAt', 'parentCommentId']) &&
+            isWithinRateLimit(request.auth.uid, 'createComment');
+          
+          allow update: if isAuthenticated() && (
+            request.auth.uid == resource.data.userId ||
+            isAdmin(request.auth.uid)
+          ) && isValidComment(request.resource.data.content);
+          
+          allow delete: if isAuthenticated() && (
+            request.auth.uid == resource.data.userId ||
+            isAdmin(request.auth.uid)
+          );
+        }
+      }
+
+      // Art walk ratings with validation
+      match /ratings/{ratingId} {
+        allow read: if true;
+        
+        allow create: if isAuthenticated() && 
+          isValidUser(request.resource.data.userId) &&
+          request.resource.data.rating is number &&
+          request.resource.data.rating >= 1 &&
+          request.resource.data.rating <= 5 &&
+          isWithinRateLimit(request.auth.uid, 'createRating');
+        
+        allow update, delete: if isAuthenticated() && (
+          request.auth.uid == resource.data.userId ||
+          isAdmin(request.auth.uid)
+        );
+      }
+    }
+
+    // Enhanced Public Art rules with validation
+    match /publicArt/{artId} {
+      allow read: if true;
+      
+      allow create: if isAuthenticated() && 
+        isValidUser(request.resource.data.submitterId) &&
+        isValidArtWalkTitle(request.resource.data.title) &&
+        isValidArtWalkDescription(request.resource.data.description) &&
+        request.resource.data.location is latlng &&
+        request.resource.data.keys().hasAll(['title', 'description', 'submitterId', 'location', 'createdAt']) &&
+        isWithinRateLimit(request.auth.uid, 'createPublicArt');
+      
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.submitterId ||
+        isAdmin(request.auth.uid) ||
+        // Allow engagement updates
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'viewCount', 'appreciateCount', 'rating', 'ratingCount'
+        ]))
+      );
+      
+      allow delete: if isAdmin(request.auth.uid);
+    }
+
+    // Security logs - admin only access
+    match /securityLogs/{logId} {
+      allow read: if isAuthenticated() && isAdmin(request.auth.uid);
+      allow write: if false; // Only server-side writes allowed
+    }
+
+    // User flags - admin only access
+    match /userFlags/{flagId} {
+      allow read, write: if isAuthenticated() && isAdmin(request.auth.uid);
+    }
+
+    // User achievements with validation
+    match /users/{userId}/achievements/{achievementId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isAdmin(request.auth.uid)
+      );
+      
+      allow write: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isAdmin(request.auth.uid)
+      ) && request.resource.data.keys().hasAll(['id', 'unlockedAt', 'progress']);
+    }
+
+    // Completed walks tracking with validation
+    match /users/{userId}/completedWalks/{walkId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isAdmin(request.auth.uid)
+      );
+      
+      allow write: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        isAdmin(request.auth.uid)
+      ) && request.resource.data.keys().hasAll(['walkId', 'completedAt', 'duration']);
+    }
+  }
+}

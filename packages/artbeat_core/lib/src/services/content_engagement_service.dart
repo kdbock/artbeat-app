@@ -472,4 +472,377 @@ class ContentEngagementService extends ChangeNotifier {
       // Don't throw - notifications are not critical
     }
   }
+
+  /// Get all ratings for a specific content
+  Future<List<Map<String, dynamic>>> getRatings({
+    required String contentId,
+    required String contentType,
+  }) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: contentId)
+          .where('contentType', isEqualTo: contentType)
+          .where('type', isEqualTo: 'rate')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final ratings = <Map<String, dynamic>>[];
+      for (final doc in querySnapshot.docs) {
+        final engagement = EngagementModel.fromFirestore(doc);
+
+        // Get user info
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(engagement.userId)
+            .get();
+
+        final userData = userDoc.data();
+
+        ratings.add({
+          'rating': engagement.metadata?['rating'] ?? 0,
+          'userId': engagement.userId,
+          'userName':
+              userData?['fullName'] ?? userData?['displayName'] ?? 'Anonymous',
+          'userProfileImage': userData?['profileImageUrl'],
+          'createdAt': engagement.createdAt,
+        });
+      }
+
+      return ratings;
+    } catch (e) {
+      debugPrint('Error fetching ratings: $e');
+      return [];
+    }
+  }
+
+  /// Get all reviews for a specific content
+  Future<List<Map<String, dynamic>>> getReviews({
+    required String contentId,
+    required String contentType,
+  }) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('engagements')
+          .where('contentId', isEqualTo: contentId)
+          .where('contentType', isEqualTo: contentType)
+          .where('type', isEqualTo: 'review')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final reviews = <Map<String, dynamic>>[];
+      for (final doc in querySnapshot.docs) {
+        final engagement = EngagementModel.fromFirestore(doc);
+
+        // Get user info
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(engagement.userId)
+            .get();
+
+        final userData = userDoc.data();
+
+        reviews.add({
+          'review': engagement.metadata?['review'] ?? '',
+          'userId': engagement.userId,
+          'userName':
+              userData?['fullName'] ?? userData?['displayName'] ?? 'Anonymous',
+          'userProfileImage': userData?['profileImageUrl'],
+          'createdAt': engagement.createdAt,
+        });
+      }
+
+      return reviews;
+    } catch (e) {
+      debugPrint('Error fetching reviews: $e');
+      return [];
+    }
+  }
+
+  /// Get average rating for content
+  Future<double> getAverageRating({
+    required String contentId,
+    required String contentType,
+  }) async {
+    try {
+      final ratings = await getRatings(
+        contentId: contentId,
+        contentType: contentType,
+      );
+
+      if (ratings.isEmpty) return 0.0;
+
+      final sum = ratings.fold<double>(
+        0.0,
+        (previous, rating) => previous + (rating['rating'] as int).toDouble(),
+      );
+
+      return sum / ratings.length;
+    } catch (e) {
+      debugPrint('Error calculating average rating: $e');
+      return 0.0;
+    }
+  }
+
+  // ========================================
+  // INDIVIDUAL SOCIAL METHODS (Convenience Wrappers)
+  // ========================================
+
+  /// Like content (convenience wrapper around toggleEngagement)
+  Future<bool> likeContent(String contentId, String contentType) async {
+    return toggleEngagement(
+      contentId: contentId,
+      contentType: contentType,
+      engagementType: EngagementType.like,
+    );
+  }
+
+  /// Unlike content (convenience wrapper around toggleEngagement)
+  Future<bool> unlikeContent(String contentId, String contentType) async {
+    // toggleEngagement handles both like and unlike based on current state
+    return toggleEngagement(
+      contentId: contentId,
+      contentType: contentType,
+      engagementType: EngagementType.like,
+    );
+  }
+
+  /// Add comment to content
+  Future<String> addComment({
+    required String contentId,
+    required String contentType,
+    required String comment,
+    String? parentCommentId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User must be authenticated to comment');
+    }
+
+    try {
+      // Create comment document
+      final commentData = {
+        'contentId': contentId,
+        'contentType': contentType,
+        'userId': user.uid,
+        'comment': comment,
+        'parentCommentId': parentCommentId,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'isDeleted': false,
+        'likeCount': 0,
+        'replyCount': 0,
+        'metadata': metadata ?? {},
+      };
+
+      final commentRef = await _firestore
+          .collection('comments')
+          .add(commentData);
+
+      // Update engagement stats using toggleEngagement
+      await toggleEngagement(
+        contentId: contentId,
+        contentType: contentType,
+        engagementType: EngagementType.comment,
+        metadata: {
+          'commentId': commentRef.id,
+          'comment': comment,
+          'parentCommentId': parentCommentId,
+        },
+      );
+
+      return commentRef.id;
+    } catch (e) {
+      debugPrint('Error adding comment: $e');
+      rethrow;
+    }
+  }
+
+  /// Share content to external platforms or within the app
+  Future<bool> shareContent({
+    required String contentId,
+    required String contentType,
+    String? platform,
+    String? message,
+    Map<String, dynamic>? metadata,
+  }) async {
+    try {
+      // Track share engagement
+      await toggleEngagement(
+        contentId: contentId,
+        contentType: contentType,
+        engagementType: EngagementType.share,
+        metadata: {
+          'platform': platform ?? 'internal',
+          'message': message,
+          'sharedAt': DateTime.now().toIso8601String(),
+          ...?metadata,
+        },
+      );
+
+      // Here you would implement actual sharing logic based on platform
+      // For now, we'll just track the engagement
+      debugPrint('Content shared: $contentId to ${platform ?? 'internal'}');
+
+      return true;
+    } catch (e) {
+      debugPrint('Error sharing content: $e');
+      return false;
+    }
+  }
+
+  /// Get comments for specific content
+  Future<List<Map<String, dynamic>>> getComments({
+    required String contentId,
+    required String contentType,
+    String? parentCommentId,
+    int limit = 50,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection('comments')
+          .where('contentId', isEqualTo: contentId)
+          .where('contentType', isEqualTo: contentType)
+          .where('isDeleted', isEqualTo: false);
+
+      if (parentCommentId != null) {
+        query = query.where('parentCommentId', isEqualTo: parentCommentId);
+      } else {
+        query = query.where('parentCommentId', isNull: true);
+      }
+
+      final querySnapshot = await query
+          .orderBy('createdAt', descending: false)
+          .limit(limit)
+          .get();
+
+      final comments = <Map<String, dynamic>>[];
+      for (final doc in querySnapshot.docs) {
+        final commentData = doc.data() as Map<String, dynamic>;
+
+        // Get user info
+        final userDoc = await _firestore
+            .collection('users')
+            .doc(commentData['userId'] as String)
+            .get();
+
+        final userData = userDoc.data();
+
+        comments.add(<String, dynamic>{
+          'id': doc.id,
+          'comment': commentData['comment'],
+          'userId': commentData['userId'],
+          'userName':
+              userData?['fullName'] ?? userData?['displayName'] ?? 'Anonymous',
+          'userProfileImage': userData?['profileImageUrl'],
+          'createdAt': commentData['createdAt'],
+          'likeCount': commentData['likeCount'] ?? 0,
+          'replyCount': commentData['replyCount'] ?? 0,
+          'parentCommentId': commentData['parentCommentId'],
+          'metadata': commentData['metadata'] ?? <String, dynamic>{},
+        });
+      }
+
+      return comments;
+    } catch (e) {
+      debugPrint('Error fetching comments: $e');
+      return [];
+    }
+  }
+
+  /// Delete comment (soft delete)
+  Future<bool> deleteComment(String commentId) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User must be authenticated to delete comments');
+    }
+
+    try {
+      final commentDoc = await _firestore
+          .collection('comments')
+          .doc(commentId)
+          .get();
+      if (!commentDoc.exists) {
+        throw Exception('Comment not found');
+      }
+
+      final commentData = commentDoc.data() as Map<String, dynamic>;
+
+      // Check if user owns the comment
+      if (commentData['userId'] != user.uid) {
+        throw Exception('Not authorized to delete this comment');
+      }
+
+      // Soft delete the comment
+      await _firestore.collection('comments').doc(commentId).update({
+        'isDeleted': true,
+        'deletedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      return true;
+    } catch (e) {
+      debugPrint('Error deleting comment: $e');
+      return false;
+    }
+  }
+
+  /// Check if user has liked specific content
+  Future<bool> hasUserLiked(String contentId, String contentType) async {
+    final user = _auth.currentUser;
+    if (user == null) return false;
+
+    try {
+      final engagementDoc = await _firestore
+          .collection('engagements')
+          .doc('${contentId}_${user.uid}_like')
+          .get();
+
+      return engagementDoc.exists;
+    } catch (e) {
+      debugPrint('Error checking like status: $e');
+      return false;
+    }
+  }
+
+  /// Get user's engagement with specific content
+  Future<Map<String, bool>> getUserEngagementStatus({
+    required String contentId,
+    required String contentType,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return {
+        'liked': false,
+        'shared': false,
+        'commented': false,
+        'followed': false,
+      };
+    }
+
+    try {
+      final engagementTypes = ['like', 'share', 'comment', 'follow'];
+      final engagementStatus = <String, bool>{};
+
+      for (final type in engagementTypes) {
+        final engagementDoc = await _firestore
+            .collection('engagements')
+            .doc('${contentId}_${user.uid}_$type')
+            .get();
+
+        engagementStatus['${type}d'] = engagementDoc.exists;
+      }
+
+      return engagementStatus;
+    } catch (e) {
+      debugPrint('Error getting user engagement status: $e');
+      return {
+        'liked': false,
+        'shared': false,
+        'commented': false,
+        'followed': false,
+      };
+    }
+  }
 }

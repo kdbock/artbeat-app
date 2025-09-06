@@ -61,7 +61,7 @@ class SimpleAdPlacementWidget extends StatelessWidget {
 
               return Container(
                 padding: padding ?? const EdgeInsets.all(8.0),
-                child: SimpleAdDisplayWidget(ad: ad),
+                child: SimpleAdDisplayWidget(ad: ad, location: location),
               );
             },
           );

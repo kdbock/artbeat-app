@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:artbeat_core/artbeat_core.dart' as core;
-import '../services/event_service.dart';
+import '../services/event_service_adapter.dart';
 
 /// Screen for creating and editing events (for Pro and Gallery plans)
 class EventCreationScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class EventCreationScreen extends StatefulWidget {
 }
 
 class _EventCreationScreenState extends State<EventCreationScreen> {
-  final EventService _eventService = EventService();
+  final EventServiceAdapter _eventService = EventServiceAdapter();
   final core.SubscriptionService _subscriptionService =
       core.SubscriptionService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -114,6 +114,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         _endTime = TimeOfDay.fromDateTime(eventModel.endDate!);
       }
 
+      // ArtbeatEvent doesn't have endDate, we'll use the same date
+      // This is a limitation we need to address in a proper migration
       setState(() {
         _isLoading = false;
       });

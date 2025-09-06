@@ -36,150 +36,152 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Colors.white,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              ArtWalkColors.primaryTeal.withValues(alpha: 0.05),
-              Colors.white,
-              ArtWalkColors.accentOrange.withValues(alpha: 0.02),
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                ArtWalkColors.primaryTeal.withValues(alpha: 0.05),
+                Colors.white,
+                ArtWalkColors.accentOrange.withValues(alpha: 0.02),
+              ],
+            ),
+          ),
+          child: Column(
+            children: [
+              // Header with user info
+              _buildDrawerHeader(),
+
+              // Navigation items
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    // Quick Actions Section
+                    _buildSectionHeader('Quick Actions'),
+                    _buildDrawerItem(
+                      context,
+                      'Create Art Walk',
+                      Icons.add_location,
+                      '/art-walk/create',
+                      ArtWalkColors.accentOrange,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Explore Map',
+                      Icons.map,
+                      '/art-walk/map',
+                      ArtWalkColors.primaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Browse Walks',
+                      Icons.list,
+                      '/art-walk/list',
+                      ArtWalkColors.primaryTeal,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // My Art Walks Section
+                    _buildSectionHeader('My Art Walks'),
+                    _buildDrawerItem(
+                      context,
+                      'My Walks',
+                      Icons.directions_walk,
+                      '/art-walk/my-walks',
+                      ArtWalkColors.primaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Completed Walks',
+                      Icons.check_circle,
+                      '/art-walk/completed',
+                      ArtWalkColors.primaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Saved Walks',
+                      Icons.bookmark,
+                      '/art-walk/saved',
+                      ArtWalkColors.primaryTeal,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // Discover Section
+                    _buildSectionHeader('Discover'),
+                    _buildDrawerItem(
+                      context,
+                      'Nearby Art',
+                      Icons.location_on,
+                      '/art-walk/nearby',
+                      ArtWalkColors.accentOrange,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Popular Walks',
+                      Icons.trending_up,
+                      '/art-walk/popular',
+                      ArtWalkColors.primaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Achievements',
+                      Icons.emoji_events,
+                      '/art-walk/achievements',
+                      ArtWalkColors.accentOrange,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // Tools Section
+                    _buildSectionHeader('Tools'),
+                    _buildDrawerItem(
+                      context,
+                      'My Captures',
+                      Icons.camera_alt,
+                      '/capture/public',
+                      ArtWalkColors.primaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Art Walk Settings',
+                      Icons.settings,
+                      '/art-walk/settings',
+                      Colors.grey,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // General Navigation
+                    _buildSectionHeader('Navigation'),
+                    _buildDrawerItem(
+                      context,
+                      'Main Dashboard',
+                      Icons.dashboard,
+                      '/dashboard',
+                      Colors.grey,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Profile',
+                      Icons.person,
+                      '/profile',
+                      Colors.grey,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Sign Out
+                    _buildSignOutItem(context),
+                  ],
+                ),
+              ),
             ],
           ),
-        ),
-        child: Column(
-          children: [
-            // Header with user info
-            _buildDrawerHeader(),
-
-            // Navigation items
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  // Quick Actions Section
-                  _buildSectionHeader('Quick Actions'),
-                  _buildDrawerItem(
-                    context,
-                    'Create Art Walk',
-                    Icons.add_location,
-                    '/art-walk/create',
-                    ArtWalkColors.accentOrange,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Explore Map',
-                    Icons.map,
-                    '/art-walk/map',
-                    ArtWalkColors.primaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Browse Walks',
-                    Icons.list,
-                    '/art-walk/list',
-                    ArtWalkColors.primaryTeal,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // My Art Walks Section
-                  _buildSectionHeader('My Art Walks'),
-                  _buildDrawerItem(
-                    context,
-                    'My Walks',
-                    Icons.directions_walk,
-                    '/art-walk/my-walks',
-                    ArtWalkColors.primaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Completed Walks',
-                    Icons.check_circle,
-                    '/art-walk/completed',
-                    ArtWalkColors.primaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Saved Walks',
-                    Icons.bookmark,
-                    '/art-walk/saved',
-                    ArtWalkColors.primaryTeal,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // Discover Section
-                  _buildSectionHeader('Discover'),
-                  _buildDrawerItem(
-                    context,
-                    'Nearby Art',
-                    Icons.location_on,
-                    '/art-walk/nearby',
-                    ArtWalkColors.accentOrange,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Popular Walks',
-                    Icons.trending_up,
-                    '/art-walk/popular',
-                    ArtWalkColors.primaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Achievements',
-                    Icons.emoji_events,
-                    '/art-walk/achievements',
-                    ArtWalkColors.accentOrange,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // Tools Section
-                  _buildSectionHeader('Tools'),
-                  _buildDrawerItem(
-                    context,
-                    'My Captures',
-                    Icons.camera_alt,
-                    '/capture/public',
-                    ArtWalkColors.primaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Art Walk Settings',
-                    Icons.settings,
-                    '/art-walk/settings',
-                    Colors.grey,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // General Navigation
-                  _buildSectionHeader('Navigation'),
-                  _buildDrawerItem(
-                    context,
-                    'Main Dashboard',
-                    Icons.dashboard,
-                    '/dashboard',
-                    Colors.grey,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Profile',
-                    Icons.person,
-                    '/profile',
-                    Colors.grey,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Sign Out
-                  _buildSignOutItem(context),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -194,7 +196,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
     return Container(
       height: 140,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -291,7 +293,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: ArtWalkColors.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,

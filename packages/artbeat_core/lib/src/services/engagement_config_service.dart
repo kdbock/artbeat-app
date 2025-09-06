@@ -17,13 +17,10 @@ class EngagementConfigService {
       case 'artwork':
         return [
           EngagementType.like,
-          EngagementType.comment,
-          EngagementType.reply,
           EngagementType.share,
           EngagementType.rate,
           EngagementType.review,
           EngagementType.gift,
-          EngagementType.seen,
         ];
       case 'artist':
       case 'profile':
@@ -85,8 +82,9 @@ class EngagementConfigService {
       case 'artwork':
         return [
           EngagementType.like,
-          EngagementType.comment,
           EngagementType.share,
+          EngagementType.rate,
+          EngagementType.review,
           EngagementType.gift,
         ];
       case 'artist':
@@ -137,6 +135,8 @@ class EngagementConfigService {
       case EngagementType.commission:
       case EngagementType.message:
       case EngagementType.review:
+      case EngagementType.rate:
+      case EngagementType.share:
         return true;
       default:
         return false;

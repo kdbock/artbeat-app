@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/artbeat_event.dart';
 
@@ -23,7 +23,7 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormatter = DateFormat('MMM dd, yyyy • h:mm a');
+    final dateFormatter = intl.DateFormat('MMM dd, yyyy • h:mm a');
     final eventDate = event.dateTime;
 
     return UniversalContentCard(

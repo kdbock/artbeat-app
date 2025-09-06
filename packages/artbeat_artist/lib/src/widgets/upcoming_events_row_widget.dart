@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_events/artbeat_events.dart';
 
 /// Widget for displaying upcoming local events in a horizontal scrollable row
@@ -73,7 +72,7 @@ class UpcomingEventsRowWidget extends StatelessWidget {
               }
 
               final events = snapshot.data!.docs
-                  .map((doc) => EventModel.fromFirestore(doc))
+                  .map((doc) => ArtbeatEvent.fromFirestore(doc))
                   .where((event) {
                 // Filter to only show events with locations containing the zipCode
                 return event.location.contains(zipCode);
@@ -96,8 +95,8 @@ class UpcomingEventsRowWidget extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final event = events[index];
                   final formattedDate =
-                      DateFormat.MMMd().format(event.startDate);
-                  final formattedTime = DateFormat.jm().format(event.startDate);
+                      DateFormat.MMMd().format(event.dateTime);
+                  final formattedTime = DateFormat.jm().format(event.dateTime);
 
                   return Container(
                     width: 280,
@@ -121,13 +120,13 @@ class UpcomingEventsRowWidget extends StatelessWidget {
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(4.0),
                               ),
-                              child: event.imageUrl != null &&
-                                      event.imageUrl!.isNotEmpty &&
-                                      Uri.tryParse(event.imageUrl!)
+                              child: event.imageUrls.isNotEmpty &&
+                                      event.imageUrls.first.isNotEmpty &&
+                                      Uri.tryParse(event.imageUrls.first)
                                               ?.hasScheme ==
                                           true
                                   ? Image.network(
-                                      event.imageUrl!,
+                                      event.imageUrls.first,
                                       height: 120,
                                       width: double.infinity,
                                       fit: BoxFit.cover,

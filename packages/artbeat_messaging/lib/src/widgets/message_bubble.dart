@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/message.dart';
+import 'message_reactions_widget.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isCurrentUser;
+  final String? chatId;
   final VoidCallback? onImageTap;
+  final VoidCallback? onReactionAdded;
 
   const MessageBubble({
     super.key,
     required this.message,
     required this.isCurrentUser,
+    this.chatId,
     this.onImageTap,
+    this.onReactionAdded,
   });
 
   @override
@@ -80,6 +85,21 @@ class MessageBubble extends StatelessWidget {
               if (isCurrentUser) _buildAvatar(),
             ],
           ),
+
+          // Add reactions widget if chatId is provided
+          if (chatId != null)
+            Padding(
+              padding: EdgeInsets.only(
+                left: isCurrentUser ? 0 : 48,
+                right: isCurrentUser ? 48 : 0,
+              ),
+              child: MessageReactionsWidget(
+                messageId: message.id,
+                chatId: chatId!,
+                onReactionAdded: onReactionAdded,
+              ),
+            ),
+
           Padding(
             padding: EdgeInsets.only(
               top: 4,
@@ -203,6 +223,6 @@ class MessageBubble extends StatelessWidget {
   }
 
   String _formatTime(DateTime timestamp) {
-    return DateFormat.jm().format(timestamp);
+    return intl.DateFormat.jm().format(timestamp);
   }
 }

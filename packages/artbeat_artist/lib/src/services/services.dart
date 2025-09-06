@@ -3,7 +3,7 @@
 
 export 'analytics_service.dart';
 export 'artwork_service.dart';
-export 'event_service.dart';
+export 'event_service_adapter.dart';
 export 'gallery_invitation_service.dart';
 export 'subscription_service.dart';
 export 'user_service.dart';

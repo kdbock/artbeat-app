@@ -31,14 +31,23 @@ class ArtworkCardWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: isValidAvatarUrl
-                      ? NetworkImage(artist.avatarUrl)
-                      : null,
-                  radius: 24,
-                  child: !isValidAvatarUrl
-                      ? const Icon(Icons.person, size: 24)
-                      : null,
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/artist/public-profile',
+                      arguments: {'artistId': artist.id},
+                    );
+                  },
+                  child: CircleAvatar(
+                    backgroundImage: isValidAvatarUrl
+                        ? NetworkImage(artist.avatarUrl)
+                        : null,
+                    radius: 24,
+                    child: !isValidAvatarUrl
+                        ? const Icon(Icons.person, size: 24)
+                        : null,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Column(

@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_capture/artbeat_capture.dart';
-import 'package:artbeat_capture/src/services/capture_service.dart';
-import 'package:artbeat_capture/src/services/storage_service.dart';
 
 /// Confirmation screen for reviewing and submitting a capture
 class CaptureConfirmationScreen extends StatefulWidget {

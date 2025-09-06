@@ -14,6 +14,7 @@ import 'package:artbeat_capture/artbeat_capture.dart' as capture;
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 import 'package:artbeat_ads/artbeat_ads.dart' as ads;
+import 'package:artbeat_settings/artbeat_settings.dart' as settings_pkg;
 
 import '../guards/auth_guard.dart';
 import '../screens/enhanced_search_screen.dart';
@@ -154,6 +155,11 @@ class AppRouter {
     // Gallery routes
     if (routeName.startsWith('/gallery')) {
       return _handleGalleryRoutes(settings);
+    }
+
+    // Commission routes
+    if (routeName.startsWith('/commission')) {
+      return _handleCommissionRoutes(settings);
     }
 
     // Community routes
@@ -431,8 +437,8 @@ class AppRouter {
         );
 
       case AppRoutes.communityArtists:
-        return RouteUtils.createSimpleRoute(
-          child: const Center(child: Text('Community Artists - Coming Soon')),
+        return RouteUtils.createMainLayoutRoute(
+          child: const community.PortfoliosScreen(),
         );
 
       case AppRoutes.communitySearch:
@@ -442,28 +448,28 @@ class AppRouter {
 
       case AppRoutes.communityPosts:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Community Posts - Coming Soon')),
+          child: const community.UnifiedCommunityHub(),
         );
 
       case AppRoutes.communityStudios:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Studios - Coming Soon')),
+          child: const community.StudiosScreen(),
         );
 
       case AppRoutes.communityGifts:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Gift Artists'),
-          child: const Center(child: Text('Select an artist to send a gift')),
+          child: const community.GiftsScreen(),
         );
 
       case AppRoutes.communityPortfolios:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Portfolios - Coming Soon')),
+          child: const community.PortfoliosScreen(),
         );
 
       case AppRoutes.communityModeration:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Moderation - Coming Soon')),
+          child: const community.ModerationQueueScreen(),
         );
 
       case AppRoutes.communitySponsorships:
@@ -473,29 +479,27 @@ class AppRouter {
 
       case AppRoutes.communitySettings:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Community Settings - Coming Soon')),
+          child: const community.QuietModeScreen(),
         );
 
       case AppRoutes.communityCreate:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(
-            child: Text('Create Community Post - Coming Soon'),
-          ),
+          child: const community.CreatePostScreen(),
         );
 
       case AppRoutes.communityMessaging:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Community Messaging - Coming Soon')),
+          child: const community.StudiosScreen(),
         );
 
       case AppRoutes.communityTrending:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Trending Posts - Coming Soon')),
+          child: const community.TrendingContentScreen(),
         );
 
       case AppRoutes.communityFeatured:
         return RouteUtils.createMainLayoutRoute(
-          child: const Center(child: Text('Featured Posts - Coming Soon')),
+          child: const community.UnifiedCommunityHub(),
         );
 
       case AppRoutes.community:
@@ -506,6 +510,36 @@ class AppRouter {
 
       default:
         return RouteUtils.createNotFoundRoute('Community feature');
+    }
+  }
+
+  /// Handles commission-related routes
+  Route<dynamic>? _handleCommissionRoutes(RouteSettings settings) {
+    switch (settings.name) {
+      case '/commission/request':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artistId = args?['artistId'] as String?;
+        final artistName = args?['artistName'] as String?;
+
+        if (artistId == null || artistName == null) {
+          return RouteUtils.createErrorRoute('Artist information required');
+        }
+
+        return RouteUtils.createSimpleRoute(
+          child: community.CommissionRequestScreen(
+            artistId: artistId,
+            artistName: artistName,
+          ),
+        );
+
+      case '/commission/hub':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Commission Hub'),
+          child: const community.CommissionHubScreen(),
+        );
+
+      default:
+        return RouteUtils.createNotFoundRoute('Commission feature');
     }
   }
 
@@ -640,17 +674,57 @@ class AppRouter {
       case AppRoutes.eventsDiscover:
       case AppRoutes.eventsDashboard:
       case AppRoutes.eventsArtistDashboard:
-        return RouteUtils.createSimpleRoute(
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 4,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight + 4),
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFE74C3C), // Red
+                    Color(0xFF3498DB), // Light Blue
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const core.EnhancedUniversalHeader(
+                title: 'Events',
+                showLogo: false,
+                showDeveloperTools: true,
+                backgroundColor: Colors.transparent,
+                titleGradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFE74C3C), // Red
+                    Color(0xFF3498DB), // Light Blue
+                  ],
+                ),
+              ),
+            ),
+          ),
+          drawer: const events.EventsDrawer(),
           child: const events.EventsDashboardScreen(),
         );
 
       case AppRoutes.eventsCreate:
         return RouteUtils.createMainLayoutRoute(
+          drawer: const events.EventsDrawer(),
           child: const events.CreateEventScreen(),
         );
 
       case AppRoutes.myEvents:
-        return RouteUtils.createSimpleRoute(
+        return RouteUtils.createMainLayoutRoute(
+          drawer: const events.EventsDrawer(),
           child: const events.UserEventsDashboardScreen(),
         );
 
@@ -664,7 +738,8 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         final eventId = args?['eventId'] as String?;
         if (eventId != null) {
-          return RouteUtils.createSimpleRoute(
+          return RouteUtils.createMainLayoutRoute(
+            drawer: const events.EventsDrawer(),
             child: events.EventDetailsScreen(eventId: eventId),
           );
         }
@@ -707,6 +782,23 @@ class AppRouter {
           child: const admin.EnhancedAdminContentReviewScreen(),
         );
 
+      case '/admin/enhanced-dashboard':
+        return RouteUtils.createMainNavRoute(
+          child: const admin.AdminEnhancedDashboardScreen(),
+        );
+
+      case '/admin/financial-analytics':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Financial Analytics'),
+          child: const admin.AdminFinancialAnalyticsScreen(),
+        );
+
+      case '/admin/advanced-content-management':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Advanced Content Management'),
+          child: const admin.AdminAdvancedContentManagementScreen(),
+        );
+
       default:
         return RouteUtils.createComingSoonRoute('Admin feature');
     }
@@ -715,10 +807,34 @@ class AppRouter {
   /// Handles settings-related routes
   Route<dynamic>? _handleSettingsRoutes(RouteSettings settings) {
     switch (settings.name) {
+      case AppRoutes.settings:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Settings'),
+          child: const settings_pkg.SettingsScreen(),
+        );
+
       case AppRoutes.settingsAccount:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Account Settings'),
-          child: const Center(child: Text('Account Settings - Coming Soon')),
+          child: const settings_pkg.AccountSettingsScreen(),
+        );
+
+      case AppRoutes.settingsNotifications:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Notification Settings'),
+          child: const settings_pkg.NotificationSettingsScreen(),
+        );
+
+      case AppRoutes.settingsPrivacy:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Privacy Settings'),
+          child: const settings_pkg.PrivacySettingsScreen(),
+        );
+
+      case AppRoutes.securitySettings:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Security Settings'),
+          child: const settings_pkg.SecuritySettingsScreen(),
         );
 
       case AppRoutes.paymentSettings:
@@ -728,6 +844,14 @@ class AppRouter {
         );
 
       default:
+        // Handle blocked users and other dynamic routes
+        if (settings.name == '/settings/blocked-users') {
+          return RouteUtils.createMainLayoutRoute(
+            appBar: RouteUtils.createAppBar('Blocked Users'),
+            child: const settings_pkg.BlockedUsersScreen(),
+          );
+        }
+
         final feature = settings.name!.split('/').last;
         return RouteUtils.createComingSoonRoute(
           '${feature[0].toUpperCase()}${feature.substring(1)} Settings',

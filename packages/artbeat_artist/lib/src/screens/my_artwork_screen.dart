@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 import '../services/subscription_service.dart' as artist_service;
 
 /// Screen for viewing and managing the current user's artwork
@@ -353,21 +354,20 @@ class _MyArtworkScreenState extends State<MyArtworkScreen> {
                     ),
                     child: artwork.imageUrl.isNotEmpty &&
                             Uri.tryParse(artwork.imageUrl)?.hasScheme == true
-                        ? Image.network(
-                            artwork.imageUrl,
+                        ? SecureNetworkImage(
+                            imageUrl: artwork.imageUrl,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: double.infinity,
-                                color: Colors.grey[200],
-                                child: const Icon(
-                                  Icons.image_not_supported,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                              );
-                            },
+                            enableThumbnailFallback: true,
+                            errorWidget: Container(
+                              width: double.infinity,
+                              color: Colors.grey[200],
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                            ),
                           )
                         : Container(
                             width: double.infinity,

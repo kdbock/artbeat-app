@@ -6,7 +6,7 @@ enum AdType {
 
 extension AdTypeExtension on AdType {
   /// Get display name for this ad type
-  String get name {
+  String get displayName {
     switch (this) {
       case AdType.banner_ad:
         return 'Banner Ad';

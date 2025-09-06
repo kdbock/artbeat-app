@@ -181,33 +181,93 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
   }
 
   Future<void> _pickCoverImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.camera,
-      preferredCameraDevice: CameraDevice.front,
-    );
-    if (pickedFile != null) {
-      // Launch cropper for optimal visual
-      final CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop ARTBeat Selfie',
-            toolbarColor: Colors.black,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.ratio16x9,
-            lockAspectRatio: false,
-          ),
-          IOSUiSettings(
-            title: 'Crop ARTBeat Selfie',
-            aspectRatioLockEnabled: false,
-          ),
-        ],
+    try {
+      print('DEBUG: Starting image picker...');
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
       );
-      if (croppedFile != null) {
-        setState(() {
-          _coverImageFile = File(croppedFile.path);
-        });
+
+      if (pickedFile != null) {
+        print('DEBUG: Image picked: ${pickedFile.path}');
+
+        // Check if the file exists before proceeding
+        final file = File(pickedFile.path);
+        if (!await file.exists()) {
+          print('DEBUG: ERROR - Picked image file does not exist');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Error: Image file not found')),
+            );
+          }
+          return;
+        }
+
+        // Launch cropper for optimal visual
+        final CroppedFile? croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          aspectRatio: const CropAspectRatio(ratioX: 16, ratioY: 9),
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop ARTBeat Selfie',
+              toolbarColor: Colors.black,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.ratio16x9,
+              lockAspectRatio: false,
+            ),
+            IOSUiSettings(
+              title: 'Crop ARTBeat Selfie',
+              aspectRatioLockEnabled: false,
+            ),
+          ],
+        );
+
+        if (croppedFile != null) {
+          print('DEBUG: Image cropped: ${croppedFile.path}');
+
+          // Check if the cropped file exists before setting state
+          final croppedFileObj = File(croppedFile.path);
+          if (!await croppedFileObj.exists()) {
+            print('DEBUG: ERROR - Cropped image file does not exist');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error: Cropped image file not found'),
+                ),
+              );
+            }
+            return;
+          }
+
+          if (mounted) {
+            setState(() {
+              _coverImageFile = croppedFileObj;
+            });
+            print(
+              'DEBUG: Cover image file set in state: ${_coverImageFile?.path}',
+            );
+
+            // Trigger a rebuild to show the image preview
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {});
+              }
+            });
+          }
+        } else {
+          print('DEBUG: Image cropping was cancelled');
+        }
+      } else {
+        print('DEBUG: No image was picked');
+      }
+    } catch (e, stackTrace) {
+      print('DEBUG: ERROR in _pickCoverImage: $e');
+      print('DEBUG: Stack trace: $stackTrace');
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error selecting image: $e')));
       }
     }
   }
@@ -275,6 +335,16 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
           isPublic: _isPublic,
         );
 
+        if (mounted) {
+          print('DEBUG: Art walk created with ID: $artWalkId');
+          print(
+            'DEBUG: Cover image file was provided: ${_coverImageFile != null}',
+          );
+          if (_coverImageFile != null) {
+            print('DEBUG: Cover image file path: ${_coverImageFile!.path}');
+          }
+        }
+
         if (mounted && artWalkId != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Art Walk created successfully!')),
@@ -282,7 +352,10 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
           Navigator.of(context).pop();
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('DEBUG: ERROR in _submitForm: $e');
+      print('DEBUG: Stack trace: $stackTrace');
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -482,7 +555,28 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
             child: _coverImageFile != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.file(_coverImageFile!, fit: BoxFit.cover),
+                    child: Image.file(
+                      _coverImageFile!,
+                      fit: BoxFit.cover,
+                      cacheWidth: 300, // Limit memory usage
+                      cacheHeight: 200, // Limit memory usage
+                      errorBuilder: (context, error, stackTrace) {
+                        print('DEBUG: Error displaying cover image: $error');
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error, size: 40, color: Colors.red),
+                                SizedBox(height: 8),
+                                Text('Error loading image'),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   )
                 : const Center(
                     child: Column(
@@ -550,8 +644,19 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
   @override
   void dispose() {
+    print('DEBUG: CreateArtWalkScreen disposing');
+
+    // Clean up controllers
     _titleController.dispose();
     _descriptionController.dispose();
+
+    // Clear image reference to free memory
+    _coverImageFile = null;
+
+    // Clear art selection
+    _selectedArtIds.clear();
+    _availablePublicArt.clear();
+
     super.dispose();
   }
 }

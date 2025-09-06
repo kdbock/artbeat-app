@@ -1080,11 +1080,478 @@ class _AdminAdvancedUserManagementScreenState
   }
 
   void _showUserActions(UserModel user) {
-    // Implementation for user actions menu
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: user.profileImageUrl.isNotEmpty
+                          ? NetworkImage(user.profileImageUrl)
+                          : null,
+                      child: user.profileImageUrl.isEmpty
+                          ? Text(
+                              user.fullName.isNotEmpty
+                                  ? user.fullName[0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(fontSize: 16),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.fullName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            user.email,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 1),
+
+              // Action items
+              ListTile(
+                leading: const Icon(Icons.visibility, color: Colors.blue),
+                title: const Text('View Details'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _navigateToUserDetail(user as UserAdminModel);
+                },
+              ),
+
+              ListTile(
+                leading: const Icon(Icons.edit, color: Colors.orange),
+                title: const Text('Edit User'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditUserDialog(user as UserAdminModel);
+                },
+              ),
+
+              if (user is UserAdminModel) ...[
+                if (!user.isSuspended)
+                  ListTile(
+                    leading: const Icon(Icons.block, color: Colors.red),
+                    title: const Text('Suspend User'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showSuspendUserDialog(user);
+                    },
+                  )
+                else
+                  ListTile(
+                    leading:
+                        const Icon(Icons.check_circle, color: Colors.green),
+                    title: const Text('Unsuspend User'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _unsuspendUser(user);
+                    },
+                  ),
+                if (!user.isVerified)
+                  ListTile(
+                    leading: const Icon(Icons.verified, color: Colors.green),
+                    title: const Text('Verify User'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _verifyUser(user);
+                    },
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.person_add, color: Colors.purple),
+                  title: const Text('Change User Type'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showChangeUserTypeDialog(user);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.note_add, color: Colors.grey),
+                  title: const Text('Add Admin Note'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAddNoteDialog(user);
+                  },
+                ),
+              ],
+
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _showCreateUserDialog() {
     // Implementation for create user dialog
+  }
+
+  void _showEditUserDialog(UserAdminModel user) {
+    // Show a dialog to edit user details
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit User: ${user.fullName}'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Edit user functionality will be available soon.'),
+            Text('Navigate to user details for full editing capabilities.'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _navigateToUserDetail(user);
+            },
+            child: const Text('View Details'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuspendUserDialog(UserAdminModel user) {
+    final reasonController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Suspend User: ${user.fullName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Are you sure you want to suspend ${user.fullName}?'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reasonController,
+              decoration: const InputDecoration(
+                labelText: 'Suspension Reason',
+                hintText: 'Enter reason for suspension...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _suspendUser(user, reasonController.text);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Suspend', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _suspendUser(UserAdminModel user, String reason) async {
+    try {
+      setState(() => _isLoading = true);
+
+      // For now, just show success - implement actual suspension later
+      await Future<void>.delayed(
+          const Duration(seconds: 1)); // Simulate API call
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${user.fullName} has been suspended'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        _loadUsers();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error suspending user: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _unsuspendUser(UserAdminModel user) async {
+    try {
+      setState(() => _isLoading = true);
+
+      // For now, just show success - implement actual unsuspension later
+      await Future<void>.delayed(
+          const Duration(seconds: 1)); // Simulate API call
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${user.fullName} has been unsuspended'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadUsers();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error unsuspending user: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _verifyUser(UserAdminModel user) async {
+    try {
+      setState(() => _isLoading = true);
+
+      // For now, just show success - implement actual verification later
+      await Future<void>.delayed(
+          const Duration(seconds: 1)); // Simulate API call
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${user.fullName} has been verified'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadUsers();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error verifying user: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showChangeUserTypeDialog(UserAdminModel user) {
+    String selectedType = user.userType ?? 'user';
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Change User Type: ${user.fullName}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Current type: ${user.userType ?? "user"}'),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: selectedType,
+                decoration: const InputDecoration(
+                  labelText: 'New User Type',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'user', child: Text('Regular User')),
+                  DropdownMenuItem(value: 'artist', child: Text('Artist')),
+                  DropdownMenuItem(
+                      value: 'business', child: Text('Gallery/Business')),
+                  DropdownMenuItem(
+                      value: 'moderator', child: Text('Moderator')),
+                  DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => selectedType = value);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _changeUserType(user, selectedType);
+              },
+              child: const Text('Change Type'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _changeUserType(UserAdminModel user, String newType) async {
+    try {
+      setState(() => _isLoading = true);
+
+      // For now, just show success - implement actual type change later
+      await Future<void>.delayed(
+          const Duration(seconds: 1)); // Simulate API call
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${user.fullName} type changed to $newType'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadUsers();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error changing user type: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showAddNoteDialog(UserAdminModel user) {
+    final noteController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Add Admin Note: ${user.fullName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: noteController,
+              decoration: const InputDecoration(
+                labelText: 'Admin Note',
+                hintText: 'Enter your note about this user...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 4,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This note will be visible to other admins',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _addAdminNote(user, noteController.text);
+            },
+            child: const Text('Add Note'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addAdminNote(UserAdminModel user, String note) async {
+    if (note.trim().isEmpty) return;
+
+    try {
+      setState(() => _isLoading = true);
+
+      // For now, just show success - implement actual note addition later
+      await Future<void>.delayed(
+          const Duration(seconds: 1)); // Simulate API call
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Admin note added successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadUsers();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error adding note: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }
 

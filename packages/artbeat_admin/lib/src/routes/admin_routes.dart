@@ -15,6 +15,9 @@ import '../screens/admin_data_management_screen.dart';
 import '../screens/admin_system_alerts_screen.dart';
 import '../screens/admin_help_support_screen.dart';
 import '../screens/migration_screen.dart';
+import '../screens/admin_events_management_screen.dart';
+import '../screens/admin_ads_management_screen.dart';
+import '../screens/admin_community_moderation_screen.dart';
 import '../models/user_admin_model.dart';
 
 /// Admin routing configuration for the ARTbeat admin system
@@ -33,6 +36,9 @@ class AdminRoutes {
   static const String analytics = '/admin/analytics';
   static const String adminSettings = '/admin/settings';
   static const String adManagement = '/admin/ad-management';
+  static const String adsManagement = '/admin/ads-management';
+  static const String eventsManagement = '/admin/events-management';
+  static const String communityModeration = '/admin/community-moderation';
   static const String couponManagement = '/admin/coupon-management';
   static const String securityCenter = '/admin/security';
   static const String dataManagement = '/admin/data';
@@ -119,6 +125,24 @@ class AdminRoutes {
       case adManagement:
         return MaterialPageRoute<void>(
           builder: (_) => const SimpleAdManagementScreen(),
+          settings: settings,
+        );
+
+      case adsManagement:
+        return MaterialPageRoute<void>(
+          builder: (_) => const AdminAdsManagementScreen(),
+          settings: settings,
+        );
+
+      case eventsManagement:
+        return MaterialPageRoute<void>(
+          builder: (_) => const AdminEventsManagementScreen(),
+          settings: settings,
+        );
+
+      case communityModeration:
+        return MaterialPageRoute<void>(
+          builder: (_) => const AdminCommunityModerationScreen(),
           settings: settings,
         );
 

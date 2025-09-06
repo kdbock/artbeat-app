@@ -4,6 +4,7 @@ import '../models/analytics_model.dart';
 import '../models/recent_activity_model.dart';
 import '../services/recent_activity_service.dart';
 import '../services/enhanced_analytics_service.dart';
+import '../services/consolidated_admin_service.dart';
 import '../widgets/admin_drawer.dart';
 
 /// Enhanced Admin Dashboard with comprehensive analytics and real-time metrics
@@ -26,6 +27,8 @@ class _AdminEnhancedDashboardScreenState
     extends State<AdminEnhancedDashboardScreen> with TickerProviderStateMixin {
   final RecentActivityService _activityService = RecentActivityService();
   final EnhancedAnalyticsService _analyticsService = EnhancedAnalyticsService();
+  final ConsolidatedAdminService _consolidatedService =
+      ConsolidatedAdminService();
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -33,6 +36,7 @@ class _AdminEnhancedDashboardScreenState
 
   AnalyticsModel? _analytics;
   List<RecentActivityModel> _recentActivities = [];
+  Map<String, dynamic> _consolidatedStats = {};
   bool _isLoading = true;
   bool _isLoadingActivities = true;
   bool _isLoadingAnalytics = true;
@@ -62,9 +66,10 @@ class _AdminEnhancedDashboardScreenState
     }
 
     try {
-      await Future.wait([
+      await Future.wait<void>([
         _loadRecentActivities(),
         _loadAnalytics(),
+        _loadConsolidatedStats(),
       ]).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
@@ -140,6 +145,30 @@ class _AdminEnhancedDashboardScreenState
         setState(() {
           _isLoadingAnalytics = false;
           _error = 'Failed to load analytics: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _loadConsolidatedStats() async {
+    try {
+      final stats = await _consolidatedService.getDashboardStats();
+      final messagingStats = await _consolidatedService.getMessagingStats();
+
+      if (mounted) {
+        setState(() {
+          _consolidatedStats = {
+            ...stats,
+            'messaging': messagingStats,
+          };
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _consolidatedStats = {
+            'error': 'Failed to load consolidated stats: $e',
+          };
         });
       }
     }
@@ -228,6 +257,8 @@ class _AdminEnhancedDashboardScreenState
           children: [
             if (_isUsingFallbackData) _buildFallbackBanner(),
             _buildKPIOverview(),
+            const SizedBox(height: 24),
+            _buildConsolidatedStats(),
             const SizedBox(height: 24),
             _buildQuickActions(),
             const SizedBox(height: 24),
@@ -1280,5 +1311,159 @@ class _AdminEnhancedDashboardScreenState
     } else {
       return 'Just now';
     }
+  }
+
+  Widget _buildConsolidatedStats() {
+    if (_consolidatedStats.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (_consolidatedStats.containsKey('error')) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Consolidated Statistics',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                (_consolidatedStats['error'] as String?) ?? 'Unknown error',
+                style: TextStyle(color: Colors.red[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final users = _consolidatedStats['users'] as Map<String, dynamic>? ?? {};
+    final content =
+        _consolidatedStats['content'] as Map<String, dynamic>? ?? {};
+    final messaging =
+        _consolidatedStats['messaging'] as Map<String, dynamic>? ?? {};
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Consolidated Statistics',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Users',
+                    '${users['total'] ?? 0}',
+                    Icons.people,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'New Today',
+                    '${users['newToday'] ?? 0}',
+                    Icons.person_add,
+                    Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Active Today',
+                    '${users['activeToday'] ?? 0}',
+                    Icons.online_prediction,
+                    Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Content',
+                    '${content['total'] ?? 0}',
+                    Icons.image,
+                    Colors.purple,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Pending Review',
+                    '${content['pendingModeration'] ?? 0}',
+                    Icons.pending,
+                    Colors.amber,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildStatCard(
+                    'Messages Today',
+                    '${messaging['messagesToday'] ?? 0}',
+                    Icons.message,
+                    Colors.teal,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -35,171 +35,173 @@ class _CaptureDrawerState extends State<CaptureDrawer> {
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Colors.white,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
-              Colors.white,
-              ArtbeatColors.primaryPurple.withValues(alpha: 0.02),
-            ],
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                ArtbeatColors.primaryGreen.withValues(alpha: 0.05),
+                Colors.white,
+                ArtbeatColors.primaryPurple.withValues(alpha: 0.02),
+              ],
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            // Header with user info
-            _buildDrawerHeader(),
+          child: Column(
+            children: [
+              // Header with user info
+              _buildDrawerHeader(),
 
-            // Navigation items
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
-                  // Quick Actions Section
-                  _buildSectionHeader('Quick Actions'),
-                  _buildDrawerItem(
-                    context,
-                    'Take Photo',
-                    Icons.camera_alt,
-                    '/capture/camera',
-                    ArtbeatColors.primaryGreen,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Browse Captures',
-                    Icons.grid_view,
-                    '/capture/browse',
-                    ArtbeatColors.secondaryTeal,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // My Captures Section
-                  _buildSectionHeader('My Captures'),
-                  _buildDrawerItem(
-                    context,
-                    'My Captures',
-                    Icons.photo_album,
-                    '/capture/my-captures',
-                    ArtbeatColors.primaryGreen,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Pending Review',
-                    Icons.pending,
-                    '/capture/pending',
-                    ArtbeatColors.accentYellow,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Approved Captures',
-                    Icons.check_circle,
-                    '/capture/approved',
-                    ArtbeatColors.primaryGreen,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // Community Section
-                  _buildSectionHeader('Community'),
-                  _buildDrawerItem(
-                    context,
-                    'Public Captures',
-                    Icons.public,
-                    '/capture/public',
-                    ArtbeatColors.primaryPurple,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Nearby Art',
-                    Icons.location_on,
-                    '/capture/nearby',
-                    ArtbeatColors.secondaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Popular Captures',
-                    Icons.trending_up,
-                    '/capture/popular',
-                    ArtbeatColors.accentYellow,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // Tools Section
-                  _buildSectionHeader('Tools'),
-                  _buildDrawerItem(
-                    context,
-                    'Search Captures',
-                    Icons.search,
-                    '/capture/search',
-                    ArtbeatColors.primaryGreen,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Capture Map',
-                    Icons.map,
-                    '/capture/map',
-                    ArtbeatColors.primaryPurple,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Capture Settings',
-                    Icons.settings,
-                    '/capture/settings',
-                    Colors.grey,
-                  ),
-
-                  const Divider(height: 24),
-
-                  // Content Moderation (if admin)
-                  if (_currentUser?.userType == UserType.admin)
-                    _buildSectionHeader('Moderation'),
-                  if (_currentUser?.userType == UserType.admin)
+              // Navigation items
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    // Quick Actions Section
+                    _buildSectionHeader('Quick Actions'),
                     _buildDrawerItem(
                       context,
-                      'Content Moderation',
-                      Icons.admin_panel_settings,
-                      '/capture/admin/moderation',
-                      Colors.red,
+                      'Take Photo',
+                      Icons.camera_alt,
+                      '/capture/camera',
+                      ArtbeatColors.primaryGreen,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Browse Captures',
+                      Icons.grid_view,
+                      '/capture/browse',
+                      ArtbeatColors.secondaryTeal,
                     ),
 
-                  const Divider(height: 24),
+                    const Divider(height: 24),
 
-                  // General Navigation
-                  _buildSectionHeader('Navigation'),
-                  _buildDrawerItem(
-                    context,
-                    'Main Dashboard',
-                    Icons.dashboard,
-                    '/dashboard',
-                    Colors.grey,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Art Walk',
-                    Icons.directions_walk,
-                    '/art-walk/dashboard',
-                    ArtbeatColors.secondaryTeal,
-                  ),
-                  _buildDrawerItem(
-                    context,
-                    'Profile',
-                    Icons.person,
-                    '/profile',
-                    Colors.grey,
-                  ),
+                    // My Captures Section
+                    _buildSectionHeader('My Captures'),
+                    _buildDrawerItem(
+                      context,
+                      'My Captures',
+                      Icons.photo_album,
+                      '/capture/my-captures',
+                      ArtbeatColors.primaryGreen,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Pending Review',
+                      Icons.pending,
+                      '/capture/pending',
+                      ArtbeatColors.accentYellow,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Approved Captures',
+                      Icons.check_circle,
+                      '/capture/approved',
+                      ArtbeatColors.primaryGreen,
+                    ),
 
-                  const SizedBox(height: 16),
+                    const Divider(height: 24),
 
-                  // Sign Out
-                  _buildSignOutItem(context),
-                ],
+                    // Community Section
+                    _buildSectionHeader('Community'),
+                    _buildDrawerItem(
+                      context,
+                      'Public Captures',
+                      Icons.public,
+                      '/capture/public',
+                      ArtbeatColors.primaryPurple,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Nearby Art',
+                      Icons.location_on,
+                      '/capture/nearby',
+                      ArtbeatColors.secondaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Popular Captures',
+                      Icons.trending_up,
+                      '/capture/popular',
+                      ArtbeatColors.accentYellow,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // Tools Section
+                    _buildSectionHeader('Tools'),
+                    _buildDrawerItem(
+                      context,
+                      'Search Captures',
+                      Icons.search,
+                      '/capture/search',
+                      ArtbeatColors.primaryGreen,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Capture Map',
+                      Icons.map,
+                      '/capture/map',
+                      ArtbeatColors.primaryPurple,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Capture Settings',
+                      Icons.settings,
+                      '/capture/settings',
+                      Colors.grey,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // Content Moderation (if admin)
+                    if (_currentUser?.userType == UserType.admin)
+                      _buildSectionHeader('Moderation'),
+                    if (_currentUser?.userType == UserType.admin)
+                      _buildDrawerItem(
+                        context,
+                        'Content Moderation',
+                        Icons.admin_panel_settings,
+                        '/capture/admin/moderation',
+                        Colors.red,
+                      ),
+
+                    const Divider(height: 24),
+
+                    // General Navigation
+                    _buildSectionHeader('Navigation'),
+                    _buildDrawerItem(
+                      context,
+                      'Main Dashboard',
+                      Icons.dashboard,
+                      '/dashboard',
+                      Colors.grey,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Art Walk',
+                      Icons.directions_walk,
+                      '/art-walk/dashboard',
+                      ArtbeatColors.secondaryTeal,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Profile',
+                      Icons.person,
+                      '/profile',
+                      Colors.grey,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Sign Out
+                    _buildSignOutItem(context),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -214,7 +216,7 @@ class _CaptureDrawerState extends State<CaptureDrawer> {
     return Container(
       height: 140,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -295,7 +297,7 @@ class _CaptureDrawerState extends State<CaptureDrawer> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: ArtbeatColors.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -324,7 +326,7 @@ class _CaptureDrawerState extends State<CaptureDrawer> {
       ),
       title: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           color: ArtbeatColors.textPrimary,
           fontSize: 14,
           fontWeight: FontWeight.w500,

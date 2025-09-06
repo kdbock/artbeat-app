@@ -31,12 +31,12 @@ class CommunityHeader extends StatelessWidget implements PreferredSizeWidget {
         title,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: Colors.black87,
           fontSize: 20,
         ),
       ),
       backgroundColor: Colors.transparent,
-      foregroundColor: Colors.white,
+      foregroundColor: Colors.black87,
       elevation: 0,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
@@ -52,25 +52,25 @@ class CommunityHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back, color: Colors.black87),
               onPressed: onBackPressed ?? () => Navigator.pop(context),
             )
           : null,
       actions: [
         if (showSearchIcon)
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
+            icon: const Icon(Icons.search, color: Colors.black87),
             onPressed: onSearchPressed ?? () => _navigateToSearch(context),
           ),
         if (showMessagingIcon)
           IconButton(
-            icon: const Icon(Icons.message, color: Colors.white),
+            icon: const Icon(Icons.message, color: Colors.black87),
             onPressed:
                 onMessagingPressed ?? () => _navigateToMessaging(context),
           ),
         if (showDeveloperIcon)
           IconButton(
-            icon: const Icon(Icons.developer_mode, color: Colors.white),
+            icon: const Icon(Icons.developer_mode, color: Colors.black87),
             onPressed: onDeveloperPressed ?? () => _openDeveloperTools(context),
           ),
         const SizedBox(width: 8), // Small padding from right edge

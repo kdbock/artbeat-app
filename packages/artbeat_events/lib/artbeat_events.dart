@@ -1,42 +1,48 @@
-/// ARTbeat Events Package
-///
-/// A comprehensive event management system for the ARTbeat app.
-/// Features include:
-/// - Event creation and management
-/// - Multiple ticket types (free, paid, VIP)
-/// - Refund policies and management
-/// - Notifications and reminders
-/// - Calendar integration
-/// - Community feed integration
-library;
+// ARTbeat Events Package - Main Export File
+// This file exports all public components of the artbeat_events package
 
-// Models
+// Models - Core data structures
 export 'src/models/artbeat_event.dart';
 export 'src/models/ticket_type.dart';
-export 'src/models/refund_policy.dart';
 export 'src/models/ticket_purchase.dart';
+export 'src/models/refund_policy.dart';
 
-// Screens
+// Services - Business logic and integrations
+export 'src/services/event_service.dart';
+export 'src/services/event_notification_service.dart';
+export 'src/services/calendar_integration_service.dart';
+export 'src/services/event_analytics_service.dart';
+export 'src/services/event_analytics_service_phase3.dart';
+export 'src/services/event_moderation_service.dart';
+export 'src/services/event_bulk_management_service.dart';
+export 'src/services/revenue_tracking_service.dart';
+export 'src/services/social_integration_service.dart';
+
+// Screens - Complete UI screens
+export 'src/screens/create_event_screen.dart';
 export 'src/screens/event_details_screen.dart';
 export 'src/screens/event_details_wrapper.dart';
-export 'src/screens/events_list_screen.dart';
-export 'src/screens/create_event_screen.dart';
 export 'src/screens/events_dashboard_screen.dart';
-export 'src/screens/user_events_dashboard_screen.dart';
+export 'src/screens/events_list_screen.dart';
 export 'src/screens/my_tickets_screen.dart';
+export 'src/screens/user_events_dashboard_screen.dart';
+export 'src/screens/advanced_analytics_dashboard_screen.dart';
+export 'src/screens/event_moderation_dashboard_screen.dart';
+export 'src/screens/event_bulk_management_screen.dart';
 
-// Forms
+// Widgets - Reusable UI components
+export 'src/widgets/event_card.dart';
+export 'src/widgets/community_feed_events_widget.dart';
+export 'src/widgets/ticket_purchase_sheet.dart';
+export 'src/widgets/qr_code_ticket_widget.dart';
+export 'src/widgets/ticket_type_builder.dart';
+export 'src/widgets/events_drawer.dart';
+export 'src/widgets/events_header.dart';
+export 'src/widgets/social_feed_widget.dart';
+
+// Forms - Form builders and validation
 export 'src/forms/event_form_builder.dart';
 
-// Services
-export 'src/services/event_service.dart';
-export 'src/services/calendar_integration_service.dart';
-export 'src/services/event_notification_service.dart';
-
-// Utils
+// Utils - Helper functions and utilities
 export 'src/utils/event_utils.dart';
-
-// Widgets
-export 'src/widgets/event_card.dart';
-export 'src/widgets/ticket_purchase_sheet.dart';
-export 'src/widgets/events_drawer.dart';
+export 'src/utils/events_logger.dart';

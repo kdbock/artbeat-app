@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 /// Service for handling chat and message notifications
 class NotificationService {
@@ -295,6 +296,220 @@ class NotificationService {
     } catch (e) {
       debugPrint('❌ Error triggering local notification: $e');
     }
+  }
+
+  // Phase 3: Enhanced Notification Features
+
+  /// Schedule a notification for later delivery
+  Future<void> scheduleNotification({
+    required String title,
+    required String body,
+    required DateTime scheduledDate,
+    int? id,
+    String? payload,
+  }) async {
+    try {
+      await _localNotifications.zonedSchedule(
+        id ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title,
+        body,
+        _convertToTZDateTime(scheduledDate),
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'scheduled_messages',
+            'Scheduled Messages',
+            channelDescription: 'Notifications for scheduled messages',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
+        ),
+        payload: payload,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (e) {
+      debugPrint('Error scheduling notification: $e');
+      rethrow;
+    }
+  }
+
+  /// Configure notification preferences for a specific chat
+  Future<void> configureChatNotifications({
+    required String chatId,
+    bool enableNotifications = true,
+    bool enableSound = true,
+    bool enableVibration = true,
+    String? customSound,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) throw Exception('User not authenticated');
+
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('chatNotificationSettings')
+          .doc(chatId)
+          .set({
+            'enableNotifications': enableNotifications,
+            'enableSound': enableSound,
+            'enableVibration': enableVibration,
+            'customSound': customSound,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error configuring chat notifications: $e');
+      rethrow;
+    }
+  }
+
+  /// Get notification preferences for a specific chat
+  Future<Map<String, dynamic>?> getChatNotificationSettings(
+    String chatId,
+  ) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return null;
+
+      final doc = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('chatNotificationSettings')
+          .doc(chatId)
+          .get();
+
+      return doc.exists ? doc.data() : null;
+    } catch (e) {
+      debugPrint('Error getting chat notification settings: $e');
+      return null;
+    }
+  }
+
+  /// Handle background messages with enhanced processing
+  Future<void> handleBackgroundMessages() async {
+    try {
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+
+      // Handle messages when app is terminated
+      final RemoteMessage? initialMessage = await _messaging.getInitialMessage();
+      if (initialMessage != null) {
+        await _handleMessageClick(initialMessage);
+      }
+
+      // Handle messages when app is in background
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageClick);
+    } catch (e) {
+      debugPrint('Error setting up background message handling: $e');
+    }
+  }
+
+  /// Handle message click actions
+  Future<void> _handleMessageClick(RemoteMessage message) async {
+    try {
+      final data = message.data;
+      final chatId = data['chatId'];
+      final messageId = data['messageId'];
+
+      if (chatId != null) {
+        // Navigate to specific chat
+        // This would typically be handled by the app's navigation system
+        debugPrint('Navigate to chat: $chatId');
+
+        if (messageId != null) {
+          // Navigate to specific message
+          debugPrint('Navigate to message: $messageId in chat: $chatId');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error handling message click: $e');
+    }
+  }
+
+  /// Set up notification categories and actions
+  Future<void> setupNotificationCategories() async {
+    try {
+      // Define notification actions for iOS
+      final DarwinNotificationCategory messageCategory =
+          DarwinNotificationCategory(
+            'MESSAGE_CATEGORY',
+            actions: <DarwinNotificationAction>[
+              DarwinNotificationAction.plain(
+                'reply',
+                'Reply',
+                options: <DarwinNotificationActionOption>{
+                  DarwinNotificationActionOption.foreground,
+                },
+              ),
+              DarwinNotificationAction.plain('mark_read', 'Mark as Read'),
+            ],
+            options: <DarwinNotificationCategoryOption>{
+              DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+            },
+          );
+
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.initialize(
+            DarwinInitializationSettings(
+              notificationCategories: [messageCategory],
+            ),
+            onDidReceiveNotificationResponse: _onNotificationResponse,
+          );
+    } catch (e) {
+      debugPrint('Error setting up notification categories: $e');
+    }
+  }
+
+  /// Handle notification actions
+  void _onNotificationResponse(NotificationResponse response) {
+    try {
+      final actionId = response.actionId;
+      final payload = response.payload;
+
+      switch (actionId) {
+        case 'reply':
+          debugPrint('Reply action triggered with payload: $payload');
+          break;
+        case 'mark_read':
+          debugPrint('Mark as read action triggered with payload: $payload');
+          break;
+        default:
+          debugPrint('Notification tapped with payload: $payload');
+      }
+    } catch (e) {
+      debugPrint('Error handling notification response: $e');
+    }
+  }
+
+  /// Cancel all scheduled notifications
+  Future<void> cancelAllScheduledNotifications() async {
+    try {
+      await _localNotifications.cancelAll();
+    } catch (e) {
+      debugPrint('Error cancelling scheduled notifications: $e');
+    }
+  }
+
+  /// Cancel a specific scheduled notification
+  Future<void> cancelScheduledNotification(int notificationId) async {
+    try {
+      await _localNotifications.cancel(notificationId);
+    } catch (e) {
+      debugPrint('Error cancelling scheduled notification: $e');
+    }
+  }
+
+  /// Helper method to convert DateTime to TZDateTime
+  static tz.TZDateTime _convertToTZDateTime(DateTime dateTime) {
+    // This is a simplified implementation
+    // In a real app, you'd want to use the timezone package properly
+    return tz.TZDateTime.from(dateTime, tz.getLocation('UTC'));
   }
 }
 

@@ -7,6 +7,7 @@ import '../models/subscription_tier.dart';
 import '../models/subscription_model.dart';
 import '../models/user_type.dart';
 import '../models/coupon_model.dart';
+import '../models/feature_limits.dart';
 import 'subscription_plan_validator.dart';
 import 'subscription_validation_service.dart';
 import 'coupon_service.dart';
@@ -648,6 +649,90 @@ class SubscriptionService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error updating user subscription tier: $e');
+    }
+  }
+
+  /// Upgrade user's subscription to a higher tier
+  Future<void> upgradeSubscription(SubscriptionTier tier) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final currentTier = await getCurrentSubscriptionTier();
+
+      // Validate that this is actually an upgrade
+      final tierOrder = [
+        SubscriptionTier.free,
+        SubscriptionTier.starter,
+        SubscriptionTier.creator,
+        SubscriptionTier.business,
+        SubscriptionTier.enterprise,
+      ];
+
+      final currentIndex = tierOrder.indexOf(currentTier);
+      final newIndex = tierOrder.indexOf(tier);
+
+      if (newIndex <= currentIndex) {
+        throw Exception('Can only upgrade to a higher tier');
+      }
+
+      // Process payment for the upgrade
+      final paymentService = PaymentService();
+
+      // Create or update subscription
+      await paymentService.createSubscription(customerId: user.uid, tier: tier);
+
+      // Update the user's tier in Firestore
+      await _updateUserSubscriptionTier(tier);
+
+      debugPrint('Successfully upgraded subscription to ${tier.displayName}');
+    } catch (e) {
+      debugPrint('Error upgrading subscription: $e');
+      rethrow;
+    }
+  }
+
+  /// Get feature limits for the current user's subscription tier
+  Future<FeatureLimits> getFeatureLimits() async {
+    try {
+      final currentTier = await getCurrentSubscriptionTier();
+      return FeatureLimits.forTier(currentTier);
+    } catch (e) {
+      debugPrint('Error getting feature limits: $e');
+      // Return free tier limits as fallback
+      return FeatureLimits.forTier(SubscriptionTier.free);
+    }
+  }
+
+  /// Check if the current user has access to a specific feature
+  Future<bool> checkFeatureAccess(String feature) async {
+    try {
+      final limits = await getFeatureLimits();
+
+      switch (feature.toLowerCase()) {
+        case 'advanced_analytics':
+          return limits.hasAdvancedAnalytics;
+        case 'featured_placement':
+          return limits.hasFeaturedPlacement;
+        case 'custom_branding':
+          return limits.hasCustomBranding;
+        case 'api_access':
+          return limits.hasAPIAccess;
+        case 'unlimited_support':
+          return limits.hasUnlimitedSupport;
+        case 'team_members':
+          return limits.teamMembers > 1;
+        case 'ai_credits':
+          return limits.aiCredits > 0;
+        default:
+          debugPrint('Unknown feature: $feature');
+          return false;
+      }
+    } catch (e) {
+      debugPrint('Error checking feature access for $feature: $e');
+      return false;
     }
   }
 }

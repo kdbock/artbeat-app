@@ -39,7 +39,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   final Set<Marker> _markers = {};
   Position? _currentPosition;
   List<CaptureModel> _localCaptures = [];
-  List<ArtWalkModel> _allUserWalks = [];
   List<AchievementModel> _artWalkAchievements = [];
   UserModel? _currentUser;
   bool _isDisposed = false;
@@ -68,7 +67,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       _loadCurrentUser(),
       _loadUserLocationAndSetMap(),
       _loadLocalCaptures(),
-      _loadAllUserWalks(),
       _loadArtWalkAchievements(),
     ]);
   }
@@ -124,18 +122,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       }
     } catch (e) {
       // debugPrint('Error loading local captures: $e');
-    }
-  }
-
-  Future<void> _loadAllUserWalks() async {
-    try {
-      // Load all public art walks for discovery
-      final walks = await _artWalkService.getPopularArtWalks(limit: 20);
-      if (!_isDisposed && mounted) {
-        setState(() => _allUserWalks = walks);
-      }
-    } catch (e) {
-      // debugPrint('Error loading all user walks: $e');
     }
   }
 
@@ -631,7 +617,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         showLogo: false,
         showBackButton: false,
         scaffoldKey: _scaffoldKey,
-        backgroundGradient: LinearGradient(
+        backgroundGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
@@ -639,7 +625,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             Color(0xFFFF9E80), // Light Orange/Peach
           ],
         ),
-        titleGradient: LinearGradient(
+        titleGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
@@ -669,6 +655,47 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 24),
+                // ZIP Code Search Box for location-based discovery
+                ZipCodeSearchBox(
+                  initialValue: _currentUser?.zipCode ?? '',
+                  onZipCodeSubmitted: (zipCode) async {
+                    try {
+                      final coordinates =
+                          await LocationUtils.getCoordinatesFromZipCode(
+                            zipCode,
+                          );
+                      if (coordinates != null && mounted) {
+                        // Update map position and reload data
+                        _updateMapPosition(
+                          coordinates.latitude,
+                          coordinates.longitude,
+                        );
+                        // Reload local captures for new location
+                        await _loadLocalCaptures();
+                        // Update user ZIP code
+                        if (_currentUser != null) {
+                          // Note: UserService doesn't have updateUser method
+                          // ZIP code is stored locally for this session
+                          setState(
+                            () => _currentUser = _currentUser!.copyWith(
+                              zipCode: zipCode,
+                            ),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      // Show error message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Invalid ZIP code: $zipCode'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  isLoading: false,
+                ),
+                const SizedBox(height: 16),
                 _buildMapWidget(),
                 const SizedBox(height: 16),
                 const BannerAdWidget(location: AdLocation.artWalkMap),
@@ -1098,511 +1125,25 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   }
 
   Widget _buildArtWalksWidget() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ArtWalkColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: ArtWalkColors.primaryTeal.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.directions_walk,
-                  color: ArtWalkColors.primaryTeal,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Local Art Walks',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: ArtWalkColors.textPrimary,
-                  ),
-                ),
-                const Spacer(),
-                if (_allUserWalks.isNotEmpty)
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () =>
-                          Navigator.pushNamed(context, '/art-walk/list'),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ArtWalkColors.primaryTeal.withValues(
-                            alpha: 0.1,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: ArtWalkColors.primaryTeal.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            ShaderMask(
-                              shaderCallback: (bounds) =>
-                                  const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFF00FF87), // Green
-                                      Color(0xFF7B2FF2), // Purple
-                                    ],
-                                  ).createShader(
-                                    Rect.fromLTWH(
-                                      0,
-                                      0,
-                                      bounds.width,
-                                      bounds.height,
-                                    ),
-                                  ),
-                              child: const Icon(
-                                Icons.visibility,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'View All',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: ArtWalkColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          if (_allUserWalks.isEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.directions_walk_outlined,
-                          color: Colors.grey[400],
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Text(
-                            'No art walks created yet. Start your first walk!',
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () =>
-                            Navigator.pushNamed(context, '/art-walk/create'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ArtWalkColors.accentOrange,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        icon: const Icon(Icons.add_location),
-                        label: const Text('Create Your First Walk'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                children: _allUserWalks
-                    .take(3)
-                    .map<Widget>((walk) => _buildWalkCard(walk))
-                    .toList(),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWalkCard(ArtWalkModel walk) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/art-walk/detail',
-          arguments: {'walkId': walk.id},
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: ArtWalkColors.primaryTeal.withValues(alpha: 0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: ArtWalkColors.primaryTeal.withValues(alpha: 0.1),
-              ),
-              child: const Icon(
-                Icons.route,
-                color: ArtWalkColors.primaryTeal,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    walk.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: ArtWalkColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.palette,
-                        size: 14,
-                        color: ArtWalkColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${walk.artworkIds.length} artworks',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: ArtWalkColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: ArtWalkColors.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${(walk.estimatedDuration ?? 0).toInt()} min',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: ArtWalkColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: ArtWalkColors.textSecondary,
-            ),
-          ],
-        ),
-      ),
+    return LocalArtWalkPreviewWidget(
+      zipCode: _currentUser?.zipCode ?? '10001',
+      onSeeAllPressed: () => Navigator.pushNamed(context, '/art-walk/list'),
     );
   }
 
   Widget _buildAchievementsWidget() {
-    return Container(
-      decoration: BoxDecoration(
-        color: ArtWalkColors.cardBackground,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: ArtWalkColors.primaryTeal.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return AchievementsGrid(
+      achievements: _artWalkAchievements,
+      onAchievementTap: (achievement) {
+        // Handle achievement tap - could show details or navigate
+        // For now, just show a snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Achievement: ${achievement.title}'),
+            duration: const Duration(seconds: 2),
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.emoji_events,
-                  color: ArtWalkColors.accentOrange,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'Art Walk Achievements',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: ArtWalkColors.textPrimary,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (_artWalkAchievements.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () =>
-                          Navigator.pushNamed(context, '/achievements'),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ArtWalkColors.primaryTeal.withValues(
-                            alpha: 0.1,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: ArtWalkColors.primaryTeal.withValues(
-                              alpha: 0.2,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            ShaderMask(
-                              shaderCallback: (bounds) =>
-                                  const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFF00FF87), // Green
-                                      Color(0xFF7B2FF2), // Purple
-                                    ],
-                                  ).createShader(
-                                    Rect.fromLTWH(
-                                      0,
-                                      0,
-                                      bounds.width,
-                                      bounds.height,
-                                    ),
-                                  ),
-                              child: const Icon(
-                                Icons.visibility,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'View All',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: ArtWalkColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (_artWalkAchievements.isEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[200]!),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.emoji_events_outlined,
-                      color: Colors.grey[400],
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'Complete art walks to earn achievements!',
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            Container(
-              height: 120,
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _artWalkAchievements.take(10).length,
-                itemBuilder: (context, index) {
-                  final achievement = _artWalkAchievements[index];
-                  return Container(
-                    width: 100,
-                    margin: const EdgeInsets.only(right: 12),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            gradient: const LinearGradient(
-                              colors: [
-                                ArtWalkColors.accentOrange,
-                                ArtWalkColors.accentOrangeLight,
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ArtWalkColors.accentOrange.withValues(
-                                  alpha: 0.3,
-                                ),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            _getAchievementIcon(achievement.iconName),
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          achievement.title,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: ArtWalkColors.textPrimary,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        if (achievement.isNew)
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: ArtWalkColors.accentOrange,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'NEW',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
-  }
-
-  IconData _getAchievementIcon(String iconName) {
-    switch (iconName) {
-      case 'directions_walk':
-        return Icons.directions_walk;
-      case 'explore':
-        return Icons.explore;
-      case 'emoji_events':
-        return Icons.emoji_events;
-      case 'collections':
-        return Icons.collections;
-      case 'auto_awesome':
-        return Icons.auto_awesome;
-      case 'add_a_photo':
-        return Icons.add_a_photo;
-      case 'volunteer_activism':
-        return Icons.volunteer_activism;
-      case 'comment':
-        return Icons.comment;
-      case 'share':
-        return Icons.share;
-      case 'palette':
-        return Icons.palette;
-      case 'star':
-        return Icons.star;
-      case 'fitness_center':
-        return Icons.fitness_center;
-      case 'access_time':
-        return Icons.access_time;
-      default:
-        return Icons.emoji_events;
-    }
   }
 }

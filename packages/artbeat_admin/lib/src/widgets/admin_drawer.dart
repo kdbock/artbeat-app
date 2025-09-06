@@ -143,8 +143,20 @@ class AdminDrawer extends StatelessWidget {
                     _buildDrawerItem(
                       context,
                       icon: Icons.campaign,
-                      title: 'Ad Management',
-                      route: '/admin/ad-management',
+                      title: 'Ads Management',
+                      route: '/admin/ads-management',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.event,
+                      title: 'Events Management',
+                      route: '/admin/events-management',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.people_alt,
+                      title: 'Community Moderation',
+                      route: '/admin/community-moderation',
                     ),
 
                     const Divider(height: 16),

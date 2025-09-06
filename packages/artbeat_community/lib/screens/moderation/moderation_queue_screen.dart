@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
+import '../../services/moderation_service.dart';
 import '../../theme/community_colors.dart';
 
 class ModerationQueueScreen extends StatefulWidget {
@@ -16,10 +16,15 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
     with SingleTickerProviderStateMixin {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
+  final ModerationService _moderationService = ModerationService();
 
   // Content to moderate
   List<PostModel> _flaggedPosts = [];
   List<CommentModel> _flaggedComments = [];
+
+  // Selection for bulk actions
+  final Set<String> _selectedPosts = {};
+  final Set<String> _selectedComments = {};
 
   bool _isLoading = true;
 
@@ -42,27 +47,9 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
     });
 
     try {
-      // Load flagged posts
-      final postsQuery = await FirebaseFirestore.instance
-          .collection('posts')
-          .where('flagged', isEqualTo: true)
-          .orderBy('flaggedAt', descending: true)
-          .get();
-
-      final posts = postsQuery.docs
-          .map((doc) => PostModel.fromFirestore(doc))
-          .toList();
-
-      // Load flagged comments
-      final commentsQuery = await FirebaseFirestore.instance
-          .collection('comments')
-          .where('flagged', isEqualTo: true)
-          .orderBy('flaggedAt', descending: true)
-          .get();
-
-      final comments = commentsQuery.docs
-          .map((doc) => CommentModel.fromFirestore(doc))
-          .toList();
+      // Use the new moderation service
+      final posts = await _moderationService.getFlaggedPosts();
+      final comments = await _moderationService.getFlaggedComments();
 
       setState(() {
         _flaggedPosts = posts;
@@ -70,7 +57,7 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         _isLoading = false;
       });
     } catch (e) {
-      // debugPrint('Error loading moderation queue: $e');
+      debugPrint('Error loading moderation queue: $e');
       setState(() {
         _isLoading = false;
       });
@@ -79,16 +66,13 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
 
   Future<void> _approvePost(PostModel post) async {
     try {
-      await FirebaseFirestore.instance.collection('posts').doc(post.id).update({
-        'flagged': false,
-        'moderationStatus': 'approved',
-        'moderatedAt': FieldValue.serverTimestamp(),
-      });
+      await _moderationService.approvePost(post.id);
 
       if (!mounted) return;
 
       setState(() {
         _flaggedPosts.remove(post);
+        _selectedPosts.remove(post.id);
       });
 
       ScaffoldMessenger.of(
@@ -105,17 +89,13 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
 
   Future<void> _removePost(PostModel post) async {
     try {
-      await FirebaseFirestore.instance.collection('posts').doc(post.id).update({
-        'isPublic': false,
-        'flagged': false,
-        'moderationStatus': 'removed',
-        'moderatedAt': FieldValue.serverTimestamp(),
-      });
+      await _moderationService.removePost(post.id);
 
       if (!mounted) return;
 
       setState(() {
         _flaggedPosts.remove(post);
+        _selectedPosts.remove(post.id);
       });
 
       ScaffoldMessenger.of(
@@ -132,19 +112,13 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
 
   Future<void> _approveComment(CommentModel comment) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('comments')
-          .doc(comment.id)
-          .update({
-            'flagged': false,
-            'moderationStatus': 'approved',
-            'moderatedAt': FieldValue.serverTimestamp(),
-          });
+      await _moderationService.approveComment(comment.id);
 
       if (!mounted) return;
 
       setState(() {
         _flaggedComments.remove(comment);
+        _selectedComments.remove(comment.id);
       });
 
       ScaffoldMessenger.of(
@@ -161,21 +135,13 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
 
   Future<void> _removeComment(CommentModel comment) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('comments')
-          .doc(comment.id)
-          .delete();
-
-      // Decrement comment count on post
-      await FirebaseFirestore.instance
-          .collection('posts')
-          .doc(comment.postId)
-          .update({'commentCount': FieldValue.increment(-1)});
+      await _moderationService.removeComment(comment.id);
 
       if (!mounted) return;
 
       setState(() {
         _flaggedComments.remove(comment);
+        _selectedComments.remove(comment.id);
       });
 
       ScaffoldMessenger.of(

@@ -1,6 +1,7 @@
 import 'package:artbeat_auth/artbeat_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
@@ -19,7 +20,39 @@ class MyApp extends StatelessWidget {
   final _firebaseInitializer = FirebaseInitializer();
   final _appRouter = AppRouter();
 
-  MyApp({super.key});
+  MyApp({super.key}) {
+    _setupGlobalErrorHandling();
+  }
+
+  void _setupGlobalErrorHandling() {
+    // Set up global error handler for Flutter framework errors
+    FlutterError.onError = (FlutterErrorDetails details) {
+      final error = details.exception;
+      final errorString = error.toString();
+
+      // Filter out expected 404 errors for missing artwork images
+      final isExpected404 =
+          errorString.contains('statusCode: 404') &&
+          (errorString.contains('firebasestorage.googleapis.com') ||
+              errorString.contains('firebase') ||
+              errorString.contains('artwork') ||
+              errorString.contains('HttpException'));
+
+      if (isExpected404) {
+        // Log 404 errors at debug level only
+        if (kDebugMode) {
+          debugPrint(
+            '🖼️ Missing image (404): ${errorString.split(',').first}',
+          );
+        }
+        // Don't show these errors in release mode
+        return;
+      }
+
+      // For other errors, use the default Flutter error handling
+      FlutterError.presentError(details);
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +71,27 @@ class MyApp extends StatelessWidget {
 
         return ErrorBoundary(
           onError: (error, stackTrace) {
-            debugPrint('❌ App-level error caught: $error');
-            debugPrint('❌ Stack trace: $stackTrace');
+            // Filter out expected 404 errors for missing artwork images
+            final errorString = error.toString();
+            final isExpected404 =
+                errorString.contains('statusCode: 404') &&
+                (errorString.contains('firebasestorage.googleapis.com') ||
+                    errorString.contains('firebase') ||
+                    errorString.contains('artwork') ||
+                    errorString.contains('HttpException'));
+
+            if (isExpected404) {
+              // Log 404 errors at debug level only
+              if (kDebugMode) {
+                debugPrint(
+                  '🖼️ Missing image (404): ${errorString.split(',').first}',
+                );
+              }
+            } else {
+              // Log other errors normally
+              debugPrint('❌ App-level error caught: $error');
+              debugPrint('❌ Stack trace: $stackTrace');
+            }
           },
           child: MultiProvider(
             providers: [

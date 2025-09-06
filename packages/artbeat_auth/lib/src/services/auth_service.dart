@@ -129,4 +129,36 @@ class AuthService {
 
   /// Listen to auth state changes
   Stream<User?> authStateChanges() => _auth.authStateChanges();
+
+  /// Send email verification to current user
+  Future<void> sendEmailVerification() async {
+    try {
+      final user = currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+        debugPrint('✅ Email verification sent to ${user.email}');
+      } else if (user?.emailVerified == true) {
+        debugPrint('ℹ️ Email already verified');
+      } else {
+        throw Exception('No authenticated user found');
+      }
+    } catch (e) {
+      debugPrint('❌ Error sending email verification: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if current user's email is verified
+  bool get isEmailVerified => currentUser?.emailVerified ?? false;
+
+  /// Reload current user to get updated verification status
+  Future<void> reloadUser() async {
+    try {
+      await currentUser?.reload();
+      debugPrint('✅ User data reloaded');
+    } catch (e) {
+      debugPrint('❌ Error reloading user: $e');
+      rethrow;
+    }
+  }
 }

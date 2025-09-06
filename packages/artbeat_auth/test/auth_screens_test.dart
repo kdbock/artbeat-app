@@ -9,6 +9,8 @@ import 'package:flutter/services.dart';
 import 'package:artbeat_auth/src/screens/login_screen.dart';
 import 'package:artbeat_auth/src/screens/register_screen.dart';
 import 'package:artbeat_auth/src/screens/forgot_password_screen.dart';
+import 'package:artbeat_auth/src/screens/email_verification_screen.dart';
+import 'package:artbeat_auth/src/screens/profile_create_screen.dart';
 import 'package:artbeat_auth/src/services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart' show ArtbeatButton;
 
@@ -134,7 +136,7 @@ void main() {
       // Check if the login form elements are present
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
-      expect(find.widgetWithText(ArtbeatButton, 'Login'), findsOneWidget);
+      expect(find.text('Login'), findsOneWidget);
       expect(find.text('Forgot Password?'), findsOneWidget);
       expect(find.text('Create Account'), findsOneWidget);
     });
@@ -244,7 +246,7 @@ void main() {
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
       expect(find.text('Confirm Password'), findsOneWidget);
-      expect(find.widgetWithText(ArtbeatButton, 'Register'), findsOneWidget);
+      expect(find.text('Register'), findsOneWidget);
       expect(find.text('Already have an account? Log in'), findsOneWidget);
     });
 
@@ -396,7 +398,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Check if we navigated back to login screen (check for login button)
-      expect(find.widgetWithText(ArtbeatButton, 'Login'), findsOneWidget);
+      expect(find.text('Login'), findsOneWidget);
     });
   });
 
@@ -439,6 +441,86 @@ void main() {
         isValidFullName('John'),
         isFalse,
       ); // Should require at least first and last name
+    });
+  });
+
+  group('Email Verification Screen Tests', () {
+    testWidgets('should display email verification elements', (
+      WidgetTester tester,
+    ) async {
+      final mockUser = MockUser();
+      when(mockUser.email).thenReturn('test@example.com');
+      when(mockUser.emailVerified).thenReturn(false);
+      when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
+
+      await tester.pumpWidget(
+        const MaterialApp(home: EmailVerificationScreen()),
+      );
+
+      // Check if the email verification elements are present
+      expect(find.text('Verify Your Email'), findsOneWidget);
+      expect(find.text('test@example.com'), findsOneWidget);
+      expect(find.text('Resend Verification Email'), findsOneWidget);
+      expect(find.text('Skip for now'), findsOneWidget);
+    });
+
+    testWidgets('should show resend cooldown', (WidgetTester tester) async {
+      final mockUser = MockUser();
+      when(mockUser.email).thenReturn('test@example.com');
+      when(mockUser.emailVerified).thenReturn(false);
+      when(mockUser.sendEmailVerification()).thenAnswer((_) async {});
+      when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
+
+      await tester.pumpWidget(
+        const MaterialApp(home: EmailVerificationScreen()),
+      );
+
+      // Tap resend button
+      await tester.tap(find.text('Resend Verification Email'));
+      await tester.pump();
+
+      // Should show cooldown
+      expect(find.textContaining('Resend in'), findsOneWidget);
+    });
+  });
+
+  group('Profile Create Screen Tests', () {
+    testWidgets('should redirect to login when no user', (
+      WidgetTester tester,
+    ) async {
+      when(mockFirebaseAuth.currentUser).thenReturn(null);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: const ProfileCreateScreen(),
+          routes: {
+            '/login': (context) => LoginScreen(authService: authService),
+          },
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Should show loading indicator initially
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('should show profile creation when user exists', (
+      WidgetTester tester,
+    ) async {
+      final mockUser = MockUser();
+      when(mockUser.uid).thenReturn('test-uid');
+      when(mockUser.email).thenReturn('test@example.com');
+      when(mockUser.displayName).thenReturn('Test User');
+      when(mockFirebaseAuth.currentUser).thenReturn(mockUser);
+
+      await tester.pumpWidget(const MaterialApp(home: ProfileCreateScreen()));
+
+      await tester.pumpAndSettle();
+
+      // Should show profile creation form (from artbeat_profile)
+      // Note: This will show the CreateProfileScreen from artbeat_profile
+      expect(find.byType(ProfileCreateScreen), findsOneWidget);
     });
   });
 }

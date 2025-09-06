@@ -17,6 +17,9 @@ export 'src/screens/my_captures_screen.dart';
 export 'src/services/capture_service.dart';
 export 'src/services/storage_service.dart';
 export 'src/services/camera_service.dart';
+export 'src/services/advanced_camera_service.dart';
+export 'src/services/ai_ml_integration_service.dart';
+export 'src/services/capture_analytics_service.dart';
 
 export 'src/screens/capture_search_screen.dart';
 
@@ -28,4 +31,5 @@ export 'src/widgets/capture_drawer.dart';
 
 // Models and Utils
 export 'src/models/media_capture.dart';
+export 'src/models/offline_queue_item.dart';
 export 'src/utils/capture_helper.dart';

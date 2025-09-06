@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_capture/artbeat_capture.dart';
-import '../services/capture_service.dart';
 
 /// Admin screen for moderating pending captures
 class AdminContentModerationScreen extends StatefulWidget {

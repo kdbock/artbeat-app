@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/subscription_model.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'error_monitoring_service.dart';
+import '../utils/artist_logger.dart';
+import '../utils/input_validator.dart';
 
 /// Service for managing artist subscriptions
 class SubscriptionService {
@@ -13,69 +15,77 @@ class SubscriptionService {
 
   /// Get the current user's subscription
   Future<SubscriptionModel?> getUserSubscription() async {
-    try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) {
-        debugPrint('❌ getUserSubscription: No authenticated user');
-        return null;
-      }
+    return ErrorMonitoringService.safeExecute(
+      'getUserSubscription',
+      () async {
+        final userId = _auth.currentUser?.uid;
+        if (userId == null) {
+          ArtistLogger.warning('getUserSubscription: No authenticated user');
+          return null;
+        }
 
-      debugPrint('🔍 getUserSubscription: Querying for userId: $userId');
+        ArtistLogger.info('getUserSubscription: Querying for userId: $userId');
 
-      final snapshot = await _firestore
-          .collection('subscriptions')
-          .where('userId', isEqualTo: userId)
-          .where('isActive', isEqualTo: true)
-          .limit(1)
-          .get();
+        final snapshot = await _firestore
+            .collection('subscriptions')
+            .where('userId', isEqualTo: userId)
+            .where('isActive', isEqualTo: true)
+            .limit(1)
+            .get();
 
-      debugPrint(
-          '📊 getUserSubscription: Found ${snapshot.docs.length} subscriptions');
+        ArtistLogger.info(
+            'getUserSubscription: Found ${snapshot.docs.length} subscriptions');
 
-      if (snapshot.docs.isEmpty) {
-        debugPrint(
-            'ℹ️ getUserSubscription: No active subscription found for user $userId');
-        return null;
-      }
+        if (snapshot.docs.isEmpty) {
+          ArtistLogger.info(
+              'getUserSubscription: No active subscription found for user $userId');
+          return null;
+        }
 
-      final subscription = SubscriptionModel.fromFirestore(snapshot.docs.first);
-      debugPrint(
-          '✅ getUserSubscription: Found subscription: ${subscription.tier}');
-      return subscription;
-    } catch (e) {
-      debugPrint('Error getting user subscription: $e');
-      return null;
-    }
+        final subscription =
+            SubscriptionModel.fromFirestore(snapshot.docs.first);
+        ArtistLogger.info(
+            'getUserSubscription: Found subscription: ${subscription.tier}');
+        return subscription;
+      },
+      fallbackValue: null,
+    );
   }
 
   /// Get current subscription for a specific user
   Future<SubscriptionModel?> getCurrentSubscription(String userId) async {
-    try {
-      final snapshot = await _firestore
-          .collection('subscriptions')
-          .where('userId', isEqualTo: userId)
-          .where('isActive', isEqualTo: true)
-          .limit(1)
-          .get();
+    return ErrorMonitoringService.safeExecute(
+      'getCurrentSubscription',
+      () async {
+        final validationResult =
+            InputValidator.validateText(userId, fieldName: 'userId');
+        final validUserId = validationResult.getOrThrow();
 
-      if (snapshot.docs.isEmpty) return null;
+        final snapshot = await _firestore
+            .collection('subscriptions')
+            .where('userId', isEqualTo: validUserId)
+            .where('isActive', isEqualTo: true)
+            .limit(1)
+            .get();
 
-      return SubscriptionModel.fromFirestore(snapshot.docs.first);
-    } catch (e) {
-      debugPrint('Error getting subscription for user $userId: $e');
-      return null;
-    }
+        if (snapshot.docs.isEmpty) return null;
+
+        return SubscriptionModel.fromFirestore(snapshot.docs.first);
+      },
+      fallbackValue: null,
+    );
   }
 
   /// Get current subscription tier
   Future<SubscriptionTier> getCurrentTier() async {
-    try {
-      final sub = await getUserSubscription();
-      return sub?.tier ?? SubscriptionTier.free;
-    } catch (e) {
-      debugPrint('Error getting current tier: $e');
-      return SubscriptionTier.free;
-    }
+    return ErrorMonitoringService.safeExecute(
+      'getCurrentTier',
+      () async {
+        final sub = await getUserSubscription();
+        return sub?.tier ?? SubscriptionTier.free;
+      },
+      fallbackValue: SubscriptionTier.free,
+    );
   }
 
   /// Create new artist profile
@@ -91,63 +101,77 @@ class SubscriptionService {
     String? profileImageUrl,
     String? coverImageUrl,
   }) async {
-    try {
-      DocumentReference docRef;
+    return ErrorMonitoringService.safeExecute(
+      'createArtistProfile',
+      () async {
+        // Validate required inputs
+        final userIdResult =
+            InputValidator.validateText(userId, fieldName: 'userId');
+        final displayNameResult =
+            InputValidator.validateText(displayName, fieldName: 'displayName');
+        final bioResult = InputValidator.validateText(bio, fieldName: 'bio');
+        final locationResult =
+            InputValidator.validateText(location, fieldName: 'location');
 
-      // Check if profile already exists
-      final existingProfile = await _firestore
-          .collection('artistProfiles')
-          .where('userId', isEqualTo: userId)
-          .limit(1)
-          .get();
+        final validUserId = userIdResult.getOrThrow();
+        final validDisplayName = displayNameResult.getOrThrow();
+        final validBio = bioResult.getOrThrow();
+        final validLocation = locationResult.getOrThrow();
 
-      if (existingProfile.docs.isNotEmpty) {
-        // Update existing profile
-        docRef = _firestore
+        DocumentReference docRef;
+
+        // Check if profile already exists
+        final existingProfile = await _firestore
             .collection('artistProfiles')
-            .doc(existingProfile.docs.first.id);
+            .where('userId', isEqualTo: validUserId)
+            .limit(1)
+            .get();
 
-        await docRef.update({
-          'displayName': displayName,
-          'bio': bio,
-          'userType': userType.value,
-          'location': location,
-          'mediums': mediums,
-          'styles': styles,
-          'socialLinks': socialLinks,
-          if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
-          if (coverImageUrl != null) 'coverImageUrl': coverImageUrl,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-      } else {
-        // Create new profile
-        docRef = _firestore.collection('artistProfiles').doc();
+        if (existingProfile.docs.isNotEmpty) {
+          // Update existing profile
+          docRef = _firestore
+              .collection('artistProfiles')
+              .doc(existingProfile.docs.first.id);
 
-        await docRef.set({
-          'userId': userId,
-          'displayName': displayName,
-          'bio': bio,
-          'userType': userType.value,
-          'location': location,
-          'mediums': mediums,
-          'styles': styles,
-          'socialLinks': socialLinks,
-          'profileImageUrl': profileImageUrl,
-          'coverImageUrl': coverImageUrl,
-          'isVerified': false,
-          'isFeatured': false,
-          'followerCount': 0,
-          'subscriptionTier': SubscriptionTier.free.apiName,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-      }
+          await docRef.update({
+            'displayName': validDisplayName,
+            'bio': validBio,
+            'userType': userType.value,
+            'location': validLocation,
+            'mediums': mediums,
+            'styles': styles,
+            'socialLinks': socialLinks,
+            if (profileImageUrl != null) 'profileImageUrl': profileImageUrl,
+            if (coverImageUrl != null) 'coverImageUrl': coverImageUrl,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          // Create new profile
+          docRef = _firestore.collection('artistProfiles').doc();
 
-      return docRef.id;
-    } catch (e) {
-      debugPrint('Error saving artist profile: $e');
-      throw Exception('Failed to save artist profile: $e');
-    }
+          await docRef.set({
+            'userId': validUserId,
+            'displayName': validDisplayName,
+            'bio': validBio,
+            'userType': userType.value,
+            'location': validLocation,
+            'mediums': mediums,
+            'styles': styles,
+            'socialLinks': socialLinks,
+            'profileImageUrl': profileImageUrl,
+            'coverImageUrl': coverImageUrl,
+            'isVerified': false,
+            'isFeatured': false,
+            'followerCount': 0,
+            'subscriptionTier': SubscriptionTier.free.apiName,
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+
+        return docRef.id;
+      },
+    );
   }
 
   /// Save or update artist profile
@@ -187,7 +211,8 @@ class SubscriptionService {
           tier = subscription.tier;
         }
       } catch (e) {
-        debugPrint('Error getting subscription, defaulting to basic: $e');
+        ArtistLogger.warning(
+            'Error getting subscription, defaulting to basic: $e');
       }
 
       // Prepare profile data
@@ -220,7 +245,7 @@ class SubscriptionService {
         await _firestore.collection('artistProfiles').add(data);
       }
     } catch (e) {
-      debugPrint('Error saving artist profile: $e');
+      ArtistLogger.error('Error saving artist profile: $e');
       throw Exception('Failed to save artist profile: $e');
     }
   }
@@ -231,7 +256,7 @@ class SubscriptionService {
       final currentTier = await getCurrentTier();
       return currentTier.index >= minimumTier.index;
     } catch (e) {
-      debugPrint('Error checking tier access: $e');
+      ArtistLogger.error('Error checking tier access: $e');
       return false;
     }
   }
@@ -248,7 +273,9 @@ class SubscriptionService {
   /// Get artist profile by user ID
   Future<ArtistProfileModel?> getArtistProfileByUserId(String userId) async {
     try {
-      debugPrint('🔍 getArtistProfileByUserId: Querying for userId: $userId');
+      // Use info level for normal operations instead of error
+      ArtistLogger.info(
+          '🔍 getArtistProfileByUserId: Querying for userId: $userId');
 
       final query = await _firestore
           .collection('artistProfiles')
@@ -256,21 +283,21 @@ class SubscriptionService {
           .limit(1)
           .get();
 
-      debugPrint(
+      ArtistLogger.info(
           '📊 getArtistProfileByUserId: Found ${query.docs.length} documents');
 
       if (query.docs.isEmpty) {
-        debugPrint(
+        ArtistLogger.warning(
             '❌ getArtistProfileByUserId: No artist profile found for user $userId');
         return null;
       }
 
       final profile = ArtistProfileModel.fromFirestore(query.docs.first);
-      debugPrint(
+      ArtistLogger.info(
           '✅ getArtistProfileByUserId: Successfully loaded profile for ${profile.displayName}');
       return profile;
     } catch (e) {
-      debugPrint('❌ Error getting artist profile: $e');
+      ArtistLogger.error('❌ Error getting artist profile: $e');
       return null;
     }
   }
@@ -283,7 +310,7 @@ class SubscriptionService {
 
       return await getArtistProfileByUserId(userId);
     } catch (e) {
-      debugPrint('Error getting current artist profile: $e');
+      ArtistLogger.error('Error getting current artist profile: $e');
       return null;
     }
   }
@@ -301,7 +328,7 @@ class SubscriptionService {
           .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting featured artists: $e');
+      ArtistLogger.error('Error getting featured artists: $e');
       return [];
     }
   }
@@ -319,7 +346,7 @@ class SubscriptionService {
           .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting verified artists: $e');
+      ArtistLogger.error('Error getting verified artists: $e');
       return [];
     }
   }
@@ -333,7 +360,7 @@ class SubscriptionService {
       if (!docSnapshot.exists) return null;
       return ArtistProfileModel.fromFirestore(docSnapshot);
     } catch (e) {
-      debugPrint('Error getting artist profile by id: $e');
+      ArtistLogger.error('Error getting artist profile by id: $e');
       return null;
     }
   }
@@ -351,7 +378,7 @@ class SubscriptionService {
 
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking if following artist: $e');
+      ArtistLogger.error('Error checking if following artist: $e');
       return false;
     }
   }
@@ -362,11 +389,11 @@ class SubscriptionService {
       final userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('User must be logged in');
 
-      debugPrint(
+      ArtistLogger.error(
           'Following artist: userId=$userId, artistProfileId=$artistProfileId');
 
       // First, create the follow relationship
-      debugPrint('Creating artistFollows document...');
+      ArtistLogger.error('Creating artistFollows document...');
       await _firestore
           .collection('artistFollows')
           .doc('${userId}_$artistProfileId')
@@ -375,19 +402,19 @@ class SubscriptionService {
         'artistProfileId': artistProfileId,
         'createdAt': FieldValue.serverTimestamp(),
       });
-      debugPrint('artistFollows document created successfully');
+      ArtistLogger.error('artistFollows document created successfully');
 
       // Update follower count
-      debugPrint('Updating follower count...');
+      ArtistLogger.error('Updating follower count...');
       await _firestore
           .collection('artistProfiles')
           .doc(artistProfileId)
           .update({
         'followerCount': FieldValue.increment(1),
       });
-      debugPrint('Follower count updated successfully');
+      ArtistLogger.error('Follower count updated successfully');
     } catch (e) {
-      debugPrint('Error following artist: $e');
+      ArtistLogger.error('Error following artist: $e');
       rethrow;
     }
   }
@@ -398,28 +425,28 @@ class SubscriptionService {
       final userId = _auth.currentUser?.uid;
       if (userId == null) throw Exception('User must be logged in');
 
-      debugPrint(
+      ArtistLogger.error(
           'Unfollowing artist: userId=$userId, artistProfileId=$artistProfileId');
 
       // First, delete the follow relationship
-      debugPrint('Deleting artistFollows document...');
+      ArtistLogger.error('Deleting artistFollows document...');
       await _firestore
           .collection('artistFollows')
           .doc('${userId}_$artistProfileId')
           .delete();
-      debugPrint('artistFollows document deleted successfully');
+      ArtistLogger.error('artistFollows document deleted successfully');
 
       // Update follower count
-      debugPrint('Updating follower count...');
+      ArtistLogger.error('Updating follower count...');
       await _firestore
           .collection('artistProfiles')
           .doc(artistProfileId)
           .update({
         'followerCount': FieldValue.increment(-1),
       });
-      debugPrint('Follower count updated successfully');
+      ArtistLogger.error('Follower count updated successfully');
     } catch (e) {
-      debugPrint('Error unfollowing artist: $e');
+      ArtistLogger.error('Error unfollowing artist: $e');
       rethrow;
     }
   }
@@ -441,7 +468,7 @@ class SubscriptionService {
         return true;
       }
     } catch (e) {
-      debugPrint('Error toggling artist follow status: $e');
+      ArtistLogger.error('Error toggling artist follow status: $e');
       rethrow;
     }
   }
@@ -499,7 +526,7 @@ class SubscriptionService {
 
       return artists;
     } catch (e) {
-      debugPrint('Error getting all artists: $e');
+      ArtistLogger.error('Error getting all artists: $e');
       return [];
     }
   }

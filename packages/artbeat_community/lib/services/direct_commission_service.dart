@@ -575,4 +575,214 @@ class DirectCommissionService {
             ..sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
         });
   }
+
+  /// Request revisions for a commission
+  Future<void> requestRevision({
+    required String commissionId,
+    required String revisionDetails,
+    required List<String> revisionItems,
+    DateTime? deadline,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      await _firestore
+          .collection('direct_commissions')
+          .doc(commissionId)
+          .update({
+            'status': CommissionStatus.revision.name,
+            'metadata.revisionRequestedAt': Timestamp.now(),
+            'metadata.revisionRequestedBy': user.uid,
+            'metadata.revisionDetails': revisionDetails,
+            'metadata.revisionItems': revisionItems,
+            'metadata.revisionDeadline': deadline != null
+                ? Timestamp.fromDate(deadline)
+                : null,
+          });
+
+      await addMessage(commissionId, 'Revision requested: $revisionDetails');
+    } catch (e) {
+      throw Exception('Failed to request revision: $e');
+    }
+  }
+
+  /// Submit revision work (artist response to revision request)
+  Future<void> submitRevision({
+    required String commissionId,
+    required String revisionNotes,
+    List<String>? fileUrls,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      await _firestore
+          .collection('direct_commissions')
+          .doc(commissionId)
+          .update({
+            'status': CommissionStatus.completed.name,
+            'metadata.revisionSubmittedAt': Timestamp.now(),
+            'metadata.revisionSubmittedBy': user.uid,
+            'metadata.revisionNotes': revisionNotes,
+            'metadata.revisionFiles': fileUrls ?? [],
+          });
+
+      await addMessage(commissionId, 'Revision submitted: $revisionNotes');
+    } catch (e) {
+      throw Exception('Failed to submit revision: $e');
+    }
+  }
+
+  /// Approve revision work
+  Future<void> approveRevision(String commissionId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      await _firestore
+          .collection('direct_commissions')
+          .doc(commissionId)
+          .update({
+            'status': CommissionStatus.delivered.name,
+            'metadata.revisionApprovedAt': Timestamp.now(),
+            'metadata.revisionApprovedBy': user.uid,
+          });
+
+      await addMessage(
+        commissionId,
+        'Revision approved. Commission delivered successfully!',
+      );
+    } catch (e) {
+      throw Exception('Failed to approve revision: $e');
+    }
+  }
+
+  /// Get commission analytics for a user
+  Future<CommissionAnalytics> getCommissionAnalytics(String userId) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      // Get all commissions for the user
+      final commissions = await getCommissionsByUser(userId);
+
+      // Calculate analytics
+      final totalCommissions = commissions.length;
+      final completedCommissions = commissions
+          .where((c) => c.status == CommissionStatus.delivered)
+          .length;
+      final activeCommissions = commissions
+          .where(
+            (c) =>
+                c.status == CommissionStatus.inProgress ||
+                c.status == CommissionStatus.accepted ||
+                c.status == CommissionStatus.revision,
+          )
+          .length;
+      final cancelledCommissions = commissions
+          .where((c) => c.status == CommissionStatus.cancelled)
+          .length;
+
+      final totalRevenue = commissions
+          .where(
+            (c) =>
+                c.artistId == userId && c.status == CommissionStatus.delivered,
+          )
+          .fold<double>(0.0, (sum, c) => sum + c.totalPrice);
+
+      final totalSpent = commissions
+          .where(
+            (c) =>
+                c.clientId == userId && c.status == CommissionStatus.delivered,
+          )
+          .fold<double>(0.0, (sum, c) => sum + c.totalPrice);
+
+      final averageCommissionValue = totalCommissions > 0
+          ? commissions.fold<double>(0.0, (sum, c) => sum + c.totalPrice) /
+                totalCommissions
+          : 0.0;
+
+      final revisionRate = totalCommissions > 0
+          ? commissions
+                    .where((c) => c.status == CommissionStatus.revision)
+                    .length /
+                totalCommissions
+          : 0.0;
+
+      // Calculate monthly trends (last 6 months)
+      final monthlyTrends = await _calculateMonthlyTrends(userId);
+
+      return CommissionAnalytics(
+        userId: userId,
+        totalCommissions: totalCommissions,
+        completedCommissions: completedCommissions,
+        activeCommissions: activeCommissions,
+        cancelledCommissions: cancelledCommissions,
+        totalRevenue: totalRevenue,
+        totalSpent: totalSpent,
+        averageCommissionValue: averageCommissionValue,
+        revisionRate: revisionRate,
+        monthlyTrends: monthlyTrends,
+        generatedAt: DateTime.now(),
+      );
+    } catch (e) {
+      throw Exception('Failed to get commission analytics: $e');
+    }
+  }
+
+  /// Calculate monthly commission trends
+  Future<List<MonthlyCommissionData>> _calculateMonthlyTrends(
+    String userId,
+  ) async {
+    try {
+      final now = DateTime.now();
+      final trends = <MonthlyCommissionData>[];
+
+      for (int i = 5; i >= 0; i--) {
+        final monthStart = DateTime(now.year, now.month - i, 1);
+        final monthEnd = DateTime(now.year, now.month - i + 1, 1);
+
+        final monthCommissions = await _firestore
+            .collection('direct_commissions')
+            .where('clientId', isEqualTo: userId)
+            .where(
+              'requestedAt',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(monthStart),
+            )
+            .where('requestedAt', isLessThan: Timestamp.fromDate(monthEnd))
+            .get();
+
+        final monthRevenue = monthCommissions.docs.fold<double>(0.0, (
+          sum,
+          doc,
+        ) {
+          final data = doc.data();
+          final price = (data['totalPrice'] as num?)?.toDouble() ?? 0.0;
+          return sum + price;
+        });
+
+        trends.add(
+          MonthlyCommissionData(
+            month: monthStart,
+            commissionCount: monthCommissions.docs.length,
+            revenue: monthRevenue,
+          ),
+        );
+      }
+
+      return trends;
+    } catch (e) {
+      debugPrint('Error calculating monthly trends: $e');
+      return [];
+    }
+  }
 }

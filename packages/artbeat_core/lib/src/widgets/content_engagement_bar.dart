@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/engagement_model.dart';
 import '../services/engagement_config_service.dart';
 import '../services/content_engagement_service.dart';
@@ -14,6 +15,7 @@ class ContentEngagementBar extends StatefulWidget {
   final Map<EngagementType, VoidCallback?>? customHandlers;
   final bool showSecondaryActions;
   final EdgeInsets? padding;
+  final VoidCallback? onEngagementChanged;
 
   const ContentEngagementBar({
     super.key,
@@ -24,6 +26,7 @@ class ContentEngagementBar extends StatefulWidget {
     this.customHandlers,
     this.showSecondaryActions = false,
     this.padding,
+    this.onEngagementChanged,
   });
 
   @override
@@ -125,6 +128,12 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
       case EngagementType.review:
         await _showReviewDialog();
         break;
+      case EngagementType.rate:
+        await _showRatingDialog();
+        break;
+      case EngagementType.share:
+        await _handleShare();
+        break;
       default:
         // Handle normally
         await _handleEngagement(type);
@@ -220,33 +229,18 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
           )
         : <EngagementType>[];
 
+    // Combine all engagement types into a single list for one row display
+    final allEngagementTypes = [...primaryTypes, ...secondaryTypes];
+
     return Container(
       padding:
           widget.padding ??
           const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: [
-          // Primary engagement actions
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: primaryTypes
-                .map((type) => _buildEngagementButton(type))
-                .toList(),
-          ),
-
-          // Secondary engagement actions (if enabled)
-          if (secondaryTypes.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: secondaryTypes
-                  .map(
-                    (type) => _buildEngagementButton(type, isSecondary: true),
-                  )
-                  .toList(),
-            ),
-          ],
-        ],
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: allEngagementTypes
+            .map((type) => _buildEngagementButton(type))
+            .toList(),
       ),
     );
   }
@@ -374,12 +368,483 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
     return '${(count / 1000000).toStringAsFixed(1)}M';
   }
 
-  // Placeholder methods for special engagement dialogs
+  // Engagement dialog methods
+  Future<void> _showRatingDialog() async {
+    int selectedRating = 0;
+
+    final result = await showDialog<int>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Rate this artwork'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('How would you rate this artwork?'),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return IconButton(
+                        icon: Icon(
+                          index < selectedRating
+                              ? Icons.star
+                              : Icons.star_border,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            selectedRating = index + 1;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(null),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: selectedRating > 0
+                      ? () => Navigator.of(context).pop(selectedRating)
+                      : null,
+                  child: const Text('Rate'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      // Submit rating
+      await _submitEngagement(EngagementType.rate, {'rating': result});
+    }
+  }
+
+  Future<void> _showReviewDialog() async {
+    final TextEditingController reviewController = TextEditingController();
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Write a review'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Share your thoughts about this artwork:'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: reviewController,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Write your review here...',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(reviewController.text),
+              child: const Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null && result.isNotEmpty) {
+      // Submit review
+      await _submitEngagement(EngagementType.review, {'review': result});
+    }
+  }
+
   Future<void> _showGiftDialog() async {
-    // TODO: Implement gift dialog
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Gift feature coming soon!')));
+    final gifts = [
+      {'name': 'Coffee ☕', 'price': 5, 'icon': '☕'},
+      {'name': 'Pizza 🍕', 'price': 15, 'icon': '🍕'},
+      {'name': 'Flowers 💐', 'price': 25, 'icon': '💐'},
+      {'name': 'Custom Amount', 'price': 0, 'icon': '💰'},
+    ];
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Send a gift'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Show your appreciation to the artist:'),
+              const SizedBox(height: 16),
+              ...gifts
+                  .map(
+                    (gift) => ListTile(
+                      leading: Text(
+                        gift['icon'] as String,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      title: Text(gift['name'] as String),
+                      subtitle: gift['price'] as int > 0
+                          ? Text('\$${gift['price']}')
+                          : null,
+                      onTap: () => Navigator.of(context).pop(gift),
+                    ),
+                  )
+                  .toList(),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null) {
+      if (result['name'] == 'Custom Amount') {
+        // Show custom amount dialog
+        await _showCustomGiftDialog();
+      } else {
+        // Submit gift
+        await _submitEngagement(EngagementType.gift, result);
+      }
+    }
+  }
+
+  Future<void> _showCustomGiftDialog() async {
+    final TextEditingController amountController = TextEditingController();
+
+    final result = await showDialog<double>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Custom gift amount'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Enter the amount you\'d like to gift:'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  prefixText: '\$',
+                  hintText: '0.00',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final amount = double.tryParse(amountController.text);
+                Navigator.of(context).pop(amount);
+              },
+              child: const Text('Gift'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null && result > 0) {
+      // Submit custom gift
+      await _submitEngagement(EngagementType.gift, {
+        'name': 'Custom Gift 💰',
+        'price': result,
+        'icon': '💰',
+      });
+    }
+  }
+
+  Future<void> _handleShare() async {
+    try {
+      // For artwork content type, show enhanced share dialog
+      if (widget.contentType == 'artwork') {
+        await _showArtworkShareDialog();
+      } else {
+        // Default share for other content types
+        final message =
+            'Check out this amazing ${widget.contentType} on ARTbeat!';
+        await SharePlus.instance.share(ShareParams(text: message));
+
+        // Track share engagement
+        await _submitEngagement(EngagementType.share, {
+          'platform': 'native_share',
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error sharing: $e')));
+      }
+    }
+  }
+
+  Future<void> _showArtworkShareDialog() async {
+    final shareText =
+        'Check out this amazing artwork on ARTbeat! 🎨\n\nhttps://artbeat.app/artwork/${widget.contentId}';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Share Artwork',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildShareOption(
+                    icon: Icons.message,
+                    label: 'Messages',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          text: shareText,
+                          subject: 'Amazing artwork on ARTbeat',
+                        ),
+                      );
+                      await _submitEngagement(EngagementType.share, {
+                        'platform': 'messages',
+                      });
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.copy,
+                    label: 'Copy Link',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Link copied to clipboard'),
+                        ),
+                      );
+                      await _submitEngagement(EngagementType.share, {
+                        'platform': 'copy_link',
+                      });
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.share,
+                    label: 'More',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          text: shareText,
+                          subject: 'Amazing artwork on ARTbeat',
+                        ),
+                      );
+                      await _submitEngagement(EngagementType.share, {
+                        'platform': 'system_share',
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildShareOption(
+                    icon: Icons.camera_alt,
+                    label: 'Stories',
+                    color: Colors.purple,
+                    onTap: () async {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Stories sharing coming soon!'),
+                        ),
+                      );
+                      await _submitEngagement(EngagementType.share, {
+                        'platform': 'stories',
+                      });
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.facebook,
+                    label: 'Facebook',
+                    color: Colors.blue,
+                    onTap: () async {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Facebook sharing coming soon!'),
+                        ),
+                      );
+                      await _submitEngagement(EngagementType.share, {
+                        'platform': 'facebook',
+                      });
+                    },
+                  ),
+                  _buildShareOption(
+                    icon: Icons.photo_camera,
+                    label: 'Instagram',
+                    color: Colors.pink,
+                    onTap: () async {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Instagram sharing coming soon!'),
+                        ),
+                      );
+                      await _submitEngagement(EngagementType.share, {
+                        'platform': 'instagram',
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildShareOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 80,
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: (color ?? Theme.of(context).primaryColor).withValues(
+                  alpha: 0.1,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: color ?? Theme.of(context).primaryColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitEngagement(
+    EngagementType type,
+    Map<String, dynamic> metadata,
+  ) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final service = context.read<ContentEngagementService>();
+      final newEngagementState = await service.toggleEngagement(
+        contentId: widget.contentId,
+        contentType: widget.contentType,
+        engagementType: type,
+        metadata: metadata,
+      );
+
+      if (mounted) {
+        setState(() {
+          _userEngagements[type] = newEngagementState;
+          _stats = _updateStatsForEngagement(type, newEngagementState);
+          _isLoading = false;
+        });
+
+        // Show success feedback
+        String message;
+        switch (type) {
+          case EngagementType.rate:
+            message = 'Thank you for rating!';
+            break;
+          case EngagementType.review:
+            message = 'Review submitted successfully!';
+            break;
+          case EngagementType.gift:
+            message = 'Gift sent to the artist!';
+            break;
+          case EngagementType.share:
+            message = 'Thank you for sharing!';
+            break;
+          default:
+            message = 'Thank you for your engagement!';
+        }
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+
+        // Notify parent of engagement change (for ratings and reviews)
+        if (widget.onEngagementChanged != null &&
+            (type == EngagementType.rate || type == EngagementType.review)) {
+          widget.onEngagementChanged!();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
   }
 
   Future<void> _showSponsorDialog() async {
@@ -400,13 +865,6 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
     // TODO: Implement message dialog
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Message feature coming soon!')),
-    );
-  }
-
-  Future<void> _showReviewDialog() async {
-    // TODO: Implement review dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Review feature coming soon!')),
     );
   }
 }

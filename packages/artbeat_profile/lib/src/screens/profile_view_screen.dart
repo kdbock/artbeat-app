@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import '../widgets/profile_header.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String userId;
@@ -181,28 +182,19 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         drawer: const ArtbeatDrawer(),
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-          child: ArtbeatGradientBackground(
-            addShadow: true,
-            child: EnhancedUniversalHeader(
-              title: 'Profile',
-              showLogo: false,
-              showSearch: true,
-              showDeveloperTools: true,
-              onSearchPressed: (query) => Navigator.pushNamed(
-                context,
-                '/search',
-                arguments: {'query': query},
-              ),
-              onMenuPressed: () {
-                _scaffoldKey.currentState?.openDrawer();
-              },
-              backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
-              elevation: 0,
-            ),
-          ),
+        appBar: ProfileHeader(
+          title: 'Profile',
+          showBackButton: !widget.isCurrentUser,
+          showSearch: true,
+          showChat: true,
+          showDeveloper: true,
+          onBackPressed: widget.isCurrentUser
+              ? null
+              : () => Navigator.of(context).pop(),
+          onSearchPressed: () => Navigator.pushNamed(context, '/search'),
+          onMenuPressed: () {
+            _scaffoldKey.currentState?.openDrawer();
+          },
         ),
         body: Container(
           decoration: _buildArtisticBackground(),

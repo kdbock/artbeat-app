@@ -139,7 +139,10 @@ class CommunityModuleHome extends StatelessWidget {
               _buildNavButton(
                 context,
                 'Create Post',
-                const CreatePostScreen(),
+                const CreateGroupPostScreen(
+                  groupType: GroupType.artist,
+                  postType: 'general',
+                ),
                 Icons.add_box,
               ),
               _buildNavButton(
@@ -195,7 +198,7 @@ class CommunityModuleHome extends StatelessWidget {
               _buildNavButton(
                 context,
                 'Commissions',
-                const CommissionsScreen(),
+                const CommissionHubScreen(),
                 Icons.work,
               ),
               _buildNavButton(

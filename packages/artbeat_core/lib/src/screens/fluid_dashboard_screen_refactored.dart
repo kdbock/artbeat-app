@@ -82,15 +82,9 @@ class _FluidDashboardScreenState extends State<FluidDashboardScreen> {
   }
 
   Widget _buildContent(DashboardViewModel viewModel) {
-    // Show loading indicator while initializing
+    // Show loading screen while initializing
     if (viewModel.isInitializing) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(
-            ArtbeatColors.primaryPurple,
-          ),
-        ),
-      );
+      return const LoadingScreen(enableNavigation: false);
     }
 
     return RefreshIndicator(

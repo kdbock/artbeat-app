@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_artist/src/screens/screens.dart';
+import 'package:artbeat_artist/src/utils/artist_logger.dart';
 import 'package:artbeat_artwork/src/screens/artwork_browse_screen.dart';
 
 // Get Firebase configuration from ConfigService
@@ -32,9 +33,10 @@ void main() async {
         ),
       );
     } else {
-      debugPrint('Firebase already initialized, using existing app instance');
+      ArtistLogger.info(
+          'Firebase already initialized, using existing app instance');
     }
-    debugPrint('Firebase initialized successfully');
+    ArtistLogger.info('Firebase initialized successfully');
 
     // Connect to Firebase emulators if requested
     if (const bool.fromEnvironment('USE_FIREBASE_EMULATOR',
@@ -43,10 +45,10 @@ void main() async {
       FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
       FirebaseAuth.instance.useAuthEmulator(host, 9099);
       FirebaseStorage.instance.useStorageEmulator(host, 9199);
-      debugPrint('Connected to Firebase emulators');
+      ArtistLogger.info('Connected to Firebase emulators');
     }
   } catch (e) {
-    debugPrint('Failed to initialize Firebase: $e');
+    ArtistLogger.error('Failed to initialize Firebase: $e');
     // Continue without Firebase when in development mode
     if (!kDebugMode) rethrow;
   }

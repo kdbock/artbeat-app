@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/group_models.dart';
 
@@ -88,6 +88,8 @@ class GroupPostCard extends StatelessWidget {
   }
 
   Widget _buildImages() {
+    if (post.imageUrls.isEmpty) return const SizedBox.shrink();
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 12),
       height: 200,
@@ -96,6 +98,14 @@ class GroupPostCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: post.imageUrls.length,
         itemBuilder: (context, index) {
+          final imageUrl = post.imageUrls[index];
+
+          // Debug: Print image URL to see what we're working with
+          debugPrint('🖼️ Displaying image URL: $imageUrl');
+
+          // More permissive validation - just check if it's not empty
+          final isValidUrl = imageUrl.isNotEmpty;
+
           return Container(
             width: 160,
             margin: EdgeInsets.only(
@@ -103,21 +113,23 @@ class GroupPostCard extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              image:
-                  post.imageUrls[index].isNotEmpty &&
-                      Uri.tryParse(post.imageUrls[index])?.hasScheme == true
+              image: isValidUrl
                   ? DecorationImage(
-                      image:
-                          NetworkImage(post.imageUrls[index]) as ImageProvider,
+                      image: NetworkImage(imageUrl) as ImageProvider,
                       fit: BoxFit.cover,
                     )
                   : null,
-              color:
-                  post.imageUrls[index].isEmpty ||
-                      Uri.tryParse(post.imageUrls[index])?.hasScheme != true
-                  ? Colors.grey[300]
-                  : null,
+              color: !isValidUrl ? Colors.grey[300] : null,
             ),
+            child: !isValidUrl
+                ? const Center(
+                    child: Icon(
+                      Icons.broken_image,
+                      color: Colors.grey,
+                      size: 32,
+                    ),
+                  )
+                : null,
           );
         },
       ),
@@ -206,7 +218,7 @@ class GroupPostCard extends StatelessWidget {
             children: [
               _buildInfoChip(
                 Icons.calendar_today,
-                DateFormat('MMM d, y').format(eventPost.eventDate),
+                intl.DateFormat('MMM d, y').format(eventPost.eventDate),
               ),
               const SizedBox(width: 8),
               _buildInfoChip(Icons.location_on, eventPost.eventLocation),
@@ -324,7 +336,7 @@ class GroupPostCard extends StatelessWidget {
               const SizedBox(width: 8),
               _buildInfoChip(
                 Icons.schedule,
-                DateFormat('MMM d').format(wantedPost.deadline),
+                intl.DateFormat('MMM d').format(wantedPost.deadline),
               ),
               const SizedBox(width: 8),
               _buildInfoChip(Icons.star, wantedPost.experienceLevel),

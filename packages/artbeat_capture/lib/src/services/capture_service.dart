@@ -1,15 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
 
 // Import ArtWalkService for achievement checking
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
+
+// Import offline services
+import 'offline_queue_service.dart';
 
 /// Service for managing art captures in the ARTbeat app.
 class CaptureService {
   static final CaptureService _instance = CaptureService._internal();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Connectivity _connectivity = Connectivity();
 
   // Cache for getAllCaptures
   List<CaptureModel>? _cachedAllCaptures;
@@ -50,6 +55,38 @@ class CaptureService {
     } catch (e) {
       debugPrint('Error fetching captures: $e');
       return [];
+    }
+  }
+
+  /// Save a new capture (with offline support)
+  Future<String?> saveCaptureWithOfflineSupport({
+    required CaptureModel capture,
+    required String localImagePath,
+  }) async {
+    try {
+      // Check internet connectivity
+      final connectivityResults = await _connectivity.checkConnectivity();
+      final isConnected = connectivityResults.any(
+        (result) => result != ConnectivityResult.none,
+      );
+
+      if (isConnected) {
+        // Online: save directly to Firestore
+        return await saveCapture(capture);
+      } else {
+        // Offline: add to queue for later sync
+        final offlineQueueService = OfflineQueueService();
+        final localCaptureId = await offlineQueueService.addCaptureToQueue(
+          captureData: capture,
+          localImagePath: localImagePath,
+        );
+
+        debugPrint('Capture added to offline queue: $localCaptureId');
+        return localCaptureId; // Return the local ID for immediate UI updates
+      }
+    } catch (e) {
+      debugPrint('Error saving capture with offline support: $e');
+      return null;
     }
   }
 

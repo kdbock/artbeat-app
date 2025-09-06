@@ -6,6 +6,7 @@ import 'dart:io';
 import '../models/ad_model.dart';
 import '../models/ad_location.dart';
 import '../models/ad_status.dart';
+import '../models/ad_duration.dart';
 
 /// Simplified ad service for the new ad system
 class SimpleAdService extends ChangeNotifier {
@@ -342,6 +343,38 @@ class SimpleAdService extends ChangeNotifier {
   Future<void> updateAd(String adId, Map<String, dynamic> data) async {
     await _adsRef.doc(adId).update(data);
     notifyListeners();
+  }
+
+  /// Update an ad with new images
+  Future<void> updateAdWithImages(
+    AdModel ad,
+    List<File> newImages,
+    List<String> imagesToKeep,
+  ) async {
+    try {
+      // Upload new images if any
+      List<String> newImageUrls = [];
+      if (newImages.isNotEmpty) {
+        newImageUrls = await _uploadImages(newImages, ad.ownerId);
+      }
+
+      // Combine kept images with new images
+      final allImageUrls = [...imagesToKeep, ...newImageUrls];
+
+      // Create updated ad data
+      final updatedData = ad.toMap();
+      updatedData['imageUrl'] = allImageUrls.isNotEmpty
+          ? allImageUrls.first
+          : '';
+      updatedData['artworkUrls'] = allImageUrls.join(',');
+
+      // Update the ad in Firestore
+      await _adsRef.doc(ad.id).update(updatedData);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error updating ad with images: $e');
+      rethrow;
+    }
   }
 
   /// Duplicate an existing ad

@@ -44,6 +44,8 @@ service cloud.firestore {
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['engagementStats'])) ||
         // Allow updating presence/online status fields
         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastSeen', 'lastActive'])) ||
+        // Allow updating notification preferences by the user themselves
+        (request.auth.uid == userId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notificationPreferences', 'updatedAt'])) ||
         // Allow updating presence fields along with other allowed fields
         (request.resource.data.diff(resource.data).affectedKeys().hasAny(['isOnline', 'lastSeen', 'lastActive']) &&
          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastSeen', 'lastActive', 'engagementStats']))

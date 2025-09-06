@@ -16,9 +16,12 @@ export 'src/services/cohort_analytics_service.dart';
 export 'src/services/admin_settings_service.dart';
 export 'src/services/recent_activity_service.dart';
 export 'src/services/migration_service.dart';
+export 'src/services/consolidated_admin_service.dart';
+export 'src/services/audit_trail_service.dart';
 
 // Export utilities
 export 'src/utils/image_utils.dart';
+export 'src/utils/admin_service_migrator.dart';
 
 // Export screens
 export 'src/screens/admin_enhanced_dashboard_screen.dart';
@@ -36,6 +39,10 @@ export 'src/screens/admin_data_management_screen.dart';
 export 'src/screens/admin_system_alerts_screen.dart';
 export 'src/screens/admin_help_support_screen.dart';
 export 'src/screens/migration_screen.dart';
+export 'src/screens/admin_events_management_screen.dart';
+export 'src/screens/admin_ads_management_screen.dart';
+export 'src/screens/admin_community_moderation_screen.dart';
+export 'src/screens/admin_system_monitoring_screen.dart';
 
 // Export routes
 export 'src/routes/admin_routes.dart';

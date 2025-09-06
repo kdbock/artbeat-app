@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
 import '../models/user_model.dart';
+import '../models/search_result_model.dart';
 import 'notification_service.dart';
 
 class ChatService extends ChangeNotifier {
@@ -898,6 +899,64 @@ class ChatService extends ChangeNotifier {
     }
   }
 
+  /// Delete a single message
+  Future<void> deleteMessage(String chatId, String messageId) async {
+    try {
+      final messageRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId);
+
+      // Check if the message exists and user has permission to delete
+      final messageDoc = await messageRef.get();
+      if (!messageDoc.exists) {
+        throw Exception('Message not found');
+      }
+
+      final messageData = messageDoc.data()!;
+      if (messageData['senderId'] != currentUserId) {
+        throw Exception('You can only delete your own messages');
+      }
+
+      // Delete the message
+      await messageRef.delete();
+
+      // Update chat's last message if this was the last message
+      final lastMessage = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .orderBy('timestamp', descending: true)
+          .limit(1)
+          .get();
+
+      if (lastMessage.docs.isNotEmpty) {
+        final newLastMessageData = lastMessage.docs.first.data();
+        await _firestore.collection('chats').doc(chatId).update({
+          'lastMessage':
+              newLastMessageData['content'] ?? newLastMessageData['text'],
+          'lastMessageTime': newLastMessageData['timestamp'],
+          'lastMessageSenderId': newLastMessageData['senderId'],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        // No messages left in chat
+        await _firestore.collection('chats').doc(chatId).update({
+          'lastMessage': '',
+          'lastMessageTime': FieldValue.serverTimestamp(),
+          'lastMessageSenderId': currentUserId,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deleting message: $e');
+      rethrow;
+    }
+  }
+
   /// Leaves a group chat
   Future<void> leaveGroup(String chatId) async {
     final currentUserId = _auth.currentUser?.uid;
@@ -1217,5 +1276,377 @@ class ChatService extends ChangeNotifier {
           debugPrint('Non-archived chat stream error: $error');
           throw Exception('Failed to load chats: $error');
         });
+  }
+
+  // Phase 3: Enhanced Message Interaction Features
+
+  /// Edit a message
+  Future<void> editMessage(
+    String chatId,
+    String messageId,
+    String newContent,
+  ) async {
+    try {
+      final messageRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId);
+
+      final messageDoc = await messageRef.get();
+      if (!messageDoc.exists) {
+        throw Exception('Message not found');
+      }
+
+      final messageData = messageDoc.data()!;
+      if (messageData['senderId'] != currentUserId) {
+        throw Exception('You can only edit your own messages');
+      }
+
+      await messageRef.update({
+        'content': newContent,
+        'text': newContent, // For backward compatibility
+        'isEdited': true,
+        'editedAt': FieldValue.serverTimestamp(),
+        'originalMessage': messageData['content'] ?? messageData['text'],
+      });
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error editing message: $e');
+      rethrow;
+    }
+  }
+
+  /// Forward a message to another chat
+  Future<void> forwardMessage(
+    String sourceMessageId,
+    String sourceChatId,
+    String targetChatId,
+  ) async {
+    try {
+      final sourceMessageRef = _firestore
+          .collection('chats')
+          .doc(sourceChatId)
+          .collection('messages')
+          .doc(sourceMessageId);
+
+      final sourceMessageDoc = await sourceMessageRef.get();
+      if (!sourceMessageDoc.exists) {
+        throw Exception('Source message not found');
+      }
+
+      final sourceMessageData = sourceMessageDoc.data()!;
+      final targetMessagesRef = _firestore
+          .collection('chats')
+          .doc(targetChatId)
+          .collection('messages');
+
+      final forwardedMessage = {
+        'senderId': currentUserId,
+        'content': sourceMessageData['content'] ?? sourceMessageData['text'],
+        'text': sourceMessageData['content'] ?? sourceMessageData['text'],
+        'timestamp': FieldValue.serverTimestamp(),
+        'type': sourceMessageData['type'] ?? 'text',
+        'isForwarded': true,
+        'forwardedFromId': sourceChatId,
+        'originalSenderId': sourceMessageData['senderId'],
+        'read': {currentUserId: false},
+      };
+
+      // Copy media URLs if present
+      if (sourceMessageData['imageUrl'] != null) {
+        forwardedMessage['imageUrl'] = sourceMessageData['imageUrl'];
+      }
+      if (sourceMessageData['fileUrl'] != null) {
+        forwardedMessage['fileUrl'] = sourceMessageData['fileUrl'];
+        forwardedMessage['fileName'] = sourceMessageData['fileName'];
+      }
+
+      await targetMessagesRef.add(forwardedMessage);
+
+      // Update target chat's last message
+      await _firestore.collection('chats').doc(targetChatId).update({
+        'lastMessage':
+            sourceMessageData['content'] ?? sourceMessageData['text'],
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'lastMessageSenderId': currentUserId,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error forwarding message: $e');
+      rethrow;
+    }
+  }
+
+  /// Star/unstar a message
+  Future<void> toggleMessageStar(String chatId, String messageId) async {
+    try {
+      final messageRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId);
+
+      await _firestore.runTransaction((transaction) async {
+        final messageDoc = await transaction.get(messageRef);
+        if (!messageDoc.exists) {
+          throw Exception('Message not found');
+        }
+
+        final messageData = messageDoc.data()!;
+        final starredBy = List<String>.from(
+          (messageData['starredBy'] as List?) ?? [],
+        );
+
+        if (starredBy.contains(currentUserId)) {
+          starredBy.remove(currentUserId);
+        } else {
+          starredBy.add(currentUserId);
+        }
+
+        transaction.update(messageRef, {
+          'starredBy': starredBy,
+          'isStarred': starredBy.isNotEmpty,
+        });
+      });
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error toggling message star: $e');
+      rethrow;
+    }
+  }
+
+  /// Get starred messages for current user
+  Stream<List<MessageModel>> getStarredMessagesStream() {
+    return _firestore
+        .collectionGroup('messages')
+        .where('starredBy', arrayContains: currentUserId)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => MessageModel.fromFirestore(doc))
+              .toList();
+        });
+  }
+
+  /// Global search across all chats
+  Future<List<SearchResultModel>> globalSearch(
+    String query, {
+    int limit = 50,
+  }) async {
+    if (query.trim().isEmpty) return [];
+
+    try {
+      final results = <SearchResultModel>[];
+
+      // Get all chats for current user
+      final chatsSnapshot = await _firestore
+          .collection('chats')
+          .where('participantIds', arrayContains: currentUserId)
+          .get();
+
+      for (final chatDoc in chatsSnapshot.docs) {
+        final chat = ChatModel.fromFirestore(chatDoc);
+
+        // Search messages in each chat
+        final messagesSnapshot = await _firestore
+            .collection('chats')
+            .doc(chatDoc.id)
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(100) // Limit per chat to avoid overwhelming results
+            .get();
+
+        for (final messageDoc in messagesSnapshot.docs) {
+          final message = MessageModel.fromFirestore(messageDoc);
+
+          if (message.content.toLowerCase().contains(query.toLowerCase())) {
+            final searchResult = SearchResultModel.fromMap(
+              <String, dynamic>{},
+              message: message,
+              chat: chat,
+              query: query,
+            );
+            results.add(searchResult);
+          }
+        }
+      }
+
+      // Sort by timestamp, most recent first
+      results.sort(
+        (a, b) => b.message.timestamp.compareTo(a.message.timestamp),
+      );
+
+      return results.take(limit).toList();
+    } catch (e) {
+      debugPrint('Error in global search: $e');
+      rethrow;
+    }
+  }
+
+  /// Search media in messages
+  Future<List<MessageModel>> searchMedia(
+    MessageType mediaType, {
+    String? chatId,
+  }) async {
+    try {
+      Query query;
+
+      if (chatId != null) {
+        // Search within specific chat
+        query = _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .where('type', isEqualTo: mediaType.toString());
+      } else {
+        // Search across all user's chats
+        final chatIds = <String>[];
+        final chatsSnapshot = await _firestore
+            .collection('chats')
+            .where('participantIds', arrayContains: currentUserId)
+            .get();
+
+        for (final doc in chatsSnapshot.docs) {
+          chatIds.add(doc.id);
+        }
+
+        if (chatIds.isEmpty) return [];
+
+        // For global media search, we need to query each chat individually
+        final allMedia = <MessageModel>[];
+
+        for (final cId in chatIds) {
+          final mediaSnapshot = await _firestore
+              .collection('chats')
+              .doc(cId)
+              .collection('messages')
+              .where('type', isEqualTo: mediaType.toString())
+              .orderBy('timestamp', descending: true)
+              .limit(20)
+              .get();
+
+          allMedia.addAll(
+            mediaSnapshot.docs.map((doc) => MessageModel.fromFirestore(doc)),
+          );
+        }
+
+        allMedia.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        return allMedia;
+      }
+
+      final snapshot = await query.orderBy('timestamp', descending: true).get();
+
+      return snapshot.docs
+          .map((doc) => MessageModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      debugPrint('Error searching media: $e');
+      rethrow;
+    }
+  }
+
+  /// Enhanced search with filters
+  Future<List<SearchResultModel>> advancedSearch({
+    required String query,
+    String? chatId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? senderId,
+    MessageType? messageType,
+    bool starredOnly = false,
+    int limit = 50,
+  }) async {
+    if (query.trim().isEmpty) return [];
+
+    try {
+      final results = <SearchResultModel>[];
+
+      // Determine which chats to search
+      List<String> chatIds;
+      if (chatId != null) {
+        chatIds = [chatId];
+      } else {
+        final chatsSnapshot = await _firestore
+            .collection('chats')
+            .where('participantIds', arrayContains: currentUserId)
+            .get();
+        chatIds = chatsSnapshot.docs.map((doc) => doc.id).toList();
+      }
+
+      for (final cId in chatIds) {
+        Query messagesQuery = _firestore
+            .collection('chats')
+            .doc(cId)
+            .collection('messages');
+
+        // Apply filters
+        if (startDate != null) {
+          messagesQuery = messagesQuery.where(
+            'timestamp',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate),
+          );
+        }
+        if (endDate != null) {
+          messagesQuery = messagesQuery.where(
+            'timestamp',
+            isLessThanOrEqualTo: Timestamp.fromDate(endDate),
+          );
+        }
+        if (senderId != null) {
+          messagesQuery = messagesQuery.where('senderId', isEqualTo: senderId);
+        }
+        if (messageType != null) {
+          messagesQuery = messagesQuery.where(
+            'type',
+            isEqualTo: messageType.toString(),
+          );
+        }
+        if (starredOnly) {
+          messagesQuery = messagesQuery.where(
+            'starredBy',
+            arrayContains: currentUserId,
+          );
+        }
+
+        final messagesSnapshot = await messagesQuery
+            .orderBy('timestamp', descending: true)
+            .limit(100)
+            .get();
+
+        // Get chat info for results
+        final chatDoc = await _firestore.collection('chats').doc(cId).get();
+        final chat = ChatModel.fromFirestore(chatDoc);
+
+        for (final messageDoc in messagesSnapshot.docs) {
+          final message = MessageModel.fromFirestore(messageDoc);
+
+          if (message.content.toLowerCase().contains(query.toLowerCase())) {
+            final searchResult = SearchResultModel.fromMap(
+              <String, dynamic>{},
+              message: message,
+              chat: chat,
+              query: query,
+            );
+            results.add(searchResult);
+          }
+        }
+      }
+
+      // Sort by timestamp, most recent first
+      results.sort(
+        (a, b) => b.message.timestamp.compareTo(a.message.timestamp),
+      );
+
+      return results.take(limit).toList();
+    } catch (e) {
+      debugPrint('Error in advanced search: $e');
+      rethrow;
+    }
   }
 }

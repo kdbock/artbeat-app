@@ -47,6 +47,21 @@ export 'src/services/content_engagement_service.dart'
 export 'src/services/engagement_config_service.dart'
     show EngagementConfigService;
 export 'src/services/enhanced_gift_service.dart' show EnhancedGiftService;
+export 'src/services/accessibility_service.dart'
+    show AccessibilityService, AccessibleNavItem, AccessibilityMixin;
+export 'src/services/performance_optimization_service.dart'
+    show
+        PerformanceOptimizationService,
+        PerformanceSummary,
+        MemoryInfo,
+        LazyLoadController;
+export 'src/services/internationalization_service.dart'
+    show
+        InternationalizationService,
+        I18nText,
+        InternationalizationMixin,
+        DateFormat,
+        NumberFormat;
 
 // Export Enhanced Gift Screens
 export 'src/screens/enhanced_gift_purchase_screen.dart'
@@ -134,8 +149,6 @@ export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
 export 'src/screens/auth_required_screen.dart' show AuthRequiredScreen;
 export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
 export 'src/screens/gift_purchase_screen.dart' show GiftPurchaseScreen;
-export 'src/screens/payment_management_screen.dart'
-    show PaymentManagementScreen;
 export 'src/screens/subscription_purchase_screen.dart'
     show SubscriptionPurchaseScreen;
 export 'src/screens/subscription_plans_screen.dart'
@@ -143,6 +156,8 @@ export 'src/screens/subscription_plans_screen.dart'
 export 'src/screens/simple_subscription_plans_screen.dart'
     show SimpleSubscriptionPlansScreen;
 export 'src/screens/coupon_management_screen.dart' show CouponManagementScreen;
+export 'src/screens/advanced_analytics_dashboard.dart'
+    show AdvancedAnalyticsDashboard;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
@@ -152,3 +167,6 @@ export 'src/providers/messaging_provider.dart' show MessagingProvider;
 export 'src/providers/community_provider.dart' show CommunityProvider;
 
 // Export Widgets
+export 'src/widgets/enhanced_navigation_menu.dart' show EnhancedNavigationMenu;
+export 'src/widgets/quick_navigation_fab.dart'
+    show QuickNavigationFAB, EnhancedAppBar;

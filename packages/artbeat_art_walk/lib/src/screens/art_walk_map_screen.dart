@@ -8,6 +8,10 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_capture/src/screens/capture_detail_screen.dart';
 import '../widgets/art_walk_drawer.dart';
+import '../widgets/art_walk_header.dart';
+import '../widgets/map_floating_menu.dart';
+import '../widgets/offline_map_fallback.dart';
+import '../widgets/offline_art_walk_widget.dart';
 
 /// Screen that displays a map with nearby captures and art walks
 class ArtWalkMapScreen extends StatefulWidget {
@@ -480,30 +484,27 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      currentIndex: 2, // Art Walk tab
+      currentIndex: 1, // Art Walk tab
       drawer: const ArtWalkDrawer(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Art Walk Map'),
-          backgroundColor: Colors.transparent,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          flexibleSpace: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF4FB3BE), // Light Teal
-                  Color(0xFFFF9E80), // Light Orange/Peach
-                ],
-              ),
-            ),
-          ),
+        appBar: ArtWalkHeader(
+          title: 'Art Walk Map',
+          showBackButton: true,
+          showSearch: true,
+          showChat: false,
+          onBackPressed: () {
+            // Check if there's a previous route to go back to
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              // If no previous route, navigate to dashboard
+              Navigator.of(context).pushReplacementNamed('/dashboard');
+            }
+          },
+          onSearchPressed: () {
+            // Navigate to search screen
+            Navigator.pushNamed(context, '/search');
+          },
         ),
         body: Stack(
           children: [
@@ -527,34 +528,17 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 child: const Center(child: CircularProgressIndicator()),
               ),
 
-            // Error message
+            // Error message - using OfflineMapFallback widget
             if (_hasMapError)
-              Container(
-                color: Colors.black54,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.white,
-                        size: 64,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _mapErrorMessage,
-                        style: const TextStyle(color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _initializeMapsAndLocation,
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              _nearbyCaptures.isNotEmpty
+                  ? OfflineMapFallback(
+                      onRetry: _initializeMapsAndLocation,
+                      hasData: true,
+                      errorMessage: _mapErrorMessage,
+                      nearbyArt:
+                          const [], // TODO: Convert CaptureModel to PublicArtModel if needed
+                    )
+                  : OfflineArtWalkWidget(onRetry: _initializeMapsAndLocation),
 
             // ZIP code search bar
             Positioned(
@@ -669,6 +653,56 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
               ),
             ),
 
+            // Create Art Walk button
+            Positioned(
+              bottom: 16,
+              left: 16,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(25),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF6B73FF), // Purple
+                      Color(0xFF9DEDC6), // Green
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/art-walk/create');
+                  },
+                  icon: const Icon(Icons.add_location, color: Colors.white),
+                  label: const Text(
+                    'Create Art Walk',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
             // Captures slider
             if (_showCapturesSlider)
               Positioned(
@@ -722,6 +756,12 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                 ),
               ),
           ],
+        ),
+        floatingActionButton: MapFloatingMenu(
+          onViewArtWalks: () => Navigator.pushNamed(context, '/art-walk/list'),
+          onCreateArtWalk: () =>
+              Navigator.pushNamed(context, '/art-walk/create'),
+          onViewAttractions: () => Navigator.pushNamed(context, '/search'),
         ),
       ),
     );

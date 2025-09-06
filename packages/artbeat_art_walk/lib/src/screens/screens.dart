@@ -12,3 +12,4 @@ export 'create_art_walk_screen.dart';
 export 'enhanced_art_walk_create_screen.dart';
 export 'enhanced_art_walk_experience_screen.dart';
 export 'my_captures_screen.dart';
+export 'search_results_screen.dart';

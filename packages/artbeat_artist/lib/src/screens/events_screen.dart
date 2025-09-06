@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
-import '../services/event_service.dart';
+import 'package:artbeat_core/artbeat_core.dart' hide EventModel;
+import '../models/event_model_internal.dart';
+import '../services/event_service_adapter.dart';
 
 /// Screen showing upcoming events
 class EventsScreen extends StatefulWidget {
@@ -11,7 +12,7 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
-  final EventService _eventService = EventService();
+  final EventServiceAdapter _eventService = EventServiceAdapter();
   List<EventModel> _events = [];
   bool _isLoading = true;
   String? _errorMessage;

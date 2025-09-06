@@ -64,6 +64,20 @@ class AIFeaturesService extends ChangeNotifier {
     }
   }
 
+  /// Simulate image processing for demo purposes
+  /// In production, this would be replaced with actual AI service calls
+  Future<Uint8List> _simulateImageProcessing(
+    Uint8List imageData,
+    String operation,
+  ) async {
+    // Simulate processing time
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+
+    // For demo purposes, return the original image
+    // In production, this would be the processed result from an AI service
+    return imageData;
+  }
+
   /// Smart crop an image using AI
   Future<AIResult<Uint8List>> smartCropImage({
     required Uint8List imageData,
@@ -74,35 +88,45 @@ class AIFeaturesService extends ChangeNotifier {
       // Check usage limits
       final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI) {
-        return AIResult.error('AI credit limit reached');
+        return AIResult.error('AI credit limit reached for your current plan');
       }
 
       // Check tier access
       userTier ??= SubscriptionTier.free;
       if (!isFeatureAvailable(smartCropping, userTier)) {
-        return AIResult.error('Smart cropping requires Starter tier or higher');
+        return AIResult.error(
+          'Smart cropping requires Starter tier or higher. Upgrade to unlock this feature.',
+        );
       }
 
       final creditsNeeded = getFeatureCreditCost(smartCropping);
 
-      // For demo purposes, return success with placeholder data
-      // In production, this would call the actual AI service
-      await Future<void>.delayed(
-        const Duration(seconds: 1),
-      ); // Simulate processing
+      // Simulate AI processing with realistic delay
+      await Future<void>.delayed(const Duration(seconds: 2));
+
+      // In production, this would call an actual AI service like:
+      // final result = await _callAIService('smart_crop', {
+      //   'image': base64Encode(imageData),
+      //   'aspectRatio': aspectRatio,
+      // });
+
+      // For now, return the original image with a simulated crop
+      // In a real implementation, this would be the processed image
+      final processedImage = await _simulateImageProcessing(imageData, 'crop');
 
       // Track AI credit usage
       await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
 
-      // Return demo result (in production, would be actual processed image)
       return AIResult.success(
-        data: imageData, // Would be processed image
+        data: processedImage,
         creditsUsed: creditsNeeded,
-        confidence: 0.95,
+        confidence: 0.92,
       );
     } catch (e) {
       debugPrint('Error in smart cropping: $e');
-      return AIResult.error('Smart cropping error: $e');
+      return AIResult.error(
+        'Failed to process image. Please try again or contact support if the issue persists.',
+      );
     }
   }
 
@@ -115,36 +139,84 @@ class AIFeaturesService extends ChangeNotifier {
       // Check usage limits
       final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI) {
-        return AIResult.error('AI credit limit reached');
+        return AIResult.error('AI credit limit reached for your current plan');
       }
 
       // Check tier access
       userTier ??= SubscriptionTier.free;
       if (!isFeatureAvailable(backgroundRemoval, userTier)) {
         return AIResult.error(
-          'Background removal requires Starter tier or higher',
+          'Background removal requires Starter tier or higher. Upgrade to unlock this feature.',
         );
       }
 
       final creditsNeeded = getFeatureCreditCost(backgroundRemoval);
 
-      // For demo purposes, return success with placeholder data
-      await Future<void>.delayed(
-        const Duration(seconds: 2),
-      ); // Simulate processing
+      // Simulate AI processing with realistic delay
+      await Future<void>.delayed(const Duration(seconds: 3));
+
+      // In production, this would call an actual AI service like:
+      // final result = await _callAIService('remove_background', {
+      //   'image': base64Encode(imageData),
+      // });
+
+      final processedImage = await _simulateImageProcessing(
+        imageData,
+        'background_removal',
+      );
 
       // Track AI credit usage
       await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
 
       return AIResult.success(
-        data: imageData, // Would be processed image
+        data: processedImage,
         creditsUsed: creditsNeeded,
-        confidence: 0.92,
+        confidence: 0.89,
       );
     } catch (e) {
       debugPrint('Error in background removal: $e');
-      return AIResult.error('Background removal error: $e');
+      return AIResult.error(
+        'Failed to remove background. Please try again or contact support if the issue persists.',
+      );
     }
+  }
+
+  /// Simulate smart tag generation based on title and description
+  Future<List<String>> _generateSmartTags(
+    String? title,
+    String? description,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    final tags = <String>[];
+
+    // Analyze title for keywords
+    if (title != null) {
+      final titleWords = title.toLowerCase().split(' ');
+      for (final word in titleWords) {
+        if (word.length > 3) {
+          tags.add(word);
+        }
+      }
+    }
+
+    // Analyze description for keywords
+    if (description != null) {
+      final descWords = description.toLowerCase().split(' ');
+      for (final word in descWords) {
+        if (word.length > 4 && !tags.contains(word)) {
+          tags.add(word);
+        }
+      }
+    }
+
+    // Add some default art-related tags if we don't have enough
+    if (tags.length < 3) {
+      tags.addAll(['contemporary', 'artwork', 'creative']);
+    }
+
+    // Limit to 8 tags and ensure uniqueness
+    return tags.take(8).toList();
   }
 
   /// Generate tags for artwork using AI
@@ -159,24 +231,25 @@ class AIFeaturesService extends ChangeNotifier {
       final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI &&
           (userTier ?? SubscriptionTier.free) == SubscriptionTier.free) {
-        return AIResult.error('AI credit limit reached for free tier');
+        return AIResult.error(
+          'AI credit limit reached for free tier. Upgrade to continue using AI features.',
+        );
       }
 
       final creditsNeeded = getFeatureCreditCost(autoTagging);
 
-      // For demo purposes, return placeholder tags
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      // Simulate AI processing
+      await Future<void>.delayed(const Duration(seconds: 1));
 
-      final sampleTags = [
-        'contemporary art',
-        'abstract',
-        'colorful',
-        'digital art',
-        'modern',
-        'creative',
-        'artistic expression',
-        'visual art',
-      ];
+      // In production, this would analyze the image and generate relevant tags:
+      // final tags = await _callAIService('generate_tags', {
+      //   'image': base64Encode(imageData),
+      //   'title': title,
+      //   'description': description,
+      // });
+
+      // Generate contextually relevant tags based on title and description
+      final generatedTags = await _generateSmartTags(title, description);
 
       // Track AI credit usage (only for paid tiers)
       if ((userTier ?? SubscriptionTier.free) != SubscriptionTier.free) {
@@ -184,16 +257,18 @@ class AIFeaturesService extends ChangeNotifier {
       }
 
       return AIResult.success(
-        data: sampleTags,
+        data: generatedTags,
         creditsUsed:
             (userTier ?? SubscriptionTier.free) == SubscriptionTier.free
             ? 0
             : creditsNeeded,
-        confidence: 0.88,
+        confidence: 0.85,
       );
     } catch (e) {
       debugPrint('Error in tag generation: $e');
-      return AIResult.error('Tag generation error: $e');
+      return AIResult.error(
+        'Failed to generate tags. Please try again or contact support if the issue persists.',
+      );
     }
   }
 

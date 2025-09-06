@@ -1,6 +1,11 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter/material.dart';
 import '../models/activity_model.dart';
+import '../widgets/artist_header.dart';
+import '../widgets/local_artists_row_widget.dart';
+import '../widgets/local_galleries_widget.dart';
+import '../widgets/upcoming_events_row_widget.dart';
+import '../widgets/artist_subscription_cta_widget.dart';
 
 class ArtistDashboardScreen extends StatefulWidget {
   const ArtistDashboardScreen({super.key});
@@ -213,6 +218,11 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
             ],
           ),
         ),
+        const SizedBox(height: 16),
+        ArtistSubscriptionCTAWidget(
+          onSubscribePressed: () =>
+              Navigator.pushNamed(context, '/subscription/artist'),
+        ),
       ],
     );
   }
@@ -231,11 +241,11 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
     return core.MainLayout(
       currentIndex: 1, // Artist Dashboard tab in bottom navigation
       scaffoldKey: _scaffoldKey,
-      appBar: const core.EnhancedUniversalHeader(
+      appBar: const ArtistHeader(
         title: 'Artist Dashboard',
         showBackButton: false,
         showSearch: false,
-        showDeveloperTools: true,
+        showDeveloper: true,
       ),
       drawer: const core.ArtbeatDrawer(),
       child: _buildDashboardContent(),
@@ -343,6 +353,54 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                         Colors.orange,
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Local Artists Section
+                  Text(
+                    'Local Artists',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  LocalArtistsRowWidget(
+                    zipCode:
+                        '10001', // Default NYC zip code - should be user's location
+                    onSeeAllPressed: () =>
+                        Navigator.pushNamed(context, '/artist/browse'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Local Galleries Section
+                  Text(
+                    'Local Galleries & Museums',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  LocalGalleriesWidget(
+                    zipCode:
+                        '10001', // Default NYC zip code - should be user's location
+                    onSeeAllPressed: () =>
+                        Navigator.pushNamed(context, '/galleries/browse'),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Upcoming Events Section
+                  Text(
+                    'Upcoming Events',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  UpcomingEventsRowWidget(
+                    zipCode:
+                        '10001', // Default NYC zip code - should be user's location
+                    onSeeAllPressed: () =>
+                        Navigator.pushNamed(context, '/events/browse'),
                   ),
                   const SizedBox(height: 24),
 

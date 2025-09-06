@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
 import '../models/ad_model.dart';
 import '../models/ad_size.dart';
 import '../models/image_fit.dart';
+import '../models/ad_location.dart';
+import '../services/ad_analytics_service.dart';
 
 /// Simplified ad display widget that handles image rotation and click actions
 class SimpleAdDisplayWidget extends StatefulWidget {
   final AdModel ad;
+  final AdLocation location;
   final VoidCallback? onTap;
   final bool showCloseButton;
+  final bool trackAnalytics;
 
   const SimpleAdDisplayWidget({
     super.key,
     required this.ad,
+    required this.location,
     this.onTap,
     this.showCloseButton = false,
+    this.trackAnalytics = true,
   });
 
   @override
@@ -27,17 +34,67 @@ class SimpleAdDisplayWidget extends StatefulWidget {
 class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
   int _currentImageIndex = 0;
   Timer? _rotationTimer;
+  Timer? _impressionTimer;
+  bool _impressionTracked = false;
+  DateTime? _viewStartTime;
+
+  late final AdAnalyticsService _analyticsService;
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
+    _analyticsService = AdAnalyticsService();
+    _getCurrentUserId();
     _startImageRotation();
+    _trackImpression();
   }
 
   @override
   void dispose() {
     _rotationTimer?.cancel();
+    _impressionTimer?.cancel();
+    _trackViewDuration();
     super.dispose();
+  }
+
+  void _getCurrentUserId() {
+    final user = FirebaseAuth.instance.currentUser;
+    _currentUserId = user?.uid;
+  }
+
+  void _trackImpression() {
+    if (!widget.trackAnalytics) return;
+
+    // Track impression after 1 second to ensure genuine view
+    _impressionTimer = Timer(const Duration(seconds: 1), () {
+      if (mounted && !_impressionTracked) {
+        _impressionTracked = true;
+        _viewStartTime = DateTime.now();
+
+        _analyticsService.trackAdImpression(
+          widget.ad.id,
+          widget.ad.ownerId,
+          viewerId: _currentUserId,
+          location: widget.location,
+          metadata: {
+            'adSize': widget.ad.size.name,
+            'adType': widget.ad.type.name,
+            'hasMultipleImages': widget.ad.artworkUrls.length > 1,
+          },
+        );
+      }
+    });
+  }
+
+  void _trackViewDuration() {
+    if (!widget.trackAnalytics || _viewStartTime == null) return;
+
+    final viewDuration = DateTime.now().difference(_viewStartTime!);
+    if (viewDuration.inSeconds >= 1) {
+      // Update impression with view duration (could be done with a separate call)
+      // For now, we'll track it in click metadata when user interacts
+    }
   }
 
   void _startImageRotation() {
@@ -55,6 +112,29 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
   }
 
   Future<void> _handleTap() async {
+    // Track click analytics
+    if (widget.trackAnalytics) {
+      final viewDuration = _viewStartTime != null
+          ? DateTime.now().difference(_viewStartTime!)
+          : null;
+
+      _analyticsService.trackAdClick(
+        widget.ad.id,
+        widget.ad.ownerId,
+        viewerId: _currentUserId,
+        location: widget.location,
+        destinationUrl: widget.ad.destinationUrl,
+        clickType: 'ad_tap',
+        metadata: {
+          'adSize': widget.ad.size.name,
+          'adType': widget.ad.type.name,
+          'currentImageIndex': _currentImageIndex,
+          'viewDurationSeconds': viewDuration?.inSeconds,
+          'hasDestinationUrl': widget.ad.destinationUrl?.isNotEmpty == true,
+        },
+      );
+    }
+
     // Custom tap handler takes precedence
     if (widget.onTap != null) {
       widget.onTap!();

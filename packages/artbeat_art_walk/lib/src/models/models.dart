@@ -7,3 +7,4 @@ export 'art_walk_comment_model.dart';
 export 'art_walk_route_model.dart';
 export 'navigation_step_model.dart';
 export 'public_art_model.dart';
+export 'search_criteria_model.dart';

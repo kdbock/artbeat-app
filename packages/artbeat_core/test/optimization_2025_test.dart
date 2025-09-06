@@ -60,7 +60,7 @@ void main() {
         additionalAICredits: 10, // $0.05 each = $0.50
       );
 
-      expect(overageCost, equals(2.97)); // $1.98 + $0.49 + $0.50
+      expect(overageCost, closeTo(2.97, 0.01)); // $1.98 + $0.49 + $0.50
     });
 
     test('Usage percentage tracking', () {

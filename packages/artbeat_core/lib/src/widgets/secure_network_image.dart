@@ -16,6 +16,7 @@ class SecureNetworkImage extends StatefulWidget {
   final BorderRadius? borderRadius;
   final bool enableRetry;
   final int maxRetries;
+  final bool enableThumbnailFallback;
 
   const SecureNetworkImage({
     super.key,
@@ -28,6 +29,7 @@ class SecureNetworkImage extends StatefulWidget {
     this.borderRadius,
     this.enableRetry = true,
     this.maxRetries = 3,
+    this.enableThumbnailFallback = false,
   });
 
   @override
@@ -38,11 +40,48 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
   int _retryCount = 0;
   bool _isRetrying = false;
   String? _authenticatedUrl;
+  bool _usingThumbnailFallback = false;
 
   @override
   void initState() {
     super.initState();
     _authenticatedUrl = widget.imageUrl;
+  }
+
+  /// Generate thumbnail URL from main artwork URL
+  String _generateThumbnailUrl(String originalUrl) {
+    try {
+      // Look for artwork patterns like: artwork/{userId}/{fileName}.jpg
+      if (originalUrl.contains('artwork') && originalUrl.contains('.jpg')) {
+        // Extract the part after 'artwork/' and before the file name
+        final artworkIndex = originalUrl.indexOf('artwork/');
+        if (artworkIndex != -1) {
+          final beforeArtwork = originalUrl.substring(
+            0,
+            artworkIndex + 8,
+          ); // Include 'artwork/'
+          final afterArtwork = originalUrl.substring(artworkIndex + 8);
+
+          // Find the next slash to separate userId from filename
+          final slashIndex = afterArtwork.indexOf('/');
+          if (slashIndex != -1) {
+            final userId = afterArtwork.substring(0, slashIndex);
+            final fileName = afterArtwork.substring(slashIndex + 1);
+
+            // Convert filename.jpg to filename_thumb.jpg
+            final nameWithoutExt = fileName.replaceAll('.jpg', '');
+            final thumbnailFileName = '${nameWithoutExt}_thumb.jpg';
+
+            return '${beforeArtwork}${userId}/thumbnails/$thumbnailFileName';
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error generating thumbnail URL: $e');
+      }
+    }
+    return originalUrl; // Return original if can't generate thumbnail
   }
 
   /// Attempts to refresh authentication tokens and retry loading
@@ -116,7 +155,52 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
         error.toString().contains('HTTP request failed, statusCode: 404');
 
     if (kDebugMode) {
+      print(
+        '🖼️ SecureNetworkImage _buildErrorWidget called for: ${widget.imageUrl}',
+      );
+      print('🖼️ Error type: $error');
+      print(
+        '🖼️ Is 404: $is404Error, enableThumbnailFallback: ${widget.enableThumbnailFallback}, usingFallback: $_usingThumbnailFallback',
+      );
+    }
+
+    // Only log errors if they're not common 404s (which are expected for missing artwork)
+    if (kDebugMode && !is404Error) {
       print('❌ SecureNetworkImage error for ${widget.imageUrl}: $error');
+    } else if (kDebugMode && is404Error) {
+      print('🖼️ SecureNetworkImage: Missing image (404) ${widget.imageUrl}');
+    }
+
+    // If 404 error and thumbnail fallback is enabled and we haven't tried it yet
+    if (is404Error &&
+        widget.enableThumbnailFallback &&
+        !_usingThumbnailFallback &&
+        widget.imageUrl != _generateThumbnailUrl(widget.imageUrl)) {
+      final thumbnailUrl = _generateThumbnailUrl(widget.imageUrl);
+      if (kDebugMode) {
+        print('🔄 Attempting thumbnail fallback for: ${widget.imageUrl}');
+        print('🔄 Generated thumbnail URL: $thumbnailUrl');
+      }
+
+      // Try loading thumbnail
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _usingThumbnailFallback = true;
+          _authenticatedUrl = thumbnailUrl;
+        });
+      });
+
+      // Return loading indicator while switching to thumbnail
+      return Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
     }
 
     // Custom error widget or default
@@ -205,14 +289,25 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
 
     // Check for empty or whitespace-only URLs
     if (urlToCheck.trim().isEmpty) {
+      debugPrint('🖼️ SecureNetworkImage: Empty URL');
       return _buildErrorWidget(context, 'Empty URL', null);
     }
 
-    // Validate URL structure
+    // Validate URL structure - more permissive
     final uri = Uri.tryParse(urlToCheck);
     final isValidUrl = uri != null && uri.hasScheme && uri.host.isNotEmpty;
+    final isLikelyValidUrl =
+        isValidUrl ||
+        urlToCheck.startsWith('http') ||
+        urlToCheck.contains('firebasestorage');
 
-    if (!isValidUrl) {
+    debugPrint('🖼️ SecureNetworkImage validating URL: $urlToCheck');
+    debugPrint(
+      '🖼️ URI: $uri, Valid: $isValidUrl, Likely valid: $isLikelyValidUrl',
+    );
+
+    if (!isLikelyValidUrl) {
+      debugPrint('🖼️ SecureNetworkImage: URL failed validation');
       return _buildErrorWidget(context, 'Invalid URL', null);
     }
 
@@ -243,6 +338,36 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
         if (kDebugMode) {
           print('🔇 CachedNetworkImage error suppressed: $error');
         }
+
+        // Handle thumbnail fallback for 404 errors via errorListener as well
+        final is404Error =
+            error.toString().contains('404') ||
+            error.toString().contains('HTTP request failed, statusCode: 404');
+
+        if (is404Error &&
+            widget.enableThumbnailFallback &&
+            !_usingThumbnailFallback &&
+            widget.imageUrl != _generateThumbnailUrl(widget.imageUrl)) {
+          final thumbnailUrl = _generateThumbnailUrl(widget.imageUrl);
+          if (kDebugMode) {
+            print(
+              '🔄 ErrorListener: Attempting thumbnail fallback for: ${widget.imageUrl}',
+            );
+            print('🔄 ErrorListener: Generated thumbnail URL: $thumbnailUrl');
+          }
+
+          // Try loading thumbnail
+          if (mounted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _usingThumbnailFallback = true;
+                  _authenticatedUrl = thumbnailUrl;
+                });
+              }
+            });
+          }
+        }
       },
     );
 
@@ -271,6 +396,7 @@ extension SecureImageExtension on Image {
     BorderRadius? borderRadius,
     bool enableRetry = true,
     int maxRetries = 3,
+    bool enableThumbnailFallback = false,
   }) {
     return SecureNetworkImage(
       key: key,
@@ -283,6 +409,7 @@ extension SecureImageExtension on Image {
       borderRadius: borderRadius,
       enableRetry: enableRetry,
       maxRetries: maxRetries,
+      enableThumbnailFallback: enableThumbnailFallback,
     );
   }
 }

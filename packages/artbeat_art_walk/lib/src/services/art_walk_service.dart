@@ -4,7 +4,8 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:artbeat_core/artbeat_core.dart' show EnhancedStorageService;
+import 'package:artbeat_core/artbeat_core.dart'
+    show EnhancedStorageService, CaptureModel;
 import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,7 +19,7 @@ import '../models/public_art_model.dart';
 import '../models/art_walk_model.dart';
 import '../models/comment_model.dart';
 import '../models/achievement_model.dart';
-import '../models/capture_model.dart';
+import '../models/search_criteria_model.dart';
 import '../services/art_walk_cache_service.dart';
 import '../services/rewards_service.dart';
 import '../services/achievement_service.dart';
@@ -453,6 +454,7 @@ class ArtWalkService {
           if (artDoc.exists) {
             final capture = CaptureModel.fromFirestore(
               artDoc as DocumentSnapshot<Map<String, dynamic>>,
+              null,
             );
             // Convert CaptureModel to PublicArtModel for consistency
             final publicArt = _convertCaptureToPublicArt(capture);
@@ -849,13 +851,37 @@ class ArtWalkService {
     }
 
     try {
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId.jpg';
-      final ref = _storage.ref().child(folder).child(userId).child(fileName);
+      // Validate image file exists
+      if (!await imageFile.exists()) {
+        throw Exception('Image file does not exist: ${imageFile.path}');
+      }
+
+      // Check file size (limit to 10MB)
+      final fileSize = await imageFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        throw Exception(
+          'Image file too large: ${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB. Maximum allowed: 10MB',
+        );
+      }
+
+      _logger.i(
+        'Starting image upload - File: ${imageFile.path}, Size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)}MB',
+      );
+
+      final fileName =
+          '${folder}_${DateTime.now().millisecondsSinceEpoch}_$userId.jpg';
+      // Use the 'uploads' path which has permissive rules for authenticated users
+      final ref = _storage.ref().child('uploads').child(fileName);
 
       final uploadTask = await ref.putFile(imageFile);
-      return await uploadTask.ref.getDownloadURL();
-    } catch (e) {
+      final downloadUrl = await uploadTask.ref.getDownloadURL();
+
+      _logger.i('Successfully uploaded image to: uploads/$fileName');
+      _logger.i('Download URL: $downloadUrl');
+      return downloadUrl;
+    } catch (e, stackTrace) {
       _logger.e('Error uploading image to storage: $e');
+      _logger.e('Stack trace: $stackTrace');
       throw Exception('Failed to upload image: $e');
     }
   }
@@ -998,12 +1024,18 @@ class ArtWalkService {
     try {
       // Upload cover image if provided
       final List<String> imageUrls = [];
+      String? coverImageUrl;
       if (coverImageFile != null) {
+        _logger.i('Uploading cover image for art walk: ${coverImageFile.path}');
         final String imageUrl = await _uploadImageToStorage(
           coverImageFile,
           'art_walks',
         );
         imageUrls.add(imageUrl);
+        coverImageUrl = imageUrl; // Set the coverImageUrl as well
+        _logger.i('Successfully uploaded cover image: $imageUrl');
+      } else {
+        _logger.i('No cover image provided for art walk creation');
       }
 
       // Get ZIP code from start location
@@ -1026,6 +1058,7 @@ class ArtWalkService {
         'routeData': routeData,
         'imageUrls':
             imageUrls, // Updated to use imageUrls instead of coverImageUrl
+        'coverImageUrl': coverImageUrl, // Add the coverImageUrl field
         'zipCode': zipCode, // Add ZIP code
         'isPublic': isPublic,
         'viewCount': 0,
@@ -1043,9 +1076,26 @@ class ArtWalkService {
       }
 
       return docRef.id;
-    } catch (e) {
+    } catch (e, stackTrace) {
       _logger.e('Error creating art walk: $e');
-      return null;
+      _logger.e('Stack trace: $stackTrace');
+
+      // Provide more specific error information
+      if (e.toString().contains('permission-denied')) {
+        throw Exception(
+          'Permission denied. Please check your authentication and try again.',
+        );
+      } else if (e.toString().contains('network')) {
+        throw Exception(
+          'Network error. Please check your internet connection and try again.',
+        );
+      } else if (e.toString().contains('Failed to upload image')) {
+        throw Exception(
+          'Failed to upload selfie image. Please try again with a different image.',
+        );
+      }
+
+      throw Exception('Failed to create art walk: $e');
     }
   }
 
@@ -1304,7 +1354,9 @@ class ArtWalkService {
           }
 
           // If not found in either, skip (invalid)
-          _logger.d('Removing invalid art piece $artId from art walk ${artWalk.id}');
+          _logger.d(
+            'Removing invalid art piece $artId from art walk ${artWalk.id}',
+          );
         }
 
         // Update the art walk with only valid IDs
@@ -1312,7 +1364,9 @@ class ArtWalkService {
           await _artWalksCollection.doc(artWalk.id).update({
             'artworkIds': validArtworkIds,
           });
-          _logger.i('Cleaned up art walk ${artWalk.id}: removed ${artWalk.artworkIds.length - validArtworkIds.length} invalid IDs');
+          _logger.i(
+            'Cleaned up art walk ${artWalk.id}: removed ${artWalk.artworkIds.length - validArtworkIds.length} invalid IDs',
+          );
         }
       }
     } catch (e) {
@@ -1561,5 +1615,496 @@ class ArtWalkService {
           ? Timestamp.fromDate(capture.updatedAt!)
           : null,
     );
+  }
+
+  // ========================================
+  // PHASE 2: ADVANCED SEARCH & FILTERING
+  // ========================================
+
+  /// Advanced search for art walks with comprehensive filtering
+  Future<SearchResult<ArtWalkModel>> searchArtWalks(
+    ArtWalkSearchCriteria criteria,
+  ) async {
+    final stopwatch = Stopwatch()..start();
+
+    try {
+      debugPrint(
+        '🔍 [SEARCH] Starting advanced art walk search with criteria: $criteria',
+      );
+
+      Query query = _artWalksCollection;
+
+      // Apply text search on title and description
+      if (criteria.searchQuery != null && criteria.searchQuery!.isNotEmpty) {
+        final searchTerm = criteria.searchQuery!.toLowerCase();
+        // Note: Firestore doesn't support full-text search natively
+        // This is a basic implementation - in production, you'd use Algolia or similar
+        query = query.where('searchTokens', arrayContains: searchTerm);
+      }
+
+      // Apply public/private filter
+      if (criteria.isPublic != null) {
+        query = query.where('isPublic', isEqualTo: criteria.isPublic);
+      }
+
+      // Apply location filter
+      if (criteria.zipCode != null && criteria.zipCode!.isNotEmpty) {
+        query = query.where('zipCode', isEqualTo: criteria.zipCode);
+      }
+
+      // Apply difficulty filter
+      if (criteria.difficulty != null) {
+        query = query.where('difficulty', isEqualTo: criteria.difficulty);
+      }
+
+      // Apply accessibility filter
+      if (criteria.isAccessible != null) {
+        query = query.where('isAccessible', isEqualTo: criteria.isAccessible);
+      }
+
+      // Apply sorting
+      switch (criteria.sortBy) {
+        case 'popular':
+          query = query.orderBy(
+            'viewCount',
+            descending: criteria.sortDescending ?? true,
+          );
+          break;
+        case 'newest':
+          query = query.orderBy(
+            'createdAt',
+            descending: criteria.sortDescending ?? true,
+          );
+          break;
+        case 'title':
+          query = query.orderBy(
+            'title',
+            descending: criteria.sortDescending ?? false,
+          );
+          break;
+        case 'duration':
+          query = query.orderBy(
+            'estimatedDuration',
+            descending: criteria.sortDescending ?? false,
+          );
+          break;
+        case 'distance':
+          query = query.orderBy(
+            'estimatedDistance',
+            descending: criteria.sortDescending ?? false,
+          );
+          break;
+        default:
+          query = query.orderBy('viewCount', descending: true);
+      }
+
+      // Apply pagination
+      if (criteria.lastDocument != null) {
+        query = query.startAfterDocument(criteria.lastDocument!);
+      }
+
+      query = query.limit(criteria.limit ?? 20);
+
+      // Execute query
+      final snapshot = await query.get();
+      final results = <ArtWalkModel>[];
+
+      for (final doc in snapshot.docs) {
+        try {
+          final artWalk = ArtWalkModel.fromFirestore(doc);
+
+          // Apply client-side filters that can't be done in Firestore
+          if (_passesClientSideFilters(artWalk, criteria)) {
+            results.add(artWalk);
+          }
+        } catch (e) {
+          debugPrint('⚠️ [SEARCH] Error parsing art walk ${doc.id}: $e');
+        }
+      }
+
+      stopwatch.stop();
+
+      debugPrint(
+        '🎯 [SEARCH] Found ${results.length} art walks in ${stopwatch.elapsedMilliseconds}ms',
+      );
+
+      return SearchResult<ArtWalkModel>(
+        results: results,
+        totalCount: results.length,
+        hasNextPage: snapshot.docs.length >= (criteria.limit ?? 20),
+        lastDocument: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+        searchQuery: criteria.searchQuery ?? '',
+        searchDuration: stopwatch.elapsed,
+      );
+    } catch (e) {
+      stopwatch.stop();
+      _logger.e('Error in advanced art walk search: $e');
+      return SearchResult<ArtWalkModel>.empty(criteria.searchQuery ?? '');
+    }
+  }
+
+  /// Advanced search for public art with comprehensive filtering
+  Future<SearchResult<PublicArtModel>> searchPublicArt(
+    PublicArtSearchCriteria criteria, {
+    double? userLatitude,
+    double? userLongitude,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+
+    try {
+      debugPrint(
+        '🔍 [SEARCH] Starting advanced public art search with criteria: $criteria',
+      );
+
+      Query query = _publicArtCollection;
+
+      // Apply text search on title and description
+      if (criteria.searchQuery != null && criteria.searchQuery!.isNotEmpty) {
+        final searchTerm = criteria.searchQuery!.toLowerCase();
+        query = query.where('searchTokens', arrayContains: searchTerm);
+      }
+
+      // Apply artist name filter
+      if (criteria.artistName != null && criteria.artistName!.isNotEmpty) {
+        query = query.where('artistName', isEqualTo: criteria.artistName);
+      }
+
+      // Apply art type filter
+      if (criteria.artTypes != null && criteria.artTypes!.isNotEmpty) {
+        query = query.where('artType', whereIn: criteria.artTypes);
+      }
+
+      // Apply verification filter
+      if (criteria.isVerified != null) {
+        query = query.where('isVerified', isEqualTo: criteria.isVerified);
+      }
+
+      // Apply sorting
+      switch (criteria.sortBy) {
+        case 'popular':
+          query = query.orderBy(
+            'viewCount',
+            descending: criteria.sortDescending ?? true,
+          );
+          break;
+        case 'newest':
+          query = query.orderBy(
+            'createdAt',
+            descending: criteria.sortDescending ?? true,
+          );
+          break;
+        case 'rating':
+          query = query.orderBy(
+            'likeCount',
+            descending: criteria.sortDescending ?? true,
+          );
+          break;
+        case 'title':
+          query = query.orderBy(
+            'title',
+            descending: criteria.sortDescending ?? false,
+          );
+          break;
+        default:
+          query = query.orderBy('viewCount', descending: true);
+      }
+
+      // Apply pagination
+      if (criteria.lastDocument != null) {
+        query = query.startAfterDocument(criteria.lastDocument!);
+      }
+
+      query = query.limit(criteria.limit ?? 20);
+
+      // Execute query
+      final snapshot = await query.get();
+      final results = <PublicArtModel>[];
+
+      for (final doc in snapshot.docs) {
+        try {
+          final publicArt = PublicArtModel.fromFirestore(doc);
+
+          // Apply client-side filters
+          if (_passesPublicArtClientSideFilters(
+            publicArt,
+            criteria,
+            userLatitude,
+            userLongitude,
+          )) {
+            results.add(publicArt);
+          }
+        } catch (e) {
+          debugPrint('⚠️ [SEARCH] Error parsing public art ${doc.id}: $e');
+        }
+      }
+
+      // Sort by distance if user location is provided
+      if (userLatitude != null &&
+          userLongitude != null &&
+          criteria.sortBy == 'distance') {
+        results.sort((a, b) {
+          final distanceA = _distanceKm(
+            userLatitude,
+            userLongitude,
+            a.location.latitude,
+            a.location.longitude,
+          );
+          final distanceB = _distanceKm(
+            userLatitude,
+            userLongitude,
+            b.location.latitude,
+            b.location.longitude,
+          );
+          return criteria.sortDescending == true
+              ? distanceB.compareTo(distanceA)
+              : distanceA.compareTo(distanceB);
+        });
+      }
+
+      stopwatch.stop();
+
+      debugPrint(
+        '🎯 [SEARCH] Found ${results.length} public art pieces in ${stopwatch.elapsedMilliseconds}ms',
+      );
+
+      return SearchResult<PublicArtModel>(
+        results: results,
+        totalCount: results.length,
+        hasNextPage: snapshot.docs.length >= (criteria.limit ?? 20),
+        lastDocument: snapshot.docs.isNotEmpty ? snapshot.docs.last : null,
+        searchQuery: criteria.searchQuery ?? '',
+        searchDuration: stopwatch.elapsed,
+      );
+    } catch (e) {
+      stopwatch.stop();
+      _logger.e('Error in advanced public art search: $e');
+      return SearchResult<PublicArtModel>.empty(criteria.searchQuery ?? '');
+    }
+  }
+
+  /// Get search suggestions based on query and user history
+  Future<List<String>> getSearchSuggestions(String query) async {
+    try {
+      if (query.length < 2) return [];
+
+      final suggestions = <String>[];
+      final queryLower = query.toLowerCase();
+
+      // Get title suggestions from art walks
+      final artWalkSnapshot = await _artWalksCollection
+          .where('searchTokens', arrayContains: queryLower)
+          .limit(5)
+          .get();
+
+      for (final doc in artWalkSnapshot.docs) {
+        final title = doc.data() as Map<String, dynamic>?;
+        if (title != null && title['title'] != null) {
+          final artWalkTitle = title['title'] as String;
+          if (artWalkTitle.toLowerCase().contains(queryLower) &&
+              !suggestions.contains(artWalkTitle)) {
+            suggestions.add(artWalkTitle);
+          }
+        }
+      }
+
+      // Get artist name suggestions from public art
+      final publicArtSnapshot = await _publicArtCollection
+          .where('searchTokens', arrayContains: queryLower)
+          .limit(5)
+          .get();
+
+      for (final doc in publicArtSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          final title = data['title'] as String?;
+          final artistName = data['artistName'] as String?;
+
+          if (title != null &&
+              title.toLowerCase().contains(queryLower) &&
+              !suggestions.contains(title)) {
+            suggestions.add(title);
+          }
+
+          if (artistName != null &&
+              artistName.toLowerCase().contains(queryLower) &&
+              !suggestions.contains(artistName)) {
+            suggestions.add(artistName);
+          }
+        }
+      }
+
+      return suggestions.take(8).toList();
+    } catch (e) {
+      _logger.e('Error getting search suggestions: $e');
+      return [];
+    }
+  }
+
+  /// Get popular search tags and categories
+  Future<Map<String, List<String>>> getSearchCategories() async {
+    try {
+      final categories = <String, List<String>>{};
+
+      // Get popular art walk tags
+      final artWalkSnapshot = await _artWalksCollection
+          .where('isPublic', isEqualTo: true)
+          .orderBy('viewCount', descending: true)
+          .limit(50)
+          .get();
+
+      final artWalkTags = <String>{};
+      final difficulties = <String>{};
+
+      for (final doc in artWalkSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          final tags = data['tags'] as List<dynamic>?;
+          if (tags != null) {
+            artWalkTags.addAll(tags.cast<String>());
+          }
+
+          final difficulty = data['difficulty'] as String?;
+          if (difficulty != null) {
+            difficulties.add(difficulty);
+          }
+        }
+      }
+
+      categories['Art Walk Tags'] = artWalkTags.take(10).toList();
+      categories['Difficulty Levels'] = difficulties.toList();
+
+      // Get popular art types
+      final publicArtSnapshot = await _publicArtCollection
+          .where('isVerified', isEqualTo: true)
+          .orderBy('viewCount', descending: true)
+          .limit(50)
+          .get();
+
+      final artTypes = <String>{};
+      final publicArtTags = <String>{};
+
+      for (final doc in publicArtSnapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>?;
+        if (data != null) {
+          final artType = data['artType'] as String?;
+          if (artType != null) {
+            artTypes.add(artType);
+          }
+
+          final tags = data['tags'] as List<dynamic>?;
+          if (tags != null) {
+            publicArtTags.addAll(tags.cast<String>());
+          }
+        }
+      }
+
+      categories['Art Types'] = artTypes.take(8).toList();
+      categories['Art Tags'] = publicArtTags.take(10).toList();
+
+      return categories;
+    } catch (e) {
+      _logger.e('Error getting search categories: $e');
+      return {};
+    }
+  }
+
+  /// Client-side filtering for art walks (filters that can't be done in Firestore)
+  bool _passesClientSideFilters(
+    ArtWalkModel artWalk,
+    ArtWalkSearchCriteria criteria,
+  ) {
+    // Apply duration filter
+    if (criteria.maxDuration != null) {
+      if (artWalk.estimatedDuration == null ||
+          artWalk.estimatedDuration! > criteria.maxDuration!) {
+        return false;
+      }
+    }
+
+    // Apply distance filter
+    if (criteria.maxDistance != null) {
+      if (artWalk.estimatedDistance == null ||
+          artWalk.estimatedDistance! > criteria.maxDistance!) {
+        return false;
+      }
+    }
+
+    // Apply tags filter
+    if (criteria.tags != null && criteria.tags!.isNotEmpty) {
+      if (artWalk.tags == null ||
+          !criteria.tags!.any((String tag) => artWalk.tags!.contains(tag))) {
+        return false;
+      }
+    }
+
+    // Apply text search to description (if not caught by searchTokens)
+    if (criteria.searchQuery != null && criteria.searchQuery!.isNotEmpty) {
+      final query = criteria.searchQuery!.toLowerCase();
+      final title = artWalk.title.toLowerCase();
+      final description = artWalk.description.toLowerCase();
+
+      if (!title.contains(query) && !description.contains(query)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Client-side filtering for public art
+  bool _passesPublicArtClientSideFilters(
+    PublicArtModel publicArt,
+    PublicArtSearchCriteria criteria,
+    double? userLatitude,
+    double? userLongitude,
+  ) {
+    // Apply distance filter
+    if (criteria.maxDistanceKm != null &&
+        userLatitude != null &&
+        userLongitude != null) {
+      final distance = _distanceKm(
+        userLatitude,
+        userLongitude,
+        publicArt.location.latitude,
+        publicArt.location.longitude,
+      );
+      if (distance > criteria.maxDistanceKm!) {
+        return false;
+      }
+    }
+
+    // Apply rating filter (using likeCount as proxy for rating)
+    if (criteria.minRating != null) {
+      // Simple rating calculation: likeCount / max(viewCount, 1) * 5
+      final rating = publicArt.viewCount > 0
+          ? (publicArt.likeCount / publicArt.viewCount) * 5.0
+          : 0.0;
+      if (rating < criteria.minRating!) {
+        return false;
+      }
+    }
+
+    // Apply tags filter
+    if (criteria.tags != null && criteria.tags!.isNotEmpty) {
+      if (!criteria.tags!.any((String tag) => publicArt.tags.contains(tag))) {
+        return false;
+      }
+    }
+
+    // Apply text search to description
+    if (criteria.searchQuery != null && criteria.searchQuery!.isNotEmpty) {
+      final query = criteria.searchQuery!.toLowerCase();
+      final title = publicArt.title.toLowerCase();
+      final description = publicArt.description.toLowerCase();
+      final artist = publicArt.artistName?.toLowerCase() ?? '';
+
+      if (!title.contains(query) &&
+          !description.contains(query) &&
+          !artist.contains(query)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

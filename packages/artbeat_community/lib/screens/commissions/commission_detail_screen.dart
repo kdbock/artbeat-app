@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import '../../services/stripe_service.dart';
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
@@ -17,6 +18,7 @@ class CommissionDetailScreen extends StatefulWidget {
 class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     with SingleTickerProviderStateMixin {
   final DirectCommissionService _commissionService = DirectCommissionService();
+  final StripeService _stripeService = StripeService();
   final _messageController = TextEditingController();
   late final TabController _tabController;
 
@@ -620,6 +622,9 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     final status = _commission!.status;
     return (status == CommissionStatus.pending && _isArtist) ||
         (status == CommissionStatus.quoted && _isClient) ||
+        (status == CommissionStatus.accepted &&
+            _isClient &&
+            _commission!.depositAmount > 0) ||
         (status == CommissionStatus.inProgress && _isArtist);
   }
 
@@ -629,6 +634,10 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
       return 'Provide Quote';
     } else if (status == CommissionStatus.quoted && _isClient) {
       return 'Accept Quote';
+    } else if (status == CommissionStatus.accepted &&
+        _isClient &&
+        _commission!.depositAmount > 0) {
+      return 'Pay Deposit (\$${_commission!.depositAmount.toStringAsFixed(2)})';
     } else if (status == CommissionStatus.inProgress && _isArtist) {
       return 'Mark Complete';
     }
@@ -641,6 +650,10 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
       _provideQuote();
     } else if (status == CommissionStatus.quoted && _isClient) {
       _acceptQuote();
+    } else if (status == CommissionStatus.accepted &&
+        _isClient &&
+        _commission!.depositAmount > 0) {
+      _payDeposit();
     } else if (status == CommissionStatus.inProgress && _isArtist) {
       _markComplete();
     }
@@ -653,6 +666,9 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
         break;
       case 'accept_quote':
         _acceptQuote();
+        break;
+      case 'pay_deposit':
+        _payDeposit();
         break;
       case 'mark_complete':
         _markComplete();
@@ -710,6 +726,33 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     }
   }
 
+  Future<void> _payDeposit() async {
+    try {
+      await _stripeService.processCommissionDeposit(
+        commissionId: _commission!.id,
+        amount: _commission!.depositAmount,
+        message: 'Deposit payment for commission: ${_commission!.title}',
+      );
+
+      await _loadCommissionDetails();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Deposit payment processed successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error processing deposit payment: $e')),
+        );
+      }
+    }
+  }
+
   Future<void> _markComplete() async {
     try {
       await _commissionService.completeCommission(_commission!.id);
@@ -738,11 +781,32 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     );
   }
 
-  void _payMilestone(CommissionMilestone milestone) {
-    // TODO: Implement milestone payment
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Milestone payment coming soon!')),
-    );
+  void _payMilestone(CommissionMilestone milestone) async {
+    try {
+      await _stripeService.processCommissionMilestone(
+        commissionId: _commission!.id,
+        milestoneId: milestone.id,
+        amount: milestone.amount,
+        message: 'Milestone payment for ${milestone.description}',
+      );
+
+      await _loadCommissionDetails();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Milestone payment processed successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error processing milestone payment: $e')),
+        );
+      }
+    }
   }
 
   void _downloadFile(CommissionFile file) {

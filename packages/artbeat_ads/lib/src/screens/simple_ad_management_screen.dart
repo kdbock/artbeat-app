@@ -237,7 +237,10 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                 SizedBox(
                   width: 80,
                   height: 60,
-                  child: SimpleAdDisplayWidget(ad: ad),
+                  child: SimpleAdDisplayWidget(
+                    ad: ad,
+                    location: AdLocation.dashboard,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 // Ad details
@@ -379,7 +382,10 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                 SizedBox(
                   width: 80,
                   height: 60,
-                  child: SimpleAdDisplayWidget(ad: ad),
+                  child: SimpleAdDisplayWidget(
+                    ad: ad,
+                    location: AdLocation.dashboard,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 // Ad details
@@ -901,7 +907,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
 
   // Image editing state
   File? _selectedMainImage;
-  List<File> _selectedArtworkImages = [];
+  final List<File> _selectedArtworkImages = [];
   String? _currentMainImageUrl;
   List<String> _currentArtworkUrls = [];
 
@@ -1071,7 +1077,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
     try {
       // Upload new images if selected
       String? newMainImageUrl = _currentMainImageUrl;
-      List<String> newArtworkUrls = List.from(_currentArtworkUrls);
+      final List<String> newArtworkUrls = List.from(_currentArtworkUrls);
 
       // Upload main image if changed
       if (_selectedMainImage != null) {
@@ -1098,6 +1104,29 @@ class _AdEditDialogState extends State<AdEditDialog> {
 
       // Calculate new end date based on updated duration
       // Create updated ad model
+      // Create duration object based on selected days
+      AdDuration duration;
+      switch (_selectedDays) {
+        case 1:
+          duration = AdDuration.oneDay;
+          break;
+        case 3:
+          duration = AdDuration.threeDays;
+          break;
+        case 7:
+          duration = AdDuration.oneWeek;
+          break;
+        case 14:
+          duration = AdDuration.twoWeeks;
+          break;
+        case 30:
+          duration = AdDuration.oneMonth;
+          break;
+        default:
+          duration = AdDuration.custom;
+          break;
+      }
+
       final updatedAd = AdModel(
         id: widget.ad.id,
         ownerId: widget.ad.ownerId,
@@ -1110,7 +1139,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         location: _selectedLocation,
-        duration: AdDuration(days: _selectedDays),
+        duration: duration,
         startDate: _selectedStartDate, // Updated start date
         endDate: _selectedStartDate.add(
           Duration(days: _selectedDays),
@@ -1294,7 +1323,10 @@ class _AdEditDialogState extends State<AdEditDialog> {
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: SimpleAdDisplayWidget(ad: widget.ad),
+                        child: SimpleAdDisplayWidget(
+                          ad: widget.ad,
+                          location: AdLocation.dashboard,
+                        ),
                       ),
                       const SizedBox(height: 16),
 

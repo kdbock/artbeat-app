@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:firebase_storage/firebase_storage.dart';
 import '../models/artbeat_event.dart';
 import '../models/ticket_type.dart';
@@ -133,7 +133,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                     ),
                   ],
                 ),
-                child: EnhancedUniversalHeader(
+                child: core.EnhancedUniversalHeader(
                   title: widget.initialEvent == null
                       ? 'Create Event'
                       : 'Edit Event',
@@ -145,14 +145,14 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   onProfilePressed: () => _showProfileMenu(context),
                   onDeveloperPressed: () => _showDeveloperTools(context),
                   backgroundColor: Colors.transparent,
-                  foregroundColor: ArtbeatColors.textPrimary,
+                  foregroundColor: core.ArtbeatColors.textPrimary,
                   actions: [
                     TextButton(
                       onPressed: _submitForm,
                       child: const Text(
                         'Save',
                         style: TextStyle(
-                          color: ArtbeatColors.textPrimary,
+                          color: core.ArtbeatColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -176,9 +176,9 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    ArtbeatColors.primaryPurple.withAlpha(25),
-                    ArtbeatColors.backgroundPrimary,
-                    ArtbeatColors.primaryGreen.withAlpha(25),
+                    core.ArtbeatColors.primaryPurple.withAlpha(25),
+                    core.ArtbeatColors.backgroundPrimary,
+                    core.ArtbeatColors.primaryGreen.withAlpha(25),
                   ],
                 ),
               )
@@ -222,12 +222,12 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: ArtbeatColors.surface,
+        color: core.ArtbeatColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ArtbeatColors.border),
+        border: Border.all(color: core.ArtbeatColors.border),
         boxShadow: [
           BoxShadow(
-            color: ArtbeatColors.primaryPurple.withAlpha(26),
+            color: core.ArtbeatColors.primaryPurple.withAlpha(26),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -241,7 +241,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: ArtbeatColors.textPrimary,
+              color: core.ArtbeatColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
@@ -681,11 +681,11 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                 labelText: 'Refund Policy',
                 filled: true,
                 fillColor:
-                    ArtbeatColors.backgroundPrimary, // match login_screen
+                    core.ArtbeatColors.backgroundPrimary, // match login_screen
                 border: OutlineInputBorder(),
               ),
               dropdownColor:
-                  ArtbeatColors.backgroundPrimary, // match login_screen
+                  core.ArtbeatColors.backgroundPrimary, // match login_screen
               style: const TextStyle(color: Colors.black),
               items: const [
                 DropdownMenuItem(
@@ -866,7 +866,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
 
     // Upload images to Firebase Storage and get URLs
     // Get current user ID from UserService
-    final userId = UserService().currentUserId;
+    final userId = core.UserService().currentUserId;
     if (userId == null) {
       ScaffoldMessenger.of(
         context,
@@ -1000,7 +1000,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   children: [
                     Icon(
                       Icons.developer_mode,
-                      color: ArtbeatColors.primaryPurple,
+                      color: core.ArtbeatColors.primaryPurple,
                     ),
                     SizedBox(width: 12),
                     Text(
@@ -1008,7 +1008,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: ArtbeatColors.textPrimary,
+                        color: core.ArtbeatColors.textPrimary,
                       ),
                     ),
                   ],
@@ -1024,21 +1024,21 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                       icon: Icons.bug_report,
                       title: 'Form Debug Info',
                       subtitle: 'View current form state',
-                      color: ArtbeatColors.primaryPurple,
+                      color: core.ArtbeatColors.primaryPurple,
                       onTap: () => _showFormDebugInfo(context),
                     ),
                     _buildDeveloperOption(
                       icon: Icons.data_object,
                       title: 'Event Data Preview',
                       subtitle: 'Preview event JSON structure',
-                      color: ArtbeatColors.primaryGreen,
+                      color: core.ArtbeatColors.primaryGreen,
                       onTap: () => _showEventDataPreview(context),
                     ),
                     _buildDeveloperOption(
                       icon: Icons.storage,
                       title: 'Firebase Storage',
                       subtitle: 'Check image upload paths',
-                      color: ArtbeatColors.secondaryTeal,
+                      color: core.ArtbeatColors.secondaryTeal,
                       onTap: () => _showStorageInfo(context),
                     ),
                   ],
@@ -1092,14 +1092,14 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: ArtbeatColors.textPrimary,
+                          color: core.ArtbeatColors.textPrimary,
                         ),
                       ),
                       Text(
                         subtitle,
                         style: const TextStyle(
                           fontSize: 14,
-                          color: ArtbeatColors.textSecondary,
+                          color: core.ArtbeatColors.textSecondary,
                         ),
                       ),
                     ],

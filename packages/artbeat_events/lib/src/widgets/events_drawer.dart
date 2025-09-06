@@ -49,7 +49,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
       } else {
         setState(() => _isLoading = false);
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error loading current user: $e');
       setState(() => _isLoading = false);
     }
@@ -71,7 +71,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
           });
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Error loading user events: $e');
     }
   }
@@ -79,125 +79,128 @@ class _EventsDrawerState extends State<EventsDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFE74C3C), // Red
-              Color(0xFF3498DB), // Light Blue
-              Colors.white,
-            ],
-            stops: [0.0, 0.3, 0.3],
+      child: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFE74C3C), // Red
+                Color(0xFF3498DB), // Light Blue
+                Colors.white,
+              ],
+              stops: [0.0, 0.3, 0.3],
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            // User profile header
-            _buildUserProfileHeader(),
+          child: Column(
+            children: [
+              // User profile header
+              _buildUserProfileHeader(),
 
-            // Navigation items
-            Expanded(
-              child: Container(
+              // Navigation items
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      _buildDrawerItem(
+                        icon: Icons.event,
+                        title: 'Events Dashboard',
+                        onTap: () =>
+                            _navigateToScreen(context, '/events/dashboard'),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.add_circle,
+                        title: 'Create Event',
+                        onTap: () =>
+                            _navigateToScreen(context, '/events/create'),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.event_note,
+                        title: 'My Events',
+                        onTap: () =>
+                            _navigateToScreen(context, '/events/my-events'),
+                        badge: _userEvents.isNotEmpty
+                            ? _userEvents.length.toString()
+                            : null,
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.confirmation_number,
+                        title: 'My Tickets',
+                        onTap: () =>
+                            _navigateToScreen(context, '/events/my-tickets'),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.calendar_today,
+                        title: 'Calendar',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          '/events/dashboard',
+                        ), // Redirect to dashboard for now
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.location_on,
+                        title: 'Nearby Events',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          '/events/discover',
+                        ), // Use discover route
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.search,
+                        title: 'Search Events',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          '/search',
+                        ), // Use main search
+                      ),
+                      const Divider(),
+                      _buildDrawerItem(
+                        icon: Icons.notifications,
+                        title: 'Event Notifications',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          '/notifications',
+                        ), // Use main notifications
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.settings,
+                        title: 'Event Settings',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          '/settings',
+                        ), // Use main settings
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.help,
+                        title: 'Event Help',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          '/support',
+                        ), // Use main support
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Footer with version info
+              Container(
+                padding: const EdgeInsets.all(16),
                 color: Colors.white,
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    _buildDrawerItem(
-                      icon: Icons.event,
-                      title: 'Events Dashboard',
-                      onTap: () =>
-                          _navigateToScreen(context, '/events/dashboard'),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.add_circle,
-                      title: 'Create Event',
-                      onTap: () => _navigateToScreen(context, '/events/create'),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.event_note,
-                      title: 'My Events',
-                      onTap: () =>
-                          _navigateToScreen(context, '/events/my-events'),
-                      badge: _userEvents.isNotEmpty
-                          ? _userEvents.length.toString()
-                          : null,
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.confirmation_number,
-                      title: 'My Tickets',
-                      onTap: () =>
-                          _navigateToScreen(context, '/events/my-tickets'),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.calendar_today,
-                      title: 'Calendar',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        '/events/dashboard',
-                      ), // Redirect to dashboard for now
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.location_on,
-                      title: 'Nearby Events',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        '/events/discover',
-                      ), // Use discover route
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.search,
-                      title: 'Search Events',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        '/search',
-                      ), // Use main search
-                    ),
-                    const Divider(),
-                    _buildDrawerItem(
-                      icon: Icons.notifications,
-                      title: 'Event Notifications',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        '/notifications',
-                      ), // Use main notifications
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.settings,
-                      title: 'Event Settings',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        '/settings',
-                      ), // Use main settings
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.help,
-                      title: 'Event Help',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        '/support',
-                      ), // Use main support
-                    ),
-                  ],
+                child: const Text(
+                  'ARTbeat Events v1.0.1',
+                  style: TextStyle(
+                    color: ArtbeatColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-
-            // Footer with version info
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: const Text(
-                'ARTbeat Events v1.0.1',
-                style: TextStyle(
-                  color: ArtbeatColors.textSecondary,
-                  fontSize: 12,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

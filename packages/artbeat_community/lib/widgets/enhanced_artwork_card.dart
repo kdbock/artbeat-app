@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 
 /// Enhanced artwork card with the new social engagement system
 class EnhancedArtworkCard extends StatelessWidget {
@@ -83,24 +84,32 @@ class EnhancedArtworkCard extends StatelessWidget {
             Container(
               width: double.infinity,
               height: isCompact ? 200 : 300,
-              decoration: BoxDecoration(
-                color: ArtbeatColors.backgroundSecondary,
-                image: artwork.imageUrl.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(artwork.imageUrl),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: artwork.imageUrl.isEmpty
-                  ? const Center(
-                      child: Icon(
-                        Icons.image,
-                        size: 64,
-                        color: ArtbeatColors.textSecondary,
+              child: artwork.imageUrl.isNotEmpty
+                  ? SecureNetworkImage(
+                      imageUrl: artwork.imageUrl,
+                      fit: BoxFit.cover,
+                      enableThumbnailFallback: true,
+                      errorWidget: Container(
+                        color: ArtbeatColors.backgroundSecondary,
+                        child: const Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 64,
+                            color: ArtbeatColors.textSecondary,
+                          ),
+                        ),
                       ),
                     )
-                  : null,
+                  : Container(
+                      color: ArtbeatColors.backgroundSecondary,
+                      child: const Center(
+                        child: Icon(
+                          Icons.image,
+                          size: 64,
+                          color: ArtbeatColors.textSecondary,
+                        ),
+                      ),
+                    ),
             ),
 
             // Artwork Details

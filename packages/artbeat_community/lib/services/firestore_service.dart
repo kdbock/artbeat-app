@@ -33,6 +33,21 @@ class FirestoreService {
     });
   }
 
+  Future<StudioModel?> getStudioById(String studioId) async {
+    final doc = await _firestore.collection('studios').doc(studioId).get();
+    if (doc.exists) {
+      return StudioModel.fromFirestore(doc);
+    }
+    return null;
+  }
+
+  Future<void> updateStudio(StudioModel studio) async {
+    await _firestore
+        .collection('studios')
+        .doc(studio.id)
+        .update(studio.toFirestore());
+  }
+
   Future<void> deleteStudio(String studioId) async {
     await _firestore.collection('studios').doc(studioId).delete();
   }

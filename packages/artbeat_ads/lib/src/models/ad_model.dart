@@ -156,7 +156,7 @@ class AdModel {
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
       location: safeLocation,
-      duration: AdDuration.fromMap(durationMap),
+      duration: AdDurationExtension.fromMap(durationMap),
       startDate: (map['startDate'] as Timestamp).toDate(),
       endDate: (map['endDate'] as Timestamp).toDate(),
       status: safeStatus,
@@ -185,4 +185,48 @@ class AdModel {
     'ctaText': ctaText,
     'imageFit': imageFit.index,
   };
+
+  /// Create a copy of this ad with some properties replaced
+  AdModel copyWith({
+    String? id,
+    String? ownerId,
+    AdType? type,
+    AdSize? size,
+    String? imageUrl,
+    List<String>? artworkUrls,
+    String? title,
+    String? description,
+    AdLocation? location,
+    AdDuration? duration,
+    DateTime? startDate,
+    DateTime? endDate,
+    AdStatus? status,
+    String? approvalId,
+    String? destinationUrl,
+    String? ctaText,
+    String? linkUrl, // Handle linkUrl parameter
+    String? contactInfo, // Handle contactInfo parameter
+    ImageFit? imageFit,
+    DateTime? updatedAt, // Handle updatedAt parameter
+  }) {
+    return AdModel(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      type: type ?? this.type,
+      size: size ?? this.size,
+      imageUrl: imageUrl ?? this.imageUrl,
+      artworkUrls: artworkUrls ?? this.artworkUrls,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      location: location ?? this.location,
+      duration: duration ?? this.duration,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      status: status ?? this.status,
+      approvalId: approvalId ?? this.approvalId,
+      destinationUrl: linkUrl ?? destinationUrl ?? this.destinationUrl,
+      ctaText: ctaText ?? this.ctaText,
+      imageFit: imageFit ?? this.imageFit,
+    );
+  }
 }

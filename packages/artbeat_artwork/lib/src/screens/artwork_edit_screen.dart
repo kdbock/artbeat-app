@@ -366,6 +366,8 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
                   ? SecureNetworkImage(
                       imageUrl: _artwork!.imageUrl,
                       fit: BoxFit.cover,
+                      enableThumbnailFallback:
+                          true, // Enable fallback for artwork
                       errorWidget:
                           const Icon(Icons.image, size: 64, color: Colors.grey),
                     )

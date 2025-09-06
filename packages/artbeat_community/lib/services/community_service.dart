@@ -92,6 +92,7 @@ class CommunityService extends ChangeNotifier {
     bool isPublic = true,
     List<String>? mentionedUsers,
     Map<String, dynamic>? metadata,
+    String? groupType, // Add groupType parameter
   }) async {
     try {
       debugPrint('🔄 Creating post for user: $userId');
@@ -99,6 +100,7 @@ class CommunityService extends ChangeNotifier {
       debugPrint('🖼️ Image URLs: $imageUrls');
       debugPrint('🏷️ Tags: $tags');
       debugPrint('📍 Location: $location');
+      debugPrint('👥 Group Type: $groupType');
 
       final docRef = await _firestore.collection('posts').add({
         'userId': userId,
@@ -117,6 +119,8 @@ class CommunityService extends ChangeNotifier {
         'isPublic': isPublic,
         'mentionedUsers': mentionedUsers,
         'metadata': metadata,
+        'groupType':
+            groupType ?? 'general', // Default to 'general' if not specified
       });
 
       debugPrint('✅ Post created successfully with ID: ${docRef.id}');

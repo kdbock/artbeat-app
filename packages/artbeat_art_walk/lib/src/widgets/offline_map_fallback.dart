@@ -1,10 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
+/// Fallback widget displayed when Google Maps cannot be loaded
+///
+/// Features:
+/// - Shows appropriate error message based on connectivity
+/// - Displays cached art pieces count when available offline
+/// - Provides retry functionality to reload the map
+/// - Offers navigation to art walk list when offline data is available
+/// - Visual indicators for offline vs connectivity issues
+///
+/// Usage:
+/// ```dart
+/// OfflineMapFallback(
+///   onRetry: () => _loadMap(),
+///   hasData: _hasCachedData,
+///   errorMessage: 'Map loading failed',
+///   nearbyArt: _cachedArtPieces,
+/// )
+/// ```
 class OfflineMapFallback extends StatelessWidget {
+  /// Callback to retry loading the map
   final VoidCallback onRetry;
+
+  /// Whether cached data is available for offline use
   final bool hasData;
+
+  /// Custom error message to display
   final String errorMessage;
+
+  /// List of nearby art pieces available offline
   final List<PublicArtModel> nearbyArt;
 
   const OfflineMapFallback({
@@ -58,10 +83,7 @@ class OfflineMapFallback extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               hasData ? 'Map unavailable while offline' : errorMessage,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
@@ -70,10 +92,7 @@ class OfflineMapFallback extends StatelessWidget {
                   ? 'You have ${nearbyArt.length} cached art pieces available.\nSome features may be limited in offline mode.'
                   : 'Please check your internet connection and try again.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             const SizedBox(height: 24),
             if (hasData && nearbyArt.isNotEmpty) ...[
@@ -84,8 +103,10 @@ class OfflineMapFallback extends StatelessWidget {
                 icon: const Icon(Icons.list_alt),
                 label: const Text('View Art Walk List'),
                 style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -95,8 +116,10 @@ class OfflineMapFallback extends StatelessWidget {
               icon: const Icon(Icons.refresh),
               label: const Text('Try Again'),
               style: OutlinedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],

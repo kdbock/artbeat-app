@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ad_model.dart';
@@ -28,7 +30,7 @@ class TestAdCreator {
           title: 'Explore Local Art',
           description: 'Discover amazing artwork in your area',
           location: AdLocation.artWalkMap,
-          duration: AdDuration(days: 7),
+          duration: AdDuration.oneWeek,
           startDate: DateTime.now(),
           endDate: DateTime.now().add(const Duration(days: 7)),
           status: AdStatus.approved,
@@ -45,7 +47,7 @@ class TestAdCreator {
           title: 'Share Your Art',
           description: 'Capture and share local artwork with the community',
           location: AdLocation.artWalkCaptures,
-          duration: AdDuration(days: 7),
+          duration: AdDuration.oneWeek,
           startDate: DateTime.now(),
           endDate: DateTime.now().add(const Duration(days: 7)),
           status: AdStatus.approved,
@@ -62,7 +64,7 @@ class TestAdCreator {
           title: 'Unlock Achievements',
           description: 'Earn badges and recognition for your art exploration',
           location: AdLocation.artWalkAchievements,
-          duration: AdDuration(days: 7),
+          duration: AdDuration.oneWeek,
           startDate: DateTime.now(),
           endDate: DateTime.now().add(const Duration(days: 7)),
           status: AdStatus.approved,

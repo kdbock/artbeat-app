@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_capture/artbeat_capture.dart';
 
-import 'capture_confirmation_screen.dart';
 
 /// Screen for adding details about the captured art
 class CaptureDetailsScreen extends StatefulWidget {

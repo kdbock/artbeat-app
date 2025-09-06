@@ -29,6 +29,12 @@ class ArtbeatEvent {
   final DateTime updatedAt;
   final String category; // Added category field
 
+  // Social interaction counts
+  final int viewCount;
+  final int likeCount;
+  final int shareCount;
+  final int saveCount;
+
   const ArtbeatEvent({
     required this.id,
     required this.title,
@@ -51,7 +57,11 @@ class ArtbeatEvent {
     this.metadata,
     required this.createdAt,
     required this.updatedAt,
-    this.category = 'Other', // Default category
+    required this.category,
+    this.viewCount = 0,
+    this.likeCount = 0,
+    this.shareCount = 0,
+    this.saveCount = 0,
   });
 
   /// Factory constructor to create a new event with generated ID
@@ -129,6 +139,42 @@ class ArtbeatEvent {
       createdAt: _parseDateTime(data['createdAt']),
       updatedAt: _parseDateTime(data['updatedAt']),
       category: data['category']?.toString() ?? 'Other', // Default category
+      viewCount: data['viewCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      shareCount: data['shareCount'] as int? ?? 0,
+      saveCount: data['saveCount'] as int? ?? 0,
+    );
+  }
+
+  /// Create an ArtbeatEvent from a Map (for analytics compatibility)
+  factory ArtbeatEvent.fromMap(Map<String, dynamic> data) {
+    return ArtbeatEvent(
+      id: data['id']?.toString() ?? '',
+      title: data['title']?.toString() ?? '',
+      description: data['description']?.toString() ?? '',
+      artistId: data['artistId']?.toString() ?? '',
+      imageUrls: _parseStringList(data['imageUrls']),
+      artistHeadshotUrl: data['artistHeadshotUrl']?.toString() ?? '',
+      eventBannerUrl: data['eventBannerUrl']?.toString() ?? '',
+      dateTime: _parseDateTime(data['dateTime']),
+      location: data['location']?.toString() ?? '',
+      ticketTypes: _parseTicketTypes(data['ticketTypes']),
+      refundPolicy: RefundPolicy.fromMap(data['refundPolicy'] ?? {}),
+      reminderEnabled: data['reminderEnabled'] as bool? ?? true,
+      isPublic: data['isPublic'] as bool? ?? true,
+      attendeeIds: _parseStringList(data['attendeeIds']),
+      maxAttendees: data['maxAttendees'] as int? ?? 100,
+      tags: _parseStringList(data['tags']),
+      contactEmail: data['contactEmail']?.toString() ?? '',
+      contactPhone: data['contactPhone']?.toString(),
+      metadata: data['metadata'] as Map<String, dynamic>?,
+      createdAt: _parseDateTime(data['createdAt']),
+      updatedAt: _parseDateTime(data['updatedAt']),
+      category: data['category']?.toString() ?? 'Other',
+      viewCount: data['viewCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      shareCount: data['shareCount'] as int? ?? 0,
+      saveCount: data['saveCount'] as int? ?? 0,
     );
   }
 
@@ -156,6 +202,10 @@ class ArtbeatEvent {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'category': category, // Added category field
+      'viewCount': viewCount,
+      'likeCount': likeCount,
+      'shareCount': shareCount,
+      'saveCount': saveCount,
     };
   }
 
@@ -183,6 +233,10 @@ class ArtbeatEvent {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? category,
+    int? viewCount,
+    int? likeCount,
+    int? shareCount,
+    int? saveCount,
   }) {
     return ArtbeatEvent(
       id: id ?? this.id,
@@ -207,6 +261,10 @@ class ArtbeatEvent {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       category: category ?? this.category, // Added category field
+      viewCount: viewCount ?? this.viewCount,
+      likeCount: likeCount ?? this.likeCount,
+      shareCount: shareCount ?? this.shareCount,
+      saveCount: saveCount ?? this.saveCount,
     );
   }
 
@@ -230,10 +288,7 @@ class ArtbeatEvent {
 
   /// Get total available tickets
   int get totalAvailableTickets {
-    return ticketTypes.fold<int>(
-      0,
-      (total, ticket) => total + ticket.quantity,
-    );
+    return ticketTypes.fold<int>(0, (total, ticket) => total + ticket.quantity);
   }
 
   /// Get total tickets sold

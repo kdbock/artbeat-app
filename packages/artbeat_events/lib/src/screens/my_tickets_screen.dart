@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/ticket_purchase.dart';
 import '../models/artbeat_event.dart';
@@ -165,6 +165,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
           child: const EnhancedUniversalHeader(
             title: 'My Tickets',
             showLogo: false,
+            showBackButton: true,
           ),
         ),
       ),
@@ -567,7 +568,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                   _buildDetailRow('Total Paid', ticket.formattedAmount),
                   _buildDetailRow(
                     'Purchase Date',
-                    DateFormat(
+                    intl.DateFormat(
                       'MMM d, y \'at\' h:mm a',
                     ).format(ticket.purchaseDate),
                   ),
@@ -577,7 +578,7 @@ class _MyTicketsScreenState extends State<MyTicketsScreen>
                   if (ticket.refundDate != null)
                     _buildDetailRow(
                       'Refund Date',
-                      DateFormat(
+                      intl.DateFormat(
                         'MMM d, y \'at\' h:mm a',
                       ).format(ticket.refundDate!),
                     ),

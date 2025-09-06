@@ -146,6 +146,8 @@ class LocalArtworkRowWidget extends StatelessWidget {
                                     width: 170,
                                     height: 150,
                                     fit: BoxFit.cover,
+                                    enableThumbnailFallback:
+                                        true, // Enable fallback for artwork
                                     errorWidget: Container(
                                       width: 170,
                                       height: 150,

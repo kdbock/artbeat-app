@@ -135,4 +135,77 @@ class NotificationService {
       debugPrint('Error sending notification: $e');
     }
   }
+
+  /// Update user's notification preferences
+  Future<void> updateNotificationPreferences(
+    Map<String, bool> preferences,
+  ) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      // Update notification preferences in user's document
+      await _firestore.collection('users').doc(user.uid).update({
+        'notificationPreferences': preferences,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      debugPrint('Notification preferences updated for user ${user.uid}');
+    } catch (e) {
+      debugPrint('Error updating notification preferences: $e');
+      rethrow;
+    }
+  }
+
+  /// Get user's current notification preferences
+  Future<Map<String, bool>> getNotificationPreferences() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return _getDefaultPreferences();
+    }
+
+    try {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (!doc.exists) {
+        return _getDefaultPreferences();
+      }
+
+      final data = doc.data() as Map<String, dynamic>;
+      final preferences =
+          data['notificationPreferences'] as Map<String, dynamic>?;
+
+      if (preferences == null) {
+        return _getDefaultPreferences();
+      }
+
+      // Convert to Map<String, bool>
+      return preferences.map((key, value) => MapEntry(key, value as bool));
+    } catch (e) {
+      debugPrint('Error getting notification preferences: $e');
+      return _getDefaultPreferences();
+    }
+  }
+
+  /// Get default notification preferences
+  Map<String, bool> _getDefaultPreferences() {
+    return {
+      'likes': true,
+      'comments': true,
+      'follows': true,
+      'messages': true,
+      'mentions': true,
+      'artworkPurchases': true,
+      'subscriptions': true,
+      'subscriptionExpirations': true,
+      'galleryInvitations': true,
+      'invitationResponses': true,
+      'achievements': true,
+      'emailNotifications': true,
+      'pushNotifications': true,
+      'marketingEmails': false,
+    };
+  }
 }

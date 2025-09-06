@@ -1,0 +1,114 @@
+# ARTbeat Art Walk Enhanced Storage Security Rules
+# Enhanced Firebase Storage security rules for Art Walk images and files
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions for access control
+    function isAuthenticated() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isValidUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return resource.metadata != null && 
+             resource.metadata.adminUser == 'true';
+    }
+
+    // File validation functions
+    function isValidImageFile() {
+      return resource.contentType != null &&
+             (resource.contentType.matches('image/jpeg') ||
+              resource.contentType.matches('image/png') ||
+              resource.contentType.matches('image/webp') ||
+              resource.contentType.matches('image/heic'));
+    }
+
+    function isValidFileSize() {
+      return resource.size < 10 * 1024 * 1024; // 10MB max
+    }
+
+    function hasValidImageDimensions() {
+      // This would require custom claims or metadata
+      // For now, we trust client-side validation
+      return true;
+    }
+
+    // Art Walk specific image storage
+    match /art-walk-images/{userId}/{walkId}/{imageId} {
+      allow read: if true; // Public read for art walk images
+      
+      allow write: if isValidUser(userId) &&
+        isValidImageFile() &&
+        isValidFileSize() &&
+        hasValidImageDimensions();
+      
+      allow delete: if isValidUser(userId) || isAdmin();
+    }
+
+    // Public art images
+    match /public-art-images/{userId}/{artId}/{imageId} {
+      allow read: if true; // Public read for public art
+      
+      allow write: if isValidUser(userId) &&
+        isValidImageFile() &&
+        isValidFileSize() &&
+        hasValidImageDimensions();
+      
+      allow delete: if isValidUser(userId) || isAdmin();
+    }
+
+    // Art walk cover images
+    match /art-walk-covers/{userId}/{walkId} {
+      allow read: if true;
+      
+      allow write: if isValidUser(userId) &&
+        isValidImageFile() &&
+        isValidFileSize() &&
+        hasValidImageDimensions();
+      
+      allow delete: if isValidUser(userId) || isAdmin();
+    }
+
+    // User avatar images for art walk profiles
+    match /art-walk-avatars/{userId} {
+      allow read: if true;
+      
+      allow write: if isValidUser(userId) &&
+        isValidImageFile() &&
+        isValidFileSize();
+      
+      allow delete: if isValidUser(userId) || isAdmin();
+    }
+
+    // Temporary upload staging area with expiration
+    match /temp-uploads/{userId}/{fileName} {
+      allow read, write: if isValidUser(userId) &&
+        isValidImageFile() &&
+        isValidFileSize();
+      
+      // Temporary files should be cleaned up by cloud functions
+      allow delete: if isValidUser(userId) || isAdmin();
+    }
+
+    // Achievement badge images - read only for users
+    match /achievement-badges/{badgeId} {
+      allow read: if true;
+      allow write: if isAdmin(); // Only admins can upload badges
+    }
+
+    // Backup and exports - admin only
+    match /backups/{path=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // Security: Block all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

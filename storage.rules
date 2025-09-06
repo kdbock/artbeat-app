@@ -94,6 +94,19 @@ service firebase.storage {
       allow write: if isAuthenticated(); // More permissive for development
     }
 
+    // Artwork path without 'images' suffix (legacy support)
+    match /artwork/{userId}/{fileName} {
+      allow read: if true; // Public read access for artwork
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Artwork path with subdirectories (legacy support)
+    match /artwork/{allPaths=**} {
+      allow read: if true; // Public read access for all artwork
+      allow write: if isAuthenticated(); // More permissive for development
+    }
+
     // Artwork videos - artists can upload their own artwork videos
     match /artwork_videos/{userId}/{artworkId}/{fileName} {
       allow read: if isAuthenticated();

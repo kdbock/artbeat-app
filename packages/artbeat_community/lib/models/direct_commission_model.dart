@@ -504,3 +504,192 @@ class ArtistCommissionSettings {
     };
   }
 }
+
+/// Commission history event types
+enum CommissionHistoryEventType { statusChange, message, milestone, payment }
+
+/// Individual commission history event
+class CommissionHistoryEvent {
+  final String id;
+  final CommissionHistoryEventType type;
+  final String title;
+  final String description;
+  final DateTime timestamp;
+  final Map<String, dynamic> metadata;
+
+  CommissionHistoryEvent({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.description,
+    required this.timestamp,
+    required this.metadata,
+  });
+
+  factory CommissionHistoryEvent.fromMap(Map<String, dynamic> map) {
+    return CommissionHistoryEvent(
+      id: map['id'] as String? ?? '',
+      type: CommissionHistoryEventType.values.firstWhere(
+        (t) => t.name == (map['type'] as String? ?? 'statusChange'),
+        orElse: () => CommissionHistoryEventType.statusChange,
+      ),
+      title: map['title'] as String? ?? '',
+      description: map['description'] as String? ?? '',
+      timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      metadata: Map<String, dynamic>.from(
+        map['metadata'] as Map<String, dynamic>? ?? {},
+      ),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type.name,
+      'title': title,
+      'description': description,
+      'timestamp': Timestamp.fromDate(timestamp),
+      'metadata': metadata,
+    };
+  }
+}
+
+/// Complete commission history with all events
+class CommissionHistory {
+  final String commissionId;
+  final List<CommissionHistoryEvent> events;
+  final int totalEvents;
+  final DateTime? lastUpdated;
+
+  CommissionHistory({
+    required this.commissionId,
+    required this.events,
+    required this.totalEvents,
+    this.lastUpdated,
+  });
+
+  factory CommissionHistory.fromMap(Map<String, dynamic> map) {
+    return CommissionHistory(
+      commissionId: map['commissionId'] as String? ?? '',
+      events:
+          (map['events'] as List<dynamic>?)
+              ?.map(
+                (e) =>
+                    CommissionHistoryEvent.fromMap(e as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      totalEvents: map['totalEvents'] as int? ?? 0,
+      lastUpdated: (map['lastUpdated'] as Timestamp?)?.toDate(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'commissionId': commissionId,
+      'events': events.map((e) => e.toMap()).toList(),
+      'totalEvents': totalEvents,
+      'lastUpdated': lastUpdated != null
+          ? Timestamp.fromDate(lastUpdated!)
+          : null,
+    };
+  }
+}
+
+/// Commission analytics data
+class CommissionAnalytics {
+  final String userId;
+  final int totalCommissions;
+  final int completedCommissions;
+  final int activeCommissions;
+  final int cancelledCommissions;
+  final double totalRevenue;
+  final double totalSpent;
+  final double averageCommissionValue;
+  final double revisionRate;
+  final List<MonthlyCommissionData> monthlyTrends;
+  final DateTime generatedAt;
+
+  CommissionAnalytics({
+    required this.userId,
+    required this.totalCommissions,
+    required this.completedCommissions,
+    required this.activeCommissions,
+    required this.cancelledCommissions,
+    required this.totalRevenue,
+    required this.totalSpent,
+    required this.averageCommissionValue,
+    required this.revisionRate,
+    required this.monthlyTrends,
+    required this.generatedAt,
+  });
+
+  factory CommissionAnalytics.fromMap(Map<String, dynamic> map) {
+    return CommissionAnalytics(
+      userId: map['userId'] as String? ?? '',
+      totalCommissions: map['totalCommissions'] as int? ?? 0,
+      completedCommissions: map['completedCommissions'] as int? ?? 0,
+      activeCommissions: map['activeCommissions'] as int? ?? 0,
+      cancelledCommissions: map['cancelledCommissions'] as int? ?? 0,
+      totalRevenue: (map['totalRevenue'] as num?)?.toDouble() ?? 0.0,
+      totalSpent: (map['totalSpent'] as num?)?.toDouble() ?? 0.0,
+      averageCommissionValue:
+          (map['averageCommissionValue'] as num?)?.toDouble() ?? 0.0,
+      revisionRate: (map['revisionRate'] as num?)?.toDouble() ?? 0.0,
+      monthlyTrends:
+          (map['monthlyTrends'] as List<dynamic>?)
+              ?.map(
+                (m) => MonthlyCommissionData.fromMap(m as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
+      generatedAt:
+          (map['generatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'totalCommissions': totalCommissions,
+      'completedCommissions': completedCommissions,
+      'activeCommissions': activeCommissions,
+      'cancelledCommissions': cancelledCommissions,
+      'totalRevenue': totalRevenue,
+      'totalSpent': totalSpent,
+      'averageCommissionValue': averageCommissionValue,
+      'revisionRate': revisionRate,
+      'monthlyTrends': monthlyTrends.map((m) => m.toMap()).toList(),
+      'generatedAt': Timestamp.fromDate(generatedAt),
+    };
+  }
+}
+
+/// Monthly commission data for analytics
+class MonthlyCommissionData {
+  final DateTime month;
+  final int commissionCount;
+  final double revenue;
+
+  MonthlyCommissionData({
+    required this.month,
+    required this.commissionCount,
+    required this.revenue,
+  });
+
+  factory MonthlyCommissionData.fromMap(Map<String, dynamic> map) {
+    return MonthlyCommissionData(
+      month: (map['month'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      commissionCount: map['commissionCount'] as int? ?? 0,
+      revenue: (map['revenue'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'month': Timestamp.fromDate(month),
+      'commissionCount': commissionCount,
+      'revenue': revenue,
+    };
+  }
+}

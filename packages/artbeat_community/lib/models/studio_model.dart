@@ -35,6 +35,28 @@ class StudioModel {
     );
   }
 
+  StudioModel copyWith({
+    String? id,
+    String? name,
+    String? description,
+    List<String>? tags,
+    String? privacyType,
+    List<String>? memberList,
+    Timestamp? createdAt,
+    Timestamp? updatedAt,
+  }) {
+    return StudioModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      tags: tags ?? this.tags,
+      privacyType: privacyType ?? this.privacyType,
+      memberList: memberList ?? this.memberList,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,

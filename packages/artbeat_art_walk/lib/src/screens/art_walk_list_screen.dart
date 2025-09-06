@@ -100,7 +100,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
         showLogo: false,
         scaffoldKey: _scaffoldKey,
         showBackButton: true,
-        backgroundGradient: LinearGradient(
+        backgroundGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
@@ -108,7 +108,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
             Color(0xFFFF9E80), // Light Orange/Peach
           ],
         ),
-        titleGradient: LinearGradient(
+        titleGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
           colors: [
@@ -119,7 +119,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
       ),
       drawer: const ArtWalkDrawer(),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -435,7 +435,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                   // Description
                   Text(
                     walk.description,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: ArtWalkColors.textSecondary,
                       fontSize: 14,
                     ),
@@ -493,7 +493,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(color: ArtWalkColors.textSecondary, fontSize: 12),
+          style: const TextStyle(color: ArtWalkColors.textSecondary, fontSize: 12),
         ),
       ],
     );
@@ -514,7 +514,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
             _searchQuery.isNotEmpty
                 ? 'No art walks found for "$_searchQuery"'
                 : 'No art walks available',
-            style: TextStyle(color: ArtWalkColors.textSecondary, fontSize: 16),
+            style: const TextStyle(color: ArtWalkColors.textSecondary, fontSize: 16),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),

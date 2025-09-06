@@ -1328,4 +1328,224 @@ class PaymentService {
       rethrow;
     }
   }
+
+  /// Process commission deposit payment
+  Future<Map<String, dynamic>> processCommissionDepositPayment({
+    required String commissionId,
+    required double amount,
+    required String paymentMethodId,
+    String? message,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      final customerId = await getOrCreateCustomerId();
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/processCommissionDepositPayment'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'customerId': customerId,
+          'commissionId': commissionId,
+          'amount': amount,
+          'paymentMethodId': paymentMethodId,
+          'message': message,
+          'userId': user.uid,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process commission deposit payment');
+      }
+
+      final result = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // Store payment record in Firestore
+      await _firestore.collection('commission_payments').add({
+        'commissionId': commissionId,
+        'userId': user.uid,
+        'type': 'deposit',
+        'amount': amount,
+        'paymentIntentId': result['paymentIntentId'],
+        'status': 'completed',
+        'createdAt': FieldValue.serverTimestamp(),
+        'metadata': {'message': message},
+      });
+
+      // Update commission status
+      await _firestore
+          .collection('direct_commissions')
+          .doc(commissionId)
+          .update({
+            'status': 'in_progress',
+            'metadata.depositPaidAt': FieldValue.serverTimestamp(),
+            'metadata.depositPaymentId': result['paymentIntentId'],
+          });
+
+      return result;
+    } catch (e) {
+      debugPrint('Error processing commission deposit payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Process commission milestone payment
+  Future<Map<String, dynamic>> processCommissionMilestonePayment({
+    required String commissionId,
+    required String milestoneId,
+    required double amount,
+    required String paymentMethodId,
+    String? message,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      final customerId = await getOrCreateCustomerId();
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/processCommissionMilestonePayment'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'customerId': customerId,
+          'commissionId': commissionId,
+          'milestoneId': milestoneId,
+          'amount': amount,
+          'paymentMethodId': paymentMethodId,
+          'message': message,
+          'userId': user.uid,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process commission milestone payment');
+      }
+
+      final result = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // Store payment record in Firestore
+      await _firestore.collection('commission_payments').add({
+        'commissionId': commissionId,
+        'milestoneId': milestoneId,
+        'userId': user.uid,
+        'type': 'milestone',
+        'amount': amount,
+        'paymentIntentId': result['paymentIntentId'],
+        'status': 'completed',
+        'createdAt': FieldValue.serverTimestamp(),
+        'metadata': {'message': message},
+      });
+
+      // Update milestone status
+      await _firestore
+          .collection('direct_commissions')
+          .doc(commissionId)
+          .update({
+            'milestones': FieldValue.arrayUnion([
+              {
+                'id': milestoneId,
+                'paid': true,
+                'paidAt': FieldValue.serverTimestamp(),
+                'paymentId': result['paymentIntentId'],
+              },
+            ]),
+          });
+
+      return result;
+    } catch (e) {
+      debugPrint('Error processing commission milestone payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Process final commission payment (remaining balance)
+  Future<Map<String, dynamic>> processCommissionFinalPayment({
+    required String commissionId,
+    required double amount,
+    required String paymentMethodId,
+    String? message,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      final customerId = await getOrCreateCustomerId();
+
+      final response = await _httpClient.post(
+        Uri.parse('$_baseUrl/processCommissionFinalPayment'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'customerId': customerId,
+          'commissionId': commissionId,
+          'amount': amount,
+          'paymentMethodId': paymentMethodId,
+          'message': message,
+          'userId': user.uid,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to process commission final payment');
+      }
+
+      final result = jsonDecode(response.body) as Map<String, dynamic>;
+
+      // Store payment record in Firestore
+      await _firestore.collection('commission_payments').add({
+        'commissionId': commissionId,
+        'userId': user.uid,
+        'type': 'final',
+        'amount': amount,
+        'paymentIntentId': result['paymentIntentId'],
+        'status': 'completed',
+        'createdAt': FieldValue.serverTimestamp(),
+        'metadata': {'message': message},
+      });
+
+      // Update commission status
+      await _firestore
+          .collection('direct_commissions')
+          .doc(commissionId)
+          .update({
+            'status': 'completed',
+            'metadata.finalPaidAt': FieldValue.serverTimestamp(),
+            'metadata.finalPaymentId': result['paymentIntentId'],
+          });
+
+      return result;
+    } catch (e) {
+      debugPrint('Error processing commission final payment: $e');
+      rethrow;
+    }
+  }
+
+  /// Get commission payment history
+  Future<List<Map<String, dynamic>>> getCommissionPayments(
+    String commissionId,
+  ) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      final querySnapshot = await _firestore
+          .collection('commission_payments')
+          .where('commissionId', isEqualTo: commissionId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return querySnapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      debugPrint('Error getting commission payments: $e');
+      return [];
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 import '../models/artwork_model.dart';
+import '../utils/artist_logger.dart';
 
 /// Service for artwork management
 class ArtworkService {
@@ -26,7 +26,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      debugPrint('Error getting artwork: $e');
+      ArtistLogger.error('Error getting artwork: $e');
       return [];
     }
   }
@@ -43,7 +43,7 @@ class ArtworkService {
         ...doc.data()!,
       });
     } catch (e) {
-      debugPrint('Error getting artwork by ID: $e');
+      ArtistLogger.error('Error getting artwork by ID: $e');
       return null;
     }
   }
@@ -95,7 +95,7 @@ class ArtworkService {
 
       return docRef.id;
     } catch (e) {
-      debugPrint('Error creating artwork: $e');
+      ArtistLogger.error('Error creating artwork: $e');
       return null;
     }
   }
@@ -142,7 +142,7 @@ class ArtworkService {
 
       return true;
     } catch (e) {
-      debugPrint('Error updating artwork: $e');
+      ArtistLogger.error('Error updating artwork: $e');
       return false;
     }
   }
@@ -163,7 +163,7 @@ class ArtworkService {
 
       return true;
     } catch (e) {
-      debugPrint('Error deleting artwork: $e');
+      ArtistLogger.error('Error deleting artwork: $e');
       return false;
     }
   }
@@ -185,7 +185,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      debugPrint('Error getting featured artwork: $e');
+      ArtistLogger.error('Error getting featured artwork: $e');
       return [];
     }
   }
@@ -208,7 +208,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      debugPrint('Error getting artwork by location: $e');
+      ArtistLogger.error('Error getting artwork by location: $e');
       return [];
     }
   }
@@ -230,7 +230,7 @@ class ArtworkService {
         });
       }).toList();
     } catch (e) {
-      debugPrint('Error getting artwork by user ID: $e');
+      ArtistLogger.error('Error getting artwork by user ID: $e');
       return [];
     }
   }

@@ -3,9 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
-import 'package:artbeat_core/artbeat_core.dart';
+// Import specific models to avoid conflicts
+import '../models/art_walk_model.dart';
+import '../models/public_art_model.dart';
+import 'package:artbeat_core/artbeat_core.dart' show ConnectivityUtils;
 
 /// Service for caching art walks locally for offline access
 class ArtWalkCacheService {

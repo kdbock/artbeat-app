@@ -464,17 +464,28 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
     try {
       // Toggle follow status using the content engagement service
       final engagementService = ContentEngagementService();
-      await engagementService.toggleEngagement(
+      final newFollowState = await engagementService.toggleEngagement(
         contentId: artist.userId,
         contentType: 'profile',
         engagementType: EngagementType.follow,
       );
 
-      // Show feedback
+      // Update the artist model with new follow state and count
       if (mounted) {
-        final message = artist.isFollowing
-            ? 'Unfollowed ${artist.displayName}'
-            : 'Following ${artist.displayName}';
+        final updatedArtist = artist.copyWith(
+          isFollowing: newFollowState,
+          followersCount: newFollowState
+              ? artist.followersCount + 1
+              : (artist.followersCount - 1).clamp(0, double.infinity).toInt(),
+        );
+
+        // Update the artist in the viewModel
+        widget.viewModel.updateArtist(updatedArtist);
+
+        // Show feedback
+        final message = newFollowState
+            ? 'Following ${artist.displayName}'
+            : 'Unfollowed ${artist.displayName}';
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

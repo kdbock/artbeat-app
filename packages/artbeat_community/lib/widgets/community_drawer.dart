@@ -63,131 +63,135 @@ class _CommunityDrawerState extends State<CommunityDrawer> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              CommunityColors.primary,
-              CommunityColors.primary,
-              Colors.white,
-            ],
-            stops: [0.0, 0.3, 0.3],
+      child: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                CommunityColors.primary,
+                CommunityColors.secondary,
+                Colors.white,
+              ],
+              stops: [0.0, 0.3, 0.3],
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            // User profile header
-            _buildUserProfileHeader(),
+          child: Column(
+            children: [
+              // User profile header
+              _buildUserProfileHeader(),
 
-            // Navigation items
-            Expanded(
-              child: Container(
+              // Navigation items
+              Expanded(
+                child: Container(
+                  color: Colors.white,
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      _buildDrawerItem(
+                        icon: Icons.home,
+                        title: 'Community Hub',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const UnifiedCommunityHub(),
+                        ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.feed,
+                        title: 'Art Feed',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const EnhancedCommunityFeedScreen(),
+                        ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.trending_up,
+                        title: 'Trending',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const TrendingContentScreen(),
+                        ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.palette,
+                        title: 'Artist Portfolios',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const PortfoliosScreen(),
+                        ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.business,
+                        title: 'Studios',
+                        onTap: () =>
+                            _navigateToScreen(context, const StudiosScreen()),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.handshake,
+                        title: 'Commissions',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const CommissionHubScreen(),
+                        ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.card_giftcard,
+                        title: 'Gifts',
+                        onTap: () =>
+                            _navigateToScreen(context, const GiftsScreen()),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.business_center,
+                        title: 'Sponsorships',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const EnhancedSponsorshipScreen(),
+                        ),
+                      ),
+                      const Divider(),
+                      _buildDrawerItem(
+                        icon: Icons.search,
+                        title: 'Search Community',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const CommunityArtistsScreen(),
+                        ),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.settings,
+                        title: 'Community Settings',
+                        onTap: () =>
+                            _navigateToScreen(context, const QuietModeScreen()),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.admin_panel_settings,
+                        title: 'Moderation',
+                        onTap: () => _navigateToScreen(
+                          context,
+                          const ModerationQueueScreen(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Footer with version info
+              Container(
+                padding: const EdgeInsets.all(16),
                 color: Colors.white,
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    _buildDrawerItem(
-                      icon: Icons.home,
-                      title: 'Community Hub',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const UnifiedCommunityHub(),
-                      ),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.feed,
-                      title: 'Art Feed',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const EnhancedCommunityFeedScreen(),
-                      ),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.trending_up,
-                      title: 'Trending',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const TrendingContentScreen(),
-                      ),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.palette,
-                      title: 'Artist Portfolios',
-                      onTap: () =>
-                          _navigateToScreen(context, const PortfoliosScreen()),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.business,
-                      title: 'Studios',
-                      onTap: () =>
-                          _navigateToScreen(context, const StudiosScreen()),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.handshake,
-                      title: 'Commissions',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const CommissionHubScreen(),
-                      ),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.card_giftcard,
-                      title: 'Gifts',
-                      onTap: () =>
-                          _navigateToScreen(context, const GiftsScreen()),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.business_center,
-                      title: 'Sponsorships',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const EnhancedSponsorshipScreen(),
-                      ),
-                    ),
-                    const Divider(),
-                    _buildDrawerItem(
-                      icon: Icons.search,
-                      title: 'Search Community',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const CommunityArtistsScreen(),
-                      ),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.settings,
-                      title: 'Community Settings',
-                      onTap: () =>
-                          _navigateToScreen(context, const QuietModeScreen()),
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.admin_panel_settings,
-                      title: 'Moderation',
-                      onTap: () => _navigateToScreen(
-                        context,
-                        const ModerationQueueScreen(),
-                      ),
-                    ),
-                  ],
+                child: const Text(
+                  'ARTbeat Community v0.0.2',
+                  style: TextStyle(
+                    color: CommunityColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-
-            // Footer with version info
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: const Text(
-                'ARTbeat Community v0.0.2',
-                style: TextStyle(
-                  color: CommunityColors.textSecondary,
-                  fontSize: 12,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

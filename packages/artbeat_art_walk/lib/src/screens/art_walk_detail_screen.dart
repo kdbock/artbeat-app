@@ -24,6 +24,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   bool _isLoading = true;
   bool _isCompletingWalk = false;
   bool _hasCompletedWalk = false;
+  bool _showNavigationPanel = false; // Track navigation panel visibility
   ArtWalkModel? _walk;
   List<PublicArtModel> _artPieces = [];
   Set<Marker> _markers = <Marker>{};
@@ -284,18 +285,17 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   void _startNavigation() {
     if (_walk == null) return;
 
-    Navigator.pushNamed(
-      context,
-      '/enhanced-art-walk-experience',
-      arguments: {'walkId': _walk!.id, 'artWalk': _walk!},
-    ).then((completed) {
-      // If the walk was completed, refresh the state
-      if (completed == true) {
-        setState(() {
-          _hasCompletedWalk = true;
-        });
-      }
+    // Show the navigation panel instead of navigating away
+    setState(() {
+      _showNavigationPanel = !_showNavigationPanel;
     });
+
+    // If showing navigation panel, scroll to it
+    if (_showNavigationPanel) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        // Scroll to navigation panel would go here
+      });
+    }
   }
 
   Future<void> _completeArtWalk() async {
@@ -668,6 +668,63 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                       ),
                     ),
                   ),
+
+                  // Turn-by-turn navigation panel (expandable)
+                  if (_showNavigationPanel) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.navigation,
+                                    color: Colors.blue,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Turn-by-Turn Navigation',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () {
+                                      setState(() {
+                                        _showNavigationPanel = false;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              // TODO: Initialize ArtWalkNavigationService and integrate TurnByTurnNavigationWidget
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  'Navigation widget integration in progress...\n\n'
+                                  'This will provide turn-by-turn directions to each art piece in the walk.',
+                                  style: TextStyle(fontStyle: FontStyle.italic),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
 
                   // Map preview
                   Container(

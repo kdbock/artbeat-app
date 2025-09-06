@@ -4,6 +4,7 @@ class AuthRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
+  static const String emailVerification = '/email-verification';
 
   // Post-auth routes
   static const String dashboard = '/dashboard';
@@ -11,7 +12,13 @@ class AuthRoutes {
 
   // Helper method to validate if a route is an auth route
   static bool isAuthRoute(String route) {
-    return [login, register, forgotPassword, profileCreate].contains(route);
+    return [
+      login,
+      register,
+      forgotPassword,
+      profileCreate,
+      emailVerification,
+    ].contains(route);
   }
 
   // Helper method to get the default route after authentication
@@ -19,6 +26,9 @@ class AuthRoutes {
 
   // Helper method to get the route for users without profiles
   static String getProfileCreationRoute() => profileCreate;
+
+  // Helper method to get the email verification route
+  static String getEmailVerificationRoute() => emailVerification;
 
   // Helper method to get the default unauthenticated route
   static String getDefaultUnauthenticatedRoute() => login;

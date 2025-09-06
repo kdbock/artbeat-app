@@ -19,7 +19,9 @@ class AuthProfileService {
   User? get currentUser => _auth.currentUser;
 
   /// Check authentication status and return appropriate route
-  Future<String> checkAuthStatus() async {
+  Future<String> checkAuthStatus({
+    bool requireEmailVerification = false,
+  }) async {
     try {
       if (!isAuthenticated) {
         debugPrint('👤 User not authenticated - redirecting to login');
@@ -28,6 +30,12 @@ class AuthProfileService {
 
       final user = currentUser!;
       debugPrint('👤 Authenticated user: ${user.uid}');
+
+      // Check email verification if required
+      if (requireEmailVerification && !user.emailVerified) {
+        debugPrint('👤 User email not verified - redirecting to verification');
+        return AuthRoutes.emailVerification;
+      }
 
       // Check if user profile exists in Firestore
       final profile = await _firestore.collection('users').doc(user.uid).get();

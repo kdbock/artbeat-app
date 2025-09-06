@@ -3,14 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
-import 'package:artbeat_artist/artbeat_artist.dart' show CommissionStatus;
+
 import '../../theme/community_colors.dart';
 import '../../models/post_model.dart';
 import '../../models/comment_model.dart';
 import '../../models/artwork_model.dart' as community_artwork;
-import '../../models/commission_model.dart';
-import '../../services/commission_service.dart';
+import '../../models/direct_commission_model.dart';
+import '../../services/direct_commission_service.dart';
 import '../../widgets/post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import '../../widgets/community_drawer.dart';
@@ -25,9 +26,9 @@ class CommissionsTab extends StatefulWidget {
 
 class _CommissionsTabState extends State<CommissionsTab>
     with SingleTickerProviderStateMixin {
-  final CommissionService _commissionService = CommissionService();
+  final DirectCommissionService _commissionService = DirectCommissionService();
   late final TabController _tabController;
-  List<CommissionModel> _commissions = [];
+  List<DirectCommissionModel> _commissions = [];
   bool _isLoading = true;
 
   @override
@@ -46,8 +47,14 @@ class _CommissionsTabState extends State<CommissionsTab>
   Future<void> _loadCommissions() async {
     setState(() => _isLoading = true);
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
       final commissions = await _commissionService.getCommissionsByUser(
-        'userId',
+        user.uid,
       );
       setState(() {
         _commissions = commissions;
@@ -82,10 +89,15 @@ class _CommissionsTabState extends State<CommissionsTab>
               : TabBarView(
                   controller: _tabController,
                   children: [
-                    // Active commissions
+                    // Active commissions (in progress, accepted, quoted)
                     _buildCommissionList(
                       _commissions
-                          .where((c) => c.status == CommissionStatus.active)
+                          .where(
+                            (c) =>
+                                c.status == CommissionStatus.inProgress ||
+                                c.status == CommissionStatus.accepted ||
+                                c.status == CommissionStatus.quoted,
+                          )
                           .toList(),
                     ),
                     // Pending commissions
@@ -97,7 +109,11 @@ class _CommissionsTabState extends State<CommissionsTab>
                     // Completed commissions
                     _buildCommissionList(
                       _commissions
-                          .where((c) => c.status == CommissionStatus.completed)
+                          .where(
+                            (c) =>
+                                c.status == CommissionStatus.completed ||
+                                c.status == CommissionStatus.delivered,
+                          )
                           .toList(),
                     ),
                   ],
@@ -107,7 +123,7 @@ class _CommissionsTabState extends State<CommissionsTab>
     );
   }
 
-  Widget _buildCommissionList(List<CommissionModel> commissions) {
+  Widget _buildCommissionList(List<DirectCommissionModel> commissions) {
     if (commissions.isEmpty) {
       return const Center(child: Text('No commissions found'));
     }
@@ -119,8 +135,10 @@ class _CommissionsTabState extends State<CommissionsTab>
         final commission = commissions[index];
         return Card(
           child: ListTile(
-            title: Text('Commission Rate: ${commission.commissionRate}%'),
-            subtitle: Text('Status: ${commission.status}'),
+            title: Text(commission.title),
+            subtitle: Text(
+              'Status: ${commission.status.displayName} • \$${commission.totalPrice.toStringAsFixed(2)}',
+            ),
             trailing: const Icon(Icons.arrow_forward),
             onTap: () {
               _showCommissionDetails(commission);
@@ -131,7 +149,7 @@ class _CommissionsTabState extends State<CommissionsTab>
     );
   }
 
-  void _showCommissionDetails(CommissionModel commission) {
+  void _showCommissionDetails(DirectCommissionModel commission) {
     showDialog<void>(
       context: context,
       builder: (context) => Dialog(
@@ -147,22 +165,18 @@ class _CommissionsTabState extends State<CommissionsTab>
               ),
               const SizedBox(height: 16),
               _buildDetailRow('Commission ID', commission.id),
-              _buildDetailRow('Gallery ID', commission.galleryId),
-              _buildDetailRow('Artist ID', commission.artistId),
-              _buildDetailRow('Artwork ID', commission.artworkId),
+              _buildDetailRow('Title', commission.title),
+              _buildDetailRow('Client', commission.clientName),
+              _buildDetailRow('Artist', commission.artistName),
+              _buildDetailRow('Type', commission.type.displayName),
               _buildDetailRow(
-                'Commission Rate',
-                '${commission.commissionRate}%',
+                'Total Price',
+                '\$${commission.totalPrice.toStringAsFixed(2)}',
               ),
-              _buildDetailRow('Status', commission.status),
-              _buildDetailRow(
-                'Created',
-                commission.createdAt.toDate().toString(),
-              ),
-              _buildDetailRow(
-                'Updated',
-                commission.updatedAt.toDate().toString(),
-              ),
+              _buildDetailRow('Status', commission.status.displayName),
+              _buildDetailRow('Requested', commission.requestedAt.toString()),
+              if (commission.deadline != null)
+                _buildDetailRow('Deadline', commission.deadline.toString()),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -260,15 +274,14 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
 
   @override
   Widget build(BuildContext context) {
-    return MainLayout(
-      currentIndex: 3,
-      drawer: const CommunityDrawer(),
-      scaffoldKey: _scaffoldKey,
+    return Scaffold(
+      key: _scaffoldKey,
       appBar: EnhancedUniversalHeader(
         title: 'Community',
         showLogo: false,
         showBackButton: false,
         scaffoldKey: _scaffoldKey,
+        showDeveloperTools: true,
         backgroundGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
@@ -280,32 +293,31 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
           colors: [CommunityColors.primary, CommunityColors.secondary],
         ),
       ),
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: CommunityColors.communityBackgroundGradient,
-          ),
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              CommunityDiscoverTab(
-                onNavigateToTab: (index) => _tabController.animateTo(index),
-              ),
-              const CommunityFeedTab(),
-              const CommissionsTab(),
-            ],
-          ),
+      drawer: const CommunityDrawer(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: CommunityColors.communityBackgroundGradient,
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO: Implement create post functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Create post - Coming soon!')),
-            );
-          },
-          backgroundColor: ArtbeatColors.primaryPurple,
-          child: const Icon(Icons.add, color: Colors.white),
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            CommunityDiscoverTab(
+              onNavigateToTab: (index) => _tabController.animateTo(index),
+            ),
+            const CommunityFeedTab(),
+            const CommissionsTab(),
+          ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // TODO: Implement create post functionality
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Create post - Coming soon!')),
+          );
+        },
+        backgroundColor: ArtbeatColors.primaryPurple,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -906,20 +918,32 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
             Expanded(
               flex: 3,
               child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
-                  image: artwork.imageUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(artwork.imageUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: artwork.imageUrl.isEmpty
-                    ? const Icon(Icons.image, size: 48, color: Colors.grey)
-                    : null,
+                child: artwork.imageUrl.isNotEmpty
+                    ? SecureNetworkImage(
+                        imageUrl: artwork.imageUrl,
+                        fit: BoxFit.cover,
+                        enableThumbnailFallback: true,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(12),
+                        ),
+                        errorWidget: const Icon(
+                          Icons.image,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                      )
+                    : Container(
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.image,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                      ),
               ),
             ),
             Expanded(
@@ -1520,6 +1544,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
+                                  color: Colors.white,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

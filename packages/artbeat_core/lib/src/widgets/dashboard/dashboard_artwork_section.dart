@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DashboardArtworkSection extends StatelessWidget {
@@ -274,22 +273,21 @@ class DashboardArtworkSection extends StatelessWidget {
                     color: ArtbeatColors.backgroundSecondary,
                   ),
                   child: _isValidImageUrl(artworkItem.imageUrl)
-                      ? CachedNetworkImage(
+                      ? SecureNetworkImage(
                           imageUrl: artworkItem.imageUrl,
                           fit: BoxFit.cover,
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                          enableThumbnailFallback: true,
+                          placeholder: Container(
+                            color: ArtbeatColors.backgroundSecondary,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                           ),
-                          errorWidget: (context, url, error) {
-                            debugPrint(
-                              '❌ Error loading artwork image: $url - Error: $error',
-                            );
-                            return const Icon(
-                              Icons.image,
-                              color: ArtbeatColors.textSecondary,
-                              size: 32,
-                            );
-                          },
+                          errorWidget: const Icon(
+                            Icons.image,
+                            color: ArtbeatColors.textSecondary,
+                            size: 32,
+                          ),
                         )
                       : Builder(
                           builder: (context) {

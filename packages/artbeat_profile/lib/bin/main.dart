@@ -1,9 +1,9 @@
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:artbeat_profile/artbeat_profile.dart';
+import 'package:artbeat_profile/artbeat_profile.dart' as profile;
 
 // You can replace this with actual Firebase options for development
 const mockFirebaseOptions = FirebaseOptions(
@@ -21,9 +21,7 @@ void main() async {
   try {
     // Check if Firebase is already initialized to avoid duplicate initialization
     if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-      options: mockFirebaseOptions,
-    );
+      await Firebase.initializeApp(options: mockFirebaseOptions);
     } else {
       debugPrint('Firebase already initialized, using existing app instance');
     }
@@ -45,8 +43,8 @@ class ProfileModuleApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         // Core providers
-        ChangeNotifierProvider<UserService>(
-          create: (_) => UserService(),
+        ChangeNotifierProvider<core.UserService>(
+          create: (_) => core.UserService(),
         ),
       ],
       child: MaterialApp(
@@ -67,27 +65,27 @@ class ProfileModuleHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Get userService and check if we have a current user for better demo experience
-    final userService = Provider.of<UserService>(context);
+    final userService = Provider.of<core.UserService>(context);
     // Try to get the demo user from the service or use a fallback
     final String demoUserId = userService.currentUserId ?? 'demo_user_id';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ARTbeat Profile Module'),
-      ),
+      appBar: AppBar(title: const Text('ARTbeat Profile Module')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Profile Module Demo',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Profile Module Demo',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
             // Navigation buttons to the profile screens
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute<ProfileViewScreen>(
-                  builder: (_) => ProfileViewScreen(
+                MaterialPageRoute<profile.ProfileViewScreen>(
+                  builder: (_) => profile.ProfileViewScreen(
                     userId: demoUserId,
                     isCurrentUser: true,
                   ),
@@ -99,10 +97,8 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute<EditProfileScreen>(
-                  builder: (_) => EditProfileScreen(
-                    userId: demoUserId,
-                  ),
+                MaterialPageRoute<profile.EditProfileScreen>(
+                  builder: (_) => profile.EditProfileScreen(userId: demoUserId),
                 ),
               ),
               child: const Text('Edit Profile'),
@@ -111,10 +107,9 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute<FollowersListScreen>(
-                  builder: (_) => FollowersListScreen(
-                    userId: demoUserId,
-                  ),
+                MaterialPageRoute<profile.FollowersListScreen>(
+                  builder: (_) =>
+                      profile.FollowersListScreen(userId: demoUserId),
                 ),
               ),
               child: const Text('Followers'),
@@ -123,10 +118,9 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute<FollowingListScreen>(
-                  builder: (_) => FollowingListScreen(
-                    userId: demoUserId,
-                  ),
+                MaterialPageRoute<profile.FollowingListScreen>(
+                  builder: (_) =>
+                      profile.FollowingListScreen(userId: demoUserId),
                 ),
               ),
               child: const Text('Following'),
@@ -135,10 +129,8 @@ class ProfileModuleHome extends StatelessWidget {
             ElevatedButton(
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute<FavoritesScreen>(
-                  builder: (_) => FavoritesScreen(
-                    userId: demoUserId,
-                  ),
+                MaterialPageRoute<profile.FavoritesScreen>(
+                  builder: (_) => profile.FavoritesScreen(userId: demoUserId),
                 ),
               ),
               child: const Text('Favorites'),

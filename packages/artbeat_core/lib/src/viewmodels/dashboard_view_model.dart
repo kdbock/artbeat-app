@@ -362,17 +362,17 @@ class DashboardViewModel extends ChangeNotifier {
       _isLoadingLocation = true;
       _safeNotifyListeners();
 
-      // Use LocationUtils with increased timeout for better reliability
+      // Use shorter timeout for better UX - if location takes too long, fallback faster
       final position =
           await LocationUtils.getCurrentPosition(
-            timeoutDuration: const Duration(seconds: 10), // Increased timeout
+            timeoutDuration: const Duration(seconds: 8), // Reduced timeout
           ).timeout(
-            const Duration(seconds: 15), // Overall timeout
+            const Duration(seconds: 10), // Overall timeout reduced
             onTimeout: () {
-              debugPrint('⚠️ Location request timed out after 15 seconds');
+              debugPrint('⚠️ Location request timed out after 10 seconds');
               throw TimeoutException(
                 'Location request timed out',
-                const Duration(seconds: 15),
+                const Duration(seconds: 10),
               );
             },
           );
@@ -509,6 +509,15 @@ class DashboardViewModel extends ChangeNotifier {
           .toList();
       _safeNotifyListeners();
       rethrow;
+    }
+  }
+
+  /// Updates an artist in the artists list
+  void updateArtist(ArtistProfileModel updatedArtist) {
+    final index = _artists.indexWhere((a) => a.userId == updatedArtist.userId);
+    if (index != -1) {
+      _artists[index] = updatedArtist;
+      _safeNotifyListeners();
     }
   }
 

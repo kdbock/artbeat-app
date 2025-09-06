@@ -98,8 +98,28 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
       final startDate = DateTime.now();
       final endDate = startDate.add(Duration(days: _selectedDays));
 
-      // Create duration object
-      final duration = AdDuration(days: _selectedDays);
+      // Create duration object based on selected days
+      AdDuration duration;
+      switch (_selectedDays) {
+        case 1:
+          duration = AdDuration.oneDay;
+          break;
+        case 3:
+          duration = AdDuration.threeDays;
+          break;
+        case 7:
+          duration = AdDuration.oneWeek;
+          break;
+        case 14:
+          duration = AdDuration.twoWeeks;
+          break;
+        case 30:
+          duration = AdDuration.oneMonth;
+          break;
+        default:
+          duration = AdDuration.custom;
+          break;
+      }
 
       // Create ad model
       final ad = AdModel(

@@ -88,7 +88,22 @@ class ImageManagementService {
     final isValidNetworkUrl =
         uri != null && uri.hasScheme && uri.host.isNotEmpty;
 
-    if (!isValidNetworkUrl) {
+    // Debug: Print URL validation info
+    debugPrint('🖼️ ImageManagementService validating URL: $imageUrl');
+    debugPrint('🖼️ URI parsed: $uri');
+    debugPrint('🖼️ Has scheme: ${uri?.hasScheme}');
+    debugPrint('🖼️ Host: ${uri?.host}');
+    debugPrint('🖼️ Is valid network URL: $isValidNetworkUrl');
+
+    // More permissive validation - allow any non-empty URL that looks like it might be a network URL
+    final isLikelyValidUrl =
+        imageUrl.isNotEmpty &&
+        (isValidNetworkUrl ||
+            imageUrl.startsWith('http') ||
+            imageUrl.contains('firebasestorage'));
+
+    if (!isLikelyValidUrl) {
+      debugPrint('🖼️ URL failed validation, showing error widget');
       // Fallback placeholder/error container without network call
       return Container(
         width: width,

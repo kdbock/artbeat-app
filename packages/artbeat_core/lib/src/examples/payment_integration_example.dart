@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/payment_service.dart';
 import '../models/subscription_tier.dart';
 import '../screens/gift_purchase_screen.dart';
-import '../screens/payment_management_screen.dart';
 import '../screens/subscription_purchase_screen.dart';
+// Note: PaymentMethodsScreen is now available in artbeat_artist package
 
 /// Example demonstrating how to integrate all Stripe payment features
 class PaymentIntegrationExample extends StatefulWidget {
@@ -82,15 +82,17 @@ class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (context) => const PaymentManagementScreen(),
+                // PaymentMethodsScreen is now in artbeat_artist package
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Payment methods management moved to artbeat_artist package',
+                    ),
                   ),
                 );
               },
               icon: const Icon(Icons.credit_card),
-              label: const Text('Manage Payment Methods'),
+              label: const Text('Manage Payment Methods (See artbeat_artist)'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
@@ -300,7 +302,7 @@ class _PaymentIntegrationExampleState extends State<PaymentIntegrationExample> {
             ),
             _buildIntegrationStep(
               '2. Payment Methods',
-              'Use PaymentManagementScreen to let users manage cards.',
+              'Use PaymentMethodsScreen from artbeat_artist package to let users manage cards.',
             ),
             _buildIntegrationStep(
               '3. Subscriptions',

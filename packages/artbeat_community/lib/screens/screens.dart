@@ -11,6 +11,7 @@ export 'unified_community_hub.dart';
 // Feed screens
 export 'feed/artist_community_feed_screen.dart';
 export 'feed/create_post_screen.dart';
+export 'feed/create_group_post_screen.dart';
 export 'feed/comments_screen.dart';
 export 'feed/trending_content_screen.dart';
 export 'feed/social_engagement_demo_screen.dart';
@@ -33,7 +34,6 @@ export 'studios/studios_screen.dart';
 export 'studios/studio_chat_screen.dart';
 
 // Commission screens
-export 'commissions/commissions_screen.dart';
 export 'commissions/commission_hub_screen.dart';
 export 'commissions/direct_commissions_screen.dart';
 export 'commissions/commission_request_screen.dart';
