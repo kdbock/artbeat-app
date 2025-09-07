@@ -298,7 +298,7 @@ Please contact me with any questions before placing your commission request.
                   onChanged: (value) {
                     setState(() => _acceptingCommissions = value);
                   },
-                  activeColor: Colors.green,
+                  activeThumbColor: Colors.green,
                 ),
               ],
             ),

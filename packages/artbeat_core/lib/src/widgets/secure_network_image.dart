@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 
 /// A secure network image widget that handles Firebase Storage authentication
 /// and App Check token issues gracefully
@@ -37,6 +38,7 @@ class SecureNetworkImage extends StatefulWidget {
 }
 
 class _SecureNetworkImageState extends State<SecureNetworkImage> {
+  static final _logger = Logger('SecureNetworkImage');
   int _retryCount = 0;
   bool _isRetrying = false;
   String? _authenticatedUrl;
@@ -155,20 +157,24 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
         error.toString().contains('HTTP request failed, statusCode: 404');
 
     if (kDebugMode) {
-      print(
+      _logger.fine(
         '🖼️ SecureNetworkImage _buildErrorWidget called for: ${widget.imageUrl}',
       );
-      print('🖼️ Error type: $error');
-      print(
+      _logger.fine('🖼️ Error type: $error');
+      _logger.fine(
         '🖼️ Is 404: $is404Error, enableThumbnailFallback: ${widget.enableThumbnailFallback}, usingFallback: $_usingThumbnailFallback',
       );
     }
 
     // Only log errors if they're not common 404s (which are expected for missing artwork)
     if (kDebugMode && !is404Error) {
-      print('❌ SecureNetworkImage error for ${widget.imageUrl}: $error');
+      _logger.warning(
+        '❌ SecureNetworkImage error for ${widget.imageUrl}: $error',
+      );
     } else if (kDebugMode && is404Error) {
-      print('🖼️ SecureNetworkImage: Missing image (404) ${widget.imageUrl}');
+      _logger.info(
+        '🖼️ SecureNetworkImage: Missing image (404) ${widget.imageUrl}',
+      );
     }
 
     // If 404 error and thumbnail fallback is enabled and we haven't tried it yet
@@ -178,8 +184,10 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
         widget.imageUrl != _generateThumbnailUrl(widget.imageUrl)) {
       final thumbnailUrl = _generateThumbnailUrl(widget.imageUrl);
       if (kDebugMode) {
-        print('🔄 Attempting thumbnail fallback for: ${widget.imageUrl}');
-        print('🔄 Generated thumbnail URL: $thumbnailUrl');
+        _logger.info(
+          '🔄 Attempting thumbnail fallback for: ${widget.imageUrl}',
+        );
+        _logger.info('🔄 Generated thumbnail URL: $thumbnailUrl');
       }
 
       // Try loading thumbnail

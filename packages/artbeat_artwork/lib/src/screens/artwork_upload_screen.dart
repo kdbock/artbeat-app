@@ -564,7 +564,7 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
 
                   // Medium dropdown
                   DropdownButtonFormField<String>(
-                    value: _medium.isEmpty ? null : _medium,
+                    initialValue: _medium.isEmpty ? null : _medium,
                     decoration: const InputDecoration(
                       labelText: 'Medium',
                       filled: true,

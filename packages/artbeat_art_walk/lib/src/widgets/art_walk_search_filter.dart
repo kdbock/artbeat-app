@@ -345,7 +345,7 @@ class _ArtWalkSearchFilterState extends State<ArtWalkSearchFilter> {
             child: Column(
               children: [
                 DropdownButtonFormField<String>(
-                  value: _criteria.sortBy,
+                  initialValue: _criteria.sortBy,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),

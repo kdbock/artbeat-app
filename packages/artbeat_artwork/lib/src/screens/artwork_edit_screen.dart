@@ -434,7 +434,7 @@ class _ArtworkEditScreenState extends State<ArtworkEditScreen> {
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: _medium.isEmpty ? null : _medium,
+          initialValue: _medium.isEmpty ? null : _medium,
           decoration: const InputDecoration(
             labelText: 'Medium *',
             border: OutlineInputBorder(),

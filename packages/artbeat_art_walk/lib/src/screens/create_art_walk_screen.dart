@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Added for GeoPoint
 import 'package:image_cropper/image_cropper.dart';
+import 'package:logging/logging.dart';
 import '../widgets/art_walk_drawer.dart';
 
 // Create Art Walk specific colors
@@ -37,6 +38,7 @@ class CreateArtWalkScreen extends StatefulWidget {
 }
 
 class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
+  static final _logger = Logger('CreateArtWalkScreen');
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -182,19 +184,19 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
   Future<void> _pickCoverImage() async {
     try {
-      print('DEBUG: Starting image picker...');
+      _logger.info('Starting image picker...');
       final XFile? pickedFile = await _picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
       );
 
       if (pickedFile != null) {
-        print('DEBUG: Image picked: ${pickedFile.path}');
+        _logger.info('Image picked: ${pickedFile.path}');
 
         // Check if the file exists before proceeding
         final file = File(pickedFile.path);
         if (!await file.exists()) {
-          print('DEBUG: ERROR - Picked image file does not exist');
+          _logger.severe('ERROR - Picked image file does not exist');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Error: Image file not found')),
@@ -223,12 +225,12 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         );
 
         if (croppedFile != null) {
-          print('DEBUG: Image cropped: ${croppedFile.path}');
+          _logger.info('Image cropped: ${croppedFile.path}');
 
           // Check if the cropped file exists before setting state
           final croppedFileObj = File(croppedFile.path);
           if (!await croppedFileObj.exists()) {
-            print('DEBUG: ERROR - Cropped image file does not exist');
+            _logger.severe('ERROR - Cropped image file does not exist');
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -243,8 +245,8 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
             setState(() {
               _coverImageFile = croppedFileObj;
             });
-            print(
-              'DEBUG: Cover image file set in state: ${_coverImageFile?.path}',
+            _logger.info(
+              'Cover image file set in state: ${_coverImageFile?.path}',
             );
 
             // Trigger a rebuild to show the image preview
@@ -255,14 +257,14 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
             });
           }
         } else {
-          print('DEBUG: Image cropping was cancelled');
+          _logger.info('Image cropping was cancelled');
         }
       } else {
-        print('DEBUG: No image was picked');
+        _logger.info('No image was picked');
       }
     } catch (e, stackTrace) {
-      print('DEBUG: ERROR in _pickCoverImage: $e');
-      print('DEBUG: Stack trace: $stackTrace');
+      _logger.severe('ERROR in _pickCoverImage: $e');
+      _logger.severe('Stack trace: $stackTrace');
 
       if (mounted) {
         ScaffoldMessenger.of(
@@ -336,12 +338,12 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         );
 
         if (mounted) {
-          print('DEBUG: Art walk created with ID: $artWalkId');
-          print(
-            'DEBUG: Cover image file was provided: ${_coverImageFile != null}',
+          _logger.info('Art walk created with ID: $artWalkId');
+          _logger.info(
+            'Cover image file was provided: ${_coverImageFile != null}',
           );
           if (_coverImageFile != null) {
-            print('DEBUG: Cover image file path: ${_coverImageFile!.path}');
+            _logger.info('Cover image file path: ${_coverImageFile!.path}');
           }
         }
 
@@ -353,8 +355,8 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         }
       }
     } catch (e, stackTrace) {
-      print('DEBUG: ERROR in _submitForm: $e');
-      print('DEBUG: Stack trace: $stackTrace');
+      _logger.severe('ERROR in _submitForm: $e');
+      _logger.severe('Stack trace: $stackTrace');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -478,7 +480,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                                   _isPublic = value;
                                 });
                               },
-                              activeColor: CreateArtWalkColors.accentGold,
+                              activeThumbColor: CreateArtWalkColors.accentGold,
                             ),
                           ],
                         ),
@@ -561,7 +563,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                       cacheWidth: 300, // Limit memory usage
                       cacheHeight: 200, // Limit memory usage
                       errorBuilder: (context, error, stackTrace) {
-                        print('DEBUG: Error displaying cover image: $error');
+                        _logger.warning('Error displaying cover image: $error');
                         return Container(
                           color: Colors.grey[300],
                           child: const Center(
@@ -644,7 +646,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
 
   @override
   void dispose() {
-    print('DEBUG: CreateArtWalkScreen disposing');
+    _logger.info('CreateArtWalkScreen disposing');
 
     // Clean up controllers
     _titleController.dispose();

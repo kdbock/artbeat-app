@@ -108,7 +108,7 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
 
             // Ticket category selection
             DropdownButtonFormField<TicketCategory>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: const InputDecoration(
                 labelText: 'Ticket Category',
                 border: OutlineInputBorder(),
