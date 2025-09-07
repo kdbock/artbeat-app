@@ -8,7 +8,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, ArtbeatColors, EnhancedStorageService, EnhancedUniversalHeader, MainLayout;
+    show
+        SubscriptionTier,
+        ArtbeatColors,
+        EnhancedStorageService,
+        EnhancedUniversalHeader,
+        MainLayout;
 
 /// Enhanced artwork upload screen with support for multiple media types
 class EnhancedArtworkUploadScreen extends StatefulWidget {
@@ -589,36 +594,36 @@ class _EnhancedArtworkUploadScreenState
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                const Icon(Icons.lock, size: 72, color: Colors.grey),
-                const SizedBox(height: 24),
-                const Text(
-                  'Free Plan Artwork Limit Reached',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
-                  'Upgrade to Artist Pro for unlimited artwork uploads.',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(
-                        context, '/artist/subscription');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
+                  const Icon(Icons.lock, size: 72, color: Colors.grey),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Free Plan Artwork Limit Reached',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  child: const Text('Upgrade Now'),
-                ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'You\'ve reached the maximum of 5 artwork pieces for the Artist Basic Plan. '
+                    'Upgrade to Artist Pro for unlimited artwork uploads.',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(
+                          context, '/artist/subscription');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                    ),
+                    child: const Text('Upgrade Now'),
+                  ),
                 ],
               ),
             ),
@@ -628,59 +633,59 @@ class _EnhancedArtworkUploadScreenState
     }
 
     return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
-          showLogo: false,
-        ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Main Image Section
-              _buildMainImageSection(),
-              const SizedBox(height: 24),
-
-              // Additional Images Section
-              _buildAdditionalImagesSection(),
-              const SizedBox(height: 24),
-
-              // Videos Section
-              _buildVideosSection(),
-              const SizedBox(height: 24),
-
-              // Audio Files Section
-              _buildAudioFilesSection(),
-              const SizedBox(height: 24),
-
-              // Basic Information
-              _buildBasicInformation(),
-              const SizedBox(height: 24),
-
-              // Media and Styles
-              _buildMediaAndStyles(),
-              const SizedBox(height: 24),
-
-              // Tags, Hashtags, Keywords
-              _buildTagsSection(),
-              const SizedBox(height: 24),
-
-              // Pricing
-              _buildPricingSection(),
-              const SizedBox(height: 32),
-
-              // Save Button
-              _buildSaveButton(),
-              const SizedBox(height: 24),
-            ],
+        currentIndex: -1,
+        child: Scaffold(
+          appBar: EnhancedUniversalHeader(
+            title: widget.artworkId == null ? 'Upload Artwork' : 'Edit Artwork',
+            showLogo: false,
           ),
-        ),
-      ),
-    ));
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Main Image Section
+                  _buildMainImageSection(),
+                  const SizedBox(height: 24),
+
+                  // Additional Images Section
+                  _buildAdditionalImagesSection(),
+                  const SizedBox(height: 24),
+
+                  // Videos Section
+                  _buildVideosSection(),
+                  const SizedBox(height: 24),
+
+                  // Audio Files Section
+                  _buildAudioFilesSection(),
+                  const SizedBox(height: 24),
+
+                  // Basic Information
+                  _buildBasicInformation(),
+                  const SizedBox(height: 24),
+
+                  // Media and Styles
+                  _buildMediaAndStyles(),
+                  const SizedBox(height: 24),
+
+                  // Tags, Hashtags, Keywords
+                  _buildTagsSection(),
+                  const SizedBox(height: 24),
+
+                  // Pricing
+                  _buildPricingSection(),
+                  const SizedBox(height: 32),
+
+                  // Save Button
+                  _buildSaveButton(),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ));
   }
 
   Widget _buildMainImageSection() {
@@ -1055,7 +1060,7 @@ class _EnhancedArtworkUploadScreenState
 
         // Medium dropdown
         DropdownButtonFormField<String>(
-          initialValue: _medium.isEmpty ? null : _medium,
+          value: _medium.isEmpty ? null : _medium,
           decoration: const InputDecoration(
             labelText: 'Medium',
             filled: true,

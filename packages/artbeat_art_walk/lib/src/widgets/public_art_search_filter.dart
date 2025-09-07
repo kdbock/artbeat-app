@@ -389,7 +389,7 @@ class _PublicArtSearchFilterState extends State<PublicArtSearchFilter> {
             child: Column(
               children: [
                 DropdownButtonFormField<String>(
-                  initialValue: _criteria.sortBy,
+                  value: _criteria.sortBy,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),

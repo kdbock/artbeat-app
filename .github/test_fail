@@ -1,0 +1,434 @@
+Run if [ -d "test" ] && [ "$(find test -name "*_test.dart" | wc -l)" -gt 0 ]; then
+  
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests SubscriptionTier 2025 pricing structure
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Legacy tier name conversion works correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests FeatureLimits usage-based system works correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Overage pricing calculations work correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Usage percentage tracking works correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Display strings and pricing format correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Feature availability checks work correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Tier names and API compatibility
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Feature descriptions match 2025 standards
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/core_2025_optimization_test.dart: 2025 Core Optimization Implementation Tests Overage pricing constants are correct
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/services/ai_features_service_test.dart: AIFeaturesService isFeatureAvailable returns correct availability for free tier
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/services/ai_features_service_test.dart: AIFeaturesService isFeatureAvailable returns correct availability for creator tier
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/services/ai_features_service_test.dart: AIFeaturesService isFeatureAvailable returns correct availability for enterprise tier
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/services/ai_features_service_test.dart: AIFeaturesService getFeatureCreditCost returns correct costs
+test/services/auth_service_test.dart:9:8: Error: Error when reading 'test/services/auth_service_test.mocks.dart': No such file or directory
+import 'auth_service_test.mocks.dart';
+       ^
+test/services/auth_service_test.dart:13:10: Error: 'MockFirebaseAuth' isn't a type.
+    late MockFirebaseAuth mockFirebaseAuth;
+         ^^^^^^^^^^^^^^^^
+test/services/auth_service_test.dart:14:10: Error: 'MockUser' isn't a type.
+    late MockUser mockUser;
+         ^^^^^^^^
+test/services/auth_service_test.dart:17:26: Error: Method not found: 'MockFirebaseAuth'.
+      mockFirebaseAuth = MockFirebaseAuth();
+                         ^^^^^^^^^^^^^^^^
+test/services/auth_service_test.dart:18:18: Error: Method not found: 'MockUser'.
+      mockUser = MockUser();
+                 ^^^^^^^^
+test/services/auth_service_test.dart:121:10: Error: 'MockUser' isn't a type.
+    late MockUser mockUser;
+         ^^^^^^^^
+test/services/auth_service_test.dart:124:18: Error: Method not found: 'MockUser'.
+      mockUser = MockUser();
+                 ^^^^^^^^
+test/services/auth_service_test.dart:129:28: Error: Method not found: 'MockUserMetadata'.
+      final mockMetadata = MockUserMetadata();
+                           ^^^^^^^^^^^^^^^^
+❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/services/auth_service_test.dart (failed)
+  
+../artbeat_events/lib/src/screens/event_bulk_management_screen.dart:124:21: Error: No named parameter with the name 'initialValue'.
+                    initialValue: _selectedCategory,
+                    ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/screens/event_bulk_management_screen.dart:157:21: Error: No named parameter with the name 'initialValue'.
+                    initialValue: _selectedStatus,
+                    ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/widgets/ticket_type_builder.dart:111:15: Error: No named parameter with the name 'initialValue'.
+              initialValue: _selectedCategory,
+              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/forms/event_form_builder.dart:679:15: Error: No named parameter with the name 'initialValue'.
+              initialValue: _getRefundPolicyKey(),
+              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_upload_screen.dart:592:23: Error: No named parameter with the name 'initialValue'.
+                      initialValue: _selectedArtType,
+                      ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_upload_screen.dart:629:23: Error: No named parameter with the name 'initialValue'.
+                      initialValue: _selectedArtMedium,
+                      ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_details_screen.dart:303:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedArtType,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_details_screen.dart:330:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedArtMedium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/artwork_upload_screen.dart:567:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _medium.isEmpty ? null : _medium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/artwork_edit_screen.dart:437:11: Error: No named parameter with the name 'initialValue'.
+          initialValue: _medium.isEmpty ? null : _medium,
+          ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/enhanced_artwork_upload_screen.dart:1058:11: Error: No named parameter with the name 'initialValue'.
+          initialValue: _medium.isEmpty ? null : _medium,
+          ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart:377:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedLocation,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart:394:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedMedium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_art_walk/lib/src/widgets/art_walk_search_filter.dart:348:19: Error: No named parameter with the name 'initialValue'.
+                  initialValue: _criteria.sortBy,
+                  ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_art_walk/lib/src/widgets/public_art_search_filter.dart:392:19: Error: No named parameter with the name 'initialValue'.
+                  initialValue: _criteria.sortBy,
+                  ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_community/lib/screens/commissions/commission_request_screen.dart:410:31: Error: No named parameter with the name 'initialValue'.
+                              initialValue: _selectedColorScheme,
+                              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_community/lib/screens/commissions/commission_request_screen.dart:448:25: Error: No named parameter with the name 'initialValue'.
+                        initialValue: _deliveryFormat,
+                        ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:419:9: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+      ..translateByDouble(
+        ^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:534:9: Error: The method 'scaleByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'scaleByDouble'.
+      ..scaleByDouble(clampedScale, clampedScale, clampedScale, 1);
+        ^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:1114:7: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+    ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0, 1)
+      ^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:1116:7: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+    ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0, 1);
+      ^^^^^^^^^^^^^^^^^
+❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/implementation_2025_comprehensive_test.dart (failed)
+  
+../artbeat_events/lib/src/screens/event_bulk_management_screen.dart:124:21: Error: No named parameter with the name 'initialValue'.
+                    initialValue: _selectedCategory,
+                    ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/screens/event_bulk_management_screen.dart:157:21: Error: No named parameter with the name 'initialValue'.
+                    initialValue: _selectedStatus,
+                    ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/widgets/ticket_type_builder.dart:111:15: Error: No named parameter with the name 'initialValue'.
+              initialValue: _selectedCategory,
+              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/forms/event_form_builder.dart:679:15: Error: No named parameter with the name 'initialValue'.
+              initialValue: _getRefundPolicyKey(),
+              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_upload_screen.dart:592:23: Error: No named parameter with the name 'initialValue'.
+                      initialValue: _selectedArtType,
+                      ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_upload_screen.dart:629:23: Error: No named parameter with the name 'initialValue'.
+                      initialValue: _selectedArtMedium,
+                      ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_details_screen.dart:303:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedArtType,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_details_screen.dart:330:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedArtMedium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/artwork_upload_screen.dart:567:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _medium.isEmpty ? null : _medium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/artwork_edit_screen.dart:437:11: Error: No named parameter with the name 'initialValue'.
+          initialValue: _medium.isEmpty ? null : _medium,
+          ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/enhanced_artwork_upload_screen.dart:1058:11: Error: No named parameter with the name 'initialValue'.
+          initialValue: _medium.isEmpty ? null : _medium,
+          ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart:377:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedLocation,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart:394:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedMedium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_art_walk/lib/src/widgets/art_walk_search_filter.dart:348:19: Error: No named parameter with the name 'initialValue'.
+                  initialValue: _criteria.sortBy,
+                  ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_art_walk/lib/src/widgets/public_art_search_filter.dart:392:19: Error: No named parameter with the name 'initialValue'.
+                  initialValue: _criteria.sortBy,
+                  ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_community/lib/screens/commissions/commission_request_screen.dart:410:31: Error: No named parameter with the name 'initialValue'.
+                              initialValue: _selectedColorScheme,
+                              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_community/lib/screens/commissions/commission_request_screen.dart:448:25: Error: No named parameter with the name 'initialValue'.
+                        initialValue: _deliveryFormat,
+                        ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:419:9: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+      ..translateByDouble(
+        ^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:534:9: Error: The method 'scaleByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'scaleByDouble'.
+      ..scaleByDouble(clampedScale, clampedScale, clampedScale, 1);
+        ^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:1114:7: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+    ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0, 1)
+      ^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:1116:7: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+    ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0, 1);
+      ^^^^^^^^^^^^^^^^^
+❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/universal_content_card_test.dart (failed)
+  
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/enhanced_bottom_nav_test.dart: EnhancedBottomNav should display correct number of navigation items
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/enhanced_bottom_nav_test.dart: EnhancedBottomNav should handle tap on capture button
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/enhanced_bottom_nav_test.dart: EnhancedBottomNav should handle tap on navigation items
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/enhanced_bottom_nav_test.dart: EnhancedBottomNav should not trigger tap for already selected item
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/enhanced_bottom_nav_test.dart: EnhancedBottomNav should show labels when showLabels is true
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/widgets/enhanced_bottom_nav_test.dart: EnhancedBottomNav should hide labels when showLabels is false
+../artbeat_events/lib/src/screens/event_bulk_management_screen.dart:124:21: Error: No named parameter with the name 'initialValue'.
+                    initialValue: _selectedCategory,
+                    ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/screens/event_bulk_management_screen.dart:157:21: Error: No named parameter with the name 'initialValue'.
+                    initialValue: _selectedStatus,
+                    ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/widgets/ticket_type_builder.dart:111:15: Error: No named parameter with the name 'initialValue'.
+              initialValue: _selectedCategory,
+              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_events/lib/src/forms/event_form_builder.dart:679:15: Error: No named parameter with the name 'initialValue'.
+              initialValue: _getRefundPolicyKey(),
+              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_upload_screen.dart:592:23: Error: No named parameter with the name 'initialValue'.
+                      initialValue: _selectedArtType,
+                      ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_upload_screen.dart:629:23: Error: No named parameter with the name 'initialValue'.
+                      initialValue: _selectedArtMedium,
+                      ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_details_screen.dart:303:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedArtType,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_capture/lib/src/screens/capture_details_screen.dart:330:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedArtMedium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/artwork_upload_screen.dart:567:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _medium.isEmpty ? null : _medium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/artwork_edit_screen.dart:437:11: Error: No named parameter with the name 'initialValue'.
+          initialValue: _medium.isEmpty ? null : _medium,
+          ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/enhanced_artwork_upload_screen.dart:1058:11: Error: No named parameter with the name 'initialValue'.
+          initialValue: _medium.isEmpty ? null : _medium,
+          ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart:377:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedLocation,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_artwork/lib/src/screens/advanced_artwork_search_screen.dart:394:17: Error: No named parameter with the name 'initialValue'.
+                initialValue: _selectedMedium,
+                ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_art_walk/lib/src/widgets/art_walk_search_filter.dart:348:19: Error: No named parameter with the name 'initialValue'.
+                  initialValue: _criteria.sortBy,
+                  ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_art_walk/lib/src/widgets/public_art_search_filter.dart:392:19: Error: No named parameter with the name 'initialValue'.
+                  initialValue: _criteria.sortBy,
+                  ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_community/lib/screens/commissions/commission_request_screen.dart:410:31: Error: No named parameter with the name 'initialValue'.
+                              initialValue: _selectedColorScheme,
+                              ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../artbeat_community/lib/screens/commissions/commission_request_screen.dart:448:25: Error: No named parameter with the name 'initialValue'.
+                        initialValue: _deliveryFormat,
+                        ^^^^^^^^^^^^
+/opt/hostedtoolcache/flutter/stable-3.32.6-x64/packages/flutter/lib/src/material/dropdown.dart:1708:3: Context: Found this candidate, but the arguments don't match.
+  DropdownButtonFormField({
+  ^^^^^^^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:419:9: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+      ..translateByDouble(
+        ^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:534:9: Error: The method 'scaleByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'scaleByDouble'.
+      ..scaleByDouble(clampedScale, clampedScale, clampedScale, 1);
+        ^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:1114:7: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+    ..translateByDouble(rect.size.width / 2, rect.size.height / 2, 0, 1)
+      ^^^^^^^^^^^^^^^^^
+../../../../../.pub-cache/hosted/pub.dev/fl_chart-1.1.0/lib/src/chart/base/custom_interactive_viewer.dart:1116:7: Error: The method 'translateByDouble' isn't defined for the class 'Matrix4'.
+ - 'Matrix4' is from 'package:vector_math/vector_math_64.dart' ('../../../../../.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib/vector_math_64.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'translateByDouble'.
+    ..translateByDouble(-rect.size.width / 2, -rect.size.height / 2, 0, 1);
+      ^^^^^^^^^^^^^^^^^
+❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/optimization_2025_test.dart (failed)
+  
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should create UserModel with required fields
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should create UserModel with all fields
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should convert UserModel to JSON
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should create UserModel from JSON
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should handle null values in JSON conversion
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should create copy of UserModel with updated fields
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should check if user is artist
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should check user types correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserModel Tests should use placeholder constructor correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserType Tests should convert UserType to string correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserType Tests should get UserType value correctly
+✅ /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_core/test/models/user_model_test.dart: UserType Tests should parse UserType from string correctly
+Error: 32 tests passed, 4 failed.
+Error: Process completed with exit code 1.

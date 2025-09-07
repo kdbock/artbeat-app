@@ -374,7 +374,7 @@ class _AdvancedArtworkSearchScreenState
                   style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                initialValue: _selectedLocation,
+                value: _selectedLocation,
                 items: _locations.map((location) {
                   return DropdownMenuItem(
                       value: location, child: Text(location));
@@ -391,7 +391,7 @@ class _AdvancedArtworkSearchScreenState
                   style: TextStyle(fontWeight: FontWeight.w500)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                initialValue: _selectedMedium,
+                value: _selectedMedium,
                 items: _mediums.map((medium) {
                   return DropdownMenuItem(value: medium, child: Text(medium));
                 }).toList(),

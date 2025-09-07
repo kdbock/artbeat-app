@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_capture/artbeat_capture.dart';
 
-
 /// Screen for adding details about the captured art
 class CaptureDetailsScreen extends StatefulWidget {
   final File imageFile;
@@ -300,7 +299,7 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
 
               // Art type dropdown
               DropdownButtonFormField<String>(
-                initialValue: _selectedArtType,
+                value: _selectedArtType,
                 decoration: const InputDecoration(
                   labelText: 'Art Type',
                   border: OutlineInputBorder(),
@@ -327,7 +326,7 @@ class _CaptureDetailsScreenState extends State<CaptureDetailsScreen> {
 
               // Art medium dropdown
               DropdownButtonFormField<String>(
-                initialValue: _selectedArtMedium,
+                value: _selectedArtMedium,
                 decoration: const InputDecoration(
                   labelText: 'Art Medium',
                   border: OutlineInputBorder(),

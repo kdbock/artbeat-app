@@ -37,7 +37,7 @@ dependencies:
   timezone: ^0.9.4
 
   # Chart visualization for analytics
-  fl_chart: ^1.1.0
+  fl_chart: ^0.69.0
 
   # HTTP requests
   http: ^1.2.0

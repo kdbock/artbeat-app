@@ -676,7 +676,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _getRefundPolicyKey(),
+              value: _getRefundPolicyKey(),
               decoration: const InputDecoration(
                 labelText: 'Refund Policy',
                 filled: true,

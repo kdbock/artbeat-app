@@ -22,7 +22,7 @@ dependencies:
   flutter_stripe: ^11.1.0
 
   # Charts and analytics
-  fl_chart: ^1.1.0
+  fl_chart: ^0.69.0
   logger: ^2.0.2
 
   # URL launcher for social media links

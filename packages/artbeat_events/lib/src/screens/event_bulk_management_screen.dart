@@ -121,7 +121,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
                       labelText: 'Category',
                       border: OutlineInputBorder(),
                     ),
-                    initialValue: _selectedCategory,
+                    value: _selectedCategory,
                     items: const [
                       DropdownMenuItem(child: Text('All Categories')),
                       DropdownMenuItem(
@@ -154,7 +154,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
                       labelText: 'Status',
                       border: OutlineInputBorder(),
                     ),
-                    initialValue: _selectedStatus,
+                    value: _selectedStatus,
                     items: const [
                       DropdownMenuItem(child: Text('All Statuses')),
                       DropdownMenuItem(value: 'active', child: Text('Active')),

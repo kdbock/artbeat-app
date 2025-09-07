@@ -449,18 +449,12 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
         backgroundGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         titleGradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.topRight,
-          colors: [
-            core.ArtbeatColors.primaryPurple,
-            Colors.pink,
-          ],
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -589,7 +583,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
 
                     // Art Type dropdown
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedArtType,
+                      value: _selectedArtType,
                       decoration: const InputDecoration(
                         labelText: 'Art Type',
                         filled: true,
@@ -626,7 +620,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
 
                     // Art Medium dropdown
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedArtMedium,
+                      value: _selectedArtMedium,
                       decoration: const InputDecoration(
                         labelText: 'Art Medium',
                         filled: true,
