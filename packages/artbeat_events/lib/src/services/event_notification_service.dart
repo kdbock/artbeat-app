@@ -21,24 +21,22 @@ class EventNotificationService {
   Future<void> initialize() async {
     try {
       // Initialize awesome_notifications
-      await AwesomeNotifications().initialize(
-        null,
-        [
-          NotificationChannel(
-            channelKey: _channelId,
-            channelName: 'Event Notifications',
-            channelDescription: 'Notifications for ARTbeat events',
-            defaultColor: const Color(0xFF6F42C1),
-            importance: NotificationImportance.High,
-            playSound: true,
-            enableVibration: true,
-          ),
-        ],
-      );
+      await AwesomeNotifications().initialize(null, [
+        NotificationChannel(
+          channelKey: _channelId,
+          channelName: 'Event Notifications',
+          channelDescription: 'Notifications for ARTbeat events',
+          defaultColor: const Color(0xFF6F42C1),
+          importance: NotificationImportance.High,
+          playSound: true,
+          enableVibration: true,
+        ),
+      ]);
 
       // Initialize local notifications
-      const initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const initializationSettingsAndroid = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const initializationSettingsIOS = DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -68,19 +66,21 @@ class EventNotificationService {
       }
 
       // Request permissions for awesome_notifications
-      final granted =
-          await AwesomeNotifications().requestPermissionToSendNotifications();
+      final granted = await AwesomeNotifications()
+          .requestPermissionToSendNotifications();
 
       // Request permissions for local_notifications on iOS
       final localPermission = await _localNotifications
           .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
+            IOSFlutterLocalNotificationsPlugin
+          >()
           ?.requestPermissions();
 
       // Request permissions for Android
       final androidPermission = await _localNotifications
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.requestNotificationsPermission();
 
       final finalResult =
@@ -107,7 +107,8 @@ class EventNotificationService {
     final hasPermission = await requestPermissions();
     if (!hasPermission) {
       _logger.w(
-          'Notification permissions not granted, skipping event reminder for: ${event.title}');
+        'Notification permissions not granted, skipping event reminder for: ${event.title}',
+      );
       return;
     }
 
@@ -128,15 +129,13 @@ class EventNotificationService {
           channelKey: _channelId,
           title: 'Event Reminder: ${event.title}',
           body: 'Your event starts in 1 hour at ${event.location}',
-          bigPicture:
-              event.eventBannerUrl.isNotEmpty ? event.eventBannerUrl : null,
+          bigPicture: event.eventBannerUrl.isNotEmpty
+              ? event.eventBannerUrl
+              : null,
           notificationLayout: event.eventBannerUrl.isNotEmpty
               ? NotificationLayout.BigPicture
               : NotificationLayout.Default,
-          payload: {
-            'eventId': event.id,
-            'type': 'event_reminder',
-          },
+          payload: {'eventId': event.id, 'type': 'event_reminder'},
         ),
         schedule: NotificationCalendar.fromDate(date: reminderTime),
       );
@@ -180,10 +179,7 @@ class EventNotificationService {
               notificationLayout: event.eventBannerUrl.isNotEmpty
                   ? NotificationLayout.BigPicture
                   : NotificationLayout.Default,
-              payload: {
-                'eventId': event.id,
-                'type': 'event_reminder',
-              },
+              payload: {'eventId': event.id, 'type': 'event_reminder'},
             ),
             schedule: NotificationCalendar.fromDate(date: reminderTime),
           );
@@ -241,9 +237,7 @@ class EventNotificationService {
           title: 'Tickets Purchased!',
           body:
               'You\'ve successfully purchased $quantity $ticketType ticket${quantity > 1 ? 's' : ''} for $eventTitle',
-          payload: {
-            'type': 'ticket_purchase_confirmation',
-          },
+          payload: {'type': 'ticket_purchase_confirmation'},
         ),
       );
 
@@ -266,9 +260,7 @@ class EventNotificationService {
           title: 'Refund Processed',
           body:
               'Your refund of \$${refundAmount.toStringAsFixed(2)} for $eventTitle has been processed',
-          payload: {
-            'type': 'refund_confirmation',
-          },
+          payload: {'type': 'refund_confirmation'},
         ),
       );
 
@@ -291,10 +283,7 @@ class EventNotificationService {
           channelKey: _channelId,
           title: 'Event Update: $eventTitle',
           body: updateMessage,
-          payload: {
-            'eventId': eventId,
-            'type': 'event_update',
-          },
+          payload: {'eventId': eventId, 'type': 'event_update'},
         ),
       );
 
@@ -322,24 +311,28 @@ class EventNotificationService {
       logger.i('Notification action received with payload: $payload');
       final eventId = payload['eventId'];
       if (eventId != null) {
-        eventNotificationNavigatorKey.currentState
-            ?.pushNamed('/event/$eventId');
+        eventNotificationNavigatorKey.currentState?.pushNamed(
+          '/event/$eventId',
+        );
       }
     }
   }
 
   static Future<void> _onNotificationCreated(
-      ReceivedNotification receivedNotification) async {
+    ReceivedNotification receivedNotification,
+  ) async {
     // Optional: Handle when notification is created
   }
 
   static Future<void> _onNotificationDisplayed(
-      ReceivedNotification receivedNotification) async {
+    ReceivedNotification receivedNotification,
+  ) async {
     // Optional: Handle when notification is displayed
   }
 
   static Future<void> _onDismissActionReceived(
-      ReceivedAction receivedAction) async {
+    ReceivedAction receivedAction,
+  ) async {
     // Optional: Handle when notification is dismissed
   }
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 /// Utility class for generating local placeholder images
 class PlaceholderImages {
-
   static const List<String> _texts = [
     'Image 1',
     'Image 2',

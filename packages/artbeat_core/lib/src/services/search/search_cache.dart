@@ -42,7 +42,8 @@ class SearchCache {
   void _cleanupCache() {
     final now = DateTime.now();
     _cache.removeWhere(
-        (key, value) => now.difference(value.timestamp) > value.ttl);
+      (key, value) => now.difference(value.timestamp) > value.ttl,
+    );
   }
 
   Future<void> clear() async {

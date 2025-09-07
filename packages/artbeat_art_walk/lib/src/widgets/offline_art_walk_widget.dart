@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class OfflineArtWalkWidget extends StatelessWidget {
   final VoidCallback onRetry;
 
-  const OfflineArtWalkWidget({
-    super.key,
-    required this.onRetry,
-  });
+  const OfflineArtWalkWidget({super.key, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +44,7 @@ class OfflineArtWalkWidget extends StatelessWidget {
         const SizedBox(height: 16),
         const Text(
           'Map Unavailable',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         const Padding(

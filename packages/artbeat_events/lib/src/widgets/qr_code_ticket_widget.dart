@@ -142,11 +142,7 @@ class QRCodeTicketWidget extends StatelessWidget {
             EventUtils.formatEventTime(event.dateTime),
           ),
           const SizedBox(height: 16),
-          _buildInfoRow(
-            Icons.location_on,
-            'Location',
-            event.location,
-          ),
+          _buildInfoRow(Icons.location_on, 'Location', event.location),
           const SizedBox(height: 16),
           _buildInfoRow(
             Icons.confirmation_number,
@@ -154,11 +150,7 @@ class QRCodeTicketWidget extends StatelessWidget {
             '${ticket.quantity} ticket${ticket.quantity > 1 ? 's' : ''}',
           ),
           const SizedBox(height: 16),
-          _buildInfoRow(
-            Icons.person,
-            'Name',
-            ticket.userName,
-          ),
+          _buildInfoRow(Icons.person, 'Name', ticket.userName),
         ],
       ),
     );
@@ -255,10 +247,7 @@ class QRCodeTicketWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Purchase Date',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
                   Text(
                     DateFormat('MMM d, y').format(ticket.purchaseDate),
@@ -274,14 +263,13 @@ class QRCodeTicketWidget extends StatelessWidget {
                 children: [
                   Text(
                     'Status',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                   ),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.shade100,
                       borderRadius: BorderRadius.circular(12),
@@ -321,10 +309,7 @@ class QRCodeTicketWidget extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Keep this QR code safe and present it at the event entrance. Screenshots are acceptable.',
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -390,12 +375,11 @@ class QRCodeTicketWidget extends StatelessWidget {
   }
 
   void _shareTicket(BuildContext context) {
-    final shareText = 'Here is my ARTbeat event ticket for ${event.title} on '
+    final shareText =
+        'Here is my ARTbeat event ticket for ${event.title} on '
         '${EventUtils.formatEventDate(event.dateTime)} at ${event.location}.\n'
         'Ticket ID: ${_formatTicketId(ticket.id)}\n'
         'Show this QR code at the entrance!';
-    SharePlus.instance.share(
-      ShareParams(text: shareText),
-    );
+    SharePlus.instance.share(ShareParams(text: shareText));
   }
 }

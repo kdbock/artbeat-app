@@ -72,7 +72,8 @@ class AdminStatsModel {
       activeUsersToday: data['activeUsersToday'] as int? ?? 0,
       activeUsersThisWeek: data['activeUsersThisWeek'] as int? ?? 0,
       activeUsersThisMonth: data['activeUsersThisMonth'] as int? ?? 0,
-      lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastUpdated:
+          (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 

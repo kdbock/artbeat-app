@@ -8,7 +8,8 @@ class ArtWalkRouteModel {
   final List<RouteSegment> segments; // Route segments between art pieces
   final int totalDistanceMeters; // Total distance of the entire route
   final int totalDurationSeconds; // Total estimated duration
-  final List<LatLng> overviewPolyline; // Simplified polyline for the entire route
+  final List<LatLng>
+  overviewPolyline; // Simplified polyline for the entire route
   final DateTime createdAt; // When this route was generated
   final String? startAddress; // Starting address if available
   final String? endAddress; // Ending address if available
@@ -34,7 +35,7 @@ class ArtWalkRouteModel {
   ) {
     final legs = route['legs'] as List<dynamic>;
     final overviewPolyline = route['overview_polyline'] as Map<String, dynamic>;
-    
+
     final List<RouteSegment> segments = [];
     int totalDistance = 0;
     int totalDuration = 0;
@@ -42,9 +43,13 @@ class ArtWalkRouteModel {
     for (int i = 0; i < legs.length; i++) {
       final leg = legs[i] as Map<String, dynamic>;
       final steps = leg['steps'] as List<dynamic>;
-      
+
       final List<NavigationStepModel> navigationSteps = steps
-          .map((step) => NavigationStepModel.fromGoogleMapsStep(step as Map<String, dynamic>))
+          .map(
+            (step) => NavigationStepModel.fromGoogleMapsStep(
+              step as Map<String, dynamic>,
+            ),
+          )
           .toList();
 
       final distance = leg['distance'] as Map<String, dynamic>;
@@ -55,15 +60,19 @@ class ArtWalkRouteModel {
       final segmentDistance = distance['value'] as int;
       final segmentDuration = duration['value'] as int;
 
-      segments.add(RouteSegment(
-        fromArtPieceId: i == 0 ? null : artPieceIds[i - 1], // null for start location
-        toArtPieceId: artPieceIds[i],
-        steps: navigationSteps,
-        distanceMeters: segmentDistance,
-        durationSeconds: segmentDuration,
-        startAddress: startAddress,
-        endAddress: endAddress,
-      ));
+      segments.add(
+        RouteSegment(
+          fromArtPieceId: i == 0
+              ? null
+              : artPieceIds[i - 1], // null for start location
+          toArtPieceId: artPieceIds[i],
+          steps: navigationSteps,
+          distanceMeters: segmentDistance,
+          durationSeconds: segmentDuration,
+          startAddress: startAddress,
+          endAddress: endAddress,
+        ),
+      );
 
       totalDistance += segmentDistance;
       totalDuration += segmentDuration;

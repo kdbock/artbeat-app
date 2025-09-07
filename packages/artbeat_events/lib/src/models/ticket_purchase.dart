@@ -96,8 +96,8 @@ class TicketPurchase {
       userName: userName,
       quantity: quantity,
       totalAmount: totalAmount,
-      status: totalAmount > 0 
-          ? TicketPurchaseStatus.pending 
+      status: totalAmount > 0
+          ? TicketPurchaseStatus.pending
           : TicketPurchaseStatus.confirmed, // Free tickets are auto-confirmed
       paymentIntentId: paymentIntentId,
       purchaseDate: DateTime.now(),
@@ -108,7 +108,7 @@ class TicketPurchase {
   /// Create TicketPurchase from Firestore document
   factory TicketPurchase.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     return TicketPurchase(
       id: doc.id,
       eventId: data['eventId']?.toString() ?? '',
@@ -118,13 +118,17 @@ class TicketPurchase {
       userName: data['userName']?.toString() ?? '',
       quantity: data['quantity'] as int? ?? 1,
       totalAmount: (data['totalAmount'] as num?)?.toDouble() ?? 0.0,
-      status: TicketPurchaseStatus.fromString(data['status']?.toString() ?? 'pending'),
+      status: TicketPurchaseStatus.fromString(
+        data['status']?.toString() ?? 'pending',
+      ),
       paymentIntentId: data['paymentIntentId']?.toString(),
       refundId: data['refundId']?.toString(),
       paymentId: data['paymentId']?.toString(),
       amount: (data['amount'] as num?)?.toDouble(),
       purchaseDate: _parseDateTime(data['purchaseDate']),
-      refundDate: data['refundDate'] != null ? _parseDateTime(data['refundDate']) : null,
+      refundDate: data['refundDate'] != null
+          ? _parseDateTime(data['refundDate'])
+          : null,
       metadata: data['metadata'] as Map<String, dynamic>?,
     );
   }
@@ -193,13 +197,15 @@ class TicketPurchase {
   bool get isFree => totalAmount == 0.0;
 
   /// Check if this purchase can be refunded
-  bool get canBeRefunded => status == TicketPurchaseStatus.confirmed && refundId == null;
+  bool get canBeRefunded =>
+      status == TicketPurchaseStatus.confirmed && refundId == null;
 
   /// Check if this purchase has been refunded
   bool get isRefunded => status == TicketPurchaseStatus.refunded;
 
   /// Check if this purchase is active (confirmed and not refunded)
-  bool get isActive => status == TicketPurchaseStatus.confirmed && refundId == null;
+  bool get isActive =>
+      status == TicketPurchaseStatus.confirmed && refundId == null;
 
   /// Format total amount for display
   String get formattedAmount {

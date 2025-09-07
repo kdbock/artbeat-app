@@ -55,8 +55,9 @@ class PublicArtModel {
       isVerified: data['isVerified'] as bool? ?? false,
       viewCount: data['viewCount'] as int? ?? 0,
       likeCount: data['likeCount'] as int? ?? 0,
-      usersFavorited:
-          List<String>.from(data['usersFavorited'] as List<dynamic>? ?? []),
+      usersFavorited: List<String>.from(
+        data['usersFavorited'] as List<dynamic>? ?? [],
+      ),
       createdAt: data['createdAt'] as Timestamp? ?? Timestamp.now(),
       updatedAt: data['updatedAt'] as Timestamp?,
     );
@@ -78,8 +79,9 @@ class PublicArtModel {
       isVerified: json['isVerified'] as bool? ?? false,
       viewCount: json['viewCount'] as int? ?? 0,
       likeCount: json['likeCount'] as int? ?? 0,
-      usersFavorited:
-          List<String>.from(json['usersFavorited'] as List<dynamic>? ?? []),
+      usersFavorited: List<String>.from(
+        json['usersFavorited'] as List<dynamic>? ?? [],
+      ),
       createdAt: json['createdAt'] as Timestamp,
       updatedAt: json['updatedAt'] as Timestamp?,
     );

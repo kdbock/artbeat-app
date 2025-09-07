@@ -396,7 +396,8 @@ class _AdminCommunityModerationScreenState
                       padding: const EdgeInsets.only(left: 16, bottom: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.warning, size: 16, color: Colors.orange),
+                          const Icon(Icons.warning,
+                              size: 16, color: Colors.orange),
                           const SizedBox(width: 8),
                           Text(
                               'Posted inappropriate content on ${DateFormat('MMM dd').format(DateTime.now().subtract(Duration(days: i + 1)))}'),

@@ -13,8 +13,10 @@ class Formatters {
 
   // Format a number into currency
   static String formatCurrency(double amount) {
-    final NumberFormat currencyFormatter =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final NumberFormat currencyFormatter = NumberFormat.currency(
+      symbol: '\$',
+      decimalDigits: 2,
+    );
     return currencyFormatter.format(amount);
   }
 

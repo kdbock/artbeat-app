@@ -41,8 +41,8 @@ class EventModel {
       startDate: data['startDate'] is Timestamp
           ? (data['startDate'] as Timestamp).toDate()
           : data['dateTime'] is Timestamp
-          ? (data['dateTime'] as Timestamp).toDate()
-          : DateTime.now(),
+              ? (data['dateTime'] as Timestamp).toDate()
+              : DateTime.now(),
       endDate: data['endDate'] is Timestamp
           ? (data['endDate'] as Timestamp).toDate()
           : null,

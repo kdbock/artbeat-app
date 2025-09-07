@@ -5,10 +5,7 @@ import '../routes.dart';
 class BecomeArtistCard extends StatelessWidget {
   final UserModel user;
 
-  const BecomeArtistCard({
-    super.key,
-    required this.user,
-  });
+  const BecomeArtistCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {

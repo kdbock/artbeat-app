@@ -32,7 +32,8 @@ enum TicketCategory {
 /// Model representing a ticket type for an event
 class TicketType {
   final String id;
-  final String name; // e.g., "General Admission", "VIP Access", "Student Discount"
+  final String
+  name; // e.g., "General Admission", "VIP Access", "Student Discount"
   final String description;
   final TicketCategory category;
   final double price; // 0.0 for free tickets

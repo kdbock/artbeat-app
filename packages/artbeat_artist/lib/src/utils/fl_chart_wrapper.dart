@@ -4,7 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 
 class SafeLineChart extends StatelessWidget {
   final LineChartData data;
-  
+
   const SafeLineChart({
     super.key,
     required this.data,
@@ -19,7 +19,7 @@ class SafeLineChart extends StatelessWidget {
 
 class SafeBarChart extends StatelessWidget {
   final BarChartData data;
-  
+
   const SafeBarChart({
     super.key,
     required this.data,
@@ -34,7 +34,7 @@ class SafeBarChart extends StatelessWidget {
 
 class SafePieChart extends StatelessWidget {
   final PieChartData data;
-  
+
   const SafePieChart({
     super.key,
     required this.data,

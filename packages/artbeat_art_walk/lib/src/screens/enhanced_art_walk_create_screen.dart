@@ -609,7 +609,9 @@ class _EnhancedArtWalkCreateScreenState
         currentIndex: -1,
         child: Scaffold(
           appBar: EnhancedUniversalHeader(
-            title: widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk',
+            title: widget.artWalkId == null
+                ? 'Create Art Walk'
+                : 'Edit Art Walk',
             showLogo: false,
             actions: [
               IconButton(
@@ -618,15 +620,16 @@ class _EnhancedArtWalkCreateScreenState
               ),
             ],
           ),
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: _buildForm(),
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: _buildForm(),
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildForm() {

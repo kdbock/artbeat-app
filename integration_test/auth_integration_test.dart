@@ -19,7 +19,10 @@ void main() {
         find.byKey(const Key('email_field')),
         'test@example.com',
       );
-      await tester.enterText(find.byKey(const Key('password_field')), 'password123');
+      await tester.enterText(
+        find.byKey(const Key('password_field')),
+        'password123',
+      );
       await tester.tap(find.byKey(const Key('login_button')));
       await tester.pumpAndSettle();
 

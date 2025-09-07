@@ -48,16 +48,16 @@ class CommentModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'userId': userId,
-        'content': content,
-        'parentCommentId': parentCommentId,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'likeCount': likeCount,
-        'userLikes': userLikes,
-        'userName': userName,
-        'userPhotoUrl': userPhotoUrl,
-        'rating': rating,
-        'replies': replies?.map((r) => r.toJson()).toList(),
-      };
+    'id': id,
+    'userId': userId,
+    'content': content,
+    'parentCommentId': parentCommentId,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'likeCount': likeCount,
+    'userLikes': userLikes,
+    'userName': userName,
+    'userPhotoUrl': userPhotoUrl,
+    'rating': rating,
+    'replies': replies?.map((r) => r.toJson()).toList(),
+  };
 }

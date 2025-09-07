@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/artbeat_colors.dart';
 
 /// Reusable gradient background widget with ARTbeat's signature design
-/// 
+///
 /// Features:
 /// - Diagonal gradient with purple, green, and blue colors
 /// - Subtle white overlay for brightness
@@ -32,32 +32,38 @@ class ArtbeatGradientBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: gradient ?? LinearGradient(
-          begin: begin,
-          end: end,
-          colors: [
-            Colors.white,
-            ArtbeatColors.primaryPurple.withValues(alpha: 0.15 * intensity),
-            const Color(0xFF4A90E2).withValues(alpha: 0.2 * intensity), // Blue
-            Colors.white.withValues(alpha: 0.95),
-            ArtbeatColors.primaryGreen.withValues(alpha: 0.12 * intensity),
-            Colors.white,
-          ],
-          stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
-        ),
+        gradient:
+            gradient ??
+            LinearGradient(
+              begin: begin,
+              end: end,
+              colors: [
+                Colors.white,
+                ArtbeatColors.primaryPurple.withValues(alpha: 0.15 * intensity),
+                const Color(
+                  0xFF4A90E2,
+                ).withValues(alpha: 0.2 * intensity), // Blue
+                Colors.white.withValues(alpha: 0.95),
+                ArtbeatColors.primaryGreen.withValues(alpha: 0.12 * intensity),
+                Colors.white,
+              ],
+              stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+            ),
         borderRadius: borderRadius,
-        boxShadow: addShadow ? [
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.8),
-            blurRadius: 4,
-            offset: const Offset(-1, -1),
-          ),
-          BoxShadow(
-            color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(1, 1),
-          ),
-        ] : null,
+        boxShadow: addShadow
+            ? [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  blurRadius: 4,
+                  offset: const Offset(-1, -1),
+                ),
+                BoxShadow(
+                  color: ArtbeatColors.primaryPurple.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(1, 1),
+                ),
+              ]
+            : null,
       ),
       child: child,
     );
@@ -87,19 +93,23 @@ class ArtbeatGradientBackgroundCompact extends StatelessWidget {
       height: height,
       padding: padding,
       decoration: BoxDecoration(
-        gradient: gradient ?? LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white.withValues(alpha: 0.95),
-            ArtbeatColors.primaryPurple.withValues(alpha: 0.12 * intensity),
-            const Color(0xFF4A90E2).withValues(alpha: 0.15 * intensity), // Blue
-            Colors.white.withValues(alpha: 0.98),
-            ArtbeatColors.primaryGreen.withValues(alpha: 0.1 * intensity),
-            Colors.white.withValues(alpha: 0.95),
-          ],
-          stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
-        ),
+        gradient:
+            gradient ??
+            LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.95),
+                ArtbeatColors.primaryPurple.withValues(alpha: 0.12 * intensity),
+                const Color(
+                  0xFF4A90E2,
+                ).withValues(alpha: 0.15 * intensity), // Blue
+                Colors.white.withValues(alpha: 0.98),
+                ArtbeatColors.primaryGreen.withValues(alpha: 0.1 * intensity),
+                Colors.white.withValues(alpha: 0.95),
+              ],
+              stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+            ),
         boxShadow: [
           BoxShadow(
             color: Colors.white.withValues(alpha: 0.9),

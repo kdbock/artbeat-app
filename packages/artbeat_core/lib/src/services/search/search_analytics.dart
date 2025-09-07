@@ -39,9 +39,7 @@ class SearchAnalytics {
     int limit = 10,
     Duration timeWindow = const Duration(days: 7),
   }) async {
-    final startDate = Timestamp.fromDate(
-      DateTime.now().subtract(timeWindow),
-    );
+    final startDate = Timestamp.fromDate(DateTime.now().subtract(timeWindow));
 
     final snapshot = await _firestore
         .collection('searchAnalytics')

@@ -48,10 +48,7 @@ class EnvValidator {
 
   /// Validate all environment variables
   bool validateAll() {
-    final List<bool> validations = [
-      validateRequiredVars(),
-      validateApiUrl(),
-    ];
+    final List<bool> validations = [validateRequiredVars(), validateApiUrl()];
 
     return !validations.contains(false);
   }
@@ -62,7 +59,8 @@ class EnvValidator {
     debugPrint('API URL: ${_envLoader.get('API_BASE_URL')}');
     debugPrint('Firebase Region: ${_envLoader.get('FIREBASE_REGION')}');
     debugPrint(
-        'Has Google Maps API Key: ${_envLoader.has('GOOGLE_MAPS_API_KEY')}');
+      'Has Google Maps API Key: ${_envLoader.has('GOOGLE_MAPS_API_KEY')}',
+    );
     debugPrint('Has Stripe Key: ${_envLoader.has('STRIPE_PUBLISHABLE_KEY')}');
   }
 }

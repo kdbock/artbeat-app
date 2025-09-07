@@ -15,8 +15,8 @@ class ArtistModel {
     this.isVerified = false,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? DateTime.now();
+  }) : createdAt = createdAt ?? DateTime.now(),
+       updatedAt = updatedAt ?? DateTime.now();
 
   factory ArtistModel.fromFirestore(
     DocumentSnapshot<Map<String, dynamic>> snapshot,

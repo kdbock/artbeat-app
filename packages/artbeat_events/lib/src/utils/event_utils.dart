@@ -181,7 +181,8 @@ class EventUtils {
     // Show remaining tickets if limited
     if (event.maxAttendees > 0) {
       final remaining = event.totalAvailableTickets - event.totalTicketsSold;
-      if (remaining < event.totalAvailableTickets * 0.2) { // Less than 20% left
+      if (remaining < event.totalAvailableTickets * 0.2) {
+        // Less than 20% left
         buffer.writeln('⚠️ Only $remaining tickets remaining!');
       }
     }
@@ -208,16 +209,16 @@ class EventUtils {
   static Map<String, dynamic> getCalendarEventDetails(ArtbeatEvent event) {
     return {
       'title': event.title,
-      'description': '${event.description}\n\nLocation: ${event.location}\n'
+      'description':
+          '${event.description}\n\nLocation: ${event.location}\n'
           'Tickets: ${getTicketPriceRange(event.ticketTypes)}',
       'start': event.dateTime,
-      'end': event.dateTime.add(const Duration(hours: 2)), // Default 2 hour duration
+      'end': event.dateTime.add(
+        const Duration(hours: 2),
+      ), // Default 2 hour duration
       'location': event.location,
       'url': 'artbeat://events/${event.id}',
-      'reminders': [
-        const Duration(days: 1),
-        const Duration(hours: 1),
-      ],
+      'reminders': [const Duration(days: 1), const Duration(hours: 1)],
     };
   }
 

@@ -85,10 +85,7 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
         children: [
           const Text(
             'Upcoming Events',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           if (widget.onViewAllPressed != null)
             TextButton(
@@ -103,9 +100,7 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
   Widget _buildLoadingState() {
     return const Padding(
       padding: EdgeInsets.symmetric(vertical: 32),
-      child: Center(
-        child: CircularProgressIndicator(),
-      ),
+      child: Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -153,11 +148,7 @@ class _CommunityFeedEventsWidgetState extends State<CommunityFeedEventsWidget> {
           padding: const EdgeInsets.all(32),
           child: Column(
             children: [
-              Icon(
-                Icons.event_busy,
-                size: 64,
-                color: Colors.grey.shade400,
-              ),
+              Icon(Icons.event_busy, size: 64, color: Colors.grey.shade400),
               const SizedBox(height: 16),
               Text(
                 'No upcoming events',

@@ -7,13 +7,8 @@ class BlockedUsersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      appBar: EnhancedUniversalHeader(
-        title: 'Blocked Users',
-        showLogo: false,
-      ),
-      body: Center(
-        child: Text('Blocked Users Screen'),
-      ),
+      appBar: EnhancedUniversalHeader(title: 'Blocked Users', showLogo: false),
+      body: Center(child: Text('Blocked Users Screen')),
     );
   }
 }

@@ -73,9 +73,7 @@ class AchievementService {
           .collection('achievements')
           .get();
 
-      return snapshot.docs
-          .map((doc) => doc.data()..['id'] = doc.id)
-          .toList();
+      return snapshot.docs.map((doc) => doc.data()..['id'] = doc.id).toList();
     } catch (e) {
       developer.log('Error getting user achievements: $e');
       return [];

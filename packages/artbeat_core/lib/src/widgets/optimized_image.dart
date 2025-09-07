@@ -48,26 +48,17 @@ class OptimizedImage extends StatelessWidget {
 
     // Apply border radius if specified
     if (borderRadius != null) {
-      imageWidget = ClipRRect(
-        borderRadius: borderRadius!,
-        child: imageWidget,
-      );
+      imageWidget = ClipRRect(borderRadius: borderRadius!, child: imageWidget);
     }
 
     // Add hero animation if enabled
     if (enableHeroAnimation && heroTag != null) {
-      imageWidget = Hero(
-        tag: heroTag!,
-        child: imageWidget,
-      );
+      imageWidget = Hero(tag: heroTag!, child: imageWidget);
     }
 
     // Add tap functionality if specified
     if (onTap != null) {
-      imageWidget = GestureDetector(
-        onTap: onTap,
-        child: imageWidget,
-      );
+      imageWidget = GestureDetector(onTap: onTap, child: imageWidget);
     }
 
     return imageWidget;
@@ -129,7 +120,7 @@ class OptimizedGridImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayUrl = thumbnailUrl ?? imageUrl;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Stack(

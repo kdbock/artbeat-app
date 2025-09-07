@@ -21,9 +21,7 @@ void main() async {
   try {
     // Check if Firebase is already initialized to avoid duplicate initialization
     if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-      options: mockFirebaseOptions,
-    );
+      await Firebase.initializeApp(options: mockFirebaseOptions);
     } else {
       debugPrint('Firebase already initialized, using existing app instance');
     }
@@ -49,9 +47,7 @@ class ArtWalkModuleApp extends StatelessWidget {
           create: (_) => core.UserService(),
         ),
         // Provider fix: use Provider<ArtWalkService> instead of ChangeNotifierProvider
-        Provider<ArtWalkService>(
-          create: (_) => ArtWalkService(),
-        ),
+        Provider<ArtWalkService>(create: (_) => ArtWalkService()),
       ],
       child: MaterialApp(
         title: 'ARTbeat Art Walk Module',
@@ -71,15 +67,15 @@ class ArtWalkModuleHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ARTbeat Art Walk Module'),
-      ),
+      appBar: AppBar(title: const Text('ARTbeat Art Walk Module')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Art Walk Module Demo',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Art Walk Module Demo',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 20),
             // Navigation buttons to art walk screens
             ElevatedButton(

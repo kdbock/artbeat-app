@@ -34,7 +34,8 @@ class DirectionsService {
 
     // Create cache key based on origin, destination, and waypoints
     final waypointsString = waypoints?.join('|') ?? '';
-    final String cacheEntryKey = '${origin}_to_${destination}_${waypointsString}_directions';
+    final String cacheEntryKey =
+        '${origin}_to_${destination}_${waypointsString}_directions';
 
     // Try to get cached directions first if requested
     if (useCachedData) {
@@ -52,7 +53,7 @@ class DirectionsService {
       'mode': 'walking', // Always use walking mode for art walks
       'key': apiKey,
     };
-    
+
     // Add waypoints if provided
     if (waypoints != null && waypoints.isNotEmpty) {
       queryParams['waypoints'] = waypoints.join('|');

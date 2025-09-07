@@ -38,12 +38,15 @@ class CoordinateValidator {
   /// Logs a warning about invalid coordinates
   static void logInvalidCoordinates(String id, double? lat, double? lng) {
     debugPrint(
-        '⚠️ Invalid coordinates detected for item $id: lat=$lat, lng=$lng');
+      '⚠️ Invalid coordinates detected for item $id: lat=$lat, lng=$lng',
+    );
   }
 
   /// Safely creates a SimpleLatLng from a GeoPoint, with validation
-  static SimpleLatLng? safeLatLngFromGeoPoint(GeoPoint? point,
-      {String? itemId}) {
+  static SimpleLatLng? safeLatLngFromGeoPoint(
+    GeoPoint? point, {
+    String? itemId,
+  }) {
     if (!isValidGeoPoint(point)) {
       if (itemId != null) {
         logInvalidCoordinates(itemId, point?.latitude, point?.longitude);

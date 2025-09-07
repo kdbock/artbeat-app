@@ -4,10 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ArtWalkInfoCard extends StatefulWidget {
   final VoidCallback onDismiss;
 
-  const ArtWalkInfoCard({
-    super.key,
-    required this.onDismiss,
-  });
+  const ArtWalkInfoCard({super.key, required this.onDismiss});
 
   @override
   State<ArtWalkInfoCard> createState() => _ArtWalkInfoCardState();
@@ -50,9 +47,7 @@ class _ArtWalkInfoCardState extends State<ArtWalkInfoCard> {
     return Card(
       margin: const EdgeInsets.all(16),
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -64,10 +59,7 @@ class _ArtWalkInfoCardState extends State<ArtWalkInfoCard> {
                 const SizedBox(width: 8),
                 const Text(
                   'Welcome to Art Walk!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(

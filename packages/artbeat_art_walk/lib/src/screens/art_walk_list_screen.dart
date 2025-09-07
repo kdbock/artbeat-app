@@ -493,7 +493,10 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(color: ArtWalkColors.textSecondary, fontSize: 12),
+          style: const TextStyle(
+            color: ArtWalkColors.textSecondary,
+            fontSize: 12,
+          ),
         ),
       ],
     );
@@ -514,7 +517,10 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
             _searchQuery.isNotEmpty
                 ? 'No art walks found for "$_searchQuery"'
                 : 'No art walks available',
-            style: const TextStyle(color: ArtWalkColors.textSecondary, fontSize: 16),
+            style: const TextStyle(
+              color: ArtWalkColors.textSecondary,
+              fontSize: 16,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),

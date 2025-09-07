@@ -3,7 +3,8 @@ import 'image_management_service.dart';
 
 /// Service to handle app initialization tasks
 class AppInitializationService {
-  static final AppInitializationService _instance = AppInitializationService._internal();
+  static final AppInitializationService _instance =
+      AppInitializationService._internal();
   factory AppInitializationService() => _instance;
   AppInitializationService._internal();
 
@@ -22,9 +23,9 @@ class AppInitializationService {
     try {
       // Initialize image management service
       await ImageManagementService().initialize();
-      
+
       // Add other service initializations here
-      
+
       _isInitialized = true;
       debugPrint('✅ ARTbeat Core Services initialized successfully');
     } catch (e) {

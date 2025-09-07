@@ -1,4 +1,3 @@
-
 /// Represents sorting options for search results
 enum SortOption {
   relevance('Relevance'),

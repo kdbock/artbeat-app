@@ -25,7 +25,8 @@ class RefundPolicy {
       allowPartialRefunds: map['allowPartialRefunds'] as bool? ?? false,
       partialRefundPercentage:
           (map['partialRefundPercentage'] as num?)?.toDouble() ?? 0.0,
-      terms: map['terms']?.toString() ??
+      terms:
+          map['terms']?.toString() ??
           'Full refund available up to 24 hours before event start time.',
       exceptions: _parseStringList(map['exceptions']),
     );
@@ -134,7 +135,8 @@ class RefundPolicy {
 
     if (allowPartialRefunds && partialRefundPercentage > 0) {
       buffer.write(
-          '${partialRefundPercentage.toStringAsFixed(0)}% refund available after deadline until event start. ');
+        '${partialRefundPercentage.toStringAsFixed(0)}% refund available after deadline until event start. ',
+      );
     }
 
     if (exceptions.isNotEmpty) {
@@ -173,9 +175,9 @@ class RefundPolicy {
 
   @override
   int get hashCode => Object.hash(
-        fullRefundDeadline,
-        allowPartialRefunds,
-        partialRefundPercentage,
-        terms,
-      );
+    fullRefundDeadline,
+    allowPartialRefunds,
+    partialRefundPercentage,
+    terms,
+  );
 }

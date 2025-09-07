@@ -300,10 +300,7 @@ class _TermsAndConditionsScreenState extends State<TermsAndConditionsScreen> {
                           gradient: const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.topRight,
-                            colors: [
-                              ArtbeatColors.primaryPurple,
-                              Colors.pink,
-                            ],
+                            colors: [ArtbeatColors.primaryPurple, Colors.pink],
                           ),
                           borderRadius: BorderRadius.circular(12),
                         ),

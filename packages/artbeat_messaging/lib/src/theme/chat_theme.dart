@@ -74,7 +74,10 @@ class ChatTheme {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(24),
-      borderSide: const BorderSide(color: ArtbeatColors.primaryPurple, width: 1.5),
+      borderSide: const BorderSide(
+        color: ArtbeatColors.primaryPurple,
+        width: 1.5,
+      ),
     ),
     filled: true,
     fillColor: Colors.grey.shade50,

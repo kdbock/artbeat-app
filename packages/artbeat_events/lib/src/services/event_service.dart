@@ -58,8 +58,10 @@ class EventService {
   /// Get a single event by ID
   Future<ArtbeatEvent?> getEvent(String eventId) async {
     try {
-      final doc =
-          await _firestore.collection(_eventsCollection).doc(eventId).get();
+      final doc = await _firestore
+          .collection(_eventsCollection)
+          .doc(eventId)
+          .get();
 
       if (doc.exists) {
         return ArtbeatEvent.fromFirestore(doc);
@@ -74,8 +76,10 @@ class EventService {
   /// Get an event by its ID
   Future<ArtbeatEvent?> getEventById(String eventId) async {
     try {
-      final docSnapshot =
-          await _firestore.collection(_eventsCollection).doc(eventId).get();
+      final docSnapshot = await _firestore
+          .collection(_eventsCollection)
+          .doc(eventId)
+          .get();
 
       if (!docSnapshot.exists) {
         _logger.w('Event not found: $eventId');
@@ -161,10 +165,12 @@ class EventService {
 
       final events = snapshot.docs
           .map(ArtbeatEvent.fromFirestore)
-          .where((event) =>
-              event.title.toLowerCase().contains(query.toLowerCase()) ||
-              event.description.toLowerCase().contains(query.toLowerCase()) ||
-              event.location.toLowerCase().contains(query.toLowerCase()))
+          .where(
+            (event) =>
+                event.title.toLowerCase().contains(query.toLowerCase()) ||
+                event.description.toLowerCase().contains(query.toLowerCase()) ||
+                event.location.toLowerCase().contains(query.toLowerCase()),
+          )
           .toList();
 
       // Sort by relevance (events with query in title first)
@@ -204,8 +210,9 @@ class EventService {
         throw Exception('Event not found');
       }
 
-      final ticketType =
-          event.ticketTypes.where((t) => t.id == ticketTypeId).firstOrNull;
+      final ticketType = event.ticketTypes
+          .where((t) => t.id == ticketTypeId)
+          .firstOrNull;
       if (ticketType == null) {
         throw Exception('Ticket type not found');
       }
@@ -305,10 +312,10 @@ class EventService {
           .collection(_ticketPurchasesCollection)
           .doc(purchaseId)
           .update({
-        'status': TicketPurchaseStatus.refunded.name,
-        'refundId': refundId,
-        'refundDate': Timestamp.now(),
-      });
+            'status': TicketPurchaseStatus.refunded.name,
+            'refundId': refundId,
+            'refundDate': Timestamp.now(),
+          });
 
       // Update ticket quantity sold (reduce by refunded quantity)
       await _updateTicketQuantitySold(
@@ -343,8 +350,10 @@ class EventService {
       final updatedTicketTypes = event.ticketTypes.map((ticket) {
         if (ticket.id == ticketTypeId) {
           final currentSold = ticket.quantitySold ?? 0;
-          final newSold =
-              (currentSold + quantityChange).clamp(0, ticket.quantity);
+          final newSold = (currentSold + quantityChange).clamp(
+            0,
+            ticket.quantity,
+          );
           return ticket.copyWith(quantitySold: newSold);
         }
         return ticket;
@@ -388,7 +397,8 @@ class EventService {
     }
 
     return query.snapshots().map(
-        (snapshot) => snapshot.docs.map(ArtbeatEvent.fromFirestore).toList());
+      (snapshot) => snapshot.docs.map(ArtbeatEvent.fromFirestore).toList(),
+    );
   }
 
   /// Stream of events by artist for real-time updates
@@ -398,8 +408,9 @@ class EventService {
         .where('artistId', isEqualTo: artistId)
         .orderBy('dateTime', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map(ArtbeatEvent.fromFirestore).toList());
+        .map(
+          (snapshot) => snapshot.docs.map(ArtbeatEvent.fromFirestore).toList(),
+        );
   }
 
   /// Get events by filters
@@ -427,18 +438,24 @@ class EventService {
       }
 
       if (isUpcoming == true) {
-        query = query.where('dateTime',
-            isGreaterThanOrEqualTo: DateTime.now().toIso8601String());
+        query = query.where(
+          'dateTime',
+          isGreaterThanOrEqualTo: DateTime.now().toIso8601String(),
+        );
       }
 
       if (startDate != null) {
-        query = query.where('dateTime',
-            isGreaterThanOrEqualTo: startDate.toIso8601String());
+        query = query.where(
+          'dateTime',
+          isGreaterThanOrEqualTo: startDate.toIso8601String(),
+        );
       }
 
       if (endDate != null) {
-        query = query.where('dateTime',
-            isLessThanOrEqualTo: endDate.toIso8601String());
+        query = query.where(
+          'dateTime',
+          isLessThanOrEqualTo: endDate.toIso8601String(),
+        );
       }
 
       // Always order by date
@@ -502,9 +519,7 @@ class EventService {
       query = query.orderBy('dateTime');
 
       final querySnapshot = await query.get();
-      return querySnapshot.docs
-          .map(ArtbeatEvent.fromFirestore)
-          .toList();
+      return querySnapshot.docs.map(ArtbeatEvent.fromFirestore).toList();
     } catch (e) {
       _logger.e('Error fetching events: $e');
       rethrow;

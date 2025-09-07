@@ -36,12 +36,12 @@ class ConfigService {
 
   /// Get Firebase options securely
   Map<String, String?> get firebaseConfig => {
-        'apiKey': get('FIREBASE_API_KEY'),
-        'appId': get('FIREBASE_APP_ID'),
-        'messagingSenderId': get('FIREBASE_MESSAGING_SENDER_ID'),
-        'projectId': get('FIREBASE_PROJECT_ID'),
-        'storageBucket': get('FIREBASE_STORAGE_BUCKET'),
-      };
+    'apiKey': get('FIREBASE_API_KEY'),
+    'appId': get('FIREBASE_APP_ID'),
+    'messagingSenderId': get('FIREBASE_MESSAGING_SENDER_ID'),
+    'projectId': get('FIREBASE_PROJECT_ID'),
+    'storageBucket': get('FIREBASE_STORAGE_BUCKET'),
+  };
 
   /// Get Google Maps API key securely
   String? get googleMapsApiKey => get('GOOGLE_MAPS_API_KEY');

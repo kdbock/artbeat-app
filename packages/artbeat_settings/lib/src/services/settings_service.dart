@@ -7,11 +7,9 @@ class SettingsService extends ChangeNotifier {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  SettingsService({
-    FirebaseFirestore? firestore,
-    FirebaseAuth? auth,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _auth = auth ?? FirebaseAuth.instance;
+  SettingsService({FirebaseFirestore? firestore, FirebaseAuth? auth})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _auth = auth ?? FirebaseAuth.instance;
 
   /// Get settings for the current user
   Future<Map<String, dynamic>> getUserSettings() async {
@@ -35,10 +33,7 @@ class SettingsService extends ChangeNotifier {
             'allowMessages': true,
             'showLocation': false,
           },
-          'securitySettings': {
-            'twoFactorEnabled': false,
-            'loginAlerts': true,
-          },
+          'securitySettings': {'twoFactorEnabled': false, 'loginAlerts': true},
         };
 
         await _firestore
@@ -191,7 +186,7 @@ class SettingsService extends ChangeNotifier {
       }
 
       await _firestore.collection('userSettings').doc(userId).set({
-        'blockedUsers': FieldValue.arrayUnion([targetUserId])
+        'blockedUsers': FieldValue.arrayUnion([targetUserId]),
       }, SetOptions(merge: true));
 
       notifyListeners();
@@ -210,7 +205,7 @@ class SettingsService extends ChangeNotifier {
       }
 
       await _firestore.collection('userSettings').doc(userId).set({
-        'blockedUsers': FieldValue.arrayRemove([targetUserId])
+        'blockedUsers': FieldValue.arrayRemove([targetUserId]),
       }, SetOptions(merge: true));
 
       notifyListeners();

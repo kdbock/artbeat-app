@@ -93,10 +93,7 @@ class AchievementBadge extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           achievement.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           textAlign: TextAlign.center,
         ),
         if (showDetails)
