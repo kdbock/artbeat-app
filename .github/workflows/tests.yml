@@ -41,6 +41,10 @@ jobs:
       - name: Verify Dart SDK version
         run: dart --version
 
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+        working-directory: packages/${{ matrix.module }}
+
       - name: Install dependencies
         run: flutter pub get
         working-directory: packages/${{ matrix.module }}
@@ -72,7 +76,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.32.6"
+          flutter-version: "3.35.3"
           channel: "stable"
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
@@ -80,6 +84,9 @@ jobs:
 
       - name: Verify Dart SDK version
         run: dart --version
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
 
       - name: Install dependencies
         run: flutter pub get
