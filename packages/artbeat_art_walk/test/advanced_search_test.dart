@@ -4,9 +4,9 @@ import 'package:mockito/annotations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Import the service and models we're testing
-import '../lib/src/services/art_walk_service.dart';
-import '../lib/src/models/search_criteria_model.dart';
-import '../lib/src/models/art_walk_model.dart';
+import 'package:artbeat_art_walk/src/models/search_criteria_model.dart';
+import 'package:artbeat_art_walk/src/models/art_walk_model.dart';
+import 'enhanced_art_walk_experience_test.mocks.dart' show MockArtWalkService;
 
 // Generate mocks
 @GenerateMocks([
@@ -20,7 +20,7 @@ import 'advanced_search_test.mocks.dart';
 
 void main() {
   group('Advanced Search Functionality Tests', () {
-    late ArtWalkService artWalkService;
+    late MockArtWalkService artWalkService;
     late MockFirebaseFirestore mockFirestore;
     late MockCollectionReference<Map<String, dynamic>> mockCollection;
     late MockQuery<Map<String, dynamic>> mockQuery;
@@ -47,7 +47,23 @@ void main() {
       when(mockQuery.get()).thenAnswer((_) async => mockSnapshot);
       when(mockSnapshot.docs).thenReturn([]);
 
-      artWalkService = ArtWalkService();
+      artWalkService = MockArtWalkService();
+
+      // Setup mock responses
+      when(artWalkService.searchArtWalks(any)).thenAnswer((invocation) async {
+        final criteria =
+            invocation.positionalArguments[0] as ArtWalkSearchCriteria;
+        return SearchResult<ArtWalkModel>(
+          results: const [],
+          totalCount: 0,
+          hasNextPage: false,
+          searchQuery: criteria.searchQuery ?? '',
+          searchDuration: const Duration(milliseconds: 100),
+        );
+      });
+      when(
+        artWalkService.getSearchSuggestions(any),
+      ).thenAnswer((_) async => []);
     });
 
     group('ArtWalkSearchCriteria Tests', () {

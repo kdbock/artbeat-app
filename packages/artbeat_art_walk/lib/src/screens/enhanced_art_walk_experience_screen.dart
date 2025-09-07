@@ -8,11 +8,13 @@ import 'package:artbeat_core/artbeat_core.dart';
 class EnhancedArtWalkExperienceScreen extends StatefulWidget {
   final String artWalkId;
   final ArtWalkModel artWalk;
+  final ArtWalkService? artWalkService;
 
   const EnhancedArtWalkExperienceScreen({
     super.key,
     required this.artWalkId,
     required this.artWalk,
+    this.artWalkService,
   });
 
   @override
@@ -34,7 +36,9 @@ class _EnhancedArtWalkExperienceScreenState
   bool _showCompactNavigation = false;
 
   // Navigation services
-  final ArtWalkService _artWalkService = ArtWalkService();
+  ArtWalkService? _artWalkService;
+  ArtWalkService get artWalkService =>
+      _artWalkService ??= widget.artWalkService ?? ArtWalkService();
   late ArtWalkNavigationService _navigationService;
   ArtWalkRouteModel? _currentRoute;
 
@@ -117,7 +121,7 @@ class _EnhancedArtWalkExperienceScreenState
 
   Future<void> _loadArtPieces() async {
     try {
-      final artPieces = await _artWalkService.getArtInWalk(widget.artWalkId);
+      final artPieces = await artWalkService.getArtInWalk(widget.artWalkId);
       setState(() {
         _artPieces = artPieces;
       });
@@ -128,7 +132,7 @@ class _EnhancedArtWalkExperienceScreenState
 
   Future<void> _loadVisitedArt() async {
     try {
-      final visitedIds = await _artWalkService.getUserVisitedArt(
+      final visitedIds = await artWalkService.getUserVisitedArt(
         widget.artWalkId,
       );
       setState(() {
@@ -335,7 +339,7 @@ class _EnhancedArtWalkExperienceScreenState
     if (_visitedArtIds.contains(art.id)) return;
 
     try {
-      final success = await _artWalkService.recordArtVisit(
+      final success = await artWalkService.recordArtVisit(
         artWalkId: widget.artWalkId,
         artId: art.id,
       );
@@ -401,9 +405,7 @@ class _EnhancedArtWalkExperienceScreenState
 
   Future<void> _completeWalk() async {
     try {
-      await _artWalkService.recordArtWalkCompletion(
-        artWalkId: widget.artWalkId,
-      );
+      await artWalkService.recordArtWalkCompletion(artWalkId: widget.artWalkId);
       Navigator.of(context).pop(true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

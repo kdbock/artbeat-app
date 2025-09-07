@@ -8,11 +8,13 @@ import 'package:timeago/timeago.dart' as timeago;
 class ArtWalkCommentSection extends StatefulWidget {
   final String artWalkId;
   final String artWalkTitle;
+  final ArtWalkService? artWalkService;
 
   const ArtWalkCommentSection({
     super.key,
     required this.artWalkId,
     required this.artWalkTitle,
+    this.artWalkService,
   });
 
   @override
@@ -21,7 +23,8 @@ class ArtWalkCommentSection extends StatefulWidget {
 
 class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
   ArtWalkService? _artWalkService;
-  ArtWalkService get artWalkService => _artWalkService ??= ArtWalkService();
+  ArtWalkService get artWalkService =>
+      _artWalkService ??= widget.artWalkService ?? ArtWalkService();
   final TextEditingController _commentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
