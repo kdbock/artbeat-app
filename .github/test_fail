@@ -1,53 +1,33 @@
 Run if [ -d "test" ] && [ "$(find test -name "*_test.dart" | wc -l)" -gt 0 ]; then
 
-test/auth_screens_test.dart:16:8: Error: Error when reading 'test/auth_screens_test.mocks.dart': No such file or directory
-import 'auth_screens_test.mocks.dart';
+test/profile_service_test.dart:13:8: Error: Error when reading 'test/profile_service_test.mocks.dart': No such file or directory
+import 'profile_service_test.mocks.dart';
        ^
-test/auth_screens_test.dart:22:8: Error: 'MockFirebaseAuth' isn't a type.
-  late MockFirebaseAuth mockFirebaseAuth;
-       ^^^^^^^^^^^^^^^^
-test/auth_screens_test.dart:23:8: Error: 'MockFirebaseFirestore' isn't a type.
-  late MockFirebaseFirestore mockFirebaseFirestore;
-       ^^^^^^^^^^^^^^^^^^^^^
-test/auth_screens_test.dart:32:24: Error: Method not found: 'MockFirebaseAuth'.
-    mockFirebaseAuth = MockFirebaseAuth();
-                       ^^^^^^^^^^^^^^^^
-test/auth_screens_test.dart:33:29: Error: Method not found: 'MockFirebaseFirestore'.
-    mockFirebaseFirestore = MockFirebaseFirestore();
-                            ^^^^^^^^^^^^^^^^^^^^^
-test/auth_screens_test.dart:368:24: Error: Method not found: 'MockUser'.
-      final mockUser = MockUser();
-                       ^^^^^^^^
-test/auth_screens_test.dart:385:24: Error: Method not found: 'MockUser'.
-      final mockUser = MockUser();
-                       ^^^^^^^^
-test/auth_screens_test.dart:428:24: Error: Method not found: 'MockUser'.
-      final mockUser = MockUser();
-                       ^^^^^^^^
-❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_auth/test/auth_screens_test.dart (failed)
-❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_auth/test/auth_screens_test.dart (failed after test completion)
-test/auth_service_test.dart:9:8: Error: Error when reading 'test/auth_service_test.mocks.dart': No such file or directory
-import 'auth_service_test.mocks.dart';
-       ^
-test/auth_service_test.dart:13:10: Error: 'MockFirebaseAuth' isn't a type.
-    late MockFirebaseAuth mockFirebaseAuth;
-         ^^^^^^^^^^^^^^^^
-test/auth_service_test.dart:14:10: Error: 'MockUser' isn't a type.
-    late MockUser mockUser;
-         ^^^^^^^^
-test/auth_service_test.dart:15:10: Error: 'MockUserCredential' isn't a type.
-    late MockUserCredential mockUserCredential;
-         ^^^^^^^^^^^^^^^^^^
-test/auth_service_test.dart:18:26: Error: Method not found: 'MockFirebaseAuth'.
-      mockFirebaseAuth = MockFirebaseAuth();
-                         ^^^^^^^^^^^^^^^^
-test/auth_service_test.dart:19:18: Error: Method not found: 'MockUser'.
-      mockUser = MockUser();
-                 ^^^^^^^^
-test/auth_service_test.dart:20:28: Error: Method not found: 'MockUserCredential'.
-      mockUserCredential = MockUserCredential();
-                           ^^^^^^^^^^^^^^^^^^
-❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_auth/test/auth_service_test.dart (failed)
+test/profile_service_test.dart:17:10: Error: 'MockFirebaseFirestore' isn't a type.
+    late MockFirebaseFirestore mockFirestore;
+         ^^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:18:10: Error: 'MockCollectionReference' isn't a type.
+    late MockCollectionReference<Map<String, dynamic>> mockCollection;
+         ^^^^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:19:10: Error: 'MockDocumentReference' isn't a type.
+    late MockDocumentReference<Map<String, dynamic>> mockDocument;
+         ^^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:20:10: Error: 'MockDocumentSnapshot' isn't a type.
+    late MockDocumentSnapshot<Map<String, dynamic>> mockSnapshot;
+         ^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:23:23: Error: Method not found: 'MockFirebaseFirestore'.
+      mockFirestore = MockFirebaseFirestore();
+                      ^^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:24:24: Error: Method not found: 'MockCollectionReference'.
+      mockCollection = MockCollectionReference<Map<String, dynamic>>();
+                       ^^^^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:25:22: Error: Method not found: 'MockDocumentReference'.
+      mockDocument = MockDocumentReference<Map<String, dynamic>>();
+                     ^^^^^^^^^^^^^^^^^^^^^
+test/profile_service_test.dart:26:22: Error: Method not found: 'MockDocumentSnapshot'.
+      mockSnapshot = MockDocumentSnapshot<Map<String, dynamic>>();
+                     ^^^^^^^^^^^^^^^^^^^^
+❌ loading /home/runner/work/artbeat-app/artbeat-app/packages/artbeat_profile/test/profile_service_test.dart (failed)
 
-Error: 0 tests passed, 2 failed.
+Error: 0 tests passed, 1 failed.
 Error: Process completed with exit code 1.

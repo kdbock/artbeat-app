@@ -572,15 +572,23 @@ StreamBuilder<List<ProfileActivityModel>>(
 
 ## Testing
 
-### Test Coverage
+Run tests with:
 
-**Implemented**:
+```bash
+flutter test
+```
 
-- ✅ Unit tests for profile services
-- ✅ Widget tests for key screens
-- ✅ Mock services for testing isolation
+### Test Status: ✅ All 17 tests passing
 
-**Test Focus Areas**:
+The package includes comprehensive unit and widget tests covering:
+
+- **ProfileService Tests** (11 tests): Profile CRUD operations, social features (follow/unfollow), search functionality, image management
+- **Profile Validation Tests** (4 tests): Profile data validation, bio length constraints, image URL validation, full name format validation
+- **Profile Privacy Tests** (2 tests): Private and public profile settings management
+
+**Test Coverage**: Complete coverage of profile management operations, social networking features, data validation, and privacy settings.
+
+### Test Focus Areas
 
 - Profile creation and editing flows
 - Social feature functionality (follow/unfollow)

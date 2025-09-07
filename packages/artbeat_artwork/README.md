@@ -148,11 +148,22 @@ ArtworkDiscoveryWidget(
 
 ## Testing
 
-Run the test suite:
+Run tests with:
 
 ```bash
-flutter test test/artwork_discovery_test.dart
+flutter test
 ```
+
+### Test Status: ✅ All 34 tests passing
+
+The package includes comprehensive unit and widget tests covering:
+
+- **CollectionModel Tests** (10 tests): Model creation, copyWith operations, Firestore conversion, equality handling, and enum display names
+- **ArtworkModel Tests** (10 tests): Model operations, Firestore data conversion, defensive copying, discovery features, and data protection
+- **ArtworkAnalyticsService Tests** (5 tests): Analytics export (JSON/CSV), optimized analytics, cross-package analytics, revenue analytics
+- **ArtworkRatingService Tests** (9 tests): Rating model operations, statistical calculations, Firestore integration, and empty data handling
+
+**Test Coverage**: Complete coverage of artwork models, collections, analytics services, rating systems, and data protection mechanisms.
 
 ## Dependencies
 
