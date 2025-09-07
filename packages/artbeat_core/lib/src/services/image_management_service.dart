@@ -27,9 +27,15 @@ class ImageManagementService {
 
   // Custom cache manager with optimized settings
   late final CacheManager _cacheManager;
+  bool _isInitialized = false;
 
   /// Initialize the image management service
   Future<void> initialize() async {
+    if (_isInitialized) {
+      debugPrint('🖼️ ImageManagementService already initialized, skipping');
+      return;
+    }
+
     _cacheManager = CacheManager(
       Config(
         'artbeat_optimized_cache',
@@ -40,6 +46,7 @@ class ImageManagementService {
       ),
     );
 
+    _isInitialized = true;
     debugPrint('🖼️ ImageManagementService initialized');
     debugPrint('📊 Max concurrent loads: $maxConcurrentLoads');
     debugPrint('💾 Cache duration: ${cacheDuration.inDays} days');

@@ -13,7 +13,6 @@ import 'offline_queue_service.dart';
 class CaptureService {
   static final CaptureService _instance = CaptureService._internal();
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Connectivity _connectivity = Connectivity();
 
   // Cache for getAllCaptures
@@ -27,6 +26,16 @@ class CaptureService {
   }
 
   CaptureService._internal();
+
+  /// Lazy Firebase Firestore instance
+  FirebaseFirestore get _firestore {
+    try {
+      return FirebaseFirestore.instance;
+    } catch (e) {
+      debugPrint('Firebase not initialized yet: $e');
+      rethrow;
+    }
+  }
 
   /// Collection reference for captures
   CollectionReference get _capturesRef => _firestore.collection('captures');

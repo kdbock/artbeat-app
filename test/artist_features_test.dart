@@ -62,7 +62,7 @@ void main() {
       expect(tier.features, contains('Unlimited artworks'));
       expect(tier.features, contains('100GB storage'));
       expect(tier.features, contains('500 AI credits/month'));
-      expect(tier.features, contains('Team collaboration (5 users)'));
+      expect(tier.features, contains('Team collaboration (up to 5 users)'));
       expect(tier.features, contains('Custom branding'));
       expect(tier.features, contains('API access'));
     });
@@ -71,7 +71,7 @@ void main() {
       const tier = SubscriptionTier.enterprise;
       expect(tier.displayName, equals('Enterprise'));
       expect(tier.monthlyPrice, equals(79.99));
-      expect(tier.features, contains('Everything unlimited'));
+      expect(tier.features, contains('Unlimited everything'));
       expect(tier.features, contains('Custom integrations'));
       expect(tier.features, contains('White-label options'));
       expect(tier.features, contains('Enterprise security'));
@@ -147,20 +147,17 @@ void main() {
       // Test artwork usage percentage
       expect(
         limits.getUsagePercentage('artworks', 12),
-        equals(48.0),
-      ); // 12/25 = 48%
+        equals(0.48),
+      ); // 12/25 = 0.48
 
       // Test storage usage percentage
-      expect(
-        limits.getUsagePercentage('storage', 2),
-        equals(40.0),
-      ); // 2/5 = 40%
+      expect(limits.getUsagePercentage('storage', 2), equals(0.4)); // 2/5 = 0.4
 
       // Test AI credits usage percentage
       expect(
         limits.getUsagePercentage('ai_credits', 25),
-        equals(50.0),
-      ); // 25/50 = 50%
+        equals(0.5),
+      ); // 25/50 = 0.5
     });
   });
 

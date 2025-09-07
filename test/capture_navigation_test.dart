@@ -11,9 +11,18 @@ import 'package:artbeat_capture/src/services/capture_service.dart';
 import 'package:artbeat_capture/src/services/storage_service.dart';
 
 import 'capture_navigation_test.mocks.dart';
+import 'test_setup.dart';
 
 @GenerateMocks([CaptureService, StorageService])
 void main() {
+  setUpAll(() async {
+    await TestSetup.initializeTestBindings();
+  });
+
+  tearDownAll(() async {
+    TestSetup.cleanupTestBindings();
+  });
+
   group('Capture Navigation Tests', () {
     late MockCaptureService mockCaptureService;
     late MockStorageService mockStorageService;

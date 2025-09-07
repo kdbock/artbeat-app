@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 
 // Import all package modules to test integration
 import 'package:artbeat_core/artbeat_core.dart';
+import '../test_setup.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  TestSetup.initializeTestBindings();
 
   group('Package Integration Tests', () {
     group('Core-Auth Integration', () {

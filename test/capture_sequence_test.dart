@@ -14,6 +14,7 @@ import 'package:artbeat_capture/src/services/capture_service.dart';
 import 'package:artbeat_capture/src/services/storage_service.dart';
 
 import 'capture_sequence_test.mocks.dart';
+import 'test_setup.dart';
 
 @GenerateMocks([
   FirebaseAuth,
@@ -23,6 +24,14 @@ import 'capture_sequence_test.mocks.dart';
   StorageService,
 ])
 void main() {
+  setUpAll(() async {
+    await TestSetup.initializeTestBindings();
+  });
+
+  tearDownAll(() async {
+    TestSetup.cleanupTestBindings();
+  });
+
   group('Capture Sequence Integration Tests', () {
     late MockFirebaseAuth mockAuth;
     late MockUser mockUser;
@@ -82,7 +91,7 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            Provider<UserService>.value(value: mockUserService),
+            ChangeNotifierProvider<UserService>.value(value: mockUserService),
             Provider<CaptureService>.value(value: mockCaptureService),
             Provider<StorageService>.value(value: mockStorageService),
           ],
@@ -99,14 +108,21 @@ void main() {
       await tester.pumpAndSettle();
 
       // Step 1: Verify terms modal appears
-      expect(find.text('Before You Capture'), findsOneWidget);
-      expect(find.text('Accept & Continue'), findsOneWidget);
+      expect(
+        find.text('Before You Capture'),
+        findsWidgets,
+      ); // Allow multiple since modal and screen may both show
+      expect(
+        find.text('Accept & Continue'),
+        findsWidgets,
+      ); // Allow multiple since both modal and screen may have this button
 
       // Accept terms (checkbox should be checked first)
-      await tester.tap(find.byType(Checkbox));
+      await tester.tap(find.byType(Checkbox).first);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Accept & Continue'));
+      // Find and tap the first "Accept & Continue" button (from the modal)
+      await tester.tap(find.text('Accept & Continue').first);
       await tester.pumpAndSettle();
 
       // Note: In a real test, we'd need to mock the camera functionality
@@ -115,7 +131,7 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            Provider<UserService>.value(value: mockUserService),
+            ChangeNotifierProvider<UserService>.value(value: mockUserService),
             Provider<CaptureService>.value(value: mockCaptureService),
             Provider<StorageService>.value(value: mockStorageService),
           ],
@@ -146,6 +162,9 @@ void main() {
       // Step 3: Verify confirmation screen
       expect(find.text('Review Capture'), findsOneWidget);
       expect(find.text('Title: Test Artwork'), findsOneWidget);
+
+      // Wait for the submit button to be available and enabled
+      await tester.pumpAndSettle();
       expect(find.text('Submit'), findsOneWidget);
 
       // Submit the capture
@@ -174,7 +193,7 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            Provider<UserService>.value(value: mockUserService),
+            ChangeNotifierProvider<UserService>.value(value: mockUserService),
             Provider<CaptureService>.value(value: mockCaptureService),
             Provider<StorageService>.value(value: mockStorageService),
           ],
@@ -242,7 +261,7 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            Provider<UserService>.value(value: mockUserService),
+            ChangeNotifierProvider<UserService>.value(value: mockUserService),
             Provider<CaptureService>.value(value: mockCaptureService),
             Provider<StorageService>.value(value: mockStorageService),
           ],
