@@ -2,9 +2,9 @@ name: Flutter Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -13,32 +13,39 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [
-          artbeat_core,
-          artbeat_auth,
-          artbeat_profile,
-          artbeat_artwork,
-          artbeat_artist,
-          artbeat_art_walk,
-          artbeat_community,
-          artbeat_settings,
-          artbeat_messaging
-        ]
+        module:
+          [
+            artbeat_core,
+            artbeat_auth,
+            artbeat_profile,
+            artbeat_artwork,
+            artbeat_artist,
+            artbeat_art_walk,
+            artbeat_community,
+            artbeat_settings,
+            artbeat_messaging,
+          ]
 
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
-          channel: 'stable'
-      
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+
+      - name: Verify Dart SDK version
+        run: dart --version
+
       - name: Install dependencies
         run: flutter pub get
         working-directory: packages/${{ matrix.module }}
         continue-on-error: true
-      
+
       - name: Run tests
         run: |
           if [ -d "test" ] && [ "$(find test -name "*_test.dart" | wc -l)" -gt 0 ]; then
@@ -53,19 +60,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main'
-    
+
     steps:
-      - uses: actions/checkout@v3
-      
+      - uses: actions/checkout@v4
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
-          channel: 'stable'
-      
+          flutter-version: "3.32.6"
+          channel: "stable"
+          cache: true
+          cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
+          cache-path: "${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:"
+
+      - name: Verify Dart SDK version
+        run: dart --version
+
       - name: Install dependencies
         run: flutter pub get
-      
+
       - name: Start Emulator and Run Integration Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
