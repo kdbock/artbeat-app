@@ -47,7 +47,9 @@ class ImageManagementService {
 
     // Skip cache manager initialization in test environments
     if (_isTestEnvironment) {
-      debugPrint('🖼️ ImageManagementService skipping cache manager in test environment');
+      debugPrint(
+        '🖼️ ImageManagementService skipping cache manager in test environment',
+      );
       _isInitialized = true;
       return;
     }

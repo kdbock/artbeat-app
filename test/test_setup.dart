@@ -222,35 +222,35 @@ class TestSetup {
     const sqfliteChannel = MethodChannel('com.tekartik.sqflite');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(sqfliteChannel, (MethodCall call) async {
-      if (call.method == 'getDatabasesPath') {
-        return '/tmp/test_databases';
-      }
-      if (call.method == 'openDatabase') {
-        return {'id': 1};
-      }
-      if (call.method == 'databaseFactory') {
-        return null;
-      }
-      if (call.method == 'Database#execute') {
-        return null;
-      }
-      if (call.method == 'Database#close') {
-        return null;
-      }
-      if (call.method == 'Database#insert') {
-        return 1;
-      }
-      if (call.method == 'Database#query') {
-        return [];
-      }
-      if (call.method == 'Database#update') {
-        return 1;
-      }
-      if (call.method == 'Database#delete') {
-        return 1;
-      }
-      return null;
-    });
+          if (call.method == 'getDatabasesPath') {
+            return '/tmp/test_databases';
+          }
+          if (call.method == 'openDatabase') {
+            return {'id': 1};
+          }
+          if (call.method == 'databaseFactory') {
+            return null;
+          }
+          if (call.method == 'Database#execute') {
+            return null;
+          }
+          if (call.method == 'Database#close') {
+            return null;
+          }
+          if (call.method == 'Database#insert') {
+            return 1;
+          }
+          if (call.method == 'Database#query') {
+            return [];
+          }
+          if (call.method == 'Database#update') {
+            return 1;
+          }
+          if (call.method == 'Database#delete') {
+            return 1;
+          }
+          return null;
+        });
 
     // Skip Firebase initialization for tests - use mocks instead
     // Firebase.initializeApp() will be mocked by individual test mocks

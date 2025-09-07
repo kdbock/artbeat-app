@@ -32,7 +32,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.32.6"
+          flutter-version: "3.35.3"
           channel: "stable"
           cache: true
           cache-key: "flutter-:os:-:channel:-:version:-:arch:-:hash:"
@@ -43,6 +43,11 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+        working-directory: packages/${{ matrix.module }}
+        continue-on-error: true
+
+      - name: Generate mocks
+        run: flutter pub run build_runner build --delete-conflicting-outputs
         working-directory: packages/${{ matrix.module }}
         continue-on-error: true
 

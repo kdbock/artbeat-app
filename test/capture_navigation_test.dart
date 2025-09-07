@@ -18,16 +18,13 @@ void main() {
 
   group('Capture Navigation Tests', () {
     // Simplified tests focusing on UI rendering without Firebase dependencies
-    testWidgets('Should display confirmation screen correctly', (
-      tester,
-    ) async {
+    testWidgets('Should display confirmation screen correctly', (tester) async {
       // Test simplified UI behavior without Firebase dependencies
       await tester.pumpWidget(
         MaterialApp(
           routes: {
-            '/dashboard': (context) => const Scaffold(
-              body: Center(child: Text('Dashboard')),
-            ),
+            '/dashboard': (context) =>
+                const Scaffold(body: Center(child: Text('Dashboard'))),
           },
           home: CaptureConfirmationScreen(
             imageFile: File('test_image.jpg'),
@@ -55,9 +52,7 @@ void main() {
       // This test verifies the UI renders correctly
     });
 
-    testWidgets('Should handle UI interactions', (
-      tester,
-    ) async {
+    testWidgets('Should handle UI interactions', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: CaptureConfirmationScreen(

@@ -100,10 +100,7 @@ void main() {
               body: Column(
                 children: [
                   Expanded(child: LoadingScreen(enableNavigation: false)),
-                  CircleAvatar(
-                    radius: 50,
-                    child: Text('TU'),
-                  ),
+                  CircleAvatar(radius: 50, child: Text('TU')),
                 ],
               ),
             ),
