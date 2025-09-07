@@ -10,8 +10,11 @@ import '../models/payment_history_model.dart';
 /// - Generating financial reports
 /// - Managing receipts and refunds
 class PaymentHistoryService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
   static const String _collectionName = 'payment_history';
+
+  PaymentHistoryService({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Record a new payment transaction
   Future<void> recordPayment({
@@ -249,7 +252,6 @@ class PaymentHistoryService extends ChangeNotifier {
             failedPayments++;
             break;
           case PaymentStatus.refunded:
-          case PaymentStatus.partiallyRefunded:
             refundedPayments++;
             refundedAmount += (payment.refundAmount ?? 0);
             break;

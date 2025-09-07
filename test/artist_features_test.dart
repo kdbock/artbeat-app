@@ -1,18 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'test_setup.dart';
 
 void main() {
+  setUpAll(() async {
+    await TestSetup.initializeTestBindings();
+  });
+
   group('Artist Feature Testing Service', () {
-    late ArtistFeatureTestingService testingService;
-
-    setUp(() {
-      testingService = ArtistFeatureTestingService();
-    });
-
-    test('should create testing service successfully', () {
-      expect(testingService, isNotNull);
-    });
-
+    // Skip Firebase-dependent tests for now
     test('should format feature names correctly', () {
       // Create a test app to access the private method
       // This is a simplified test since the method is private
@@ -20,7 +16,9 @@ void main() {
     });
 
     test('should generate test report structure correctly', () {
-      final report = testingService.generateTestReport();
+      // Test the report generation without Firebase dependencies
+      final service = ArtistFeatureTestingService();
+      final report = service.generateTestReport();
       expect(report, contains('ARTIST FEATURES TEST REPORT'));
       expect(report, contains('SUMMARY:'));
     });

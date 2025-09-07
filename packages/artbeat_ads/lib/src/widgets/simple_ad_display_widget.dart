@@ -17,6 +17,7 @@ class SimpleAdDisplayWidget extends StatefulWidget {
   final VoidCallback? onTap;
   final bool showCloseButton;
   final bool trackAnalytics;
+  final AdAnalyticsService? analyticsService;
 
   const SimpleAdDisplayWidget({
     super.key,
@@ -25,6 +26,7 @@ class SimpleAdDisplayWidget extends StatefulWidget {
     this.onTap,
     this.showCloseButton = false,
     this.trackAnalytics = true,
+    this.analyticsService,
   });
 
   @override
@@ -38,14 +40,16 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
   bool _impressionTracked = false;
   DateTime? _viewStartTime;
 
-  late final AdAnalyticsService _analyticsService;
+  AdAnalyticsService? _analyticsService;
   String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
-    _analyticsService = AdAnalyticsService();
-    _getCurrentUserId();
+    if (widget.trackAnalytics) {
+      _analyticsService = widget.analyticsService ?? AdAnalyticsService();
+      _getCurrentUserId();
+    }
     _startImageRotation();
     _trackImpression();
   }
@@ -72,17 +76,19 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
         _impressionTracked = true;
         _viewStartTime = DateTime.now();
 
-        _analyticsService.trackAdImpression(
-          widget.ad.id,
-          widget.ad.ownerId,
-          viewerId: _currentUserId,
-          location: widget.location,
-          metadata: {
-            'adSize': widget.ad.size.name,
-            'adType': widget.ad.type.name,
-            'hasMultipleImages': widget.ad.artworkUrls.length > 1,
-          },
-        );
+        if (_analyticsService != null) {
+          _analyticsService!.trackAdImpression(
+            widget.ad.id,
+            widget.ad.ownerId,
+            viewerId: _currentUserId,
+            location: widget.location,
+            metadata: {
+              'adSize': widget.ad.size.name,
+              'adType': widget.ad.type.name,
+              'hasMultipleImages': widget.ad.artworkUrls.length > 1,
+            },
+          );
+        }
       }
     });
   }
@@ -113,12 +119,12 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
 
   Future<void> _handleTap() async {
     // Track click analytics
-    if (widget.trackAnalytics) {
+    if (widget.trackAnalytics && _analyticsService != null) {
       final viewDuration = _viewStartTime != null
           ? DateTime.now().difference(_viewStartTime!)
           : null;
 
-      _analyticsService.trackAdClick(
+      _analyticsService!.trackAdClick(
         widget.ad.id,
         widget.ad.ownerId,
         viewerId: _currentUserId,
@@ -181,80 +187,90 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
           200.0,
           400.0,
         ); // Allow up to 400px for better display
-        final constrainedHeight = (constrainedWidth / aspectRatio).clamp(
-          50.0,
-          availableHeight,
+        final calculatedHeight = constrainedWidth / aspectRatio;
+        final minHeight = 50.0;
+        final maxHeight = availableHeight.isFinite
+            ? availableHeight
+            : calculatedHeight;
+        final constrainedHeight = calculatedHeight.clamp(
+          minHeight.clamp(0.0, maxHeight),
+          maxHeight,
         );
 
-        return GestureDetector(
-          onTap: _handleTap,
-          child: Container(
-            width: constrainedWidth,
-            height: constrainedHeight,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                // Main ad content
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: _buildAdContent(),
-                ),
+        return Semantics(
+          label: 'Advertisement',
+          hint: 'Tap to interact with advertisement',
+          button: true,
+          child: GestureDetector(
+            onTap: _handleTap,
+            child: Container(
+              width: constrainedWidth,
+              height: constrainedHeight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Main ad content
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _buildAdContent(),
+                  ),
 
-                // Close button (if enabled)
-                if (widget.showCloseButton)
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
+                  // Close button (if enabled)
+                  if (widget.showCloseButton)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  // Image rotation indicator (if multiple images)
+                  if (widget.ad.artworkUrls.length > 1)
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Image rotation indicator (if multiple images)
-                if (widget.ad.artworkUrls.length > 1)
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${_currentImageIndex + 1}/${widget.ad.artworkUrls.length}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
+                        child: Text(
+                          '${_currentImageIndex + 1}/${widget.ad.artworkUrls.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         );

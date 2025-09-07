@@ -493,6 +493,10 @@ class _AdminAdsManagementScreenState extends State<AdminAdsManagementScreen>
         return Colors.grey;
       case AdStatus.paused:
         return Colors.blue;
+      case AdStatus.draft:
+        return Colors.grey.shade400;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -509,6 +513,10 @@ class _AdminAdsManagementScreenState extends State<AdminAdsManagementScreen>
         return Icons.history;
       case AdStatus.paused:
         return Icons.pause_circle;
+      case AdStatus.draft:
+        return Icons.edit;
+      default:
+        return Icons.help_outline;
     }
   }
 

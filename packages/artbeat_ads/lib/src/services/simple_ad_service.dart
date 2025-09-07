@@ -10,8 +10,15 @@ import '../models/ad_duration.dart';
 
 /// Simplified ad service for the new ad system
 class SimpleAdService extends ChangeNotifier {
-  final _adsRef = FirebaseFirestore.instance.collection('ads');
-  final _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
+
+  SimpleAdService({FirebaseFirestore? firestore, FirebaseStorage? storage})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _storage = storage ?? FirebaseStorage.instance;
+
+  CollectionReference<Map<String, dynamic>> get _adsRef =>
+      _firestore.collection('ads');
 
   /// Create an ad with images
   Future<String> createAdWithImages(AdModel ad, List<File> images) async {

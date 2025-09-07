@@ -417,9 +417,7 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
             SizedBox(height: 16),
             Text('No analytics data', style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text(
-              'Analytics will appear once your ads start receiving views',
-            ),
+            Text('Analytics will appear once your ads start receiving views'),
           ],
         ),
       );
@@ -746,6 +744,14 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
         color = Colors.grey;
         text = 'Expired';
         break;
+      case AdStatus.draft:
+        color = Colors.grey.shade400;
+        text = 'Draft';
+        break;
+      case AdStatus.active:
+        color = Colors.blue.shade700;
+        text = 'Active';
+        break;
     }
 
     return Container(
@@ -829,7 +835,9 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
   void _navigateToCreateAd() {
     Navigator.push<void>(
       context,
-      MaterialPageRoute<void>(builder: (context) => const SimpleAdCreateScreen()),
+      MaterialPageRoute<void>(
+        builder: (context) => const SimpleAdCreateScreen(),
+      ),
     ).then((_) => _refreshData());
   }
 

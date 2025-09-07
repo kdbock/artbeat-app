@@ -12,6 +12,7 @@ class SimpleAdPlacementWidget extends StatelessWidget {
   final EdgeInsets? padding;
   final bool showIfEmpty;
   final Widget Function(BuildContext)? emptyBuilder;
+  final bool trackAnalytics;
 
   const SimpleAdPlacementWidget({
     super.key,
@@ -19,54 +20,56 @@ class SimpleAdPlacementWidget extends StatelessWidget {
     this.padding,
     this.showIfEmpty = false,
     this.emptyBuilder,
+    this.trackAnalytics = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SimpleAdService(),
-      child: Consumer<SimpleAdService>(
-        builder: (context, adService, child) {
-          return StreamBuilder<List<AdModel>>(
-            stream: adService.getAdsByLocation(location),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return showIfEmpty
-                    ? _buildPlaceholder()
-                    : const SizedBox.shrink();
-              }
+    return Consumer<SimpleAdService>(
+      builder: (context, adService, child) {
+        return StreamBuilder<List<AdModel>>(
+          stream: adService.getAdsByLocation(location),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return showIfEmpty
+                  ? _buildPlaceholder()
+                  : const SizedBox.shrink();
+            }
 
-              if (snapshot.hasError) {
-                debugPrint(
-                  'Error loading ads for ${location.name}: ${snapshot.error}',
-                );
-                return showIfEmpty
-                    ? _buildPlaceholder()
-                    : const SizedBox.shrink();
-              }
-
-              final ads = snapshot.data ?? [];
-
-              if (ads.isEmpty) {
-                if (emptyBuilder != null) {
-                  return emptyBuilder!(context);
-                }
-                return showIfEmpty
-                    ? _buildPlaceholder()
-                    : const SizedBox.shrink();
-              }
-
-              // Show the first active ad (you could implement rotation logic here)
-              final ad = ads.first;
-
-              return Container(
-                padding: padding ?? const EdgeInsets.all(8.0),
-                child: SimpleAdDisplayWidget(ad: ad, location: location),
+            if (snapshot.hasError) {
+              debugPrint(
+                'Error loading ads for ${location.name}: ${snapshot.error}',
               );
-            },
-          );
-        },
-      ),
+              return showIfEmpty
+                  ? _buildPlaceholder()
+                  : const SizedBox.shrink();
+            }
+
+            final ads = snapshot.data ?? [];
+
+            if (ads.isEmpty) {
+              if (emptyBuilder != null) {
+                return emptyBuilder!(context);
+              }
+              return showIfEmpty
+                  ? _buildPlaceholder()
+                  : const SizedBox.shrink();
+            }
+
+            // Show the first active ad (you could implement rotation logic here)
+            final ad = ads.first;
+
+            return Container(
+              padding: padding ?? const EdgeInsets.all(8.0),
+              child: SimpleAdDisplayWidget(
+                ad: ad,
+                location: location,
+                trackAnalytics: trackAnalytics,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -101,6 +104,7 @@ class AdSpaceWidget extends StatelessWidget {
   final String? customLabel;
   final double? width;
   final double? height;
+  final bool trackAnalytics;
 
   const AdSpaceWidget({
     super.key,
@@ -108,66 +112,73 @@ class AdSpaceWidget extends StatelessWidget {
     this.customLabel,
     this.width,
     this.height,
+    this.trackAnalytics = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => SimpleAdService(),
-      child: Consumer<SimpleAdService>(
-        builder: (context, adService, child) {
-          return FutureBuilder<int>(
-            future: adService.getActiveAdsCount(location),
-            builder: (context, snapshot) {
-              final hasAds = (snapshot.data ?? 0) > 0;
+    return Consumer<SimpleAdService>(
+      builder: (context, adService, child) {
+        return FutureBuilder<int>(
+          future: adService.getActiveAdsCount(location),
+          builder: (context, snapshot) {
+            // Handle error case explicitly
+            if (snapshot.hasError) {
+              debugPrint('Error getting ad count: ${snapshot.error}');
+              // Fall through to show placeholder
+            }
 
-              if (hasAds) {
-                return SimpleAdPlacementWidget(location: location);
-              }
+            final hasAds = (snapshot.data ?? 0) > 0;
 
-              // Show placeholder for development/testing
-              return Container(
-                width:
-                    width ??
-                    double.infinity, // Allow full width instead of fixed 320
-                height: height ?? 50,
-                constraints: BoxConstraints(
-                  maxWidth: width ?? 400,
-                ), // Max width constraint
-                margin: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.grey.shade300,
-                    style: BorderStyle.solid,
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.campaign_outlined,
-                        color: Colors.grey.shade400,
-                        size: 20,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        customLabel ?? '${location.displayName} Ad',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            if (hasAds) {
+              return SimpleAdPlacementWidget(
+                location: location,
+                trackAnalytics: trackAnalytics,
               );
-            },
-          );
-        },
-      ),
+            }
+
+            // Show placeholder for development/testing or when there's an error
+            return Container(
+              width:
+                  width ??
+                  double.infinity, // Allow full width instead of fixed 320
+              height: height ?? 50,
+              constraints: BoxConstraints(
+                maxWidth: width ?? 400,
+              ), // Max width constraint
+              margin: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.campaign_outlined,
+                      color: Colors.grey.shade400,
+                      size: 20,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      customLabel ?? '${location.displayName} Ad',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

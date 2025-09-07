@@ -132,11 +132,17 @@ class FeatureLimits {
         return hasUnlimitedArtworks
             ? -1
             : (artworks - currentUsage).clamp(0, artworks);
+      case 'storage':
+        return hasUnlimitedStorage
+            ? -1
+            : ((storageGB - currentUsage).clamp(0, storageGB)).toInt();
       case 'aiCredits':
+      case 'ai_credits':
         return hasUnlimitedAICredits
             ? -1
             : (aiCredits - currentUsage).clamp(0, aiCredits);
       case 'teamMembers':
+      case 'team_members':
         return hasUnlimitedTeamMembers
             ? -1
             : (teamMembers - currentUsage).clamp(0, teamMembers);
@@ -150,9 +156,13 @@ class FeatureLimits {
     switch (feature) {
       case 'artworks':
         return !hasUnlimitedArtworks && currentUsage >= (artworks * 0.8);
+      case 'storage':
+        return !hasUnlimitedStorage && currentUsage >= (storageGB * 0.8);
       case 'aiCredits':
+      case 'ai_credits':
         return !hasUnlimitedAICredits && currentUsage >= (aiCredits * 0.8);
       case 'teamMembers':
+      case 'team_members':
         return !hasUnlimitedTeamMembers && currentUsage >= (teamMembers * 0.8);
       default:
         return false;
@@ -166,11 +176,17 @@ class FeatureLimits {
         return hasUnlimitedArtworks
             ? 0.0
             : (currentUsage / artworks).clamp(0.0, 1.0);
+      case 'storage':
+        return hasUnlimitedStorage
+            ? 0.0
+            : (currentUsage / storageGB).clamp(0.0, 1.0);
       case 'aiCredits':
+      case 'ai_credits':
         return hasUnlimitedAICredits
             ? 0.0
             : (currentUsage / aiCredits).clamp(0.0, 1.0);
       case 'teamMembers':
+      case 'team_members':
         return hasUnlimitedTeamMembers
             ? 0.0
             : (currentUsage / teamMembers).clamp(0.0, 1.0);

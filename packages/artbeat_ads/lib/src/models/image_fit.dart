@@ -7,10 +7,30 @@ enum ImageFit {
   fill, // Stretches image to fill entire area (may distort)
   fitWidth, // Scales image to fit width (may crop height)
   fitHeight, // Scales image to fit height (may crop width)
-  none, // No scaling, shows original size
+  none, // Represents no specific fit
+  scaleDown, // Image scales down to fit.
 }
 
 extension ImageFitExtension on ImageFit {
+  String get description {
+    switch (this) {
+      case ImageFit.cover:
+        return 'covers the entire ad space';
+      case ImageFit.contain:
+        return 'entirely visible within ad space';
+      case ImageFit.fill:
+        return 'fills the entire ad space';
+      case ImageFit.fitWidth:
+        return 'fit the width of the ad space';
+      case ImageFit.fitHeight:
+        return 'fit the height of the ad space';
+      case ImageFit.scaleDown:
+        return 'scale down to fit';
+      case ImageFit.none:
+        return 'shows original image size and aspect ratio';
+    }
+  }
+
   /// Get display name for this image fit
   String get displayName {
     switch (this) {
@@ -24,8 +44,10 @@ extension ImageFitExtension on ImageFit {
         return 'Fit Width';
       case ImageFit.fitHeight:
         return 'Fit Height';
+      case ImageFit.scaleDown:
+        return 'Scale Down';
       case ImageFit.none:
-        return 'Original Size';
+        return 'None (Original Size)';
     }
   }
 
@@ -42,6 +64,8 @@ extension ImageFitExtension on ImageFit {
         return BoxFit.fitWidth;
       case ImageFit.fitHeight:
         return BoxFit.fitHeight;
+      case ImageFit.scaleDown:
+        return BoxFit.scaleDown;
       case ImageFit.none:
         return BoxFit.none;
     }

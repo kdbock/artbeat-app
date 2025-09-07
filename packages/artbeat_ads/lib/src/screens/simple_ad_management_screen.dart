@@ -589,6 +589,14 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
         color = Colors.grey.shade600;
         text = 'Expired';
         break;
+      case AdStatus.draft:
+        color = Colors.grey.shade400;
+        text = 'Draft';
+        break;
+      case AdStatus.active:
+        color = Colors.blue.shade700;
+        text = 'Active';
+        break;
     }
 
     return Container(
@@ -1064,6 +1072,10 @@ class _AdEditDialogState extends State<AdEditDialog> {
         return Colors.grey;
       case AdStatus.expired:
         return Colors.black54;
+      case AdStatus.draft:
+        return Colors.grey.shade400;
+      case AdStatus.active:
+        return Colors.blue.shade700;
     }
   }
 

@@ -773,6 +773,8 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         return 'Fits image height, may crop width';
       case ImageFit.none:
         return 'Shows original image size and aspect ratio';
+      case ImageFit.scaleDown:
+        return 'Scales down image to fit.';
     }
   }
 }

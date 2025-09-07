@@ -8,19 +8,37 @@ import '../services/usage_tracking_service.dart';
 /// Service to test and validate that all artist features are working correctly
 /// This helps ensure subscription tiers provide the promised functionality
 class ArtistFeatureTestingService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final UsageTrackingService _usageService = UsageTrackingService();
+  FirebaseFirestore? _firestore;
+  FirebaseAuth? _auth;
+  UsageTrackingService? _usageService;
 
   /// Test results for different features
   final Map<String, TestResult> _testResults = {};
+
+  /// Get Firestore instance (lazy initialization)
+  FirebaseFirestore get _getFirestore {
+    _firestore ??= FirebaseFirestore.instance;
+    return _firestore!;
+  }
+
+  /// Get Auth instance (lazy initialization)
+  FirebaseAuth get _getAuth {
+    _auth ??= FirebaseAuth.instance;
+    return _auth!;
+  }
+
+  /// Get Usage service instance (lazy initialization)
+  UsageTrackingService get _getUsageService {
+    _usageService ??= UsageTrackingService();
+    return _usageService!;
+  }
 
   /// Test all features for a specific subscription tier
   Future<Map<String, TestResult>> testAllFeaturesForTier(
     SubscriptionTier tier, {
     String? userId,
   }) async {
-    userId ??= _auth.currentUser?.uid;
+    userId ??= _getAuth.currentUser?.uid;
     if (userId == null) {
       throw Exception('No authenticated user for testing');
     }
@@ -184,7 +202,7 @@ class ArtistFeatureTestingService {
   /// Individual feature test methods
   Future<TestResult> _testProfileAccess(String userId) async {
     try {
-      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userDoc = await _getFirestore.collection('users').doc(userId).get();
       if (userDoc.exists) {
         return TestResult.passed('User profile accessible');
       }
@@ -197,7 +215,7 @@ class ArtistFeatureTestingService {
   Future<TestResult> _testCommunityAccess(String userId) async {
     try {
       // Test if user can access community posts
-      final postsQuery = await _firestore.collection('posts').limit(1).get();
+      final postsQuery = await _getFirestore.collection('posts').limit(1).get();
 
       if (postsQuery.docs.isNotEmpty || postsQuery.docs.isEmpty) {
         return TestResult.passed('Community access verified');
@@ -211,7 +229,7 @@ class ArtistFeatureTestingService {
   Future<TestResult> _testBasicAnalytics(String userId) async {
     try {
       // Test if user has access to basic analytics
-      await _firestore
+      await _getFirestore
           .collection('analytics')
           .where('userId', isEqualTo: userId)
           .limit(1)
@@ -229,7 +247,7 @@ class ArtistFeatureTestingService {
     SubscriptionTier tier,
   ) async {
     try {
-      final stats = await _usageService.getUsageStats(userId);
+      final stats = await _getUsageService.getUsageStats(userId);
       if (stats.isNotEmpty) {
         return TestResult.passed('Usage limits tracking working');
       }
@@ -278,7 +296,7 @@ class ArtistFeatureTestingService {
     int expectedCredits,
   ) async {
     try {
-      final canUseAI = await _usageService.canPerformAction(
+      final canUseAI = await _getUsageService.canPerformAction(
         'use_ai_credit',
         userId: userId,
       );
@@ -304,7 +322,7 @@ class ArtistFeatureTestingService {
   Future<TestResult> _testAdvancedAnalytics(String userId) async {
     try {
       // Test if advanced analytics are available
-      await _firestore.collection('advanced_analytics').doc(userId).get();
+      await _getFirestore.collection('advanced_analytics').doc(userId).get();
 
       // Advanced analytics access is available regardless of existing data
       return TestResult.passed('Advanced analytics access verified');
@@ -316,7 +334,7 @@ class ArtistFeatureTestingService {
   Future<TestResult> _testFeaturedPlacement(String userId) async {
     try {
       // Test if user can be featured
-      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userDoc = await _getFirestore.collection('users').doc(userId).get();
       if (userDoc.exists) {
         return TestResult.passed('Featured placement capability verified');
       }

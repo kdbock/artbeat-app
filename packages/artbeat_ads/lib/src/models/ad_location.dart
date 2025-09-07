@@ -1,6 +1,9 @@
 /// AdLocation for where the ad will be displayed in the app
 enum AdLocation {
   dashboard, // fluid_dashboard_screen
+  feed,
+  profile,
+  search,
   artWalkDashboard, // art_walk_dashboard
   captureDashboard, // capture_dashboard
   communityDashboard, // community_dashboard
@@ -30,7 +33,13 @@ extension AdLocationExtension on AdLocation {
   String get displayName {
     switch (this) {
       case AdLocation.dashboard:
-        return 'Main Dashboard';
+        return 'Dashboard';
+      case AdLocation.feed:
+        return 'Feed';
+      case AdLocation.profile:
+        return 'Profile';
+      case AdLocation.search:
+        return 'Search';
       case AdLocation.artWalkDashboard:
         return 'Art Walk Dashboard';
       case AdLocation.captureDashboard:
@@ -83,6 +92,12 @@ extension AdLocationExtension on AdLocation {
     switch (this) {
       case AdLocation.dashboard:
         return 'Main app dashboard screen';
+      case AdLocation.feed:
+        return 'Ad appears in the content feed.';
+      case AdLocation.profile:
+        return 'Ad appears on profile pages.';
+      case AdLocation.search:
+        return 'Ad appears in search results.';
       case AdLocation.artWalkDashboard:
         return 'Art walk discovery screen';
       case AdLocation.captureDashboard:
@@ -127,6 +142,8 @@ extension AdLocationExtension on AdLocation {
         return 'Beneath featured events section in events dashboard';
       case AdLocation.eventsAll:
         return 'Beneath all events section in events dashboard';
+      default:
+        return '';
     }
   }
 }

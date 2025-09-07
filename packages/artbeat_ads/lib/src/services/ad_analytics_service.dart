@@ -9,7 +9,13 @@ import '../models/ad_location.dart';
 
 /// Service for tracking and analyzing ad performance
 class AdAnalyticsService extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore;
+
+  // Default constructor uses FirebaseFirestore.instance
+  AdAnalyticsService() : _firestore = FirebaseFirestore.instance;
+
+  // Constructor for testing with injected firestore instance
+  AdAnalyticsService.withFirestore(this._firestore);
 
   // Collection references
   CollectionReference get _analyticsCollection =>

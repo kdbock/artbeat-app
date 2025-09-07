@@ -83,7 +83,7 @@ enum SubscriptionTier {
           'Custom integrations',
           'White-label options',
           'Enterprise security',
-          'Account manager',
+          'Dedicated account manager',
           'All Business features',
         ];
     }
