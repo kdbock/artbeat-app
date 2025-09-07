@@ -46,7 +46,7 @@ class TestSetup {
           return null;
         });
 
-    // Mock Firebase Storage channels
+    // Mock Firebase Storage more comprehensively
     const firebaseStorageChannel = MethodChannel(
       'plugins.flutter.io/firebase_storage',
     );
@@ -63,10 +63,33 @@ class TestSetup {
           if (call.method == 'Reference#putFile') {
             return {'path': 'test-path'};
           }
+          if (call.method == 'Reference#putData') {
+            return {'path': 'test-path'};
+          }
+          if (call.method == 'TaskSnapshot#snapshot') {
+            return {'bytesTransferred': 100, 'totalBytes': 100};
+          }
+          if (call.method == 'UploadTask#snapshot') {
+            return {'bytesTransferred': 100, 'totalBytes': 100};
+          }
+          if (call.method == 'FirebaseStorage#getReferenceFromUrl') {
+            return {'path': 'test-path'};
+          }
+          if (call.method == 'Reference#delete') {
+            return null;
+          }
+          if (call.method == 'Reference#listAll') {
+            return {'items': <String>[], 'prefixes': <String>[]};
+          }
+          if (call.method == 'Reference#list') {
+            return {
+              'items': <String>[],
+              'prefixes': <String>[],
+              'pageToken': null,
+            };
+          }
           return null;
-        });
-
-    // Mock Firebase Auth channels
+        }); // Mock Firebase Auth channels
     const firebaseAuthChannel = MethodChannel(
       'plugins.flutter.io/firebase_auth',
     );
@@ -81,8 +104,61 @@ class TestSetup {
                 'uid': 'test-user-id',
                 'email': 'test@example.com',
                 'displayName': 'Test User',
+                'photoURL': null,
+                'emailVerified': true,
+                'isAnonymous': false,
               },
             };
+          }
+          if (call.method == 'FirebaseAuth#signOut') {
+            return null;
+          }
+          if (call.method == 'FirebaseAuth#authStateChanges') {
+            return null;
+          }
+          if (call.method == 'FirebaseAuth#idTokenChanges') {
+            return null;
+          }
+          if (call.method == 'FirebaseAuth#userChanges') {
+            return null;
+          }
+          return null;
+        });
+
+    // Mock Firestore channels
+    const firestoreChannel = MethodChannel(
+      'plugins.flutter.io/cloud_firestore',
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(firestoreChannel, (MethodCall call) async {
+          if (call.method == 'DocumentReference#get') {
+            return {
+              'data': {
+                'id': 'test-user-id',
+                'name': 'Test User',
+                'email': 'test@example.com',
+                'createdAt': DateTime.now().toIso8601String(),
+              },
+              'metadata': {'hasPendingWrites': false, 'isFromCache': false},
+            };
+          }
+          if (call.method == 'DocumentReference#set') {
+            return null;
+          }
+          if (call.method == 'DocumentReference#update') {
+            return null;
+          }
+          if (call.method == 'DocumentReference#delete') {
+            return null;
+          }
+          if (call.method == 'Query#get') {
+            return {
+              'documents': <Map<String, dynamic>>[],
+              'metadata': {'hasPendingWrites': false, 'isFromCache': false},
+            };
+          }
+          if (call.method == 'Query#snapshots') {
+            return null;
           }
           return null;
         });

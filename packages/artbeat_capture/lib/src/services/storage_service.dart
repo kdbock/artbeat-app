@@ -9,8 +9,48 @@ class StorageService {
   factory StorageService() => _instance;
   StorageService._internal();
 
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final EnhancedStorageService _enhancedStorage = EnhancedStorageService();
+  FirebaseStorage? _storage;
+  FirebaseAuth? _auth;
+  EnhancedStorageService? _enhancedStorage;
+
+  FirebaseStorage? get _storageInstance {
+    if (_storage == null) {
+      try {
+        _storage = FirebaseStorage.instance;
+      } catch (e) {
+        debugPrint(
+          '❌ StorageService: Firebase Storage initialization failed: $e',
+        );
+        if (kDebugMode) {
+          debugPrint(
+            '👤 StorageService: Running in test environment - using null storage',
+          );
+        }
+      }
+    }
+    return _storage;
+  }
+
+  FirebaseAuth? get _authInstance {
+    if (_auth == null) {
+      try {
+        _auth = FirebaseAuth.instance;
+      } catch (e) {
+        debugPrint('❌ StorageService: Firebase Auth initialization failed: $e');
+        if (kDebugMode) {
+          debugPrint(
+            '👤 StorageService: Running in test environment - using null auth',
+          );
+        }
+      }
+    }
+    return _auth;
+  }
+
+  EnhancedStorageService get _enhancedStorageInstance {
+    _enhancedStorage ??= EnhancedStorageService();
+    return _enhancedStorage!;
+  }
 
   /// Upload capture image specifically with retry logic
   Future<String> uploadCaptureImage(File file, String userId) async {
@@ -24,11 +64,12 @@ class StorageService {
         );
 
         // Use the optimized upload method and return just the main image URL
-        final result = await _enhancedStorage.uploadImageWithOptimization(
-          imageFile: file,
-          category: 'capture',
-          generateThumbnail: true,
-        );
+        final result = await _enhancedStorageInstance
+            .uploadImageWithOptimization(
+              imageFile: file,
+              category: 'capture',
+              generateThumbnail: true,
+            );
 
         debugPrint('✅ StorageService: Capture image upload successful');
         return result['main'] ?? result.values.first;
@@ -83,7 +124,7 @@ class StorageService {
     try {
       debugPrint('🔄 StorageService: Starting optimized upload...');
 
-      final result = await _enhancedStorage.uploadImageWithOptimization(
+      final result = await _enhancedStorageInstance.uploadImageWithOptimization(
         imageFile: file,
         category: 'capture',
         generateThumbnail: true,
@@ -100,8 +141,13 @@ class StorageService {
   /// Legacy upload method (kept for backward compatibility)
   Future<String> uploadImage(File file) async {
     try {
+      // Check if Firebase services are available (test environment handling)
+      if (_authInstance == null || _storageInstance == null) {
+        throw Exception('Firebase services not available in test environment');
+      }
+
       // Check if user is authenticated
-      final user = FirebaseAuth.instance.currentUser;
+      final user = _authInstance!.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
@@ -116,7 +162,7 @@ class StorageService {
       final fileName = 'capture_${timestamp}_${user.uid}';
 
       // Use the capture_images path that already exists in your Storage
-      final ref = _storage.ref().child(
+      final ref = _storageInstance!.ref().child(
         'capture_images/${user.uid}/$fileName.jpg',
       );
 
@@ -126,7 +172,7 @@ class StorageService {
       debugPrint(
         'StorageService: Storage path: capture_images/${user.uid}/$fileName.jpg',
       );
-      debugPrint('StorageService: Storage bucket: ${_storage.bucket}');
+      debugPrint('StorageService: Storage bucket: ${_storageInstance!.bucket}');
 
       // Set metadata
       final metadata = SettableMetadata(
@@ -169,7 +215,11 @@ class StorageService {
 
   Future<void> deleteImage(String imageUrl) async {
     try {
-      final ref = _storage.refFromURL(imageUrl);
+      if (_storageInstance == null) {
+        throw Exception('Firebase Storage not available in test environment');
+      }
+
+      final ref = _storageInstance!.refFromURL(imageUrl);
       await ref.delete();
       debugPrint('StorageService: Image deleted successfully');
     } catch (e) {
@@ -181,22 +231,29 @@ class StorageService {
   /// Test Firebase Storage connectivity with detailed bucket info
   Future<bool> testStorageConnectivity() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      if (_authInstance == null || _storageInstance == null) {
+        debugPrint(
+          'StorageService: Firebase services not available in test environment',
+        );
+        return false;
+      }
+
+      final user = _authInstance!.currentUser;
       if (user == null) return false;
 
       debugPrint('StorageService: Testing connectivity...');
-      debugPrint('StorageService: Storage bucket: ${_storage.bucket}');
-      debugPrint('StorageService: App name: ${_storage.app.name}');
+      debugPrint('StorageService: Storage bucket: ${_storageInstance!.bucket}');
+      debugPrint('StorageService: App name: ${_storageInstance!.app.name}');
       debugPrint(
-        'StorageService: Storage max upload size: ${_storage.maxUploadRetryTime}',
+        'StorageService: Storage max upload size: ${_storageInstance!.maxUploadRetryTime}',
       );
       debugPrint(
-        'StorageService: Storage max download size: ${_storage.maxDownloadRetryTime}',
+        'StorageService: Storage max download size: ${_storageInstance!.maxDownloadRetryTime}',
       );
 
       // Try to list files in the root to see if we can access the bucket
       try {
-        final listResult = await _storage.ref().listAll();
+        final listResult = await _storageInstance!.ref().listAll();
         debugPrint(
           'StorageService: Root directory accessible, found ${listResult.items.length} items',
         );
@@ -205,7 +262,7 @@ class StorageService {
       }
 
       // Try to create a simple reference
-      final testRef = _storage.ref('test_connection.txt');
+      final testRef = _storageInstance!.ref('test_connection.txt');
       debugPrint('StorageService: Test reference created: ${testRef.fullPath}');
       debugPrint('StorageService: Test reference bucket: ${testRef.bucket}');
       debugPrint('StorageService: Test reference storage: ${testRef.storage}');
@@ -220,7 +277,11 @@ class StorageService {
   /// Simple upload method with minimal path requirements
   Future<String> uploadImageSimple(File file) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      if (_authInstance == null || _storageInstance == null) {
+        throw Exception('Firebase services not available in test environment');
+      }
+
+      final user = _authInstance!.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
@@ -245,7 +306,7 @@ class StorageService {
       );
       debugPrint('StorageService: Target: $fileName');
 
-      final ref = _storage.ref(fileName);
+      final ref = _storageInstance!.ref(fileName);
 
       final metadata = SettableMetadata(
         contentType: 'image/jpeg',
@@ -337,18 +398,22 @@ class StorageService {
   /// Enhanced diagnostic method to check Storage status
   Future<String> diagnosisStorageIssue() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      if (_authInstance == null || _storageInstance == null) {
+        return 'DIAGNOSIS: Firebase services not available in test environment';
+      }
+
+      final user = _authInstance!.currentUser;
       if (user == null) {
         return 'DIAGNOSIS: User not authenticated';
       }
 
       debugPrint('=== Storage Diagnosis ===');
       debugPrint('User: ${user.uid}');
-      debugPrint('Bucket: ${_storage.bucket}');
+      debugPrint('Bucket: ${_storageInstance!.bucket}');
 
       // Test 1: Try to list root directory
       try {
-        final listResult = await _storage.ref().listAll();
+        final listResult = await _storageInstance!.ref().listAll();
         debugPrint(
           'SUCCESS: Storage is enabled, found ${listResult.items.length} items',
         );
