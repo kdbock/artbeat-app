@@ -1,6 +1,7 @@
 // Example of how to fix the failing widget tests
 // Replace your current widget test setup with this pattern:
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'test_utils.dart';
