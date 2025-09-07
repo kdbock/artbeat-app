@@ -326,7 +326,7 @@ class _PayoutRequestScreenState extends State<PayoutRequestScreen> {
               )
             else
               DropdownButtonFormField<PayoutAccountModel>(
-                initialValue: _selectedAccount,
+                value: _selectedAccount,
                 decoration: const InputDecoration(
                   labelText: 'Select Account',
                   border: OutlineInputBorder(),

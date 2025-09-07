@@ -478,7 +478,7 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
                                   _isPublic = value;
                                 });
                               },
-                              activeThumbColor: CreateArtWalkColors.accentGold,
+                              activeColor: CreateArtWalkColors.accentGold,
                             ),
                           ],
                         ),

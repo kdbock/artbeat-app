@@ -381,7 +381,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DropdownButtonFormField<AdLocation>(
-              initialValue: _selectedLocation,
+              value: _selectedLocation,
               decoration: const InputDecoration(
                 labelText: 'Select Display Location',
                 border: OutlineInputBorder(),

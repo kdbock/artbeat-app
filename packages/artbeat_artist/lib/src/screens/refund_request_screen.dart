@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show PaymentService, EnhancedUniversalHeader, MainLayout;
 
-/// Screen for handling subscription refund requests
+/// Screen for handling subscription refunds
 class RefundRequestScreen extends StatefulWidget {
   final String subscriptionId;
   final String paymentId;
@@ -184,7 +184,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  initialValue: _selectedReason,
+                  value: _selectedReason,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                   ),

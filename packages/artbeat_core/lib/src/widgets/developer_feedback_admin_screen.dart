@@ -182,7 +182,7 @@ class _DeveloperFeedbackAdminScreenState
                 SizedBox(
                   width: double.infinity,
                   child: DropdownButtonFormField<FeedbackStatus?>(
-                    initialValue: _statusFilter,
+                    value: _statusFilter,
                     decoration: const InputDecoration(
                       labelText: 'Status',
                       border: OutlineInputBorder(),
@@ -215,7 +215,7 @@ class _DeveloperFeedbackAdminScreenState
                 SizedBox(
                   width: double.infinity,
                   child: DropdownButtonFormField<String?>(
-                    initialValue: _packageFilter,
+                    value: _packageFilter,
                     decoration: const InputDecoration(
                       labelText: 'Package',
                       border: OutlineInputBorder(),
@@ -261,7 +261,7 @@ class _DeveloperFeedbackAdminScreenState
             children: [
               Expanded(
                 child: DropdownButtonFormField<FeedbackStatus?>(
-                  initialValue: _statusFilter,
+                  value: _statusFilter,
                   decoration: const InputDecoration(
                     labelText: 'Status',
                     border: OutlineInputBorder(),
@@ -293,7 +293,7 @@ class _DeveloperFeedbackAdminScreenState
               const SizedBox(width: 16),
               Expanded(
                 child: DropdownButtonFormField<String?>(
-                  initialValue: _packageFilter,
+                  value: _packageFilter,
                   decoration: const InputDecoration(
                     labelText: 'Package',
                     border: OutlineInputBorder(),

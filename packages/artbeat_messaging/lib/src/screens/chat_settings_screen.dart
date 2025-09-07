@@ -96,31 +96,43 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Select Theme'),
-                  content: RadioGroup<String>(
-                    groupValue: _selectedTheme,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedTheme = value!;
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        RadioListTile<String>(
-                          title: Text('System'),
-                          value: 'system',
-                        ),
-                        RadioListTile<String>(
-                          title: Text('Light'),
-                          value: 'light',
-                        ),
-                        RadioListTile<String>(
-                          title: Text('Dark'),
-                          value: 'dark',
-                        ),
-                      ],
-                    ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RadioListTile<String>(
+                        title: const Text('System'),
+                        value: 'system',
+                        groupValue: _selectedTheme,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTheme = value!;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                      RadioListTile<String>(
+                        title: const Text('Light'),
+                        value: 'light',
+                        groupValue: _selectedTheme,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTheme = value!;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                      RadioListTile<String>(
+                        title: const Text('Dark'),
+                        value: 'dark',
+                        groupValue: _selectedTheme,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTheme = value!;
+                          });
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
                   ),
                 ),
               );
