@@ -2,17 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:artbeat_art_walk/src/widgets/art_walk_comment_section.dart';
+import '../test_utils.dart';
 
 void main() {
   group('ArtWalkCommentSection Widget Tests', () {
     late String testArtWalkId;
+    late TestEnvironment testEnv;
+
+    setUpAll(() {
+      TestUtils.initializeWidgetTesting();
+    });
 
     setUp(() {
       testArtWalkId = 'test_art_walk_123';
+      testEnv = TestUtils.createTestEnvironment();
     });
 
     Widget createTestWidget(ArtWalkCommentSection widget) {
-      return MaterialApp(home: Scaffold(body: widget));
+      return TestUtils.createTestWidgetWrapper(
+        child: Scaffold(body: widget),
+        testEnv: testEnv,
+      );
     }
 
     group('Widget Rendering', () {

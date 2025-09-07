@@ -26,19 +26,30 @@ import '../services/achievement_service.dart';
 
 /// Service for managing Art Walks and Public Art
 class ArtWalkService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  FirebaseFirestore? _firestoreInstance;
+  FirebaseAuth? _authInstance;
+  FirebaseStorage? _storageInstance;
+
+  // Lazy initialization getters
+  FirebaseFirestore get _firestore =>
+      _firestoreInstance ??= FirebaseFirestore.instance;
+  FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
+  FirebaseStorage get _storage => _storageInstance ??= FirebaseStorage.instance;
   final Logger _logger = Logger();
   final ConnectivityService _connectivityService = ConnectivityService();
 
-  // Collection references
-  final CollectionReference _artWalksCollection = FirebaseFirestore.instance
-      .collection('artWalks');
-  final CollectionReference _publicArtCollection = FirebaseFirestore.instance
-      .collection('publicArt');
-  final CollectionReference _capturesCollection = FirebaseFirestore.instance
-      .collection('captures');
+  // Collection references - lazy initialization
+  CollectionReference? _artWalksCollectionInstance;
+  CollectionReference get _artWalksCollection =>
+      _artWalksCollectionInstance ??= _firestore.collection('artWalks');
+
+  CollectionReference? _publicArtCollectionInstance;
+  CollectionReference get _publicArtCollection =>
+      _publicArtCollectionInstance ??= _firestore.collection('publicArt');
+
+  CollectionReference? _capturesCollectionInstance;
+  CollectionReference get _capturesCollection =>
+      _capturesCollectionInstance ??= _firestore.collection('captures');
 
   /// Using secure DirectionsService for getting walking directions with API key protection
 

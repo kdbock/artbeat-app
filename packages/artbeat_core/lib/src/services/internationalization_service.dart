@@ -28,7 +28,7 @@ class InternationalizationService {
   // Current locale and translations
   Locale _currentLocale = const Locale('en', 'US');
   Map<String, String> _translations = {};
-  Map<String, Map<String, String>> _allTranslations = {};
+  final Map<String, Map<String, String>> _allTranslations = {};
 
   // Locale change notifier
   final StreamController<Locale> _localeController =

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_art_walk/src/services/art_walk_service.dart';
 import 'package:artbeat_art_walk/src/models/comment_model.dart';
@@ -19,7 +20,8 @@ class ArtWalkCommentSection extends StatefulWidget {
 }
 
 class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
-  final ArtWalkService _artWalkService = ArtWalkService();
+  ArtWalkService? _artWalkService;
+  ArtWalkService get artWalkService => _artWalkService ??= ArtWalkService();
   final TextEditingController _commentController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -29,11 +31,20 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
   String? _parentCommentAuthor;
   double? _selectedRating;
   List<CommentModel> _comments = [];
+  bool _hasLoadedComments = false;
 
   @override
   void initState() {
     super.initState();
-    _loadComments();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasLoadedComments) {
+      _hasLoadedComments = true;
+      _loadComments();
+    }
   }
 
   @override
@@ -46,7 +57,7 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
     setState(() => _isLoading = true);
 
     try {
-      final comments = await _artWalkService.getArtWalkComments(
+      final comments = await artWalkService.getArtWalkComments(
         widget.artWalkId,
       );
       setState(() {
@@ -56,9 +67,15 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading comments: ${e.toString()}')),
-        );
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error loading comments: ${e.toString()}'),
+              ),
+            );
+          }
+        });
       }
     }
   }
@@ -78,7 +95,7 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
 
     try {
       final content = _commentController.text.trim();
-      await _artWalkService.addCommentToArtWalk(
+      await artWalkService.addCommentToArtWalk(
         artWalkId: widget.artWalkId,
         content: content,
         parentCommentId: _parentCommentId,
@@ -154,7 +171,7 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
     setState(() => _isLoading = true);
 
     try {
-      await _artWalkService.deleteArtWalkComment(
+      await artWalkService.deleteArtWalkComment(
         artWalkId: widget.artWalkId,
         commentId: commentId,
       );
@@ -186,7 +203,7 @@ class _ArtWalkCommentSectionState extends State<ArtWalkCommentSection> {
     }
 
     try {
-      await _artWalkService.toggleCommentLike(
+      await artWalkService.toggleCommentLike(
         artWalkId: widget.artWalkId,
         commentId: commentId,
       );

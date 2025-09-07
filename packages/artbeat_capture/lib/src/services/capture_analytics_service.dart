@@ -201,7 +201,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
       }
 
       // Query analytics events
-      Query query = _firestore
+      final Query query = _firestore
           .collection('captureAnalytics')
           .where('userId', isEqualTo: userId)
           .where(
@@ -269,7 +269,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
 
       final startDate = DateTime.now().subtract(Duration(days: days));
 
-      Query query = _firestore
+      final Query query = _firestore
           .collection('captureAnalytics')
           .where('userId', isEqualTo: userId)
           .where('eventType', isEqualTo: 'performance_metric')
@@ -475,7 +475,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
       // Get recent capture events
       final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
 
-      Query query = _firestore
+      final Query query = _firestore
           .collection('captureAnalytics')
           .where('userId', isEqualTo: userId)
           .where('eventType', isEqualTo: 'capture_taken')

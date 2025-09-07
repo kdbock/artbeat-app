@@ -20,8 +20,13 @@ enum NotificationType {
 
 /// Service for managing user notifications
 class NotificationService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseAuth? _authInstance;
+  FirebaseFirestore? _firestoreInstance;
+
+  // Lazy initialization getters
+  FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
+  FirebaseFirestore get _firestore =>
+      _firestoreInstance ??= FirebaseFirestore.instance;
 
   /// Get current user's notifications
   Future<List<Map<String, dynamic>>> getUserNotifications() async {

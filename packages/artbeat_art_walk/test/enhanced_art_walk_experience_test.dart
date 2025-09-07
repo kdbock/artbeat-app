@@ -4,6 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'test_utils.dart';
 
 import 'enhanced_art_walk_experience_test.mocks.dart';
 
@@ -11,9 +12,15 @@ import 'enhanced_art_walk_experience_test.mocks.dart';
 void main() {
   group('Enhanced Art Walk Experience Tests', () {
     late MockArtWalkService mockArtWalkService;
+    late TestEnvironment testEnv;
+
+    setUpAll(() {
+      TestUtils.initializeWidgetTesting();
+    });
 
     setUp(() {
       mockArtWalkService = MockArtWalkService();
+      testEnv = TestUtils.createTestEnvironment();
     });
 
     testWidgets('Should display loading screen initially', (tester) async {

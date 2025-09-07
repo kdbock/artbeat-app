@@ -74,13 +74,13 @@ class MinimalScreenWithNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Minimal Screen')),
-      body: Stack(
+      body: const Stack(
         children: [
           // Your content
-          const Center(child: Text('Minimal Screen Content')),
+          Center(child: Text('Minimal Screen Content')),
 
           // Just add the FAB for comprehensive navigation access
-          const QuickNavigationFAB(),
+          QuickNavigationFAB(),
         ],
       ),
     );

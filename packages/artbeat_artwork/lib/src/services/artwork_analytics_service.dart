@@ -4,18 +4,22 @@ import 'package:flutter/foundation.dart';
 
 /// Service for managing artwork analytics
 class ArtworkAnalyticsService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth? _auth;
+  FirebaseAuth get auth => _auth ??= FirebaseAuth.instance;
+
+  FirebaseFirestore? _firestore;
+  FirebaseFirestore get firestore => _firestore ??= FirebaseFirestore.instance;
 
   /// Get the current authenticated user's ID
   String? getCurrentUserId() {
-    return _auth.currentUser?.uid;
+    return auth.currentUser?.uid;
   }
 
   /// Track artwork view
   Future<void> trackArtworkView(String artworkId, {String? source}) async {
     try {
       final userId = getCurrentUserId();
-      await FirebaseFirestore.instance.collection('artwork_analytics').add({
+      await firestore.collection('artwork_analytics').add({
         'artworkId': artworkId,
         'userId': userId,
         'action': 'view',
@@ -33,7 +37,7 @@ class ArtworkAnalyticsService {
       {String? source}) async {
     try {
       final userId = getCurrentUserId();
-      await FirebaseFirestore.instance.collection('search_analytics').add({
+      await firestore.collection('search_analytics').add({
         'query': query,
         'resultCount': resultCount,
         'userId': userId,
@@ -51,7 +55,7 @@ class ArtworkAnalyticsService {
       {String? buyerId, String? paymentMethod}) async {
     try {
       final userId = getCurrentUserId();
-      await FirebaseFirestore.instance.collection('sales_analytics').add({
+      await firestore.collection('sales_analytics').add({
         'artworkId': artworkId,
         'sellerId': userId,
         'buyerId': buyerId,
@@ -61,7 +65,7 @@ class ArtworkAnalyticsService {
       });
 
       // Also track in general analytics
-      await FirebaseFirestore.instance.collection('artwork_analytics').add({
+      await firestore.collection('artwork_analytics').add({
         'artworkId': artworkId,
         'userId': buyerId,
         'action': 'purchase',
@@ -78,7 +82,7 @@ class ArtworkAnalyticsService {
   Future<Map<String, dynamic>> getArtworkPerformance(String artworkId) async {
     try {
       // Get view count
-      final viewsSnapshot = await FirebaseFirestore.instance
+      final viewsSnapshot = await firestore
           .collection('artwork_analytics')
           .where('artworkId', isEqualTo: artworkId)
           .where('action', isEqualTo: 'view')
@@ -87,7 +91,7 @@ class ArtworkAnalyticsService {
       final viewCount = viewsSnapshot.docs.length;
 
       // Get engagement metrics (likes, comments, shares)
-      final engagementSnapshot = await FirebaseFirestore.instance
+      final engagementSnapshot = await firestore
           .collection('artwork_analytics')
           .where('artworkId', isEqualTo: artworkId)
           .get();
@@ -124,7 +128,7 @@ class ArtworkAnalyticsService {
       {int limit = 10}) async {
     try {
       // Get artist's artworks
-      final artworksSnapshot = await FirebaseFirestore.instance
+      final artworksSnapshot = await firestore
           .collection('artwork')
           .where('userId', isEqualTo: artistId)
           .get();
@@ -163,7 +167,7 @@ class ArtworkAnalyticsService {
   /// Get geographic distribution of views
   Future<Map<String, int>> getGeographicDistribution(String artworkId) async {
     try {
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await firestore
           .collection('artwork_analytics')
           .where('artworkId', isEqualTo: artworkId)
           .where('action', isEqualTo: 'view')
@@ -191,7 +195,7 @@ class ArtworkAnalyticsService {
     try {
       final startDate = DateTime.now().subtract(Duration(days: days));
 
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await firestore
           .collection('artwork_analytics')
           .where('artworkId', isEqualTo: artworkId)
           .where('action', isEqualTo: 'view')
@@ -234,7 +238,7 @@ class ArtworkAnalyticsService {
     try {
       final startDate = DateTime.now().subtract(Duration(days: days));
 
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await firestore
           .collection('search_analytics')
           .where('timestamp', isGreaterThan: Timestamp.fromDate(startDate))
           .orderBy('timestamp', descending: true)
@@ -295,7 +299,7 @@ class ArtworkAnalyticsService {
     try {
       final startDate = DateTime.now().subtract(Duration(days: days));
 
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await firestore
           .collection('sales_analytics')
           .where('sellerId', isEqualTo: artistId)
           .where('timestamp', isGreaterThan: Timestamp.fromDate(startDate))
@@ -473,11 +477,11 @@ class ArtworkAnalyticsService {
   Future<Map<String, dynamic>> getOptimizedAnalytics(String artistId) async {
     try {
       // Use Firestore aggregation queries for better performance
-      final analyticsQuery = FirebaseFirestore.instance
+      final analyticsQuery = firestore
           .collection('artwork_analytics')
           .where('userId', isEqualTo: artistId);
 
-      final salesQuery = FirebaseFirestore.instance
+      final salesQuery = firestore
           .collection('sales_analytics')
           .where('sellerId', isEqualTo: artistId);
 

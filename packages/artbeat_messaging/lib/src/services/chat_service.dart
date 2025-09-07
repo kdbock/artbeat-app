@@ -10,20 +10,28 @@ import '../models/search_result_model.dart';
 import 'notification_service.dart';
 
 class ChatService extends ChangeNotifier {
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
-  final FirebaseStorage _storage;
-  final NotificationService _notificationService;
+  FirebaseFirestore? _firestoreInstance;
+  FirebaseAuth? _authInstance;
+  FirebaseStorage? _storageInstance;
+  NotificationService? _notificationServiceInstance;
+
+  // Lazy initialization getters
+  FirebaseFirestore get _firestore =>
+      _firestoreInstance ??= FirebaseFirestore.instance;
+  FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
+  FirebaseStorage get _storage => _storageInstance ??= FirebaseStorage.instance;
+  NotificationService get _notificationService =>
+      _notificationServiceInstance ??= NotificationService();
 
   ChatService({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
     FirebaseStorage? storage,
     NotificationService? notificationService,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance,
-       _storage = storage ?? FirebaseStorage.instance,
-       _notificationService = notificationService ?? NotificationService();
+  }) : _firestoreInstance = firestore,
+       _authInstance = auth,
+       _storageInstance = storage,
+       _notificationServiceInstance = notificationService;
 
   String get currentUserId {
     final userId = _auth.currentUser?.uid;

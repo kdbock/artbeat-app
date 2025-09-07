@@ -10,17 +10,21 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  final FirebaseMessaging _messaging;
-  final FirebaseFirestore _firestore;
-  final FirebaseAuth _auth;
+  FirebaseMessaging? _messaging;
+  FirebaseFirestore? _firestore;
+  FirebaseAuth? _auth;
+
+  FirebaseMessaging get messaging => _messaging ??= FirebaseMessaging.instance;
+  FirebaseFirestore get firestore => _firestore ??= FirebaseFirestore.instance;
+  FirebaseAuth get auth => _auth ??= FirebaseAuth.instance;
 
   NotificationService({
     FirebaseMessaging? messaging,
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
-  }) : _messaging = messaging ?? FirebaseMessaging.instance,
-       _firestore = firestore ?? FirebaseFirestore.instance,
-       _auth = auth ?? FirebaseAuth.instance;
+  }) : _messaging = messaging,
+       _firestore = firestore,
+       _auth = auth;
 
   static const String _deviceTokensField = 'deviceTokens';
   static const String _usersCollection = 'users';
@@ -40,7 +44,7 @@ class NotificationService {
       );
       await _localNotifications.initialize(initSettings);
       // Request permission for notifications
-      final settings = await _messaging.requestPermission(
+      final settings = await messaging.requestPermission(
         alert: true,
         badge: true,
         sound: true,
@@ -49,13 +53,13 @@ class NotificationService {
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         // Get FCM token
-        final token = await _messaging.getToken();
+        final token = await messaging.getToken();
         if (token != null) {
           await _saveDeviceToken(token);
         }
 
         // Listen for token refresh
-        _messaging.onTokenRefresh.listen(_saveDeviceToken);
+        messaging.onTokenRefresh.listen(_saveDeviceToken);
 
         // Configure FCM handlers
         if (!kDebugMode) {
@@ -108,10 +112,10 @@ class NotificationService {
   /// Save FCM device token to user's document
   Future<void> _saveDeviceToken(String token) async {
     try {
-      final userId = _auth.currentUser?.uid;
+      final userId = auth.currentUser?.uid;
       if (userId == null) return;
 
-      final userRef = _firestore.collection(_usersCollection).doc(userId);
+      final userRef = firestore.collection(_usersCollection).doc(userId);
 
       // Add token to array if it doesn't exist
       await userRef.set({
@@ -129,10 +133,10 @@ class NotificationService {
     required Map<String, dynamic> data,
   }) async {
     try {
-      final userId = _auth.currentUser?.uid;
+      final userId = auth.currentUser?.uid;
       if (userId == null) return;
 
-      await _firestore
+      await firestore
           .collection(_usersCollection)
           .doc(userId)
           .collection(_notificationsCollection)
@@ -151,11 +155,11 @@ class NotificationService {
   /// Remove device token when user logs out
   Future<void> removeDeviceToken() async {
     try {
-      final token = await _messaging.getToken();
-      final userId = _auth.currentUser?.uid;
+      final token = await messaging.getToken();
+      final userId = auth.currentUser?.uid;
       if (token == null || userId == null) return;
 
-      final userRef = _firestore.collection(_usersCollection).doc(userId);
+      final userRef = firestore.collection(_usersCollection).doc(userId);
       await userRef.update({
         _deviceTokensField: FieldValue.arrayRemove([token]),
       });
@@ -167,10 +171,10 @@ class NotificationService {
   /// Mark a notification as read
   Future<void> markNotificationAsRead(String notificationId) async {
     try {
-      final userId = _auth.currentUser?.uid;
+      final userId = auth.currentUser?.uid;
       if (userId == null) return;
 
-      await _firestore
+      await firestore
           .collection(_usersCollection)
           .doc(userId)
           .collection(_notificationsCollection)
@@ -183,12 +187,12 @@ class NotificationService {
 
   /// Get user's notification history
   Stream<QuerySnapshot> getNotifications() {
-    final userId = _auth.currentUser?.uid;
+    final userId = auth.currentUser?.uid;
     if (userId == null) {
       return const Stream.empty();
     }
 
-    return _firestore
+    return firestore
         .collection(_usersCollection)
         .doc(userId)
         .collection(_notificationsCollection)
@@ -198,12 +202,12 @@ class NotificationService {
 
   /// Get count of unread notifications
   Stream<int> getUnreadNotificationsCount() {
-    final userId = _auth.currentUser?.uid;
+    final userId = auth.currentUser?.uid;
     if (userId == null) {
       return Stream.value(0);
     }
 
-    return _firestore
+    return firestore
         .collection(_usersCollection)
         .doc(userId)
         .collection(_notificationsCollection)
@@ -220,7 +224,7 @@ class NotificationService {
     required Map<String, dynamic> data,
   }) async {
     try {
-      await _firestore
+      await firestore
           .collection(_usersCollection)
           .doc(userId)
           .collection(_notificationsCollection)
@@ -242,11 +246,11 @@ class NotificationService {
 
   /// Start listening for new notifications in Firestore to trigger push notifications
   void _startNotificationListener() {
-    final userId = _auth.currentUser?.uid;
+    final userId = auth.currentUser?.uid;
     if (userId == null) return;
 
     try {
-      _firestore
+      firestore
           .collection(_usersCollection)
           .doc(userId)
           .collection(_notificationsCollection)
@@ -344,10 +348,10 @@ class NotificationService {
     String? customSound,
   }) async {
     try {
-      final userId = _auth.currentUser?.uid;
+      final userId = auth.currentUser?.uid;
       if (userId == null) throw Exception('User not authenticated');
 
-      await _firestore
+      await firestore
           .collection('users')
           .doc(userId)
           .collection('chatNotificationSettings')
@@ -370,10 +374,10 @@ class NotificationService {
     String chatId,
   ) async {
     try {
-      final userId = _auth.currentUser?.uid;
+      final userId = auth.currentUser?.uid;
       if (userId == null) return null;
 
-      final doc = await _firestore
+      final doc = await firestore
           .collection('users')
           .doc(userId)
           .collection('chatNotificationSettings')
@@ -395,7 +399,7 @@ class NotificationService {
       );
 
       // Handle messages when app is terminated
-      final RemoteMessage? initialMessage = await _messaging.getInitialMessage();
+      final RemoteMessage? initialMessage = await messaging.getInitialMessage();
       if (initialMessage != null) {
         await _handleMessageClick(initialMessage);
       }

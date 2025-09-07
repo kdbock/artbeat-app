@@ -5,8 +5,6 @@ import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
 import 'package:share_plus/share_plus.dart';
-import '../widgets/artwork_social_widget.dart';
-import '../widgets/artwork_moderation_status_chip.dart';
 
 /// Screen for viewing artwork details
 class ArtworkDetailScreen extends StatefulWidget {

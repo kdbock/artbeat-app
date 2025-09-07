@@ -7,8 +7,14 @@ import 'package:artbeat_core/artbeat_core.dart'
 
 /// Service for managing user achievements
 class AchievementService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore? _firestoreInstance;
+  FirebaseAuth? _authInstance;
+
+  // Lazy initialization getters
+  FirebaseFirestore get _firestore =>
+      _firestoreInstance ??= FirebaseFirestore.instance;
+  FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
+
   final Logger _logger = Logger();
   final NotificationService _notificationService = NotificationService();
 

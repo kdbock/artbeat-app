@@ -4,8 +4,14 @@ import 'package:logger/logger.dart';
 
 /// Service for managing user rewards, XP, and achievements
 class RewardsService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseFirestore? _firestoreInstance;
+  FirebaseAuth? _authInstance;
+
+  // Lazy initialization getters
+  FirebaseFirestore get _firestore =>
+      _firestoreInstance ??= FirebaseFirestore.instance;
+  FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
+
   final Logger _logger = Logger();
 
   /// XP rewards for different actions

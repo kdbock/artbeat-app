@@ -12,7 +12,8 @@ class EnhancedStorageService {
   factory EnhancedStorageService() => _instance;
   EnhancedStorageService._internal();
 
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  FirebaseStorage? _storageInstance;
+  FirebaseStorage get _storage => _storageInstance ??= FirebaseStorage.instance;
 
   // Image compression settings
   static const int maxImageWidth = 1920;

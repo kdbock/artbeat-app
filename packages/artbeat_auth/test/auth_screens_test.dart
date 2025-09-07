@@ -4,8 +4,6 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/services.dart';
 import 'package:artbeat_auth/src/screens/login_screen.dart';
 import 'package:artbeat_auth/src/screens/register_screen.dart';
 import 'package:artbeat_auth/src/screens/forgot_password_screen.dart';
@@ -28,87 +26,6 @@ void main() {
 
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    final binding = TestDefaultBinaryMessengerBinding.instance;
-
-    // Mock firebase_core
-    const coreChannel = MethodChannel('plugins.flutter.io/firebase_core');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(coreChannel, (
-      methodCall,
-    ) async {
-      if (methodCall.method == 'Firebase#initializeCore') {
-        return [
-          {
-            'name': 'default',
-            'options': {
-              'apiKey': 'test',
-              'appId': 'test',
-              'messagingSenderId': 'test',
-              'projectId': 'test',
-            },
-            'pluginConstants': <String, Object?>{},
-          },
-        ];
-      }
-      if (methodCall.method == 'Firebase#initializeApp') {
-        return {
-          'name': methodCall.arguments['name'],
-          'options': methodCall.arguments['options'],
-          'pluginConstants': <String, Object?>{},
-        };
-      }
-      return null;
-    });
-
-    // Mock pigeon channel for firebase_core (used by newer Firebase)
-    const pigeonCoreChannel = MethodChannel('flutter.firebase/core');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(pigeonCoreChannel, (
-      methodCall,
-    ) async {
-      if (methodCall.method == 'initializeCore') {
-        return [
-          {
-            'name': 'default',
-            'options': {
-              'apiKey': 'test',
-              'appId': 'test',
-              'messagingSenderId': 'test',
-              'projectId': 'test',
-            },
-            'pluginConstants': <String, Object?>{},
-          },
-        ];
-      }
-      if (methodCall.method == 'initializeApp') {
-        return {
-          'name': methodCall.arguments['name'],
-          'options': methodCall.arguments['options'],
-          'pluginConstants': <String, Object?>{},
-        };
-      }
-      return null;
-    });
-
-    // Mock firebase_auth
-    const authChannel = MethodChannel('plugins.flutter.io/firebase_auth');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(authChannel, (
-      methodCall,
-    ) async {
-      // Return null for all calls to avoid platform exceptions
-      return null;
-    });
-
-    // Mock cloud_firestore
-    const firestoreChannel = MethodChannel(
-      'plugins.flutter.io/cloud_firestore',
-    );
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(firestoreChannel, (
-      methodCall,
-    ) async {
-      // Return null for all calls to avoid platform exceptions
-      return null;
-    });
-
-    await Firebase.initializeApp();
   });
 
   setUp(() {

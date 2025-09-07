@@ -9,7 +9,9 @@ class AIFeaturesService extends ChangeNotifier {
   factory AIFeaturesService() => _instance;
   AIFeaturesService._internal();
 
-  final UsageTrackingService _usageTracking = UsageTrackingService();
+  UsageTrackingService? _usageTracking;
+  UsageTrackingService get usageTracking =>
+      _usageTracking ??= UsageTrackingService();
 
   // AI Feature Types
   static const String smartCropping = 'smart_cropping';
@@ -86,7 +88,7 @@ class AIFeaturesService extends ChangeNotifier {
   }) async {
     try {
       // Check usage limits
-      final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
+      final canUseAI = await usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI) {
         return AIResult.error('AI credit limit reached for your current plan');
       }
@@ -115,7 +117,7 @@ class AIFeaturesService extends ChangeNotifier {
       final processedImage = await _simulateImageProcessing(imageData, 'crop');
 
       // Track AI credit usage
-      await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
+      await usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
 
       return AIResult.success(
         data: processedImage,
@@ -137,7 +139,7 @@ class AIFeaturesService extends ChangeNotifier {
   }) async {
     try {
       // Check usage limits
-      final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
+      final canUseAI = await usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI) {
         return AIResult.error('AI credit limit reached for your current plan');
       }
@@ -166,7 +168,7 @@ class AIFeaturesService extends ChangeNotifier {
       );
 
       // Track AI credit usage
-      await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
+      await usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
 
       return AIResult.success(
         data: processedImage,
@@ -228,7 +230,7 @@ class AIFeaturesService extends ChangeNotifier {
   }) async {
     try {
       // Auto-tagging is available for all tiers with minimal credit cost
-      final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
+      final canUseAI = await usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI &&
           (userTier ?? SubscriptionTier.free) == SubscriptionTier.free) {
         return AIResult.error(
@@ -253,7 +255,7 @@ class AIFeaturesService extends ChangeNotifier {
 
       // Track AI credit usage (only for paid tiers)
       if ((userTier ?? SubscriptionTier.free) != SubscriptionTier.free) {
-        await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
+        await usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
       }
 
       return AIResult.success(
@@ -317,7 +319,7 @@ class AIFeaturesService extends ChangeNotifier {
       }
 
       // Check usage limits
-      final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
+      final canUseAI = await usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI) {
         return AIResult.error('AI credit limit reached');
       }
@@ -343,7 +345,7 @@ class AIFeaturesService extends ChangeNotifier {
       ];
 
       // Track AI credit usage
-      await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
+      await usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
 
       return AIResult.success(
         data: sampleRecommendations.take(limit).toList(),
@@ -373,7 +375,7 @@ class AIFeaturesService extends ChangeNotifier {
       }
 
       // Check usage limits
-      final canUseAI = await _usageTracking.canPerformAction('use_ai_credit');
+      final canUseAI = await usageTracking.canPerformAction('use_ai_credit');
       if (!canUseAI) {
         return AIResult.error('AI credit limit reached');
       }
@@ -396,7 +398,7 @@ class AIFeaturesService extends ChangeNotifier {
       };
 
       // Track AI credit usage
-      await _usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
+      await usageTracking.trackUsage('ai_credit', amount: creditsNeeded);
 
       return AIResult.success(
         data: sampleInsights,
@@ -412,7 +414,7 @@ class AIFeaturesService extends ChangeNotifier {
   /// Get user's AI usage statistics
   Future<Map<String, dynamic>> getAIUsageStats() async {
     try {
-      final usage = await _usageTracking.getCurrentUsage('current_user_id');
+      final usage = await usageTracking.getCurrentUsage('current_user_id');
 
       // Demo limits based on free tier
       const creditsLimit = 5; // Free tier limit

@@ -81,7 +81,7 @@ class EnhancedArtworkCard extends StatelessWidget {
             ),
 
             // Artwork Image
-            Container(
+            SizedBox(
               width: double.infinity,
               height: isCompact ? 200 : 300,
               child: artwork.imageUrl.isNotEmpty

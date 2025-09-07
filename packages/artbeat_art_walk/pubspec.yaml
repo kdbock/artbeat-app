@@ -47,3 +47,4 @@ dev_dependencies:
   mockito: ^5.4.4
   build_runner: ^2.4.10
   cloud_firestore_platform_interface: any
+  firebase_core_platform_interface: ^6.0.0

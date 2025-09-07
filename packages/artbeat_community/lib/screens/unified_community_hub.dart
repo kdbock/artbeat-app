@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_core/src/widgets/secure_network_image.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 
 import '../../theme/community_colors.dart';
