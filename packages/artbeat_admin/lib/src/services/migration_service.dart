@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for migrating existing data to use standardized moderation status
 class MigrationService {
@@ -7,7 +7,7 @@ class MigrationService {
 
   /// Migrate all collections to use standardized moderation status
   Future<void> migrateAllCollections() async {
-    debugPrint('Starting migration of all collections...');
+    AppLogger.info('Starting migration of all collections...');
 
     try {
       await Future.wait([
@@ -18,16 +18,16 @@ class MigrationService {
         migrateAdsCollection(),
       ]);
 
-      debugPrint('Migration completed successfully!');
+      AppLogger.info('Migration completed successfully!');
     } catch (e) {
-      debugPrint('Migration failed: $e');
+      AppLogger.info('Migration failed: $e');
       rethrow;
     }
   }
 
   /// Migrate captures collection to use standardized status
   Future<void> migrateCapturesCollection() async {
-    debugPrint('Migrating captures collection...');
+    AppLogger.info('Migrating captures collection...');
 
     try {
       final batch = _firestore.batch();
@@ -71,19 +71,19 @@ class MigrationService {
 
       if (updateCount > 0) {
         await batch.commit();
-        debugPrint('Updated $updateCount captures');
+        AppLogger.info('Updated $updateCount captures');
       } else {
-        debugPrint('No captures needed migration');
+        AppLogger.info('No captures needed migration');
       }
     } catch (e) {
-      debugPrint('Error migrating captures: $e');
+      AppLogger.error('Error migrating captures: $e');
       rethrow;
     }
   }
 
   /// Migrate posts collection to add moderation status
   Future<void> migratePostsCollection() async {
-    debugPrint('Migrating posts collection...');
+    AppLogger.info('Migrating posts collection...');
 
     try {
       final batch = _firestore.batch();
@@ -110,19 +110,19 @@ class MigrationService {
 
       if (updateCount > 0) {
         await batch.commit();
-        debugPrint('Updated $updateCount posts');
+        AppLogger.info('Updated $updateCount posts');
       } else {
-        debugPrint('No posts needed migration');
+        AppLogger.info('No posts needed migration');
       }
     } catch (e) {
-      debugPrint('Error migrating posts: $e');
+      AppLogger.error('Error migrating posts: $e');
       rethrow;
     }
   }
 
   /// Migrate comments collection to add moderation status
   Future<void> migrateCommentsCollection() async {
-    debugPrint('Migrating comments collection...');
+    AppLogger.info('Migrating comments collection...');
 
     try {
       final batch = _firestore.batch();
@@ -149,19 +149,19 @@ class MigrationService {
 
       if (updateCount > 0) {
         await batch.commit();
-        debugPrint('Updated $updateCount comments');
+        AppLogger.info('Updated $updateCount comments');
       } else {
-        debugPrint('No comments needed migration');
+        AppLogger.info('No comments needed migration');
       }
     } catch (e) {
-      debugPrint('Error migrating comments: $e');
+      AppLogger.error('Error migrating comments: $e');
       rethrow;
     }
   }
 
   /// Migrate artwork collection to add moderation status
   Future<void> migrateArtworkCollection() async {
-    debugPrint('Migrating artwork collection...');
+    AppLogger.info('Migrating artwork collection...');
 
     try {
       final batch = _firestore.batch();
@@ -188,19 +188,19 @@ class MigrationService {
 
       if (updateCount > 0) {
         await batch.commit();
-        debugPrint('Updated $updateCount artwork items');
+        AppLogger.info('Updated $updateCount artwork items');
       } else {
-        debugPrint('No artwork needed migration');
+        AppLogger.info('No artwork needed migration');
       }
     } catch (e) {
-      debugPrint('Error migrating artwork: $e');
+      AppLogger.error('Error migrating artwork: $e');
       rethrow;
     }
   }
 
   /// Migrate ads collection to standardize status field
   Future<void> migrateAdsCollection() async {
-    debugPrint('Migrating ads collection...');
+    AppLogger.info('Migrating ads collection...');
 
     try {
       final batch = _firestore.batch();
@@ -255,12 +255,12 @@ class MigrationService {
 
       if (updateCount > 0) {
         await batch.commit();
-        debugPrint('Updated $updateCount ads');
+        AppLogger.info('Updated $updateCount ads');
       } else {
-        debugPrint('No ads needed migration');
+        AppLogger.info('No ads needed migration');
       }
     } catch (e) {
-      debugPrint('Error migrating ads: $e');
+      AppLogger.error('Error migrating ads: $e');
       rethrow;
     }
   }
@@ -276,7 +276,7 @@ class MigrationService {
       results['artwork'] = await _checkCollectionMigrationStatus('artwork');
       results['ads'] = await _checkCollectionMigrationStatus('ads');
     } catch (e) {
-      debugPrint('Error checking migration status: $e');
+      AppLogger.error('Error checking migration status: $e');
       rethrow;
     }
 
@@ -317,14 +317,14 @@ class MigrationService {
         needsMigration: migratedDocs < totalDocs,
       );
     } catch (e) {
-      debugPrint('Error checking $collectionName migration status: $e');
+      AppLogger.error('Error checking $collectionName migration status: $e');
       rethrow;
     }
   }
 
   /// Rollback migration (remove new fields)
   Future<void> rollbackMigration() async {
-    debugPrint('Rolling back migration...');
+    AppLogger.info('Rolling back migration...');
 
     try {
       await Future.wait([
@@ -335,9 +335,9 @@ class MigrationService {
         _rollbackCollection('ads'),
       ]);
 
-      debugPrint('Rollback completed successfully!');
+      AppLogger.info('Rollback completed successfully!');
     } catch (e) {
-      debugPrint('Rollback failed: $e');
+      AppLogger.info('Rollback failed: $e');
       rethrow;
     }
   }
@@ -369,10 +369,10 @@ class MigrationService {
 
       if (updateCount > 0) {
         await batch.commit();
-        debugPrint('Rolled back $updateCount documents in $collectionName');
+        AppLogger.info('Rolled back $updateCount documents in $collectionName');
       }
     } catch (e) {
-      debugPrint('Error rolling back $collectionName: $e');
+      AppLogger.error('Error rolling back $collectionName: $e');
       rethrow;
     }
   }

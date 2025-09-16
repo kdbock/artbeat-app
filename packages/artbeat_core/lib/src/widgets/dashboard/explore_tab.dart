@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:flutter/foundation.dart';
 
 class ExploreTab extends StatelessWidget {
   final LatLng? userLocation;
@@ -44,22 +45,25 @@ class ExploreTab extends StatelessWidget {
                 child: isMapPreviewReady && userLocation != null
                     ? Stack(
                         children: [
-                          GoogleMap(
-                            key: const Key('explore_tab_map'),
-                            initialCameraPosition: CameraPosition(
-                              target: userLocation!,
-                              zoom: 14,
+                          if (kIsWeb)
+                            _buildWebMapFallback()
+                          else
+                            GoogleMap(
+                              key: const Key('explore_tab_map'),
+                              initialCameraPosition: CameraPosition(
+                                target: userLocation!,
+                                zoom: 14,
+                              ),
+                              markers: markers,
+                              myLocationEnabled: false,
+                              myLocationButtonEnabled: false,
+                              zoomControlsEnabled: false,
+                              rotateGesturesEnabled: false,
+                              scrollGesturesEnabled: false,
+                              zoomGesturesEnabled: false,
+                              tiltGesturesEnabled: false,
+                              liteModeEnabled: true,
                             ),
-                            markers: markers,
-                            myLocationEnabled: false,
-                            myLocationButtonEnabled: false,
-                            zoomControlsEnabled: false,
-                            rotateGesturesEnabled: false,
-                            scrollGesturesEnabled: false,
-                            zoomGesturesEnabled: false,
-                            tiltGesturesEnabled: false,
-                            liteModeEnabled: true,
-                          ),
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -125,6 +129,35 @@ class ExploreTab extends StatelessWidget {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      height: 200,
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 48, color: Colors.grey[400]),
+            const SizedBox(height: 8),
+            Text(
+              'Explore Map',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Map preview available on mobile',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+          ],
+        ),
       ),
     );
   }

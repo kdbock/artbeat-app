@@ -1,17 +1,50 @@
 // Copyright (c) 2025 ArtBeat. All rights reserved.
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-import 'config/maps_config.dart';
 import 'app.dart';
+import 'config/maps_config.dart';
+import 'in_app_purchase_setup.dart';
 import 'src/managers/app_lifecycle_manager.dart';
+import 'src/services/crash_prevention_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize logging system first
+  AppLogger.initialize();
+
+  // Set up global error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    CrashPreventionService.logCrashPrevention(
+      operation: 'flutter_framework',
+      errorType: details.exception.runtimeType.toString(),
+      additionalInfo: details.exception.toString(),
+    );
+
+    AppLogger.error(
+      'Flutter framework error: ${details.exception}',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+  };
+
+  // Handle errors outside of Flutter framework
+  PlatformDispatcher.instance.onError = (error, stack) {
+    CrashPreventionService.logCrashPrevention(
+      operation: 'platform_error',
+      errorType: error.runtimeType.toString(),
+      additionalInfo: error.toString(),
+    );
+
+    AppLogger.error('Platform error: $error', error: error, stackTrace: stack);
+    return true;
+  };
 
   // Start performance monitoring
   PerformanceMonitor.startTimer('app_startup');
@@ -48,40 +81,56 @@ Future<void> main() async {
     PerformanceMonitor.endTimer('app_startup');
 
     if (kDebugMode) {
-      // Print Firebase status for debugging
+      // Log Firebase status for debugging
       final status = SecureFirebaseConfig.getStatus();
       if (status['initialized'] == true) {
-        print('✅ Firebase confirmed ready');
-        print(
+        AppLogger.firebase('✅ Firebase confirmed ready');
+        AppLogger.firebase(
           '🔍 Firebase app names: ${Firebase.apps.map((app) => app.name).toList()}',
         );
       }
     }
-  } catch (e, stackTrace) {
+  } on Object catch (e, stackTrace) {
+    // Use crash prevention service for better error handling
+    CrashPreventionService.logCrashPrevention(
+      operation: 'app_initialization',
+      errorType: e.runtimeType.toString(),
+      additionalInfo: e.toString(),
+    );
+
     if (kDebugMode) {
-      print('❌ Initialization failed: $e');
-      print('❌ Error type: ${e.runtimeType}');
+      AppLogger.error(
+        '❌ Initialization failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      AppLogger.error('❌ Error type: ${e.runtimeType}');
       if (e is FileSystemException) {
-        print('❌ File system error - Path: ${e.path}');
-        print('❌ File system error - Message: ${e.message}');
+        AppLogger.error('❌ File system error - Path: ${e.path}');
+        AppLogger.error('❌ File system error - Message: ${e.message}');
       }
-      print('❌ Stack trace: $stackTrace');
     }
 
     // Handle duplicate app errors specifically
     if (e.toString().contains('duplicate-app') ||
         e.toString().contains('already exists')) {
       if (kDebugMode) {
-        print(
+        AppLogger.warning(
           '🔥 Duplicate app error caught in main, proceeding with app launch',
         );
       }
       // Continue with app launch since Firebase is already initialized
     } else {
-      // For other errors, show error dialog with more details
-      String errorDetails = e.toString();
-      if (e is FileSystemException) {
-        errorDetails = 'File not found: ${e.path}\nMessage: ${e.message}';
+      // For other errors, show user-friendly error message
+      final userFriendlyMessage =
+          CrashPreventionService.getUserFriendlyErrorMessage(e);
+      String errorDetails = userFriendlyMessage;
+
+      if (kDebugMode) {
+        errorDetails += '\n\nDebug info: ${e.toString()}';
+        if (e is FileSystemException) {
+          errorDetails += '\nFile: ${e.path}\nMessage: ${e.message}';
+        }
       }
 
       runApp(
@@ -100,10 +149,7 @@ Future<void> main() async {
                   const SizedBox(height: 8),
                   Text('Error: $errorDetails', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => main(),
-                    child: const Text('Retry'),
-                  ),
+                  const ElevatedButton(onPressed: main, child: Text('Retry')),
                 ],
               ),
             ),
@@ -124,11 +170,11 @@ void _initializeNonCriticalServices() {
     try {
       await ImageManagementService().initialize();
       if (kDebugMode) {
-        print('✅ Image management service initialized');
+        AppLogger.info('✅ Image management service initialized');
       }
-    } catch (e) {
+    } on Object catch (e) {
       if (kDebugMode) {
-        print('❌ Image management service initialization failed: $e');
+        AppLogger.error('❌ Image management service initialization failed: $e');
       }
       // Don't fail the entire app for image service
     }
@@ -137,13 +183,28 @@ void _initializeNonCriticalServices() {
     try {
       await messaging.NotificationService().initialize();
       if (kDebugMode) {
-        print('✅ Messaging notification service initialized');
+        AppLogger.info('✅ Messaging notification service initialized');
       }
-    } catch (e) {
+    } on Object catch (e) {
       if (kDebugMode) {
-        print('❌ Messaging notification service initialization failed: $e');
+        AppLogger.error(
+          '❌ Messaging notification service initialization failed: $e',
+        );
       }
       // Don't fail the entire app for notification service
+    }
+
+    // Initialize in-app purchase service
+    try {
+      await InAppPurchaseSetup().initialize();
+      if (kDebugMode) {
+        AppLogger.info('✅ In-app purchase service initialized');
+      }
+    } on Object catch (e) {
+      if (kDebugMode) {
+        AppLogger.error('❌ In-app purchase service initialization failed: $e');
+      }
+      // Don't fail the entire app for purchase service
     }
   });
 }

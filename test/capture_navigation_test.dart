@@ -1,9 +1,9 @@
 import 'dart:io';
+
+import 'package:artbeat_capture/src/screens/capture_confirmation_screen.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_capture/src/screens/capture_confirmation_screen.dart';
 
 import 'test_setup.dart';
 
@@ -36,7 +36,6 @@ void main() {
               createdAt: DateTime.now(),
               isPublic: true,
               tags: [],
-              status: CaptureStatus.pending,
             ),
           ),
         ),
@@ -65,7 +64,6 @@ void main() {
               createdAt: DateTime.now(),
               isPublic: true,
               tags: [],
-              status: CaptureStatus.pending,
             ),
           ),
         ),
@@ -104,7 +102,6 @@ void main() {
               createdAt: DateTime.now(),
               isPublic: true,
               tags: [],
-              status: CaptureStatus.pending,
             ),
           ),
         ),

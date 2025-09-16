@@ -17,15 +17,12 @@ dependencies:
   cloud_firestore: ^6.0.0
   firebase_storage: ^13.0.0
 
-  # Stripe integration for paid tickets
+  # Stripe integration for event ticketing
   flutter_stripe: ^11.1.0
 
   # Notifications
   flutter_local_notifications: ^18.0.1
   awesome_notifications: ^0.10.1
-
-  # Calendar integration
-  device_calendar: ^4.3.2
 
   # Image handling
   image_picker: ^1.0.7

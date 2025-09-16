@@ -4,8 +4,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:flutter/foundation.dart';
 import '../models/feedback_model.dart';
+import '../utils/logger.dart';
 
 class FeedbackService {
   static final FeedbackService _instance = FeedbackService._internal();
@@ -176,7 +176,7 @@ class FeedbackService {
             await _storage.refFromURL(imageUrl).delete();
           } catch (e) {
             // Continue even if image deletion fails
-            debugPrint('Failed to delete image: $imageUrl, Error: $e');
+            AppLogger.error('Failed to delete image: $imageUrl, Error: $e');
           }
         }
       }

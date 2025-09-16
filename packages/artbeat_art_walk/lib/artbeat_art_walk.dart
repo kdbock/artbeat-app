@@ -8,3 +8,4 @@ export 'src/widgets/widgets.dart';
 export 'src/utils/utils.dart';
 export 'src/constants/routes.dart';
 export 'src/routes/art_walk_route_config.dart';
+export 'src/theme/art_walk_design_system.dart';

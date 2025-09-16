@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/logger.dart';
 
 /// Advanced analytics dashboard providing cross-package insights
 class AdvancedAnalyticsDashboard extends StatefulWidget {
@@ -67,7 +68,7 @@ class _AdvancedAnalyticsDashboardState extends State<AdvancedAnalyticsDashboard>
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading analytics: $e');
+      AppLogger.error('Error loading analytics: $e');
       setState(() => _isLoading = false);
     }
   }

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/direct_commission_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class DirectCommissionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -42,7 +42,7 @@ class DirectCommissionService {
             try {
               return DirectCommissionModel.fromFirestore(doc);
             } catch (e) {
-              debugPrint('Error parsing commission ${doc.id}: $e');
+              AppLogger.error('Error parsing commission ${doc.id}: $e');
               return null;
             }
           })
@@ -781,7 +781,7 @@ class DirectCommissionService {
 
       return trends;
     } catch (e) {
-      debugPrint('Error calculating monthly trends: $e');
+      AppLogger.error('Error calculating monthly trends: $e');
       return [];
     }
   }

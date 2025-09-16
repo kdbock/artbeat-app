@@ -86,9 +86,9 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
                       ],
                     ),
                   )
-                : FutureBuilder<List<messaging.UserModel>>(
+                : FutureBuilder(
                     future: chatService.searchUsers(_searchQuery),
-                    builder: (context, snapshot) {
+                    builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
@@ -137,7 +137,7 @@ class _ContactSelectionScreenState extends State<ContactSelectionScreen> {
                       return ListView.builder(
                         itemCount: users.length,
                         itemBuilder: (context, index) {
-                          final user = users[index];
+                          final user = users[index] as messaging.UserModel;
                           return ListTile(
                             leading: ImageUtils.safeCircleAvatar(
                               imageUrl: user.photoUrl,

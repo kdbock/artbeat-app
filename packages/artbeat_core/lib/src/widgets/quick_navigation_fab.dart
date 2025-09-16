@@ -33,12 +33,12 @@ class QuickNavigationFAB extends StatelessWidget {
       bottom: bottom ?? 100,
       right: right ?? 20,
       child: FloatingActionButton(
+        heroTag: "quick_navigation_fab",
         onPressed: () => _showNavigationMenu(context),
         backgroundColor: ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,
         elevation: 8,
         mini: mini,
-        heroTag: "navigation_fab",
         child: Container(
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
@@ -109,7 +109,7 @@ class EnhancedAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading,
       actions: appBarActions.isNotEmpty ? appBarActions : null,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      foregroundColor: ArtbeatColors.textPrimary,
+      // Removed foregroundColor to use deep purple default
       elevation: 0,
       scrolledUnderElevation: 1,
       centerTitle: false,

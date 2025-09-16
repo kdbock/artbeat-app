@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'capture_details_screen.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import '../services/capture_terms_service.dart';
 
 class BasicCaptureScreen extends StatefulWidget {
   const BasicCaptureScreen({Key? key}) : super(key: key);
@@ -19,15 +20,55 @@ class _BasicCaptureScreenState extends State<BasicCaptureScreen> {
 
   Future<void> _openCamera() async {
     setState(() => _isProcessing = true);
-    final picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-      preferredCameraDevice: CameraDevice.rear,
-    );
-    setState(() => _isProcessing = false);
-    if (photo != null) {
-      setState(() => _imageFile = File(photo.path));
+
+    try {
+      final picker = ImagePicker();
+      final XFile? photo = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+
+      if (photo != null) {
+        setState(() => _imageFile = File(photo.path));
+      }
+    } catch (e) {
+      if (mounted) {
+        AppLogger.error('Camera capture failed: $e');
+
+        // Show user-friendly error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_getCameraErrorMessage(e)),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _openCamera,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
+
+  String _getCameraErrorMessage(dynamic error) {
+    final errorString = error.toString().toLowerCase();
+
+    if (errorString.contains('permission')) {
+      return 'Camera permission required. Please enable camera access in settings.';
+    } else if (errorString.contains('camera not available') ||
+        errorString.contains('no camera found')) {
+      return 'Camera not available on this device.';
+    } else if (errorString.contains('cancelled') ||
+        errorString.contains('user_cancelled')) {
+      return 'Camera capture was cancelled.';
+    } else {
+      return 'Unable to access camera. Please try again.';
     }
   }
 
@@ -328,7 +369,10 @@ class _BasicCaptureScreenState extends State<BasicCaptureScreen> {
                       flex: 2,
                       child: ElevatedButton.icon(
                         onPressed: _hasAcceptedTerms
-                            ? () {
+                            ? () async {
+                                // Save terms acceptance for future use
+                                await CaptureTermsService.markTermsAccepted();
+
                                 Navigator.of(context).pop();
                                 setState(() {
                                   _showTerms = false;

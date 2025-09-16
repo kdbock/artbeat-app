@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_community/artbeat_community.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 /// Container widget that loads the current user's artist profile
 /// and displays their community feed with create post functionality

@@ -32,7 +32,7 @@ class ArtistAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (kDebugMode) {
-      debugPrint('ArtistAvatar build: $displayName');
+      AppLogger.info('ArtistAvatar build: $displayName');
     }
 
     return UserAvatar(

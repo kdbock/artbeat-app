@@ -21,7 +21,8 @@ class SponsorTierSelectionDialog extends StatefulWidget {
 class _SponsorTierSelectionDialogState
     extends State<SponsorTierSelectionDialog> {
   final core.SponsorshipService _sponsorshipService = core.SponsorshipService();
-  final core.PaymentService _paymentService = core.PaymentService();
+  final core.EnhancedPaymentService _paymentService =
+      core.EnhancedPaymentService();
 
   core.SponsorshipTier? _selectedTier;
   bool _isLoading = false;
@@ -33,24 +34,34 @@ class _SponsorTierSelectionDialogState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
-        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildTierSelection(),
-            const SizedBox(height: 24),
-            if (_selectedTier != null) ...[
-              _buildSelectedTierInfo(),
-              const SizedBox(height: 24),
-            ],
-            if (_errorMessage != null) ...[
-              _buildErrorMessage(),
-              const SizedBox(height: 16),
-            ],
-            _buildActions(),
+            // Header (fixed at top)
+            Padding(padding: const EdgeInsets.all(24), child: _buildHeader()),
+            // Scrollable content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTierSelection(),
+                    const SizedBox(height: 24),
+                    if (_selectedTier != null) ...[
+                      _buildSelectedTierInfo(),
+                      const SizedBox(height: 24),
+                    ],
+                    if (_errorMessage != null) ...[
+                      _buildErrorMessage(),
+                      const SizedBox(height: 16),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            // Actions (fixed at bottom)
+            Padding(padding: const EdgeInsets.all(24), child: _buildActions()),
           ],
         ),
       ),
@@ -325,20 +336,25 @@ class _SponsorTierSelectionDialogState
     });
 
     try {
-      // Get default payment method
-      final paymentMethodId = await _paymentService.getDefaultPaymentMethodId();
+      // Get payment methods with risk assessment using enhanced service
+      final paymentMethods = await _paymentService.getPaymentMethodsWithRisk();
 
-      if (paymentMethodId == null) {
+      // Find the default payment method
+      final defaultPaymentMethod = paymentMethods
+          .where((method) => method.isDefault)
+          .firstOrNull;
+
+      if (defaultPaymentMethod == null) {
         throw Exception(
           'No payment method found. Please add a payment method first.',
         );
       }
 
-      // Create sponsorship
+      // Create sponsorship using enhanced payment service
       await _sponsorshipService.createSponsorship(
         artistId: widget.artistId,
         tier: _selectedTier!,
-        paymentMethodId: paymentMethodId,
+        paymentMethodId: defaultPaymentMethod.id,
       );
 
       if (mounted) {

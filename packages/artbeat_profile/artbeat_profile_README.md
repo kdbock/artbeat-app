@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `artbeat_profile` module is the comprehensive user profile management system for the ARTbeat Flutter application. It handles all aspects of user profile functionality including creation, editing, viewing, social features, achievements, discovery, and advanced profile customization. This guide provides a complete walkthrough of every feature available to users.
+The `artbeat_profile` module is the comprehensive user profile management system for the ARTbeat Flutter application. It handles all aspects of user profile functionality including creation, editing, viewing, social features, achievements, discovery, advanced profile customization, and **secure payment processing with enhanced fraud detection**. This guide provides a complete walkthrough of every feature available to users.
 
 > **Implementation Status**: This guide documents both implemented features (✅) and planned features (🚧). Recent major updates include new profile models and services for customization, activity tracking, and analytics.
 
@@ -42,6 +42,7 @@ The `artbeat_profile` module is the comprehensive user profile management system
 - **Social Features**: ✅ 100% implemented
 - **Achievement System**: ✅ 100% implemented
 - **Advanced Customization**: ✅ 100% implemented (models, services, and screens)
+- **🆕 Enhanced Payment System**: ✅ 100% implemented (Fraud detection, biometric auth, risk assessment)
 - **Privacy & Settings**: 🔄 Exists in artbeat_settings package
 
 ---
@@ -126,6 +127,47 @@ The `artbeat_profile` module is the comprehensive user profile management system
 - ✅ Achievement badge display
 
 **Available to**: All user types
+
+### 5. Enhanced Payment System 🆕
+
+**Purpose**: Secure payment processing with advanced fraud detection and user-friendly features
+
+**Key Features**:
+
+- ✅ **Enhanced Payment Service Integration** - Advanced fraud detection and risk assessment
+- ✅ **Biometric Authentication** - Secure payment processing with device authentication
+- ✅ **Device Fingerprinting** - Unique device identification for security
+- ✅ **Real-time Risk Assessment** - Payment method evaluation before processing
+- ✅ **Cloud Function Integration** - Server-side payment processing with authentication
+- ✅ **Multiple Payment Methods** - Support for Apple Pay, Google Pay, PayPal, and credit cards
+- ✅ **Gift System** - Send digital gifts to other users with secure processing
+- ✅ **Coupon Support** - Apply discount codes and promotional offers
+- ✅ **Transaction History** - Complete payment history and receipt management
+
+**Security Features**:
+
+- 🔒 **Fraud Detection**: Advanced algorithms detect suspicious transactions
+- 🔒 **Risk Scoring**: Payment methods evaluated for security before processing
+- 🔒 **Device Authentication**: Biometric and device-based verification
+- 🔒 **Encrypted Processing**: All payment data secured with industry standards
+- 🔒 **Real-time Monitoring**: Continuous transaction monitoring and alerts
+
+**Supported Transaction Types**:
+
+- 💝 **Gifts**: Send digital gifts to artists and users
+- 📱 **Subscriptions**: Manage artist and gallery subscriptions
+- 📢 **Advertisements**: Purchase ad space with enhanced security
+- 🤝 **Sponsorships**: Support artists with secure sponsorship payments
+- 🎨 **Commissions**: Process commission payments (deposit, milestone, final)
+
+**Integration Points**:
+
+- 🔗 `EnhancedPaymentService` - Core payment processing with security features
+- 🔗 `OrderReviewScreen` - Unified payment review interface with coupons
+- 🔗 Cloud Functions - Server-side payment intent creation and processing
+- 🔗 Stripe Integration - Secure payment gateway with multiple methods
+
+**Available to**: All user types (artists, galleries, regular users)
 
 ---
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show SocketException;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,10 +9,11 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_capture/src/screens/capture_detail_screen.dart';
 import '../widgets/art_walk_drawer.dart';
-import '../widgets/art_walk_header.dart';
+
 import '../widgets/map_floating_menu.dart';
 import '../widgets/offline_map_fallback.dart';
 import '../widgets/offline_art_walk_widget.dart';
+import '../theme/art_walk_design_system.dart';
 
 /// Screen that displays a map with nearby captures and art walks
 class ArtWalkMapScreen extends StatefulWidget {
@@ -128,7 +130,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         );
       }
     } catch (e) {
-      debugPrint('❌ Error initializing location: $e');
+      AppLogger.error('❌ Error initializing location: $e');
       if (mounted) {
         setState(() {
           _hasMapError = true;
@@ -255,7 +257,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
             .timeout(const Duration(seconds: 3));
         _hasMovedToUserLocation = true;
       } catch (e) {
-        debugPrint('⚠️ Error animating camera: $e');
+        AppLogger.error('⚠️ Error animating camera: $e');
       }
     }
   }
@@ -291,7 +293,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
         _updateMarkers();
       }
     } catch (e) {
-      debugPrint('❌ Error loading nearby captures: $e');
+      AppLogger.error('❌ Error loading nearby captures: $e');
       if (mounted) {
         setState(() {
           _nearbyCaptures = [];
@@ -306,7 +308,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
     try {
       await _userService.updateUserZipCode(zipCode);
     } catch (e) {
-      debugPrint('❌ Error updating user ZIP code: $e');
+      AppLogger.error('❌ Error updating user ZIP code: $e');
     }
   }
 
@@ -382,7 +384,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       setState(() => _currentPosition = newPosition);
       await _updateNearbyCaptures();
     } catch (e) {
-      debugPrint('❌ Error refreshing location: $e');
+      AppLogger.error('❌ Error refreshing location: $e');
     }
   }
 
@@ -444,7 +446,7 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       });
       _updateMarkers();
     } catch (e) {
-      debugPrint('❌ Error updating nearby captures: $e');
+      AppLogger.error('❌ Error updating nearby captures: $e');
     }
   }
 
@@ -487,45 +489,95 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
       currentIndex: 1, // Art Walk tab
       drawer: const ArtWalkDrawer(),
       child: Scaffold(
-        appBar: ArtWalkHeader(
+        appBar: ArtWalkDesignSystem.buildAppBar(
           title: 'Art Walk Map',
           showBackButton: true,
-          showSearch: true,
-          showChat: false,
-          onBackPressed: () {
-            // Check if there's a previous route to go back to
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              // If no previous route, navigate to dashboard
-              Navigator.of(context).pushReplacementNamed('/dashboard');
-            }
-          },
-          onSearchPressed: () {
-            // Navigate to search screen
-            Navigator.pushNamed(context, '/search');
-          },
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.search,
+                color: ArtWalkDesignSystem.textLight,
+              ),
+              onPressed: () => Navigator.pushNamed(context, '/search'),
+            ),
+          ],
         ),
         body: Stack(
           children: [
             // Google Map
-            GoogleMap(
-              initialCameraPosition: _defaultLocation,
-              markers: _markers,
-              onMapCreated: (GoogleMapController controller) {
-                _mapController = controller;
-              },
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-            ),
+            kIsWeb
+                ? Container(
+                    color: Colors.grey[100],
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.map_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Interactive Map',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : GoogleMap(
+                    initialCameraPosition: _defaultLocation,
+                    markers: _markers,
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller;
+                    },
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
+                  ),
 
             // Loading indicator
             if (_isLoading || _isSearchingZip)
               Container(
-                color: Colors.black54,
-                child: const Center(child: CircularProgressIndicator()),
+                decoration: const BoxDecoration(
+                  gradient: ArtWalkDesignSystem.backgroundGradient,
+                ),
+                child: Center(
+                  child: ArtWalkDesignSystem.buildGlassCard(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            ArtWalkDesignSystem.primaryTeal,
+                          ),
+                        ),
+                        const SizedBox(height: ArtWalkDesignSystem.paddingM),
+                        Text(
+                          _isSearchingZip
+                              ? 'Searching location...'
+                              : 'Loading map...',
+                          style: ArtWalkDesignSystem.cardTitleStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
 
             // Error message - using OfflineMapFallback widget
@@ -542,27 +594,26 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
 
             // ZIP code search bar
             Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
+              top: ArtWalkDesignSystem.paddingM,
+              left: ArtWalkDesignSystem.paddingM,
+              right: ArtWalkDesignSystem.paddingM,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ArtWalkDesignSystem.paddingM,
+                ),
+                decoration: ArtWalkDesignSystem.glassDecoration(
+                  borderRadius: ArtWalkDesignSystem.radiusM,
                 ),
                 child: TextField(
+                  style: ArtWalkDesignSystem.cardTitleStyle,
                   decoration: InputDecoration(
                     hintText: 'Enter ZIP code (current: $_currentZipCode)',
+                    hintStyle: ArtWalkDesignSystem.cardSubtitleStyle,
                     border: InputBorder.none,
-                    suffixIcon: const Icon(Icons.search),
+                    suffixIcon: const Icon(
+                      Icons.search,
+                      color: ArtWalkDesignSystem.primaryTeal,
+                    ),
                   ),
                   onSubmitted: (zipCode) async {
                     if (zipCode.isNotEmpty) {

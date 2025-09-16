@@ -3,18 +3,17 @@ import '../test_artist_features_app.dart';
 
 /// Debug menu for accessing development and testing features
 class DebugMenu extends StatelessWidget {
-  const DebugMenu({Key? key}) : super(key: key);
+  const DebugMenu({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('🛠️ Debug Menu'),
         backgroundColor: Colors.grey[800],
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -132,7 +131,6 @@ class DebugMenu extends StatelessWidget {
         ),
       ),
     );
-  }
 
   void _showFirebaseDebug(BuildContext context) {
     showDialog<void>(

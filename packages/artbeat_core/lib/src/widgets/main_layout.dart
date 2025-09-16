@@ -44,9 +44,8 @@ class _MainLayoutState extends State<MainLayout> {
           ).pushNamedAndRemoveUntil('/art-walk/dashboard', (route) => false);
           break;
         case 2:
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil('/captures', (route) => false);
+          // Smart camera launch for capture button - checks terms acceptance
+          Navigator.of(context).pushNamed('/capture/smart');
           break;
         case 3:
           Navigator.of(

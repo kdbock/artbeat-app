@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/profile_analytics_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing profile analytics and user engagement metrics
 class ProfileAnalyticsService extends ChangeNotifier {
@@ -23,7 +24,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting profile analytics: $e');
+      AppLogger.error('Error getting profile analytics: $e');
       return null;
     }
   }
@@ -50,7 +51,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
 
       return filteredViews;
     } catch (e) {
-      debugPrint('Error getting profile view stats: $e');
+      AppLogger.error('Error getting profile view stats: $e');
       return {};
     }
   }
@@ -116,7 +117,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
         'profileViews': analytics.profileViews,
       };
     } catch (e) {
-      debugPrint('Error getting engagement metrics: $e');
+      AppLogger.error('Error getting engagement metrics: $e');
       return {};
     }
   }
@@ -145,7 +146,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
 
       return growthData;
     } catch (e) {
-      debugPrint('Error getting follower growth: $e');
+      AppLogger.error('Error getting follower growth: $e');
       return {};
     }
   }
@@ -215,7 +216,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating profile view count: $e');
+      AppLogger.error('Error updating profile view count: $e');
     }
   }
 
@@ -269,7 +270,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating engagement metrics: $e');
+      AppLogger.error('Error updating engagement metrics: $e');
     }
   }
 
@@ -297,7 +298,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
 
       return analytics;
     } catch (e) {
-      debugPrint('Error getting bulk analytics: $e');
+      AppLogger.error('Error getting bulk analytics: $e');
       return [];
     }
   }
@@ -326,7 +327,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
           .map((doc) => ProfileAnalyticsModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting top profiles: $e');
+      AppLogger.error('Error getting top profiles: $e');
       return [];
     }
   }
@@ -337,7 +338,7 @@ class ProfileAnalyticsService extends ChangeNotifier {
       await _analyticsCollection.doc(userId).delete();
       notifyListeners();
     } catch (e) {
-      debugPrint('Error resetting analytics: $e');
+      AppLogger.error('Error resetting analytics: $e');
     }
   }
 

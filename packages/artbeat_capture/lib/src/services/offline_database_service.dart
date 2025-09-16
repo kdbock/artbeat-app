@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
+import 'package:artbeat_core/artbeat_core.dart' show CaptureModel, AppLogger;
 import '../models/offline_queue_item.dart';
 
 /// Service for managing offline capture queue using SQLite
@@ -31,7 +31,7 @@ class OfflineDatabaseService {
       final documentsDirectory = await getApplicationDocumentsDirectory();
       final path = join(documentsDirectory.path, 'offline_capture_queue.db');
 
-      debugPrint('Initializing offline database at: $path');
+      AppLogger.info('Initializing offline database at: $path');
 
       return await openDatabase(
         path,
@@ -40,14 +40,14 @@ class OfflineDatabaseService {
         onUpgrade: _upgradeDatabase,
       );
     } catch (e) {
-      debugPrint('Error initializing offline database: $e');
+      AppLogger.error('Error initializing offline database: $e');
       rethrow;
     }
   }
 
   /// Create database tables
   Future<void> _createDatabase(Database db, int version) async {
-    debugPrint('Creating offline queue tables');
+    AppLogger.info('Creating offline queue tables');
 
     await db.execute('''
       CREATE TABLE offline_queue (
@@ -86,7 +86,9 @@ class OfflineDatabaseService {
     int oldVersion,
     int newVersion,
   ) async {
-    debugPrint('Upgrading offline database from v$oldVersion to v$newVersion');
+    AppLogger.info(
+      'Upgrading offline database from v$oldVersion to v$newVersion',
+    );
 
     if (oldVersion < 2) {
       // Future version upgrades would go here
@@ -105,10 +107,10 @@ class OfflineDatabaseService {
         'syncPriority': item.syncPriority,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
 
-      debugPrint('Added item to offline queue: ${item.id}');
+      AppLogger.info('Added item to offline queue: ${item.id}');
       return result > 0;
     } catch (e) {
-      debugPrint('Error adding item to offline queue: $e');
+      AppLogger.error('Error adding item to offline queue: $e');
       return false;
     }
   }
@@ -135,7 +137,7 @@ class OfflineDatabaseService {
       );
       return result > 0;
     } catch (e) {
-      debugPrint('Error updating queue item: $e');
+      AppLogger.error('Error updating queue item: $e');
       return false;
     }
   }
@@ -151,10 +153,10 @@ class OfflineDatabaseService {
         whereArgs: [itemId],
       );
 
-      debugPrint('Removed item from offline queue: $itemId');
+      AppLogger.info('Removed item from offline queue: $itemId');
       return result > 0;
     } catch (e) {
-      debugPrint('Error removing item from offline queue: $e');
+      AppLogger.error('Error removing item from offline queue: $e');
       return false;
     }
   }
@@ -176,7 +178,7 @@ class OfflineDatabaseService {
 
       return maps.map((map) => _mapToQueueItem(map)).toList();
     } catch (e) {
-      debugPrint('Error getting pending items: $e');
+      AppLogger.error('Error getting pending items: $e');
       return [];
     }
   }
@@ -197,7 +199,7 @@ class OfflineDatabaseService {
 
       return maps.map((map) => _mapToQueueItem(map)).toList();
     } catch (e) {
-      debugPrint('Error getting items by status: $e');
+      AppLogger.error('Error getting items by status: $e');
       return [];
     }
   }
@@ -218,7 +220,7 @@ class OfflineDatabaseService {
           .where((item) => item.captureData.userId == userId)
           .toList();
     } catch (e) {
-      debugPrint('Error getting user queue items: $e');
+      AppLogger.error('Error getting user queue items: $e');
       return [];
     }
   }
@@ -240,7 +242,7 @@ class OfflineDatabaseService {
       // Filter for items ready for auto-retry
       return items.where((item) => item.shouldAutoRetry).toList();
     } catch (e) {
-      debugPrint('Error getting items for auto-retry: $e');
+      AppLogger.error('Error getting items for auto-retry: $e');
       return [];
     }
   }
@@ -265,7 +267,7 @@ class OfflineDatabaseService {
 
       return stats;
     } catch (e) {
-      debugPrint('Error getting queue statistics: $e');
+      AppLogger.error('Error getting queue statistics: $e');
       return {};
     }
   }
@@ -286,12 +288,12 @@ class OfflineDatabaseService {
       );
 
       if (result > 0) {
-        debugPrint('Cleaned up $result old synced items');
+        AppLogger.info('Cleaned up $result old synced items');
       }
 
       return result;
     } catch (e) {
-      debugPrint('Error cleaning up old items: $e');
+      AppLogger.error('Error cleaning up old items: $e');
       return 0;
     }
   }
@@ -301,10 +303,10 @@ class OfflineDatabaseService {
     try {
       final db = await database;
       await db.delete('offline_queue');
-      debugPrint('Cleared offline queue');
+      AppLogger.info('Cleared offline queue');
       return true;
     } catch (e) {
-      debugPrint('Error clearing queue: $e');
+      AppLogger.error('Error clearing queue: $e');
       return false;
     }
   }

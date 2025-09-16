@@ -28,6 +28,8 @@ dependencies:
     path: ../artbeat_artist
   artbeat_artwork:
     path: ../artbeat_artwork
+  artbeat_events:
+    path: ../artbeat_events
   share_plus: ^11.0.0
   google_maps_flutter: ^2.5.3
   flutter_svg: ^2.0.10+1
@@ -37,6 +39,11 @@ dependencies:
   uuid: ^4.2.1
   geolocator: ^14.0.1
   http: ^1.2.0
+  flutter_image_compress: ^2.3.0
+  video_player: ^2.8.2
+  audioplayers: ^6.0.0
+  image_editor_plus: ^1.0.4
+  file_picker: ^8.0.0+1
 
 flutter:
   uses-material-design: true

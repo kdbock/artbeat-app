@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/subscription_tier.dart';
+import '../utils/logger.dart';
 
 /// Service for validating subscription plan transitions and capabilities
 class SubscriptionPlanValidator {
@@ -43,7 +43,7 @@ class SubscriptionPlanValidator {
 
       return true;
     } catch (e) {
-      debugPrint('Error validating tier transition: $e');
+      AppLogger.error('Error validating tier transition: $e');
       return false;
     }
   }
@@ -63,7 +63,7 @@ class SubscriptionPlanValidator {
 
       return snapshot.docs.isNotEmpty;
     } catch (e) {
-      debugPrint('Error checking active commissions: $e');
+      AppLogger.error('Error checking active commissions: $e');
       return false;
     }
   }
@@ -82,7 +82,7 @@ class SubscriptionPlanValidator {
 
       return snapshot.count ?? 0;
     } catch (e) {
-      debugPrint('Error getting artwork count: $e');
+      AppLogger.error('Error getting artwork count: $e');
       return 0;
     }
   }

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/material.dart';
 
 /// Temporary debug screen to fix profile image URL
 class DebugProfileFix extends StatefulWidget {
@@ -32,7 +32,7 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
         _urlController.text = _currentProfileUrl ?? '';
       });
     } catch (e) {
-      debugPrint('Error loading user: $e');
+      AppLogger.error('Error loading user: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -71,15 +71,14 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Debug Profile Fix'),
         backgroundColor: ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -156,7 +155,6 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
         ),
       ),
     );
-  }
 
   @override
   void dispose() {

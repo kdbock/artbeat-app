@@ -10,3 +10,8 @@ export 'directions_service.dart';
 export 'secure_directions_service.dart';
 export 'google_maps_service.dart';
 export 'rewards_service.dart';
+export 'audio_navigation_service.dart';
+export 'art_walk_progress_service.dart';
+export 'art_location_clustering_service.dart';
+export 'smart_onboarding_service.dart';
+export 'haptic_feedback_service.dart';

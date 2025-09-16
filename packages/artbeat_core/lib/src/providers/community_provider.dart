@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/logger.dart';
 
 class CommunityProvider extends ChangeNotifier {
   int _unreadCount = 0;
@@ -51,7 +52,7 @@ class CommunityProvider extends ChangeNotifier {
         notifyListeners();
       },
       onError: (Object error) {
-        debugPrint('Error listening to unread count: $error');
+        AppLogger.error('Error listening to unread count: $error');
         if (!mounted) return; // Check if still mounted
         _unreadCount = 0;
         notifyListeners();
@@ -85,7 +86,7 @@ class CommunityProvider extends ChangeNotifier {
             return 0;
           });
     } catch (e) {
-      debugPrint('Error getting unread posts count: $e');
+      AppLogger.error('Error getting unread posts count: $e');
       return Stream.value(0);
     }
   }
@@ -102,7 +103,7 @@ class CommunityProvider extends ChangeNotifier {
             'userId': _currentUser!.uid,
           }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Error marking community as visited: $e');
+      AppLogger.error('Error marking community as visited: $e');
     }
   }
 

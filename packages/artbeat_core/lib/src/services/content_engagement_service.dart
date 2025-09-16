@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/engagement_model.dart';
 import 'engagement_config_service.dart';
+import '../utils/logger.dart';
 
 /// Content-specific engagement service for ARTbeat content types
 /// Replaces UniversalEngagementService with content-specific engagement handling
@@ -102,7 +103,7 @@ class ContentEngagementService extends ChangeNotifier {
       notifyListeners();
       return !isCurrentlyEngaged; // Return new engagement state
     } catch (e) {
-      debugPrint('Error toggling engagement: $e');
+      AppLogger.error('Error toggling engagement: $e');
       rethrow;
     }
   }
@@ -124,7 +125,7 @@ class ContentEngagementService extends ChangeNotifier {
       final doc = await engagementRef.get();
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking engagement: $e');
+      AppLogger.error('Error checking engagement: $e');
       return false;
     }
   }
@@ -149,7 +150,7 @@ class ContentEngagementService extends ChangeNotifier {
         data['engagementStats'] as Map<String, dynamic>? ?? data,
       );
     } catch (e) {
-      debugPrint('Error getting engagement stats: $e');
+      AppLogger.error('Error getting engagement stats: $e');
       return EngagementStats(lastUpdated: DateTime.now());
     }
   }
@@ -173,7 +174,7 @@ class ContentEngagementService extends ChangeNotifier {
           .map((doc) => EngagementModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting engagements: $e');
+      AppLogger.error('Error getting engagements: $e');
       return [];
     }
   }
@@ -239,7 +240,7 @@ class ContentEngagementService extends ChangeNotifier {
         });
       });
     } catch (e) {
-      debugPrint('Error tracking seen engagement: $e');
+      AppLogger.error('Error tracking seen engagement: $e');
       // Don't throw - seen tracking is not critical
     }
   }
@@ -258,7 +259,7 @@ class ContentEngagementService extends ChangeNotifier {
           .map((doc) => doc.data()['userId'] as String)
           .toList();
     } catch (e) {
-      debugPrint('Error getting user followers: $e');
+      AppLogger.error('Error getting user followers: $e');
       return [];
     }
   }
@@ -277,7 +278,7 @@ class ContentEngagementService extends ChangeNotifier {
           .map((doc) => doc.data()['contentId'] as String)
           .toList();
     } catch (e) {
-      debugPrint('Error getting user following: $e');
+      AppLogger.error('Error getting user following: $e');
       return [];
     }
   }
@@ -468,7 +469,7 @@ class ContentEngagementService extends ChangeNotifier {
         'message': 'Someone ${engagementType.pastTense} your $contentType',
       });
     } catch (e) {
-      debugPrint('Error creating engagement notification: $e');
+      AppLogger.error('Error creating engagement notification: $e');
       // Don't throw - notifications are not critical
     }
   }
@@ -511,7 +512,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return ratings;
     } catch (e) {
-      debugPrint('Error fetching ratings: $e');
+      AppLogger.error('Error fetching ratings: $e');
       return [];
     }
   }
@@ -554,7 +555,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return reviews;
     } catch (e) {
-      debugPrint('Error fetching reviews: $e');
+      AppLogger.error('Error fetching reviews: $e');
       return [];
     }
   }
@@ -579,7 +580,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return sum / ratings.length;
     } catch (e) {
-      debugPrint('Error calculating average rating: $e');
+      AppLogger.error('Error calculating average rating: $e');
       return 0.0;
     }
   }
@@ -654,7 +655,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return commentRef.id;
     } catch (e) {
-      debugPrint('Error adding comment: $e');
+      AppLogger.error('Error adding comment: $e');
       rethrow;
     }
   }
@@ -683,11 +684,11 @@ class ContentEngagementService extends ChangeNotifier {
 
       // Here you would implement actual sharing logic based on platform
       // For now, we'll just track the engagement
-      debugPrint('Content shared: $contentId to ${platform ?? 'internal'}');
+      AppLogger.info('Content shared: $contentId to ${platform ?? 'internal'}');
 
       return true;
     } catch (e) {
-      debugPrint('Error sharing content: $e');
+      AppLogger.error('Error sharing content: $e');
       return false;
     }
   }
@@ -746,7 +747,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return comments;
     } catch (e) {
-      debugPrint('Error fetching comments: $e');
+      AppLogger.error('Error fetching comments: $e');
       return [];
     }
   }
@@ -783,7 +784,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      debugPrint('Error deleting comment: $e');
+      AppLogger.error('Error deleting comment: $e');
       return false;
     }
   }
@@ -801,7 +802,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return engagementDoc.exists;
     } catch (e) {
-      debugPrint('Error checking like status: $e');
+      AppLogger.error('Error checking like status: $e');
       return false;
     }
   }
@@ -836,7 +837,7 @@ class ContentEngagementService extends ChangeNotifier {
 
       return engagementStatus;
     } catch (e) {
-      debugPrint('Error getting user engagement status: $e');
+      AppLogger.error('Error getting user engagement status: $e');
       return {
         'liked': false,
         'shared': false,

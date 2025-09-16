@@ -13,6 +13,16 @@ export 'models/studio_model.dart';
 export 'models/gift_model_export.dart'; // Use export file to avoid conflicts
 export 'models/direct_commission_model.dart';
 export 'models/sponsor_model.dart';
+export 'models/group_models.dart' show GroupType;
+
+// NEW SIMPLIFIED EXPORTS
+export 'models/art_models.dart';
+export 'services/art_community_service.dart';
+export 'services/firebase_storage_service.dart';
+export 'widgets/art_gallery_widgets.dart';
+export 'screens/art_community_hub.dart';
+export 'screens/create_art_post_screen.dart';
+export 'screens/artist_onboarding_screen.dart';
 
 // Services
 export 'services/services.dart';

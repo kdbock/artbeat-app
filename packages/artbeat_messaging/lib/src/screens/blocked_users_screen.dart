@@ -30,7 +30,7 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
       final blockedUsers = await chatService.getBlockedUsers();
 
       setState(() {
-        _blockedUsers = blockedUsers;
+        _blockedUsers = blockedUsers.cast<messaging.UserModel>();
         _isLoading = false;
       });
     } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Comprehensive audit trail service for compliance and logging
 /// Tracks all admin actions, user activities, and system events
@@ -46,7 +47,7 @@ class AuditTrailService extends ChangeNotifier {
 
       await _firestore.collection('auditTrail').add(auditEntry);
     } catch (e) {
-      debugPrint('Error logging admin action: $e');
+      AppLogger.error('Error logging admin action: $e');
     }
   }
 
@@ -72,7 +73,7 @@ class AuditTrailService extends ChangeNotifier {
 
       await _firestore.collection('userActivityLog').add(auditEntry);
     } catch (e) {
-      debugPrint('Error logging user activity: $e');
+      AppLogger.error('Error logging user activity: $e');
     }
   }
 
@@ -97,7 +98,7 @@ class AuditTrailService extends ChangeNotifier {
 
       await _firestore.collection('systemEventLog').add(auditEntry);
     } catch (e) {
-      debugPrint('Error logging system event: $e');
+      AppLogger.error('Error logging system event: $e');
     }
   }
 
@@ -144,7 +145,7 @@ class AuditTrailService extends ChangeNotifier {
         return data;
       }).toList();
     } catch (e) {
-      debugPrint('Error getting audit trail: $e');
+      AppLogger.error('Error getting audit trail: $e');
       return [];
     }
   }
@@ -184,7 +185,7 @@ class AuditTrailService extends ChangeNotifier {
         return data;
       }).toList();
     } catch (e) {
-      debugPrint('Error getting user activity logs: $e');
+      AppLogger.error('Error getting user activity logs: $e');
       return [];
     }
   }
@@ -224,7 +225,7 @@ class AuditTrailService extends ChangeNotifier {
         return data;
       }).toList();
     } catch (e) {
-      debugPrint('Error getting system event logs: $e');
+      AppLogger.error('Error getting system event logs: $e');
       return [];
     }
   }
@@ -292,7 +293,7 @@ class AuditTrailService extends ChangeNotifier {
         'generatedBy': _auth.currentUser?.email ?? 'system',
       };
     } catch (e) {
-      debugPrint('Error generating compliance report: $e');
+      AppLogger.error('Error generating compliance report: $e');
       return {
         'error': e.toString(),
         'generatedAt': DateTime.now().toIso8601String(),
@@ -330,7 +331,7 @@ class AuditTrailService extends ChangeNotifier {
         'lastUpdated': DateTime.now().toIso8601String(),
       };
     } catch (e) {
-      debugPrint('Error getting audit statistics: $e');
+      AppLogger.error('Error getting audit statistics: $e');
       return {
         'error': e.toString(),
         'lastUpdated': DateTime.now().toIso8601String(),
@@ -392,7 +393,7 @@ class AuditTrailService extends ChangeNotifier {
       final snapshot = await query.count().get();
       return snapshot.count ?? 0;
     } catch (e) {
-      debugPrint('Error getting action count: $e');
+      AppLogger.error('Error getting action count: $e');
       return 0;
     }
   }

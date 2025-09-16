@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CommunityService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -13,7 +15,7 @@ class CommunityService extends ChangeNotifier {
     // This is a placeholder.
     // Actual implementation would use image_picker or a similar package
     // to allow the user to select images from their gallery or camera.
-    debugPrint('pickPostImages called - placeholder implementation');
+    AppLogger.info('pickPostImages called - placeholder implementation');
     return []; // Return an empty list for now
   }
 
@@ -37,11 +39,18 @@ class CommunityService extends ChangeNotifier {
 
       final querySnapshot = await query.get();
 
-      return querySnapshot.docs
-          .map((doc) => PostModel.fromFirestore(doc))
-          .toList();
+      // Load posts and add like status for current user
+      final posts = <PostModel>[];
+      for (final doc in querySnapshot.docs) {
+        final post = PostModel.fromFirestore(doc);
+        final isLiked = await hasUserLikedPost(post.id);
+        final postWithLikeStatus = post.copyWith(isLikedByCurrentUser: isLiked);
+        posts.add(postWithLikeStatus);
+      }
+
+      return posts;
     } catch (e) {
-      debugPrint('Error getting posts: $e');
+      AppLogger.error('Error getting posts: $e');
       return [];
     }
   }
@@ -73,7 +82,7 @@ class CommunityService extends ChangeNotifier {
           .map((doc) => PostModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting posts by user ID: $e');
+      AppLogger.error('Error getting posts by user ID: $e');
       return [];
     }
   }
@@ -95,12 +104,12 @@ class CommunityService extends ChangeNotifier {
     String? groupType, // Add groupType parameter
   }) async {
     try {
-      debugPrint('🔄 Creating post for user: $userId');
-      debugPrint('📝 Post content: $content');
-      debugPrint('🖼️ Image URLs: $imageUrls');
-      debugPrint('🏷️ Tags: $tags');
-      debugPrint('📍 Location: $location');
-      debugPrint('👥 Group Type: $groupType');
+      AppLogger.info('🔄 Creating post for user: $userId');
+      AppLogger.info('📝 Post content: $content');
+      AppLogger.info('🖼️ Image URLs: $imageUrls');
+      AppLogger.info('🏷️ Tags: $tags');
+      AppLogger.info('📍 Location: $location');
+      AppLogger.info('👥 Group Type: $groupType');
 
       final docRef = await _firestore.collection('posts').add({
         'userId': userId,
@@ -123,11 +132,11 @@ class CommunityService extends ChangeNotifier {
             groupType ?? 'general', // Default to 'general' if not specified
       });
 
-      debugPrint('✅ Post created successfully with ID: ${docRef.id}');
+      AppLogger.info('✅ Post created successfully with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {
-      debugPrint('❌ Error creating post: $e');
-      debugPrint('📍 Stack trace: ${StackTrace.current}');
+      AppLogger.error('❌ Error creating post: $e');
+      AppLogger.info('📍 Stack trace: ${StackTrace.current}');
       return null;
     }
   }
@@ -138,7 +147,7 @@ class CommunityService extends ChangeNotifier {
       await _firestore.collection('posts').doc(postId).delete();
       return true;
     } catch (e) {
-      debugPrint('Error deleting post: $e');
+      AppLogger.error('Error deleting post: $e');
       return false;
     }
   }
@@ -175,12 +184,12 @@ class CommunityService extends ChangeNotifier {
 
       return commentRef.id;
     } catch (e) {
-      debugPrint('Error adding comment: $e');
-      debugPrint('Error type: ${e.runtimeType}');
+      AppLogger.error('Error adding comment: $e');
+      AppLogger.error('Error type: ${e.runtimeType}');
       if (e.toString().contains('permission')) {
-        debugPrint('Permission error details: $e');
-        debugPrint('User ID: $userId');
-        debugPrint('Post ID: $postId');
+        AppLogger.error('Permission error details: $e');
+        AppLogger.info('User ID: $userId');
+        AppLogger.info('Post ID: $postId');
       }
       return null;
     }
@@ -219,7 +228,7 @@ class CommunityService extends ChangeNotifier {
           ) // Filter top-level comments
           .toList();
     } catch (e) {
-      debugPrint('Error getting comments: $e');
+      AppLogger.error('Error getting comments: $e');
       return [];
     }
   }
@@ -256,7 +265,7 @@ class CommunityService extends ChangeNotifier {
           .map((doc) => CommentModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting replies: $e');
+      AppLogger.error('Error getting replies: $e');
       return [];
     }
   }
@@ -300,7 +309,7 @@ class CommunityService extends ChangeNotifier {
             return unreadPostsSnapshot.docs.length;
           });
     } catch (e) {
-      debugPrint('Error getting unread posts count: $e');
+      AppLogger.error('Error getting unread posts count: $e');
       return Stream.value(0);
     }
   }
@@ -313,7 +322,109 @@ class CommunityService extends ChangeNotifier {
         'userId': userId,
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Error marking community as visited: $e');
+      AppLogger.error('Error marking community as visited: $e');
+    }
+  }
+
+  // Toggle like for a post
+  Future<bool> toggleLike(String postId) async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) {
+        AppLogger.error('User not authenticated for like action');
+        return false;
+      }
+
+      // Reference to the post document
+      final postRef = _firestore.collection('posts').doc(postId);
+
+      // Reference to the user's like document
+      final likeRef = _firestore
+          .collection('posts')
+          .doc(postId)
+          .collection('likes')
+          .doc(userId);
+
+      // Use a transaction to ensure consistency
+      return await _firestore.runTransaction<bool>((transaction) async {
+        // Check if user has already liked this post
+        final likeDoc = await transaction.get(likeRef);
+        final postDoc = await transaction.get(postRef);
+
+        if (!postDoc.exists) {
+          throw Exception('Post not found');
+        }
+
+        final postData = postDoc.data() as Map<String, dynamic>;
+        final currentLikeCount =
+            (postData['engagementStats']?['likeCount'] ?? 0) as int;
+
+        if (likeDoc.exists) {
+          // User has liked - remove like
+          transaction.delete(likeRef);
+          transaction.update(postRef, {
+            'engagementStats.likeCount': currentLikeCount > 0
+                ? currentLikeCount - 1
+                : 0,
+            'engagementStats.lastUpdated': FieldValue.serverTimestamp(),
+          });
+          AppLogger.info('Removed like for post $postId by user $userId');
+          return false; // false = unliked
+        } else {
+          // User hasn't liked - add like
+          transaction.set(likeRef, {
+            'userId': userId,
+            'likedAt': FieldValue.serverTimestamp(),
+          });
+          transaction.update(postRef, {
+            'engagementStats.likeCount': currentLikeCount + 1,
+            'engagementStats.lastUpdated': FieldValue.serverTimestamp(),
+          });
+          AppLogger.info('Added like for post $postId by user $userId');
+          return true; // true = liked
+        }
+      });
+    } catch (e) {
+      AppLogger.error('Error toggling like for post $postId: $e');
+      return false;
+    }
+  }
+
+  // Check if current user has liked a post
+  Future<bool> hasUserLikedPost(String postId) async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return false;
+
+      final likeDoc = await _firestore
+          .collection('posts')
+          .doc(postId)
+          .collection('likes')
+          .doc(userId)
+          .get();
+
+      return likeDoc.exists;
+    } catch (e) {
+      AppLogger.error('Error checking if user liked post $postId: $e');
+      return false;
+    }
+  }
+
+  // Get users who liked a post
+  Future<List<String>> getPostLikes(String postId) async {
+    try {
+      final likesSnapshot = await _firestore
+          .collection('posts')
+          .doc(postId)
+          .collection('likes')
+          .get();
+
+      return likesSnapshot.docs
+          .map((doc) => doc.data()['userId'] as String)
+          .toList();
+    } catch (e) {
+      AppLogger.error('Error getting likes for post $postId: $e');
+      return [];
     }
   }
 }

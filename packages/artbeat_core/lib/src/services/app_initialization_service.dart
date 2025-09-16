@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'image_management_service.dart';
+import '../utils/logger.dart';
 
 /// Service to handle app initialization tasks
 class AppInitializationService {
@@ -14,11 +14,11 @@ class AppInitializationService {
   /// Initialize all core services
   Future<void> initialize() async {
     if (_isInitialized) {
-      debugPrint('⚠️ AppInitializationService already initialized');
+      AppLogger.warning('⚠️ AppInitializationService already initialized');
       return;
     }
 
-    debugPrint('🚀 Initializing ARTbeat Core Services...');
+    AppLogger.info('🚀 Initializing ARTbeat Core Services...');
 
     try {
       // Initialize image management service
@@ -27,9 +27,9 @@ class AppInitializationService {
       // Add other service initializations here
 
       _isInitialized = true;
-      debugPrint('✅ ARTbeat Core Services initialized successfully');
+      AppLogger.info('✅ ARTbeat Core Services initialized successfully');
     } catch (e) {
-      debugPrint('❌ Failed to initialize ARTbeat Core Services: $e');
+      AppLogger.error('❌ Failed to initialize ARTbeat Core Services: $e');
       rethrow;
     }
   }
@@ -37,6 +37,6 @@ class AppInitializationService {
   /// Reset initialization state (for testing)
   void reset() {
     _isInitialized = false;
-    debugPrint('🔄 AppInitializationService reset');
+    AppLogger.info('🔄 AppInitializationService reset');
   }
 }

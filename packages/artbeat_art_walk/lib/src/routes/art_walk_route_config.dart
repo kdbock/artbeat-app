@@ -22,8 +22,9 @@ class ArtWalkRouteConfig {
 
       case ArtWalkRoutes.experience:
         final args = settings.arguments as Map<String, dynamic>;
+        // Redirect to enhanced experience for better UX
         return MaterialPageRoute(
-          builder: (_) => ArtWalkExperienceScreen(
+          builder: (_) => EnhancedArtWalkExperienceScreen(
             artWalkId: args['artWalkId'] as String,
             artWalk: args['artWalk'] as ArtWalkModel,
           ),

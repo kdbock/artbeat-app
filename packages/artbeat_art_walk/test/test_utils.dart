@@ -137,11 +137,11 @@ class TestUtils {
   /// Setup test environment variables
   static void setupTestEnvironmentVariables() {
     // Mock environment variables that tests need
-    const mockEnvVars = {
-      'GOOGLE_MAPS_API_KEY': 'test-google-maps-key',
-      'SECURE_DIRECTIONS_ENDPOINT': 'https://test-endpoint.com',
-      'DIRECTIONS_API_KEY_HASH': 'test-hash-key',
-    };
+    // const mockEnvVars = {
+    //   'GOOGLE_MAPS_API_KEY': 'test-google-maps-key',
+    //   'SECURE_DIRECTIONS_ENDPOINT': 'https://test-endpoint.com',
+    //   'DIRECTIONS_API_KEY_HASH': 'test-hash-key',
+    // };
 
     // You might need to use a different approach based on how your app reads config
     // This is a placeholder - implement based on your config system

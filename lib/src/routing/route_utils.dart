@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 /// Route handler interface for modular routing
 abstract class RouteHandler {
@@ -16,71 +16,62 @@ class RouteUtils {
     int currentIndex = -1,
     PreferredSizeWidget? appBar,
     Widget? drawer,
-  }) {
-    return MaterialPageRoute<T>(
-      builder: (_) => core.MainLayout(
-        currentIndex: currentIndex,
-        appBar: appBar,
-        drawer: drawer,
-        child: child,
-      ),
-    );
-  }
+  }) => MaterialPageRoute<T>(
+    builder: (_) => core.MainLayout(
+      currentIndex: currentIndex,
+      appBar: appBar,
+      drawer: drawer,
+      child: child,
+    ),
+  );
 
   /// Creates a main navigation route with the ArtbeatDrawer
   static MaterialPageRoute<T> createMainNavRoute<T>({
     required Widget child,
     int currentIndex = -1,
     PreferredSizeWidget? appBar,
-  }) {
-    return MaterialPageRoute<T>(
-      builder: (_) => core.MainLayout(
-        currentIndex: currentIndex,
-        appBar: appBar,
-        drawer: const core.ArtbeatDrawer(),
-        child: child,
-      ),
-    );
-  }
+  }) => MaterialPageRoute<T>(
+    builder: (_) => core.MainLayout(
+      currentIndex: currentIndex,
+      appBar: appBar,
+      drawer: const core.ArtbeatDrawer(),
+      child: child,
+    ),
+  );
 
   /// Creates a simple MaterialPageRoute without MainLayout
-  static MaterialPageRoute<T> createSimpleRoute<T>({required Widget child}) {
-    return MaterialPageRoute<T>(builder: (_) => child);
-  }
+  static MaterialPageRoute<T> createSimpleRoute<T>({required Widget child}) =>
+      MaterialPageRoute<T>(builder: (_) => child);
 
   /// Creates a route with authentication requirement
   static MaterialPageRoute<T> createAuthRequiredRoute<T>({
     required Widget Function() authenticatedBuilder,
     Widget Function()? unauthenticatedBuilder,
-  }) {
-    return MaterialPageRoute<T>(
-      builder: (_) {
-        final user = FirebaseAuth.instance.currentUser;
-        if (user != null) {
-          return authenticatedBuilder();
-        } else {
-          return unauthenticatedBuilder?.call() ??
-              const core.MainLayout(
-                currentIndex: -1,
-                child: core.AuthRequiredScreen(),
-              );
-        }
-      },
-    );
-  }
+  }) => MaterialPageRoute<T>(
+    builder: (_) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        return authenticatedBuilder();
+      } else {
+        return unauthenticatedBuilder?.call() ??
+            const core.MainLayout(
+              currentIndex: -1,
+              child: core.AuthRequiredScreen(),
+            );
+      }
+    },
+  );
 
   /// Creates a standard app bar
   static PreferredSizeWidget createAppBar(
     String title, {
     bool showBackButton = true,
     bool showLogo = false,
-  }) {
-    return core.EnhancedUniversalHeader(
-      title: title,
-      showLogo: showLogo,
-      showBackButton: showBackButton,
-    );
-  }
+  }) => core.EnhancedUniversalHeader(
+    title: title,
+    showLogo: showLogo,
+    showBackButton: showBackButton,
+  );
 
   /// Extracts arguments safely from route settings
   static T? getArgument<T>(RouteSettings settings, String key) {
@@ -89,96 +80,93 @@ class RouteUtils {
   }
 
   /// Creates a not found route
-  static MaterialPageRoute<void> createNotFoundRoute([String? feature]) {
-    return MaterialPageRoute<void>(
-      builder: (_) => core.MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.grey),
-                const SizedBox(height: 16),
-                const Text(
-                  'Page Not Found',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  feature != null
-                      ? 'The $feature page could not be found.'
-                      : 'The requested page could not be found.',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
+  static MaterialPageRoute<void> createNotFoundRoute([String? feature]) =>
+      MaterialPageRoute<void>(
+        builder: (_) => core.MainLayout(
+          currentIndex: -1,
+          child: Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Page Not Found',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    feature != null
+                        ? 'The $feature page could not be found.'
+                        : 'The requested page could not be found.',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
 
   /// Creates a coming soon placeholder route
-  static MaterialPageRoute<void> createComingSoonRoute(String feature) {
-    return MaterialPageRoute<void>(
-      builder: (_) => core.MainLayout(
-        currentIndex: -1,
-        appBar: createAppBar(feature),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.construction, size: 64, color: Colors.orange),
-              const SizedBox(height: 16),
-              Text(
-                '$feature Coming Soon',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'This feature is under development.',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// Creates an error route with custom message
-  static MaterialPageRoute<void> createErrorRoute(String message) {
-    return MaterialPageRoute<void>(
-      builder: (_) => core.MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          body: Center(
+  static MaterialPageRoute<void> createComingSoonRoute(String feature) =>
+      MaterialPageRoute<void>(
+        builder: (_) => core.MainLayout(
+          currentIndex: -1,
+          appBar: createAppBar(feature),
+          child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error, size: 64, color: Colors.red),
+                const Icon(Icons.construction, size: 64, color: Colors.orange),
                 const SizedBox(height: 16),
-                const Text(
-                  'Error',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Text(
+                  '$feature Coming Soon',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  message,
-                  style: const TextStyle(color: Colors.grey),
-                  textAlign: TextAlign.center,
+                const Text(
+                  'This feature is under development.',
+                  style: TextStyle(color: Colors.grey),
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
+      );
+
+  /// Creates an error route with custom message
+  static MaterialPageRoute<void> createErrorRoute(String message) =>
+      MaterialPageRoute<void>(
+        builder: (_) => core.MainLayout(
+          currentIndex: -1,
+          child: Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Error',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    style: const TextStyle(color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
 
   /// Safely creates a route with error handling
   static Route<dynamic> createSafeRoute(
@@ -187,8 +175,8 @@ class RouteUtils {
   ) {
     try {
       return MaterialPageRoute(builder: (_) => builder());
-    } catch (e) {
-      debugPrint('❌ Error creating route $routeName: $e');
+    } on Exception catch (e) {
+      core.AppLogger.error('❌ Error creating route $routeName: $e');
       return createErrorRoute('Error loading $routeName');
     }
   }
@@ -214,13 +202,12 @@ class RouteUtils {
   }
 
   /// Creates a user model from Firebase user
-  static core.UserModel createUserModelFromFirebase(User firebaseUser) {
-    return core.UserModel(
-      id: firebaseUser.uid,
-      email: firebaseUser.email ?? '',
-      username: extractUsernameFromFirebaseUser(firebaseUser),
-      fullName: firebaseUser.displayName ?? '',
-      createdAt: DateTime.now(),
-    );
-  }
+  static core.UserModel createUserModelFromFirebase(User firebaseUser) =>
+      core.UserModel(
+        id: firebaseUser.uid,
+        email: firebaseUser.email ?? '',
+        username: extractUsernameFromFirebaseUser(firebaseUser),
+        fullName: firebaseUser.displayName ?? '',
+        createdAt: DateTime.now(),
+      );
 }

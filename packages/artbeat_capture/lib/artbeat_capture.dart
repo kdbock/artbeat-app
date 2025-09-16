@@ -9,6 +9,7 @@ export 'src/screens/captures_list_screen.dart';
 export 'src/screens/terms_and_conditions_screen.dart';
 export 'src/screens/camera_capture_screen.dart';
 export 'src/screens/camera_only_screen.dart';
+export 'src/screens/smart_capture_screen.dart';
 export 'src/screens/capture_upload_screen.dart';
 export 'src/screens/capture_details_screen.dart';
 export 'src/screens/capture_confirmation_screen.dart';
@@ -20,6 +21,7 @@ export 'src/services/camera_service.dart';
 export 'src/services/advanced_camera_service.dart';
 export 'src/services/ai_ml_integration_service.dart';
 export 'src/services/capture_analytics_service.dart';
+export 'src/services/capture_terms_service.dart';
 
 export 'src/screens/capture_search_screen.dart';
 

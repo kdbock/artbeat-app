@@ -342,7 +342,7 @@ class _DashboardCommunitySectionState extends State<DashboardCommunitySection> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            debugPrint('DashboardCommunitySection: Tapping post ${post.id}');
+            AppLogger.info('DashboardCommunitySection: Tapping post ${post.id}');
             Navigator.pushNamed(
               context,
               '/community/feed',

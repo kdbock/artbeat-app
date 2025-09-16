@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import 'test_setup.dart';
 
 void main() {
@@ -102,7 +102,6 @@ void main() {
         () => storageService.uploadMultipleImages(
           imageFiles: [],
           category: 'test',
-          maxConcurrent: 3,
         ),
         returnsNormally,
       );

@@ -148,7 +148,7 @@ class _UserEventsDashboardScreenState extends State<UserEventsDashboardScreen> {
             onSearchPressed: (String query) => _showSearchModal(context),
             onProfilePressed: () => _showProfileMenu(context),
             backgroundColor: Colors.transparent,
-            foregroundColor: ArtbeatColors.textPrimary,
+            // Removed foregroundColor to use deep purple default
           ),
         ),
       ),

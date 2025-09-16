@@ -12,5 +12,8 @@ export 'user_type.dart'; // Add UserType export
 // Universal engagement system
 export 'engagement_model.dart';
 
+// In-app purchase models
+export 'in_app_purchase_models.dart';
+
 // Types
 export 'types/filter_types.dart';

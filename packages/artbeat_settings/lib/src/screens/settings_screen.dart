@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -7,10 +6,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const EnhancedUniversalHeader(title: 'Settings', showLogo: false),
-      body: _buildSettingsBody(context),
-    );
+    return _buildSettingsBody(context);
   }
 
   Widget _buildSettingsBody(BuildContext context) {
@@ -54,12 +50,17 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   Text(
                     'Your Account',
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Manage your profile and preferences',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.black54),
                   ),
                 ],
               ),
@@ -81,8 +82,14 @@ class SettingsScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: _getIconForCategory(category.iconData),
-        title: Text(category.title),
-        subtitle: Text(category.description),
+        title: Text(
+          category.title,
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+        ),
+        subtitle: Text(
+          category.description,
+          style: TextStyle(color: Colors.black54),
+        ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () => _navigateToCategory(context, category),
       ),
@@ -93,7 +100,13 @@ class SettingsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Quick Actions', style: Theme.of(context).textTheme.titleMedium),
+        Text(
+          'Quick Actions',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 12),
         Card(
           child: Column(

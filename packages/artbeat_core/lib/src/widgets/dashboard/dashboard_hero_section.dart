@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:artbeat_core/artbeat_core.dart';
 
 class DashboardHeroSection extends StatefulWidget {
@@ -31,42 +32,44 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
           // Map background
           Positioned.fill(
             child: ClipRRect(
-              child: GoogleMap(
-                key: const Key(_mapKey),
-                initialCameraPosition: CameraPosition(
-                  target:
-                      widget.viewModel.mapLocation ??
-                      const LatLng(35.7796, -78.6382),
-                  zoom: 14.0,
-                ),
-                markers: widget.viewModel.markers,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
-                mapToolbarEnabled: false,
-                style: '''[
-                  {
-                    "featureType": "poi",
-                    "elementType": "labels",
-                    "stylers": [{"visibility": "off"}]
-                  },
-                  {
-                    "featureType": "transit",
-                    "elementType": "labels",
-                    "stylers": [{"visibility": "off"}]
-                  },
-                  {
-                    "featureType": "road",
-                    "elementType": "labels",
-                    "stylers": [{"visibility": "off"}]
-                  }
-                ]''',
-                onMapCreated: widget.viewModel.onMapCreated,
-                compassEnabled: false,
-                scrollGesturesEnabled: false,
-                rotateGesturesEnabled: false,
-                tiltGesturesEnabled: false,
-              ),
+              child: kIsWeb
+                  ? _buildWebMapFallback()
+                  : GoogleMap(
+                      key: const Key(_mapKey),
+                      initialCameraPosition: CameraPosition(
+                        target:
+                            widget.viewModel.mapLocation ??
+                            const LatLng(35.7796, -78.6382),
+                        zoom: 14.0,
+                      ),
+                      markers: widget.viewModel.markers,
+                      myLocationEnabled: true,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      style: '''[
+                        {
+                          "featureType": "poi",
+                          "elementType": "labels",
+                          "stylers": [{"visibility": "off"}]
+                        },
+                        {
+                          "featureType": "transit",
+                          "elementType": "labels",
+                          "stylers": [{"visibility": "off"}]
+                        },
+                        {
+                          "featureType": "road",
+                          "elementType": "labels",
+                          "stylers": [{"visibility": "off"}]
+                        }
+                      ]''',
+                      onMapCreated: widget.viewModel.onMapCreated,
+                      compassEnabled: false,
+                      scrollGesturesEnabled: false,
+                      rotateGesturesEnabled: false,
+                      tiltGesturesEnabled: false,
+                    ),
             ),
           ),
 
@@ -225,6 +228,34 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      color: ArtbeatColors.primaryPurple.withValues(alpha: 0.8),
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map, size: 48, color: Colors.white70),
+            SizedBox(height: 16),
+            Text(
+              'Interactive Map',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Available on mobile devices',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
         ),
       ),
     );

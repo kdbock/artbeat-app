@@ -22,16 +22,32 @@ export 'src/services/connectivity_service.dart' show ConnectivityService;
 export 'src/services/subscription_service.dart' show SubscriptionService;
 export 'src/services/artist_service.dart' show ArtistService;
 export 'src/services/payment_service.dart' show PaymentService;
+export 'src/services/enhanced_payment_service_working.dart'
+    show
+        EnhancedPaymentService,
+        PaymentResult,
+        SubscriptionResult,
+        RiskAssessment;
+export 'src/services/in_app_purchase_manager.dart'
+    show
+        InAppPurchaseManager,
+        PurchaseEvent,
+        PurchaseEventType,
+        CompletedPurchase;
 export 'src/services/sponsorship_service.dart' show SponsorshipService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;
 export 'src/services/feedback_service.dart' show FeedbackService;
 export 'src/services/maps_diagnostic_service.dart' show MapsDiagnosticService;
 export 'src/services/image_management_service.dart' show ImageManagementService;
+export 'src/services/leaderboard_service.dart'
+    show LeaderboardService, LeaderboardCategory, LeaderboardEntry;
 export 'src/services/enhanced_storage_service.dart' show EnhancedStorageService;
 export 'src/services/firebase_storage_auth_service.dart'
     show FirebaseStorageAuthService;
 export 'src/services/coupon_service.dart' show CouponService;
+export 'src/screens/order_review_screen.dart';
+export 'src/utils/order_review_helpers.dart';
 // 2025 Enhanced Services
 export 'src/services/ai_service.dart' show AIService;
 export 'src/services/ai_features_service.dart'
@@ -68,6 +84,8 @@ export 'src/screens/enhanced_gift_purchase_screen.dart'
     show EnhancedGiftPurchaseScreen;
 export 'src/screens/gift_campaign_screen.dart' show GiftCampaignScreen;
 export 'src/screens/gift_subscription_screen.dart' show GiftSubscriptionScreen;
+export 'src/screens/leaderboard_screen.dart' show LeaderboardScreen;
+export 'src/screens/help_support_screen.dart' show HelpSupportScreen;
 
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
@@ -110,6 +128,7 @@ export 'src/widgets/featured_content_row_widget.dart';
 export 'src/widgets/network_error_widget.dart';
 export 'src/widgets/main_layout.dart';
 export 'src/widgets/enhanced_universal_header.dart';
+export 'src/widgets/enhanced_profile_menu.dart';
 export 'src/widgets/enhanced_bottom_nav.dart';
 export 'src/widgets/artbeat_gradient_background.dart';
 export 'src/widgets/skeleton_widgets.dart';
@@ -140,11 +159,12 @@ export 'src/utils/image_utils.dart' show ImageUtils;
 export 'src/utils/permission_utils.dart' show PermissionUtils;
 export 'src/utils/performance_monitor.dart' show PerformanceMonitor;
 export 'src/utils/env_loader.dart' show EnvLoader;
+export 'src/utils/logger.dart' show AppLogger, LoggerExtension, LoggingMixin;
+export 'src/utils/image_url_validator.dart' show ImageUrlValidator;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
-export 'src/screens/fluid_dashboard_screen_refactored.dart'
-    show FluidDashboardScreen;
+export 'src/screens/artbeat_dashboard_screen.dart' show ArtbeatDashboardScreen;
 export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
 export 'src/screens/auth_required_screen.dart' show AuthRequiredScreen;
 export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
@@ -158,6 +178,7 @@ export 'src/screens/simple_subscription_plans_screen.dart'
 export 'src/screens/coupon_management_screen.dart' show CouponManagementScreen;
 export 'src/screens/advanced_analytics_dashboard.dart'
     show AdvancedAnalyticsDashboard;
+export 'src/screens/full_browse_screen.dart' show FullBrowseScreen;
 
 // Export ViewModels
 export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
@@ -166,7 +187,13 @@ export 'src/viewmodels/dashboard_view_model.dart' show DashboardViewModel;
 export 'src/providers/messaging_provider.dart' show MessagingProvider;
 export 'src/providers/community_provider.dart' show CommunityProvider;
 
+// Export Dashboard Widgets
+export 'src/widgets/dashboard/index.dart';
+
 // Export Widgets
 export 'src/widgets/enhanced_navigation_menu.dart' show EnhancedNavigationMenu;
 export 'src/widgets/quick_navigation_fab.dart'
     show QuickNavigationFAB, EnhancedAppBar;
+
+// Export In-App Purchase Widgets
+export 'src/widgets/widgets.dart';

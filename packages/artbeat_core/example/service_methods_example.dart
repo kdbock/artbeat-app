@@ -19,9 +19,9 @@ class ServiceMethodsExample {
     try {
       // Upgrade to Creator tier
       await _subscriptionService.upgradeSubscription(SubscriptionTier.creator);
-      print('✅ Successfully upgraded to Creator tier');
+      AppLogger.info('✅ Successfully upgraded to Creator tier');
     } catch (e) {
-      print('❌ Upgrade failed: $e');
+      AppLogger.error('❌ Upgrade failed: $e');
     }
   }
 
@@ -30,16 +30,16 @@ class ServiceMethodsExample {
     try {
       final limits = await _subscriptionService.getFeatureLimits();
 
-      print('📊 Current Feature Limits:');
-      print('  • Artworks: ${limits.artworks}');
-      print('  • Storage: ${limits.storageGB} GB');
-      print('  • AI Credits: ${limits.aiCredits}');
-      print('  • Team Members: ${limits.teamMembers}');
-      print('  • Advanced Analytics: ${limits.hasAdvancedAnalytics}');
-      print('  • Featured Placement: ${limits.hasFeaturedPlacement}');
-      print('  • Custom Branding: ${limits.hasCustomBranding}');
+      AppLogger.analytics('📊 Current Feature Limits:');
+      AppLogger.info('  • Artworks: ${limits.artworks}');
+      AppLogger.info('  • Storage: ${limits.storageGB} GB');
+      AppLogger.info('  • AI Credits: ${limits.aiCredits}');
+      AppLogger.info('  • Team Members: ${limits.teamMembers}');
+      AppLogger.analytics('  • Advanced Analytics: ${limits.hasAdvancedAnalytics}');
+      AppLogger.info('  • Featured Placement: ${limits.hasFeaturedPlacement}');
+      AppLogger.info('  • Custom Branding: ${limits.hasCustomBranding}');
     } catch (e) {
-      print('❌ Failed to get limits: $e');
+      AppLogger.error('❌ Failed to get limits: $e');
     }
   }
 
@@ -56,16 +56,16 @@ class ServiceMethodsExample {
         'ai_credits',
       ];
 
-      print('🔐 Feature Access Check:');
+      AppLogger.auth('🔐 Feature Access Check:');
       for (final feature in features) {
         final hasAccess = await _subscriptionService.checkFeatureAccess(
           feature,
         );
         final status = hasAccess ? '✅' : '❌';
-        print('  $status $feature');
+        AppLogger.info('  $status $feature');
       }
     } catch (e) {
-      print('❌ Failed to check feature access: $e');
+      AppLogger.error('❌ Failed to check feature access: $e');
     }
   }
 
@@ -90,46 +90,46 @@ class ServiceMethodsExample {
       };
 
       await _notificationService.updateNotificationPreferences(preferences);
-      print('✅ Notification preferences updated successfully');
+      AppLogger.info('✅ Notification preferences updated successfully');
 
       // Verify the update
       final currentPrefs = await _notificationService
           .getNotificationPreferences();
-      print('📱 Current notification settings:');
+      AppLogger.info('📱 Current notification settings:');
       currentPrefs.forEach((key, value) {
         final status = value ? '🔔' : '🔕';
-        print('  $status $key');
+        AppLogger.info('  $status $key');
       });
     } catch (e) {
-      print('❌ Failed to update notification preferences: $e');
+      AppLogger.error('❌ Failed to update notification preferences: $e');
     }
   }
 
   /// Example: Complete workflow demonstrating all new methods
   Future<void> completeWorkflow() async {
-    print('🚀 Starting complete service methods workflow...\n');
+    AppLogger.info('🚀 Starting complete service methods workflow...\n');
 
     // 1. Check current limits
-    print('1️⃣ Checking current feature limits...');
+    AppLogger.info('1️⃣ Checking current feature limits...');
     await checkUserLimits();
-    print('');
+    AppLogger.info('');
 
     // 2. Check feature access
-    print('2️⃣ Checking feature access...');
+    AppLogger.info('2️⃣ Checking feature access...');
     await checkFeatureAccess();
-    print('');
+    AppLogger.info('');
 
     // 3. Update notification preferences
-    print('3️⃣ Updating notification preferences...');
+    AppLogger.info('3️⃣ Updating notification preferences...');
     await updateNotificationSettings();
-    print('');
+    AppLogger.info('');
 
     // 4. Upgrade subscription (commented out to avoid charges)
-    print('4️⃣ Subscription upgrade (demo - not executed)');
-    print('   Call upgradeUserSubscription() to upgrade to a paid tier');
-    print('');
+    AppLogger.info('4️⃣ Subscription upgrade (demo - not executed)');
+    AppLogger.info('   Call upgradeUserSubscription() to upgrade to a paid tier');
+    AppLogger.info('');
 
-    print('✅ Workflow completed! All 4 new service methods demonstrated.');
+    AppLogger.info('✅ Workflow completed! All 4 new service methods demonstrated.');
   }
 }
 

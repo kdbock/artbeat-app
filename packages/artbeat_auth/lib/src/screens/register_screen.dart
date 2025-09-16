@@ -207,51 +207,119 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Effective Date: June 1, 2025\n',
+                        'ARTbeat Terms of Service\n',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Effective Date: September 1, 2025\n',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                       Text(
-                        'Welcome to Artbeat Community, a platform provided by the Local Artbeat app to empower artists and connect them with patrons, peers, and sponsors. By using the Artbeat Community features, you agree to the following terms:\n',
+                        'Last Updated: September 1, 2025\n',
+                        style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                       _TermsSection(
                         title: '1. Acceptance of Terms',
                         content:
-                            'By accessing or using the Artbeat Community, you agree to comply with and be bound by these Terms of Service. If you do not agree, you may not use the platform.',
+                            'By accessing or using ARTbeat (the "Platform"), you agree to these Terms of Service ("Terms"). If you do not agree, you must not use ARTbeat. These Terms apply worldwide, subject to local laws where expressly required.',
                       ),
                       _TermsSection(
-                        title: '2. User Accounts',
+                        title: '2. Eligibility',
                         content:
-                            '• You must be at least 13 years old to create an account.\n• You are responsible for keeping your account credentials secure.',
+                            'You must be at least 13 years old (or the minimum digital consent age in your country).\n\nIf you are under 18, you may use the Platform only with the consent of a parent or guardian.\n\nBy registering, you confirm that the information provided is accurate and up-to-date.',
                       ),
                       _TermsSection(
-                        title: '3. Content Ownership',
+                        title: '3. Accounts & Registration',
                         content:
-                            '• All artwork, comments, and media you upload remain your intellectual property.\n• You grant Artbeat Community a non-exclusive, royalty-free license to display your content within the app.',
+                            'Users must provide a valid name, email, password, and ZIP code during registration.\n\nYou are responsible for maintaining the security of your account, including enabling two-factor authentication where available.\n\nARTbeat may suspend or terminate accounts that violate these Terms.',
                       ),
                       _TermsSection(
-                        title: '4. Community Guidelines',
+                        title: '4. User Types & Roles',
                         content:
-                            '• Respect others. No hate speech, harassment, or plagiarism.\n• Do not post explicit or illegal content.\n• Feedback should be constructive and tagged appropriately.',
+                            'Regular Users: May browse, follow, favorite, and engage with content.\n\nArtists: May upload artwork, manage profiles, sell work, host events, and access subscription tiers.\n\nGalleries: Manage multiple artists, exhibitions, and commissions.\n\nModerators/Admins: Enforce policies, moderate content, and manage the platform.',
                       ),
                       _TermsSection(
-                        title: '5. Gifting and Payments',
+                        title: '5. User Content & Intellectual Property',
                         content:
-                            '• Stripe handles all payment processing securely.\n• Artbeat Community is not liable for payment processing issues or chargebacks.\n• All transactions are final unless otherwise agreed upon by the sender and artist.',
+                            'You retain ownership of artwork, captures, events, and other content you upload.\n\nBy posting, you grant ARTbeat a worldwide, non-exclusive, royalty-free license to store, display, distribute, and promote your content for Platform operation and marketing.\n\nContent must comply with community standards: no hate speech, harassment, nudity (outside artistic context), or unlawful materials.',
                       ),
                       _TermsSection(
-                        title: '6. Commissions and Sponsorships',
+                        title: '6. Payments & Subscriptions',
                         content:
-                            '• Commissions are contracts between the artist and patron. Artbeat Community is not responsible for delivery, quality, or refunds.\n• Sponsored content must follow disclosure guidelines.',
+                            'Payments are processed via Stripe.\n\nSubscription tiers, ads, events, and in-app purchases are billed in local currency where supported.\n\nRefunds are governed by event- or ad-specific refund policies.\n\nUsers must provide accurate billing information; fraudulent activity may result in termination.',
                       ),
                       _TermsSection(
-                        title: '7. Termination',
+                        title: '7. Advertising & Sponsorship',
                         content:
-                            'We reserve the right to suspend or terminate accounts that violate our policies or engage in abusive behavior.',
+                            'Ads must comply with community and legal standards.\n\nARTbeat reserves the right to reject or remove ads at its discretion.\n\nAd performance analytics are aggregated and anonymized.',
                       ),
                       _TermsSection(
-                        title: '8. Changes to Terms',
+                        title: '8. Events & Ticketing',
                         content:
-                            'We may modify these Terms of Service at any time. Continued use of the app means acceptance of the updated terms.',
+                            'Artists and galleries may create public or private events.\n\nTickets (free, paid, VIP) are sold through Stripe.\n\nRefunds depend on the event\'s Refund Policy; ARTbeat is not liable for disputes between buyers and event hosts.',
+                      ),
+                      _TermsSection(
+                        title: '9. Messaging & Community Conduct',
+                        content:
+                            'Messaging is provided for personal and professional communication.\n\nUsers must not engage in spam, harassment, illegal solicitation, or unauthorized data collection.\n\nARTbeat may monitor reported messages for violations but does not read private messages by default.',
+                      ),
+                      _TermsSection(
+                        title: '10. Location-Based Features',
+                        content:
+                            'Features such as Art Walks rely on GPS and mapping.\n\nYou consent to ARTbeat\'s use of your location data to provide navigation, recommendations, and achievements.\n\nARTbeat is not responsible for accidents, injuries, or damages during real-world activities.',
+                      ),
+                      _TermsSection(
+                        title: '11. Privacy & Data Use',
+                        content:
+                            'ARTbeat complies with GDPR (EU), CCPA (California), and other applicable data protection laws.\n\nUsers may request data export or deletion via the Privacy Settings Screen.\n\nData may be transferred internationally; by using ARTbeat, you consent to such transfers.',
+                      ),
+                      _TermsSection(
+                        title: '12. Moderation & Enforcement',
+                        content:
+                            'ARTbeat reserves the right to remove content, suspend accounts, or ban users at its discretion.\n\nUsers may appeal moderation actions by contacting support@localartbeat.app.\n\nRepeated violations may result in permanent account termination.',
+                      ),
+                      _TermsSection(
+                        title: '13. Prohibited Uses',
+                        content:
+                            'You may not:\n\n• Upload unlawful, infringing, defamatory, or harmful content.\n• Circumvent security systems or attempt to reverse-engineer the app.\n• Use ARTbeat for unauthorized advertising or pyramid schemes.\n• Impersonate others or misrepresent affiliation.',
+                      ),
+                      _TermsSection(
+                        title: '14. International Use',
+                        content:
+                            'The Platform is operated from the United States.\n\nUsers outside the US are responsible for compliance with local laws and regulations.\n\nCertain features (payments, ticketing, ads) may not be available in all jurisdictions.',
+                      ),
+                      _TermsSection(
+                        title: '15. Limitation of Liability',
+                        content:
+                            'ARTbeat is provided "as is" and "as available".\n\nARTbeat is not liable for:\n• User disputes (artist-patron, buyer-seller).\n• Real-world accidents during events or art walks.\n• Payment processing errors outside ARTbeat\'s control.',
+                      ),
+                      _TermsSection(
+                        title: '16. Indemnification',
+                        content:
+                            'You agree to indemnify and hold harmless ARTbeat, its affiliates, employees, and partners from claims, damages, or expenses arising from your use of the Platform.',
+                      ),
+                      _TermsSection(
+                        title: '17. Termination',
+                        content:
+                            'You may terminate your account at any time via the Account Settings Screen.\n\nARTbeat may terminate accounts for violations of these Terms.\n\nCertain provisions (IP rights, liability, jurisdiction) survive termination.',
+                      ),
+                      _TermsSection(
+                        title: '18. Governing Law & Dispute Resolution',
+                        content:
+                            'For US users: governed by the laws of North Carolina, United States.\n\nFor international users: governed by applicable mandatory local law, otherwise North Carolina law applies.\n\nDisputes shall be resolved through binding arbitration in the United States, unless prohibited by law.',
+                      ),
+                      _TermsSection(
+                        title: '19. Changes to Terms',
+                        content:
+                            'ARTbeat may update these Terms from time to time. Notice will be provided via app notification or email. Continued use of the Platform constitutes acceptance of changes.',
+                      ),
+                      _TermsSection(
+                        title: '20. Contact',
+                        content:
+                            'Questions or complaints may be directed to:\nARTbeat Support\nPO BOX 232 Kinston NC 28502\nsupport@localartbeat.app',
                       ),
                     ],
                   ),
@@ -305,48 +373,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Effective Date: June 1, 2025\n',
+                        'ARTbeat Privacy Policy\n',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Effective Date: September 1, 2025\n',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                      Text(
+                        'Last Updated: September 1, 2025\n',
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                       _TermsSection(
-                        title: '1. Information We Collect',
+                        title: '1. Introduction',
                         content:
-                            '• Name, email, and avatar (at signup)\n• Artworks, comments, gifts, and interactions\n• Stripe account information (for artists receiving payments)\n• Usage data (app activity, crash logs)',
+                            'Local ARTbeat ("ARTbeat", "we", "our", "us") values your privacy. This Privacy Policy explains how we collect, use, store, and share your personal data when you use the ARTbeat mobile apps, websites, APIs, and related services (the "Platform").\n\nBy using ARTbeat, you agree to the practices described here. If you do not agree, you must not use the Platform.',
                       ),
                       _TermsSection(
-                        title: '2. How We Use Your Information',
+                        title: '2. Information We Collect',
                         content:
-                            '• To display your profile and shared artwork\n• To enable community features (chat, threads, gifts)\n• To process and track payments\n• To improve the platform\'s performance and security',
+                            'a) Information You Provide:\n• Account Information: Name, email, password, ZIP/postal code.\n• Profile Information: Bio, profile photo, customization settings.\n• Artist/Gallery Information: Portfolio, subscription details, payout information.\n• Payment Information: Processed by Stripe; ARTbeat never stores full card details.\n• Content: Artwork, captures, events, ads, comments, messages.\n\nb) Information We Collect Automatically:\n• Device Information: Device type, operating system, app version, crash reports.\n• Usage Data: Logins, navigation, feature usage, interactions (favorites, likes, shares).\n• Location Data: GPS data when you use Art Walks, map features, or location-tagged captures.\n• Analytics Data: Firebase Analytics, engagement tracking, ad performance metrics.\n\nc) Information from Third Parties:\n• App Stores (Apple/Google): For app downloads, in-app purchases, refunds.\n• Social & Sharing Platforms: If you share content via external apps (e.g., Instagram, Facebook).\n• Payment Processors (Stripe): Payment confirmations, refunds, and chargeback details.',
                       ),
                       _TermsSection(
-                        title: '3. Data Sharing',
+                        title: '3. How We Use Your Information',
                         content:
-                            '• We do not sell your data.\n• We use Stripe for payment processing. Stripe may collect and store information per their own policy.\n• We may share data with service providers (Firebase, analytics) strictly to provide core functionality.',
+                            'We use data to:\n• Provide and improve ARTbeat features (profiles, artwork, events, ads, community).\n• Process payments, subscriptions, and refunds.\n• Enable GPS navigation and location-based discovery.\n• Send notifications (reminders, purchases, account alerts).\n• Moderate content and enforce policies.\n• Provide analytics to artists, galleries, and advertisers.\n• Ensure safety, prevent fraud, and comply with legal requirements.',
                       ),
                       _TermsSection(
-                        title: '4. Data Retention',
+                        title: '4. Sharing of Information',
                         content:
-                            '• We keep user data as long as your account is active.\n• You may request account deletion at any time via settings or support.',
+                            'We share your data only as needed:\n• With Service Providers: Stripe (payments), Firebase (storage, authentication, analytics).\n• With Other Users: Profile details, artwork, captures, events, ads, or comments you choose to make public.\n• For Moderation/Legal Compliance: To comply with DMCA, law enforcement, or platform security.\n• In Business Transfers: If ARTbeat undergoes a merger, acquisition, or asset sale.\n\nWe do not sell your personal information.',
                       ),
                       _TermsSection(
-                        title: '5. Security',
+                        title: '5. Data Retention',
                         content:
-                            '• Data is stored securely in Firebase using industry-standard encryption.\n• Payment data is handled exclusively by Stripe.',
+                            '• Content remains until deleted by you or moderated.\n• Account data is retained while your account is active.\n• You may request deletion of your account and associated data at any time.\n• We may retain minimal information as required by law (e.g., payment records).',
                       ),
                       _TermsSection(
-                        title: '6. Your Rights',
+                        title: '6. International Data Transfers',
                         content:
-                            '• You may access, correct, or delete your data at any time.\n• EU/California users may request additional protections under GDPR/CCPA.',
+                            '• Data is stored in Firebase\'s global infrastructure (primarily U.S.).\n• For EU/UK residents, transfers rely on Standard Contractual Clauses (SCCs).\n• By using ARTbeat, you consent to cross-border data transfers.',
                       ),
                       _TermsSection(
-                        title: '7. Contact Us',
+                        title: '7. Your Rights',
                         content:
-                            'For any questions or privacy-related requests, contact: support@localartbeat.app',
+                            'United States (CCPA/State Privacy Laws):\n• Right to know what personal data we collect.\n• Right to request deletion of your personal data.\n• Right to opt out of sale of personal data (we do not sell data).\n\nEU/EEA/UK (GDPR):\n• Right of access, rectification, and erasure.\n• Right to restrict or object to processing.\n• Right to data portability.\n• Right to withdraw consent at any time.\n• Right to lodge a complaint with your local Data Protection Authority.\n\nOther Regions:\n• We honor local legal rights where applicable.',
                       ),
                       _TermsSection(
-                        title: '8. Changes to This Policy',
+                        title: '8. Security',
                         content:
-                            'We may update this Privacy Policy periodically. Continued use of the platform indicates your acceptance of any changes.',
+                            '• End-to-end encryption for authentication and payments.\n• Two-factor authentication available for accounts.\n• Secure logging and XSS prevention built into services.\n• Despite protections, no system is 100% secure—users transmit data at their own risk.',
+                      ),
+                      _TermsSection(
+                        title: '9. Children\'s Privacy',
+                        content:
+                            '• ARTbeat is not directed to children under 13.\n• If you are under 13, do not register.\n• Parents who believe their child has registered may request deletion via support@localartbeat.app.',
+                      ),
+                      _TermsSection(
+                        title: '10. Changes to This Policy',
+                        content:
+                            'We may update this Privacy Policy. Updates will be posted with a new Effective Date, and we will notify users where legally required.',
+                      ),
+                      _TermsSection(
+                        title: '11. Contact Us',
+                        content:
+                            'For questions or data requests:\nLocal ARTbeat, LLC\nPO BOX 232 Kinston, NC 28502\nEmail: support@localartbeat.app',
                       ),
                     ],
                   ),

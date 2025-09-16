@@ -500,7 +500,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                 title: title,
                 showLogo: false,
                 backgroundColor: Colors.transparent,
-                foregroundColor: ArtbeatColors.textPrimary,
+                // Removed foregroundColor to use deep purple default
                 elevation: 0,
                 showBackButton: true,
                 onBackPressed: () => Navigator.pop(context),

@@ -14,6 +14,9 @@ import '../../services/direct_commission_service.dart';
 import '../../widgets/post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import '../../widgets/community_drawer.dart';
+import 'feed/create_post_screen.dart';
+import 'create_art_post_screen.dart';
+import '../../services/art_community_service.dart';
 
 // Tab-specific version of commissions content (without MainLayout)
 class CommissionsTab extends StatefulWidget {
@@ -248,7 +251,7 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
           context.read<CommunityProvider>().markCommunityAsVisited();
         } catch (e) {
           // Provider might be disposed, silently ignore
-          debugPrint('CommunityProvider access failed: $e');
+          AppLogger.info('CommunityProvider access failed: $e');
         }
       }
     });
@@ -303,34 +306,74 @@ class _UnifiedCommunityHubState extends State<UnifiedCommunityHub>
             CommunityDiscoverTab(
               onNavigateToTab: (index) => _tabController.animateTo(index),
             ),
-            const CommunityFeedTab(),
+            const LegacyCommunityFeedTab(),
             const CommissionsTab(),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Implement create post functionality
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create post - Coming soon!')),
-          );
-        },
+        onPressed: () => _handleCreatePost(context),
         backgroundColor: ArtbeatColors.primaryPurple,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
+
+  /// Handle create post button tap - route based on user type
+  Future<void> _handleCreatePost(BuildContext context) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to create a post')),
+        );
+        return;
+      }
+
+      // Check if user is an artist by looking for artist profile
+      final communityService = ArtCommunityService();
+      final artistProfile = await communityService.getArtistProfile(user.uid);
+
+      if (artistProfile != null) {
+        // User is an artist - show the options screen for specialized posts
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => const CreatePostScreen(),
+          ),
+        );
+      } else {
+        // Regular user - go directly to the simple create post form
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => const CreateArtPostScreen(),
+          ),
+        );
+      }
+
+      communityService.dispose();
+    } catch (e) {
+      // If there's an error checking artist status, default to simple create post
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => const CreateArtPostScreen(),
+        ),
+      );
+    }
+  }
 }
 
 // Feed Tab - Based on UnifiedCommunityFeed
-class CommunityFeedTab extends StatefulWidget {
-  const CommunityFeedTab({super.key});
+class LegacyCommunityFeedTab extends StatefulWidget {
+  const LegacyCommunityFeedTab({super.key});
 
   @override
-  State<CommunityFeedTab> createState() => _CommunityFeedTabState();
+  State<LegacyCommunityFeedTab> createState() => _LegacyCommunityFeedTabState();
 }
 
-class _CommunityFeedTabState extends State<CommunityFeedTab> {
+class _LegacyCommunityFeedTabState extends State<LegacyCommunityFeedTab> {
   final ScrollController _scrollController = ScrollController();
   final List<PostModel> _posts = [];
   final Map<String, List<CommentModel>> _postComments = {};
@@ -360,7 +403,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
 
   void _handleUserTap(String userId) {
     // TODO: Navigate to user profile
-    debugPrint('User tapped: $userId');
+    AppLogger.info('User tapped: $userId');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('User profile for $userId (coming soon)')),
     );
@@ -430,7 +473,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                 }
               }
             } catch (e) {
-              debugPrint('Error enriching post ${post.id} user data: $e');
+              AppLogger.error('Error enriching post ${post.id} user data: $e');
             }
           }
         }
@@ -454,7 +497,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         }
       }
     } catch (e) {
-      debugPrint('Error loading posts: $e');
+      AppLogger.error('Error loading posts: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -510,7 +553,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                 }
               }
             } catch (e) {
-              debugPrint('Error enriching post ${post.id} user data: $e');
+              AppLogger.error('Error enriching post ${post.id} user data: $e');
             }
           }
           await _fetchCommentsForPost(post.id);
@@ -523,7 +566,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         }
       }
     } catch (e) {
-      debugPrint('Error loading more posts: $e');
+      AppLogger.error('Error loading more posts: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -554,7 +597,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading comments for post $postId: $e');
+      AppLogger.error('Error loading comments for post $postId: $e');
       if (mounted) {
         setState(() {
           _postComments[postId] = [];
@@ -673,7 +716,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: FeedAdWidget(
-                location: AdLocation.communityFeed,
+                location: AdLocation.communityInFeed,
                 index: index,
               ),
             );
@@ -786,7 +829,7 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading artworks: $e');
+      AppLogger.error('Error loading artworks: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -1075,7 +1118,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading online artists: $e');
+      AppLogger.error('Error loading online artists: $e');
       if (mounted) {
         setState(() => _isLoadingOnlineArtists = false);
       }
@@ -1102,7 +1145,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading recent posts: $e');
+      AppLogger.error('Error loading recent posts: $e');
       if (mounted) {
         setState(() => _isLoadingRecentPosts = false);
       }
@@ -1154,7 +1197,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading featured artists: $e');
+      AppLogger.error('Error loading featured artists: $e');
       if (mounted) {
         setState(() => _isLoadingFeaturedArtists = false);
       }
@@ -1206,7 +1249,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading verified artists: $e');
+      AppLogger.error('Error loading verified artists: $e');
       if (mounted) {
         setState(() => _isLoadingVerifiedArtists = false);
       }
@@ -1259,7 +1302,7 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading artists: $e');
+      AppLogger.error('Error loading artists: $e');
       if (mounted) {
         setState(() => _isLoadingArtists = false);
       }
@@ -1308,18 +1351,16 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Unified community hub ad placement
+            const BannerAdWidget(location: AdLocation.unifiedCommunityHub),
+            const SizedBox(height: 16),
+
             // Online Artists Section
             _buildOnlineArtistsSection(),
-
-            // Ad placement
-            const BannerAdWidget(location: AdLocation.communityOnlineArtists),
             const SizedBox(height: 16),
 
             // Recent Posts Section
             _buildRecentPostsSection(),
-
-            // Ad placement
-            const BannerAdWidget(location: AdLocation.communityRecentPosts),
             const SizedBox(height: 16),
 
             // Featured Artists Section
@@ -1331,10 +1372,6 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
               isLoading: _isLoadingFeaturedArtists,
             ),
 
-            // Ad placement
-            const BannerAdWidget(location: AdLocation.communityFeaturedArtists),
-            const SizedBox(height: 16),
-
             // Verified Artists Section
             _buildArtistsSection(
               title: 'Verified Artists',
@@ -1344,9 +1381,6 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
               showVerifiedBadge: true,
               isLoading: _isLoadingVerifiedArtists,
             ),
-
-            // Ad placement
-            const BannerAdWidget(location: AdLocation.communityVerifiedArtists),
             const SizedBox(height: 16),
 
             // Artists Section

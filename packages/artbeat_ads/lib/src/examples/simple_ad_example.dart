@@ -55,7 +55,7 @@ class SimpleAdExample extends StatelessWidget {
 
               // Banner Ad at top
               const Text('Banner Ad (Dashboard):'),
-              const BannerAdWidget(location: AdLocation.dashboard),
+              const BannerAdWidget(location: AdLocation.fluidDashboard),
               const SizedBox(height: 24),
 
               // Content with feed ad
@@ -63,7 +63,10 @@ class SimpleAdExample extends StatelessWidget {
               const SizedBox(height: 8),
               _buildContentItem('Content Item 1'),
               _buildContentItem('Content Item 2'),
-              const FeedAdWidget(location: AdLocation.communityFeed, index: 2),
+              const FeedAdWidget(
+                location: AdLocation.communityInFeed,
+                index: 2,
+              ),
               _buildContentItem('Content Item 3'),
               _buildContentItem('Content Item 4'),
               const SizedBox(height: 24),
@@ -80,7 +83,7 @@ class SimpleAdExample extends StatelessWidget {
                 customLabel: 'Capture Ad',
               ),
               const AdSpaceWidget(
-                location: AdLocation.eventsDashboard,
+                location: AdLocation.eventDashboard,
                 customLabel: 'Events Ad',
               ),
               const SizedBox(height: 24),
@@ -132,7 +135,10 @@ class DashboardWithAdsExample extends StatelessWidget {
       body: Column(
         children: [
           // Banner ad at top
-          const BannerAdWidget(location: AdLocation.dashboard, showAtTop: true),
+          const BannerAdWidget(
+            location: AdLocation.fluidDashboard,
+            showAtTop: true,
+          ),
 
           // Main content
           Expanded(
@@ -155,7 +161,7 @@ class DashboardWithAdsExample extends StatelessWidget {
 
                 // Another ad placement
                 const SimpleAdPlacementWidget(
-                  location: AdLocation.dashboard,
+                  location: AdLocation.fluidDashboard,
                   padding: EdgeInsets.symmetric(vertical: 8),
                 ),
               ],
@@ -164,7 +170,7 @@ class DashboardWithAdsExample extends StatelessWidget {
 
           // Banner ad at bottom
           const BannerAdWidget(
-            location: AdLocation.dashboard,
+            location: AdLocation.fluidDashboard,
             showAtTop: false,
           ),
         ],

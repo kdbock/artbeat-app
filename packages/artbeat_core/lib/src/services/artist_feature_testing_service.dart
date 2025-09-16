@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/subscription_tier.dart';
 import '../models/feature_limits.dart';
 import '../services/usage_tracking_service.dart';
+import '../utils/logger.dart';
 
 /// Service to test and validate that all artist features are working correctly
 /// This helps ensure subscription tiers provide the promised functionality
@@ -45,7 +45,7 @@ class ArtistFeatureTestingService {
 
     _testResults.clear();
 
-    debugPrint('🧪 Testing all features for ${tier.displayName} tier...');
+    AppLogger.info('🧪 Testing all features for ${tier.displayName} tier...');
 
     // Test basic features available to all tiers
     await _testBasicFeatures(userId, tier);

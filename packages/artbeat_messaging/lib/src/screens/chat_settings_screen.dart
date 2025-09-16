@@ -92,47 +92,55 @@ class _ChatSettingsScreenState extends State<ChatSettingsScreen> {
                   _selectedTheme.substring(1),
             ),
             onTap: () {
+              final MenuController controller = MenuController();
               showDialog<void>(
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Select Theme'),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RadioListTile<String>(
-                        title: const Text('System'),
+                  content: MenuAnchor(
+                    controller: controller,
+                    menuChildren: [
+                      RadioMenuButton<String>(
                         value: 'system',
                         groupValue: _selectedTheme,
                         onChanged: (value) {
-                          setState(() {
-                            _selectedTheme = value!;
-                          });
-                          Navigator.pop(context);
+                          if (value != null) {
+                            setState(() {
+                              _selectedTheme = value;
+                            });
+                            Navigator.pop(context);
+                          }
                         },
+                        child: const Text('System'),
                       ),
-                      RadioListTile<String>(
-                        title: const Text('Light'),
+                      RadioMenuButton<String>(
                         value: 'light',
                         groupValue: _selectedTheme,
                         onChanged: (value) {
-                          setState(() {
-                            _selectedTheme = value!;
-                          });
-                          Navigator.pop(context);
+                          if (value != null) {
+                            setState(() {
+                              _selectedTheme = value;
+                            });
+                            Navigator.pop(context);
+                          }
                         },
+                        child: const Text('Light'),
                       ),
-                      RadioListTile<String>(
-                        title: const Text('Dark'),
+                      RadioMenuButton<String>(
                         value: 'dark',
                         groupValue: _selectedTheme,
                         onChanged: (value) {
-                          setState(() {
-                            _selectedTheme = value!;
-                          });
-                          Navigator.pop(context);
+                          if (value != null) {
+                            setState(() {
+                              _selectedTheme = value;
+                            });
+                            Navigator.pop(context);
+                          }
                         },
+                        child: const Text('Dark'),
                       ),
                     ],
+                    child: const SizedBox.shrink(),
                   ),
                 ),
               );

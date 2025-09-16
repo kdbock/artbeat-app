@@ -38,7 +38,7 @@ class GiftController extends ChangeNotifier {
       _sentGifts.add(gift);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error sending gift: $e');
+      AppLogger.error('Error sending gift: $e');
       rethrow;
     }
   }
@@ -68,7 +68,7 @@ class GiftController extends ChangeNotifier {
       // Refresh sent gifts
       await fetchSentGifts();
     } catch (e) {
-      debugPrint('Error sending custom gift: $e');
+      AppLogger.error('Error sending custom gift: $e');
       rethrow;
     }
   }
@@ -98,7 +98,7 @@ class GiftController extends ChangeNotifier {
       notifyListeners();
       return subscriptionId;
     } catch (e) {
-      debugPrint('Error creating gift subscription: $e');
+      AppLogger.error('Error creating gift subscription: $e');
       rethrow;
     }
   }
@@ -109,7 +109,7 @@ class GiftController extends ChangeNotifier {
       notifyListeners();
       return _sentGifts;
     } catch (e) {
-      debugPrint('Error fetching sent gifts: $e');
+      AppLogger.error('Error fetching sent gifts: $e');
       return [];
     }
   }
@@ -119,7 +119,7 @@ class GiftController extends ChangeNotifier {
       _giftAnalytics = await _enhancedGiftService.getGiftAnalytics(userId);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading gift analytics: $e');
+      AppLogger.error('Error loading gift analytics: $e');
     }
   }
 

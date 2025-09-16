@@ -41,7 +41,7 @@ class _ArtistListWidgetState extends State<ArtistListWidget>
     });
 
     try {
-      debugPrint('Loading artists for community...');
+      AppLogger.info('Loading artists for community...');
 
       // Get all artist profiles
       final artistsSnapshot = await FirebaseFirestore.instance
@@ -52,12 +52,12 @@ class _ArtistListWidgetState extends State<ArtistListWidget>
 
       if (!mounted) return;
 
-      debugPrint('Found ${artistsSnapshot.docs.length} artist documents');
+      AppLogger.info('Found ${artistsSnapshot.docs.length} artist documents');
 
       final loadedArtists = <ArtistProfileModel>[];
       for (final doc in artistsSnapshot.docs) {
         try {
-          debugPrint('Processing artist document: ${doc.id}');
+          AppLogger.info('Processing artist document: ${doc.id}');
           final artist = ArtistProfileModel.fromFirestore(doc);
           loadedArtists.add(artist);
 
@@ -69,11 +69,11 @@ class _ArtistListWidgetState extends State<ArtistListWidget>
             'Successfully loaded artist: ${artist.displayName} with $followerCount followers',
           );
         } catch (e) {
-          debugPrint('Error parsing artist ${doc.id}: $e');
+          AppLogger.error('Error parsing artist ${doc.id}: $e');
         }
       }
 
-      debugPrint('Loaded ${loadedArtists.length} artists');
+      AppLogger.info('Loaded ${loadedArtists.length} artists');
 
       if (mounted) {
         setState(() {
@@ -82,7 +82,7 @@ class _ArtistListWidgetState extends State<ArtistListWidget>
         });
       }
     } catch (e) {
-      debugPrint('Error loading artists: $e');
+      AppLogger.error('Error loading artists: $e');
       if (mounted) {
         setState(() {
           _hasError = true;

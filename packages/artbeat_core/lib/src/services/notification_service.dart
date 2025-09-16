@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../utils/logger.dart';
 
 /// Enum representing different types of notifications
 enum NotificationType {
@@ -43,7 +43,7 @@ class NotificationService {
 
       return snapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      debugPrint('Error getting user notifications: $e');
+      AppLogger.error('Error getting user notifications: $e');
       return [];
     }
   }
@@ -61,7 +61,7 @@ class NotificationService {
           .doc(notificationId)
           .update({'read': true});
     } catch (e) {
-      debugPrint('Error marking notification as read: $e');
+      AppLogger.error('Error marking notification as read: $e');
     }
   }
 
@@ -85,7 +85,7 @@ class NotificationService {
 
       await batch.commit();
     } catch (e) {
-      debugPrint('Error marking all notifications as read: $e');
+      AppLogger.error('Error marking all notifications as read: $e');
     }
   }
 
@@ -102,7 +102,7 @@ class NotificationService {
           .doc(notificationId)
           .delete();
     } catch (e) {
-      debugPrint('Error deleting notification: $e');
+      AppLogger.error('Error deleting notification: $e');
     }
   }
 
@@ -135,9 +135,9 @@ class NotificationService {
 
       // Here you would implement push notification sending using Firebase Cloud Messaging
       // This is a simplified version without the actual FCM integration
-      debugPrint('Notification sent to user $userId: $title');
+      AppLogger.info('Notification sent to user $userId: $title');
     } catch (e) {
-      debugPrint('Error sending notification: $e');
+      AppLogger.error('Error sending notification: $e');
     }
   }
 
@@ -157,9 +157,9 @@ class NotificationService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      debugPrint('Notification preferences updated for user ${user.uid}');
+      AppLogger.info('Notification preferences updated for user ${user.uid}');
     } catch (e) {
-      debugPrint('Error updating notification preferences: $e');
+      AppLogger.error('Error updating notification preferences: $e');
       rethrow;
     }
   }
@@ -189,7 +189,7 @@ class NotificationService {
       // Convert to Map<String, bool>
       return preferences.map((key, value) => MapEntry(key, value as bool));
     } catch (e) {
-      debugPrint('Error getting notification preferences: $e');
+      AppLogger.error('Error getting notification preferences: $e');
       return _getDefaultPreferences();
     }
   }

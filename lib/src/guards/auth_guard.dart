@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class AuthGuard {
   /// Check if user is currently authenticated
@@ -67,8 +67,7 @@ class AuthRequiredScreen extends StatelessWidget {
   const AuthRequiredScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: const core.EnhancedUniversalHeader(
         title: 'Authentication Required',
         showLogo: false,
@@ -99,5 +98,4 @@ class AuthRequiredScreen extends StatelessWidget {
         ),
       ),
     );
-  }
 }

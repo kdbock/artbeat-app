@@ -30,7 +30,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
 
   AdType _selectedType = AdType.banner_ad;
   AdSize _selectedSize = AdSize.small;
-  AdLocation _selectedLocation = AdLocation.dashboard;
+  AdLocation _selectedLocation = AdLocation.fluidDashboard;
   ImageFit _selectedImageFit = ImageFit.cover;
   int _selectedDays = 7;
 

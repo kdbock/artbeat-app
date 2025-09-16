@@ -28,9 +28,9 @@ void main() async {
       );
 
       await Firebase.initializeApp(options: options);
-      debugPrint('Firebase initialized successfully with secure configuration');
+      AppLogger.firebase('Firebase initialized successfully with secure configuration');
     } else {
-      debugPrint('Firebase already initialized, using existing app instance');
+      AppLogger.firebase('Firebase already initialized, using existing app instance');
     }
 
     if (kDebugMode &&
@@ -42,10 +42,10 @@ void main() async {
       FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
       FirebaseAuth.instance.useAuthEmulator(host, 9099);
       FirebaseStorage.instance.useStorageEmulator(host, 9199);
-      debugPrint('Connected to Firebase emulators');
+      AppLogger.firebase('Connected to Firebase emulators');
     }
   } catch (e) {
-    debugPrint('Failed to initialize Firebase: $e');
+    AppLogger.firebase('Failed to initialize Firebase: $e');
     if (!kDebugMode) rethrow;
   }
 

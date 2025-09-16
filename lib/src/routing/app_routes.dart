@@ -41,6 +41,10 @@ class AppRoutes {
   // Gallery routes
   static const String galleryCommissions = '/gallery/commissions';
 
+  // Commission routes
+  static const String commissionHub = '/commission/hub';
+  static const String commissionRequest = '/commission/request';
+
   // Artist routes
   static const String artistDashboard = '/artist/dashboard';
   static const String artistOnboarding = '/artist/onboarding';
@@ -80,6 +84,7 @@ class AppRoutes {
   // Payment routes
   static const String paymentMethods = '/payment/methods';
   static const String paymentRefund = '/payment/refund';
+  static const String paymentScreen = '/payment/screen';
   static const String adPayment = '/ads/payment';
 
   // Capture routes
@@ -112,6 +117,11 @@ class AppRoutes {
   static const String artWalkDashboard = '/art-walk/dashboard';
   static const String artWalkMyWalks = '/art-walk/my-walks';
   static const String artWalkMyCaptures = '/art-walk/my-captures';
+  static const String artWalkCompleted = '/art-walk/completed';
+  static const String artWalkSaved = '/art-walk/saved';
+  static const String artWalkPopular = '/art-walk/popular';
+  static const String artWalkAchievements = '/art-walk/achievements';
+  static const String artWalkSettings = '/art-walk/settings';
   static const String enhancedCreateArtWalk = '/enhanced-create-art-walk';
   static const String enhancedArtWalkExperience =
       '/enhanced-art-walk-experience';
@@ -137,6 +147,7 @@ class AppRoutes {
   static const String communityTrending = '/community/trending';
   static const String communityFeatured = '/community/featured';
   static const String community = '/community';
+  static const String artCommunityHub = '/community/hub';
 
   // Events routes
   static const String events = '/events';
@@ -193,6 +204,7 @@ class AppRoutes {
   // Other routes
   static const String achievements = '/achievements';
   static const String achievementsInfo = '/achievements/info';
+  static const String leaderboard = '/leaderboard';
   static const String notifications = '/notifications';
   static const String dev = '/dev';
   static const String developerFeedbackAdmin = '/developer-feedback-admin';
@@ -200,6 +212,7 @@ class AppRoutes {
   static const String support = '/support';
   static const String search = '/search';
   static const String searchResults = '/search/results';
+  static const String browse = '/browse';
   static const String artSearch = '/art-search';
   static const String artWalkSearch = '/art-walk-search';
   static const String local = '/local';
@@ -210,6 +223,9 @@ class AppRoutes {
   static const String adsCreate = '/ads/create';
   static const String adsManagement = '/ads/management';
   static const String adsStatistics = '/ads/statistics';
+
+  // In-app purchase routes
+  static const String inAppPurchaseDemo = '/in-app-purchase-demo';
 
   /// Returns a list of all available routes
   static List<String> get allRoutes => [
@@ -254,8 +270,11 @@ class AppRoutes {
     galleryAnalytics,
     subscriptionComparison,
     subscriptionPlans,
+    commissionHub,
+    commissionRequest,
     paymentMethods,
     paymentRefund,
+    paymentScreen,
     adPayment,
     captures,
     captureCamera,
@@ -279,6 +298,11 @@ class AppRoutes {
     artWalkDashboard,
     artWalkMyWalks,
     artWalkMyCaptures,
+    artWalkCompleted,
+    artWalkSaved,
+    artWalkPopular,
+    artWalkAchievements,
+    artWalkSettings,
     artWalkSearch,
     enhancedCreateArtWalk,
     enhancedArtWalkExperience,
@@ -302,6 +326,7 @@ class AppRoutes {
     communityTrending,
     communityFeatured,
     community,
+    artCommunityHub,
     events,
     eventsDiscover,
     eventsDashboard,
@@ -349,6 +374,7 @@ class AppRoutes {
     paymentSettings,
     achievements,
     achievementsInfo,
+    leaderboard,
     notifications,
     dev,
     feedback,
@@ -357,6 +383,7 @@ class AppRoutes {
     support,
     search,
     searchResults,
+    browse,
     artSearch,
     artWalkSearch,
     local,
@@ -365,6 +392,7 @@ class AppRoutes {
     adsCreate,
     adsManagement,
     adsStatistics,
+    inAppPurchaseDemo,
   ];
 
   /// Checks if a route is valid

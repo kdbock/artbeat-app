@@ -28,7 +28,7 @@ class DirectionsService {
     if (apiKey == null ||
         apiKey.isEmpty ||
         apiKey == 'YOUR_GOOGLE_MAPS_API_KEY') {
-      debugPrint('⚠️ Invalid Google Maps API key');
+      AppLogger.warning('⚠️ Invalid Google Maps API key');
       throw Exception('Invalid or missing API key for directions');
     }
 
@@ -41,7 +41,7 @@ class DirectionsService {
     if (useCachedData) {
       final cachedData = await _getCachedDirections(cacheEntryKey);
       if (cachedData != null) {
-        debugPrint('🗺️ Using cached directions');
+        AppLogger.info('🗺️ Using cached directions');
         return cachedData;
       }
     }
@@ -96,7 +96,7 @@ class DirectionsService {
         }
       } on TimeoutException {
         lastError = Exception('Request timed out');
-        debugPrint('⌛ Directions request timed out (attempt ${attempt + 1})');
+        AppLogger.info('⌛ Directions request timed out (attempt ${attempt + 1})');
       } on SocketException {
         lastError = Exception('Network error');
         debugPrint(
@@ -104,7 +104,7 @@ class DirectionsService {
         );
       } on Exception catch (e) {
         lastError = e;
-        debugPrint('❌ Error fetching directions: $e (attempt ${attempt + 1})');
+        AppLogger.error('❌ Error fetching directions: $e (attempt ${attempt + 1})');
       }
 
       attempt++;
@@ -118,7 +118,7 @@ class DirectionsService {
     if (!useCachedData) {
       final fallbackCachedData = await _getCachedDirections(cacheEntryKey);
       if (fallbackCachedData != null) {
-        debugPrint('🔄 Falling back to cached directions after API failures');
+        AppLogger.info('🔄 Falling back to cached directions after API failures');
         return fallbackCachedData;
       }
     }
@@ -147,7 +147,7 @@ class DirectionsService {
       // Save back to preferences
       await prefs.setString(_cacheKey, jsonEncode(cache));
     } catch (e) {
-      debugPrint('⚠️ Failed to cache directions: $e');
+      AppLogger.warning('⚠️ Failed to cache directions: $e');
     }
   }
 
@@ -173,7 +173,7 @@ class DirectionsService {
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Error retrieving cached directions: $e');
+      AppLogger.error('⚠️ Error retrieving cached directions: $e');
     }
     return null;
   }
@@ -184,7 +184,7 @@ class DirectionsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_cacheKey);
     } catch (e) {
-      debugPrint('⚠️ Failed to clear directions cache: $e');
+      AppLogger.warning('⚠️ Failed to clear directions cache: $e');
     }
   }
 }

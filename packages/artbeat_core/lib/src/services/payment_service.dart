@@ -10,6 +10,7 @@ import '../models/gift_subscription_model.dart';
 import '../utils/env_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../utils/logger.dart';
 
 /// Service for handling payments and subscriptions with Stripe integration
 class PaymentService {
@@ -28,8 +29,41 @@ class PaymentService {
   late final FirebaseFirestore _firestore;
   late final http.Client _httpClient;
 
+  // v2 Cloud Functions URLs
   static const String _baseUrl =
       'https://us-central1-wordnerd-artbeat.cloudfunctions.net';
+  static const Map<String, String> _functionUrls = {
+    'createCustomer':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/createCustomer',
+    'createSetupIntent':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/createSetupIntent',
+    'createPaymentIntent':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/createPaymentIntent',
+    'processGiftPayment':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/processGiftPayment',
+    'processSubscriptionPayment':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/processSubscriptionPayment',
+    'processAdPayment':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/processAdPayment',
+    'processSponsorshipPayment':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/processSponsorshipPayment',
+    'processCommissionPayment':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/processCommissionPayment',
+    'getPaymentMethods':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/getPaymentMethods',
+    'updateCustomer':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/updateCustomer',
+    'detachPaymentMethod':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/detachPaymentMethod',
+    'createSubscription':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/createSubscription',
+    'cancelSubscription':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/cancelSubscription',
+    'changeSubscriptionTier':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/changeSubscriptionTier',
+    'requestRefund':
+        'https://us-central1-wordnerd-artbeat.cloudfunctions.net/requestRefund',
+  };
 
   void initializeDependencies({
     FirebaseAuth? auth,
@@ -41,18 +75,49 @@ class PaymentService {
     _httpClient = httpClient ?? http.Client();
   }
 
+  /// Make authenticated request to Cloud Functions
+  Future<http.Response> _makeAuthenticatedRequest({
+    required String functionKey,
+    required Map<String, dynamic> body,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    AppLogger.auth('🔐 Getting ID token for user: ${user.uid}');
+    final idToken = await user.getIdToken();
+    if (idToken == null) {
+      throw Exception('Failed to get ID token');
+    }
+
+    final url = _functionUrls[functionKey]!;
+    AppLogger.network('🌐 Making request to: $url');
+    AppLogger.auth('🔐 Token length: ${idToken.length}');
+    AppLogger.info('📝 Request body: ${json.encode(body)}');
+
+    return _httpClient.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $idToken',
+      },
+      body: json.encode(body),
+    );
+  }
+
   /// Initialize Stripe with publishable key
   void _initializeStripe() {
     try {
       final publishableKey = EnvLoader().get('STRIPE_PUBLISHABLE_KEY');
       if (publishableKey.isNotEmpty) {
         Stripe.publishableKey = publishableKey;
-        debugPrint('✅ Stripe initialized with publishable key');
+        AppLogger.info('✅ Stripe initialized with publishable key');
       } else {
-        debugPrint('⚠️ Stripe publishable key not found in environment');
+        AppLogger.warning('⚠️ Stripe publishable key not found in environment');
       }
     } catch (e) {
-      debugPrint('❌ Error initializing Stripe: $e');
+      AppLogger.error('❌ Error initializing Stripe: $e');
     }
   }
 
@@ -67,10 +132,9 @@ class PaymentService {
         throw Exception('User not authenticated');
       }
 
-      final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/createCustomer'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email, 'userId': userId}),
+      final response = await _makeAuthenticatedRequest(
+        functionKey: 'createCustomer',
+        body: {'email': email, 'userId': userId},
       );
 
       if (response.statusCode != 200) {
@@ -78,6 +142,13 @@ class PaymentService {
         debugPrint(
           'Create customer error - Status: ${response.statusCode}, Body: $errorBody',
         );
+
+        // Check for 404 (function not found) - common deployment issue
+        if (response.statusCode == 404) {
+          throw Exception(
+            'Payment service is temporarily unavailable. Please add a payment method later from your profile settings.',
+          );
+        }
 
         // Check if this is a configuration issue
         if (response.statusCode == 500 && errorBody.contains('stripe')) {
@@ -102,7 +173,7 @@ class PaymentService {
 
       return customerId;
     } catch (e) {
-      debugPrint('Error creating customer: $e');
+      AppLogger.error('Error creating customer: $e');
       rethrow;
     }
   }
@@ -110,20 +181,33 @@ class PaymentService {
   /// Create a setup intent for adding payment methods
   Future<String> createSetupIntent(String customerId) async {
     try {
-      final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/createSetupIntent'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'customerId': customerId}),
+      final response = await _makeAuthenticatedRequest(
+        functionKey: 'createSetupIntent',
+        body: {'customerId': customerId},
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to create setup intent');
+        final errorBody = response.body;
+        debugPrint(
+          'Create setup intent error - Status: ${response.statusCode}, Body: $errorBody',
+        );
+
+        // Check for 404 (function not found) - common deployment issue
+        if (response.statusCode == 404) {
+          throw Exception(
+            'Payment service is temporarily unavailable. Please try again later.',
+          );
+        }
+
+        throw Exception(
+          'Failed to create setup intent: ${response.statusCode} - $errorBody',
+        );
       }
 
       final data = json.decode(response.body) as Map<String, dynamic>;
       return data['clientSecret'] as String;
     } catch (e) {
-      debugPrint('Error creating setup intent: $e');
+      AppLogger.error('Error creating setup intent: $e');
       rethrow;
     }
   }
@@ -143,7 +227,7 @@ class PaymentService {
         ),
       );
     } catch (e) {
-      debugPrint('Error setting up payment sheet: $e');
+      AppLogger.error('Error setting up payment sheet: $e');
       rethrow;
     }
   }
@@ -151,10 +235,9 @@ class PaymentService {
   /// Get customer's saved payment methods
   Future<List<PaymentMethodModel>> getPaymentMethods(String customerId) async {
     try {
-      final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/getPaymentMethods'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'customerId': customerId}),
+      final response = await _makeAuthenticatedRequest(
+        functionKey: 'getPaymentMethods',
+        body: {'customerId': customerId},
       );
 
       if (response.statusCode != 200) {
@@ -170,7 +253,7 @@ class PaymentService {
           .map((pm) => PaymentMethodModel.fromJson(pm as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      debugPrint('Error getting payment methods: $e');
+      AppLogger.error('Error getting payment methods: $e');
       return [];
     }
   }
@@ -181,22 +264,27 @@ class PaymentService {
     required String paymentMethodId,
   }) async {
     try {
-      final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/updateCustomer'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
+      final response = await _makeAuthenticatedRequest(
+        functionKey: 'updateCustomer',
+        body: {
           'customerId': customerId,
           'defaultPaymentMethod': paymentMethodId,
-        }),
+        },
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to set default payment method');
+        final errorBody = response.body;
+        debugPrint(
+          'Set default payment method error - Status: ${response.statusCode}, Body: $errorBody',
+        );
+        throw Exception(
+          'Failed to set default payment method: ${response.statusCode} - $errorBody',
+        );
       }
 
       return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error setting default payment method: $e');
+      AppLogger.error('Error setting default payment method: $e');
       rethrow;
     }
   }
@@ -206,19 +294,24 @@ class PaymentService {
     String paymentMethodId,
   ) async {
     try {
-      final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/detachPaymentMethod'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'paymentMethodId': paymentMethodId}),
+      final response = await _makeAuthenticatedRequest(
+        functionKey: 'detachPaymentMethod',
+        body: {'paymentMethodId': paymentMethodId},
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to detach payment method');
+        final errorBody = response.body;
+        debugPrint(
+          'Detach payment method error - Status: ${response.statusCode}, Body: $errorBody',
+        );
+        throw Exception(
+          'Failed to detach payment method: ${response.statusCode} - $errorBody',
+        );
       }
 
       return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error detaching payment method: $e');
+      AppLogger.error('Error detaching payment method: $e');
       rethrow;
     }
   }
@@ -253,7 +346,7 @@ class PaymentService {
       final data = json.decode(response.body) as Map<String, dynamic>;
       return data['success'] as bool? ?? false;
     } catch (e) {
-      debugPrint('Error processing payment: $e');
+      AppLogger.error('Error processing payment: $e');
       rethrow;
     }
   }
@@ -272,7 +365,7 @@ class PaymentService {
       }
 
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/requestRefund'),
+        Uri.parse(_functionUrls['requestRefund']!),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'paymentId': paymentId,
@@ -298,7 +391,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error requesting refund: $e');
+      AppLogger.error('Error requesting refund: $e');
       rethrow;
     }
   }
@@ -318,7 +411,7 @@ class PaymentService {
 
       final priceId = _getPriceIdForTier(newTier);
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/changeSubscriptionTier'),
+        Uri.parse(_functionUrls['changeSubscriptionTier']!),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customerId': customerId,
@@ -343,7 +436,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error changing subscription tier: $e');
+      AppLogger.error('Error changing subscription tier: $e');
       rethrow;
     }
   }
@@ -352,7 +445,7 @@ class PaymentService {
   Future<Map<String, dynamic>> cancelSubscription(String subscriptionId) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/cancelSubscription'),
+        Uri.parse(_functionUrls['cancelSubscription']!),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'subscriptionId': subscriptionId}),
       );
@@ -372,7 +465,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error cancelling subscription: $e');
+      AppLogger.error('Error cancelling subscription: $e');
       rethrow;
     }
   }
@@ -436,7 +529,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error processing gift payment: $e');
+      AppLogger.error('Error processing gift payment: $e');
       rethrow;
     }
   }
@@ -459,7 +552,7 @@ class PaymentService {
           .map((doc) => GiftModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting sent gifts: $e');
+      AppLogger.error('Error getting sent gifts: $e');
       rethrow;
     }
   }
@@ -482,7 +575,7 @@ class PaymentService {
           .map((doc) => GiftModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting received gifts: $e');
+      AppLogger.error('Error getting received gifts: $e');
       rethrow;
     }
   }
@@ -537,7 +630,7 @@ class PaymentService {
         );
       }
     } catch (e) {
-      debugPrint('Error processing sponsorship payment: $e');
+      AppLogger.error('Error processing sponsorship payment: $e');
       rethrow;
     }
   }
@@ -590,7 +683,7 @@ class PaymentService {
         throw Exception('Refund failed: ${errorData['error']}');
       }
     } catch (e) {
-      debugPrint('Error processing refund: $e');
+      AppLogger.error('Error processing refund: $e');
       rethrow;
     }
   }
@@ -633,19 +726,19 @@ class PaymentService {
       throw Exception('User not authenticated');
     }
 
-    debugPrint('Getting or creating customer ID for user: $userId');
+    AppLogger.info('Getting or creating customer ID for user: $userId');
 
     // Check if customer ID already exists in Firestore
     final userDoc = await _firestore.collection('users').doc(userId).get();
     final data = userDoc.data();
-    debugPrint('User document exists: ${userDoc.exists}, data: $data');
+    AppLogger.info('User document exists: ${userDoc.exists}, data: $data');
 
     if (userDoc.exists &&
         data != null &&
         data.containsKey('stripeCustomerId')) {
       final customerId = data['stripeCustomerId'] as String?;
       if (customerId != null) {
-        debugPrint('Found existing customer ID: $customerId');
+        AppLogger.info('Found existing customer ID: $customerId');
         return customerId;
       }
     }
@@ -653,21 +746,68 @@ class PaymentService {
     // If not, create a new customer in Stripe
     final email = _auth.currentUser?.email ?? '';
     final name = _auth.currentUser?.displayName ?? '';
-    debugPrint('Creating new customer with email: $email, name: $name');
+    AppLogger.info('Creating new customer with email: $email, name: $name');
     return createCustomer(email: email, name: name);
   }
 
   /// Get the user's default payment method ID
   Future<String?> getDefaultPaymentMethodId() async {
     try {
-      final customerId = await getOrCreateCustomerId();
-      final paymentMethods = await getPaymentMethods(customerId);
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        AppLogger.auth('User not authenticated');
+        return null;
+      }
 
-      // Return the first payment method if available
-      // In a real app, you'd want to track which one is the default
-      return paymentMethods.isNotEmpty ? paymentMethods.first.id : null;
+      // First check if we have a stored default payment method ID
+      final customerDoc = await _firestore
+          .collection('customers')
+          .doc(userId)
+          .get();
+
+      if (customerDoc.exists) {
+        final customerData = customerDoc.data();
+        final defaultPaymentMethodId =
+            customerData?['defaultPaymentMethodId'] as String?;
+
+        if (defaultPaymentMethodId != null) {
+          debugPrint(
+            'Found stored default payment method: $defaultPaymentMethodId',
+          );
+          return defaultPaymentMethodId;
+        }
+
+        // If no default is set, get all payment methods and return the first one
+        final stripeCustomerId = customerData?['stripeCustomerId'] as String?;
+        if (stripeCustomerId != null) {
+          final paymentMethods = await getPaymentMethods(stripeCustomerId);
+          if (paymentMethods.isNotEmpty) {
+            final firstPaymentMethodId = paymentMethods.first.id;
+
+            // Set this as the default for future use
+            await _firestore.collection('customers').doc(userId).update({
+              'defaultPaymentMethodId': firstPaymentMethodId,
+            });
+
+            debugPrint(
+              'Set first payment method as default: $firstPaymentMethodId',
+            );
+            return firstPaymentMethodId;
+          }
+        }
+      }
+
+      AppLogger.info('No payment methods found for user');
+      return null;
     } catch (e) {
-      debugPrint('Error getting default payment method: $e');
+      AppLogger.error('Error getting default payment method: $e');
+
+      // If the error contains "404" or "temporarily unavailable", it's likely a deployment issue
+      if (e.toString().contains('404') ||
+          e.toString().contains('temporarily unavailable')) {
+        return null; // Return null so calling code can handle gracefully
+      }
+
       return null;
     }
   }
@@ -717,7 +857,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error processing ad payment: $e');
+      AppLogger.error('Error processing ad payment: $e');
       rethrow;
     }
   }
@@ -745,7 +885,7 @@ class PaymentService {
 
       return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error getting ad pricing: $e');
+      AppLogger.error('Error getting ad pricing: $e');
       rethrow;
     }
   }
@@ -797,7 +937,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error processing enhanced gift payment: $e');
+      AppLogger.error('Error processing enhanced gift payment: $e');
       rethrow;
     }
   }
@@ -829,7 +969,7 @@ class PaymentService {
 
       final priceId = _getPriceIdForTier(tier);
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/createSubscription'),
+        Uri.parse(_functionUrls['createSubscription']!),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customerId': customerId,
@@ -866,7 +1006,7 @@ class PaymentService {
 
       return data;
     } catch (e) {
-      debugPrint('Error creating subscription: $e');
+      AppLogger.error('Error creating subscription: $e');
       rethrow;
     }
   }
@@ -905,7 +1045,7 @@ class PaymentService {
       final data = json.decode(response.body) as Map<String, dynamic>;
       return data;
     } catch (e) {
-      debugPrint('Error creating custom subscription: $e');
+      AppLogger.error('Error creating custom subscription: $e');
       rethrow;
     }
   }
@@ -937,7 +1077,7 @@ class PaymentService {
         });
       }
     } catch (e) {
-      debugPrint('Error pausing subscription: $e');
+      AppLogger.error('Error pausing subscription: $e');
       rethrow;
     }
   }
@@ -969,7 +1109,7 @@ class PaymentService {
         });
       }
     } catch (e) {
-      debugPrint('Error resuming subscription: $e');
+      AppLogger.error('Error resuming subscription: $e');
       rethrow;
     }
   }
@@ -993,7 +1133,7 @@ class PaymentService {
         throw Exception('Failed to update subscription price');
       }
     } catch (e) {
-      debugPrint('Error updating subscription price: $e');
+      AppLogger.error('Error updating subscription price: $e');
       rethrow;
     }
   }
@@ -1036,7 +1176,7 @@ class PaymentService {
       // Update artist earnings totals
       await _updateArtistEarnings(artistId, type, amount);
     } catch (e) {
-      debugPrint('Error creating earnings transaction: $e');
+      AppLogger.error('Error creating earnings transaction: $e');
       rethrow;
     }
   }
@@ -1109,7 +1249,7 @@ class PaymentService {
         }
       });
     } catch (e) {
-      debugPrint('Error updating artist earnings: $e');
+      AppLogger.error('Error updating artist earnings: $e');
       rethrow;
     }
   }
@@ -1132,7 +1272,7 @@ class PaymentService {
 
       return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error getting sponsorship analytics: $e');
+      AppLogger.error('Error getting sponsorship analytics: $e');
       rethrow;
     }
   }
@@ -1168,7 +1308,7 @@ class PaymentService {
 
       return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error processing custom gift payment: $e');
+      AppLogger.error('Error processing custom gift payment: $e');
       rethrow;
     }
   }
@@ -1221,7 +1361,7 @@ class PaymentService {
 
       return json.decode(response.body) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error creating gift subscription: $e');
+      AppLogger.error('Error creating gift subscription: $e');
       rethrow;
     }
   }
@@ -1239,7 +1379,7 @@ class PaymentService {
         throw Exception('Failed to pause gift subscription');
       }
     } catch (e) {
-      debugPrint('Error pausing gift subscription: $e');
+      AppLogger.error('Error pausing gift subscription: $e');
       rethrow;
     }
   }
@@ -1257,7 +1397,7 @@ class PaymentService {
         throw Exception('Failed to resume gift subscription');
       }
     } catch (e) {
-      debugPrint('Error resuming gift subscription: $e');
+      AppLogger.error('Error resuming gift subscription: $e');
       rethrow;
     }
   }
@@ -1275,7 +1415,7 @@ class PaymentService {
         throw Exception('Failed to cancel gift subscription');
       }
     } catch (e) {
-      debugPrint('Error cancelling gift subscription: $e');
+      AppLogger.error('Error cancelling gift subscription: $e');
       rethrow;
     }
   }
@@ -1324,7 +1464,7 @@ class PaymentService {
 
       return subscriptionData;
     } catch (e) {
-      debugPrint('Error creating free subscription: $e');
+      AppLogger.error('Error creating free subscription: $e');
       rethrow;
     }
   }
@@ -1387,7 +1527,7 @@ class PaymentService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing commission deposit payment: $e');
+      AppLogger.error('Error processing commission deposit payment: $e');
       rethrow;
     }
   }
@@ -1458,7 +1598,7 @@ class PaymentService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing commission milestone payment: $e');
+      AppLogger.error('Error processing commission milestone payment: $e');
       rethrow;
     }
   }
@@ -1521,7 +1661,7 @@ class PaymentService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing commission final payment: $e');
+      AppLogger.error('Error processing commission final payment: $e');
       rethrow;
     }
   }
@@ -1544,8 +1684,863 @@ class PaymentService {
 
       return querySnapshot.docs.map((doc) => doc.data()).toList();
     } catch (e) {
-      debugPrint('Error getting commission payments: $e');
+      AppLogger.error('Error getting commission payments: $e');
       return [];
+    }
+  }
+
+  /// Process direct gift payment (no stored payment methods required)
+  Future<Map<String, dynamic>> processDirectGiftPayment({
+    required String recipientId,
+    required double amount,
+    required String giftType,
+    String? message,
+    String? campaignId,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      debugPrint(
+        '🎁 Starting direct gift payment for \$${amount.toStringAsFixed(2)}',
+      );
+      debugPrint(
+        '🎁 Parameters - recipientId: $recipientId, giftType: $giftType, message: $message, campaignId: $campaignId',
+      );
+
+      final idToken = await _auth.currentUser!.getIdToken();
+      String? paymentIntentId;
+
+      // Handle free gifts (100% off coupons)
+      if (amount <= 0.0) {
+        AppLogger.info('🎁 Processing free gift (100% off coupon applied)');
+
+        // Skip payment intent creation for free gifts
+        // Send directly to backend with special free gift flag
+        final requestBody = <String, dynamic>{
+          'recipientId': recipientId,
+          'amount': 0.0, // Free amount
+          'giftType': giftType,
+          'isFreeGift': true, // Flag to indicate this is a free gift
+          'skipPaymentValidation':
+              true, // Tell backend to skip payment intent validation
+        };
+
+        // Only add optional fields if they're not null
+        if (message != null && message.isNotEmpty) {
+          requestBody['message'] = message;
+        }
+        if (campaignId != null && campaignId.isNotEmpty) {
+          requestBody['campaignId'] = campaignId;
+        }
+
+        debugPrint(
+          '🎁 Sending free gift request body: ${json.encode(requestBody)}',
+        );
+        AppLogger.info(
+          '🎁 Endpoint URL: ${_functionUrls['processGiftPayment']}',
+        );
+
+        final processResponse = await _httpClient.post(
+          Uri.parse(_functionUrls['processGiftPayment']!),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+          body: json.encode(requestBody),
+        );
+
+        AppLogger.info(
+          '🎁 Backend response status: ${processResponse.statusCode}',
+        );
+        AppLogger.info('🎁 Backend response body: ${processResponse.body}');
+
+        if (processResponse.statusCode != 200) {
+          final errorData = json.decode(processResponse.body);
+          AppLogger.error('🎁 Backend error data: $errorData');
+          throw Exception('Failed to process free gift: ${errorData['error']}');
+        }
+
+        final processData =
+            json.decode(processResponse.body) as Map<String, dynamic>;
+        debugPrint(
+          '🎉 Free gift processed successfully: ${processData['giftId']}',
+        );
+
+        return {
+          'status': 'success',
+          'giftId': processData['giftId'],
+          'paymentIntentId': null, // No payment intent for free gifts
+          'message': 'Free gift sent successfully!',
+          'isFreeGift': true,
+        };
+      }
+
+      // Step 1: Create payment intent for paid gifts
+      final paymentIntentResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['createPaymentIntent']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'amount': amount,
+          'description': 'ArtBeat Gift: $giftType',
+          'metadata': {
+            'recipientId': recipientId,
+            'giftType': giftType,
+            'senderId': userId,
+            if (campaignId != null) 'campaignId': campaignId,
+          },
+        }),
+      );
+
+      if (paymentIntentResponse.statusCode != 200) {
+        final errorData = json.decode(paymentIntentResponse.body);
+        throw Exception(
+          'Failed to create payment intent: ${errorData['error']}',
+        );
+      }
+
+      final paymentIntentData =
+          json.decode(paymentIntentResponse.body) as Map<String, dynamic>;
+      final clientSecret = paymentIntentData['clientSecret'] as String;
+      paymentIntentId = paymentIntentData['paymentIntentId'] as String;
+
+      AppLogger.info('✅ Payment intent created: $paymentIntentId');
+
+      // Step 2: Initialize and present payment sheet
+      try {
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'ArtBeat',
+            style: ThemeMode.system,
+          ),
+        );
+
+        await Stripe.instance.presentPaymentSheet();
+        AppLogger.info('✅ Payment confirmed with Stripe');
+      } on StripeException catch (e) {
+        if (e.error.code == FailureCode.Canceled) {
+          throw Exception('Payment was cancelled by user');
+        } else {
+          throw Exception('Payment failed: ${e.error.localizedMessage}');
+        }
+      }
+
+      // Step 3: Process the gift on the backend
+      final processResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['processGiftPayment']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'paymentIntentId': paymentIntentId,
+          'recipientId': recipientId,
+          'amount': amount,
+          'giftType': giftType,
+          'message': message,
+          'campaignId': campaignId,
+          'isFreeGift': false,
+        }),
+      );
+
+      if (processResponse.statusCode != 200) {
+        final errorData = json.decode(processResponse.body);
+        throw Exception('Failed to process gift: ${errorData['error']}');
+      }
+
+      final processData =
+          json.decode(processResponse.body) as Map<String, dynamic>;
+      AppLogger.info(
+        '🎉 Gift processed successfully: ${processData['giftId']}',
+      );
+
+      return {
+        'status': 'success',
+        'giftId': processData['giftId'],
+        'paymentIntentId': paymentIntentId,
+        'message': 'Gift sent successfully!',
+        'isFreeGift': false,
+      };
+    } catch (e) {
+      AppLogger.error('❌ Error processing direct gift payment: $e');
+
+      // Return error details for better user experience
+      return {
+        'status': 'error',
+        'error': e.toString(),
+        'message': 'Failed to process gift payment. Please try again.',
+      };
+    }
+  }
+
+  /// Process direct subscription payment (no stored payment methods required)
+  Future<Map<String, dynamic>> processDirectSubscriptionPayment({
+    required String tier,
+    required double priceAmount,
+    String billingCycle = 'monthly',
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      debugPrint(
+        '💳 Starting direct subscription payment for $tier - \$${priceAmount.toStringAsFixed(2)}',
+      );
+
+      final idToken = await _auth.currentUser!.getIdToken();
+      String? paymentIntentId;
+
+      // Handle free subscriptions (100% off coupons)
+      if (priceAmount <= 0.0) {
+        AppLogger.info(
+          '💳 Processing free subscription (100% off coupon applied)',
+        );
+
+        // Skip Stripe payment processing for free subscriptions
+        // Process the subscription directly on the backend
+        final processResponse = await _httpClient.post(
+          Uri.parse(_functionUrls['processSubscriptionPayment']!),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+          body: json.encode({
+            'paymentIntentId':
+                'FREE_SUBSCRIPTION_TRANSACTION', // Special ID for free subscriptions
+            'tier': tier,
+            'priceAmount': 0.0, // Ensure amount is 0 for free subscriptions
+            'billingCycle': billingCycle,
+            'isFreeSubscription':
+                true, // Flag to indicate this is a free subscription
+          }),
+        );
+
+        if (processResponse.statusCode != 200) {
+          final errorData = json.decode(processResponse.body);
+          throw Exception(
+            'Failed to process free subscription: ${errorData['error']}',
+          );
+        }
+
+        final processData =
+            json.decode(processResponse.body) as Map<String, dynamic>;
+        debugPrint(
+          '🎉 Free subscription processed successfully: ${processData['subscriptionId']}',
+        );
+
+        return {
+          'status': 'success',
+          'subscriptionId': processData['subscriptionId'],
+          'paymentIntentId': null, // No payment intent for free subscriptions
+          'message': 'Free subscription activated successfully!',
+          'isFreeSubscription': true,
+        };
+      }
+
+      // Step 1: Create payment intent for paid subscriptions
+      final paymentIntentResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['createPaymentIntent']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'amount': priceAmount,
+          'description': 'ArtBeat Subscription: $tier',
+          'metadata': {
+            'tier': tier,
+            'billingCycle': billingCycle,
+            'userId': userId,
+          },
+        }),
+      );
+
+      if (paymentIntentResponse.statusCode != 200) {
+        final errorData = json.decode(paymentIntentResponse.body);
+        throw Exception(
+          'Failed to create payment intent: ${errorData['error']}',
+        );
+      }
+
+      final paymentIntentData =
+          json.decode(paymentIntentResponse.body) as Map<String, dynamic>;
+      final clientSecret = paymentIntentData['clientSecret'] as String;
+      paymentIntentId = paymentIntentData['paymentIntentId'] as String;
+
+      AppLogger.info('✅ Payment intent created: $paymentIntentId');
+
+      // Step 2: Initialize and present payment sheet
+      try {
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'ArtBeat',
+            style: ThemeMode.system,
+          ),
+        );
+
+        await Stripe.instance.presentPaymentSheet();
+        AppLogger.info('✅ Payment confirmed with Stripe');
+      } on StripeException catch (e) {
+        if (e.error.code == FailureCode.Canceled) {
+          throw Exception('Payment was cancelled by user');
+        } else {
+          throw Exception('Payment failed: ${e.error.localizedMessage}');
+        }
+      }
+
+      // Step 3: Process the subscription on the backend
+      final processResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['processSubscriptionPayment']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'paymentIntentId': paymentIntentId,
+          'tier': tier,
+          'priceAmount': priceAmount,
+          'billingCycle': billingCycle,
+          'isFreeSubscription': false,
+        }),
+      );
+
+      if (processResponse.statusCode != 200) {
+        final errorData = json.decode(processResponse.body);
+        throw Exception(
+          'Failed to process subscription: ${errorData['error']}',
+        );
+      }
+
+      final processData =
+          json.decode(processResponse.body) as Map<String, dynamic>;
+      debugPrint(
+        '🎉 Subscription processed successfully: ${processData['subscriptionId']}',
+      );
+
+      return {
+        'status': 'success',
+        'subscriptionId': processData['subscriptionId'],
+        'paymentIntentId': paymentIntentId,
+        'message': 'Subscription activated successfully!',
+        'isFreeSubscription': false,
+      };
+    } catch (e) {
+      AppLogger.error('❌ Error processing direct subscription payment: $e');
+      return {
+        'status': 'error',
+        'error': e.toString(),
+        'message': 'Failed to process subscription payment. Please try again.',
+      };
+    }
+  }
+
+  /// Process direct ad payment (no stored payment methods required)
+  Future<Map<String, dynamic>> processDirectAdPayment({
+    required String adType,
+    required int duration,
+    required double amount,
+    Map<String, dynamic>? targetAudience,
+    Map<String, dynamic>? adContent,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      debugPrint(
+        '📢 Starting direct ad payment for $adType - \$${amount.toStringAsFixed(2)}',
+      );
+
+      final idToken = await _auth.currentUser!.getIdToken();
+      String? paymentIntentId;
+
+      // Handle free advertisements (100% off coupons)
+      if (amount <= 0.0) {
+        debugPrint(
+          '📢 Processing free advertisement (100% off coupon applied)',
+        );
+
+        // Skip Stripe payment processing for free ads
+        // Process the ad directly on the backend
+        final processResponse = await _httpClient.post(
+          Uri.parse(_functionUrls['processAdPayment']!),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+          body: json.encode({
+            'paymentIntentId': 'FREE_AD_TRANSACTION', // Special ID for free ads
+            'adType': adType,
+            'duration': duration,
+            'amount': 0.0, // Ensure amount is 0 for free ads
+            'targetAudience': targetAudience,
+            'adContent': adContent,
+            'isFreeAd': true, // Flag to indicate this is a free ad
+          }),
+        );
+
+        if (processResponse.statusCode != 200) {
+          final errorData = json.decode(processResponse.body);
+          throw Exception(
+            'Failed to process free advertisement: ${errorData['error']}',
+          );
+        }
+
+        final processData =
+            json.decode(processResponse.body) as Map<String, dynamic>;
+        debugPrint(
+          '🎉 Free advertisement processed successfully: ${processData['adId']}',
+        );
+
+        return {
+          'status': 'success',
+          'adId': processData['adId'],
+          'paymentIntentId': null, // No payment intent for free ads
+          'message': 'Free advertisement activated successfully!',
+          'isFreeAd': true,
+        };
+      }
+
+      // Step 1: Create payment intent for paid advertisements
+      final paymentIntentResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['createPaymentIntent']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'amount': amount,
+          'description': 'ArtBeat Advertisement: $adType',
+          'metadata': {
+            'adType': adType,
+            'duration': duration.toString(),
+            'userId': userId,
+          },
+        }),
+      );
+
+      if (paymentIntentResponse.statusCode != 200) {
+        final errorData = json.decode(paymentIntentResponse.body);
+        throw Exception(
+          'Failed to create payment intent: ${errorData['error']}',
+        );
+      }
+
+      final paymentIntentData =
+          json.decode(paymentIntentResponse.body) as Map<String, dynamic>;
+      final clientSecret = paymentIntentData['clientSecret'] as String;
+      paymentIntentId = paymentIntentData['paymentIntentId'] as String;
+
+      AppLogger.info('✅ Payment intent created: $paymentIntentId');
+
+      // Step 2: Initialize and present payment sheet
+      try {
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'ArtBeat',
+            style: ThemeMode.system,
+          ),
+        );
+
+        await Stripe.instance.presentPaymentSheet();
+        AppLogger.info('✅ Payment confirmed with Stripe');
+      } on StripeException catch (e) {
+        if (e.error.code == FailureCode.Canceled) {
+          throw Exception('Payment was cancelled by user');
+        } else {
+          throw Exception('Payment failed: ${e.error.localizedMessage}');
+        }
+      }
+
+      // Step 3: Process the ad on the backend
+      final processResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['processAdPayment']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'paymentIntentId': paymentIntentId,
+          'adType': adType,
+          'duration': duration,
+          'amount': amount,
+          'targetAudience': targetAudience,
+          'adContent': adContent,
+          'isFreeAd': false,
+        }),
+      );
+
+      if (processResponse.statusCode != 200) {
+        final errorData = json.decode(processResponse.body);
+        throw Exception('Failed to process ad: ${errorData['error']}');
+      }
+
+      final processData =
+          json.decode(processResponse.body) as Map<String, dynamic>;
+      AppLogger.info('🎉 Ad processed successfully: ${processData['adId']}');
+
+      return {
+        'status': 'success',
+        'adId': processData['adId'],
+        'paymentIntentId': paymentIntentId,
+        'message': 'Advertisement activated successfully!',
+        'isFreeAd': false,
+      };
+    } catch (e) {
+      AppLogger.error('❌ Error processing direct ad payment: $e');
+      return {
+        'status': 'error',
+        'error': e.toString(),
+        'message': 'Failed to process ad payment. Please try again.',
+      };
+    }
+  }
+
+  /// Process direct sponsorship payment (no stored payment methods required)
+  Future<Map<String, dynamic>> processDirectSponsorshipPayment({
+    required String artistId,
+    required double amount,
+    required String sponsorshipType,
+    int duration = 30,
+    List<String>? benefits,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      debugPrint(
+        '🤝 Starting direct sponsorship payment for $sponsorshipType - \$${amount.toStringAsFixed(2)}',
+      );
+
+      final idToken = await _auth.currentUser!.getIdToken();
+      String? paymentIntentId;
+
+      // Handle free sponsorships (100% off coupons)
+      if (amount <= 0.0) {
+        AppLogger.info(
+          '🤝 Processing free sponsorship (100% off coupon applied)',
+        );
+
+        // Skip Stripe payment processing for free sponsorships
+        // Process the sponsorship directly on the backend
+        final processResponse = await _httpClient.post(
+          Uri.parse(_functionUrls['processSponsorshipPayment']!),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+          body: json.encode({
+            'paymentIntentId':
+                'FREE_SPONSORSHIP_TRANSACTION', // Special ID for free sponsorships
+            'artistId': artistId,
+            'amount': 0.0, // Ensure amount is 0 for free sponsorships
+            'sponsorshipType': sponsorshipType,
+            'duration': duration,
+            'benefits': benefits,
+            'isFreeSponsorship':
+                true, // Flag to indicate this is a free sponsorship
+          }),
+        );
+
+        if (processResponse.statusCode != 200) {
+          final errorData = json.decode(processResponse.body);
+          throw Exception(
+            'Failed to process free sponsorship: ${errorData['error']}',
+          );
+        }
+
+        final processData =
+            json.decode(processResponse.body) as Map<String, dynamic>;
+        debugPrint(
+          '🎉 Free sponsorship processed successfully: ${processData['sponsorshipId']}',
+        );
+
+        return {
+          'status': 'success',
+          'sponsorshipId': processData['sponsorshipId'],
+          'paymentIntentId': null, // No payment intent for free sponsorships
+          'message': 'Free sponsorship activated successfully!',
+          'isFreeSponsorship': true,
+        };
+      }
+
+      // Step 1: Create payment intent for paid sponsorships
+      final paymentIntentResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['createPaymentIntent']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'amount': amount,
+          'description': 'ArtBeat Sponsorship: $sponsorshipType',
+          'metadata': {
+            'artistId': artistId,
+            'sponsorshipType': sponsorshipType,
+            'duration': duration.toString(),
+            'sponsorId': userId,
+          },
+        }),
+      );
+
+      if (paymentIntentResponse.statusCode != 200) {
+        final errorData = json.decode(paymentIntentResponse.body);
+        throw Exception(
+          'Failed to create payment intent: ${errorData['error']}',
+        );
+      }
+
+      final paymentIntentData =
+          json.decode(paymentIntentResponse.body) as Map<String, dynamic>;
+      final clientSecret = paymentIntentData['clientSecret'] as String;
+      paymentIntentId = paymentIntentData['paymentIntentId'] as String;
+
+      AppLogger.info('✅ Payment intent created: $paymentIntentId');
+
+      // Step 2: Initialize and present payment sheet
+      try {
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'ArtBeat',
+            style: ThemeMode.system,
+          ),
+        );
+
+        await Stripe.instance.presentPaymentSheet();
+        AppLogger.info('✅ Payment confirmed with Stripe');
+      } on StripeException catch (e) {
+        if (e.error.code == FailureCode.Canceled) {
+          throw Exception('Payment was cancelled by user');
+        } else {
+          throw Exception('Payment failed: ${e.error.localizedMessage}');
+        }
+      }
+
+      // Step 3: Process the sponsorship on the backend
+      final processResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['processSponsorshipPayment']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'paymentIntentId': paymentIntentId,
+          'artistId': artistId,
+          'amount': amount,
+          'sponsorshipType': sponsorshipType,
+          'duration': duration,
+          'benefits': benefits,
+          'isFreeSponsorship': false,
+        }),
+      );
+
+      if (processResponse.statusCode != 200) {
+        final errorData = json.decode(processResponse.body);
+        throw Exception('Failed to process sponsorship: ${errorData['error']}');
+      }
+
+      final processData =
+          json.decode(processResponse.body) as Map<String, dynamic>;
+      debugPrint(
+        '🎉 Sponsorship processed successfully: ${processData['sponsorshipId']}',
+      );
+
+      return {
+        'status': 'success',
+        'sponsorshipId': processData['sponsorshipId'],
+        'paymentIntentId': paymentIntentId,
+        'message': 'Sponsorship activated successfully!',
+        'isFreeSponsorship': false,
+      };
+    } catch (e) {
+      AppLogger.error('❌ Error processing direct sponsorship payment: $e');
+      return {
+        'status': 'error',
+        'error': e.toString(),
+        'message': 'Failed to process sponsorship payment. Please try again.',
+      };
+    }
+  }
+
+  /// Process direct commission payment (no stored payment methods required)
+  Future<Map<String, dynamic>> processDirectCommissionPayment({
+    required String artistId,
+    required double amount,
+    required String commissionType,
+    String? description,
+    DateTime? deadline,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      debugPrint(
+        '🎨 Starting direct commission payment for $commissionType - \$${amount.toStringAsFixed(2)}',
+      );
+
+      final idToken = await _auth.currentUser!.getIdToken();
+      String? paymentIntentId;
+
+      // Handle free commissions (100% off coupons)
+      if (amount <= 0.0) {
+        AppLogger.info(
+          '🎨 Processing free commission (100% off coupon applied)',
+        );
+
+        // Skip Stripe payment processing for free commissions
+        // Process the commission directly on the backend
+        final processResponse = await _httpClient.post(
+          Uri.parse(_functionUrls['processCommissionPayment']!),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $idToken',
+          },
+          body: json.encode({
+            'paymentIntentId':
+                'FREE_COMMISSION_TRANSACTION', // Special ID for free commissions
+            'artistId': artistId,
+            'amount': 0.0, // Ensure amount is 0 for free commissions
+            'commissionType': commissionType,
+            'description': description,
+            'deadline': deadline?.toIso8601String(),
+            'isFreeCommission':
+                true, // Flag to indicate this is a free commission
+          }),
+        );
+
+        if (processResponse.statusCode != 200) {
+          final errorData = json.decode(processResponse.body);
+          throw Exception(
+            'Failed to process free commission: ${errorData['error']}',
+          );
+        }
+
+        final processData =
+            json.decode(processResponse.body) as Map<String, dynamic>;
+        debugPrint(
+          '🎉 Free commission processed successfully: ${processData['commissionId']}',
+        );
+
+        return {
+          'status': 'success',
+          'commissionId': processData['commissionId'],
+          'paymentIntentId': null, // No payment intent for free commissions
+          'message': 'Free commission request sent successfully!',
+          'isFreeCommission': true,
+        };
+      }
+
+      // Step 1: Create payment intent for paid commissions
+      final paymentIntentResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['createPaymentIntent']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'amount': amount,
+          'description': 'ArtBeat Commission: $commissionType',
+          'metadata': {
+            'artistId': artistId,
+            'commissionType': commissionType,
+            'clientId': userId,
+          },
+        }),
+      );
+
+      if (paymentIntentResponse.statusCode != 200) {
+        final errorData = json.decode(paymentIntentResponse.body);
+        throw Exception(
+          'Failed to create payment intent: ${errorData['error']}',
+        );
+      }
+
+      final paymentIntentData =
+          json.decode(paymentIntentResponse.body) as Map<String, dynamic>;
+      final clientSecret = paymentIntentData['clientSecret'] as String;
+      paymentIntentId = paymentIntentData['paymentIntentId'] as String;
+
+      AppLogger.info('✅ Payment intent created: $paymentIntentId');
+
+      // Step 2: Initialize and present payment sheet
+      try {
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: clientSecret,
+            merchantDisplayName: 'ArtBeat',
+            style: ThemeMode.system,
+          ),
+        );
+
+        await Stripe.instance.presentPaymentSheet();
+        AppLogger.info('✅ Payment confirmed with Stripe');
+      } on StripeException catch (e) {
+        if (e.error.code == FailureCode.Canceled) {
+          throw Exception('Payment was cancelled by user');
+        } else {
+          throw Exception('Payment failed: ${e.error.localizedMessage}');
+        }
+      }
+
+      // Step 3: Process the commission on the backend
+      final processResponse = await _httpClient.post(
+        Uri.parse(_functionUrls['processCommissionPayment']!),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $idToken',
+        },
+        body: json.encode({
+          'paymentIntentId': paymentIntentId,
+          'artistId': artistId,
+          'amount': amount,
+          'commissionType': commissionType,
+          'description': description,
+          'deadline': deadline?.toIso8601String(),
+          'isFreeCommission': false,
+        }),
+      );
+
+      if (processResponse.statusCode != 200) {
+        final errorData = json.decode(processResponse.body);
+        throw Exception('Failed to process commission: ${errorData['error']}');
+      }
+
+      final processData =
+          json.decode(processResponse.body) as Map<String, dynamic>;
+      debugPrint(
+        '🎉 Commission processed successfully: ${processData['commissionId']}',
+      );
+
+      return {
+        'status': 'success',
+        'commissionId': processData['commissionId'],
+        'paymentIntentId': paymentIntentId,
+        'message': 'Commission request sent successfully!',
+        'isFreeCommission': false,
+      };
+    } catch (e) {
+      AppLogger.error('❌ Error processing direct commission payment: $e');
+      return {
+        'status': 'error',
+        'error': e.toString(),
+        'message': 'Failed to process commission payment. Please try again.',
+      };
     }
   }
 }

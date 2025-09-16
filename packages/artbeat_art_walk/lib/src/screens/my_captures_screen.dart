@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show ArtbeatColors, EnhancedUniversalHeader, OptimizedImage, MainLayout;
-import 'package:artbeat_core/src/utils/color_extensions.dart';
+    show OptimizedImage, MainLayout, ImageUrlValidator;
+
 import '../widgets/art_walk_drawer.dart';
+import '../theme/art_walk_design_system.dart';
 
 /// Screen to display user's captured art
 class MyCapturesScreen extends StatefulWidget {
@@ -60,7 +61,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Failed to load captures. Please try again.'),
-            backgroundColor: ArtbeatColors.error,
+            backgroundColor: ArtWalkDesignSystem.accentOrange,
             duration: const Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -68,7 +69,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
             ),
             action: SnackBarAction(
               label: 'Retry',
-              textColor: ArtbeatColors.white,
+              textColor: Colors.white,
               onPressed: _loadCaptures,
             ),
           ),
@@ -84,153 +85,153 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
       currentIndex: 2, // Capture tab index
       drawer: const ArtWalkDrawer(),
       child: Scaffold(
-        body: Column(
-          children: [
-            EnhancedUniversalHeader(
-              title: 'My Captures',
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              showLogo: false,
-              showDeveloperTools: true,
-              onMenuPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    _loadCaptures();
-                  },
-                ),
-              ],
-            ),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ArtbeatColors.primaryPurple.withAlphaValue(0.05),
-                      ArtbeatColors.white,
-                      ArtbeatColors.primaryGreen.withAlphaValue(0.05),
-                    ],
+        appBar: ArtWalkDesignSystem.buildAppBar(
+          title: 'My Captures',
+          showBackButton: true,
+        ),
+        body: ArtWalkDesignSystem.buildScreenContainer(
+          child: _isLoading
+              ? ArtWalkScreenTemplate.buildLoadingState(
+                  message: 'Loading your captures...',
+                )
+              : _captures.isEmpty
+              ? ArtWalkScreenTemplate.buildEmptyState(
+                  title: 'No Captures Yet',
+                  subtitle: 'Start capturing art to see your collection here.',
+                  icon: Icons.camera_alt,
+                  actionText: 'Capture Art',
+                  onAction: () => Navigator.pushNamed(context, '/capture'),
+                )
+              : _buildCapturesGrid(),
+        ),
+        floatingActionButton: ArtWalkDesignSystem.buildFloatingActionButton(
+          onPressed: () => Navigator.pushNamed(context, '/capture'),
+          icon: Icons.camera_alt,
+          tooltip: 'Capture Art',
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCapturesGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(ArtWalkDesignSystem.paddingM),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: ArtWalkDesignSystem.paddingM,
+        mainAxisSpacing: ArtWalkDesignSystem.paddingM,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: _captures.length,
+      itemBuilder: (context, index) {
+        final capture = _captures[index];
+        return CaptureCard(
+          capture: capture,
+          index: index,
+          onTap: () => _showCaptureDetails(capture),
+        );
+      },
+    );
+  }
+
+  void _showCaptureDetails(CaptureModel capture) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        builder: (context, scrollController) => Container(
+          decoration: ArtWalkDesignSystem.glassDecoration(),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            padding: const EdgeInsets.all(ArtWalkDesignSystem.paddingL),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(
+                      bottom: ArtWalkDesignSystem.paddingL,
+                    ),
+                    decoration: BoxDecoration(
+                      color: ArtWalkDesignSystem.textSecondary.withValues(
+                        alpha: 0.3,
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            ArtbeatColors.primaryPurple,
+                if (ImageUrlValidator.isValidImageUrl(capture.imageUrl))
+                  Container(
+                    height: 200,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(
+                      bottom: ArtWalkDesignSystem.paddingM,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(
+                        ArtWalkDesignSystem.radiusL,
+                      ),
+                      image: DecorationImage(
+                        image: NetworkImage(capture.imageUrl),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                Text(
+                  capture.title ?? 'Untitled Capture',
+                  style: ArtWalkDesignSystem.cardTitleStyle,
+                ),
+                const SizedBox(height: ArtWalkDesignSystem.paddingS),
+                if (capture.artistName?.isNotEmpty == true) ...[
+                  Text(
+                    'Artist: ${capture.artistName}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: ArtWalkDesignSystem.primaryTeal,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: ArtWalkDesignSystem.paddingS),
+                ],
+                if (capture.description?.isNotEmpty == true) ...[
+                  Text(
+                    capture.description!,
+                    style: ArtWalkDesignSystem.cardSubtitleStyle,
+                  ),
+                  const SizedBox(height: ArtWalkDesignSystem.paddingM),
+                ],
+                if (capture.locationName?.isNotEmpty == true)
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: ArtWalkDesignSystem.primaryTeal,
+                        size: 20,
+                      ),
+                      const SizedBox(width: ArtWalkDesignSystem.paddingS),
+                      Expanded(
+                        child: Text(
+                          capture.locationName!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: ArtWalkDesignSystem.textSecondary,
                           ),
                         ),
-                      )
-                    : _captures.isEmpty
-                    ? _buildEmptyState()
-                    : _buildCapturesList(),
-              ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.camera_alt_outlined,
-              size: 80,
-              color: ArtbeatColors.primaryPurple.withAlphaValue(0.4),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No Captures Yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: ArtbeatColors.primaryPurple,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Start capturing art around you to see them here!',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: ArtbeatColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pushNamed('/capture/camera').then((_) {
-                  // Refresh captures when returning from camera
-                  _loadCaptures();
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ArtbeatColors.primaryPurple,
-                foregroundColor: ArtbeatColors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              icon: const Icon(Icons.camera_alt),
-              label: const Text('Capture Art'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCapturesList() {
-    return RefreshIndicator(
-      onRefresh: _loadCaptures,
-      color: ArtbeatColors.primaryPurple,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.8,
-        ),
-        itemCount: _captures.length,
-        // Add cache extent control to prevent excessive preloading
-        cacheExtent: 400, // Limit cache to reasonable size
-        itemBuilder: (context, index) {
-          final capture = _captures[index];
-          return CaptureCard(
-            key: ValueKey('capture_${capture.id}'),
-            capture: capture,
-            index: index,
-            onTap: () => _showCaptureDetail(capture),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showCaptureDetail(CaptureModel capture) {
-    // Navigate to capture detail screen instead of modal
-    Navigator.of(context)
-        .pushNamed('/capture/detail', arguments: {'captureId': capture.id})
-        .then((_) {
-          // Refresh captures when returning from detail
-          _loadCaptures();
-        });
   }
 }
 
@@ -260,156 +261,163 @@ class _CaptureCardState extends State<CaptureCard>
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: widget.onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: ArtbeatColors.background,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-                ),
-                child: widget.capture.imageUrl.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(12),
-                        ),
-                        child: RepaintBoundary(
-                          child: OptimizedImage(
-                            imageUrl:
-                                widget.capture.thumbnailUrl ??
-                                widget.capture.imageUrl,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            isThumbnail: true,
-                            placeholder: Container(
-                              color: ArtbeatColors.background,
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      ArtbeatColors.primaryPurple,
+    return Container(
+      decoration: ArtWalkDesignSystem.glassDecoration(),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onTap,
+          borderRadius: BorderRadius.circular(ArtWalkDesignSystem.radiusXL),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    color: ArtWalkDesignSystem.cardBackground,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
+                  ),
+                  child:
+                      ImageUrlValidator.isValidImageUrl(widget.capture.imageUrl)
+                      ? ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          child: RepaintBoundary(
+                            child: OptimizedImage(
+                              imageUrl:
+                                  widget.capture.thumbnailUrl ??
+                                  widget.capture.imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              isThumbnail: true,
+                              placeholder: Container(
+                                color: ArtWalkDesignSystem.cardBackground,
+                                child: const Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        ArtWalkDesignSystem.primaryTeal,
+                                      ),
+                                      strokeWidth: 2,
                                     ),
-                                    strokeWidth: 2,
                                   ),
                                 ),
                               ),
-                            ),
-                            errorWidget: Container(
-                              color: ArtbeatColors.background,
-                              child: const Icon(
-                                Icons.broken_image_outlined,
-                                color: ArtbeatColors.textSecondary,
-                                size: 40,
+                              errorWidget: Container(
+                                color: ArtWalkDesignSystem.cardBackground,
+                                child: const Icon(
+                                  Icons.broken_image_outlined,
+                                  color: ArtWalkDesignSystem.textSecondary,
+                                  size: 40,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      )
-                    : Container(
-                        decoration: const BoxDecoration(
-                          color: ArtbeatColors.background,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(12),
+                        )
+                      : Container(
+                          decoration: const BoxDecoration(
+                            color: ArtWalkDesignSystem.cardBackground,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            color: ArtWalkDesignSystem.textSecondary,
+                            size: 40,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          color: ArtbeatColors.textSecondary,
-                          size: 40,
-                        ),
-                      ),
+                ),
               ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.capture.title ?? 'Untitled',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: ArtbeatColors.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (widget.capture.artistName != null) ...[
-                      const SizedBox(height: 4),
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'by ${widget.capture.artistName}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: ArtbeatColors.textSecondary,
+                        widget.capture.title ?? 'Untitled',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: ArtWalkDesignSystem.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                    const SizedBox(height: 8),
-                    Flexible(
-                      child: Row(
-                        children: [
-                          Icon(
-                            widget.capture.isPublic ? Icons.public : Icons.lock,
-                            size: 14,
-                            color: widget.capture.isPublic
-                                ? ArtbeatColors.primaryGreen
-                                : ArtbeatColors.textSecondary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            widget.capture.isPublic ? 'Public' : 'Private',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: widget.capture.isPublic
-                                      ? ArtbeatColors.primaryGreen
-                                      : ArtbeatColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                          if (!widget.capture.isProcessed) ...[
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.hourglass_empty,
-                              size: 14,
-                              color: ArtbeatColors.warning,
-                            ),
-                            const SizedBox(width: 2),
-                            Flexible(
-                              child: Text(
-                                'Processing',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: ArtbeatColors.warning,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                overflow: TextOverflow.ellipsis,
+                      if (widget.capture.artistName != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'by ${widget.capture.artistName}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: ArtWalkDesignSystem.textSecondary,
                               ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Icon(
+                              widget.capture.isPublic
+                                  ? Icons.public
+                                  : Icons.lock,
+                              size: 14,
+                              color: widget.capture.isPublic
+                                  ? ArtWalkDesignSystem.primaryTeal
+                                  : ArtWalkDesignSystem.textSecondary,
                             ),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.capture.isPublic ? 'Public' : 'Private',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: widget.capture.isPublic
+                                        ? ArtWalkDesignSystem.primaryTeal
+                                        : ArtWalkDesignSystem.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                            ),
+                            if (!widget.capture.isProcessed) ...[
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.hourglass_empty,
+                                size: 14,
+                                color: ArtWalkDesignSystem.accentOrange,
+                              ),
+                              const SizedBox(width: 2),
+                              Flexible(
+                                child: Text(
+                                  'Processing',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: ArtWalkDesignSystem.accentOrange,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

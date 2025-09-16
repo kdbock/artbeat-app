@@ -124,9 +124,9 @@ class ArtbeatComponents {
     backgroundColor: Colors.transparent,
     elevation: 0,
     centerTitle: true,
-    iconTheme: IconThemeData(color: ArtbeatColors.textPrimary),
+    iconTheme: IconThemeData(color: ArtbeatColors.headerText),
     titleTextStyle: TextStyle(
-      color: ArtbeatColors.textPrimary,
+      color: ArtbeatColors.headerText,
       fontSize: 20,
       fontWeight: FontWeight.w600,
       fontFamily: 'Roboto',

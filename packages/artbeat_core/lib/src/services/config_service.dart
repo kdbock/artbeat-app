@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../utils/logger.dart';
 
 /// Service for managing configuration and environment variables securely
 class ConfigService {
@@ -17,9 +18,9 @@ class ConfigService {
     try {
       await dotenv.load(fileName: '.env');
       _isInitialized = true;
-      debugPrint('ConfigService initialized successfully');
+      AppLogger.info('ConfigService initialized successfully');
     } catch (e) {
-      debugPrint('Failed to initialize ConfigService: $e');
+      AppLogger.info('Failed to initialize ConfigService: $e');
       if (!kDebugMode) rethrow;
     }
   }
@@ -29,7 +30,7 @@ class ConfigService {
     try {
       return dotenv.env[key];
     } catch (e) {
-      debugPrint('Error getting config value for $key: $e');
+      AppLogger.error('Error getting config value for $key: $e');
       return null;
     }
   }

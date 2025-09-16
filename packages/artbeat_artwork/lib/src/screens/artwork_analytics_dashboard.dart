@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show EnhancedUniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout, AppLogger;
 import '../services/artwork_analytics_service.dart';
 import '../services/artwork_service.dart';
 
@@ -61,7 +61,7 @@ class _ArtworkAnalyticsDashboardState extends State<ArtworkAnalyticsDashboard> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading analytics: $e');
+      AppLogger.error('Error loading analytics: $e');
       setState(() {
         _isLoading = false;
       });

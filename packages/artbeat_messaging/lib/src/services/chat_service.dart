@@ -5,29 +5,31 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
-import '../models/user_model.dart';
+import '../models/user_model.dart' as messaging;
 import '../models/search_result_model.dart';
-import 'notification_service.dart';
+import 'notification_service.dart' as messaging_notifications;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class ChatService extends ChangeNotifier {
   FirebaseFirestore? _firestoreInstance;
   FirebaseAuth? _authInstance;
   FirebaseStorage? _storageInstance;
-  NotificationService? _notificationServiceInstance;
+  messaging_notifications.NotificationService? _notificationServiceInstance;
 
   // Lazy initialization getters
   FirebaseFirestore get _firestore =>
       _firestoreInstance ??= FirebaseFirestore.instance;
   FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
   FirebaseStorage get _storage => _storageInstance ??= FirebaseStorage.instance;
-  NotificationService get _notificationService =>
-      _notificationServiceInstance ??= NotificationService();
+  messaging_notifications.NotificationService get _notificationService =>
+      _notificationServiceInstance ??=
+          messaging_notifications.NotificationService();
 
   ChatService({
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
     FirebaseStorage? storage,
-    NotificationService? notificationService,
+    messaging_notifications.NotificationService? notificationService,
   }) : _firestoreInstance = firestore,
        _authInstance = auth,
        _storageInstance = storage,
@@ -62,19 +64,21 @@ class ChatService extends ChangeNotifier {
                 final chat = ChatModel.fromFirestore(doc);
                 chats.add(chat);
               } catch (e) {
-                debugPrint('Error parsing chat document ${doc.id}: $e');
+                core.AppLogger.error(
+                  'Error parsing chat document ${doc.id}: $e',
+                );
                 // Skip malformed documents rather than breaking the entire stream
                 continue;
               }
             }
             return chats;
           } catch (e) {
-            debugPrint('Error processing chat stream: $e');
+            core.AppLogger.error('Error processing chat stream: $e');
             rethrow;
           }
         })
         .handleError((Object error) {
-          debugPrint('Chat stream error: $error');
+          core.AppLogger.error('Chat stream error: $error');
           throw Exception('Failed to load chats: $error');
         });
   }
@@ -242,14 +246,14 @@ class ChatService extends ChangeNotifier {
               await typingRef.update({userId: false});
             }
           } catch (e) {
-            debugPrint('Error in auto-reset timer: $e');
+            core.AppLogger.error('Error in auto-reset timer: $e');
           }
         });
       } else {
         await typingRef.update({userId: false});
       }
     } catch (e) {
-      debugPrint('Error updating typing status: $e');
+      core.AppLogger.error('Error updating typing status: $e');
     }
   }
 
@@ -265,7 +269,7 @@ class ChatService extends ChangeNotifier {
         userId: FieldValue.delete(),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Error clearing typing status: $e');
+      core.AppLogger.error('Error clearing typing status: $e');
     }
   }
 
@@ -285,7 +289,7 @@ class ChatService extends ChangeNotifier {
           userData['fullName'] as String? ??
           userData['username'] as String?;
     } catch (e) {
-      debugPrint('Error getting user display name: $e');
+      core.AppLogger.error('Error getting user display name: $e');
       return null;
     }
   }
@@ -305,7 +309,7 @@ class ChatService extends ChangeNotifier {
       return userData['photoUrl'] as String? ??
           userData['profileImageUrl'] as String?;
     } catch (e) {
-      debugPrint('Error getting user photo URL: $e');
+      core.AppLogger.error('Error getting user photo URL: $e');
       return null;
     }
   }
@@ -341,7 +345,7 @@ class ChatService extends ChangeNotifier {
     return filteredChats;
   }
 
-  Future<List<UserModel>> searchUsers(String query) async {
+  Future<List<messaging.UserModel>> searchUsers(String query) async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
@@ -351,7 +355,7 @@ class ChatService extends ChangeNotifier {
     try {
       // Since Firestore doesn't support full-text search, we'll use multiple queries
       // and combine the results
-      final List<UserModel> allResults = [];
+      final List<messaging.UserModel> allResults = [];
       final Set<String> seenIds = <String>{};
 
       // Search by fullName (case-insensitive prefix search)
@@ -366,13 +370,13 @@ class ChatService extends ChangeNotifier {
 
         for (final doc in fullNameQuery.docs) {
           if (!seenIds.contains(doc.id) && doc.id != userId) {
-            final user = UserModel.fromFirestore(doc);
+            final user = messaging.UserModel.fromFirestore(doc);
             allResults.add(user);
             seenIds.add(doc.id);
           }
         }
       } catch (e) {
-        debugPrint('Error in fullName search: $e');
+        core.AppLogger.error('Error in fullName search: $e');
       }
 
       // Search by username (case-insensitive prefix search)
@@ -387,13 +391,13 @@ class ChatService extends ChangeNotifier {
 
         for (final doc in usernameQuery.docs) {
           if (!seenIds.contains(doc.id) && doc.id != userId) {
-            final user = UserModel.fromFirestore(doc);
+            final user = messaging.UserModel.fromFirestore(doc);
             allResults.add(user);
             seenIds.add(doc.id);
           }
         }
       } catch (e) {
-        debugPrint('Error in username search: $e');
+        core.AppLogger.error('Error in username search: $e');
       }
 
       // Search by zipCode (exact match)
@@ -406,13 +410,13 @@ class ChatService extends ChangeNotifier {
 
         for (final doc in zipCodeQuery.docs) {
           if (!seenIds.contains(doc.id) && doc.id != userId) {
-            final user = UserModel.fromFirestore(doc);
+            final user = messaging.UserModel.fromFirestore(doc);
             allResults.add(user);
             seenIds.add(doc.id);
           }
         }
       } catch (e) {
-        debugPrint('Error in zipCode search: $e');
+        core.AppLogger.error('Error in zipCode search: $e');
       }
 
       // If we still don't have many results, do a broader search
@@ -438,7 +442,7 @@ class ChatService extends ChangeNotifier {
               if (fullName.contains(query) ||
                   username.contains(query) ||
                   location.contains(query)) {
-                final user = UserModel.fromFirestore(doc);
+                final user = messaging.UserModel.fromFirestore(doc);
                 allResults.add(user);
                 seenIds.add(doc.id);
 
@@ -447,13 +451,13 @@ class ChatService extends ChangeNotifier {
             }
           }
         } catch (e) {
-          debugPrint('Error in broad search: $e');
+          core.AppLogger.error('Error in broad search: $e');
         }
       }
 
       return allResults;
     } catch (e) {
-      debugPrint('Error searching users: $e');
+      core.AppLogger.error('Error searching users: $e');
       throw Exception('Failed to search users');
     }
   }
@@ -510,7 +514,7 @@ class ChatService extends ChangeNotifier {
       final newChat = await chatDoc.get();
       return ChatModel.fromFirestore(newChat);
     } catch (e) {
-      debugPrint('Error creating/getting chat: $e');
+      core.AppLogger.error('Error creating/getting chat: $e');
       throw Exception('Failed to create or get chat');
     }
   }
@@ -560,7 +564,7 @@ class ChatService extends ChangeNotifier {
       final newChat = await chatDoc.get();
       return ChatModel.fromFirestore(newChat);
     } catch (e) {
-      debugPrint('Error creating group chat: $e');
+      core.AppLogger.error('Error creating group chat: $e');
       throw Exception('Failed to create group chat');
     }
   }
@@ -572,9 +576,9 @@ class ChatService extends ChangeNotifier {
       notifyListeners();
 
       // You can also add any cache clearing logic here if needed
-      debugPrint('Chat service refreshed');
+      core.AppLogger.info('Chat service refreshed');
     } catch (e) {
-      debugPrint('Error refreshing chat service: $e');
+      core.AppLogger.error('Error refreshing chat service: $e');
     }
   }
 
@@ -589,7 +593,7 @@ class ChatService extends ChangeNotifier {
         'unreadCounts.$userId': 0,
       });
     } catch (e) {
-      debugPrint('Error marking chat as read: $e');
+      core.AppLogger.error('Error marking chat as read: $e');
     }
   }
 
@@ -608,7 +612,9 @@ class ChatService extends ChangeNotifier {
         'unreadCounts': unreadCounts,
       });
 
-      debugPrint('ChatService: Migrated unreadCounts for chat $chatId');
+      core.AppLogger.info(
+        'ChatService: Migrated unreadCounts for chat $chatId',
+      );
     } catch (e) {
       debugPrint(
         'ChatService: Error migrating unreadCounts for chat $chatId: $e',
@@ -619,7 +625,7 @@ class ChatService extends ChangeNotifier {
   /// Gets the total unread messages count across all non-archived chats
   Stream<int> getTotalUnreadCount() {
     final userId = _auth.currentUser?.uid;
-    debugPrint('ChatService.getTotalUnreadCount: userId = $userId');
+    core.AppLogger.info('ChatService.getTotalUnreadCount: userId = $userId');
     if (userId == null) {
       debugPrint(
         'ChatService.getTotalUnreadCount: No user logged in, returning 0',
@@ -650,7 +656,9 @@ class ChatService extends ChangeNotifier {
               archivedChatIds.add(doc.data()['chatId'] as String);
             }
           } catch (e) {
-            debugPrint('Error getting archived chat IDs for unread count: $e');
+            core.AppLogger.error(
+              'Error getting archived chat IDs for unread count: $e',
+            );
           }
 
           for (final doc in snapshot.docs) {
@@ -691,7 +699,9 @@ class ChatService extends ChangeNotifier {
                 );
               }
             } catch (e) {
-              debugPrint('Error parsing unread count for chat ${doc.id}: $e');
+              core.AppLogger.error(
+                'Error parsing unread count for chat ${doc.id}: $e',
+              );
             }
           }
 
@@ -719,13 +729,13 @@ class ChatService extends ChangeNotifier {
   }
 
   /// Gets a user by ID
-  Future<UserModel?> getUser(String userId) async {
+  Future<messaging.UserModel?> getUser(String userId) async {
     try {
       final doc = await _firestore.collection('users').doc(userId).get();
       if (!doc.exists) return null;
-      return UserModel.fromFirestore(doc);
+      return messaging.UserModel.fromFirestore(doc);
     } catch (e) {
-      debugPrint('Error getting user: $e');
+      core.AppLogger.error('Error getting user: $e');
       return null;
     }
   }
@@ -737,13 +747,13 @@ class ChatService extends ChangeNotifier {
       if (!doc.exists) return null;
       return ChatModel.fromFirestore(doc);
     } catch (e) {
-      debugPrint('Error getting chat: $e');
+      core.AppLogger.error('Error getting chat: $e');
       return null;
     }
   }
 
   /// Gets blocked users for current user
-  Future<List<UserModel>> getBlockedUsers() async {
+  Future<List<messaging.UserModel>> getBlockedUsers() async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) throw Exception('User not authenticated');
 
@@ -754,7 +764,7 @@ class ChatService extends ChangeNotifier {
           .collection('blockedUsers')
           .get();
 
-      final blockedUsers = <UserModel>[];
+      final blockedUsers = <messaging.UserModel>[];
       for (final doc in snapshot.docs) {
         final blockedUserId = doc.id;
         final userData = doc.data();
@@ -766,7 +776,7 @@ class ChatService extends ChangeNotifier {
             .get();
 
         if (userDoc.exists) {
-          final user = UserModel.fromFirestore(userDoc);
+          final user = messaging.UserModel.fromFirestore(userDoc);
           // Add blocked date from the blockedUsers collection
           user.blockedAt = (userData['blockedAt'] as Timestamp?)?.toDate();
           blockedUsers.add(user);
@@ -775,7 +785,7 @@ class ChatService extends ChangeNotifier {
 
       return blockedUsers;
     } catch (e) {
-      debugPrint('Error getting blocked users: $e');
+      core.AppLogger.error('Error getting blocked users: $e');
       return [];
     }
   }
@@ -793,7 +803,7 @@ class ChatService extends ChangeNotifier {
           .doc(userId)
           .set({'blockedAt': FieldValue.serverTimestamp()});
     } catch (e) {
-      debugPrint('Error blocking user: $e');
+      core.AppLogger.error('Error blocking user: $e');
       throw Exception('Failed to block user');
     }
   }
@@ -811,7 +821,7 @@ class ChatService extends ChangeNotifier {
           .doc(userId)
           .delete();
     } catch (e) {
-      debugPrint('Error unblocking user: $e');
+      core.AppLogger.error('Error unblocking user: $e');
       throw Exception('Failed to unblock user');
     }
   }
@@ -831,7 +841,7 @@ class ChatService extends ChangeNotifier {
 
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking if user is blocked: $e');
+      core.AppLogger.error('Error checking if user is blocked: $e');
       return false;
     }
   }
@@ -866,9 +876,9 @@ class ChatService extends ChangeNotifier {
         'participants': participants,
       });
 
-      debugPrint('Refreshed participant data for chat $chatId');
+      core.AppLogger.info('Refreshed participant data for chat $chatId');
     } catch (e) {
-      debugPrint('Error refreshing chat participants: $e');
+      core.AppLogger.error('Error refreshing chat participants: $e');
     }
   }
 
@@ -900,9 +910,9 @@ class ChatService extends ChangeNotifier {
       });
 
       await batch.commit();
-      debugPrint('Chat history cleared for chat $chatId');
+      core.AppLogger.info('Chat history cleared for chat $chatId');
     } catch (e) {
-      debugPrint('Error clearing chat history: $e');
+      core.AppLogger.error('Error clearing chat history: $e');
       throw Exception('Failed to clear chat history');
     }
   }
@@ -960,7 +970,7 @@ class ChatService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error deleting message: $e');
+      core.AppLogger.error('Error deleting message: $e');
       rethrow;
     }
   }
@@ -1002,9 +1012,9 @@ class ChatService extends ChangeNotifier {
       );
 
       await _sendMessage(chatId, leaveMessage);
-      debugPrint('Left group chat $chatId');
+      core.AppLogger.info('Left group chat $chatId');
     } catch (e) {
-      debugPrint('Error leaving group: $e');
+      core.AppLogger.error('Error leaving group: $e');
       throw Exception('Failed to leave group');
     }
   }
@@ -1033,9 +1043,9 @@ class ChatService extends ChangeNotifier {
       batch.delete(_firestore.collection('chats').doc(chatId));
 
       await batch.commit();
-      debugPrint('Chat deleted: $chatId');
+      core.AppLogger.info('Chat deleted: $chatId');
     } catch (e) {
-      debugPrint('Error deleting chat: $e');
+      core.AppLogger.error('Error deleting chat: $e');
       throw Exception('Failed to delete chat');
     }
   }
@@ -1054,9 +1064,9 @@ class ChatService extends ChangeNotifier {
         'status': 'pending',
         'type': 'user_report',
       });
-      debugPrint('User reported: $userId');
+      core.AppLogger.info('User reported: $userId');
     } catch (e) {
-      debugPrint('Error reporting user: $e');
+      core.AppLogger.error('Error reporting user: $e');
       throw Exception('Failed to report user');
     }
   }
@@ -1099,7 +1109,7 @@ class ChatService extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint('Error sending message notifications: $e');
+      core.AppLogger.error('Error sending message notifications: $e');
       // Don't throw error to avoid breaking message sending
     }
   }
@@ -1120,7 +1130,7 @@ class ChatService extends ChangeNotifier {
         data: data,
       );
     } catch (e) {
-      debugPrint('❌ Error sending notification to user $userId: $e');
+      core.AppLogger.error('❌ Error sending notification to user $userId: $e');
     }
   }
 
@@ -1136,10 +1146,10 @@ class ChatService extends ChangeNotifier {
           .doc(chatId)
           .set({'archivedAt': Timestamp.now(), 'chatId': chatId});
 
-      debugPrint('Chat $chatId archived for user $userId');
+      core.AppLogger.info('Chat $chatId archived for user $userId');
       notifyListeners();
     } catch (e) {
-      debugPrint('Error archiving chat: $e');
+      core.AppLogger.error('Error archiving chat: $e');
       throw Exception('Failed to archive chat');
     }
   }
@@ -1156,10 +1166,10 @@ class ChatService extends ChangeNotifier {
           .doc(chatId)
           .delete();
 
-      debugPrint('Chat $chatId unarchived for user $userId');
+      core.AppLogger.info('Chat $chatId unarchived for user $userId');
       notifyListeners();
     } catch (e) {
-      debugPrint('Error unarchiving chat: $e');
+      core.AppLogger.error('Error unarchiving chat: $e');
       throw Exception('Failed to unarchive chat');
     }
   }
@@ -1179,7 +1189,7 @@ class ChatService extends ChangeNotifier {
 
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking if chat is archived: $e');
+      core.AppLogger.error('Error checking if chat is archived: $e');
       return false;
     }
   }
@@ -1220,12 +1230,12 @@ class ChatService extends ChangeNotifier {
             }
             return chats;
           } catch (e) {
-            debugPrint('Error processing archived chat stream: $e');
+            core.AppLogger.error('Error processing archived chat stream: $e');
             rethrow;
           }
         })
         .handleError((Object error) {
-          debugPrint('Archived chat stream error: $error');
+          core.AppLogger.error('Archived chat stream error: $error');
           throw Exception('Failed to load archived chats: $error');
         });
   }
@@ -1259,7 +1269,7 @@ class ChatService extends ChangeNotifier {
                 archivedChatIds.add(doc.data()['chatId'] as String);
               }
             } catch (e) {
-              debugPrint('Error getting archived chat IDs: $e');
+              core.AppLogger.error('Error getting archived chat IDs: $e');
             }
 
             for (final doc in snapshot.docs) {
@@ -1270,18 +1280,22 @@ class ChatService extends ChangeNotifier {
                 final chat = ChatModel.fromFirestore(doc);
                 chats.add(chat);
               } catch (e) {
-                debugPrint('Error parsing chat document ${doc.id}: $e');
+                core.AppLogger.error(
+                  'Error parsing chat document ${doc.id}: $e',
+                );
                 continue;
               }
             }
             return chats;
           } catch (e) {
-            debugPrint('Error processing non-archived chat stream: $e');
+            core.AppLogger.error(
+              'Error processing non-archived chat stream: $e',
+            );
             rethrow;
           }
         })
         .handleError((Object error) {
-          debugPrint('Non-archived chat stream error: $error');
+          core.AppLogger.error('Non-archived chat stream error: $error');
           throw Exception('Failed to load chats: $error');
         });
   }
@@ -1321,7 +1335,7 @@ class ChatService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error editing message: $e');
+      core.AppLogger.error('Error editing message: $e');
       rethrow;
     }
   }
@@ -1384,7 +1398,7 @@ class ChatService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error forwarding message: $e');
+      core.AppLogger.error('Error forwarding message: $e');
       rethrow;
     }
   }
@@ -1423,7 +1437,7 @@ class ChatService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error toggling message star: $e');
+      core.AppLogger.error('Error toggling message star: $e');
       rethrow;
     }
   }
@@ -1492,7 +1506,7 @@ class ChatService extends ChangeNotifier {
 
       return results.take(limit).toList();
     } catch (e) {
-      debugPrint('Error in global search: $e');
+      core.AppLogger.error('Error in global search: $e');
       rethrow;
     }
   }
@@ -1554,7 +1568,7 @@ class ChatService extends ChangeNotifier {
           .map((doc) => MessageModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error searching media: $e');
+      core.AppLogger.error('Error searching media: $e');
       rethrow;
     }
   }
@@ -1653,7 +1667,7 @@ class ChatService extends ChangeNotifier {
 
       return results.take(limit).toList();
     } catch (e) {
-      debugPrint('Error in advanced search: $e');
+      core.AppLogger.error('Error in advanced search: $e');
       rethrow;
     }
   }

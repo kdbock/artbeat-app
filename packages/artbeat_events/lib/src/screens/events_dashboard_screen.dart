@@ -178,18 +178,38 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFF5F5), // Very light red tint
-            Color(0xFFF0F8FF), // Very light blue tint
-          ],
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF5F5), // Very light red tint
+              Color(0xFFF0F8FF), // Very light blue tint
+            ],
+          ),
         ),
+        child: SafeArea(child: _buildEventsDashboard(context, currentUser)),
       ),
-      child: SafeArea(child: _buildEventsDashboard(context, currentUser)),
+      floatingActionButton: currentUser != null
+          ? FloatingActionButton(
+              onPressed: () => Navigator.pushNamed(context, '/events/create'),
+              backgroundColor: const Color(0xFFE74C3C), // Red
+              foregroundColor: Colors.white,
+              tooltip: 'Create Event',
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+
+  void _showProfileMenu(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const EnhancedProfileMenu(),
     );
   }
 
@@ -452,8 +472,8 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                 _buildHeroSection(context, currentUser),
                 const SizedBox(height: 16),
 
-                // Ad placement beneath hero section
-                const BannerAdWidget(location: AdLocation.eventsHero),
+                // Event dashboard ad placement
+                const BannerAdWidget(location: AdLocation.eventDashboard),
                 const SizedBox(height: 24),
 
                 // Quick Actions
@@ -466,10 +486,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                   const SizedBox(height: 16),
                   _buildFeaturedEventsCarousel(),
                   const SizedBox(height: 16),
-
-                  // Ad placement beneath featured events section
-                  const BannerAdWidget(location: AdLocation.eventsFeatured),
-                  const SizedBox(height: 24),
                 ],
 
                 // All Events Section
@@ -480,10 +496,6 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                 const SizedBox(height: 16),
                 _buildModernEventsList(context, currentUser),
                 const SizedBox(height: 16),
-
-                // Ad placement beneath all events section
-                const BannerAdWidget(location: AdLocation.eventsAll),
-                const SizedBox(height: 24),
 
                 // Artist CTA widget
                 const CompactArtistCTAWidget(),
@@ -673,6 +685,17 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                   ],
                 ),
               ),
+              // Profile Icon
+              if (currentUser != null)
+                IconButton(
+                  icon: const Icon(
+                    Icons.account_circle,
+                    size: 32,
+                    color: ArtbeatColors.primaryPurple,
+                  ),
+                  onPressed: () => _showProfileMenu(context),
+                  tooltip: 'Profile',
+                ),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(

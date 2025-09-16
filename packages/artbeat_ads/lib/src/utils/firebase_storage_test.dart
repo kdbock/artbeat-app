@@ -1,45 +1,46 @@
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Utility class to test Firebase Storage connectivity and diagnose issues
 class FirebaseStorageTest {
   static Future<void> runDiagnostics() async {
-    debugPrint('🔍 Starting Firebase Storage diagnostics...');
+    AppLogger.debug('🔍 Starting Firebase Storage diagnostics...');
 
     try {
       // Test 1: Check if user is authenticated
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        debugPrint('❌ User not authenticated');
+        AppLogger.error('❌ User not authenticated');
         return;
       }
-      debugPrint('✅ User authenticated: ${user.uid}');
+      AppLogger.auth('✅ User authenticated: ${user.uid}');
 
       // Test 2: Test basic Firebase Storage reference creation
       try {
         final ref = FirebaseStorage.instance.ref().child(
           'test_diagnostics.txt',
         );
-        debugPrint('✅ Firebase Storage reference created successfully');
+        AppLogger.firebase('✅ Firebase Storage reference created successfully');
 
         // Test 3: Try to get metadata for a non-existent file (should fail gracefully)
         try {
           await ref.getMetadata();
-          debugPrint('⚠️ Unexpected: test file exists');
+          AppLogger.warning('⚠️ Unexpected: test file exists');
         } catch (e) {
           if (e.toString().contains('object-not-found')) {
             debugPrint(
               '✅ Firebase Storage connectivity confirmed (expected object-not-found)',
             );
           } else {
-            debugPrint('❌ Firebase Storage connectivity issue: $e');
+            AppLogger.error('❌ Firebase Storage connectivity issue: $e');
           }
         }
 
         // Test 4: Try to upload a small test file
         try {
-          debugPrint('🔄 Testing small file upload...');
+          AppLogger.info('🔄 Testing small file upload...');
           final testData =
               'Firebase Storage test - ${DateTime.now().toIso8601String()}';
           final uploadTask = ref.putString(testData);
@@ -50,40 +51,40 @@ class FirebaseStorageTest {
           );
 
           final downloadUrl = await snapshot.ref.getDownloadURL();
-          debugPrint('✅ Test upload successful: $downloadUrl');
+          AppLogger.info('✅ Test upload successful: $downloadUrl');
 
           // Clean up test file
           await ref.delete();
-          debugPrint('✅ Test file cleaned up');
+          AppLogger.info('✅ Test file cleaned up');
         } catch (e) {
-          debugPrint('❌ Test upload failed: $e');
+          AppLogger.error('❌ Test upload failed: $e');
 
           if (e.toString().contains('cannot parse response')) {
-            debugPrint('🚨 "Cannot parse response" error detected!');
-            debugPrint('💡 This usually indicates:');
-            debugPrint('   - Network connectivity issues');
-            debugPrint('   - Firebase Storage service interruption');
-            debugPrint('   - Incorrect Firebase configuration');
-            debugPrint('   - Storage rules blocking the operation');
+            AppLogger.error('🚨 "Cannot parse response" error detected!');
+            AppLogger.info('💡 This usually indicates:');
+            AppLogger.network('   - Network connectivity issues');
+            AppLogger.firebase('   - Firebase Storage service interruption');
+            AppLogger.firebase('   - Incorrect Firebase configuration');
+            AppLogger.info('   - Storage rules blocking the operation');
           }
         }
       } catch (e) {
-        debugPrint('❌ Firebase Storage reference creation failed: $e');
+        AppLogger.error('❌ Firebase Storage reference creation failed: $e');
       }
     } catch (e) {
-      debugPrint('❌ Diagnostics failed: $e');
+      AppLogger.error('❌ Diagnostics failed: $e');
     }
 
-    debugPrint('🏁 Firebase Storage diagnostics completed');
+    AppLogger.firebase('🏁 Firebase Storage diagnostics completed');
   }
 
   /// Test different upload paths to see which ones work
   static Future<void> testUploadPaths() async {
-    debugPrint('🔍 Testing different upload paths...');
+    AppLogger.debug('🔍 Testing different upload paths...');
 
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      debugPrint('❌ User not authenticated');
+      AppLogger.error('❌ User not authenticated');
       return;
     }
 
@@ -98,7 +99,7 @@ class FirebaseStorageTest {
 
     for (final path in paths) {
       try {
-        debugPrint('🔄 Testing path: $path');
+        AppLogger.info('🔄 Testing path: $path');
         final ref = FirebaseStorage.instance.ref().child(path);
         final uploadTask = ref.putString(testData);
 
@@ -107,15 +108,15 @@ class FirebaseStorageTest {
           onTimeout: () => throw Exception('Path test timed out'),
         );
 
-        debugPrint('✅ Path $path: SUCCESS');
+        AppLogger.info('✅ Path $path: SUCCESS');
 
         // Clean up
         await ref.delete();
       } catch (e) {
-        debugPrint('❌ Path $path: FAILED - $e');
+        AppLogger.error('❌ Path $path: FAILED - $e');
       }
     }
 
-    debugPrint('🏁 Path testing completed');
+    AppLogger.info('🏁 Path testing completed');
   }
 }

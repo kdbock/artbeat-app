@@ -44,7 +44,7 @@ class AdClickModel {
       viewerId: map['viewerId'] as String?,
       location: AdLocation.values.firstWhere(
         (loc) => loc.name == (map['location'] ?? ''),
-        orElse: () => AdLocation.dashboard,
+        orElse: () => AdLocation.fluidDashboard,
       ),
       timestamp: map['timestamp'] != null
           ? (map['timestamp'] as Timestamp).toDate()

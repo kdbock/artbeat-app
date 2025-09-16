@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 
@@ -885,6 +886,10 @@ class _EnhancedArtWalkCreateScreenState
       return const Center(child: CircularProgressIndicator());
     }
 
+    if (kIsWeb) {
+      return _buildWebMapFallback();
+    }
+
     return GoogleMap(
       onMapCreated: _onMapCreated,
       onTap: _onMapTap,
@@ -989,6 +994,35 @@ class _EnhancedArtWalkCreateScreenState
         child: Text(
           progress == 100 ? 'Share Your Art Walk' : 'Complete Your Walk',
           style: const TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Create Art Walk',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Map-based art walk creation is optimized for mobile devices.\nUse the list view below to select art pieces for your walk.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
         ),
       ),
     );

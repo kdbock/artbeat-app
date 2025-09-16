@@ -5,6 +5,7 @@ import 'dart:collection';
 import 'dart:io' show Platform;
 import 'dart:async' show Zone;
 import '../widgets/secure_network_image.dart';
+import '../utils/logger.dart';
 
 /// Comprehensive image management service to prevent buffer overflow
 /// and optimize image loading across the app
@@ -41,7 +42,7 @@ class ImageManagementService {
   /// Initialize the image management service
   Future<void> initialize() async {
     if (_isInitialized) {
-      debugPrint('🖼️ ImageManagementService already initialized, skipping');
+      AppLogger.info('🖼️ ImageManagementService already initialized, skipping');
       return;
     }
 
@@ -65,9 +66,9 @@ class ImageManagementService {
     );
 
     _isInitialized = true;
-    debugPrint('🖼️ ImageManagementService initialized');
-    debugPrint('📊 Max concurrent loads: $maxConcurrentLoads');
-    debugPrint('💾 Cache duration: ${cacheDuration.inDays} days');
+    AppLogger.info('🖼️ ImageManagementService initialized');
+    AppLogger.analytics('📊 Max concurrent loads: $maxConcurrentLoads');
+    AppLogger.info('💾 Cache duration: ${cacheDuration.inDays} days');
   }
 
   /// Get an optimized image widget with proper buffer management and Firebase Storage auth
@@ -114,11 +115,11 @@ class ImageManagementService {
         uri != null && uri.hasScheme && uri.host.isNotEmpty;
 
     // Debug: Print URL validation info
-    debugPrint('🖼️ ImageManagementService validating URL: $imageUrl');
-    debugPrint('🖼️ URI parsed: $uri');
-    debugPrint('🖼️ Has scheme: ${uri?.hasScheme}');
-    debugPrint('🖼️ Host: ${uri?.host}');
-    debugPrint('🖼️ Is valid network URL: $isValidNetworkUrl');
+    AppLogger.info('🖼️ ImageManagementService validating URL: $imageUrl');
+    AppLogger.info('🖼️ URI parsed: $uri');
+    AppLogger.info('🖼️ Has scheme: ${uri?.hasScheme}');
+    AppLogger.info('🖼️ Host: ${uri?.host}');
+    AppLogger.network('🖼️ Is valid network URL: $isValidNetworkUrl');
 
     // More permissive validation - allow any non-empty URL that looks like it might be a network URL
     final isLikelyValidUrl =
@@ -128,7 +129,7 @@ class ImageManagementService {
             imageUrl.contains('firebasestorage'));
 
     if (!isLikelyValidUrl) {
-      debugPrint('🖼️ URL failed validation, showing error widget');
+      AppLogger.error('🖼️ URL failed validation, showing error widget');
       // Fallback placeholder/error container without network call
       return Container(
         width: width,
@@ -182,7 +183,7 @@ class ImageManagementService {
   ) async {
     // Check if already loading
     if (_loadingUrls.contains(imageUrl)) {
-      debugPrint('🔄 Image already loading: $imageUrl');
+      AppLogger.info('🔄 Image already loading: $imageUrl');
       return;
     }
 
@@ -194,7 +195,7 @@ class ImageManagementService {
     } else {
       // Add to queue
       _loadQueue.add(() => _executeLoad(imageUrl, onComplete));
-      debugPrint('📥 Image queued for loading: $imageUrl');
+      AppLogger.info('📥 Image queued for loading: $imageUrl');
     }
   }
 
@@ -210,17 +211,17 @@ class ImageManagementService {
       _cacheManager!
           .getSingleFile(imageUrl)
           .then((file) {
-            debugPrint('✅ Image loaded successfully: $imageUrl');
+            AppLogger.info('✅ Image loaded successfully: $imageUrl');
             _completeLoad(imageUrl, onComplete);
           })
           .catchError((dynamic error) {
-            debugPrint('❌ Image load failed: $imageUrl - $error');
+            AppLogger.error('❌ Image load failed: $imageUrl - $error');
             _completeLoad(imageUrl, onComplete);
           });
     } else {
       // In test environments where cache manager is not available,
       // simulate successful load completion
-      debugPrint('✅ Image loaded successfully (simulated): $imageUrl');
+      AppLogger.info('✅ Image loaded successfully (simulated): $imageUrl');
       _completeLoad(imageUrl, onComplete);
     }
   }
@@ -275,18 +276,18 @@ class ImageManagementService {
 
   /// Preload critical images
   Future<void> preloadCriticalImages(List<String> imageUrls) async {
-    debugPrint('🔄 Preloading ${imageUrls.length} critical images');
+    AppLogger.info('🔄 Preloading ${imageUrls.length} critical images');
 
     if (_cacheManager == null) {
       // In test environments, just return without doing anything
-      debugPrint('🖼️ Skipping preload in test environment');
+      AppLogger.info('🖼️ Skipping preload in test environment');
       return;
     }
 
     for (final url in imageUrls.take(maxConcurrentLoads)) {
       if (!_loadingUrls.contains(url)) {
         _cacheManager!.getSingleFile(url).catchError((dynamic error) {
-          debugPrint('❌ Preload failed for: $url');
+          AppLogger.error('❌ Preload failed for: $url');
           throw error as Object;
         });
       }
@@ -297,9 +298,9 @@ class ImageManagementService {
   Future<void> clearOldCache() async {
     try {
       await _cacheManager?.emptyCache();
-      debugPrint('🧹 Image cache cleared');
+      AppLogger.info('🧹 Image cache cleared');
     } catch (e) {
-      debugPrint('❌ Error clearing cache: $e');
+      AppLogger.error('❌ Error clearing cache: $e');
     }
   }
 
@@ -314,7 +315,7 @@ class ImageManagementService {
         'queuedLoads': _loadQueue.length,
       };
     } catch (e) {
-      debugPrint('❌ Error getting cache stats: $e');
+      AppLogger.error('❌ Error getting cache stats: $e');
       return {
         'error': e.toString(),
         'activeLoads': _activeLoads,

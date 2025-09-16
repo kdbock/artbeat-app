@@ -1,84 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_ads/artbeat_ads.dart';
 import '../screens/admin_login_screen.dart';
-import '../screens/admin_enhanced_dashboard_screen.dart';
-import '../screens/admin_financial_analytics_screen.dart';
-import '../screens/admin_advanced_user_management_screen.dart';
-import '../screens/admin_advanced_content_management_screen.dart';
+import '../screens/modern_unified_admin_dashboard.dart';
 import '../screens/admin_user_detail_screen.dart';
-import '../screens/enhanced_admin_content_review_screen.dart';
-import '../screens/admin_analytics_screen.dart';
 import '../screens/admin_settings_screen.dart';
-import '../screens/admin_coupon_management_screen.dart';
 import '../screens/admin_security_center_screen.dart';
-import '../screens/admin_data_management_screen.dart';
-import '../screens/admin_system_alerts_screen.dart';
-import '../screens/admin_help_support_screen.dart';
-import '../screens/migration_screen.dart';
-import '../screens/admin_events_management_screen.dart';
-import '../screens/admin_ads_management_screen.dart';
-import '../screens/admin_community_moderation_screen.dart';
+import '../screens/admin_system_monitoring_screen.dart';
+import '../screens/admin_payment_screen.dart';
 import '../models/user_admin_model.dart';
 
 /// Admin routing configuration for the ARTbeat admin system
+///
+/// Streamlined admin routes - consolidated from 15+ screens to 4 main sections:
+/// 1. Unified Dashboard (replaces dashboard, analytics, enhanced dashboard)
+/// 2. User Detail (modal/overlay for user details)
+/// 3. Essential System Screens (settings, security, data, alerts, help)
+/// 4. Migration (temporary utility)
 class AdminRoutes {
+  // Main unified dashboard - replaces all dashboard and analytics screens
   static const String dashboard = '/admin/dashboard';
-  static const String enhancedDashboard = '/admin/enhanced-dashboard';
-  static const String financialAnalytics = '/admin/financial-analytics';
-  static const String userManagement = '/admin/user-management';
+  static const String enhancedDashboard =
+      '/admin/dashboard'; // Redirect to unified
+  static const String financialAnalytics =
+      '/admin/dashboard'; // Redirect to unified
+  static const String userManagement =
+      '/admin/dashboard'; // Redirect to unified
   static const String advancedUserManagement =
-      '/admin/advanced-user-management';
-  static const String userDetail = '/admin/user-detail';
-  static const String contentReview = '/admin/content-review';
-  static const String enhancedContentReview = '/admin/enhanced-content-review';
+      '/admin/dashboard'; // Redirect to unified
+  static const String contentReview = '/admin/dashboard'; // Redirect to unified
+  static const String enhancedContentReview =
+      '/admin/dashboard'; // Redirect to unified
   static const String advancedContentManagement =
-      '/admin/advanced-content-management';
-  static const String analytics = '/admin/analytics';
+      '/admin/dashboard'; // Redirect to unified
+  static const String contentManagementSuite =
+      '/admin/dashboard'; // Redirect to unified
+  static const String analytics = '/admin/dashboard'; // Redirect to unified
+  static const String adManagement = '/admin/dashboard'; // Redirect to unified
+  static const String adsManagement = '/admin/dashboard'; // Redirect to unified
+  static const String eventsManagement =
+      '/admin/dashboard'; // Redirect to unified
+  static const String communityModeration =
+      '/admin/dashboard'; // Redirect to unified
+  static const String couponManagement =
+      '/admin/dashboard'; // Redirect to unified
+
+  // User detail screen (modal/overlay)
+  static const String userDetail = '/admin/user-detail';
+
+  // Essential system screens (kept separate for specific functionality)
   static const String adminSettings = '/admin/settings';
-  static const String adManagement = '/admin/ad-management';
-  static const String adsManagement = '/admin/ads-management';
-  static const String eventsManagement = '/admin/events-management';
-  static const String communityModeration = '/admin/community-moderation';
-  static const String couponManagement = '/admin/coupon-management';
   static const String securityCenter = '/admin/security';
-  static const String dataManagement = '/admin/data';
-  static const String systemAlerts = '/admin/alerts';
-  static const String helpSupport = '/admin/help';
-  static const String migration = '/admin/migration';
+  static const String systemMonitoring = '/admin/monitoring';
+  static const String paymentManagement = '/admin/payments';
   static const String login = '/admin/login';
 
   /// Generate routes for the admin system
   static Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // All main admin functionality now routes to the modern unified dashboard
       case dashboard:
-        // Redirect to enhanced dashboard
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminEnhancedDashboardScreen(),
-          settings: settings,
-        );
-
-      case enhancedDashboard:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminEnhancedDashboardScreen(),
-          settings: settings,
-        );
-
-      case financialAnalytics:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminFinancialAnalyticsScreen(),
-          settings: settings,
-        );
-
-      case userManagement:
-        // Redirect to advanced user management
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminAdvancedUserManagementScreen(),
-          settings: settings,
-        );
-
-      case advancedUserManagement:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminAdvancedUserManagementScreen(),
+          builder: (_) => const ModernUnifiedAdminDashboard(),
           settings: settings,
         );
 
@@ -92,63 +73,9 @@ class AdminRoutes {
           settings: settings,
         );
 
-      case contentReview:
-        return MaterialPageRoute<void>(
-          builder: (_) => const EnhancedAdminContentReviewScreen(),
-          settings: settings,
-        );
-
-      case enhancedContentReview:
-        return MaterialPageRoute<void>(
-          builder: (_) => const EnhancedAdminContentReviewScreen(),
-          settings: settings,
-        );
-
-      case advancedContentManagement:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminAdvancedContentManagementScreen(),
-          settings: settings,
-        );
-
-      case analytics:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminAnalyticsScreen(),
-          settings: settings,
-        );
-
       case adminSettings:
         return MaterialPageRoute<void>(
           builder: (_) => const AdminSettingsScreen(),
-          settings: settings,
-        );
-
-      case adManagement:
-        return MaterialPageRoute<void>(
-          builder: (_) => const SimpleAdManagementScreen(),
-          settings: settings,
-        );
-
-      case adsManagement:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminAdsManagementScreen(),
-          settings: settings,
-        );
-
-      case eventsManagement:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminEventsManagementScreen(),
-          settings: settings,
-        );
-
-      case communityModeration:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminCommunityModerationScreen(),
-          settings: settings,
-        );
-
-      case couponManagement:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminCouponManagementScreen(),
           settings: settings,
         );
 
@@ -158,27 +85,15 @@ class AdminRoutes {
           settings: settings,
         );
 
-      case dataManagement:
+      case systemMonitoring:
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminDataManagementScreen(),
+          builder: (_) => const AdminSystemMonitoringScreen(),
           settings: settings,
         );
 
-      case systemAlerts:
+      case paymentManagement:
         return MaterialPageRoute<void>(
-          builder: (_) => const AdminSystemAlertsScreen(),
-          settings: settings,
-        );
-
-      case helpSupport:
-        return MaterialPageRoute<void>(
-          builder: (_) => const AdminHelpSupportScreen(),
-          settings: settings,
-        );
-
-      case migration:
-        return MaterialPageRoute<void>(
-          builder: (_) => const MigrationScreen(),
+          builder: (_) => const AdminPaymentScreen(),
           settings: settings,
         );
 
@@ -325,31 +240,10 @@ class AdminRoutes {
         category: AdminRouteCategory.system,
       ),
       const AdminRoute(
-        name: 'Data Management',
-        route: dataManagement,
-        icon: Icons.backup,
-        description: 'Data backup, export, and management tools',
-        category: AdminRouteCategory.system,
-      ),
-      const AdminRoute(
-        name: 'System Alerts',
-        route: systemAlerts,
-        icon: Icons.notifications,
-        description: 'System notifications and monitoring alerts',
-        category: AdminRouteCategory.system,
-      ),
-      const AdminRoute(
-        name: 'Help & Support',
-        route: helpSupport,
-        icon: Icons.help_outline,
-        description: 'Documentation, tutorials, and support resources',
-        category: AdminRouteCategory.system,
-      ),
-      const AdminRoute(
-        name: 'Data Migration',
-        route: migration,
-        icon: Icons.sync_alt,
-        description: 'Migrate data to standardized moderation status',
+        name: 'System Monitoring',
+        route: systemMonitoring,
+        icon: Icons.monitor,
+        description: 'Real-time system monitoring and performance metrics',
         category: AdminRouteCategory.system,
       ),
     ];

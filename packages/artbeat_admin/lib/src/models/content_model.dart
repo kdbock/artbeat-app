@@ -1,58 +1,167 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// Content model for admin management
-/// Represents various types of content (posts, artworks, events, etc.)
+/// Content Model for Admin Dashboard
+///
+/// Represents any type of content in the system (artwork, posts, events, etc.)
+/// Used for unified content management in the admin dashboard
 class ContentModel {
   final String id;
   final String title;
   final String description;
-  final String type; // 'post', 'artwork', 'event', etc.
+  final String type; // 'artwork', 'post', 'event', 'ad', etc.
   final String authorId;
   final String authorName;
+  final String status; // 'active', 'pending', 'rejected', 'archived'
   final DateTime createdAt;
-  final String status; // 'active', 'inactive', 'draft'
-  final String moderationStatus; // 'pending', 'approved', 'rejected'
-  final double engagementScore;
+  final DateTime? updatedAt;
+  final bool isFlagged;
+  final bool isPublic;
   final List<String> tags;
   final Map<String, dynamic> metadata;
+  final String? imageUrl;
   final String? thumbnailUrl;
+  final int viewCount;
+  final int likeCount;
+  final int reportCount;
 
-  ContentModel({
+  const ContentModel({
     required this.id,
     required this.title,
     required this.description,
     required this.type,
     required this.authorId,
     required this.authorName,
+    required this.status,
     required this.createdAt,
-    this.status = 'active',
-    this.moderationStatus = 'pending',
-    this.engagementScore = 0.0,
+    this.updatedAt,
+    this.isFlagged = false,
+    this.isPublic = true,
     this.tags = const [],
     this.metadata = const {},
+    this.imageUrl,
     this.thumbnailUrl,
+    this.viewCount = 0,
+    this.likeCount = 0,
+    this.reportCount = 0,
   });
 
+  /// Create ContentModel from Firestore document
   factory ContentModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
     return ContentModel(
       id: doc.id,
-      title: data['title'] as String? ?? '',
+      title: data['title'] as String? ?? 'Untitled',
       description: data['description'] as String? ?? '',
-      type: data['type'] as String? ?? 'post',
+      type: data['type'] as String? ?? 'unknown',
       authorId: data['authorId'] as String? ?? '',
-      authorName: data['authorName'] as String? ?? '',
+      authorName: data['authorName'] as String? ?? 'Unknown Author',
+      status: data['status'] as String? ?? 'pending',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      status: data['status'] as String? ?? 'active',
-      moderationStatus: data['moderationStatus'] as String? ?? 'pending',
-      engagementScore: ((data['engagementScore'] as num?) ?? 0.0).toDouble(),
-      tags: List<String>.from(data['tags'] as List<dynamic>? ?? []),
-      metadata: Map<String, dynamic>.from(
-          data['metadata'] as Map<dynamic, dynamic>? ?? {}),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      isFlagged: data['isFlagged'] as bool? ?? false,
+      isPublic: data['isPublic'] as bool? ?? true,
+      tags: List<String>.from(data['tags'] as List? ?? []),
+      metadata: Map<String, dynamic>.from(data['metadata'] as Map? ?? {}),
+      imageUrl: data['imageUrl'] as String?,
       thumbnailUrl: data['thumbnailUrl'] as String?,
+      viewCount: data['viewCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      reportCount: data['reportCount'] as int? ?? 0,
     );
   }
 
+  /// Create ContentModel from different collection types
+  factory ContentModel.fromArtwork(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return ContentModel(
+      id: doc.id,
+      title: data['title'] as String? ?? 'Untitled Artwork',
+      description: data['description'] as String? ?? '',
+      type: 'artwork',
+      authorId: data['artistId'] as String? ?? '',
+      authorName: data['artistName'] as String? ?? 'Unknown Artist',
+      status: data['status'] as String? ?? 'pending',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      isFlagged: data['isFlagged'] as bool? ?? false,
+      isPublic: data['isPublic'] as bool? ?? true,
+      tags: List<String>.from(data['tags'] as List? ?? []),
+      metadata: {
+        'medium': data['medium'] as String? ?? '',
+        'dimensions': data['dimensions'] as String? ?? '',
+        'price': data['price'] as double? ?? 0.0,
+        'category': data['category'] as String? ?? '',
+      },
+      imageUrl: data['imageUrl'] as String?,
+      thumbnailUrl: data['thumbnailUrl'] as String?,
+      viewCount: data['viewCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      reportCount: data['reportCount'] as int? ?? 0,
+    );
+  }
+
+  factory ContentModel.fromPost(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return ContentModel(
+      id: doc.id,
+      title: data['title'] as String? ?? 'Untitled Post',
+      description: data['content'] as String? ?? '',
+      type: 'post',
+      authorId: data['authorId'] as String? ?? '',
+      authorName: data['authorName'] as String? ?? 'Unknown User',
+      status: data['status'] as String? ?? 'active',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      isFlagged: data['isFlagged'] as bool? ?? false,
+      isPublic: data['isPublic'] as bool? ?? true,
+      tags: List<String>.from(data['tags'] as List? ?? []),
+      metadata: {
+        'postType': data['postType'] as String? ?? 'text',
+        'communityId': data['communityId'] as String? ?? '',
+      },
+      imageUrl: data['imageUrl'] as String?,
+      thumbnailUrl: data['thumbnailUrl'] as String?,
+      viewCount: data['viewCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      reportCount: data['reportCount'] as int? ?? 0,
+    );
+  }
+
+  factory ContentModel.fromEvent(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    return ContentModel(
+      id: doc.id,
+      title: data['title'] as String? ?? 'Untitled Event',
+      description: data['description'] as String? ?? '',
+      type: 'event',
+      authorId: data['organizerId'] as String? ?? '',
+      authorName: data['organizerName'] as String? ?? 'Unknown Organizer',
+      status: data['status'] as String? ?? 'pending',
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
+      isFlagged: data['isFlagged'] as bool? ?? false,
+      isPublic: data['isPublic'] as bool? ?? true,
+      tags: List<String>.from(data['tags'] as List? ?? []),
+      metadata: {
+        'eventDate':
+            (data['eventDate'] as Timestamp?)?.toDate().toIso8601String(),
+        'location': data['location'] as String? ?? '',
+        'ticketPrice': data['ticketPrice'] as double? ?? 0.0,
+        'maxAttendees': data['maxAttendees'] as int? ?? 0,
+      },
+      imageUrl: data['imageUrl'] as String?,
+      thumbnailUrl: data['thumbnailUrl'] as String?,
+      viewCount: data['viewCount'] as int? ?? 0,
+      likeCount: data['likeCount'] as int? ?? 0,
+      reportCount: data['reportCount'] as int? ?? 0,
+    );
+  }
+
+  /// Convert to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,
@@ -60,16 +169,22 @@ class ContentModel {
       'type': type,
       'authorId': authorId,
       'authorName': authorName,
-      'createdAt': Timestamp.fromDate(createdAt),
       'status': status,
-      'moderationStatus': moderationStatus,
-      'engagementScore': engagementScore,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
+      'isFlagged': isFlagged,
+      'isPublic': isPublic,
       'tags': tags,
       'metadata': metadata,
+      'imageUrl': imageUrl,
       'thumbnailUrl': thumbnailUrl,
+      'viewCount': viewCount,
+      'likeCount': likeCount,
+      'reportCount': reportCount,
     };
   }
 
+  /// Create a copy with updated fields
   ContentModel copyWith({
     String? id,
     String? title,
@@ -77,13 +192,18 @@ class ContentModel {
     String? type,
     String? authorId,
     String? authorName,
-    DateTime? createdAt,
     String? status,
-    String? moderationStatus,
-    double? engagementScore,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isFlagged,
+    bool? isPublic,
     List<String>? tags,
     Map<String, dynamic>? metadata,
+    String? imageUrl,
     String? thumbnailUrl,
+    int? viewCount,
+    int? likeCount,
+    int? reportCount,
   }) {
     return ContentModel(
       id: id ?? this.id,
@@ -92,13 +212,179 @@ class ContentModel {
       type: type ?? this.type,
       authorId: authorId ?? this.authorId,
       authorName: authorName ?? this.authorName,
-      createdAt: createdAt ?? this.createdAt,
       status: status ?? this.status,
-      moderationStatus: moderationStatus ?? this.moderationStatus,
-      engagementScore: engagementScore ?? this.engagementScore,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isFlagged: isFlagged ?? this.isFlagged,
+      isPublic: isPublic ?? this.isPublic,
       tags: tags ?? this.tags,
       metadata: metadata ?? this.metadata,
+      imageUrl: imageUrl ?? this.imageUrl,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      viewCount: viewCount ?? this.viewCount,
+      likeCount: likeCount ?? this.likeCount,
+      reportCount: reportCount ?? this.reportCount,
     );
+  }
+
+  /// Get display-friendly type name
+  String get displayType {
+    switch (type.toLowerCase()) {
+      case 'artwork':
+        return 'Artwork';
+      case 'post':
+        return 'Post';
+      case 'event':
+        return 'Event';
+      case 'ad':
+        return 'Advertisement';
+      case 'commission':
+        return 'Commission';
+      default:
+        return type.toUpperCase();
+    }
+  }
+
+  /// Get status color for UI
+  String get statusColor {
+    switch (status.toLowerCase()) {
+      case 'active':
+      case 'approved':
+        return 'green';
+      case 'pending':
+        return 'orange';
+      case 'rejected':
+      case 'banned':
+        return 'red';
+      case 'archived':
+        return 'grey';
+      default:
+        return 'blue';
+    }
+  }
+
+  /// Check if content needs attention
+  bool get needsAttention {
+    return isFlagged ||
+        status == 'pending' ||
+        reportCount > 0 ||
+        (status == 'rejected' &&
+            updatedAt != null &&
+            DateTime.now().difference(updatedAt!).inDays < 7);
+  }
+
+  /// Get priority level for admin review
+  String get priorityLevel {
+    if (isFlagged || reportCount > 5) return 'high';
+    if (reportCount > 0 || status == 'pending') return 'medium';
+    return 'low';
+  }
+
+  /// Get engagement score
+  double get engagementScore {
+    if (viewCount == 0) return 0.0;
+    return (likeCount / viewCount) * 100;
+  }
+
+  @override
+  String toString() {
+    return 'ContentModel(id: $id, title: $title, type: $type, status: $status)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is ContentModel && other.id == id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
+/// Content type enumeration for filtering - Admin Dashboard
+enum AdminContentType {
+  all,
+  artwork,
+  post,
+  event,
+  ad,
+  commission;
+
+  String get displayName {
+    switch (this) {
+      case AdminContentType.all:
+        return 'All Content';
+      case AdminContentType.artwork:
+        return 'Artwork';
+      case AdminContentType.post:
+        return 'Posts';
+      case AdminContentType.event:
+        return 'Events';
+      case AdminContentType.ad:
+        return 'Advertisements';
+      case AdminContentType.commission:
+        return 'Commissions';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case AdminContentType.all:
+        return 'all';
+      case AdminContentType.artwork:
+        return 'artwork';
+      case AdminContentType.post:
+        return 'post';
+      case AdminContentType.event:
+        return 'event';
+      case AdminContentType.ad:
+        return 'ad';
+      case AdminContentType.commission:
+        return 'commission';
+    }
+  }
+}
+
+/// Content status enumeration - Admin Dashboard
+enum AdminContentStatus {
+  all,
+  active,
+  pending,
+  rejected,
+  archived,
+  flagged;
+
+  String get displayName {
+    switch (this) {
+      case AdminContentStatus.all:
+        return 'All Status';
+      case AdminContentStatus.active:
+        return 'Active';
+      case AdminContentStatus.pending:
+        return 'Pending Review';
+      case AdminContentStatus.rejected:
+        return 'Rejected';
+      case AdminContentStatus.archived:
+        return 'Archived';
+      case AdminContentStatus.flagged:
+        return 'Flagged';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case AdminContentStatus.all:
+        return 'all';
+      case AdminContentStatus.active:
+        return 'active';
+      case AdminContentStatus.pending:
+        return 'pending';
+      case AdminContentStatus.rejected:
+        return 'rejected';
+      case AdminContentStatus.archived:
+        return 'archived';
+      case AdminContentStatus.flagged:
+        return 'flagged';
+    }
   }
 }

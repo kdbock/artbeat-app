@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Production-ready integrated settings service with caching and performance optimization
 /// Implementation Date: September 5, 2025
@@ -116,7 +117,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, settings);
       return settings;
     } catch (e) {
-      debugPrint('Error getting user settings: $e');
+      AppLogger.error('Error getting user settings: $e');
       rethrow;
     }
   }
@@ -152,7 +153,7 @@ class IntegratedSettingsService extends ChangeNotifier {
     } catch (e) {
       // Revert optimistic update on error
       _invalidateCache('userSettings');
-      debugPrint('Error updating user settings: $e');
+      AppLogger.error('Error updating user settings: $e');
       rethrow;
     }
   }
@@ -189,7 +190,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, settings);
       return settings;
     } catch (e) {
-      debugPrint('Error getting notification settings: $e');
+      AppLogger.error('Error getting notification settings: $e');
       rethrow;
     }
   }
@@ -214,7 +215,7 @@ class IntegratedSettingsService extends ChangeNotifier {
           .set(settings.toMap(), SetOptions(merge: true));
     } catch (e) {
       _invalidateCache('notificationSettings');
-      debugPrint('Error updating notification settings: $e');
+      AppLogger.error('Error updating notification settings: $e');
       rethrow;
     }
   }
@@ -251,7 +252,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, settings);
       return settings;
     } catch (e) {
-      debugPrint('Error getting privacy settings: $e');
+      AppLogger.error('Error getting privacy settings: $e');
       rethrow;
     }
   }
@@ -274,7 +275,7 @@ class IntegratedSettingsService extends ChangeNotifier {
           .set(settings.toMap(), SetOptions(merge: true));
     } catch (e) {
       _invalidateCache('privacySettings');
-      debugPrint('Error updating privacy settings: $e');
+      AppLogger.error('Error updating privacy settings: $e');
       rethrow;
     }
   }
@@ -311,7 +312,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, settings);
       return settings;
     } catch (e) {
-      debugPrint('Error getting security settings: $e');
+      AppLogger.error('Error getting security settings: $e');
       rethrow;
     }
   }
@@ -334,7 +335,7 @@ class IntegratedSettingsService extends ChangeNotifier {
           .set(settings.toMap(), SetOptions(merge: true));
     } catch (e) {
       _invalidateCache('securitySettings');
-      debugPrint('Error updating security settings: $e');
+      AppLogger.error('Error updating security settings: $e');
       rethrow;
     }
   }
@@ -376,7 +377,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, settings);
       return settings;
     } catch (e) {
-      debugPrint('Error getting account settings: $e');
+      AppLogger.error('Error getting account settings: $e');
       rethrow;
     }
   }
@@ -399,7 +400,7 @@ class IntegratedSettingsService extends ChangeNotifier {
           .set(settings.toMap(), SetOptions(merge: true));
     } catch (e) {
       _invalidateCache('accountSettings');
-      debugPrint('Error updating account settings: $e');
+      AppLogger.error('Error updating account settings: $e');
       rethrow;
     }
   }
@@ -430,7 +431,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, blockedUsers);
       return blockedUsers;
     } catch (e) {
-      debugPrint('Error getting blocked users: $e');
+      AppLogger.error('Error getting blocked users: $e');
       return [];
     }
   }
@@ -465,7 +466,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _invalidateCache('blockedUsers');
       notifyListeners();
     } catch (e) {
-      debugPrint('Error blocking user: $e');
+      AppLogger.error('Error blocking user: $e');
       rethrow;
     }
   }
@@ -485,7 +486,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _invalidateCache('blockedUsers');
       notifyListeners();
     } catch (e) {
-      debugPrint('Error unblocking user: $e');
+      AppLogger.error('Error unblocking user: $e');
       rethrow;
     }
   }
@@ -517,7 +518,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       _setCached(cacheKey, devices);
       return devices;
     } catch (e) {
-      debugPrint('Error getting device activity: $e');
+      AppLogger.error('Error getting device activity: $e');
       return [];
     }
   }
@@ -533,7 +534,7 @@ class IntegratedSettingsService extends ChangeNotifier {
       // Invalidate cache to force refresh
       _invalidateCache('deviceActivity');
     } catch (e) {
-      debugPrint('Error logging device activity: $e');
+      AppLogger.error('Error logging device activity: $e');
     }
   }
 
@@ -552,7 +553,7 @@ class IntegratedSettingsService extends ChangeNotifier {
         'status': 'pending',
       });
     } catch (e) {
-      debugPrint('Error requesting data download: $e');
+      AppLogger.error('Error requesting data download: $e');
       rethrow;
     }
   }
@@ -572,7 +573,7 @@ class IntegratedSettingsService extends ChangeNotifier {
         'status': 'pending',
       });
     } catch (e) {
-      debugPrint('Error requesting data deletion: $e');
+      AppLogger.error('Error requesting data deletion: $e');
       rethrow;
     }
   }
@@ -590,7 +591,7 @@ class IntegratedSettingsService extends ChangeNotifier {
         getDeviceActivity(),
       ]);
     } catch (e) {
-      debugPrint('Error preloading settings: $e');
+      AppLogger.error('Error preloading settings: $e');
     }
   }
 

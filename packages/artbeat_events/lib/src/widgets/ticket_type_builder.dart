@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import '../models/ticket_type.dart';
 
 /// Widget for building and editing individual ticket types
@@ -112,11 +113,20 @@ class _TicketTypeBuilderState extends State<TicketTypeBuilder> {
               decoration: const InputDecoration(
                 labelText: 'Ticket Category',
                 border: OutlineInputBorder(),
+                filled: true,
+                fillColor: core.ArtbeatColors.backgroundPrimary,
               ),
+              dropdownColor: core.ArtbeatColors.backgroundPrimary,
+              style: const TextStyle(color: core.ArtbeatColors.textPrimary),
               items: TicketCategory.values.map((category) {
                 return DropdownMenuItem(
                   value: category,
-                  child: Text(category.displayName),
+                  child: Text(
+                    category.displayName,
+                    style: const TextStyle(
+                      color: core.ArtbeatColors.textPrimary,
+                    ),
+                  ),
                 );
               }).toList(),
               onChanged: (category) {

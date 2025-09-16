@@ -25,6 +25,9 @@ class ArtbeatColors {
   static const Color textWhite = Color.fromARGB(255, 26, 4, 43);
   static const Color textDisabled = Color(0xFFADB5BD);
 
+  // Header Colors
+  static const Color headerText = Color(0xFF1A0D2E); // Deep purple for headers
+
   // Gray Colors
   static const Color lightGray = Color(0xFFF5F5F5);
   static const Color darkGray = Color(0xFF666666);

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:logger/logger.dart';
 import 'dart:math';
-import '../widgets/art_walk_drawer.dart';
 
 final Logger _logger = Logger();
 
@@ -285,17 +285,12 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   void _startNavigation() {
     if (_walk == null) return;
 
-    // Show the navigation panel instead of navigating away
-    setState(() {
-      _showNavigationPanel = !_showNavigationPanel;
-    });
-
-    // If showing navigation panel, scroll to it
-    if (_showNavigationPanel) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        // Scroll to navigation panel would go here
-      });
-    }
+    // Navigate to the enhanced art walk experience
+    Navigator.pushNamed(
+      context,
+      ArtWalkRoutes.enhancedExperience,
+      arguments: {'artWalkId': _walk!.id, 'artWalk': _walk!},
+    );
   }
 
   Future<void> _completeArtWalk() async {
@@ -379,17 +374,24 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         drawer: const ArtWalkDrawer(),
         child: Scaffold(
           key: const ValueKey('loading'),
-          appBar: EnhancedUniversalHeader(
+          appBar: ArtWalkDesignSystem.buildAppBar(
             title: 'Art Walk Details',
-            showLogo: false,
+            showBackButton: true,
             actions: [
               IconButton(
-                icon: const Icon(Icons.chat),
+                icon: const Icon(
+                  Icons.chat,
+                  color: ArtWalkDesignSystem.textLight,
+                ),
                 onPressed: () => Navigator.pushNamed(context, '/messaging'),
               ),
             ],
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: ArtWalkDesignSystem.buildScreenContainer(
+            child: ArtWalkScreenTemplate.buildLoadingState(
+              message: 'Loading art walk details...',
+            ),
+          ),
         ),
       );
     }
@@ -400,17 +402,28 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         drawer: const ArtWalkDrawer(),
         child: Scaffold(
           key: const ValueKey('not_found'),
-          appBar: EnhancedUniversalHeader(
+          appBar: ArtWalkDesignSystem.buildAppBar(
             title: 'Art Walk Details',
-            showLogo: false,
+            showBackButton: true,
             actions: [
               IconButton(
-                icon: const Icon(Icons.chat),
+                icon: const Icon(
+                  Icons.chat,
+                  color: ArtWalkDesignSystem.textLight,
+                ),
                 onPressed: () => Navigator.pushNamed(context, '/messaging'),
               ),
             ],
           ),
-          body: const Center(child: Text('Art walk not found')),
+          body: ArtWalkDesignSystem.buildScreenContainer(
+            child: ArtWalkScreenTemplate.buildEmptyState(
+              title: 'Art Walk Not Found',
+              subtitle: 'The requested art walk could not be found.',
+              icon: Icons.error_outline,
+              actionText: 'Go Back',
+              onAction: () => Navigator.pop(context),
+            ),
+          ),
         ),
       );
     }
@@ -732,26 +745,28 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: _markers.isNotEmpty
-                              ? _markers.first.position
-                              : const LatLng(
-                                  37.7749,
-                                  -122.4194,
-                                ), // Default to SF
-                          zoom: 13,
-                        ),
-                        markers: _markers,
-                        polylines: _polylines,
-                        liteModeEnabled: true,
-                        zoomControlsEnabled: false,
-                        scrollGesturesEnabled: false,
-                        rotateGesturesEnabled: false,
-                        zoomGesturesEnabled: false,
-                        tiltGesturesEnabled: false,
-                        myLocationButtonEnabled: false,
-                      ),
+                      child: kIsWeb
+                          ? _buildWebMapFallback()
+                          : GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: _markers.isNotEmpty
+                                    ? _markers.first.position
+                                    : const LatLng(
+                                        37.7749,
+                                        -122.4194,
+                                      ), // Default to SF
+                                zoom: 13,
+                              ),
+                              markers: _markers,
+                              polylines: _polylines,
+                              liteModeEnabled: true,
+                              zoomControlsEnabled: false,
+                              scrollGesturesEnabled: false,
+                              rotateGesturesEnabled: false,
+                              zoomGesturesEnabled: false,
+                              tiltGesturesEnabled: false,
+                              myLocationButtonEnabled: false,
+                            ),
                     ),
                   ),
 
@@ -896,6 +911,39 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      color: const Color(0xFF00838F).withValues(alpha: 0.1), // Art Walk teal
+      child: const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.map_outlined,
+              size: 48,
+              color: Color(0xFF00838F), // Art Walk teal
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Art Walk Map Preview',
+              style: TextStyle(
+                color: Color(0xFF00838F),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Interactive map available on mobile devices',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

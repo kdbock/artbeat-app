@@ -55,7 +55,7 @@ class _CommunityDrawerState extends State<CommunityDrawer> {
         setState(() => _isLoading = false);
       }
     } catch (e) {
-      debugPrint('Error loading current user: $e');
+      AppLogger.error('Error loading current user: $e');
       setState(() => _isLoading = false);
     }
   }

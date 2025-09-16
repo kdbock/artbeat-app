@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/artbeat_event.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Enhanced social integration service for Phase 3 implementation
 /// Provides social features, community engagement, and sharing capabilities
@@ -440,7 +441,7 @@ class SocialIntegrationService {
       });
     } catch (e) {
       // Silently fail for analytics
-      print('Failed to track social engagement: $e');
+      AppLogger.info('Failed to track social engagement: $e');
     }
   }
 

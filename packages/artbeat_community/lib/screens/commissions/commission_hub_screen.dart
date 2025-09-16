@@ -113,18 +113,6 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
   Widget build(BuildContext context) {
     return core.MainLayout(
       currentIndex: 3,
-      appBar: const core.EnhancedUniversalHeader(
-        title: 'Commission Hub',
-        showBackButton: true,
-        showSearch: false,
-        backgroundGradient: CommunityColors.communityGradient,
-        titleGradient: LinearGradient(
-          colors: [Colors.white, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        foregroundColor: Colors.white,
-      ),
       child: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
@@ -193,20 +181,12 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Direct Commission System',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: CommunityColors.primary,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
                         _isArtist
                             ? 'Manage your commission requests and settings'
                             : 'Request custom artwork from talented artists',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

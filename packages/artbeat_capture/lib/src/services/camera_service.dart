@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:camera/camera.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class CameraService {
   static final CameraService _instance = CameraService._internal();
@@ -36,11 +37,11 @@ class CameraService {
       await _initializeCameras();
 
       _isCameraAvailable = _cameras != null && _cameras!.isNotEmpty;
-      debugPrint('CameraService: Camera available: $_isCameraAvailable');
+      AppLogger.info('CameraService: Camera available: $_isCameraAvailable');
 
       return _isCameraAvailable!;
     } catch (e) {
-      debugPrint('CameraService: Error checking camera availability: $e');
+      AppLogger.error('CameraService: Error checking camera availability: $e');
       _isCameraAvailable = false;
       return false;
     }
@@ -53,9 +54,9 @@ class CameraService {
     try {
       _cameras = await availableCameras();
       _isInitialized = true;
-      debugPrint('CameraService: Found ${_cameras?.length ?? 0} cameras');
+      AppLogger.info('CameraService: Found ${_cameras?.length ?? 0} cameras');
     } catch (e) {
-      debugPrint('CameraService: Failed to initialize cameras: $e');
+      AppLogger.info('CameraService: Failed to initialize cameras: $e');
       _cameras = [];
       _isInitialized = true;
     }
@@ -85,7 +86,7 @@ class CameraService {
 
       return false;
     } catch (e) {
-      debugPrint('CameraService: Error checking if emulator: $e');
+      AppLogger.error('CameraService: Error checking if emulator: $e');
       return false;
     }
   }

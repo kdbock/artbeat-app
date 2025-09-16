@@ -1,14 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/material.dart';
 
 class DeveloperMenu extends StatelessWidget {
   const DeveloperMenu({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return SafeArea(
+  Widget build(BuildContext context) => SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
             // Header section
@@ -45,10 +44,8 @@ class DeveloperMenu extends StatelessWidget {
         ),
       ),
     );
-  }
 
-  Widget _buildDatabaseSection(BuildContext context) {
-    return ExpansionTile(
+  Widget _buildDatabaseSection(BuildContext context) => ExpansionTile(
       title: const Text('Database Management'),
       children: [
         ListTile(
@@ -92,10 +89,8 @@ class DeveloperMenu extends StatelessWidget {
         ),
       ],
     );
-  }
 
-  Widget _buildFeedbackSection(BuildContext context) {
-    return ExpansionTile(
+  Widget _buildFeedbackSection(BuildContext context) => ExpansionTile(
       title: const Text('Feedback System'),
       children: [
         ListTile(
@@ -142,10 +137,8 @@ class DeveloperMenu extends StatelessWidget {
         ),
       ],
     );
-  }
 
-  Widget _buildBackupSection(BuildContext context) {
-    return ExpansionTile(
+  Widget _buildBackupSection(BuildContext context) => ExpansionTile(
       title: const Text('Backup Management'),
       children: [
         ListTile(
@@ -174,10 +167,8 @@ class DeveloperMenu extends StatelessWidget {
         ),
       ],
     );
-  }
 
-  Widget _buildDebugSection(BuildContext context) {
-    return ExpansionTile(
+  Widget _buildDebugSection(BuildContext context) => ExpansionTile(
       title: const Text('Debug Tools'),
       children: [
         ListTile(
@@ -196,5 +187,4 @@ class DeveloperMenu extends StatelessWidget {
         ),
       ],
     );
-  }
 }

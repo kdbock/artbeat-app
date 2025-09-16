@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Helper class to handle Google Maps errors, especially in emulators
 class GoogleMapsErrorHandler {
@@ -22,7 +23,7 @@ class GoogleMapsErrorHandler {
       }
       return false;
     } catch (e) {
-      debugPrint('⚠️ Error checking if device is emulator: $e');
+      AppLogger.error('⚠️ Error checking if device is emulator: $e');
       return false;
     }
   }
@@ -60,9 +61,9 @@ class GoogleMapsErrorHandler {
       // Set a lower zoom level for better emulator performance
       await controller.moveCamera(CameraUpdate.zoomTo(10));
 
-      debugPrint('✅ Applied emulator camera optimizations to map');
+      AppLogger.info('✅ Applied emulator camera optimizations to map');
     } catch (e) {
-      debugPrint('❌ Failed to optimize map camera for emulator: $e');
+      AppLogger.error('❌ Failed to optimize map camera for emulator: $e');
     }
   }
 

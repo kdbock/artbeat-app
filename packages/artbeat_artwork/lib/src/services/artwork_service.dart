@@ -5,7 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show SubscriptionTier, EnhancedStorageService;
+    show SubscriptionTier, EnhancedStorageService, AppLogger;
 import 'package:artbeat_artist/artbeat_artist.dart' show SubscriptionService;
 
 /// Service for managing artwork
@@ -30,7 +30,7 @@ class ArtworkService {
       final subscription = await _subscriptionService.getUserSubscription();
       return subscription?.tier ?? SubscriptionTier.free;
     } catch (e) {
-      debugPrint('Error getting user subscription: $e');
+      AppLogger.error('Error getting user subscription: $e');
       return SubscriptionTier.free;
     }
   }
@@ -97,7 +97,7 @@ class ArtworkService {
       }
 
       // Upload image using enhanced storage service with optimization
-      debugPrint('🎨 Uploading artwork image with optimization...');
+      AppLogger.info('🎨 Uploading artwork image with optimization...');
       final uploadResult = await _enhancedStorage.uploadImageWithOptimization(
         imageFile: imageFile,
         category: 'artwork',
@@ -107,9 +107,9 @@ class ArtworkService {
       final imageUrl = uploadResult['imageUrl']!;
       final thumbnailUrl = uploadResult['thumbnailUrl'];
 
-      debugPrint('✅ Artwork image uploaded successfully');
-      debugPrint('📊 Original: ${uploadResult['originalSize']}');
-      debugPrint('📊 Compressed: ${uploadResult['compressedSize']}');
+      AppLogger.info('✅ Artwork image uploaded successfully');
+      AppLogger.analytics('📊 Original: ${uploadResult['originalSize']}');
+      AppLogger.analytics('📊 Compressed: ${uploadResult['compressedSize']}');
 
       // Create artwork data
       final artworkData = {
@@ -142,7 +142,7 @@ class ArtworkService {
       final docRef = await _artworkCollection.add(artworkData);
       return docRef.id;
     } catch (e) {
-      debugPrint('Error uploading artwork: $e');
+      AppLogger.error('Error uploading artwork: $e');
       throw Exception('Failed to upload artwork: $e');
     }
   }
@@ -156,7 +156,7 @@ class ArtworkService {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting artwork: $e');
+      AppLogger.error('Error getting artwork: $e');
       return null;
     }
   }
@@ -175,13 +175,13 @@ class ArtworkService {
           .get();
 
       if (!artistProfileDoc.exists) {
-        debugPrint('❌ ArtworkService: Artist profile not found');
+        AppLogger.error('❌ ArtworkService: Artist profile not found');
         return [];
       }
 
       final userId = artistProfileDoc.data()?['userId'];
       if (userId == null) {
-        debugPrint('❌ ArtworkService: No userId found in artist profile');
+        AppLogger.error('❌ ArtworkService: No userId found in artist profile');
         return [];
       }
 
@@ -241,7 +241,7 @@ class ArtworkService {
 
       return artworks;
     } catch (e) {
-      debugPrint('❌ Error getting artist artwork: $e');
+      AppLogger.error('❌ Error getting artist artwork: $e');
       return [];
     }
   }
@@ -303,7 +303,7 @@ class ArtworkService {
       // Update Firestore document
       await _artworkCollection.doc(artworkId).update(updateData);
     } catch (e) {
-      debugPrint('Error updating artwork: $e');
+      AppLogger.error('Error updating artwork: $e');
       throw Exception('Failed to update artwork: $e');
     }
   }
@@ -333,7 +333,7 @@ class ArtworkService {
       // Update Firestore document
       await _artworkCollection.doc(artworkId).update(updateData);
     } catch (e) {
-      debugPrint('Error updating artwork moderation: $e');
+      AppLogger.error('Error updating artwork moderation: $e');
       throw Exception('Failed to update artwork moderation: $e');
     }
   }
@@ -361,7 +361,7 @@ class ArtworkService {
         try {
           await _storage.refFromURL(artwork.imageUrl).delete();
         } catch (e) {
-          debugPrint('Error deleting artwork image: $e');
+          AppLogger.error('Error deleting artwork image: $e');
           // Continue with deletion even if image deletion fails
         }
       }
@@ -369,7 +369,7 @@ class ArtworkService {
       // Delete Firestore document
       await _artworkCollection.doc(artworkId).delete();
     } catch (e) {
-      debugPrint('Error deleting artwork: $e');
+      AppLogger.error('Error deleting artwork: $e');
       throw Exception('Failed to delete artwork: $e');
     }
   }
@@ -406,7 +406,7 @@ class ArtworkService {
         return true;
       }
     } catch (e) {
-      debugPrint('Error toggling artwork like: $e');
+      AppLogger.error('Error toggling artwork like: $e');
       throw Exception('Failed to update like status: $e');
     }
   }
@@ -425,7 +425,7 @@ class ArtworkService {
 
       return likeDoc.exists;
     } catch (e) {
-      debugPrint('Error checking like status: $e');
+      AppLogger.error('Error checking like status: $e');
       return false;
     }
   }
@@ -437,7 +437,7 @@ class ArtworkService {
         'viewCount': FieldValue.increment(1),
       });
     } catch (e) {
-      debugPrint('Error incrementing view count: $e');
+      AppLogger.error('Error incrementing view count: $e');
       // Non-critical error, don't throw
     }
   }
@@ -462,7 +462,7 @@ class ArtworkService {
                 false);
       }).toList();
     } catch (e) {
-      debugPrint('Error searching artwork: $e');
+      AppLogger.error('Error searching artwork: $e');
       return [];
     }
   }
@@ -481,7 +481,7 @@ class ArtworkService {
           .map((doc) => ArtworkModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting featured artwork: $e');
+      AppLogger.error('Error getting featured artwork: $e');
       return [];
     }
   }
@@ -500,7 +500,7 @@ class ArtworkService {
           .map((doc) => ArtworkModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting public artwork with composite query: $e');
+      AppLogger.error('Error getting public artwork with composite query: $e');
 
       // Fallback: Get all public artwork without ordering (doesn't require composite index)
       try {
@@ -520,7 +520,7 @@ class ArtworkService {
             'Fallback query successful: loaded ${artworks.length} artworks');
         return artworks;
       } catch (fallbackError) {
-        debugPrint('Fallback query also failed: $fallbackError');
+        AppLogger.error('Fallback query also failed: $fallbackError');
         return [];
       }
     }
@@ -538,7 +538,7 @@ class ArtworkService {
           .map((doc) => ArtworkModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting all artwork: $e');
+      AppLogger.error('Error getting all artwork: $e');
       // Fallback: Get all artwork without ordering
       try {
         final fallbackSnapshot = await _artworkCollection.limit(limit).get();
@@ -554,7 +554,7 @@ class ArtworkService {
             'Fallback query successful: loaded ${artworks.length} artworks');
         return artworks;
       } catch (fallbackError) {
-        debugPrint('Fallback query also failed: $fallbackError');
+        AppLogger.error('Fallback query also failed: $fallbackError');
         return [];
       }
     }
@@ -659,7 +659,7 @@ class ArtworkService {
 
       return artworks;
     } catch (e) {
-      debugPrint('Error in advanced search: $e');
+      AppLogger.error('Error in advanced search: $e');
       return [];
     }
   }
@@ -676,7 +676,7 @@ class ArtworkService {
         'searchType': 'artwork',
       });
     } catch (e) {
-      debugPrint('Error tracking search analytics: $e');
+      AppLogger.error('Error tracking search analytics: $e');
       // Non-critical error, don't throw
     }
   }
@@ -696,7 +696,7 @@ class ArtworkService {
         'lastUsed': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error saving search: $e');
+      AppLogger.error('Error saving search: $e');
       throw Exception('Failed to save search');
     }
   }
@@ -721,7 +721,7 @@ class ArtworkService {
         };
       }).toList();
     } catch (e) {
-      debugPrint('Error getting saved searches: $e');
+      AppLogger.error('Error getting saved searches: $e');
       return [];
     }
   }
@@ -734,7 +734,7 @@ class ArtworkService {
           .doc(searchId)
           .delete();
     } catch (e) {
-      debugPrint('Error deleting saved search: $e');
+      AppLogger.error('Error deleting saved search: $e');
       throw Exception('Failed to delete saved search');
     }
   }
@@ -749,7 +749,7 @@ class ArtworkService {
         'lastUsed': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error updating saved search usage: $e');
+      AppLogger.error('Error updating saved search usage: $e');
     }
   }
 
@@ -779,7 +779,7 @@ class ArtworkService {
 
       return sortedQueries.take(10).toList();
     } catch (e) {
-      debugPrint('Error getting search suggestions: $e');
+      AppLogger.error('Error getting search suggestions: $e');
       return [];
     }
   }

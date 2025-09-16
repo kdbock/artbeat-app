@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_ads/src/widgets/simple_ad_display_widget.dart';
@@ -11,8 +10,6 @@ import 'package:artbeat_ads/src/models/ad_status.dart';
 import 'package:artbeat_ads/src/models/ad_location.dart';
 import 'package:artbeat_ads/src/models/ad_duration.dart';
 import 'package:artbeat_ads/src/models/image_fit.dart';
-
-import 'simple_ad_display_widget_test.mocks.dart';
 
 @GenerateMocks([FirebaseAuth, User])
 void main() {
@@ -34,7 +31,7 @@ void main() {
         imageUrl: 'https://example.com/image.jpg',
         title: 'Test Ad Title',
         description: 'Test ad description',
-        location: AdLocation.dashboard,
+        location: AdLocation.fluidDashboard,
         duration: AdDuration.weekly,
         startDate: testStartDate,
         endDate: testEndDate,
@@ -61,7 +58,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: testAd,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false, // Disable analytics for testing
             ),
           ),
@@ -82,7 +79,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: testAd,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               showCloseButton: true,
               trackAnalytics: false,
             ),
@@ -102,7 +99,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: testAd,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -121,7 +118,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: testAdWithMultipleImages,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -140,7 +137,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: testAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -161,7 +158,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: testAd,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               onTap: () => tapCalled = true,
               trackAnalytics: false,
             ),
@@ -187,7 +184,7 @@ void main() {
               height: 250,
               child: SimpleAdDisplayWidget(
                 ad: testAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -213,7 +210,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: smallAd,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -228,7 +225,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: largeAd,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -251,7 +248,7 @@ void main() {
               height: 250, // Large enough for overlay content
               child: SimpleAdDisplayWidget(
                 ad: largeAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -274,7 +271,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: adWithoutCTA,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -294,7 +291,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: adWithoutURL,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -317,7 +314,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: adWithFitContain,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -332,7 +329,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: adWithFitCover,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -347,7 +344,7 @@ void main() {
           home: Scaffold(
             body: SimpleAdDisplayWidget(
               ad: adWithFitFill,
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               trackAnalytics: false,
             ),
           ),
@@ -368,7 +365,7 @@ void main() {
               height: 100,
               child: SimpleAdDisplayWidget(
                 ad: testAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -391,7 +388,7 @@ void main() {
               height: 30,
               child: SimpleAdDisplayWidget(
                 ad: testAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -411,7 +408,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: testAdWithMultipleImages,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -436,7 +433,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: testAd, // Single image
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -459,7 +456,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: adWithEmptyImage,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -479,7 +476,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: adWithEmptyArtwork,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -507,7 +504,7 @@ void main() {
                 height: 250,
                 child: SimpleAdDisplayWidget(
                   ad: adWithLongText,
-                  location: AdLocation.dashboard,
+                  location: AdLocation.fluidDashboard,
                   trackAnalytics: false,
                 ),
               ),
@@ -526,7 +523,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: testAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -547,7 +544,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: testAd,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),
@@ -573,7 +570,7 @@ void main() {
               home: Scaffold(
                 body: SimpleAdDisplayWidget(
                   ad: testAd,
-                  location: AdLocation.dashboard,
+                  location: AdLocation.fluidDashboard,
                   trackAnalytics: false,
                 ),
               ),
@@ -591,7 +588,7 @@ void main() {
             home: Scaffold(
               body: SimpleAdDisplayWidget(
                 ad: testAdWithMultipleImages,
-                location: AdLocation.dashboard,
+                location: AdLocation.fluidDashboard,
                 trackAnalytics: false,
               ),
             ),

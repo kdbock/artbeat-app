@@ -26,6 +26,12 @@ android {
         buildConfig = true
     }
 
+    // Add build optimization
+    dexOptions {
+        preDexLibraries = true
+        maxProcessCount = Runtime.getRuntime().availableProcessors()
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -58,8 +64,8 @@ android {
         applicationId = "com.wordnerd.artbeat"
         minSdk = 24  // Android 7.0 (2016) - Explicit minimum for Firebase compatibility
         targetSdk = flutter.targetSdkVersion
-        versionCode = 37
-        versionName = "1.1.1"
+        versionCode = 40
+        versionName = "2.0.0"
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")

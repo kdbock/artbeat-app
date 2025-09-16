@@ -5,6 +5,7 @@ import '../models/gift_model.dart';
 import '../models/gift_campaign_model.dart';
 import '../models/gift_subscription_model.dart';
 import 'payment_service.dart';
+import '../utils/logger.dart';
 
 class EnhancedGiftService extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -508,7 +509,7 @@ class EnhancedGiftService extends ChangeNotifier {
 
       return docRef.id;
     } catch (e) {
-      debugPrint('Error purchasing gift: $e');
+      AppLogger.error('Error purchasing gift: $e');
       rethrow;
     }
   }
@@ -591,7 +592,7 @@ class EnhancedGiftService extends ChangeNotifier {
         'redeemedAt': DateTime.now().toIso8601String(),
       };
     } catch (e) {
-      debugPrint('Error redeeming gift: $e');
+      AppLogger.error('Error redeeming gift: $e');
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -789,7 +790,7 @@ class EnhancedGiftService extends ChangeNotifier {
         },
       };
     } catch (e) {
-      debugPrint('Error getting gift history: $e');
+      AppLogger.error('Error getting gift history: $e');
       return {
         'sentGifts': <Map<String, dynamic>>[],
         'receivedGifts': <Map<String, dynamic>>[],
@@ -867,7 +868,7 @@ class EnhancedGiftService extends ChangeNotifier {
         },
       });
     } catch (e) {
-      debugPrint('Error sending gift notification: $e');
+      AppLogger.error('Error sending gift notification: $e');
       // Don't throw - notifications are not critical
     }
   }
@@ -895,7 +896,7 @@ class EnhancedGiftService extends ChangeNotifier {
         }, SetOptions(merge: true));
       }
     } catch (e) {
-      debugPrint('Error processing gift redemption: $e');
+      AppLogger.error('Error processing gift redemption: $e');
       // Don't throw - we want the redemption to succeed even if balance update fails
     }
   }

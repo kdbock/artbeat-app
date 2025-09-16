@@ -357,25 +357,10 @@ class _SubscriptionPurchaseScreenState
     });
 
     try {
-      // Get or create customer ID
-      final customerId = await _paymentService.getOrCreateCustomerId();
-
-      // Get user's default payment method
-      final paymentMethodId = await _paymentService.getDefaultPaymentMethodId();
-
-      if (paymentMethodId == null) {
-        setState(() {
-          _errorMessage =
-              'No payment method found. Please add a payment method first.';
-        });
-        return;
-      }
-
-      // Create or update subscription
+      // Use payment service to create subscription
       final result = await _paymentService.createSubscription(
-        customerId: customerId,
+        customerId: user.uid,
         tier: widget.tier,
-        paymentMethodId: paymentMethodId,
       );
 
       if (result['status'] == 'active' || result['status'] == 'trialing') {

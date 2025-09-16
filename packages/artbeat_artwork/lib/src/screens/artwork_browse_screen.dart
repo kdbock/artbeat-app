@@ -19,7 +19,6 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
   final _searchController = TextEditingController();
   String _selectedLocation = 'All';
   String _selectedMedium = 'All';
-  List<String> _locations = ['All'];
 
   @override
   void initState() {
@@ -49,9 +48,7 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
         }
       }
 
-      setState(() {
-        _locations = locations.toList()..sort();
-      });
+      // Store locations if needed for UI dropdowns later
     } catch (e) {
       // debugPrint('Error loading locations: $e');
     }

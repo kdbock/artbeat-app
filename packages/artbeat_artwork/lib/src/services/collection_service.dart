@@ -1,13 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:logging/logging.dart';
+import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
 import '../models/collection_model.dart';
 import '../models/artwork_model.dart';
 import 'artwork_service.dart';
 
 /// Service for managing artwork collections and portfolios
 class CollectionService {
-  static final _logger = Logger('CollectionService');
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ArtworkService _artworkService = ArtworkService();
@@ -338,7 +337,7 @@ class CollectionService {
       });
     } catch (e) {
       // Don't throw error for view count increment failures
-      _logger.warning('Failed to increment collection view count: $e');
+      AppLogger.warning('Failed to increment collection view count: $e');
     }
   }
 

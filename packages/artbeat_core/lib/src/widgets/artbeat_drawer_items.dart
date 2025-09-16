@@ -1,6 +1,19 @@
 import 'package:flutter/material.dart';
 import '../theme/artbeat_colors.dart';
 
+// Define drawer section structure
+class DrawerSection {
+  final String? title;
+  final List<ArtbeatDrawerItem> items;
+  final bool showDivider;
+
+  const DrawerSection({
+    this.title,
+    required this.items,
+    this.showDivider = false,
+  });
+}
+
 class ArtbeatDrawerItem {
   final String title;
   final IconData icon;
@@ -27,28 +40,10 @@ class ArtbeatDrawerItems {
     route: '/dashboard',
   );
 
-  static const profile = ArtbeatDrawerItem(
-    title: 'My Profile',
-    icon: Icons.person_outline,
-    route: '/profile',
-  );
-
-  static const browseCaptures = ArtbeatDrawerItem(
-    title: 'Browse Captures',
-    icon: Icons.camera_alt_outlined,
-    route: '/capture/browse',
-  );
-
-  static const browseArtists = ArtbeatDrawerItem(
-    title: 'Browse Artists',
-    icon: Icons.people_outline,
-    route: '/artist/browse',
-  );
-
-  static const browseArtwork = ArtbeatDrawerItem(
-    title: 'Browse Artwork',
-    icon: Icons.image_outlined,
-    route: '/artwork/browse',
+  static const browse = ArtbeatDrawerItem(
+    title: 'Browse',
+    icon: Icons.search_outlined,
+    route: '/browse',
   );
 
   static const community = ArtbeatDrawerItem(
@@ -74,6 +69,49 @@ class ArtbeatDrawerItems {
     icon: Icons.message_outlined,
     route: '/messaging',
     requiresAuth: true,
+  );
+
+  static const advertise = ArtbeatDrawerItem(
+    title: 'Advertise',
+    icon: Icons.campaign,
+    route: '/ads/create',
+    color: ArtbeatColors.primaryGreen,
+  );
+
+  // Role-specific creation items
+  static const createPost = ArtbeatDrawerItem(
+    title: 'Community Hub',
+    icon: Icons.groups_outlined,
+    route: '/community/hub',
+    requiredRoles: ['artist', 'admin', 'gallery'],
+  );
+
+  static const createEvent = ArtbeatDrawerItem(
+    title: 'Create Event',
+    icon: Icons.add_circle_outline,
+    route: '/events/create',
+    requiredRoles: ['artist', 'admin', 'gallery'],
+  );
+
+  static const createArtWalk = ArtbeatDrawerItem(
+    title: 'Create Art Walk',
+    icon: Icons.add_location_outlined,
+    route: '/art-walk/create',
+  );
+
+  // Commission items
+  static const artistCommissions = ArtbeatDrawerItem(
+    title: 'Commission Hub',
+    icon: Icons.handshake_outlined,
+    route: '/commission/hub',
+    requiredRoles: ['artist'],
+  );
+
+  static const commissionRequests = ArtbeatDrawerItem(
+    title: 'Commission Requests',
+    icon: Icons.request_quote_outlined,
+    route: '/commission/request',
+    requiredRoles: ['artist'],
   );
 
   // Role-Specific Items
@@ -114,10 +152,10 @@ class ArtbeatDrawerItems {
     requiredRoles: ['artist'],
   );
 
-  static const advertise = ArtbeatDrawerItem(
-    title: 'Advertise',
-    icon: Icons.campaign,
-    route: '/ads/create',
+  static const adPerformance = ArtbeatDrawerItem(
+    title: 'Ad Performance',
+    icon: Icons.analytics_outlined,
+    route: '/ads/statistics',
     color: ArtbeatColors.primaryGreen,
   );
 
@@ -125,13 +163,6 @@ class ArtbeatDrawerItems {
     title: 'My Events',
     icon: Icons.event_note_outlined,
     route: '/events/my-events',
-    requiredRoles: ['artist'],
-  );
-
-  static const createEvent = ArtbeatDrawerItem(
-    title: 'Create Event',
-    icon: Icons.add_circle_outline,
-    route: '/events/create',
     requiredRoles: ['artist'],
   );
 
@@ -206,8 +237,8 @@ class ArtbeatDrawerItems {
     requiredRoles: ['gallery'],
   );
 
-  // Admin-specific items
-  static const adminDashboard = ArtbeatDrawerItem(
+  // Admin-specific items - Streamlined to unified dashboard
+  static const unifiedAdminDashboard = ArtbeatDrawerItem(
     title: 'Admin Dashboard',
     icon: Icons.admin_panel_settings,
     route: '/admin/dashboard',
@@ -215,57 +246,9 @@ class ArtbeatDrawerItems {
     color: ArtbeatColors.primaryPurple,
   );
 
-  static const enhancedAdminDashboard = ArtbeatDrawerItem(
-    title: 'Enhanced Admin',
-    icon: Icons.dashboard,
-    route: '/admin/enhanced-dashboard',
-    requiredRoles: ['admin'],
-    color: ArtbeatColors.primaryPurple,
-  );
-
-  static const userManagement = ArtbeatDrawerItem(
-    title: 'User Management',
-    icon: Icons.people_alt_outlined,
-    route: '/admin/user-management',
-    requiredRoles: ['admin'],
-    color: ArtbeatColors.primaryPurple,
-  );
-
-  static const contentModeration = ArtbeatDrawerItem(
-    title: 'Content Moderation',
-    icon: Icons.gavel_outlined,
-    route: '/admin/content-review',
-    requiredRoles: ['admin', 'moderator'],
-    color: ArtbeatColors.primaryPurple,
-  );
-
-  static const advancedContentManagement = ArtbeatDrawerItem(
-    title: 'Advanced Content',
-    icon: Icons.manage_search,
-    route: '/admin/advanced-content-management',
-    requiredRoles: ['admin'],
-    color: ArtbeatColors.primaryPurple,
-  );
-
-  static const adManagement = ArtbeatDrawerItem(
-    title: 'Ad Management',
-    icon: Icons.campaign_outlined,
-    route: '/admin/ad-management',
-    requiredRoles: ['admin'],
-    color: ArtbeatColors.primaryPurple,
-  );
-
-  static const financialAnalytics = ArtbeatDrawerItem(
-    title: 'Financial Analytics',
-    icon: Icons.trending_up,
-    route: '/admin/financial-analytics',
-    requiredRoles: ['admin'],
-    color: ArtbeatColors.primaryPurple,
-  );
-
   static const adminSettings = ArtbeatDrawerItem(
     title: 'Admin Settings',
-    icon: Icons.admin_panel_settings_outlined,
+    icon: Icons.settings_outlined,
     route: '/admin/settings',
     requiredRoles: ['admin'],
     color: ArtbeatColors.primaryPurple,
@@ -275,7 +258,7 @@ class ArtbeatDrawerItems {
   static const moderatorDashboard = ArtbeatDrawerItem(
     title: 'Moderation Dashboard',
     icon: Icons.security_outlined,
-    route: '/admin/content-review',
+    route: '/admin/dashboard', // Redirects to unified admin dashboard
     requiredRoles: ['moderator'],
     color: ArtbeatColors.warning,
   );
@@ -299,10 +282,24 @@ class ArtbeatDrawerItems {
     route: '/favorites',
   );
 
+  static const following = ArtbeatDrawerItem(
+    title: 'Following',
+    icon: Icons.person_add_outlined,
+    route: '/profile/following',
+  );
+
+  static const followers = ArtbeatDrawerItem(
+    title: 'Followers',
+    icon: Icons.people_outlined,
+    route: '/profile/followers',
+    requiredRoles: ['artist', 'admin', 'gallery'], // Artist POV
+  );
+
   static const myTickets = ArtbeatDrawerItem(
-    title: 'My Tickets',
-    icon: Icons.local_activity_outlined,
-    route: '/events/my-tickets',
+    title: 'Create Event',
+    icon: Icons.add_circle_outline,
+    route: '/events/create',
+    requiredRoles: ['artist', 'admin', 'gallery'],
   );
 
   static const notifications = ArtbeatDrawerItem(
@@ -338,6 +335,20 @@ class ArtbeatDrawerItems {
     requiredRoles: ['artist', 'gallery'],
   );
 
+  static const paymentScreen = ArtbeatDrawerItem(
+    title: 'Payment Screen',
+    icon: Icons.payment,
+    route: '/payment/screen',
+    requiredRoles: ['artist'],
+  );
+
+  static const refundRequest = ArtbeatDrawerItem(
+    title: 'Refund Request',
+    icon: Icons.undo_outlined,
+    route: '/payment/refund',
+    requiredRoles: ['artist'],
+  );
+
   // Advertising items for artists and galleries
   static const createAd = ArtbeatDrawerItem(
     title: 'Create Ad',
@@ -347,17 +358,18 @@ class ArtbeatDrawerItems {
     requiredRoles: ['artist', 'gallery'],
   );
 
-  static const manageAds = ArtbeatDrawerItem(
-    title: 'Manage Ads',
+  static const manageMyAds = ArtbeatDrawerItem(
+    title: 'My Ads',
     icon: Icons.ads_click_outlined,
-    route: '/ads/management',
+    route: '/ads/my-ads',
     requiredRoles: ['artist', 'gallery'],
   );
 
-  static const adStatistics = ArtbeatDrawerItem(
-    title: 'Ad Statistics',
+  static const myAdStatistics = ArtbeatDrawerItem(
+    title: 'Ad Performance',
     icon: Icons.analytics_outlined,
-    route: '/ads/statistics',
+    route: '/ads/my-statistics',
+    color: ArtbeatColors.primaryGreen,
     requiredRoles: ['artist', 'gallery'],
   );
 
@@ -368,11 +380,28 @@ class ArtbeatDrawerItems {
     requiredRoles: ['artist'],
   );
 
+  // Admin advertising items
+  static const manageAds = ArtbeatDrawerItem(
+    title: 'Manage Ads',
+    icon: Icons.ads_click_outlined,
+    route: '/ads/management',
+    requiredRoles: ['admin'],
+    color: ArtbeatColors.primaryPurple,
+  );
+
+  static const adStatistics = ArtbeatDrawerItem(
+    title: 'Ad Statistics',
+    icon: Icons.analytics_outlined,
+    route: '/ads/statistics',
+    requiredRoles: ['admin'],
+    color: ArtbeatColors.primaryPurple,
+  );
+
   // Settings items
   static const settings = ArtbeatDrawerItem(
     title: 'Settings',
     icon: Icons.settings_outlined,
-    route: '/settings/account',
+    route: '/settings',
   );
 
   static const help = ArtbeatDrawerItem(
@@ -393,98 +422,145 @@ class ArtbeatDrawerItems {
   // Grouped items for different user types
   static List<ArtbeatDrawerItem> get coreItems => [
     dashboard,
-    profile,
-    browseCaptures,
-    browseArtists,
-    browseArtwork,
+    browse,
+    enhancedSearch,
     community,
     events,
     artWalk,
-    advertise,
-    messaging,
   ];
 
-  static List<ArtbeatDrawerItem> get userItems => [
-    editProfile,
+  static List<ArtbeatDrawerItem> get creationItems => [
+    createPost,
+    createEvent,
+    createArtWalk,
+    advertise,
+  ];
+
+  static List<ArtbeatDrawerItem> get personalItems => [
+    notifications,
     achievements,
     favorites,
-    myTickets,
-    notifications,
-    artWalkCreate,
-    enhancedSearch,
+    following,
+    followers,
   ];
 
   static List<ArtbeatDrawerItem> get artistItems => [
+    // Artist Management
     artistDashboard,
-    artistProfileEdit,
-    artistPublicProfile,
-    myArtwork,
-    uploadArtwork,
     artistAnalytics,
     artistEarnings,
-    payoutRequest,
-    payoutAccounts,
-    advertise,
-    artistEvents,
-    createEvent,
+    // Profile & Content
+    artistProfileEdit,
+    artistPublicProfile,
+    uploadArtwork,
+    createPost, // Post to feed
+    // Artist Discovery
     artistBrowse,
     featuredArtists,
-    subscriptionPlans,
+    artistEvents,
+    // Commissions & Business
+    artistCommissions, // Commission settings
+    commissionRequests, // Commission requests
+    // Payments & Payouts
+    payoutAccounts,
+    payoutRequest,
     paymentMethods,
+    paymentScreen,
+    refundRequest,
+    // Advertising
+    createAd,
+    manageMyAds,
+    myAdStatistics,
+    approvedAds,
+    // Subscriptions
+    subscriptionPlans,
   ];
 
   static List<ArtbeatDrawerItem> get galleryItems => [
+    // Gallery Management
     galleryDashboard,
     manageArtists,
     galleryAnalytics,
     galleryCommissions,
-    advertise,
+    // Advertising
+    createAd,
+    manageMyAds,
+    myAdStatistics,
+    // Subscriptions
     subscriptionPlans,
     paymentMethods,
   ];
 
   static List<ArtbeatDrawerItem> get adminItems => [
-    adminDashboard,
-    enhancedAdminDashboard,
-    userManagement,
-    contentModeration,
-    advancedContentManagement,
-    adManagement,
-    financialAnalytics,
+    unifiedAdminDashboard,
     adminSettings,
+    manageAds,
+    adStatistics,
   ];
 
   static List<ArtbeatDrawerItem> get moderatorItems => [moderatorDashboard];
 
-  static List<ArtbeatDrawerItem> get settingsItems => [settings, help];
+  static List<ArtbeatDrawerItem> get settingsItems => [settings, help, signOut];
 
-  // Helper method to get items for a specific user role
-  static List<ArtbeatDrawerItem> getItemsForRole(String? userRole) {
-    final List<ArtbeatDrawerItem> items = [...coreItems];
+  // Helper method to get sections for a specific user role
+  static List<DrawerSection> getSectionsForRole(String? userRole) {
+    final List<DrawerSection> sections = [];
 
-    // Add user-specific items
-    items.addAll(userItems);
+    // 1. Core Navigation (Always Visible)
+    sections.add(DrawerSection(title: 'Navigation', items: coreItems));
 
-    // Add role-specific items
+    // 2. Creation Tools (for artists, galleries, admins)
+    final hasCreationRole =
+        userRole == 'artist' || userRole == 'gallery' || userRole == 'admin';
+    if (hasCreationRole) {
+      sections.add(DrawerSection(title: 'Create', items: creationItems));
+    }
+
+    // 3. Messaging (always available for authenticated users)
+    sections.add(DrawerSection(items: [messaging]));
+
+    // 4. Role-Specific Management Tools
     switch (userRole) {
       case 'artist':
-        items.addAll(artistItems);
+        sections.add(DrawerSection(title: 'Artist', items: artistItems));
         break;
       case 'gallery':
-        items.addAll(galleryItems);
+        sections.add(DrawerSection(title: 'Gallery', items: galleryItems));
         break;
       case 'admin':
-        items.addAll(adminItems);
+        sections.add(DrawerSection(title: 'Admin', items: adminItems));
+        // Also show artist tools for admins
+        sections.add(
+          DrawerSection(
+            title: 'Artist Tools',
+            items: [
+              commissionRequests,
+              paymentMethods,
+              paymentScreen,
+              refundRequest,
+            ],
+          ),
+        );
         break;
       case 'moderator':
-        items.addAll(moderatorItems);
+        sections.add(DrawerSection(title: 'Moderation', items: moderatorItems));
         break;
     }
 
-    // Add settings and sign out
-    items.addAll(settingsItems);
-    items.add(signOut);
+    // 5. Personal & Social Features
+    sections.add(DrawerSection(title: 'Personal', items: personalItems));
 
-    return items;
+    // 6. Settings & Support
+    sections.add(
+      DrawerSection(title: 'Settings', items: settingsItems, showDivider: true),
+    );
+
+    return sections;
+  }
+
+  // Helper method to get items for a specific user role (legacy method for backward compatibility)
+  static List<ArtbeatDrawerItem> getItemsForRole(String? userRole) {
+    final sections = getSectionsForRole(userRole);
+    return sections.expand((section) => section.items).toList();
   }
 }

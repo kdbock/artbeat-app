@@ -5,6 +5,7 @@ import '../models/ad_model.dart';
 import '../models/ad_location.dart';
 import '../services/simple_ad_service.dart';
 import 'simple_ad_display_widget.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Simple widget to display ads in specific locations throughout the app
 class SimpleAdPlacementWidget extends StatelessWidget {
@@ -87,11 +88,36 @@ class SimpleAdPlacementWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey.shade300),
         ),
-        child: const Center(
-          child: Text(
-            'Ad Space',
-            style: TextStyle(color: Colors.grey, fontSize: 12),
-          ),
+        child: Stack(
+          children: [
+            // Sponsored label (legal requirement)
+            Positioned(
+              top: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade600,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Text(
+                  'Sponsored',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+            // Main content
+            const Center(
+              child: Text(
+                'Ad Space',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -124,7 +150,7 @@ class AdSpaceWidget extends StatelessWidget {
           builder: (context, snapshot) {
             // Handle error case explicitly
             if (snapshot.hasError) {
-              debugPrint('Error getting ad count: ${snapshot.error}');
+              AppLogger.error('Error getting ad count: ${snapshot.error}');
               // Fall through to show placeholder
             }
 
@@ -155,25 +181,53 @@ class AdSpaceWidget extends StatelessWidget {
                   style: BorderStyle.solid,
                 ),
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.campaign_outlined,
-                      color: Colors.grey.shade400,
-                      size: 20,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      customLabel ?? '${location.displayName} Ad',
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 10,
+              child: Stack(
+                children: [
+                  // Sponsored label (legal requirement)
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade600,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: const Text(
+                        'Sponsored',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Main content
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.campaign_outlined,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          customLabel ?? '${location.displayName} Ad',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             );
           },

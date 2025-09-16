@@ -47,6 +47,12 @@ service firebase.storage {
       allow read, write: if isAuthenticated();
     }
 
+    // Temporary very permissive rule for debugging post uploads
+    match /post_images/{allPaths=**} {
+      allow read: if true; // Public read access for debugging
+      allow write: if isAuthenticated();
+    }
+
     // Root level files - for simple uploads during development
     match /{fileName} {
       allow read: if isAuthenticated();
@@ -181,6 +187,27 @@ service firebase.storage {
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
     }
     
+    // Post videos for community feed
+    match /posts/{userId}/videos/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+    
+    // Post audio for community feed
+    match /posts/{userId}/audio/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+    
+    // More permissive posts path for development (videos and audio)
+    match /posts/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // More permissive for development
+      allow delete: if isAuthenticated();
+    }
+    
     // Profile images
     match /profile_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
@@ -218,6 +245,13 @@ service firebase.storage {
 
     // Feedback images - for developer feedback system
     match /feedback_images/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+      allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
+    }
+
+    // Public art images - for art walk public art submissions
+    match /public_art_images/{userId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);
       allow delete: if isAuthenticated() && (isDebugMode() || request.auth.uid == userId);

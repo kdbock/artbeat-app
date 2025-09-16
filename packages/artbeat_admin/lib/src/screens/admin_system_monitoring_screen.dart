@@ -81,10 +81,12 @@ class _AdminSystemMonitoringScreenState
       if (mounted) {
         setState(() {
           _systemMetrics = metrics;
-          _performanceData = performance;
+          _performanceData = [performance];
           _systemAlerts = alerts;
-          _activeUsers = users;
-          _serverStatus = servers;
+          _activeUsers = [
+            {'count': users}
+          ];
+          _serverStatus = [servers];
           _isLoading = false;
 
           // Update chart data

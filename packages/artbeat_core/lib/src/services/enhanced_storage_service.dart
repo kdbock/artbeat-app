@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import '../utils/image_utils.dart';
+import '../utils/logger.dart';
 
 /// Enhanced storage service with image compression and optimization
 class EnhancedStorageService {
@@ -71,21 +72,28 @@ class EnhancedStorageService {
 
       // Upload compressed image
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = '${category}_${timestamp}_${user.uid}';
+      final fileName =
+          '${category.replaceAll('/', '_')}_${timestamp}_${user.uid}';
+      final storagePath = _getStoragePathForCategory(category);
+
+      // For custom paths that already include user structure, use as-is
+      final mainPath = storagePath == category
+          ? '$storagePath/$fileName.jpg'
+          : '$storagePath/${user.uid}/$fileName.jpg';
 
       final mainImageUrl = await _uploadImageData(
         compressedImage,
-        '$category/${user.uid}/$fileName.jpg',
+        mainPath,
         user.uid,
       );
 
       String? thumbnailUrl;
       if (thumbnail != null) {
-        thumbnailUrl = await _uploadImageData(
-          thumbnail,
-          '$category/${user.uid}/thumbnails/${fileName}_thumb.jpg',
-          user.uid,
-        );
+        final thumbPath = storagePath == category
+            ? '$storagePath/thumbnails/${fileName}_thumb.jpg'
+            : '$storagePath/${user.uid}/thumbnails/${fileName}_thumb.jpg';
+
+        thumbnailUrl = await _uploadImageData(thumbnail, thumbPath, user.uid);
       }
 
       final result = {
@@ -98,18 +106,22 @@ class EnhancedStorageService {
         result['thumbnailUrl'] = thumbnailUrl;
       }
 
-      debugPrint('✅ Image upload successful');
-      debugPrint('📊 Original: ${originalImage.width}x${originalImage.height}');
+      AppLogger.info('✅ Image upload successful');
+      AppLogger.analytics(
+        '📊 Original: ${originalImage.width}x${originalImage.height}',
+      );
       debugPrint(
         '📊 Compressed: ${compressedImage.width}x${compressedImage.height}',
       );
       if (thumbnail != null) {
-        debugPrint('📊 Thumbnail: ${thumbnail.width}x${thumbnail.height}');
+        AppLogger.analytics(
+          '📊 Thumbnail: ${thumbnail.width}x${thumbnail.height}',
+        );
       }
 
       return result;
     } catch (e) {
-      debugPrint('❌ Enhanced storage upload failed: $e');
+      AppLogger.error('❌ Enhanced storage upload failed: $e');
       rethrow;
     }
   }
@@ -142,6 +154,28 @@ class EnhancedStorageService {
           'maxHeight': maxImageHeight,
           'quality': jpegQuality,
         };
+    }
+  }
+
+  /// Map category to correct storage path that matches Firebase rules
+  String _getStoragePathForCategory(String category) {
+    // Handle complex custom paths
+    if (category.startsWith('art_walk_covers/')) {
+      return category; // Use as-is for custom paths
+    }
+
+    switch (category) {
+      case 'profile':
+        return 'profile';
+      case 'capture':
+        return 'capture_images';
+      case 'artwork':
+        return 'artwork_images';
+      case 'post':
+      case 'community_posts':
+        return 'post_images';
+      default:
+        return category;
     }
   }
 
@@ -275,7 +309,9 @@ class EnhancedStorageService {
     try {
       // Validate URL before attempting to delete
       if (!ImageUtils.isValidFirebaseStorageUrl(imageUrl)) {
-        debugPrint('⚠️ Invalid Firebase Storage URL for deletion: $imageUrl');
+        AppLogger.warning(
+          '⚠️ Invalid Firebase Storage URL for deletion: $imageUrl',
+        );
         return;
       }
 
@@ -295,9 +331,9 @@ class EnhancedStorageService {
         }
       }
 
-      debugPrint('🗑️ Image and thumbnail deleted successfully');
+      AppLogger.info('🗑️ Image and thumbnail deleted successfully');
     } catch (e) {
-      debugPrint('❌ Error deleting image: $e');
+      AppLogger.error('❌ Error deleting image: $e');
       rethrow;
     }
   }
@@ -307,7 +343,9 @@ class EnhancedStorageService {
     try {
       // Validate URL before attempting to get metadata
       if (!ImageUtils.isValidFirebaseStorageUrl(imageUrl)) {
-        debugPrint('⚠️ Invalid Firebase Storage URL for metadata: $imageUrl');
+        AppLogger.warning(
+          '⚠️ Invalid Firebase Storage URL for metadata: $imageUrl',
+        );
         return {};
       }
 
@@ -322,7 +360,7 @@ class EnhancedStorageService {
         'customMetadata': metadata.customMetadata,
       };
     } catch (e) {
-      debugPrint('❌ Error getting image metadata: $e');
+      AppLogger.error('❌ Error getting image metadata: $e');
       return {};
     }
   }

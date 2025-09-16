@@ -57,9 +57,9 @@ class _ArtworkDiscoveryScreenState extends State<ArtworkDiscoveryScreen>
       ]);
 
       setState(() {
-        _trendingArtworks = results[0];
-        _personalizedArtworks = results[1];
-        _similarArtworks = results[2];
+        _trendingArtworks = results[0].cast<ArtworkModel>();
+        _personalizedArtworks = results[1].cast<ArtworkModel>();
+        _similarArtworks = results[2].cast<ArtworkModel>();
         _isLoading = false;
       });
     } catch (e) {

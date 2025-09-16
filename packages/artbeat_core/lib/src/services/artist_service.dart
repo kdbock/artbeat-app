@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/artist_model.dart';
 import '../models/artist_profile_model.dart';
+import '../utils/logger.dart';
 
 /// Unified ArtistService that handles both basic artist operations
 /// and enhanced artist profile functionality
@@ -14,7 +15,7 @@ class ArtistService {
   /// Get featured artists using ArtistProfileModel for enhanced data
   Future<List<ArtistProfileModel>> getFeaturedArtistProfiles() async {
     try {
-      debugPrint('🎨 ArtistService: Fetching featured artist profiles...');
+      AppLogger.info('🎨 ArtistService: Fetching featured artist profiles...');
       final snapshot = await _firestore
           .collection('artistProfiles')
           .where('isFeatured', isEqualTo: true)
@@ -48,7 +49,7 @@ class ArtistService {
     bool onlyFeatured = false,
   }) async {
     try {
-      debugPrint('🔍 ArtistService: Searching artists with query: "$query"');
+      AppLogger.debug('🔍 ArtistService: Searching artists with query: "$query"');
 
       Query artistsQuery = _firestore.collection('artistProfiles');
 
@@ -95,10 +96,10 @@ class ArtistService {
             .toList();
       }
 
-      debugPrint('🔍 ArtistService: Found ${results.length} matching artists');
+      AppLogger.debug('🔍 ArtistService: Found ${results.length} matching artists');
       return results;
     } catch (e) {
-      debugPrint('❌ ArtistService: Error searching artists: $e');
+      AppLogger.error('❌ ArtistService: Error searching artists: $e');
       return [];
     }
   }
@@ -142,7 +143,7 @@ class ArtistService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error getting featured artists: $e');
+      AppLogger.error('Error getting featured artists: $e');
       return [];
     }
   }
@@ -163,7 +164,7 @@ class ArtistService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error getting all artists: $e');
+      AppLogger.error('Error getting all artists: $e');
       return [];
     }
   }

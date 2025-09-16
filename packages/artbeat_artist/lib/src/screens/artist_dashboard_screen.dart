@@ -1,11 +1,15 @@
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/activity_model.dart';
 import '../widgets/artist_header.dart';
 import '../widgets/local_artists_row_widget.dart';
 import '../widgets/local_galleries_widget.dart';
 import '../widgets/upcoming_events_row_widget.dart';
 import '../widgets/artist_subscription_cta_widget.dart';
+import '../services/earnings_service.dart';
+import '../services/analytics_service.dart';
+import '../models/earnings_model.dart';
 
 class ArtistDashboardScreen extends StatefulWidget {
   const ArtistDashboardScreen({super.key});
@@ -18,9 +22,14 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
   final _scrollController = ScrollController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // Services
+  final EarningsService _earningsService = EarningsService();
+  final AnalyticsService _analyticsService = AnalyticsService();
+
   bool _isLoading = true;
   String? _error;
-  Map<String, dynamic> _quickStats = {};
+  EarningsModel? _earnings;
+  Map<String, dynamic> _analytics = {};
   List<ActivityModel> _recentActivities = [];
 
   @override
@@ -42,32 +51,21 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
         _error = null;
       });
 
-      await Future<void>.delayed(
-          const Duration(seconds: 1)); // Simulate network delay
+      // Load real data from services
+      final earnings = await _earningsService.getArtistEarnings();
+      final analytics = await _loadAnalyticsData();
 
-      setState(() {
-        _quickStats = {
-          'totalSales': 1234.56,
-          'totalArtworks': 42,
-          'totalGiftValue': 567.89,
-          'sponsorshipsValue': 890.12,
-        };
-        _recentActivities = [
-          const ActivityModel(
-            type: ActivityType.sale,
-            title: 'New Artwork Sale',
-            description: 'Your artwork "Summer Breeze" was sold',
-            timeAgo: '2h ago',
-          ),
-          const ActivityModel(
-            type: ActivityType.commission,
-            title: 'New Commission Request',
-            description: 'You received a new commission inquiry',
-            timeAgo: '5h ago',
-          ),
-        ];
-        _isLoading = false;
-      });
+      // Load recent activities from various sources
+      final activities = await _loadRecentActivities();
+
+      if (mounted) {
+        setState(() {
+          _earnings = earnings;
+          _analytics = analytics;
+          _recentActivities = activities;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -75,6 +73,181 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<Map<String, dynamic>> _loadAnalyticsData() async {
+    try {
+      final userId = _analyticsService.getCurrentUserId();
+      if (userId == null) return {};
+
+      // Get artwork count and other analytics
+      final artworkCount = await _getArtworkCount(userId);
+      final profileViews = await _getProfileViews(userId);
+
+      return {
+        'artworkCount': artworkCount,
+        'profileViews': profileViews,
+        'totalSales': _earnings?.totalEarnings ?? 0.0,
+      };
+    } catch (e) {
+      return {};
+    }
+  }
+
+  Future<int> _getArtworkCount(String userId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('artwork')
+          .where('userId', isEqualTo: userId)
+          .get();
+      return snapshot.docs.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<int> _getProfileViews(String userId) async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('artistProfileViews')
+          .where('artistId', isEqualTo: userId)
+          .get();
+      return snapshot.docs.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<List<ActivityModel>> _loadRecentActivities() async {
+    final activities = <ActivityModel>[];
+
+    try {
+      final userId = _analyticsService.getCurrentUserId();
+      if (userId == null) return activities;
+
+      // Load recent artwork sales
+      final salesActivities = await _loadSalesActivities(userId);
+      activities.addAll(salesActivities);
+
+      // Load recent commission requests
+      final commissionActivities = await _loadCommissionActivities(userId);
+      activities.addAll(commissionActivities);
+
+      // Load recent gift activities
+      final giftActivities = await _loadGiftActivities(userId);
+      activities.addAll(giftActivities);
+
+      // Sort by most recent and take top 5
+      activities.sort((a, b) => b.timeAgo.compareTo(a.timeAgo));
+      return activities.take(5).toList();
+    } catch (e) {
+      return activities;
+    }
+  }
+
+  Future<List<ActivityModel>> _loadSalesActivities(String userId) async {
+    final activities = <ActivityModel>[];
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('artwork_sales')
+          .where('artistId', isEqualTo: userId)
+          .orderBy('soldAt', descending: true)
+          .limit(3)
+          .get();
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final artworkTitle = data['artworkTitle'] as String? ?? 'Artwork';
+        final soldAt = (data['soldAt'] as Timestamp?)?.toDate();
+
+        activities.add(ActivityModel(
+          type: ActivityType.sale,
+          title: 'Artwork Sold',
+          description: '"$artworkTitle" was sold',
+          timeAgo: soldAt != null ? _formatTimeAgo(soldAt) : 'Recently',
+        ));
+      }
+    } catch (e) {
+      // Handle error silently
+    }
+
+    return activities;
+  }
+
+  Future<List<ActivityModel>> _loadCommissionActivities(String userId) async {
+    final activities = <ActivityModel>[];
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('commission_requests')
+          .where('artistId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(3)
+          .get();
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+
+        activities.add(ActivityModel(
+          type: ActivityType.commission,
+          title: 'Commission Request',
+          description: 'New commission inquiry received',
+          timeAgo: createdAt != null ? _formatTimeAgo(createdAt) : 'Recently',
+        ));
+      }
+    } catch (e) {
+      // Handle error silently
+    }
+
+    return activities;
+  }
+
+  Future<List<ActivityModel>> _loadGiftActivities(String userId) async {
+    final activities = <ActivityModel>[];
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('gift_purchases')
+          .where('recipientArtistId', isEqualTo: userId)
+          .orderBy('purchasedAt', descending: true)
+          .limit(2)
+          .get();
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final purchasedAt = (data['purchasedAt'] as Timestamp?)?.toDate();
+        final amount = (data['amount'] as num?)?.toDouble() ?? 0.0;
+
+        activities.add(ActivityModel(
+          type: ActivityType.gift,
+          title: 'Gift Received',
+          description: 'Received a gift of \$${amount.toStringAsFixed(2)}',
+          timeAgo:
+              purchasedAt != null ? _formatTimeAgo(purchasedAt) : 'Recently',
+        ));
+      }
+    } catch (e) {
+      // Handle error silently
+    }
+
+    return activities;
+  }
+
+  String _formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
     }
   }
 
@@ -173,7 +346,7 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Create animated ads featuring your artwork to reach more art lovers',
+                          'Create ads featuring your artwork to reach more art lovers',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: Colors.blue.shade700,
@@ -188,9 +361,9 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _navigateToCreateArtistApprovedAd(context),
+                  onPressed: () => Navigator.pushNamed(context, '/ads/create'),
                   icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Create Artist Approved Ad'),
+                  label: const Text('Create Ad'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade600,
                     foregroundColor: Colors.white,
@@ -206,12 +379,16 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                 children: [
                   Icon(Icons.star, color: Colors.amber.shade600, size: 16),
                   const SizedBox(width: 4),
-                  Text(
-                    'Premium feature: Animated GIF ads with your artwork',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.amber.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  Expanded(
+                    child: Text(
+                      'Premium feature: Create engaging ads with your artwork',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.amber.shade700,
+                            fontWeight: FontWeight.w500,
+                          ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -224,15 +401,6 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
               Navigator.pushNamed(context, '/subscription/artist'),
         ),
       ],
-    );
-  }
-
-  void _navigateToCreateArtistApprovedAd(BuildContext context) {
-    // TODO: Implement artist approved ad creation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Artist approved ad creation coming soon!'),
-      ),
     );
   }
 
@@ -329,31 +497,59 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                     mainAxisSpacing: 16,
                     children: [
                       _buildStatCard(
-                        'Total Sales',
-                        '\$${_quickStats['totalSales']?.toString() ?? '0.00'}',
+                        'Total Earnings',
+                        '\$${_earnings?.totalEarnings.toStringAsFixed(2) ?? '0.00'}',
                         Icons.attach_money,
                         Colors.green,
                       ),
                       _buildStatCard(
+                        'Available Balance',
+                        '\$${_earnings?.availableBalance.toStringAsFixed(2) ?? '0.00'}',
+                        Icons.account_balance_wallet,
+                        Colors.teal,
+                      ),
+                      _buildStatCard(
                         'Total Artworks',
-                        _quickStats['totalArtworks']?.toString() ?? '0',
+                        _analytics['artworkCount']?.toString() ?? '0',
                         Icons.palette,
                         Colors.blue,
                       ),
                       _buildStatCard(
-                        'Total Gifts',
-                        '\$${_quickStats['totalGiftValue']?.toString() ?? '0.00'}',
+                        'Profile Views',
+                        _analytics['profileViews']?.toString() ?? '0',
+                        Icons.visibility,
+                        Colors.indigo,
+                      ),
+                      _buildStatCard(
+                        'Gift Earnings',
+                        '\$${_earnings?.giftEarnings.toStringAsFixed(2) ?? '0.00'}',
                         Icons.card_giftcard,
                         Colors.purple,
                       ),
                       _buildStatCard(
+                        'Commission Earnings',
+                        '\$${_earnings?.commissionEarnings.toStringAsFixed(2) ?? '0.00'}',
+                        Icons.work,
+                        Colors.amber,
+                      ),
+                      _buildStatCard(
                         'Sponsorships',
-                        '\$${_quickStats['sponsorshipsValue']?.toString() ?? '0.00'}',
+                        '\$${_earnings?.sponsorshipEarnings.toStringAsFixed(2) ?? '0.00'}',
                         Icons.handshake,
                         Colors.orange,
                       ),
+                      _buildStatCard(
+                        'Pending Balance',
+                        '\$${_earnings?.pendingBalance.toStringAsFixed(2) ?? '0.00'}',
+                        Icons.pending,
+                        Colors.red,
+                      ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+
+                  // Quick Actions Section - Moved to top
+                  _buildQuickActionsSection(context),
                   const SizedBox(height: 24),
 
                   // Local Artists Section
@@ -402,10 +598,6 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
                     onSeeAllPressed: () =>
                         Navigator.pushNamed(context, '/events/browse'),
                   ),
-                  const SizedBox(height: 24),
-
-                  // Quick Actions Section
-                  _buildQuickActionsSection(context),
                   const SizedBox(height: 24),
 
                   // Artist Marketing Section
@@ -481,23 +673,31 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildActionCard(
+              child: _buildThemedActionButton(
                 context,
-                title: 'Earnings Dashboard',
-                subtitle: 'View earnings & payouts',
-                icon: Icons.account_balance_wallet,
-                color: Colors.green,
-                onTap: () => Navigator.pushNamed(context, '/artist/earnings'),
+                title: 'Add Post',
+                subtitle: 'Share updates with your community',
+                icon: Icons.post_add,
+                gradient: const LinearGradient(
+                  colors: [Colors.purple, Colors.pink],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () => _showCreatePostOptions(context),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildActionCard(
+              child: _buildThemedActionButton(
                 context,
                 title: 'Upload Artwork',
-                subtitle: 'Add new artwork',
+                subtitle: 'Add new artwork to your portfolio',
                 icon: Icons.add_photo_alternate,
-                color: Colors.blue,
+                gradient: const LinearGradient(
+                  colors: [Colors.blue, Colors.cyan],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 onTap: () => Navigator.pushNamed(context, '/artwork/upload'),
               ),
             ),
@@ -507,25 +707,32 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildActionCard(
+              child: _buildThemedActionButton(
                 context,
-                title: 'Analytics',
-                subtitle: 'View performance',
-                icon: Icons.analytics,
-                color: Colors.purple,
-                onTap: () => Navigator.pushNamed(context, '/artist/analytics'),
+                title: 'Create Event',
+                subtitle: 'Host exhibitions and gatherings',
+                icon: Icons.event,
+                gradient: const LinearGradient(
+                  colors: [Colors.orange, Colors.red],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () => Navigator.pushNamed(context, '/events/create'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildActionCard(
+              child: _buildThemedActionButton(
                 context,
-                title: 'Profile Settings',
-                subtitle: 'Edit your profile',
-                icon: Icons.person_outline,
-                color: Colors.orange,
-                onTap: () =>
-                    Navigator.pushNamed(context, '/artist/profile-edit'),
+                title: 'View Analytics',
+                subtitle: 'Track your performance',
+                icon: Icons.analytics,
+                gradient: const LinearGradient(
+                  colors: [Colors.green, Colors.teal],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () => Navigator.pushNamed(context, '/artist/analytics'),
               ),
             ),
           ],
@@ -534,7 +741,122 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
     );
   }
 
-  Widget _buildActionCard(
+  void _showCreatePostOptions(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        maxChildSize: 0.8,
+        minChildSize: 0.3,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Header
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.post_add,
+                      color: Colors.purple,
+                      size: 28,
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Create Post',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          Text(
+                            'Share updates with your community',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Create options
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  children: [
+                    _buildPostOption(
+                      context,
+                      title: 'Text Post',
+                      subtitle: 'Share your thoughts and updates',
+                      icon: Icons.text_fields,
+                      color: Colors.purple,
+                      onTap: () => _createTextPost(context),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPostOption(
+                      context,
+                      title: 'Artwork Post',
+                      subtitle: 'Showcase your latest creation',
+                      icon: Icons.palette,
+                      color: Colors.blue,
+                      onTap: () => _createArtworkPost(context),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPostOption(
+                      context,
+                      title: 'Event Post',
+                      subtitle: 'Announce upcoming events',
+                      icon: Icons.event,
+                      color: Colors.orange,
+                      onTap: () => _createEventPost(context),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildPostOption(
+                      context,
+                      title: 'Photo Post',
+                      subtitle: 'Share photos from your studio',
+                      icon: Icons.photo_camera,
+                      color: Colors.green,
+                      onTap: () => _createPhotoPost(context),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPostOption(
     BuildContext context, {
     required String title,
     required String subtitle,
@@ -542,35 +864,153 @@ class _ArtistDashboardScreenState extends State<ArtistDashboardScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 2,
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[200]!),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
             children: [
-              CircleAvatar(
-                backgroundColor: color.withValues(alpha: 0.1),
-                child: Icon(icon, color: color),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey[400],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _createTextPost(BuildContext context) {
+    Navigator.pop(context);
+    // Navigate to general post creation screen
+    Navigator.pushNamed(context, '/community/create');
+  }
+
+  void _createArtworkPost(BuildContext context) {
+    Navigator.pop(context);
+    // Navigate to general post creation screen
+    Navigator.pushNamed(context, '/community/create');
+  }
+
+  void _createEventPost(BuildContext context) {
+    Navigator.pop(context);
+    // Navigate to general post creation screen
+    Navigator.pushNamed(context, '/community/create');
+  }
+
+  void _createPhotoPost(BuildContext context) {
+    Navigator.pop(context);
+    // Navigate to general post creation screen
+    Navigator.pushNamed(context, '/community/create');
+  }
+
+  Widget _buildThemedActionButton(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required LinearGradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      height: 140, // Increased from 120 to prevent overflow
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14, // Slightly smaller font
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2), // Reduced from 4
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 11, // Slightly smaller font
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 
 /// Service for configuring Firebase settings and timeouts
 class FirebaseConfigService {
@@ -19,16 +19,16 @@ class FirebaseConfigService {
         sslEnabled: true,
       );
 
-      debugPrint('✅ Firebase configured successfully with persistence enabled');
+      AppLogger.firebase('✅ Firebase configured successfully with persistence enabled');
     } catch (e) {
-      debugPrint('❌ Error configuring Firebase: $e');
+      AppLogger.error('❌ Error configuring Firebase: $e');
       if (e is FirebaseException) {
         if (e.code == 'failed-precondition') {
           // Multiple tabs open, persistence can only be enabled in one tab at a time
-          debugPrint('Multiple tabs are open, offline persistence disabled');
+          AppLogger.info('Multiple tabs are open, offline persistence disabled');
         } else if (e.code == 'unimplemented') {
           // The current browser does not support persistence
-          debugPrint('Current platform does not support offline persistence');
+          AppLogger.info('Current platform does not support offline persistence');
         }
       }
       // Continue even if configuration fails - app should still work online

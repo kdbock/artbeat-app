@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/material.dart';
 
 /// Test screen to demonstrate SecureNetworkImage functionality
 class TestSecureImageScreen extends StatelessWidget {
@@ -20,7 +20,7 @@ class TestSecureImageScreen extends StatelessWidget {
         showBackButton: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -37,8 +37,7 @@ class TestSecureImageScreen extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 itemCount: testUrls.length,
-                itemBuilder: (context, index) {
-                  return Card(
+                itemBuilder: (context, index) => Card(
                     margin: const EdgeInsets.only(bottom: 16),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -72,9 +71,6 @@ class TestSecureImageScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                               child: SecureNetworkImage(
                                 imageUrl: testUrls[index],
-                                fit: BoxFit.cover,
-                                enableRetry: true,
-                                maxRetries: 3,
                                 errorWidget: Container(
                                   color: Colors.grey[200],
                                   child: const Column(
@@ -127,8 +123,7 @@ class TestSecureImageScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                  );
-                },
+                  ),
               ),
             ),
             const SizedBox(height: 16),

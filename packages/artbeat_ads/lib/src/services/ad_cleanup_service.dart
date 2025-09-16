@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/ad_status.dart';
 import '../models/ad_location.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service to clean up and reset ad collections for testing
 class AdCleanupService {
@@ -12,7 +13,7 @@ class AdCleanupService {
     if (!kDebugMode) return;
 
     try {
-      debugPrint('🧹 Starting ad cleanup and reset...');
+      AppLogger.info('🧹 Starting ad cleanup and reset...');
 
       // Step 1: Clean up existing test ads
       await _cleanupTestAds();
@@ -20,15 +21,15 @@ class AdCleanupService {
       // Step 2: Create fresh test ads
       await _createFreshTestAds();
 
-      debugPrint('✅ Ad cleanup and reset completed!');
+      AppLogger.info('✅ Ad cleanup and reset completed!');
     } catch (e) {
-      debugPrint('❌ Error during ad cleanup and reset: $e');
+      AppLogger.error('❌ Error during ad cleanup and reset: $e');
     }
   }
 
   /// Clean up all test ads from both collections
   static Future<void> _cleanupTestAds() async {
-    debugPrint('🗑️ Cleaning up existing test ads...');
+    AppLogger.info('🗑️ Cleaning up existing test ads...');
 
     // Clean up ads collection
     await _cleanupCollection('ads');
@@ -42,7 +43,7 @@ class AdCleanupService {
       final snapshot = await _firestore.collection(collectionName).get();
 
       if (snapshot.docs.isEmpty) {
-        debugPrint('📭 No documents found in $collectionName');
+        AppLogger.info('📭 No documents found in $collectionName');
         return;
       }
 
@@ -66,18 +67,18 @@ class AdCleanupService {
 
       if (deleteCount > 0) {
         await batch.commit();
-        debugPrint('🗑️ Deleted $deleteCount test ads from $collectionName');
+        AppLogger.info('🗑️ Deleted $deleteCount test ads from $collectionName');
       } else {
-        debugPrint('📭 No test ads found to delete in $collectionName');
+        AppLogger.info('📭 No test ads found to delete in $collectionName');
       }
     } catch (e) {
-      debugPrint('❌ Error cleaning up $collectionName: $e');
+      AppLogger.error('❌ Error cleaning up $collectionName: $e');
     }
   }
 
   /// Create fresh test ads for all dashboard locations
   static Future<void> _createFreshTestAds() async {
-    debugPrint('🎯 Creating fresh test ads...');
+    AppLogger.info('🎯 Creating fresh test ads...');
 
     final now = DateTime.now();
     final endDate = now.add(const Duration(days: 30));
@@ -85,9 +86,9 @@ class AdCleanupService {
     // Create test ads for different locations
     final testAds = [
       {
-        'location': AdLocation.dashboard,
-        'title': 'Dashboard Test Ad',
-        'description': 'Test ad for main dashboard',
+        'location': AdLocation.fluidDashboard,
+        'title': 'Fluid Dashboard Test Ad',
+        'description': 'Test ad for fluid dashboard',
       },
       {
         'location': AdLocation.artWalkDashboard,
@@ -95,14 +96,14 @@ class AdCleanupService {
         'description': 'Test ad for art walk dashboard',
       },
       {
-        'location': AdLocation.eventsDashboard,
-        'title': 'Events Test Ad',
-        'description': 'Test ad for events dashboard',
+        'location': AdLocation.eventDashboard,
+        'title': 'Event Dashboard Test Ad',
+        'description': 'Test ad for event dashboard',
       },
       {
-        'location': AdLocation.communityDashboard,
-        'title': 'Community Test Ad',
-        'description': 'Test ad for community dashboard',
+        'location': AdLocation.unifiedCommunityHub,
+        'title': 'Community Hub Test Ad',
+        'description': 'Test ad for unified community hub',
       },
     ];
 
@@ -208,11 +209,11 @@ class AdCleanupService {
     if (!kDebugMode) return;
 
     try {
-      debugPrint('🎯 Creating test ads only...');
+      AppLogger.info('🎯 Creating test ads only...');
       await _createFreshTestAds();
-      debugPrint('✅ Test ads created!');
+      AppLogger.info('✅ Test ads created!');
     } catch (e) {
-      debugPrint('❌ Error creating test ads: $e');
+      AppLogger.error('❌ Error creating test ads: $e');
     }
   }
 }

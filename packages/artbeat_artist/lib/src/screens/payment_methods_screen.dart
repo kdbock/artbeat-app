@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 /// Screen for managing payment methods
 class PaymentMethodsScreen extends StatefulWidget {

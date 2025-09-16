@@ -12,6 +12,7 @@ import 'subscription_plan_validator.dart';
 import 'subscription_validation_service.dart';
 import 'coupon_service.dart';
 import 'payment_service.dart';
+import '../utils/logger.dart';
 
 /// Service for managing subscriptions
 class SubscriptionService extends ChangeNotifier {
@@ -42,7 +43,7 @@ class SubscriptionService extends ChangeNotifier {
 
       return SubscriptionModel.fromFirestore(snapshot.docs.first);
     } catch (e) {
-      debugPrint('Error getting user subscription: $e');
+      AppLogger.error('Error getting user subscription: $e');
       return null;
     }
   }
@@ -69,7 +70,7 @@ class SubscriptionService extends ChangeNotifier {
       final tier = artistProfile.subscriptionTier;
       return tier;
     } catch (e) {
-      debugPrint('Error getting current subscription tier: $e');
+      AppLogger.error('Error getting current subscription tier: $e');
       return SubscriptionTier.free;
     }
   }
@@ -83,7 +84,7 @@ class SubscriptionService extends ChangeNotifier {
           tier == SubscriptionTier.business ||
           tier == SubscriptionTier.enterprise;
     } catch (e) {
-      debugPrint('Error checking if user is subscriber: $e');
+      AppLogger.error('Error checking if user is subscriber: $e');
       return false;
     }
   }
@@ -101,7 +102,7 @@ class SubscriptionService extends ChangeNotifier {
           .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting featured artists: $e');
+      AppLogger.error('Error getting featured artists: $e');
       return [];
     }
   }
@@ -119,7 +120,7 @@ class SubscriptionService extends ChangeNotifier {
           .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting local artists: $e');
+      AppLogger.error('Error getting local artists: $e');
       return [];
     }
   }
@@ -137,7 +138,7 @@ class SubscriptionService extends ChangeNotifier {
           .map((doc) => ArtistProfileModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting galleries: $e');
+      AppLogger.error('Error getting galleries: $e');
       return [];
     }
   }
@@ -221,7 +222,7 @@ class SubscriptionService extends ChangeNotifier {
 
       // Check if transition is valid
       if (!await _planValidator.canTransitionTo(currentTier, newTier)) {
-        debugPrint('Invalid tier transition from $currentTier to $newTier');
+        AppLogger.info('Invalid tier transition from $currentTier to $newTier');
         return false;
       }
 
@@ -301,7 +302,7 @@ class SubscriptionService extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      debugPrint('Error changing subscription tier: $e');
+      AppLogger.error('Error changing subscription tier: $e');
       return false;
     }
   }
@@ -420,7 +421,7 @@ class SubscriptionService extends ChangeNotifier {
       final dynamic value = capabilities[capability];
       return (value as bool?) ?? false;
     } catch (e) {
-      debugPrint('Error checking capability $capability: $e');
+      AppLogger.error('Error checking capability $capability: $e');
       return false;
     }
   }
@@ -510,7 +511,7 @@ class SubscriptionService extends ChangeNotifier {
         'isFree': isFree,
       };
     } catch (e) {
-      debugPrint('Error creating subscription with coupon: $e');
+      AppLogger.error('Error creating subscription with coupon: $e');
       return {'success': false, 'message': 'Failed to create subscription: $e'};
     }
   }
@@ -592,7 +593,7 @@ class SubscriptionService extends ChangeNotifier {
 
       return history;
     } catch (e) {
-      debugPrint('Error getting coupon history: $e');
+      AppLogger.error('Error getting coupon history: $e');
       return [];
     }
   }
@@ -620,7 +621,7 @@ class SubscriptionService extends ChangeNotifier {
 
       return customerId;
     } catch (e) {
-      debugPrint('Error getting/creating customer ID: $e');
+      AppLogger.error('Error getting/creating customer ID: $e');
       return null;
     }
   }
@@ -648,7 +649,7 @@ class SubscriptionService extends ChangeNotifier {
             });
       }
     } catch (e) {
-      debugPrint('Error updating user subscription tier: $e');
+      AppLogger.error('Error updating user subscription tier: $e');
     }
   }
 
@@ -687,9 +688,9 @@ class SubscriptionService extends ChangeNotifier {
       // Update the user's tier in Firestore
       await _updateUserSubscriptionTier(tier);
 
-      debugPrint('Successfully upgraded subscription to ${tier.displayName}');
+      AppLogger.info('Successfully upgraded subscription to ${tier.displayName}');
     } catch (e) {
-      debugPrint('Error upgrading subscription: $e');
+      AppLogger.error('Error upgrading subscription: $e');
       rethrow;
     }
   }
@@ -700,7 +701,7 @@ class SubscriptionService extends ChangeNotifier {
       final currentTier = await getCurrentSubscriptionTier();
       return FeatureLimits.forTier(currentTier);
     } catch (e) {
-      debugPrint('Error getting feature limits: $e');
+      AppLogger.error('Error getting feature limits: $e');
       // Return free tier limits as fallback
       return FeatureLimits.forTier(SubscriptionTier.free);
     }
@@ -727,11 +728,11 @@ class SubscriptionService extends ChangeNotifier {
         case 'ai_credits':
           return limits.aiCredits > 0;
         default:
-          debugPrint('Unknown feature: $feature');
+          AppLogger.info('Unknown feature: $feature');
           return false;
       }
     } catch (e) {
-      debugPrint('Error checking feature access for $feature: $e');
+      AppLogger.error('Error checking feature access for $feature: $e');
       return false;
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'dart:io';
+import '../utils/logger.dart';
 
 /// Diagnostic service for Google Maps configuration and issues
 class MapsDiagnosticService {
@@ -24,10 +25,10 @@ class MapsDiagnosticService {
       // Check network connectivity for maps tiles
       diagnostics['networkCheck'] = await _checkMapTileConnectivity();
 
-      debugPrint('$_tag: Configuration diagnostics: $diagnostics');
+      AppLogger.info('$_tag: Configuration diagnostics: $diagnostics');
       return diagnostics;
     } catch (e) {
-      debugPrint('$_tag: Error during diagnostics: $e');
+      AppLogger.error('$_tag: Error during diagnostics: $e');
       diagnostics['error'] = e.toString();
       return diagnostics;
     }
@@ -94,28 +95,28 @@ class MapsDiagnosticService {
 
   /// Log comprehensive diagnostics for debugging
   static Future<void> logDiagnostics() async {
-    debugPrint('$_tag: Starting Google Maps diagnostics...');
+    AppLogger.info('$_tag: Starting Google Maps diagnostics...');
 
     final diagnostics = await diagnoseConfiguration();
 
-    debugPrint('$_tag: === Google Maps Diagnostic Report ===');
-    debugPrint('$_tag: Platform: ${diagnostics['platform']}');
-    debugPrint('$_tag: Debug Mode: ${diagnostics['isDebugMode']}');
+    AppLogger.info('$_tag: === Google Maps Diagnostic Report ===');
+    AppLogger.info('$_tag: Platform: ${diagnostics['platform']}');
+    AppLogger.debug('$_tag: Debug Mode: ${diagnostics['isDebugMode']}');
 
     if (Platform.isIOS) {
       final ios = diagnostics['iosConfigured'] as Map<String, dynamic>?;
-      debugPrint('$_tag: iOS Bundle ID: ${ios?['bundleId']}');
-      debugPrint('$_tag: iOS API Key: ${ios?['expectedApiKey']}');
+      AppLogger.info('$_tag: iOS Bundle ID: ${ios?['bundleId']}');
+      AppLogger.info('$_tag: iOS API Key: ${ios?['expectedApiKey']}');
     }
 
     final network = diagnostics['networkCheck'] as Map<String, dynamic>?;
-    debugPrint('$_tag: Can reach Maps API: ${network?['canReachMapsAPI']}');
-    debugPrint('$_tag: Network status: ${network?['statusCode']}');
+    AppLogger.network('$_tag: Can reach Maps API: ${network?['canReachMapsAPI']}');
+    AppLogger.network('$_tag: Network status: ${network?['statusCode']}');
 
     if (diagnostics.containsKey('error')) {
-      debugPrint('$_tag: ❌ Error: ${diagnostics['error']}');
+      AppLogger.error('$_tag: ❌ Error: ${diagnostics['error']}');
     }
 
-    debugPrint('$_tag: === End Diagnostic Report ===');
+    AppLogger.info('$_tag: === End Diagnostic Report ===');
   }
 }

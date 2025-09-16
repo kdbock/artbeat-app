@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/artwork_model.dart';
+import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
 
 /// Service for cleaning up artwork data inconsistencies
 class ArtworkCleanupService {
@@ -10,11 +11,11 @@ class ArtworkCleanupService {
   /// Find and fix artwork with broken image URLs
   Future<void> cleanupBrokenArtworkImages({bool dryRun = true}) async {
     if (!kDebugMode) {
-      debugPrint('⚠️ Cleanup service only runs in debug mode');
+      AppLogger.warning('⚠️ Cleanup service only runs in debug mode');
       return;
     }
 
-    debugPrint('🔍 Starting artwork image cleanup (dryRun: $dryRun)...');
+    AppLogger.debug('🔍 Starting artwork image cleanup (dryRun: $dryRun)...');
 
     try {
       // Get all artwork documents
@@ -24,7 +25,7 @@ class ArtworkCleanupService {
       int brokenImages = 0;
       int fixedImages = 0;
 
-      debugPrint('📊 Found $totalArtwork artwork documents to check');
+      AppLogger.analytics('📊 Found $totalArtwork artwork documents to check');
 
       for (final doc in snapshot.docs) {
         try {
@@ -35,33 +36,33 @@ class ArtworkCleanupService {
 
           if (!isAccessible) {
             brokenImages++;
-            debugPrint('❌ Broken image found:');
-            debugPrint('   - ID: ${artwork.id}');
-            debugPrint('   - Title: ${artwork.title}');
-            debugPrint('   - Artist: ${artwork.userId}');
-            debugPrint('   - URL: ${artwork.imageUrl}');
+            AppLogger.error('❌ Broken image found:');
+            AppLogger.info('   - ID: ${artwork.id}');
+            AppLogger.info('   - Title: ${artwork.title}');
+            AppLogger.info('   - Artist: ${artwork.userId}');
+            AppLogger.info('   - URL: ${artwork.imageUrl}');
 
             if (!dryRun) {
               // Option 1: Set a placeholder image
               await _fixBrokenArtworkImage(doc.id, artwork);
               fixedImages++;
-              debugPrint('✅ Fixed broken image for artwork ${artwork.id}');
+              AppLogger.info('✅ Fixed broken image for artwork ${artwork.id}');
             }
           } else {
-            debugPrint('✅ Image OK: ${artwork.title}');
+            AppLogger.info('✅ Image OK: ${artwork.title}');
           }
         } catch (e) {
-          debugPrint('❌ Error checking artwork ${doc.id}: $e');
+          AppLogger.error('❌ Error checking artwork ${doc.id}: $e');
         }
       }
 
-      debugPrint('📊 Cleanup Summary:');
-      debugPrint('   - Total artwork: $totalArtwork');
-      debugPrint('   - Broken images: $brokenImages');
-      debugPrint('   - Fixed images: $fixedImages');
-      debugPrint('   - Dry run: $dryRun');
+      AppLogger.analytics('📊 Cleanup Summary:');
+      AppLogger.info('   - Total artwork: $totalArtwork');
+      AppLogger.info('   - Broken images: $brokenImages');
+      AppLogger.info('   - Fixed images: $fixedImages');
+      AppLogger.info('   - Dry run: $dryRun');
     } catch (e) {
-      debugPrint('❌ Error during cleanup: $e');
+      AppLogger.error('❌ Error during cleanup: $e');
     }
   }
 
@@ -71,7 +72,7 @@ class ArtworkCleanupService {
       final response = await http.head(Uri.parse(imageUrl));
       return response.statusCode == 200;
     } catch (e) {
-      debugPrint('❌ Image check failed for $imageUrl: $e');
+      AppLogger.error('❌ Image check failed for $imageUrl: $e');
       return false;
     }
   }
@@ -90,9 +91,9 @@ class ArtworkCleanupService {
         'originalBrokenUrl': artwork.imageUrl, // Keep reference to broken URL
       });
 
-      debugPrint('✅ Cleared broken image URL for artwork $artworkId');
+      AppLogger.info('✅ Cleared broken image URL for artwork $artworkId');
     } catch (e) {
-      debugPrint('❌ Error fixing artwork $artworkId: $e');
+      AppLogger.error('❌ Error fixing artwork $artworkId: $e');
       rethrow;
     }
   }
@@ -100,11 +101,12 @@ class ArtworkCleanupService {
   /// Remove artwork with broken images (more aggressive cleanup)
   Future<void> removeBrokenArtwork({bool dryRun = true}) async {
     if (!kDebugMode) {
-      debugPrint('⚠️ Remove broken artwork only runs in debug mode');
+      AppLogger.warning('⚠️ Remove broken artwork only runs in debug mode');
       return;
     }
 
-    debugPrint('🗑️ Starting removal of broken artwork (dryRun: $dryRun)...');
+    AppLogger.info(
+        '🗑️ Starting removal of broken artwork (dryRun: $dryRun)...');
 
     try {
       final snapshot = await _firestore.collection('artwork').get();
@@ -126,21 +128,21 @@ class ArtworkCleanupService {
             if (!dryRun) {
               await doc.reference.delete();
               removedArtwork++;
-              debugPrint('🗑️ Removed broken artwork ${artwork.id}');
+              AppLogger.info('🗑️ Removed broken artwork ${artwork.id}');
             }
           }
         } catch (e) {
-          debugPrint('❌ Error checking artwork ${doc.id}: $e');
+          AppLogger.error('❌ Error checking artwork ${doc.id}: $e');
         }
       }
 
-      debugPrint('📊 Removal Summary:');
-      debugPrint('   - Total artwork: $totalArtwork');
-      debugPrint('   - Broken artwork: $brokenArtwork');
-      debugPrint('   - Removed artwork: $removedArtwork');
-      debugPrint('   - Dry run: $dryRun');
+      AppLogger.analytics('📊 Removal Summary:');
+      AppLogger.info('   - Total artwork: $totalArtwork');
+      AppLogger.info('   - Broken artwork: $brokenArtwork');
+      AppLogger.info('   - Removed artwork: $removedArtwork');
+      AppLogger.info('   - Dry run: $dryRun');
     } catch (e) {
-      debugPrint('❌ Error during removal: $e');
+      AppLogger.error('❌ Error during removal: $e');
     }
   }
 
@@ -149,7 +151,7 @@ class ArtworkCleanupService {
     const problematicUrl =
         'https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/artwork_images%2FEdH8MvWk4Ja6eoSZM59QtOaxEK43%2Fnew%2F1750961590495_EdH8MvWk4Ja6eoSZM59QtOaxEK43?alt=media&token=d9e1ed0b-e106-44e3-a9d4-5da43d0ff045';
 
-    debugPrint('🔍 Checking specific problematic image...');
+    AppLogger.debug('🔍 Checking specific problematic image...');
 
     try {
       // Find artwork with this specific URL
@@ -158,29 +160,30 @@ class ArtworkCleanupService {
           .where('imageUrl', isEqualTo: problematicUrl)
           .get();
 
-      debugPrint('📊 Found ${snapshot.docs.length} artwork with this URL');
+      AppLogger.analytics(
+          '📊 Found ${snapshot.docs.length} artwork with this URL');
 
       for (final doc in snapshot.docs) {
         final artwork = ArtworkModel.fromFirestore(doc);
-        debugPrint('❌ Problematic artwork:');
-        debugPrint('   - ID: ${artwork.id}');
-        debugPrint('   - Title: ${artwork.title}');
-        debugPrint('   - Artist: ${artwork.userId}');
-        debugPrint('   - Created: ${artwork.createdAt}');
+        AppLogger.error('❌ Problematic artwork:');
+        AppLogger.info('   - ID: ${artwork.id}');
+        AppLogger.info('   - Title: ${artwork.title}');
+        AppLogger.info('   - Artist: ${artwork.userId}');
+        AppLogger.info('   - Created: ${artwork.createdAt}');
 
         // Check if image is accessible
         final isAccessible = await _checkImageUrl(problematicUrl);
-        debugPrint('   - Image accessible: $isAccessible');
+        AppLogger.info('   - Image accessible: $isAccessible');
 
         // If image is not accessible, fix it immediately
         if (!isAccessible) {
-          debugPrint('🔧 Fixing broken image for artwork ${artwork.id}...');
+          AppLogger.info('🔧 Fixing broken image for artwork ${artwork.id}...');
           await _fixBrokenArtworkImage(doc.id, artwork);
-          debugPrint('✅ Fixed broken image for artwork ${artwork.id}');
+          AppLogger.info('✅ Fixed broken image for artwork ${artwork.id}');
         }
       }
     } catch (e) {
-      debugPrint('❌ Error checking specific image: $e');
+      AppLogger.error('❌ Error checking specific image: $e');
     }
   }
 }

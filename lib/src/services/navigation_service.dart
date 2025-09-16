@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/material.dart';
 
 /// Enhanced navigation service with error handling and analytics
 class NavigationService {
-  static final NavigationService _instance = NavigationService._internal();
   factory NavigationService() => _instance;
   NavigationService._internal();
+  static final NavigationService _instance = NavigationService._internal();
 
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
 
@@ -62,8 +63,8 @@ class NavigationService {
       _showNavigationError(context, routeName, error);
 
       // Log to console for debugging
-      debugPrint('Navigation error to $routeName: $error');
-      debugPrint('Stack trace: $stackTrace');
+      AppLogger.error('Navigation error to $routeName: $error');
+      AppLogger.info('Stack trace: $stackTrace');
 
       return false;
     }
@@ -154,12 +155,12 @@ class NavigationService {
   }) async {
     // Pre-flight checks
     if (!context.mounted) {
-      debugPrint('Navigation cancelled: context not mounted');
+      AppLogger.info('Navigation cancelled: context not mounted');
       return false;
     }
 
     if (!doesRouteExist(routeName)) {
-      debugPrint('Navigation cancelled: route $routeName does not exist');
+      AppLogger.info('Navigation cancelled: route $routeName does not exist');
       _showNavigationError(context, routeName, 'Route does not exist');
       return false;
     }
@@ -183,13 +184,11 @@ extension SafeNavigation on BuildContext {
     Object? arguments,
     bool replace = false,
     bool clearStack = false,
-  }) {
-    return NavigationService().safeNavigateTo(
+  }) => NavigationService().safeNavigateTo(
       this,
       routeName,
       arguments: arguments,
       replace: replace,
       clearStack: clearStack,
     );
-  }
 }

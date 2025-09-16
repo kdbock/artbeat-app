@@ -1,9 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
-import 'package:flutter/material.dart';
-
 // Import all package modules to test integration
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+
 import '../test_setup.dart';
 
 void main() {
@@ -212,15 +212,13 @@ void main() {
 
         for (int i = 0; i < 10; i++) {
           futures.add(
-            Future.delayed(const Duration(milliseconds: 10), () {
-              return UserModel(
+            Future.delayed(const Duration(milliseconds: 10), () => UserModel(
                 id: 'async-user-$i',
                 email: 'async-user$i@example.com',
                 username: 'async-user$i',
                 fullName: 'Async User $i',
                 createdAt: DateTime.now(),
-              );
-            }),
+              )),
           );
         }
 

@@ -15,6 +15,13 @@ export 'subscription_validation_service.dart';
 export 'image_management_service.dart';
 export 'enhanced_storage_service.dart';
 
+// In-app purchase services
+export 'in_app_purchase_service.dart';
+export 'in_app_subscription_service.dart';
+export 'in_app_gift_service.dart';
+export 'in_app_ad_service.dart';
+export 'in_app_purchase_manager.dart';
+
 // Content engagement system
 export 'content_engagement_service.dart';
 export 'engagement_config_service.dart';

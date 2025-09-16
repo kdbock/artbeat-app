@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Advanced camera service with enhanced capture capabilities
 /// Provides professional-grade camera features for art capture
@@ -47,7 +48,7 @@ class AdvancedCameraService extends ChangeNotifier {
       // Get available cameras
       _cameras = await availableCameras();
       if (_cameras == null || _cameras!.isEmpty) {
-        debugPrint('AdvancedCameraService: No cameras available');
+        AppLogger.info('AdvancedCameraService: No cameras available');
         return false;
       }
 
@@ -65,7 +66,7 @@ class AdvancedCameraService extends ChangeNotifier {
       );
       return true;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Initialization failed: $e');
+      AppLogger.info('AdvancedCameraService: Initialization failed: $e');
       return false;
     }
   }
@@ -104,7 +105,7 @@ class AdvancedCameraService extends ChangeNotifier {
       // Enable image stabilization if available
       if (_stabilizationEnabled) {
         // Note: This would require platform-specific implementation
-        debugPrint('AdvancedCameraService: Image stabilization enabled');
+        AppLogger.info('AdvancedCameraService: Image stabilization enabled');
       }
     } catch (e) {
       debugPrint(
@@ -133,7 +134,7 @@ class AdvancedCameraService extends ChangeNotifier {
 
       return true;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error switching camera: $e');
+      AppLogger.error('AdvancedCameraService: Error switching camera: $e');
       return false;
     }
   }
@@ -148,7 +149,7 @@ class AdvancedCameraService extends ChangeNotifier {
       _currentZoom = clampedZoom;
       notifyListeners();
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error setting zoom: $e');
+      AppLogger.error('AdvancedCameraService: Error setting zoom: $e');
     }
   }
 
@@ -161,7 +162,7 @@ class AdvancedCameraService extends ChangeNotifier {
       _flashMode = mode;
       notifyListeners();
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error setting flash mode: $e');
+      AppLogger.error('AdvancedCameraService: Error setting flash mode: $e');
     }
   }
 
@@ -174,7 +175,7 @@ class AdvancedCameraService extends ChangeNotifier {
       _focusMode = mode;
       notifyListeners();
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error setting focus mode: $e');
+      AppLogger.error('AdvancedCameraService: Error setting focus mode: $e');
     }
   }
 
@@ -187,7 +188,7 @@ class AdvancedCameraService extends ChangeNotifier {
       _exposureMode = mode;
       notifyListeners();
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error setting exposure mode: $e');
+      AppLogger.error('AdvancedCameraService: Error setting exposure mode: $e');
     }
   }
 
@@ -199,7 +200,7 @@ class AdvancedCameraService extends ChangeNotifier {
       await _controller!.setFocusPoint(point);
       notifyListeners();
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error setting focus point: $e');
+      AppLogger.error('AdvancedCameraService: Error setting focus point: $e');
     }
   }
 
@@ -211,7 +212,7 @@ class AdvancedCameraService extends ChangeNotifier {
       await _controller!.setExposurePoint(point);
       notifyListeners();
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error setting exposure point: $e');
+      AppLogger.error('AdvancedCameraService: Error setting exposure point: $e');
     }
   }
 
@@ -250,7 +251,7 @@ class AdvancedCameraService extends ChangeNotifier {
       notifyListeners();
       return processedImagePath;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error capturing advanced image: $e');
+      AppLogger.error('AdvancedCameraService: Error capturing advanced image: $e');
       return null;
     }
   }
@@ -278,7 +279,7 @@ class AdvancedCameraService extends ChangeNotifier {
       notifyListeners();
       return burstImages;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error capturing burst: $e');
+      AppLogger.error('AdvancedCameraService: Error capturing burst: $e');
       return burstImages;
     }
   }
@@ -305,7 +306,7 @@ class AdvancedCameraService extends ChangeNotifier {
 
       return image.path;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error capturing with timer: $e');
+      AppLogger.error('AdvancedCameraService: Error capturing with timer: $e');
       return null;
     }
   }
@@ -337,7 +338,7 @@ class AdvancedCameraService extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error starting video recording: $e');
+      AppLogger.error('AdvancedCameraService: Error starting video recording: $e');
       return false;
     }
   }
@@ -353,7 +354,7 @@ class AdvancedCameraService extends ChangeNotifier {
 
       return video.path;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error stopping video recording: $e');
+      AppLogger.error('AdvancedCameraService: Error stopping video recording: $e');
       _isRecording = false;
       notifyListeners();
       return null;
@@ -383,7 +384,7 @@ class AdvancedCameraService extends ChangeNotifier {
 
       return imagePath;
     } catch (e) {
-      debugPrint('AdvancedCameraService: Error processing image: $e');
+      AppLogger.error('AdvancedCameraService: Error processing image: $e');
       return imagePath; // Return original if processing fails
     }
   }

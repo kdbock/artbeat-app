@@ -12,7 +12,8 @@ import 'package:artbeat_core/artbeat_core.dart'
         ArtbeatColors,
         EnhancedUniversalHeader,
         EnhancedStorageService,
-        MainLayout;
+        MainLayout,
+        AppLogger;
 
 /// Screen for uploading and editing artwork
 class ArtworkUploadScreen extends StatefulWidget {
@@ -367,7 +368,8 @@ class _ArtworkUploadScreenState extends State<ArtworkUploadScreen> {
 
       return uploadResult['imageUrl']!;
     } catch (e) {
-      debugPrint('❌ Enhanced upload failed, falling back to legacy method: $e');
+      AppLogger.error(
+          '❌ Enhanced upload failed, falling back to legacy method: $e');
 
       // Fallback to legacy method but with better path structure
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_$userId';

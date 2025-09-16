@@ -16,3 +16,7 @@
 
 # Keep your application classes
 -keep class com.wordnerd.artbeat.** { *; }
+
+# Suppress warnings for unused ProGuard rules from dependencies
+-dontwarn j$.util.**
+-dontwarn j$.util.concurrent.**

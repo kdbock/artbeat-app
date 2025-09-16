@@ -85,7 +85,9 @@ class BetweenSectionsAdWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SimpleAdPlacementWidget(location: location ?? AdLocation.dashboard);
+    return SimpleAdPlacementWidget(
+      location: location ?? AdLocation.fluidDashboard,
+    );
   }
 }
 
@@ -96,6 +98,6 @@ Widget InFeedAdWidget({
   String? analyticsLocation,
 }) {
   return SimpleAdPlacementWidget(
-    location: location ?? AdLocation.communityFeed,
+    location: location ?? AdLocation.communityInFeed,
   );
 }

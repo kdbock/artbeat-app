@@ -263,7 +263,7 @@ class _EventsListScreenState extends State<EventsListScreen>
             showBackButton: widget.showBackButton,
             onBackPressed: () => Navigator.of(context).pop(),
             backgroundColor: Colors.transparent,
-            foregroundColor: ArtbeatColors.textPrimary,
+            // Removed foregroundColor to use deep purple default
             actions: [
               if (widget.showCreateButton)
                 IconButton(

@@ -712,22 +712,24 @@ class _ArtistPublicProfileScreenState extends State<ArtistPublicProfileScreen> {
   }
 
   void _handleSponsorAction() {
-    Navigator.pushNamed(
+    Navigator.push(
       context,
-      '/sponsorship/create',
-      arguments: {
-        'artistId': _artistProfile!.userId,
-        'artistName': _artistProfile!.displayName,
-      },
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: _artistProfile!.userId,
+          recipientName: _artistProfile!.displayName,
+          initialTab: 2, // Open the subscription tab
+        ),
+      ),
     );
   }
 
   void _handleMessageAction() {
     Navigator.pushNamed(
       context,
-      '/messaging/conversation',
+      '/messaging/user-chat',
       arguments: {
-        'recipientId': _artistProfile!.userId,
+        'userId': _artistProfile!.userId,
         'recipientName': _artistProfile!.displayName,
       },
     );

@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter/foundation.dart';
 
 class MapPickerDialog extends StatefulWidget {
   final GeoPoint? initialLocation;
@@ -110,25 +111,28 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
         ),
         body: Stack(
           children: [
-            GoogleMap(
-              key: const Key('map_picker_dialog_map'),
-              initialCameraPosition: CameraPosition(
-                target:
-                    _selectedLocation ??
-                    const LatLng(37.7749, -122.4194), // Default to SF
-                zoom: 15,
+            if (kIsWeb)
+              _buildWebMapFallback()
+            else
+              GoogleMap(
+                key: const Key('map_picker_dialog_map'),
+                initialCameraPosition: CameraPosition(
+                  target:
+                      _selectedLocation ??
+                      const LatLng(37.7749, -122.4194), // Default to SF
+                  zoom: 15,
+                ),
+                onMapCreated: (controller) => _controller = controller,
+                markers: _selectedLocation == null
+                    ? {}
+                    : {
+                        Marker(
+                          markerId: const MarkerId('selected'),
+                          position: _selectedLocation!,
+                        ),
+                      },
+                onTap: _updateSelectedLocation,
               ),
-              onMapCreated: (controller) => _controller = controller,
-              markers: _selectedLocation == null
-                  ? {}
-                  : {
-                      Marker(
-                        markerId: const MarkerId('selected'),
-                        position: _selectedLocation!,
-                      ),
-                    },
-              onTap: _updateSelectedLocation,
-            ),
             Positioned(
               top: 16,
               right: 16,
@@ -159,6 +163,35 @@ class _MapPickerDialogState extends State<MapPickerDialog> {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Location Picker',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Interactive map location selection is optimized for mobile devices.\nPlease use the manual address entry or current location button.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
           ],
         ),
       ),

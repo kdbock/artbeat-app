@@ -14,6 +14,7 @@ import '../models/ad_type.dart';
 import '../models/image_fit.dart';
 import '../services/simple_ad_service.dart';
 import '../widgets/simple_ad_display_widget.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Simplified admin screen for managing ads
 class SimpleAdManagementScreen extends StatefulWidget {
@@ -239,7 +240,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                   height: 60,
                   child: SimpleAdDisplayWidget(
                     ad: ad,
-                    location: AdLocation.dashboard,
+                    location: AdLocation.fluidDashboard,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -384,7 +385,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                   height: 60,
                   child: SimpleAdDisplayWidget(
                     ad: ad,
-                    location: AdLocation.dashboard,
+                    location: AdLocation.fluidDashboard,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -864,7 +865,7 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
           }
         } catch (e) {
           failureCount++;
-          debugPrint('Error approving ad ${ad.id}: $e');
+          AppLogger.error('Error approving ad ${ad.id}: $e');
         }
       }
 
@@ -1040,7 +1041,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
       final snapshot = await uploadTask.whenComplete(() {});
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
-      debugPrint('Error uploading image: $e');
+      AppLogger.error('Error uploading image: $e');
       return null;
     }
   }
@@ -1337,7 +1338,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
                         ),
                         child: SimpleAdDisplayWidget(
                           ad: widget.ad,
-                          location: AdLocation.dashboard,
+                          location: AdLocation.fluidDashboard,
                         ),
                       ),
                       const SizedBox(height: 16),

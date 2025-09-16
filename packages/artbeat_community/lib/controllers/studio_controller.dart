@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/studio_model.dart';
 import '../services/firestore_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class StudioController extends ChangeNotifier {
   final FirestoreService _firestoreService;
@@ -15,7 +16,7 @@ class StudioController extends ChangeNotifier {
       _studios = await _firestoreService.getStudios();
       notifyListeners();
     } catch (e) {
-      debugPrint('Error fetching studios: $e');
+      AppLogger.error('Error fetching studios: $e');
     }
   }
 
@@ -25,7 +26,7 @@ class StudioController extends ChangeNotifier {
       _studios.add(studio);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error creating studio: $e');
+      AppLogger.error('Error creating studio: $e');
     }
   }
 
@@ -35,7 +36,7 @@ class StudioController extends ChangeNotifier {
       _studios.removeWhere((studio) => studio.id == studioId);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error deleting studio: $e');
+      AppLogger.error('Error deleting studio: $e');
     }
   }
 }

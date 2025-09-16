@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/user_service.dart';
+import 'logger.dart';
 
 class UserSyncHelper {
   static final UserService _userService = UserService();
@@ -13,7 +14,7 @@ class UserSyncHelper {
     try {
       final authUser = FirebaseAuth.instance.currentUser;
       if (authUser == null) {
-        debugPrint('❌ UserSyncHelper: No authenticated user');
+        AppLogger.error('❌ UserSyncHelper: No authenticated user');
         return false;
       }
 
@@ -50,11 +51,11 @@ class UserSyncHelper {
       // Check if user document exists
       final existingUser = await _userService.getUserById(authUser.uid);
       if (existingUser != null) {
-        debugPrint('✅ UserSyncHelper: User document already exists');
+        AppLogger.info('✅ UserSyncHelper: User document already exists');
         return true;
       }
 
-      debugPrint('⚠️ UserSyncHelper: User document missing, creating...');
+      AppLogger.warning('⚠️ UserSyncHelper: User document missing, creating...');
 
       // Create user document
       try {
@@ -63,26 +64,26 @@ class UserSyncHelper {
           email: authUser.email ?? '',
           displayName: authUser.displayName ?? 'ARTbeat User',
         );
-        debugPrint('✅ UserSyncHelper: createNewUser completed without error');
+        AppLogger.error('✅ UserSyncHelper: createNewUser completed without error');
       } catch (createError) {
         debugPrint(
           '❌ UserSyncHelper: createNewUser failed with error: $createError',
         );
-        debugPrint('❌ UserSyncHelper: Error type: ${createError.runtimeType}');
+        AppLogger.error('❌ UserSyncHelper: Error type: ${createError.runtimeType}');
         rethrow;
       }
 
       // Verify creation
       final newUser = await _userService.getUserById(authUser.uid);
       if (newUser != null) {
-        debugPrint('✅ UserSyncHelper: User document created successfully');
+        AppLogger.info('✅ UserSyncHelper: User document created successfully');
         return true;
       } else {
-        debugPrint('❌ UserSyncHelper: Failed to create user document');
+        AppLogger.error('❌ UserSyncHelper: Failed to create user document');
         return false;
       }
     } catch (e) {
-      debugPrint('❌ UserSyncHelper: Error ensuring user document: $e');
+      AppLogger.error('❌ UserSyncHelper: Error ensuring user document: $e');
       return false;
     } finally {
       _isChecking = false;

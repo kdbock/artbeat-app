@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../constants/routes.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for authentication and user profile management
 class AuthProfileService {
@@ -24,22 +25,22 @@ class AuthProfileService {
   }) async {
     try {
       if (!isAuthenticated) {
-        debugPrint('👤 User not authenticated - redirecting to login');
+        AppLogger.auth('👤 User not authenticated - redirecting to login');
         return AuthRoutes.login;
       }
 
       final user = currentUser!;
-      debugPrint('👤 Authenticated user: ${user.uid}');
+      AppLogger.auth('👤 Authenticated user: ${user.uid}');
 
       // Check email verification if required
       if (requireEmailVerification && !user.emailVerified) {
-        debugPrint('👤 User email not verified - redirecting to verification');
+        AppLogger.info('👤 User email not verified - redirecting to verification');
         return AuthRoutes.emailVerification;
       }
 
       // Check if user profile exists in Firestore
       final profile = await _firestore.collection('users').doc(user.uid).get();
-      debugPrint('👤 Firestore profile data: ${profile.data()}');
+      AppLogger.info('👤 Firestore profile data: ${profile.data()}');
 
       if (!profile.exists) {
         debugPrint(
@@ -53,7 +54,7 @@ class AuthProfileService {
       );
       return AuthRoutes.dashboard;
     } catch (e) {
-      debugPrint('❌ Error checking authentication status: $e');
+      AppLogger.error('❌ Error checking authentication status: $e');
       return AuthRoutes.login;
     }
   }
@@ -69,7 +70,7 @@ class AuthProfileService {
           .get();
       return doc.data();
     } catch (e) {
-      debugPrint('❌ Error getting user profile: $e');
+      AppLogger.error('❌ Error getting user profile: $e');
       return null;
     }
   }
@@ -79,7 +80,7 @@ class AuthProfileService {
     try {
       await _auth.signOut();
     } catch (e) {
-      debugPrint('❌ Error signing out: $e');
+      AppLogger.error('❌ Error signing out: $e');
       rethrow;
     }
   }

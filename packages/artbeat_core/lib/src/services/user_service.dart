@@ -10,6 +10,7 @@ import '../models/user_model.dart';
 import '../models/user_type.dart';
 import 'package:artbeat_art_walk/src/models/achievement_model.dart';
 import '../storage/enhanced_storage_service.dart';
+import '../utils/logger.dart';
 
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
@@ -18,18 +19,19 @@ class UserService extends ChangeNotifier {
     return _instance;
   }
 
-  late FirebaseAuth? _auth;
-  late FirebaseFirestore? _firestore;
-  late FirebaseStorage? _storage;
+  FirebaseAuth? _auth;
+  FirebaseFirestore? _firestore;
+  FirebaseStorage? _storage;
   bool _firebaseInitialized = false;
 
   UserService._internal() {
     _logDebug('Initializing UserService');
+    _initializeFirebase();
   }
 
   Future<UserModel> getUserModel(String userId) async {
     try {
-      final doc = await _firestore!.collection('users').doc(userId).get();
+      final doc = await firestore.collection('users').doc(userId).get();
       if (!doc.exists) {
         throw Exception('User document not found');
       }
@@ -41,11 +43,11 @@ class UserService extends ChangeNotifier {
   }
 
   void _logDebug(String message) {
-    debugPrint('👤 UserService: $message');
+    AppLogger.info('👤 UserService: $message');
   }
 
   void _logError(String message, [Object? error, StackTrace? stackTrace]) {
-    debugPrint('❌ UserService Error: $message');
+    AppLogger.error('❌ UserService Error: $message');
     if (error != null) debugPrint('Error details: $error');
     if (stackTrace != null) debugPrint('Stack trace: $stackTrace');
   }
@@ -113,24 +115,15 @@ class UserService extends ChangeNotifier {
   }
 
   CollectionReference get _usersCollection {
-    if (_firestore == null) {
-      throw StateError('Firebase Firestore not available in test environment');
-    }
-    return _firestore!.collection('users');
+    return firestore.collection('users');
   }
 
   CollectionReference get _followersCollection {
-    if (_firestore == null) {
-      throw StateError('Firebase Firestore not available in test environment');
-    }
-    return _firestore!.collection('followers');
+    return firestore.collection('followers');
   }
 
   CollectionReference get _followingCollection {
-    if (_firestore == null) {
-      throw StateError('Firebase Firestore not available in test environment');
-    }
-    return _firestore!.collection('following');
+    return firestore.collection('following');
   }
 
   User? get currentUser {
@@ -154,7 +147,7 @@ class UserService extends ChangeNotifier {
 
   Future<List<AchievementModel>> getUserAchievements(String userId) async {
     try {
-      final achievements = await _firestore!
+      final achievements = await firestore
           .collection('users')
           .doc(userId)
           .collection('achievements')
@@ -267,7 +260,7 @@ class UserService extends ChangeNotifier {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
       notifyListeners();
-      debugPrint('✅ Updated user ZIP code to: $zipCode');
+      AppLogger.info('✅ Updated user ZIP code to: $zipCode');
     } catch (e, s) {
       _logError('Error updating user ZIP code', e, s);
     }
@@ -797,6 +790,61 @@ class UserService extends ChangeNotifier {
     } catch (e, s) {
       _logError('Error getting users by role', e, s);
       return [];
+    }
+  }
+
+  /// Update user's capture count when they create a new capture
+  Future<bool> incrementUserCaptureCount(String userId) async {
+    try {
+      await firestore.collection('users').doc(userId).update({
+        'capturesCount': FieldValue.increment(1),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      _logDebug('Incremented capture count for user $userId');
+      return true;
+    } catch (e, s) {
+      _logError('Error incrementing user capture count', e, s);
+      return false;
+    }
+  }
+
+  /// Update user's capture count when they delete a capture
+  Future<bool> decrementUserCaptureCount(String userId) async {
+    try {
+      await firestore.collection('users').doc(userId).update({
+        'capturesCount': FieldValue.increment(-1),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      _logDebug('Decremented capture count for user $userId');
+      return true;
+    } catch (e, s) {
+      _logError('Error decrementing user capture count', e, s);
+      return false;
+    }
+  }
+
+  /// Recalculate and update user's capture count from actual captures
+  Future<bool> recalculateUserCaptureCount(String userId) async {
+    try {
+      // Get actual count from captures collection
+      final capturesSnapshot = await firestore
+          .collection('captures')
+          .where('userId', isEqualTo: userId)
+          .get();
+
+      final actualCount = capturesSnapshot.size;
+
+      // Update user document with correct count
+      await firestore.collection('users').doc(userId).update({
+        'capturesCount': actualCount,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      _logDebug('Updated capture count for user $userId to $actualCount');
+      return true;
+    } catch (e, s) {
+      _logError('Error recalculating user capture count', e, s);
+      return false;
     }
   }
 }

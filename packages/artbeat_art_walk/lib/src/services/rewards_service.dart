@@ -16,10 +16,18 @@ class RewardsService {
 
   /// XP rewards for different actions
   static const Map<String, int> _xpRewards = {
-    'art_capture_approved': 50,
+    'art_capture_created': 25, // Creating a new capture
+    'art_capture_approved': 50, // When capture gets approved
     'art_walk_completion': 100,
     'art_walk_creation': 75, // Creating a new art walk
     'art_visit': 10, // For individual art visits during walks
+    'art_visit_verified': 15, // Within 30m + photo
+    'art_visit_proximity': 10, // Within 30m
+    'art_visit_general': 5, // General check-in
+    'first_art_visit': 25, // Bonus for first visit
+    'art_walk_milestone_25': 10, // 25% progress bonus
+    'art_walk_milestone_50': 15, // 50% progress bonus
+    'art_walk_milestone_75': 20, // 75% progress bonus
     'review_submission': 30, // Minimum 50 words required
     'helpful_vote_received': 10,
     'public_walk_popular': 75, // When your walk is used by 5+ users
@@ -285,6 +293,9 @@ class RewardsService {
 
         // Track action-specific stats
         switch (action) {
+          case 'art_capture_created':
+            updates['stats.capturesCreated'] = FieldValue.increment(1);
+            break;
           case 'art_capture_approved':
             updates['stats.capturesApproved'] = FieldValue.increment(1);
             break;

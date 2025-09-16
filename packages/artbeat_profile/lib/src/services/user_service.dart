@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// User service for profile-related operations
 class UserService {
@@ -16,7 +16,7 @@ class UserService {
       final doc = await _firestore.collection('users').doc(userId).get();
       return doc.data();
     } catch (e) {
-      debugPrint('Error getting user profile: $e');
+      AppLogger.error('Error getting user profile: $e');
       return null;
     }
   }
@@ -31,9 +31,9 @@ class UserService {
         ...updates,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      debugPrint('User profile updated for $userId');
+      AppLogger.info('User profile updated for $userId');
     } catch (e) {
-      debugPrint('Error updating user profile: $e');
+      AppLogger.error('Error updating user profile: $e');
       rethrow;
     }
   }
@@ -57,7 +57,7 @@ class UserService {
         'defaultTags': <String>[],
       };
     } catch (e) {
-      debugPrint('Error getting capture user settings: $e');
+      AppLogger.error('Error getting capture user settings: $e');
       return null;
     }
   }
@@ -72,9 +72,9 @@ class UserService {
         'captureSettings': settings,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      debugPrint('Capture settings updated for $userId');
+      AppLogger.info('Capture settings updated for $userId');
     } catch (e) {
-      debugPrint('Error updating capture settings: $e');
+      AppLogger.error('Error updating capture settings: $e');
       rethrow;
     }
   }
@@ -91,7 +91,7 @@ class UserService {
 
       return null;
     } catch (e) {
-      debugPrint('Error getting user preferences: $e');
+      AppLogger.error('Error getting user preferences: $e');
       return null;
     }
   }
@@ -106,9 +106,9 @@ class UserService {
         'preferences': preferences,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      debugPrint('User preferences updated for $userId');
+      AppLogger.info('User preferences updated for $userId');
     } catch (e) {
-      debugPrint('Error updating user preferences: $e');
+      AppLogger.error('Error updating user preferences: $e');
       rethrow;
     }
   }

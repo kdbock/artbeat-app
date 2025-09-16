@@ -25,7 +25,7 @@ class ChatListScreen extends StatelessWidget {
               title: 'Messages',
               showLogo: false,
               backgroundColor: Colors.transparent,
-              foregroundColor: ArtbeatColors.textPrimary,
+              // Removed foregroundColor to use deep purple default
               elevation: 0,
               actions: [
                 IconButton(

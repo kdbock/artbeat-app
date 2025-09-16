@@ -8,6 +8,10 @@ import 'sponsorships/enhanced_sponsorship_screen.dart';
 export '../src/screens/community_artists_screen.dart';
 export 'unified_community_hub.dart';
 
+// NEW SIMPLIFIED SCREENS
+export 'art_community_hub.dart';
+export 'create_art_post_screen.dart';
+
 // Feed screens
 export 'feed/artist_community_feed_screen.dart';
 export 'feed/create_post_screen.dart';

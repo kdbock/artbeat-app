@@ -1,5 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import 'test_setup.dart';
 
 void main() {

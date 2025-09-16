@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:artbeat_core/artbeat_core.dart' show EnhancedStorageService;
+import 'package:artbeat_core/artbeat_core.dart'
+    show EnhancedStorageService, AppLogger;
 
 class StorageService {
   static final StorageService _instance = StorageService._internal();
@@ -36,7 +37,9 @@ class StorageService {
       try {
         _auth = FirebaseAuth.instance;
       } catch (e) {
-        debugPrint('❌ StorageService: Firebase Auth initialization failed: $e');
+        AppLogger.error(
+          '❌ StorageService: Firebase Auth initialization failed: $e',
+        );
         if (kDebugMode) {
           debugPrint(
             '👤 StorageService: Running in test environment - using null auth',
@@ -71,11 +74,13 @@ class StorageService {
               generateThumbnail: true,
             );
 
-        debugPrint('✅ StorageService: Capture image upload successful');
+        AppLogger.info('✅ StorageService: Capture image upload successful');
         return result['main'] ?? result.values.first;
       } catch (e) {
         retryCount++;
-        debugPrint('❌ StorageService: Upload attempt $retryCount failed: $e');
+        AppLogger.error(
+          '❌ StorageService: Upload attempt $retryCount failed: $e',
+        );
 
         if (retryCount >= maxRetries) {
           debugPrint(
@@ -122,7 +127,7 @@ class StorageService {
   /// Upload image with optimization (recommended method)
   Future<Map<String, String>> uploadImageOptimized(File file) async {
     try {
-      debugPrint('🔄 StorageService: Starting optimized upload...');
+      AppLogger.info('🔄 StorageService: Starting optimized upload...');
 
       final result = await _enhancedStorageInstance.uploadImageWithOptimization(
         imageFile: file,
@@ -130,10 +135,10 @@ class StorageService {
         generateThumbnail: true,
       );
 
-      debugPrint('✅ StorageService: Optimized upload successful');
+      AppLogger.info('✅ StorageService: Optimized upload successful');
       return result;
     } catch (e) {
-      debugPrint('❌ StorageService: Optimized upload failed: $e');
+      AppLogger.error('❌ StorageService: Optimized upload failed: $e');
       rethrow;
     }
   }
@@ -166,13 +171,15 @@ class StorageService {
         'capture_images/${user.uid}/$fileName.jpg',
       );
 
-      debugPrint('StorageService: Starting upload...');
-      debugPrint('StorageService: File path: ${file.path}');
-      debugPrint('StorageService: File size: ${await file.length()} bytes');
+      AppLogger.info('StorageService: Starting upload...');
+      AppLogger.info('StorageService: File path: ${file.path}');
+      AppLogger.info('StorageService: File size: ${await file.length()} bytes');
       debugPrint(
         'StorageService: Storage path: capture_images/${user.uid}/$fileName.jpg',
       );
-      debugPrint('StorageService: Storage bucket: ${_storageInstance!.bucket}');
+      AppLogger.info(
+        'StorageService: Storage bucket: ${_storageInstance!.bucket}',
+      );
 
       // Set metadata
       final metadata = SettableMetadata(
@@ -197,18 +204,20 @@ class StorageService {
 
       // Wait for upload completion
       final snapshot = await uploadTask;
-      debugPrint('StorageService: Upload completed successfully');
+      AppLogger.info('StorageService: Upload completed successfully');
 
       // Get download URL
       final downloadUrl = await snapshot.ref.getDownloadURL();
-      debugPrint('StorageService: Upload successful, URL: $downloadUrl');
+      AppLogger.info('StorageService: Upload successful, URL: $downloadUrl');
 
       return downloadUrl;
     } on FirebaseException catch (e) {
-      debugPrint('StorageService: Firebase error: ${e.code} - ${e.message}');
+      AppLogger.error(
+        'StorageService: Firebase error: ${e.code} - ${e.message}',
+      );
       throw Exception('Firebase upload failed: ${e.message}');
     } catch (e) {
-      debugPrint('StorageService: General error: $e');
+      AppLogger.error('StorageService: General error: $e');
       throw Exception('Failed to upload image: $e');
     }
   }
@@ -221,9 +230,9 @@ class StorageService {
 
       final ref = _storageInstance!.refFromURL(imageUrl);
       await ref.delete();
-      debugPrint('StorageService: Image deleted successfully');
+      AppLogger.info('StorageService: Image deleted successfully');
     } catch (e) {
-      debugPrint('StorageService: Error deleting image: $e');
+      AppLogger.error('StorageService: Error deleting image: $e');
       throw Exception('Failed to delete image: $e');
     }
   }
@@ -241,9 +250,11 @@ class StorageService {
       final user = _authInstance!.currentUser;
       if (user == null) return false;
 
-      debugPrint('StorageService: Testing connectivity...');
-      debugPrint('StorageService: Storage bucket: ${_storageInstance!.bucket}');
-      debugPrint('StorageService: App name: ${_storageInstance!.app.name}');
+      AppLogger.info('StorageService: Testing connectivity...');
+      AppLogger.info(
+        'StorageService: Storage bucket: ${_storageInstance!.bucket}',
+      );
+      AppLogger.info('StorageService: App name: ${_storageInstance!.app.name}');
       debugPrint(
         'StorageService: Storage max upload size: ${_storageInstance!.maxUploadRetryTime}',
       );
@@ -258,18 +269,24 @@ class StorageService {
           'StorageService: Root directory accessible, found ${listResult.items.length} items',
         );
       } catch (e) {
-        debugPrint('StorageService: Cannot list root directory: $e');
+        AppLogger.info('StorageService: Cannot list root directory: $e');
       }
 
       // Try to create a simple reference
       final testRef = _storageInstance!.ref('test_connection.txt');
-      debugPrint('StorageService: Test reference created: ${testRef.fullPath}');
-      debugPrint('StorageService: Test reference bucket: ${testRef.bucket}');
-      debugPrint('StorageService: Test reference storage: ${testRef.storage}');
+      AppLogger.info(
+        'StorageService: Test reference created: ${testRef.fullPath}',
+      );
+      AppLogger.info(
+        'StorageService: Test reference bucket: ${testRef.bucket}',
+      );
+      AppLogger.info(
+        'StorageService: Test reference storage: ${testRef.storage}',
+      );
 
       return true;
     } catch (e) {
-      debugPrint('StorageService: Connectivity test failed: $e');
+      AppLogger.info('StorageService: Connectivity test failed: $e');
       return false;
     }
   }
@@ -300,11 +317,11 @@ class StorageService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'img_$timestamp.jpg';
 
-      debugPrint('StorageService: Simple upload starting...');
+      AppLogger.info('StorageService: Simple upload starting...');
       debugPrint(
         'StorageService: File: ${file.path} (${await file.length()} bytes)',
       );
-      debugPrint('StorageService: Target: $fileName');
+      AppLogger.info('StorageService: Target: $fileName');
 
       final ref = _storageInstance!.ref(fileName);
 
@@ -320,10 +337,10 @@ class StorageService {
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
 
-      debugPrint('StorageService: Simple upload successful: $downloadUrl');
+      AppLogger.info('StorageService: Simple upload successful: $downloadUrl');
       return downloadUrl;
     } catch (e) {
-      debugPrint('StorageService: Simple upload failed: $e');
+      AppLogger.info('StorageService: Simple upload failed: $e');
       rethrow;
     }
   }
@@ -362,7 +379,7 @@ class StorageService {
           final fileName = 'test_$timestamp.jpg';
 
           final ref = storage.ref(fileName);
-          debugPrint('StorageService: Created reference: ${ref.fullPath}');
+          AppLogger.info('StorageService: Created reference: ${ref.fullPath}');
 
           final metadata = SettableMetadata(
             contentType: 'image/jpeg',
@@ -381,7 +398,7 @@ class StorageService {
           );
           return downloadUrl;
         } catch (e) {
-          debugPrint('StorageService: Storage instance $i failed: $e');
+          AppLogger.info('StorageService: Storage instance $i failed: $e');
           if (i == storageInstances.length - 1) {
             rethrow; // Last attempt failed, rethrow
           }
@@ -390,7 +407,7 @@ class StorageService {
 
       throw Exception('All storage configurations failed');
     } catch (e) {
-      debugPrint('StorageService: Explicit bucket upload failed: $e');
+      AppLogger.info('StorageService: Explicit bucket upload failed: $e');
       rethrow;
     }
   }
@@ -407,9 +424,9 @@ class StorageService {
         return 'DIAGNOSIS: User not authenticated';
       }
 
-      debugPrint('=== Storage Diagnosis ===');
-      debugPrint('User: ${user.uid}');
-      debugPrint('Bucket: ${_storageInstance!.bucket}');
+      AppLogger.info('=== Storage Diagnosis ===');
+      AppLogger.info('User: ${user.uid}');
+      AppLogger.info('Bucket: ${_storageInstance!.bucket}');
 
       // Test 1: Try to list root directory
       try {
@@ -419,7 +436,7 @@ class StorageService {
         );
         return 'SUCCESS: Firebase Storage is properly configured';
       } catch (e) {
-        debugPrint('List error: $e');
+        AppLogger.error('List error: $e');
 
         if (e.toString().contains('object-not-found')) {
           return 'DIAGNOSIS: Firebase Storage is NOT ENABLED for this project. Please enable it in Firebase Console.';

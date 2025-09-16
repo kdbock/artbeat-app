@@ -373,3 +373,107 @@ exports.requestRefund = functions.https.onRequest((request, response) => {
     }
   });
 });
+
+/**
+ * Fix capture counts for users - recalculates from actual captures
+ */
+exports.fixCaptureCount = functions.https.onRequest((request, response) => {
+  cors(request, response, async () => {
+    try {
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
+      }
+
+      const {userId} = request.body;
+
+      if (!userId) {
+        return response.status(400).send({
+          error: "Missing userId parameter",
+        });
+      }
+
+      const db = admin.firestore();
+
+      // Get actual count from captures collection
+      const capturesSnapshot = await db
+        .collection("captures")
+        .where("userId", "==", userId)
+        .get();
+
+      const actualCount = capturesSnapshot.size;
+
+      // Update user document with correct count
+      await db.collection("users").doc(userId).update({
+        capturesCount: actualCount,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`Fixed capture count for user ${userId}: ${actualCount}`);
+
+      response.status(200).send({
+        success: true,
+        userId,
+        capturesCount: actualCount,
+        message: `Updated capture count to ${actualCount}`,
+      });
+    } catch (error) {
+      console.error("Error fixing capture count:", error);
+      response.status(500).send({error: error.message});
+    }
+  });
+});
+
+/**
+ * Fix capture counts for all users who have the issue
+ */
+exports.fixAllCaptureCounts = functions.https.onRequest((request, response) => {
+  cors(request, response, async () => {
+    try {
+      if (request.method !== "POST") {
+        return response.status(405).send({error: "Method Not Allowed"});
+      }
+
+      const db = admin.firestore();
+      let fixedCount = 0;
+
+      // Get all users
+      const usersSnapshot = await db.collection("users").get();
+
+      for (const userDoc of usersSnapshot.docs) {
+        const userId = userDoc.id;
+        const userData = userDoc.data();
+        const currentCapturesCount = userData.capturesCount || 0;
+
+        // Get actual count from captures collection
+        const capturesSnapshot = await db
+          .collection("captures")
+          .where("userId", "==", userId)
+          .get();
+
+        const actualCount = capturesSnapshot.size;
+
+        // Only update if counts differ
+        if (currentCapturesCount !== actualCount) {
+          await db.collection("users").doc(userId).update({
+            capturesCount: actualCount,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          fixedCount++;
+          console.log(
+            `Fixed capture count for user ${userId}: ` +
+            `${currentCapturesCount} -> ${actualCount}`,
+          );
+        }
+      }
+
+      response.status(200).send({
+        success: true,
+        fixedCount,
+        message: `Fixed capture counts for ${fixedCount} users`,
+      });
+    } catch (error) {
+      console.error("Error fixing all capture counts:", error);
+      response.status(500).send({error: error.message});
+    }
+  });
+});

@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
 
 /// Screen for experiencing a self-guided art walk
@@ -108,13 +109,52 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   }
 
   Future<void> _initializeWalk() async {
-    await _getCurrentLocation();
-    await _loadArtPieces();
-    await _loadVisitedArt();
-    _createMarkersAndRoute();
-    setState(() {
-      _isLoading = false;
-    });
+    try {
+      await _getCurrentLocation();
+      await _loadArtPieces();
+      await _loadVisitedArt();
+      _createMarkersAndRoute();
+    } catch (e) {
+      AppLogger.error('Failed to initialize art walk: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to load art walk: ${_getWalkErrorMessage(e)}',
+            ),
+            backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _initializeWalk,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _getWalkErrorMessage(dynamic error) {
+    final errorString = error.toString().toLowerCase();
+
+    if (errorString.contains('permission') ||
+        errorString.contains('location')) {
+      return 'Location permission required for navigation.';
+    } else if (errorString.contains('network') ||
+        errorString.contains('connection')) {
+      return 'Network connection required to load art walk data.';
+    } else if (errorString.contains('not found') ||
+        errorString.contains('empty')) {
+      return 'Art walk data not available.';
+    } else {
+      return 'Please check your connection and try again.';
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -140,11 +180,15 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
   Future<void> _loadArtPieces() async {
     try {
       final artPieces = await _artWalkService.getArtInWalk(widget.artWalkId);
+      if (artPieces.isEmpty) {
+        throw Exception('No art pieces found for this walk');
+      }
       setState(() {
         _artPieces = artPieces;
       });
     } catch (e) {
-      // debugPrint('Error loading art pieces: $e');
+      AppLogger.error('Error loading art pieces: $e');
+      rethrow; // Re-throw to be handled by _initializeWalk
     }
   }
 
@@ -159,7 +203,13 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
             _visitedArtIds.length == _artPieces.length && _artPieces.isNotEmpty;
       });
     } catch (e) {
-      // debugPrint('Error loading visited art: $e');
+      AppLogger.error('Error loading visited art: $e');
+      // Don't rethrow - visited art is not critical for walk initialization
+      // Set empty list as fallback
+      setState(() {
+        _visitedArtIds = [];
+        _isWalkCompleted = false;
+      });
     }
   }
 
@@ -381,11 +431,15 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
       return MainLayout(
         currentIndex: -1,
         child: Scaffold(
-          appBar: EnhancedUniversalHeader(
+          appBar: ArtWalkDesignSystem.buildAppBar(
             title: widget.artWalk.title,
-            showLogo: false,
+            showBackButton: true,
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: ArtWalkDesignSystem.buildScreenContainer(
+            child: ArtWalkScreenTemplate.buildLoadingState(
+              message: 'Preparing your art walk experience...',
+            ),
+          ),
         ),
       );
     }
@@ -393,12 +447,15 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: EnhancedUniversalHeader(
+        appBar: ArtWalkDesignSystem.buildAppBar(
           title: widget.artWalk.title,
-          showLogo: false,
+          showBackButton: true,
           actions: [
             IconButton(
-              icon: const Icon(Icons.info_outline),
+              icon: const Icon(
+                Icons.info_outline,
+                color: ArtWalkDesignSystem.textLight,
+              ),
               onPressed: () {
                 showDialog<void>(
                   context: context,
@@ -431,28 +488,31 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
         body: Stack(
           children: [
             // Map
-            GoogleMap(
-              onMapCreated: (controller) {
-                _mapController = controller;
-                if (_artPieces.isNotEmpty) {
-                  _centerOnCurrentArt();
-                }
-              },
-              initialCameraPosition: CameraPosition(
-                target: _artPieces.isNotEmpty
-                    ? LatLng(
-                        _artPieces[0].location.latitude,
-                        _artPieces[0].location.longitude,
-                      )
-                    : const LatLng(35.5951, -82.5515), // Default to Asheville
-                zoom: 14.0,
+            if (kIsWeb)
+              _buildWebMapFallback()
+            else
+              GoogleMap(
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                  if (_artPieces.isNotEmpty) {
+                    _centerOnCurrentArt();
+                  }
+                },
+                initialCameraPosition: CameraPosition(
+                  target: _artPieces.isNotEmpty
+                      ? LatLng(
+                          _artPieces[0].location.latitude,
+                          _artPieces[0].location.longitude,
+                        )
+                      : const LatLng(35.5951, -82.5515), // Default to Asheville
+                  zoom: 14.0,
+                ),
+                markers: _markers,
+                polylines: _polylines,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
               ),
-              markers: _markers,
-              polylines: _polylines,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-            ),
 
             // Progress card
             Positioned(
@@ -592,6 +652,35 @@ class _ArtWalkExperienceScreenState extends State<ArtWalkExperienceScreen> {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Interactive Map',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
             ),
           ],
         ),

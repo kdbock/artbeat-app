@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/comment_model.dart';
+import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
 
 /// Enhanced comment service specifically for artwork interactions
 ///
@@ -96,7 +96,7 @@ class ArtworkCommentService {
 
       return commentRef.id;
     } catch (e) {
-      debugPrint('Error posting comment: $e');
+      AppLogger.error('Error posting comment: $e');
       return null;
     }
   }
@@ -130,7 +130,7 @@ class ArtworkCommentService {
           .map((doc) => CommentModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting artwork comments: $e');
+      AppLogger.error('Error getting artwork comments: $e');
       return [];
     }
   }
@@ -155,7 +155,7 @@ class ArtworkCommentService {
           .map((doc) => CommentModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting comment replies: $e');
+      AppLogger.error('Error getting comment replies: $e');
       return [];
     }
   }
@@ -195,7 +195,7 @@ class ArtworkCommentService {
 
       return true;
     } catch (e) {
-      debugPrint('Error editing comment: $e');
+      AppLogger.error('Error editing comment: $e');
       return false;
     }
   }
@@ -254,7 +254,7 @@ class ArtworkCommentService {
 
       return true;
     } catch (e) {
-      debugPrint('Error deleting comment: $e');
+      AppLogger.error('Error deleting comment: $e');
       return false;
     }
   }
@@ -304,7 +304,7 @@ class ArtworkCommentService {
 
       return true;
     } catch (e) {
-      debugPrint('Error toggling comment like: $e');
+      AppLogger.error('Error toggling comment like: $e');
       return false;
     }
   }
@@ -326,7 +326,7 @@ class ArtworkCommentService {
 
       return likeDoc.exists;
     } catch (e) {
-      debugPrint('Error checking comment like status: $e');
+      AppLogger.error('Error checking comment like status: $e');
       return false;
     }
   }
@@ -353,7 +353,7 @@ class ArtworkCommentService {
 
       return true;
     } catch (e) {
-      debugPrint('Error reporting comment: $e');
+      AppLogger.error('Error reporting comment: $e');
       return false;
     }
   }
@@ -414,7 +414,7 @@ class ArtworkCommentService {
         'engagementScore': totalLikes + (totalComments * 2),
       };
     } catch (e) {
-      debugPrint('Error getting comment stats: $e');
+      AppLogger.error('Error getting comment stats: $e');
       return {
         'totalComments': 0,
         'topLevelComments': 0,
@@ -459,7 +459,7 @@ class ArtworkCommentService {
         'createdAt': Timestamp.now(),
       });
     } catch (e) {
-      debugPrint('Error creating comment notification: $e');
+      AppLogger.error('Error creating comment notification: $e');
     }
   }
 }

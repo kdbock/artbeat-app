@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/artbeat_event.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Advanced analytics service for comprehensive event data analysis
 /// Phase 3 implementation with real-time metrics and detailed reporting
@@ -60,7 +61,7 @@ class EventAnalyticsServicePhase3 {
       });
     } catch (e) {
       // Silently fail for analytics - don't break user experience
-      print('Failed to track event view: $e');
+      AppLogger.info('Failed to track event view: $e');
     }
   }
 
@@ -87,7 +88,7 @@ class EventAnalyticsServicePhase3 {
         'lastInteraction': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Failed to track event interaction: $e');
+      AppLogger.info('Failed to track event interaction: $e');
     }
   }
 

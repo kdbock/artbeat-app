@@ -59,7 +59,7 @@ class _AvatarWidgetState extends State<AvatarWidget> {
         );
       }
     } catch (e) {
-      debugPrint('⚠️ AvatarWidget: Failed to fetch user avatar: $e');
+      AppLogger.warning('⚠️ AvatarWidget: Failed to fetch user avatar: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -71,11 +71,11 @@ class _AvatarWidgetState extends State<AvatarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🎭 AvatarWidget build:');
-    debugPrint('  - original avatarUrl: "${widget.avatarUrl}"');
-    debugPrint('  - current avatarUrl: "${_currentAvatarUrl ?? 'null'}"');
-    debugPrint('  - userId: "${widget.userId ?? 'null'}"');
-    debugPrint('  - displayName: "${widget.displayName ?? 'User'}"');
+    AppLogger.info('🎭 AvatarWidget build:');
+    AppLogger.info('  - original avatarUrl: "${widget.avatarUrl}"');
+    AppLogger.info('  - current avatarUrl: "${_currentAvatarUrl ?? 'null'}"');
+    AppLogger.info('  - userId: "${widget.userId ?? 'null'}"');
+    AppLogger.info('  - displayName: "${widget.displayName ?? 'User'}"');
     debugPrint(
       '  - will pass to UserAvatar: ${(_currentAvatarUrl?.isNotEmpty == true) ? _currentAvatarUrl : null}',
     );

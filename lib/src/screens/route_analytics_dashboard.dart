@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:flutter/material.dart';
+
 import '../services/route_analytics_service.dart';
 
 /// Analytics dashboard for monitoring route usage
@@ -56,8 +57,7 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: const core.EnhancedUniversalHeader(
         title: 'Route Analytics',
         showLogo: false,
@@ -70,10 +70,10 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
                 Expanded(
                   child: Row(
                     children: [
-                      Expanded(flex: 1, child: _buildRoutesList()),
+                      Expanded(child: _buildRoutesList()),
                       if (_selectedRoute != null) ...[
                         const VerticalDivider(width: 1),
-                        Expanded(flex: 1, child: _buildRouteDetails()),
+                        Expanded(child: _buildRouteDetails()),
                       ],
                     ],
                   ),
@@ -81,7 +81,6 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
               ],
             ),
     );
-  }
 
   Widget _buildSummaryCards() {
     final totalVisits = _popularRoutes.fold<int>(
@@ -134,8 +133,7 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
     required String value,
     required IconData icon,
     required Color color,
-  }) {
-    return Container(
+  }) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -161,10 +159,8 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
         ],
       ),
     );
-  }
 
-  Widget _buildRoutesList() {
-    return Container(
+  Widget _buildRoutesList() => Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -219,7 +215,6 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
         ],
       ),
     );
-  }
 
   Widget _buildRouteDetails() {
     if (_selectedRoute == null) return const SizedBox();
@@ -291,8 +286,7 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
     required String title,
     required String value,
     required IconData icon,
-  }) {
-    return Container(
+  }) => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.grey[50],
@@ -325,9 +319,6 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
         ],
       ),
     );
-  }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
 }

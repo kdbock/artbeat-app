@@ -57,7 +57,7 @@ void main() {
         imageUrl: 'https://example.com/image.jpg',
         title: 'Test Ad',
         description: 'Test Description',
-        location: AdLocation.dashboard,
+        location: AdLocation.fluidDashboard,
         duration: AdDuration.weekly,
         startDate: testStartDate,
         endDate: testEndDate,
@@ -297,7 +297,7 @@ void main() {
         ).thenThrow(Exception('Firestore error'));
 
         expect(
-          () => adService.getAdsByLocation(AdLocation.dashboard).first,
+          () => adService.getAdsByLocation(AdLocation.fluidDashboard).first,
           throwsA(isA<Exception>()),
         );
       });

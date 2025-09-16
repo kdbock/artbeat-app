@@ -10,3 +10,4 @@ export 'gift_model.dart';
 export 'gift_campaign_model.dart';
 export 'gift_subscription_model.dart';
 export 'artwork_model.dart';
+export 'in_app_purchase_models.dart';

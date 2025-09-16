@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/artwork_model.dart';
+import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
 
 /// Moderation action types
 enum ModerationAction { approve, reject, flag, unflag, requestChanges }
@@ -59,7 +59,7 @@ class EnhancedModerationService {
 
       return docRef.id;
     } catch (e) {
-      debugPrint('Error submitting for moderation: $e');
+      AppLogger.error('Error submitting for moderation: $e');
       return null;
     }
   }
@@ -172,7 +172,7 @@ class EnhancedModerationService {
 
       return true;
     } catch (e) {
-      debugPrint('Error performing moderation action: $e');
+      AppLogger.error('Error performing moderation action: $e');
       return false;
     }
   }
@@ -236,7 +236,7 @@ class EnhancedModerationService {
 
       return results;
     } catch (e) {
-      debugPrint('Error getting moderation queue: $e');
+      AppLogger.error('Error getting moderation queue: $e');
       return [];
     }
   }
@@ -251,7 +251,7 @@ class EnhancedModerationService {
 
       return true;
     } catch (e) {
-      debugPrint('Error assigning moderator: $e');
+      AppLogger.error('Error assigning moderator: $e');
       return false;
     }
   }
@@ -353,7 +353,7 @@ class EnhancedModerationService {
             : 0.0,
       };
     } catch (e) {
-      debugPrint('Error getting moderation stats: $e');
+      AppLogger.error('Error getting moderation stats: $e');
       return {};
     }
   }
@@ -410,7 +410,7 @@ class EnhancedModerationService {
 
       return auditTrail;
     } catch (e) {
-      debugPrint('Error getting audit trail: $e');
+      AppLogger.error('Error getting audit trail: $e');
       return [];
     }
   }
@@ -467,7 +467,7 @@ class EnhancedModerationService {
       // In a real implementation, this would call an AI service
       // and update the analysis results
     } catch (e) {
-      debugPrint('Error triggering AI analysis: $e');
+      AppLogger.error('Error triggering AI analysis: $e');
     }
   }
 
@@ -530,7 +530,7 @@ class EnhancedModerationService {
         'createdAt': Timestamp.now(),
       });
     } catch (e) {
-      debugPrint('Error sending moderation notification: $e');
+      AppLogger.error('Error sending moderation notification: $e');
     }
   }
 
@@ -553,7 +553,7 @@ class EnhancedModerationService {
         },
       });
     } catch (e) {
-      debugPrint('Error logging audit event: $e');
+      AppLogger.error('Error logging audit event: $e');
     }
   }
 }

@@ -8,6 +8,7 @@ import 'package:geocoding/geocoding.dart';
 import '../models/art_walk_model.dart';
 import '../models/public_art_model.dart';
 import 'package:artbeat_core/artbeat_core.dart' show ConnectivityUtils;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 /// Service for caching art walks locally for offline access
 class ArtWalkCacheService {
@@ -142,7 +143,7 @@ class ArtWalkCacheService {
           .cast<ArtWalkModel>()
           .toList();
     } catch (e) {
-      debugPrint('❌ Error getting all cached art walks: $e');
+      core.AppLogger.error('❌ Error getting all cached art walks: $e');
       return [];
     }
   }
@@ -369,13 +370,13 @@ class ArtWalkCacheService {
       // Check if we have this ZIP code already cached
       final cachedZip = prefs.getString(cacheKey);
       if (cachedZip != null) {
-        debugPrint('📍 [DEBUG] Using cached ZIP code: $cachedZip');
+        core.AppLogger.info('📍 [DEBUG] Using cached ZIP code: $cachedZip');
         return cachedZip;
       }
 
       // If we're offline, return empty string to trigger fallback
       if (!(await isOnline())) {
-        debugPrint('📍 [DEBUG] Offline, cannot fetch ZIP code');
+        core.AppLogger.info('📍 [DEBUG] Offline, cannot fetch ZIP code');
         return '';
       }
 
@@ -383,12 +384,12 @@ class ArtWalkCacheService {
       try {
         // Import the geocoding plugin and implement real geocoding
         final placemarks = await placemarkFromCoordinates(latitude, longitude);
-        debugPrint('📍 [DEBUG] Geocoding result: $placemarks');
+        core.AppLogger.info('📍 [DEBUG] Geocoding result: $placemarks');
         if (placemarks.isNotEmpty &&
             placemarks.first.postalCode?.isNotEmpty == true) {
           final zip = placemarks.first.postalCode!;
           await prefs.setString(cacheKey, zip);
-          debugPrint('📍 [DEBUG] Got ZIP from geocoding: $zip');
+          core.AppLogger.info('📍 [DEBUG] Got ZIP from geocoding: $zip');
           return zip;
         }
         debugPrint(
@@ -396,11 +397,13 @@ class ArtWalkCacheService {
         );
         return '';
       } catch (e) {
-        debugPrint('❌ [DEBUG] Error with geocoding service: $e');
+        core.AppLogger.error('❌ [DEBUG] Error with geocoding service: $e');
         return '';
       }
     } catch (e) {
-      debugPrint('❌ [DEBUG] Error getting ZIP code from coordinates: $e');
+      core.AppLogger.error(
+        '❌ [DEBUG] Error getting ZIP code from coordinates: $e',
+      );
       return '';
     }
   }
@@ -425,7 +428,7 @@ class ArtWalkCacheService {
           .cast<PublicArtModel>()
           .toList();
     } catch (e) {
-      debugPrint('❌ Error getting cached public art: $e');
+      core.AppLogger.error('❌ Error getting cached public art: $e');
       return [];
     }
   }

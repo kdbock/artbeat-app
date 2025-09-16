@@ -25,7 +25,7 @@ void main() {
     });
 
     Widget createTestWidget({
-      AdLocation location = AdLocation.dashboard,
+      AdLocation location = AdLocation.fluidDashboard,
       EdgeInsets? padding,
       bool showIfEmpty = false,
       Widget Function(BuildContext)? emptyBuilder,
@@ -52,7 +52,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value(testAds));
 
         await tester.pumpWidget(createTestWidget());
@@ -66,7 +66,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value([]));
 
         await tester.pumpWidget(createTestWidget(showIfEmpty: false));
@@ -80,7 +80,7 @@ void main() {
         'should show placeholder when no ads and showIfEmpty is true',
         (WidgetTester tester) async {
           when(
-            mockAdService.getAdsByLocation(AdLocation.dashboard),
+            mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
           ).thenAnswer((_) => Stream<List<AdModel>>.value([]));
 
           await tester.pumpWidget(createTestWidget(showIfEmpty: true));
@@ -95,7 +95,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream.value(testAds));
 
         await tester.pumpWidget(createTestWidget(showIfEmpty: true));
@@ -109,7 +109,9 @@ void main() {
       testWidgets('should handle stream errors gracefully', (
         WidgetTester tester,
       ) async {
-        when(mockAdService.getAdsByLocation(AdLocation.dashboard)).thenAnswer(
+        when(
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
+        ).thenAnswer(
           (_) => Stream<List<AdModel>>.error(Exception('Network error')),
         );
 
@@ -123,7 +125,9 @@ void main() {
       testWidgets('should handle stream errors without placeholder', (
         WidgetTester tester,
       ) async {
-        when(mockAdService.getAdsByLocation(AdLocation.dashboard)).thenAnswer(
+        when(
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
+        ).thenAnswer(
           (_) => Stream<List<AdModel>>.error(Exception('Network error')),
         );
 
@@ -140,7 +144,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value([]));
 
         await tester.pumpWidget(
@@ -158,7 +162,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value([]));
 
         await tester.pumpWidget(
@@ -177,7 +181,7 @@ void main() {
     group('Layout and Styling Tests', () {
       testWidgets('should apply custom padding', (WidgetTester tester) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream.value(testAds));
 
         const customPadding = EdgeInsets.all(16.0);
@@ -194,7 +198,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream.value(testAds));
 
         await tester.pumpWidget(createTestWidget());
@@ -210,7 +214,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value(testAds));
 
         await tester.pumpWidget(createTestWidget());
@@ -253,7 +257,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value([]));
 
         await tester.pumpWidget(createTestWidget(showIfEmpty: true));
@@ -279,7 +283,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getAdsByLocation(AdLocation.dashboard),
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
         ).thenAnswer((_) => Stream<List<AdModel>>.value([]));
 
         await tester.pumpWidget(createTestWidget(showIfEmpty: true));
@@ -309,7 +313,7 @@ void main() {
     });
 
     Widget createAdSpaceWidget({
-      AdLocation location = AdLocation.dashboard,
+      AdLocation location = AdLocation.fluidDashboard,
       String? customLabel,
       double? width,
       double? height,
@@ -336,9 +340,11 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 1);
-        when(mockAdService.getAdsByLocation(AdLocation.dashboard)).thenAnswer(
+        when(
+          mockAdService.getAdsByLocation(AdLocation.fluidDashboard),
+        ).thenAnswer(
           (_) => Stream<List<AdModel>>.value([AdTestHelpers.createTestAd()]),
         );
 
@@ -352,21 +358,21 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget());
         await tester.pump();
 
         expect(find.byIcon(Icons.campaign_outlined), findsOneWidget);
-        expect(find.text('Dashboard Ad'), findsOneWidget);
+        expect(find.text('Fluid Dashboard Ad'), findsOneWidget);
       });
 
       testWidgets('should use custom label when provided', (
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(
@@ -375,14 +381,14 @@ void main() {
         await tester.pump();
 
         expect(find.text('Custom Ad Label'), findsOneWidget);
-        expect(find.text('Dashboard Ad'), findsNothing);
+        expect(find.text('Fluid Dashboard Ad'), findsNothing);
       });
 
       testWidgets('should use custom dimensions when provided', (
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget(width: 200, height: 100));
@@ -417,7 +423,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget());
@@ -437,7 +443,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget());
@@ -456,7 +462,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget());
@@ -478,7 +484,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => throw Exception('Service error'));
 
         await tester.pumpWidget(createAdSpaceWidget());
@@ -490,7 +496,7 @@ void main() {
 
       testWidgets('should handle null ad count', (WidgetTester tester) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget());
@@ -505,7 +511,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         // Test with small screen
@@ -530,7 +536,7 @@ void main() {
         WidgetTester tester,
       ) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget(width: 1000));
@@ -547,7 +553,7 @@ void main() {
     group('Performance Tests', () {
       testWidgets('should handle rapid rebuilds', (WidgetTester tester) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         for (int i = 0; i < 10; i++) {
@@ -560,7 +566,7 @@ void main() {
 
       testWidgets('should dispose properly', (WidgetTester tester) async {
         when(
-          mockAdService.getActiveAdsCount(AdLocation.dashboard),
+          mockAdService.getActiveAdsCount(AdLocation.fluidDashboard),
         ).thenAnswer((_) async => 0);
 
         await tester.pumpWidget(createAdSpaceWidget());

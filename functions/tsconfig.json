@@ -1,7 +1,7 @@
 {
   "compileOnSave": true,
   "include": [
-    "src"
+    "src/**/*"
   ],
   "compilerOptions": {
     "module": "NodeNext",
@@ -13,6 +13,8 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "moduleResolution": "nodenext",
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "allowJs": true,
+    "checkJs": false
   }
 }

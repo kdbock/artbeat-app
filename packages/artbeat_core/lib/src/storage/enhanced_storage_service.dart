@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
+import '../utils/logger.dart';
 
 class EnhancedStorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -19,7 +20,7 @@ class EnhancedStorageService {
     int thumbnailSize = 200,
   }) async {
     try {
-      debugPrint('📸 Starting optimized image upload for category: $category');
+      AppLogger.info('📸 Starting optimized image upload for category: $category');
 
       // Read the image file
       final bytes = await imageFile.readAsBytes();
@@ -74,7 +75,7 @@ class EnhancedStorageService {
 
       // Generate and upload thumbnail if requested
       if (generateThumbnail) {
-        debugPrint('🔍 Generating thumbnail...');
+        AppLogger.debug('🔍 Generating thumbnail...');
         final thumbnail = img.copyResize(
           originalImage,
           width: thumbnailSize,
@@ -93,13 +94,13 @@ class EnhancedStorageService {
 
         final thumbnailUrl = await thumbnailRef.getDownloadURL();
         result['thumbnailUrl'] = thumbnailUrl;
-        debugPrint('✅ Thumbnail generated and uploaded');
+        AppLogger.info('✅ Thumbnail generated and uploaded');
       }
 
-      debugPrint('✅ Enhanced image upload completed successfully');
+      AppLogger.info('✅ Enhanced image upload completed successfully');
       return result;
     } catch (e) {
-      debugPrint('❌ Error in enhanced image upload: $e');
+      AppLogger.error('❌ Error in enhanced image upload: $e');
       rethrow;
     }
   }
@@ -108,9 +109,9 @@ class EnhancedStorageService {
     try {
       final ref = _storage.refFromURL(imageUrl);
       await ref.delete();
-      debugPrint('✅ Image deleted successfully: $imageUrl');
+      AppLogger.info('✅ Image deleted successfully: $imageUrl');
     } catch (e) {
-      debugPrint('❌ Error deleting image: $e');
+      AppLogger.error('❌ Error deleting image: $e');
       rethrow;
     }
   }

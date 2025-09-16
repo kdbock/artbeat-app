@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'env_loader.dart';
+import 'logger.dart';
 
 /// Utility class for validating environment variables
 class EnvValidator {
@@ -22,13 +23,13 @@ class EnvValidator {
     bool isValid = true;
     for (final key in _requiredVars) {
       if (!_envLoader.has(key) || _envLoader.get(key).isEmpty) {
-        debugPrint('❌ Missing required environment variable: $key');
+        AppLogger.error('❌ Missing required environment variable: $key');
         isValid = false;
       }
     }
 
     if (isValid) {
-      debugPrint('✅ All required environment variables are set');
+      AppLogger.info('✅ All required environment variables are set');
     }
 
     return isValid;
@@ -41,7 +42,7 @@ class EnvValidator {
       Uri.parse(apiUrl);
       return true;
     } catch (e) {
-      debugPrint('❌ Invalid API URL format: ${e.toString()}');
+      AppLogger.error('❌ Invalid API URL format: ${e.toString()}');
       return false;
     }
   }
@@ -55,12 +56,12 @@ class EnvValidator {
 
   /// Print environment diagnostics
   void printDiagnostics() {
-    debugPrint('🔍 Environment Diagnostics:');
-    debugPrint('API URL: ${_envLoader.get('API_BASE_URL')}');
-    debugPrint('Firebase Region: ${_envLoader.get('FIREBASE_REGION')}');
+    AppLogger.debug('🔍 Environment Diagnostics:');
+    AppLogger.info('API URL: ${_envLoader.get('API_BASE_URL')}');
+    AppLogger.firebase('Firebase Region: ${_envLoader.get('FIREBASE_REGION')}');
     debugPrint(
       'Has Google Maps API Key: ${_envLoader.has('GOOGLE_MAPS_API_KEY')}',
     );
-    debugPrint('Has Stripe Key: ${_envLoader.has('STRIPE_PUBLISHABLE_KEY')}');
+    AppLogger.info('Has Stripe Key: ${_envLoader.has('STRIPE_PUBLISHABLE_KEY')}');
   }
 }

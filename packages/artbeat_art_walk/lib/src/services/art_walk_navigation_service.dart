@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 /// Service for handling turn-by-turn navigation during art walks
 class ArtWalkNavigationService {
@@ -113,6 +114,11 @@ class ArtWalkNavigationService {
   /// Stop navigation and clean up resources
   Future<void> stopNavigation() async {
     _locationUpdateTimer?.cancel();
+    _locationUpdateTimer = null;
+
+    await _locationSubscription?.cancel();
+    _locationSubscription = null;
+
     _currentRoute = null;
     _currentSegmentIndex = 0;
     _currentStepIndex = 0;
@@ -183,19 +189,44 @@ class ArtWalkNavigationService {
   /// Start monitoring location updates
   Future<void> _startLocationMonitoring() async {
     const LocationSettings locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 5, // Update every 5 meters
+      accuracy: LocationAccuracy.medium, // Reduced from high to medium
+      distanceFilter: 10, // Increased from 5 to 10 meters to reduce updates
+      timeLimit: Duration(
+        minutes: 30,
+      ), // Add time limit to prevent indefinite tracking
     );
 
     final locationStream = Geolocator.getPositionStream(
       locationSettings: locationSettings,
     );
 
-    _locationSubscription = locationStream.listen((Position position) {
-      if (!_locationUpdateController.isClosed) {
-        _lastKnownPosition = position;
-        _locationUpdateController.add(position);
-        _processLocationUpdate(position);
+    _locationSubscription = locationStream.listen(
+      (Position position) {
+        if (!_locationUpdateController.isClosed) {
+          _lastKnownPosition = position;
+          _locationUpdateController.add(position);
+          _processLocationUpdate(position);
+        }
+      },
+      onError: (Object error) {
+        // Handle location stream errors gracefully
+        core.AppLogger.error('Location stream error: $error');
+        // Try to restart location monitoring after a delay
+        Future.delayed(const Duration(seconds: 5), () {
+          if (_currentRoute != null && !_locationUpdateController.isClosed) {
+            _startLocationMonitoring();
+          }
+        });
+      },
+      cancelOnError: false, // Don't cancel the stream on errors
+    );
+
+    // Add a safety timer to prevent indefinite location tracking
+    _locationUpdateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      // Check if navigation is still active
+      if (_currentRoute == null || _locationUpdateController.isClosed) {
+        timer.cancel();
+        _locationSubscription?.cancel();
       }
     });
   }
@@ -291,9 +322,20 @@ class ArtWalkNavigationService {
   /// Dispose of resources
   void dispose() {
     _locationUpdateTimer?.cancel();
+    _locationUpdateTimer = null;
+
     _locationSubscription?.cancel();
-    _navigationUpdateController.close();
-    _locationUpdateController.close();
+    _locationSubscription = null;
+
+    _currentRoute = null;
+    _lastKnownPosition = null;
+
+    if (!_navigationUpdateController.isClosed) {
+      _navigationUpdateController.close();
+    }
+    if (!_locationUpdateController.isClosed) {
+      _locationUpdateController.close();
+    }
   }
 }
 

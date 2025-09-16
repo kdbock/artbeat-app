@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import '../widgets/art_walk_drawer.dart';
 
 /// Screen for editing existing art walks
 class ArtWalkEditScreen extends StatefulWidget {

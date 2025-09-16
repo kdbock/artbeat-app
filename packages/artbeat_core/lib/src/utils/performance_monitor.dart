@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'logger.dart';
 
 /// Simple performance monitoring utility for tracking app startup and navigation times
 class PerformanceMonitor {
@@ -9,7 +10,7 @@ class PerformanceMonitor {
   static void startTimer(String operation) {
     if (kDebugMode) {
       _startTimes[operation] = DateTime.now();
-      debugPrint('⏱️ Started timing: $operation');
+      AppLogger.info('⏱️ Started timing: $operation');
     }
   }
 
@@ -18,7 +19,7 @@ class PerformanceMonitor {
     if (kDebugMode && _startTimes.containsKey(operation)) {
       final duration = DateTime.now().difference(_startTimes[operation]!);
       _durations[operation] = duration;
-      debugPrint('⏱️ $operation completed in ${duration.inMilliseconds}ms');
+      AppLogger.info('⏱️ $operation completed in ${duration.inMilliseconds}ms');
       _startTimes.remove(operation);
     }
   }
@@ -31,9 +32,9 @@ class PerformanceMonitor {
   /// Log all recorded durations
   static void logAllDurations() {
     if (kDebugMode && _durations.isNotEmpty) {
-      debugPrint('📊 Performance Summary:');
+      AppLogger.analytics('📊 Performance Summary:');
       _durations.forEach((operation, duration) {
-        debugPrint('  $operation: ${duration.inMilliseconds}ms');
+        AppLogger.info('  $operation: ${duration.inMilliseconds}ms');
       });
     }
   }

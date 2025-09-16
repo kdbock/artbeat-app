@@ -1,13 +1,13 @@
-import 'package:flutter/foundation.dart';
-
-import 'package:flutter/widgets.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 /// Manages app lifecycle events and prevents crashes during background transitions
 class AppLifecycleManager extends WidgetsBindingObserver {
-  static final AppLifecycleManager _instance = AppLifecycleManager._internal();
   factory AppLifecycleManager() => _instance;
   AppLifecycleManager._internal();
+  static final AppLifecycleManager _instance = AppLifecycleManager._internal();
 
   bool _isInitialized = false;
   AppLifecycleState _currentState = AppLifecycleState.resumed;
@@ -18,7 +18,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       _isInitialized = true;
       if (kDebugMode) {
-        print('🔄 AppLifecycleManager initialized');
+        AppLogger.info('🔄 AppLifecycleManager initialized');
       }
     }
   }
@@ -29,7 +29,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       WidgetsBinding.instance.removeObserver(this);
       _isInitialized = false;
       if (kDebugMode) {
-        print('🔄 AppLifecycleManager disposed');
+        AppLogger.info('🔄 AppLifecycleManager disposed');
       }
     }
   }
@@ -40,7 +40,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
     _currentState = state;
 
     if (kDebugMode) {
-      print('🔄 App lifecycle state changed to: $state');
+      AppLogger.info('🔄 App lifecycle state changed to: $state');
     }
 
     switch (state) {
@@ -64,7 +64,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
 
   void _handleAppResumed() {
     if (kDebugMode) {
-      print('✅ App resumed - reinitializing connections');
+      AppLogger.info('✅ App resumed - reinitializing connections');
     }
     // Reinitialize any connections that might have been dropped
     _ensureFirestoreConnection();
@@ -72,7 +72,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
 
   void _handleAppPaused() {
     if (kDebugMode) {
-      print('⏸️ App paused - preparing for background');
+      AppLogger.info('⏸️ App paused - preparing for background');
     }
     // Prepare for background - save any pending data
     _saveStateForBackground();
@@ -80,14 +80,14 @@ class AppLifecycleManager extends WidgetsBindingObserver {
 
   void _handleAppInactive() {
     if (kDebugMode) {
-      print('🔻 App inactive - temporarily pausing operations');
+      AppLogger.info('🔻 App inactive - temporarily pausing operations');
     }
     // Temporarily pause operations
   }
 
   void _handleAppDetached() {
     if (kDebugMode) {
-      print('🔌 App detached - cleaning up resources');
+      AppLogger.info('🔌 App detached - cleaning up resources');
     }
     // Clean up resources
     _cleanupResources();
@@ -95,7 +95,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
 
   void _handleAppHidden() {
     if (kDebugMode) {
-      print('👻 App hidden - minimizing resource usage');
+      AppLogger.info('👻 App hidden - minimizing resource usage');
     }
     // Minimize resource usage
   }
@@ -106,11 +106,11 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       // Check if Firestore is available
       FirebaseFirestore.instance.settings;
       if (kDebugMode) {
-        print('✅ Firestore connection healthy');
+        AppLogger.info('✅ Firestore connection healthy');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Firestore connection issue: $e');
+        AppLogger.error('❌ Firestore connection issue: $e');
       }
       // Attempt to reconnect
       _reconnectFirestore();
@@ -123,11 +123,11 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       // Enable network if disabled
       FirebaseFirestore.instance.enableNetwork();
       if (kDebugMode) {
-        print('🔄 Firestore network re-enabled');
+        AppLogger.network('🔄 Firestore network re-enabled');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Failed to re-enable Firestore network: $e');
+        AppLogger.error('❌ Failed to re-enable Firestore network: $e');
       }
     }
   }
@@ -139,11 +139,11 @@ class AppLifecycleManager extends WidgetsBindingObserver {
     try {
       FirebaseFirestore.instance.terminate();
       if (kDebugMode) {
-        print('💾 Firestore terminated cleanly for background');
+        AppLogger.info('💾 Firestore terminated cleanly for background');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error terminating Firestore: $e');
+        AppLogger.error('❌ Error terminating Firestore: $e');
       }
     }
   }
@@ -154,11 +154,11 @@ class AppLifecycleManager extends WidgetsBindingObserver {
     try {
       // Cancel any pending operations
       if (kDebugMode) {
-        print('🧹 Resources cleaned up');
+        AppLogger.info('🧹 Resources cleaned up');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error cleaning up resources: $e');
+        AppLogger.error('❌ Error cleaning up resources: $e');
       }
     }
   }

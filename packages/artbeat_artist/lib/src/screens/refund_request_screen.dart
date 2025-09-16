@@ -184,7 +184,7 @@ class _RefundRequestScreenState extends State<RefundRequestScreen> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedReason,
+                  initialValue: _selectedReason,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                   ),

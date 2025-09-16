@@ -147,39 +147,103 @@ void main() {
 
     group('AdLocation Tests', () {
       test('should have correct enum values', () {
-        expect(AdLocation.values, hasLength(26));
-        expect(AdLocation.values, contains(AdLocation.dashboard));
-        expect(AdLocation.values, contains(AdLocation.feed));
-        expect(AdLocation.values, contains(AdLocation.profile));
-        expect(AdLocation.values, contains(AdLocation.search));
+        expect(AdLocation.values, hasLength(9));
+        expect(AdLocation.values, contains(AdLocation.fluidDashboard));
         expect(AdLocation.values, contains(AdLocation.artWalkDashboard));
         expect(AdLocation.values, contains(AdLocation.captureDashboard));
-        expect(AdLocation.values, contains(AdLocation.communityDashboard));
-        expect(AdLocation.values, contains(AdLocation.eventsDashboard));
+        expect(AdLocation.values, contains(AdLocation.unifiedCommunityHub));
+        expect(AdLocation.values, contains(AdLocation.eventDashboard));
+        expect(
+          AdLocation.values,
+          contains(AdLocation.artisticMessagingDashboard),
+        );
+        expect(AdLocation.values, contains(AdLocation.artistPublicProfile));
+        expect(AdLocation.values, contains(AdLocation.artistInFeed));
+        expect(AdLocation.values, contains(AdLocation.communityInFeed));
       });
 
       test('should have correct display names', () {
-        expect(AdLocation.dashboard.displayName, equals('Dashboard'));
-        expect(AdLocation.feed.displayName, equals('Feed'));
-        expect(AdLocation.profile.displayName, equals('Profile'));
-        expect(AdLocation.search.displayName, equals('Search'));
+        expect(
+          AdLocation.fluidDashboard.displayName,
+          equals('Fluid Dashboard'),
+        );
+        expect(
+          AdLocation.artWalkDashboard.displayName,
+          equals('Art Walk Dashboard'),
+        );
+        expect(
+          AdLocation.captureDashboard.displayName,
+          equals('Capture Dashboard'),
+        );
+        expect(
+          AdLocation.unifiedCommunityHub.displayName,
+          equals('Unified Community Hub'),
+        );
+        expect(
+          AdLocation.eventDashboard.displayName,
+          equals('Event Dashboard'),
+        );
+        expect(
+          AdLocation.artisticMessagingDashboard.displayName,
+          equals('Artistic Messaging Dashboard'),
+        );
+        expect(
+          AdLocation.artistPublicProfile.displayName,
+          equals('Artist Public Profile'),
+        );
+        expect(AdLocation.artistInFeed.displayName, equals('Artist in Feed'));
+        expect(
+          AdLocation.communityInFeed.displayName,
+          equals('Community in Feed'),
+        );
       });
 
       test('should have correct descriptions', () {
         expect(
-          AdLocation.dashboard.description,
-          contains('Main app dashboard'),
+          AdLocation.fluidDashboard.description,
+          contains('fluid dashboard'),
         );
-        expect(AdLocation.feed.description, contains('content feed'));
-        expect(AdLocation.profile.description, contains('profile pages'));
-        expect(AdLocation.search.description, contains('search results'));
+        expect(AdLocation.artWalkDashboard.description, contains('Art walk'));
+        expect(AdLocation.captureDashboard.description, contains('capture'));
+        expect(
+          AdLocation.unifiedCommunityHub.description,
+          contains('community hub'),
+        );
+        expect(AdLocation.eventDashboard.description, contains('Events'));
+        expect(
+          AdLocation.artisticMessagingDashboard.description,
+          contains('messaging'),
+        );
+        expect(
+          AdLocation.artistPublicProfile.description,
+          contains('artist profile'),
+        );
+        expect(AdLocation.artistInFeed.description, contains('Artist content'));
+        expect(
+          AdLocation.communityInFeed.description,
+          contains('Community content'),
+        );
       });
 
       test('should have correct names', () {
-        expect(AdLocation.dashboard.name, equals('dashboard'));
-        expect(AdLocation.feed.name, equals('feed'));
-        expect(AdLocation.profile.name, equals('profile'));
-        expect(AdLocation.search.name, equals('search'));
+        expect(AdLocation.fluidDashboard.name, equals('fluidDashboard'));
+        expect(AdLocation.artWalkDashboard.name, equals('artWalkDashboard'));
+        expect(AdLocation.captureDashboard.name, equals('captureDashboard'));
+        expect(
+          AdLocation.unifiedCommunityHub.name,
+          equals('unifiedCommunityHub'),
+        );
+        expect(AdLocation.eventDashboard.name, equals('eventDashboard'));
+        expect(
+          AdLocation.artisticMessagingDashboard.name,
+          equals('artisticMessagingDashboard'),
+        );
+        expect(
+          AdLocation.artistPublicProfile.name,
+          equals('artistPublicProfile'),
+        );
+        expect(AdLocation.artistInFeed.name, equals('artistInFeed'));
+        expect(AdLocation.communityInFeed.name, equals('communityInFeed'));
       });
     });
 
@@ -333,7 +397,7 @@ void main() {
           'type': AdType.banner_ad,
           'size': AdSize.large,
           'status': AdStatus.active,
-          'location': AdLocation.dashboard,
+          'location': AdLocation.fluidDashboard,
           'duration': AdDuration.weekly,
           'imageFit': ImageFit.cover,
         };
@@ -379,7 +443,10 @@ void main() {
         expect(AdType.banner_ad.toString(), contains('banner_ad'));
         expect(AdSize.medium.toString(), contains('medium'));
         expect(AdStatus.pending.toString(), contains('pending'));
-        expect(AdLocation.dashboard.toString(), contains('dashboard'));
+        expect(
+          AdLocation.fluidDashboard.toString(),
+          contains('fluidDashboard'),
+        );
       });
 
       test('should handle enum equality', () {

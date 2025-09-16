@@ -47,6 +47,20 @@ class _GiftsScreenState extends State<GiftsScreen> {
     }
   }
 
+  void _handleSendGift(GiftModel gift) {
+    // Navigate to enhanced gift purchasing flow with pre-selected gift
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: gift.recipientId,
+          recipientName: 'Artist', // We might need to get the actual name
+          initialTab: 0, // Start with preset gifts
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -128,7 +142,10 @@ class _GiftsScreenState extends State<GiftsScreen> {
                           childAspectRatio: 1.0,
                         ),
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => GiftCardWidget(gift: _gifts[index]),
+                      (context, index) => GiftCardWidget(
+                        gift: _gifts[index],
+                        onSendGift: () => _handleSendGift(_gifts[index]),
+                      ),
                       childCount: _gifts.length,
                     ),
                   ),

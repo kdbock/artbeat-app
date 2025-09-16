@@ -35,13 +35,13 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>ARTbeat needs access to save artwork photos to your photo library.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>ARTbeat needs your location to show nearby public art and create location-based art walks.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>ARTbeat uses your location to discover public art near you and create custom art walks.</string>
+	<string>ARTbeat needs your location to show nearby public art and provide turn-by-turn navigation during art walks.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>ARTbeat uses your location to discover public art near you and create custom art walks.</string>
+	<string>ARTbeat needs continuous location access to provide accurate art walk navigation, track your progress, and show real-time updates even when the app is in the background.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ARTbeat needs microphone access to record audio notes about public art (optional).</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>ARTbeat sends notifications for art walk updates, event reminders, and community features.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

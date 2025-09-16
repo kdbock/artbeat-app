@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
-import '../widgets/art_walk_drawer.dart';
 
 class ArtWalkListScreen extends StatefulWidget {
   const ArtWalkListScreen({super.key});
@@ -93,45 +92,44 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: EnhancedUniversalHeader(
-        title: 'Art Walks',
-        showLogo: false,
-        scaffoldKey: _scaffoldKey,
-        showBackButton: true,
-        backgroundGradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [
-            Color(0xFF4FB3BE), // Light Teal
-            Color(0xFFFF9E80), // Light Orange/Peach
-          ],
-        ),
-        titleGradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [
-            Color(0xFF4FB3BE), // Light Teal
-            Color(0xFFFF9E80), // Light Orange/Peach
-          ],
-        ),
-      ),
+    return MainLayout(
+      currentIndex: 1,
       drawer: const ArtWalkDrawer(),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              ArtWalkColors.backgroundGradientStart,
-              ArtWalkColors.backgroundGradientEnd,
-            ],
-          ),
+      scaffoldKey: _scaffoldKey,
+      child: Scaffold(
+        appBar: ArtWalkDesignSystem.buildAppBar(
+          title: 'Art Walks',
+          showBackButton: true,
+          scaffoldKey: _scaffoldKey,
         ),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _buildContent(),
+        body: ArtWalkDesignSystem.buildScreenContainer(
+          child: _isLoading
+              ? Center(
+                  child: ArtWalkDesignSystem.buildGlassCard(
+                    child: const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            ArtWalkDesignSystem.primaryTeal,
+                          ),
+                        ),
+                        SizedBox(height: ArtWalkDesignSystem.paddingM),
+                        Text(
+                          'Loading art walks...',
+                          style: ArtWalkDesignSystem.cardTitleStyle,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : _buildContent(),
+        ),
+        floatingActionButton: ArtWalkDesignSystem.buildFloatingActionButton(
+          onPressed: _navigateToCreateWalk,
+          icon: Icons.add_location,
+          tooltip: 'Create Art Walk',
+        ),
       ),
     );
   }
@@ -150,40 +148,31 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
   }
 
   Widget _buildSearchAndFilterBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return ArtWalkDesignSystem.buildGlassCard(
       child: Column(
         children: [
           // Search bar
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search art walks...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: ArtWalkColors.primaryTeal.withValues(alpha: 0.3),
+          Container(
+            decoration: ArtWalkDesignSystem.cardDecoration(),
+            child: TextField(
+              style: ArtWalkDesignSystem.cardTitleStyle,
+              decoration: const InputDecoration(
+                hintText: 'Search art walks...',
+                hintStyle: ArtWalkDesignSystem.cardSubtitleStyle,
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: ArtWalkDesignSystem.primaryTeal,
                 ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.all(ArtWalkDesignSystem.paddingM),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: ArtWalkColors.primaryTeal.withValues(alpha: 0.3),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: ArtWalkColors.primaryTeal),
-              ),
-              filled: true,
-              fillColor: Colors.white,
+              onChanged: (value) {
+                setState(() => _searchQuery = value);
+                _applyFilters();
+              },
             ),
-            onChanged: (value) {
-              setState(() => _searchQuery = value);
-              _applyFilters();
-            },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ArtWalkDesignSystem.paddingM),
           // Filter chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -258,7 +247,9 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
 
                     if (walk.coverImageUrl != null &&
                         walk.coverImageUrl!.isNotEmpty) {
-                      debugPrint('Using coverImageUrl: ${walk.coverImageUrl}');
+                      AppLogger.info(
+                        'Using coverImageUrl: ${walk.coverImageUrl}',
+                      );
                       return SecureNetworkImage(
                         imageUrl: walk.coverImageUrl!,
                         fit: BoxFit.cover,
@@ -301,7 +292,9 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                         ),
                       );
                     } else if (walk.imageUrls.isNotEmpty) {
-                      debugPrint('Using imageUrls[0]: ${walk.imageUrls.first}');
+                      AppLogger.info(
+                        'Using imageUrls[0]: ${walk.imageUrls.first}',
+                      );
                       return SecureNetworkImage(
                         imageUrl: walk.imageUrls.first,
                         fit: BoxFit.cover,
@@ -344,7 +337,7 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                         ),
                       );
                     } else {
-                      debugPrint('No image available for ${walk.title}');
+                      AppLogger.info('No image available for ${walk.title}');
                       return Container(
                         decoration: BoxDecoration(
                           color: ArtWalkColors.primaryTeal.withValues(

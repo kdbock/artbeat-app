@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:artbeat_events/artbeat_events.dart';
 import '../models/event_model_internal.dart' as internal;
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Adapter service to bridge between artbeat_artist EventModel and artbeat_events ArtbeatEvent
 /// This provides backward compatibility while migrating to the unified event system
@@ -78,7 +78,7 @@ class EventServiceAdapter {
       final artbeatEvents = await _eventService.getEventsByArtist(userId);
       return artbeatEvents.map(_convertFromArtbeatEvent).toList();
     } catch (e) {
-      debugPrint('Error fetching local events: $e');
+      AppLogger.error('Error fetching local events: $e');
       return [];
     }
   }
@@ -90,7 +90,7 @@ class EventServiceAdapter {
           await _eventService.getUpcomingPublicEvents(limit: 50);
       return artbeatEvents.map(_convertFromArtbeatEvent).toList();
     } catch (e) {
-      debugPrint('Error fetching upcoming events: $e');
+      AppLogger.error('Error fetching upcoming events: $e');
       return [];
     }
   }
@@ -142,9 +142,9 @@ class EventServiceAdapter {
       );
 
       await _eventService.createEvent(artbeatEvent);
-      debugPrint('Event created successfully');
+      AppLogger.info('Event created successfully');
     } catch (e) {
-      debugPrint('Error creating event: $e');
+      AppLogger.error('Error creating event: $e');
       rethrow;
     }
   }
@@ -204,9 +204,9 @@ class EventServiceAdapter {
       );
 
       await _eventService.updateEvent(updatedEvent);
-      debugPrint('Event updated successfully');
+      AppLogger.info('Event updated successfully');
     } catch (e) {
-      debugPrint('Error updating event: $e');
+      AppLogger.error('Error updating event: $e');
       rethrow;
     }
   }
@@ -231,9 +231,9 @@ class EventServiceAdapter {
       }
 
       await _eventService.deleteEvent(eventId);
-      debugPrint('Event deleted successfully');
+      AppLogger.info('Event deleted successfully');
     } catch (e) {
-      debugPrint('Error deleting event: $e');
+      AppLogger.error('Error deleting event: $e');
       rethrow;
     }
   }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/artbeat_colors.dart';
 import 'secure_network_image.dart';
+import '../utils/logger.dart';
 
 /// A unified avatar widget for displaying user profile images across the app
 class UserAvatar extends StatelessWidget {
@@ -44,7 +45,7 @@ class UserAvatar extends StatelessWidget {
 
     // Debug logging to help identify issues (reduced for performance)
     if (kDebugMode) {
-      debugPrint('🔍 UserAvatar build: $displayName');
+      AppLogger.debug('🔍 UserAvatar build: $displayName');
     }
 
     Widget avatar;

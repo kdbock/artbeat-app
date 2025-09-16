@@ -297,71 +297,48 @@ class _AdPaymentScreenState extends State<AdPaymentScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+    if (_pricingData == null) {
+      setState(() {
+        _errorMessage = 'Pricing data not available. Please try again.';
+      });
+      return;
+    }
 
-    try {
-      // Get user's default payment method
-      final paymentMethodId = await _paymentService.getDefaultPaymentMethodId();
+    // Navigate to OrderReviewScreen for enhanced payment processing
+    final orderDetails = OrderDetails(
+      type: TransactionType.advertisement,
+      title: 'Advertisement Payment',
+      description:
+          'Payment for ${widget.ad.title} advertisement (${widget.duration.displayName} in ${widget.location.displayName})',
+      originalAmount: (_pricingData!['totalPrice'] as num).toDouble(),
+      metadata: {
+        'adId': widget.ad.id,
+        'adType': widget.ad.type.name,
+        'duration': widget.duration.days,
+        'location': widget.location.name,
+        'adTitle': widget.ad.title,
+      },
+    );
 
-      if (paymentMethodId == null) {
-        setState(() {
-          _errorMessage =
-              'No payment method found. Please add a payment method first.';
-        });
-        return;
-      }
-
-      // Process the payment
-      final result = await _paymentService.processAdPayment(
-        adId: widget.ad.id,
-        paymentMethodId: paymentMethodId,
-        amount: (_pricingData!['totalPrice'] as num).toDouble(),
-        adType: widget.ad.type.name,
-        duration: widget.duration.days,
-        location: widget.location.name,
+    if (mounted) {
+      final result = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute<bool>(
+          builder: (context) => OrderReviewScreen(
+            orderDetails: orderDetails,
+            onPaymentComplete: (paymentResult) {
+              // Handle successful payment
+              if (paymentResult['status'] == 'succeeded') {
+                Navigator.pop(context, true);
+              }
+            },
+          ),
+        ),
       );
 
-      if (result['status'] == 'succeeded') {
-        if (mounted) {
-          // Show success dialog
-          await showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Payment Successful'),
-              content: const Text(
-                'Your ad payment has been processed successfully! Your ad will be reviewed and activated according to your schedule.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-          );
-
-          // Return to previous screen with success result
-          if (mounted) {
-            Navigator.pop(context, true);
-          }
-        }
-      } else {
-        throw Exception('Payment failed with status: ${result['status']}');
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _errorMessage = 'Payment failed: ${e.toString()}';
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+      // If payment was successful, return to previous screen
+      if (result == true && mounted) {
+        Navigator.pop(context, true);
       }
     }
   }

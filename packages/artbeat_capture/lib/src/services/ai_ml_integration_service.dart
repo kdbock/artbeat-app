@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// AI/ML Integration Service for automated tagging and recognition
 /// Provides intelligent analysis of captured artwork and images
@@ -46,7 +47,7 @@ class AIMLIntegrationService extends ChangeNotifier {
       notifyListeners();
       return analysisResult;
     } catch (e) {
-      debugPrint('AIMLIntegrationService: Error analyzing image: $e');
+      AppLogger.error('AIMLIntegrationService: Error analyzing image: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -75,7 +76,7 @@ class AIMLIntegrationService extends ChangeNotifier {
         ),
       };
     } catch (e) {
-      debugPrint('AIMLIntegrationService: Error detecting art style: $e');
+      AppLogger.error('AIMLIntegrationService: Error detecting art style: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -103,7 +104,7 @@ class AIMLIntegrationService extends ChangeNotifier {
         'saturation': colorAnalysis['saturation'],
       };
     } catch (e) {
-      debugPrint('AIMLIntegrationService: Error analyzing color palette: $e');
+      AppLogger.error('AIMLIntegrationService: Error analyzing color palette: $e');
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -126,7 +127,7 @@ class AIMLIntegrationService extends ChangeNotifier {
         'confidence': objectDetection['confidence'],
       };
     } catch (e) {
-      debugPrint('AIMLIntegrationService: Error detecting objects: $e');
+      AppLogger.error('AIMLIntegrationService: Error detecting objects: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -177,7 +178,7 @@ class AIMLIntegrationService extends ChangeNotifier {
 
       return {'success': true, 'metadata': metadata};
     } catch (e) {
-      debugPrint('AIMLIntegrationService: Error generating metadata: $e');
+      AppLogger.error('AIMLIntegrationService: Error generating metadata: $e');
       return {
         'success': false,
         'error': e.toString(),
@@ -446,7 +447,7 @@ class AIMLIntegrationService extends ChangeNotifier {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('AIMLIntegrationService: Error storing analysis result: $e');
+      AppLogger.error('AIMLIntegrationService: Error storing analysis result: $e');
     }
   }
 

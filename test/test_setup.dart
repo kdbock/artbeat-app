@@ -16,21 +16,19 @@ class TestSetup {
       'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi.initializeCore',
     );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(firebaseCoreChannel, (MethodCall call) async {
-          // Return null to indicate the method is not implemented (prevents actual Firebase initialization)
-          return null;
-        });
+        .setMockMethodCallHandler(
+          firebaseCoreChannel,
+          (MethodCall call) async => null,
+        );
 
     const firebaseHostApiChannel = MethodChannel(
       'dev.flutter.pigeon.firebase_core_platform_interface.FirebaseCoreHostApi',
     );
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(firebaseHostApiChannel, (
-          MethodCall call,
-        ) async {
-          // Return null to indicate the method is not implemented
-          return null;
-        });
+        .setMockMethodCallHandler(
+          firebaseHostApiChannel,
+          (MethodCall call) async => null,
+        );
 
     // Mock path_provider plugin methods to prevent MissingPluginException
     const pathProviderChannel = MethodChannel(

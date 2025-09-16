@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/refund_request_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing refund requests and processing workflows
 ///
@@ -82,7 +83,7 @@ class RefundService extends ChangeNotifier {
       notifyListeners();
       return docRef.id;
     } catch (e) {
-      debugPrint('Error submitting refund request: $e');
+      AppLogger.error('Error submitting refund request: $e');
       rethrow;
     }
   }
@@ -111,7 +112,7 @@ class RefundService extends ChangeNotifier {
             .toList();
       });
     } catch (e) {
-      debugPrint('Error getting user refund requests: $e');
+      AppLogger.error('Error getting user refund requests: $e');
       return Stream.value([]);
     }
   }
@@ -143,7 +144,7 @@ class RefundService extends ChangeNotifier {
             .toList();
       });
     } catch (e) {
-      debugPrint('Error getting all refund requests: $e');
+      AppLogger.error('Error getting all refund requests: $e');
       return Stream.value([]);
     }
   }
@@ -161,7 +162,7 @@ class RefundService extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting refund request by ID: $e');
+      AppLogger.error('Error getting refund request by ID: $e');
       return null;
     }
   }
@@ -187,7 +188,7 @@ class RefundService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error approving refund request: $e');
+      AppLogger.error('Error approving refund request: $e');
       rethrow;
     }
   }
@@ -208,7 +209,7 @@ class RefundService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error rejecting refund request: $e');
+      AppLogger.error('Error rejecting refund request: $e');
       rethrow;
     }
   }
@@ -246,7 +247,7 @@ class RefundService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating refund status: $e');
+      AppLogger.error('Error updating refund status: $e');
       rethrow;
     }
   }
@@ -340,7 +341,7 @@ class RefundService extends ChangeNotifier {
             : 0.0,
       };
     } catch (e) {
-      debugPrint('Error getting refund statistics: $e');
+      AppLogger.error('Error getting refund statistics: $e');
       return {};
     }
   }
@@ -408,7 +409,7 @@ class RefundService extends ChangeNotifier {
         (a, b) => (a['month'] as String).compareTo(b['month'] as String),
       );
     } catch (e) {
-      debugPrint('Error getting monthly refund summary: $e');
+      AppLogger.error('Error getting monthly refund summary: $e');
       return [];
     }
   }
@@ -463,7 +464,7 @@ class RefundService extends ChangeNotifier {
 
       return results.take(limit).toList();
     } catch (e) {
-      debugPrint('Error searching refund requests: $e');
+      AppLogger.error('Error searching refund requests: $e');
       return [];
     }
   }
@@ -482,7 +483,7 @@ class RefundService extends ChangeNotifier {
       // Return mock refund ID
       return 'rf_mock_${DateTime.now().millisecondsSinceEpoch}';
     } catch (e) {
-      debugPrint('Error processing Stripe refund: $e');
+      AppLogger.error('Error processing Stripe refund: $e');
       return null;
     }
   }
@@ -556,7 +557,7 @@ class RefundService extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint('Error processing approved refund: $e');
+      AppLogger.error('Error processing approved refund: $e');
       await updateRefundStatus(
         refundId: refundId,
         status: RefundStatus.failed,
@@ -580,7 +581,7 @@ class RefundService extends ChangeNotifier {
             'refundReason': refund.reason.displayName,
           });
     } catch (e) {
-      debugPrint('Error updating payment history with refund: $e');
+      AppLogger.error('Error updating payment history with refund: $e');
     }
   }
 }

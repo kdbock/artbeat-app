@@ -1,24 +1,25 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'package:artbeat_core/artbeat_core.dart' as core;
-import 'package:artbeat_auth/artbeat_auth.dart' as auth;
-import 'package:artbeat_artist/artbeat_artist.dart' as artist;
-import 'package:artbeat_profile/artbeat_profile.dart' as profile;
-import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
-import 'package:artbeat_events/artbeat_events.dart' as events;
-import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
-import 'package:artbeat_community/artbeat_community.dart' as community;
-import 'package:artbeat_capture/artbeat_capture.dart' as capture;
-import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:artbeat_admin/artbeat_admin.dart' as admin;
 import 'package:artbeat_ads/artbeat_ads.dart' as ads;
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
+import 'package:artbeat_artist/artbeat_artist.dart' as artist;
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
+import 'package:artbeat_auth/artbeat_auth.dart' as auth;
+import 'package:artbeat_capture/artbeat_capture.dart' as capture;
+import 'package:artbeat_community/artbeat_community.dart' as community;
+import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_events/artbeat_events.dart' as events;
+import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:artbeat_profile/artbeat_profile.dart' as profile;
 import 'package:artbeat_settings/artbeat_settings.dart' as settings_pkg;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
+import '../../screens/in_app_purchase_demo_screen.dart';
+import '../../screens/notifications_screen.dart';
+import '../../test_payment_debug.dart';
 import '../guards/auth_guard.dart';
 import '../screens/enhanced_search_screen.dart';
-import '../../screens/notifications_screen.dart';
 import 'app_routes.dart';
 import 'route_utils.dart';
 
@@ -33,7 +34,7 @@ class AppRouter {
       return RouteUtils.createNotFoundRoute();
     }
 
-    debugPrint('🛣️ Navigating to: $routeName');
+    core.AppLogger.info('🛣️ Navigating to: $routeName');
 
     // Check if user is authenticated for protected routes
     if (!_authGuard.isAuthenticated && _isProtectedRoute(routeName)) {
@@ -46,9 +47,13 @@ class AppRouter {
         return RouteUtils.createSimpleRoute(child: const core.SplashScreen());
 
       case AppRoutes.dashboard:
-        return RouteUtils.createSimpleRoute(
-          child: const core.FluidDashboardScreen(),
+        return RouteUtils.createMainNavRoute(
+          currentIndex: 0,
+          child: const core.ArtbeatDashboardScreen(),
         );
+
+      case '/debug/payment':
+        return RouteUtils.createSimpleRoute(child: const PaymentDebugScreen());
 
       case AppRoutes.login:
         return RouteUtils.createSimpleRoute(child: const auth.LoginScreen());
@@ -64,7 +69,6 @@ class AppRouter {
       case AppRoutes.profile:
         final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: profile.ProfileViewScreen(
             userId: currentUserId,
             isCurrentUser: true,
@@ -74,13 +78,11 @@ class AppRouter {
       case AppRoutes.profileEdit:
         final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: profile.EditProfileScreen(userId: currentUserId),
         );
 
       case AppRoutes.artistDashboard:
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: const artist.ArtistDashboardScreen(),
         );
 
@@ -91,27 +93,46 @@ class AppRouter {
 
       case AppRoutes.search:
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: const EnhancedSearchScreen(),
+        );
+
+      case AppRoutes.browse:
+        return RouteUtils.createMainNavRoute(
+          child: const core.FullBrowseScreen(),
+        );
+
+      case '/community/create-post':
+        return RouteUtils.createMainNavRoute(
+          child: const community.CreateGroupPostScreen(
+            groupType: community.GroupType.artist,
+            postType: 'artwork',
+          ),
+        );
+
+      case '/events/create':
+        return RouteUtils.createMainNavRoute(
+          child: const events.CreateEventScreen(),
         );
 
       case AppRoutes.artistSearch:
       case AppRoutes.artistSearchShort:
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: const artist.ArtistBrowseScreen(),
         );
 
       case AppRoutes.trending:
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: const artist.ArtistBrowseScreen(), // Trending artists
         );
 
       case AppRoutes.local:
         return RouteUtils.createMainNavRoute(
-          currentIndex: -1,
           child: const events.EventsDashboardScreen(),
+        );
+
+      case AppRoutes.inAppPurchaseDemo:
+        return RouteUtils.createMainNavRoute(
+          child: const InAppPurchaseDemoScreen(),
         );
     }
 
@@ -125,18 +146,17 @@ class AppRouter {
     return RouteUtils.createNotFoundRoute();
   }
 
-  bool _isProtectedRoute(String routeName) {
-    return routeName != AppRoutes.splash &&
-        routeName != AppRoutes.login &&
-        routeName != AppRoutes.register &&
-        routeName != AppRoutes.forgotPassword &&
-        routeName != AppRoutes.artistSearch &&
-        routeName != AppRoutes.artistSearchShort &&
-        routeName != AppRoutes.trending &&
-        routeName != AppRoutes.local &&
-        routeName != AppRoutes.artworkBrowse &&
-        !routeName.startsWith('/public/');
-  }
+  bool _isProtectedRoute(String routeName) =>
+      routeName != AppRoutes.splash &&
+      routeName != AppRoutes.login &&
+      routeName != AppRoutes.register &&
+      routeName != AppRoutes.forgotPassword &&
+      routeName != AppRoutes.artistSearch &&
+      routeName != AppRoutes.artistSearchShort &&
+      routeName != AppRoutes.trending &&
+      routeName != AppRoutes.local &&
+      routeName != AppRoutes.artworkBrowse &&
+      !routeName.startsWith('/public/');
 
   /// Handles specialized routes that aren't in core handler
   Route<dynamic>? _handleSpecializedRoutes(RouteSettings settings) {
@@ -186,6 +206,11 @@ class AppRouter {
     // Admin routes
     if (routeName.startsWith('/admin')) {
       return _handleAdminRoutes(settings);
+    }
+
+    // Profile routes
+    if (routeName.startsWith('/profile')) {
+      return _handleProfileRoutes(settings);
     }
 
     // Settings routes
@@ -426,14 +451,14 @@ class AppRouter {
       case AppRoutes.communityDashboard:
         return RouteUtils.createMainNavRoute(
           currentIndex: 3,
-          child: const community.UnifiedCommunityHub(),
+          child: const community.ArtCommunityHub(),
         );
 
       case AppRoutes.communityFeed:
         // Use createMainNavRoute to ensure proper MainLayout wrapping
         return RouteUtils.createMainNavRoute(
           currentIndex: 3,
-          child: const community.UnifiedCommunityHub(),
+          child: const community.ArtCommunityHub(),
         );
 
       case AppRoutes.communityArtists:
@@ -448,7 +473,7 @@ class AppRouter {
 
       case AppRoutes.communityPosts:
         return RouteUtils.createMainLayoutRoute(
-          child: const community.UnifiedCommunityHub(),
+          child: const community.ArtCommunityHub(),
         );
 
       case AppRoutes.communityStudios:
@@ -499,13 +524,19 @@ class AppRouter {
 
       case AppRoutes.communityFeatured:
         return RouteUtils.createMainLayoutRoute(
-          child: const community.UnifiedCommunityHub(),
+          child: const community.ArtCommunityHub(),
         );
 
       case AppRoutes.community:
         // Redirect to community dashboard
         return RouteUtils.createSimpleRoute(
-          child: const community.UnifiedCommunityHub(),
+          child: const community.ArtCommunityHub(),
+        );
+
+      case AppRoutes.artCommunityHub:
+        return RouteUtils.createMainNavRoute(
+          currentIndex: 3,
+          child: const community.ArtCommunityHub(),
         );
 
       default:
@@ -521,10 +552,15 @@ class AppRouter {
         final artistId = args?['artistId'] as String?;
         final artistName = args?['artistName'] as String?;
 
+        // If no arguments provided, show the user's commission requests
         if (artistId == null || artistName == null) {
-          return RouteUtils.createErrorRoute('Artist information required');
+          return RouteUtils.createMainLayoutRoute(
+            appBar: RouteUtils.createAppBar('My Commission Requests'),
+            child: const community.DirectCommissionsScreen(),
+          );
         }
 
+        // If arguments provided, show commission request form for specific artist
         return RouteUtils.createSimpleRoute(
           child: community.CommissionRequestScreen(
             artistId: artistId,
@@ -547,7 +583,8 @@ class AppRouter {
   Route<dynamic>? _handleArtWalkRoutes(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.artWalkDashboard:
-        return RouteUtils.createSimpleRoute(
+        return RouteUtils.createMainNavRoute(
+          currentIndex: 1,
           child: const art_walk.ArtWalkDashboardScreen(),
         );
 
@@ -575,7 +612,7 @@ class AppRouter {
       case AppRoutes.artWalkCreate:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
-          child: const art_walk.CreateArtWalkScreen(),
+          child: const art_walk.EnhancedArtWalkCreateScreen(),
         );
 
       case AppRoutes.enhancedArtWalkExperience:
@@ -621,6 +658,50 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
           child: const Center(child: Text('Nearby Art Walks - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkMyWalks:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const art_walk.EnhancedMyArtWalksScreen(),
+        );
+
+      case AppRoutes.artWalkMyCaptures:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const art_walk.MyCapturesScreen(),
+        );
+
+      case AppRoutes.artWalkCompleted:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Completed Art Walks - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkSaved:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Saved Art Walks - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkPopular:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Popular Art Walks - Coming Soon')),
+        );
+
+      case AppRoutes.artWalkAchievements:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(
+            child: Text('Art Walk Achievements - Coming Soon'),
+          ),
+        );
+
+      case AppRoutes.artWalkSettings:
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const Center(child: Text('Art Walk Settings - Coming Soon')),
         );
 
       default:
@@ -676,10 +757,10 @@ class AppRouter {
       case AppRoutes.eventsArtistDashboard:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 4,
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-            child: Container(
-              decoration: const BoxDecoration(
+          appBar: const PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight + 4),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -696,11 +777,8 @@ class AppRouter {
                   ),
                 ],
               ),
-              child: const core.EnhancedUniversalHeader(
+              child: core.EnhancedUniversalHeader(
                 title: 'Events',
-                showLogo: false,
-                showDeveloperTools: true,
-                backgroundColor: Colors.transparent,
                 titleGradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -766,37 +844,15 @@ class AppRouter {
         );
 
       case AppRoutes.adminCouponManagement:
-        return RouteUtils.createSimpleRoute(
-          child: const admin.AdminCouponManagementScreen(),
-        );
-
       case AppRoutes.adminUsers:
-        // Redirect to the proper admin user management route
-        return RouteUtils.createSimpleRoute(
-          child: const admin.AdminAdvancedUserManagementScreen(),
-        );
-
       case AppRoutes.adminModeration:
-        // Redirect to the proper admin content review route
-        return RouteUtils.createSimpleRoute(
-          child: const admin.EnhancedAdminContentReviewScreen(),
-        );
-
       case '/admin/enhanced-dashboard':
-        return RouteUtils.createMainNavRoute(
-          child: const admin.AdminEnhancedDashboardScreen(),
-        );
-
       case '/admin/financial-analytics':
-        return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Financial Analytics'),
-          child: const admin.AdminFinancialAnalyticsScreen(),
-        );
-
+      case '/admin/content-management-suite':
       case '/admin/advanced-content-management':
-        return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Advanced Content Management'),
-          child: const admin.AdminAdvancedContentManagementScreen(),
+        // All admin routes now redirect to the modern unified dashboard
+        return RouteUtils.createSimpleRoute(
+          child: const admin.ModernUnifiedAdminDashboard(),
         );
 
       default:
@@ -859,6 +915,188 @@ class AppRouter {
     }
   }
 
+  /// Handles profile-related routes
+  Route<dynamic>? _handleProfileRoutes(RouteSettings settings) {
+    switch (settings.name) {
+      case '/profile':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Center(child: Text('Profile not available')),
+              );
+            }
+            return core.MainLayout(
+              currentIndex: -1,
+              appBar: RouteUtils.createAppBar('Profile'),
+              child: profile.ProfileViewScreen(
+                userId: currentUser.uid,
+                isCurrentUser: true,
+              ),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/edit':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Center(child: Text('Profile edit not available')),
+              );
+            }
+            return core.MainLayout(
+              currentIndex: -1,
+              appBar: RouteUtils.createAppBar('Edit Profile'),
+              child: profile.EditProfileScreen(
+                userId: currentUser.uid,
+                onProfileUpdated: () {
+                  // Handle profile update if needed
+                },
+              ),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/picture':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final args = settings.arguments as Map<String, dynamic>?;
+            final imageUrl = args?['imageUrl'] as String? ?? '';
+            return core.MainLayout(
+              currentIndex: -1,
+              appBar: RouteUtils.createAppBar('Profile Picture'),
+              child: profile.ProfilePictureViewerScreen(imageUrl: imageUrl),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/connections':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () => core.MainLayout(
+            currentIndex: -1,
+            appBar: RouteUtils.createAppBar('Connections'),
+            child: const profile.ProfileConnectionsScreen(),
+          ),
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/activity':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () => core.MainLayout(
+            currentIndex: -1,
+            appBar: RouteUtils.createAppBar('Activity History'),
+            child: const profile.ProfileActivityScreen(),
+          ),
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/analytics':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () => core.MainLayout(
+            currentIndex: -1,
+            appBar: RouteUtils.createAppBar('Profile Analytics'),
+            child: const profile.ProfileAnalyticsScreen(),
+          ),
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/achievements':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () => core.MainLayout(
+            currentIndex: -1,
+            appBar: RouteUtils.createAppBar('Achievements'),
+            child: const profile.AchievementsScreen(),
+          ),
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/following':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Center(child: Text('Following not available')),
+              );
+            }
+            return core.MainLayout(
+              currentIndex: -1,
+              appBar: RouteUtils.createAppBar('Following'),
+              child: profile.FollowingListScreen(userId: currentUser.uid),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/profile/followers':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Center(child: Text('Followers not available')),
+              );
+            }
+            return core.MainLayout(
+              currentIndex: -1,
+              appBar: RouteUtils.createAppBar('Followers'),
+              child: profile.FollowersListScreen(userId: currentUser.uid),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      default:
+        return RouteUtils.createComingSoonRoute('Profile feature');
+    }
+  }
+
   /// Handles capture-related routes
   Route<dynamic>? _handleCaptureRoutes(RouteSettings settings) {
     switch (settings.name) {
@@ -871,6 +1109,12 @@ class AppRouter {
       case AppRoutes.captureCamera:
         return RouteUtils.createMainLayoutRoute(
           child: const capture.BasicCaptureScreen(),
+        );
+
+      case '/capture/smart':
+        return RouteUtils.createMainNavRoute(
+          currentIndex: 2,
+          child: const capture.SmartCaptureScreen(),
         );
 
       case AppRoutes.captureDashboard:
@@ -958,9 +1202,8 @@ class AppRouter {
   Route<dynamic>? _handleAdRoutes(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.adsCreate:
-        return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Create Ad'),
-          child: const Center(child: Text('Create Ad - Coming Soon')),
+        return RouteUtils.createSimpleRoute(
+          child: const ads.AdEducationDashboard(),
         );
 
       case AppRoutes.adsManagement:
@@ -971,7 +1214,7 @@ class AppRouter {
 
       case AppRoutes.adsStatistics:
         return RouteUtils.createMainLayoutRoute(
-          appBar: RouteUtils.createAppBar('Ad Statistics'),
+          appBar: RouteUtils.createAppBar('Ad Performance'),
           child: const ads.SimpleAdStatisticsScreen(),
         );
 
@@ -1008,6 +1251,12 @@ class AppRouter {
           child: const artist.PaymentMethodsScreen(),
         );
 
+      case AppRoutes.paymentScreen:
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Payment Screen'),
+          child: const artist.PaymentMethodsScreen(),
+        );
+
       case AppRoutes.paymentRefund:
         return RouteUtils.createMainLayoutRoute(
           appBar: RouteUtils.createAppBar('Refunds'),
@@ -1030,6 +1279,11 @@ class AppRouter {
       case AppRoutes.achievementsInfo:
         return RouteUtils.createMainLayoutRoute(
           child: const profile.AchievementInfoScreen(),
+        );
+
+      case AppRoutes.leaderboard:
+        return RouteUtils.createMainLayoutRoute(
+          child: const core.LeaderboardScreen(),
         );
 
       case AppRoutes.notifications:
@@ -1063,6 +1317,47 @@ class AppRouter {
           child: const Center(child: Text('System Info - Coming Soon')),
         );
 
+      case AppRoutes.support:
+      case '/help':
+        return RouteUtils.createMainLayoutRoute(
+          child: const core.HelpSupportScreen(),
+        );
+
+      case '/favorites':
+        return AuthGuard.guardRoute(
+          settings: settings,
+          authenticatedBuilder: () {
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser == null) {
+              return const core.MainLayout(
+                currentIndex: -1,
+                child: Center(child: Text('Favorites not available')),
+              );
+            }
+            return core.MainLayout(
+              currentIndex: -1,
+              appBar: RouteUtils.createAppBar('Favorites'),
+              child: profile.FavoritesScreen(userId: currentUser.uid),
+            );
+          },
+          unauthenticatedBuilder: () => const core.MainLayout(
+            currentIndex: -1,
+            child: core.AuthRequiredScreen(),
+          ),
+        );
+
+      case '/rewards':
+        return RouteUtils.createComingSoonRoute('Rewards');
+
+      case '/billing':
+        return RouteUtils.createMainLayoutRoute(
+          appBar: RouteUtils.createAppBar('Billing & Payments'),
+          child: const artist.PaymentMethodsScreen(),
+        );
+
+      case '/about':
+        return RouteUtils.createComingSoonRoute('About ARTbeat');
+
       default:
         // Fallback to splash screen for unknown routes
         return RouteUtils.createMainLayoutRoute(
@@ -1074,9 +1369,8 @@ class AppRouter {
 
 /// Widget that loads artist profile data and then shows the artist feed
 class _ArtistFeedLoader extends StatefulWidget {
-  final String artistUserId;
-
   const _ArtistFeedLoader({required this.artistUserId});
+  final String artistUserId;
 
   @override
   State<_ArtistFeedLoader> createState() => _ArtistFeedLoaderState();
@@ -1139,7 +1433,7 @@ class _ArtistFeedLoaderState extends State<_ArtistFeedLoader> {
           _error = 'Artist not found';
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       _error = 'Failed to load artist: $e';
     } finally {
       if (mounted) {
@@ -1184,9 +1478,8 @@ class _ArtistFeedLoaderState extends State<_ArtistFeedLoader> {
 
 /// Temporary widget to handle user chat navigation
 class _UserChatLoader extends StatefulWidget {
-  final String userId;
-
   const _UserChatLoader({required this.userId});
+  final String userId;
 
   @override
   State<_UserChatLoader> createState() => _UserChatLoaderState();
@@ -1209,7 +1502,7 @@ class _UserChatLoaderState extends State<_UserChatLoader> {
 
       // Navigation is now using pushReplacementNamed, so we don't need to pop
       // The loader screen will be replaced by the chat screen
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1223,7 +1516,6 @@ class _UserChatLoaderState extends State<_UserChatLoader> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
 }

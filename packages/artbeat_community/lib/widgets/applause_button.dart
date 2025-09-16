@@ -27,7 +27,7 @@ class ApplauseButton extends StatelessWidget {
 
     // Safety check for required data
     if (postId.isEmpty) {
-      debugPrint('⚠️ ApplauseButton: postId is empty');
+      AppLogger.warning('⚠️ ApplauseButton: postId is empty');
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(

@@ -1,18 +1,19 @@
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// A widget that catches and handles errors to prevent app crashes
 class ErrorBoundary extends StatefulWidget {
-  final Widget child;
-  final Widget? fallback;
-  final void Function(Object error, StackTrace stackTrace)? onError;
 
   const ErrorBoundary({
-    Key? key,
+    super.key,
     required this.child,
     this.fallback,
     this.onError,
-  }) : super(key: key);
+  });
+  final Widget child;
+  final Widget? fallback;
+  final void Function(Object error, StackTrace stackTrace)? onError;
 
   @override
   State<ErrorBoundary> createState() => _ErrorBoundaryState();
@@ -30,8 +31,8 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
     _previousOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
       if (kDebugMode) {
-        print('❌ Flutter Error caught by ErrorBoundary: ${details.exception}');
-        print('❌ Stack trace: ${details.stack}');
+        AppLogger.error('❌ Flutter Error caught by ErrorBoundary: ${details.exception}');
+        AppLogger.error('❌ Stack trace: ${details.stack}');
       }
       if (widget.onError != null) {
         widget.onError!(details.exception, details.stack ?? StackTrace.current);
@@ -80,7 +81,7 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
       textDirection: TextDirection.ltr,
       child: Material(
         child: Container(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -116,11 +117,10 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 
 /// A more specific error boundary for network-related errors
 class NetworkErrorBoundary extends StatefulWidget {
+
+  const NetworkErrorBoundary({super.key, required this.child, this.onRetry});
   final Widget child;
   final VoidCallback? onRetry;
-
-  const NetworkErrorBoundary({Key? key, required this.child, this.onRetry})
-    : super(key: key);
 
   @override
   State<NetworkErrorBoundary> createState() => _NetworkErrorBoundaryState();
@@ -138,10 +138,9 @@ class _NetworkErrorBoundaryState extends State<NetworkErrorBoundary> {
     return widget.child;
   }
 
-  Widget _buildNetworkErrorWidget() {
-    return Material(
+  Widget _buildNetworkErrorWidget() => Material(
       child: Container(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -173,7 +172,6 @@ class _NetworkErrorBoundaryState extends State<NetworkErrorBoundary> {
         ),
       ),
     );
-  }
 
   void showNetworkError() {
     if (mounted) {

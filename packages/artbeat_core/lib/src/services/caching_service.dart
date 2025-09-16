@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:math' as math;
+import '../utils/logger.dart';
 
 class CachingService {
   static final CachingService _instance = CachingService._internal();
@@ -13,9 +13,9 @@ class CachingService {
   Future<void> clearOldCache() async {
     try {
       await _cacheManager.emptyCache();
-      debugPrint('🧹 Cleared old image cache');
+      AppLogger.info('🧹 Cleared old image cache');
     } catch (e) {
-      debugPrint('❌ Error clearing cache: $e');
+      AppLogger.error('❌ Error clearing cache: $e');
     }
   }
 
@@ -23,9 +23,9 @@ class CachingService {
   Future<void> removeFromCache(String url) async {
     try {
       await _cacheManager.removeFile(url);
-      debugPrint('🗑️ Removed $url from cache');
+      AppLogger.info('🗑️ Removed $url from cache');
     } catch (e) {
-      debugPrint('❌ Error removing file from cache: $e');
+      AppLogger.error('❌ Error removing file from cache: $e');
     }
   }
 
@@ -41,7 +41,7 @@ class CachingService {
       final fileLength = await file.file.length();
       return 'Cache file size: ${_formatBytes(fileLength)}';
     } catch (e) {
-      debugPrint('❌ Error getting cache stats: $e');
+      AppLogger.error('❌ Error getting cache stats: $e');
       return 'Cache stats unavailable';
     }
   }

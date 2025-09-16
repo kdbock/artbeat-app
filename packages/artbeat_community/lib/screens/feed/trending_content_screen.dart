@@ -125,7 +125,7 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading trending content: $e');
+      AppLogger.error('Error loading trending content: $e');
       setState(() {
         _isLoading = false;
       });
@@ -202,7 +202,7 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading more trending content: $e');
+      AppLogger.error('Error loading more trending content: $e');
       setState(() {
         _isLoadingMore = false;
       });
@@ -384,17 +384,17 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
                             const [], // Empty list since we don't load comments here
                         onUserTap: (userId) {
                           // Navigate to user profile
-                          debugPrint('Navigate to user profile: $userId');
+                          AppLogger.info('Navigate to user profile: $userId');
                         },
                         // legacy applause removed - engagement handled by UniversalEngagementBar
                         onComment: (postId) {
                           // Navigate to comments screen
-                          debugPrint('Navigate to comments for post: $postId');
+                          AppLogger.info('Navigate to comments for post: $postId');
                         },
                         // legacy share removed - engagement handled by UniversalEngagementBar
                         onToggleExpand: () {
                           // Toggle expanded view
-                          debugPrint('Toggle expand for post: ${post.id}');
+                          AppLogger.info('Toggle expand for post: ${post.id}');
                         },
                       );
                     },

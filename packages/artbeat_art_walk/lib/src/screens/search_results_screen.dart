@@ -7,6 +7,7 @@ import '../services/art_walk_service.dart';
 import '../widgets/art_walk_search_filter.dart';
 import '../widgets/public_art_search_filter.dart';
 import '../widgets/art_walk_card.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Comprehensive search results screen for both art walks and public art
 class SearchResultsScreen extends StatefulWidget {
@@ -132,7 +133,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen>
         _showSuggestions = suggestions.isNotEmpty;
       });
     } catch (e) {
-      debugPrint('Error loading search suggestions: $e');
+      AppLogger.error('Error loading search suggestions: $e');
     }
   }
 
@@ -169,7 +170,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen>
       // Provide haptic feedback
       HapticFeedback.lightImpact();
     } catch (e) {
-      debugPrint('Search error: $e');
+      AppLogger.error('Search error: $e');
       _showErrorSnackBar('Search failed. Please try again.');
     } finally {
       setState(() {
@@ -230,7 +231,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen>
         });
       }
     } catch (e) {
-      debugPrint('Load more error: $e');
+      AppLogger.error('Load more error: $e');
       _showErrorSnackBar('Failed to load more results.');
     } finally {
       setState(() {

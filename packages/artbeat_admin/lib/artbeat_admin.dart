@@ -2,6 +2,7 @@
 export 'src/models/admin_stats_model.dart';
 export 'src/models/user_admin_model.dart';
 export 'src/models/content_review_model.dart';
+export 'src/models/content_model.dart';
 export 'src/models/analytics_model.dart';
 export 'src/models/admin_settings_model.dart';
 export 'src/models/recent_activity_model.dart';
@@ -17,32 +18,21 @@ export 'src/services/admin_settings_service.dart';
 export 'src/services/recent_activity_service.dart';
 export 'src/services/migration_service.dart';
 export 'src/services/consolidated_admin_service.dart';
+export 'src/services/unified_admin_service.dart';
 export 'src/services/audit_trail_service.dart';
 
 // Export utilities
 export 'src/utils/image_utils.dart';
 export 'src/utils/admin_service_migrator.dart';
 
-// Export screens
-export 'src/screens/admin_enhanced_dashboard_screen.dart';
-export 'src/screens/admin_financial_analytics_screen.dart';
-export 'src/screens/admin_advanced_user_management_screen.dart' hide DateRange;
-export 'src/screens/admin_advanced_content_management_screen.dart'
-    hide DateRange, DateRangeExtension;
+// Export screens - Streamlined to unified dashboard
+export 'src/screens/unified_admin_dashboard.dart';
+export 'src/screens/modern_unified_admin_dashboard.dart';
 export 'src/screens/admin_user_detail_screen.dart';
-export 'src/screens/enhanced_admin_content_review_screen.dart';
-export 'src/screens/admin_analytics_screen.dart';
 export 'src/screens/admin_settings_screen.dart';
-export 'src/screens/admin_coupon_management_screen.dart';
 export 'src/screens/admin_security_center_screen.dart';
-export 'src/screens/admin_data_management_screen.dart';
-export 'src/screens/admin_system_alerts_screen.dart';
-export 'src/screens/admin_help_support_screen.dart';
-export 'src/screens/migration_screen.dart';
-export 'src/screens/admin_events_management_screen.dart';
-export 'src/screens/admin_ads_management_screen.dart';
-export 'src/screens/admin_community_moderation_screen.dart';
 export 'src/screens/admin_system_monitoring_screen.dart';
+export 'src/screens/admin_login_screen.dart';
 
 // Export routes
 export 'src/routes/admin_routes.dart';

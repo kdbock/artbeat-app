@@ -253,16 +253,52 @@ class AdminService {
     }
   }
 
-  /// Restore deleted user
-  Future<void> restoreUser(String userId) async {
+  /// Update user profile information
+  Future<void> updateUserProfile(
+      String userId, Map<String, dynamic> profileData) async {
     try {
       await _firestore.collection('users').doc(userId).update({
-        'isDeleted': false,
-        'deletedAt': null,
+        ...profileData,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw Exception('Failed to restore user: $e');
+      throw Exception('Failed to update user profile: $e');
+    }
+  }
+
+  /// Remove user profile image
+  Future<void> removeUserProfileImage(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'profileImageUrl': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to remove user profile image: $e');
+    }
+  }
+
+  /// Remove user cover image
+  Future<void> removeUserCoverImage(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'coverImageUrl': null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to remove user cover image: $e');
+    }
+  }
+
+  /// Set user as featured
+  Future<void> setUserFeatured(String userId, bool isFeatured) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'isFeatured': isFeatured,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update user featured status: $e');
     }
   }
 
@@ -369,5 +405,28 @@ class AdminService {
     if (user == null) return false;
     final doc = await _firestore.collection('users').doc(user.uid).get();
     return doc.exists && (doc.data()?['userType'] == 'admin');
+  }
+
+  /// Toggle user ban status
+  Future<void> toggleUserBan(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+
+      final userData = userDoc.data()!;
+      final isSuspended = userData['isSuspended'] as bool? ?? false;
+
+      await _firestore.collection('users').doc(userId).update({
+        'isSuspended': !isSuspended,
+        'suspendedAt': !isSuspended ? FieldValue.serverTimestamp() : null,
+        'suspendedBy': !isSuspended ? _auth.currentUser?.uid : null,
+        'suspensionReason': !isSuspended ? 'Admin action' : null,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to toggle user ban: $e');
+    }
   }
 }

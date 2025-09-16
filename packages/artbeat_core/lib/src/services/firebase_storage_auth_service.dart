@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 
 /// Service to handle Firebase Storage authentication and token refresh
 class FirebaseStorageAuthService {
@@ -22,16 +23,16 @@ class FirebaseStorageAuthService {
           await user.getIdToken(true); // Force refresh
           authRefreshed = true;
           if (kDebugMode) {
-            print('✅ Firebase Auth token refreshed successfully');
+            AppLogger.firebase('✅ Firebase Auth token refreshed successfully');
           }
         } catch (e) {
           if (kDebugMode) {
-            print('❌ Failed to refresh Firebase Auth token: $e');
+            AppLogger.error('❌ Failed to refresh Firebase Auth token: $e');
           }
         }
       } else {
         if (kDebugMode) {
-          print('⚠️ No authenticated user found for token refresh');
+          AppLogger.warning('⚠️ No authenticated user found for token refresh');
         }
       }
 
@@ -40,18 +41,18 @@ class FirebaseStorageAuthService {
         await FirebaseAppCheck.instance.getToken(true); // Force refresh
         appCheckRefreshed = true;
         if (kDebugMode) {
-          print('✅ App Check token refreshed successfully');
+          AppLogger.info('✅ App Check token refreshed successfully');
         }
       } catch (e) {
         if (kDebugMode) {
-          print('❌ Failed to refresh App Check token: $e');
+          AppLogger.error('❌ Failed to refresh App Check token: $e');
         }
       }
 
       return authRefreshed || appCheckRefreshed;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error during token refresh: $e');
+        AppLogger.error('❌ Error during token refresh: $e');
       }
       return false;
     }
@@ -84,7 +85,7 @@ class FirebaseStorageAuthService {
       // Check authentication
       if (!isAuthenticated) {
         if (kDebugMode) {
-          print('⚠️ User not authenticated for Firebase Storage access');
+          AppLogger.warning('⚠️ User not authenticated for Firebase Storage access');
         }
         return false;
       }
@@ -92,7 +93,7 @@ class FirebaseStorageAuthService {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error validating storage access: $e');
+        AppLogger.error('❌ Error validating storage access: $e');
       }
       return false;
     }
@@ -101,7 +102,7 @@ class FirebaseStorageAuthService {
   /// Handles 403 errors by refreshing tokens and retrying
   Future<bool> handle403Error(String url) async {
     if (kDebugMode) {
-      print('🔄 Handling 403 error for URL: $url');
+      AppLogger.error('🔄 Handling 403 error for URL: $url');
     }
 
     // First, try refreshing tokens
@@ -109,7 +110,7 @@ class FirebaseStorageAuthService {
 
     if (!tokensRefreshed) {
       if (kDebugMode) {
-        print('❌ Could not refresh tokens for 403 error handling');
+        AppLogger.error('❌ Could not refresh tokens for 403 error handling');
       }
       return false;
     }
@@ -118,7 +119,7 @@ class FirebaseStorageAuthService {
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
     if (kDebugMode) {
-      print('✅ Tokens refreshed, ready for retry');
+      AppLogger.info('✅ Tokens refreshed, ready for retry');
     }
 
     return true;

@@ -6,6 +6,7 @@ import '../models/ad_analytics_model.dart';
 import '../models/ad_impression_model.dart';
 import '../models/ad_click_model.dart';
 import '../models/ad_location.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for tracking and analyzing ad performance
 class AdAnalyticsService extends ChangeNotifier {
@@ -60,9 +61,9 @@ class AdAnalyticsService extends ChangeNotifier {
         location: location,
       );
 
-      debugPrint('Ad impression tracked: $adId at ${location.name}');
+      AppLogger.info('Ad impression tracked: $adId at ${location.name}');
     } catch (e) {
-      debugPrint('Error tracking ad impression: $e');
+      AppLogger.error('Error tracking ad impression: $e');
       // Don't throw - analytics should not break app functionality
     }
   }
@@ -106,9 +107,9 @@ class AdAnalyticsService extends ChangeNotifier {
         location: location,
       );
 
-      debugPrint('Ad click tracked: $adId at ${location.name} ($clickType)');
+      AppLogger.info('Ad click tracked: $adId at ${location.name} ($clickType)');
     } catch (e) {
-      debugPrint('Error tracking ad click: $e');
+      AppLogger.error('Error tracking ad click: $e');
       // Don't throw - analytics should not break app functionality
     }
   }
@@ -124,7 +125,7 @@ class AdAnalyticsService extends ChangeNotifier {
 
       return null;
     } catch (e) {
-      debugPrint('Error getting ad performance metrics: $e');
+      AppLogger.error('Error getting ad performance metrics: $e');
       return null;
     }
   }
@@ -144,7 +145,7 @@ class AdAnalyticsService extends ChangeNotifier {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error getting user ad analytics: $e');
+      AppLogger.error('Error getting user ad analytics: $e');
       return [];
     }
   }
@@ -188,7 +189,7 @@ class AdAnalyticsService extends ChangeNotifier {
         'period': '30 days',
       };
     } catch (e) {
-      debugPrint('Error getting location performance data: $e');
+      AppLogger.error('Error getting location performance data: $e');
       return {
         'location': location.name,
         'impressions': 0,
@@ -237,7 +238,7 @@ class AdAnalyticsService extends ChangeNotifier {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error getting ad impressions: $e');
+      AppLogger.error('Error getting ad impressions: $e');
       return [];
     }
   }
@@ -280,7 +281,7 @@ class AdAnalyticsService extends ChangeNotifier {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error getting ad clicks: $e');
+      AppLogger.error('Error getting ad clicks: $e');
       return [];
     }
   }
@@ -300,7 +301,7 @@ class AdAnalyticsService extends ChangeNotifier {
 
       return AdAnalyticsModel.calculateCTR(impressions.length, clicks.length);
     } catch (e) {
-      debugPrint('Error calculating CTR: $e');
+      AppLogger.error('Error calculating CTR: $e');
       return 0.0;
     }
   }
@@ -362,7 +363,7 @@ class AdAnalyticsService extends ChangeNotifier {
         'generatedAt': DateTime.now().toIso8601String(),
       };
     } catch (e) {
-      debugPrint('Error generating performance report: $e');
+      AppLogger.error('Error generating performance report: $e');
       return {'error': 'Failed to generate report', 'message': e.toString()};
     }
   }
@@ -433,7 +434,7 @@ class AdAnalyticsService extends ChangeNotifier {
         }
       });
     } catch (e) {
-      debugPrint('Error updating analytics aggregation: $e');
+      AppLogger.error('Error updating analytics aggregation: $e');
     }
   }
 
@@ -514,7 +515,7 @@ class AdAnalyticsService extends ChangeNotifier {
         'Cleaned up ${oldImpressions.docs.length + oldClicks.docs.length} old analytics records',
       );
     } catch (e) {
-      debugPrint('Error cleaning up old analytics data: $e');
+      AppLogger.error('Error cleaning up old analytics data: $e');
     }
   }
 }

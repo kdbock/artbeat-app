@@ -468,7 +468,7 @@ class DashboardArtworkSection extends StatelessWidget {
         const SnackBar(content: Text('Artwork shared successfully!')),
       );
     } catch (e) {
-      debugPrint('Error sharing artwork: $e');
+      AppLogger.error('Error sharing artwork: $e');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error sharing: ${e.toString()}')));

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 /// Widget to display a preview of local art walks on the dashboard
 class LocalArtWalkPreviewWidget extends StatefulWidget {
@@ -31,9 +32,12 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Local Art Walks',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              const Expanded(
+                child: Text(
+                  'Local Art Walks',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               TextButton(
                 onPressed: widget.onSeeAllPressed,
@@ -116,21 +120,24 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
         borderRadius: BorderRadius.circular(12),
         child: Stack(
           children: [
-            GoogleMap(
-              key: const Key('art_walk_preview_map'),
-              initialCameraPosition: CameraPosition(
-                target: LatLng(lat, lng),
-                zoom: 14,
+            if (kIsWeb)
+              _buildWebMapFallback()
+            else
+              GoogleMap(
+                key: const Key('art_walk_preview_map'),
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(lat, lng),
+                  zoom: 14,
+                ),
+                onMapCreated: (controller) {
+                  _setupMarkers(artPoints);
+                },
+                markers: _markers,
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+                compassEnabled: false,
+                myLocationButtonEnabled: false,
               ),
-              onMapCreated: (controller) {
-                _setupMarkers(artPoints);
-              },
-              markers: _markers,
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-              compassEnabled: false,
-              myLocationButtonEnabled: false,
-            ),
             // Overlay to prevent interaction with map
             Positioned.fill(
               child: Material(
@@ -234,30 +241,60 @@ class _LocalArtWalkPreviewWidgetState extends State<LocalArtWalkPreviewWidget> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(12.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.explore, size: 48, color: Colors.blueGrey),
-                SizedBox(height: 12),
+                Icon(Icons.explore, size: 40, color: Colors.blueGrey),
+                SizedBox(height: 8),
                 Text(
                   'Discover Local Art Walks',
                   style: TextStyle(
                     color: Colors.blueGrey,
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 4),
                 Text(
                   'Explore art walks in your neighborhood',
-                  style: TextStyle(color: Colors.blueGrey, fontSize: 14),
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      height: 200,
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 48, color: Colors.grey[400]),
+            const SizedBox(height: 8),
+            Text(
+              'Art Walk Preview',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Map preview available on mobile',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            ),
+          ],
         ),
       ),
     );

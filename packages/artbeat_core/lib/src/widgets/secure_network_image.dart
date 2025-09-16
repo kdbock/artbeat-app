@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
+import '../utils/logger.dart';
 
 /// A secure network image widget that handles Firebase Storage authentication
 /// and App Check token issues gracefully
@@ -80,7 +81,7 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error generating thumbnail URL: $e');
+        AppLogger.error('❌ Error generating thumbnail URL: $e');
       }
     }
     return originalUrl; // Return original if can't generate thumbnail
@@ -100,7 +101,9 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       if (user != null) {
         await user.getIdToken(true); // Force refresh
         if (kDebugMode) {
-          print('🔄 Refreshed Firebase Auth token for image retry');
+          AppLogger.firebase(
+            '🔄 Refreshed Firebase Auth token for image retry',
+          );
         }
       }
 
@@ -108,11 +111,11 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       try {
         await FirebaseAppCheck.instance.getToken(true); // Force refresh
         if (kDebugMode) {
-          print('🔄 Refreshed App Check token for image retry');
+          AppLogger.info('🔄 Refreshed App Check token for image retry');
         }
       } catch (e) {
         if (kDebugMode) {
-          print('⚠️ Could not refresh App Check token: $e');
+          AppLogger.warning('⚠️ Could not refresh App Check token: $e');
         }
       }
 
@@ -135,7 +138,7 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Error during token refresh: $e');
+        AppLogger.error('❌ Error during token refresh: $e');
       }
       setState(() {
         _isRetrying = false;
@@ -297,7 +300,7 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
 
     // Check for empty or whitespace-only URLs
     if (urlToCheck.trim().isEmpty) {
-      debugPrint('🖼️ SecureNetworkImage: Empty URL');
+      AppLogger.network('🖼️ SecureNetworkImage: Empty URL');
       return _buildErrorWidget(context, 'Empty URL', null);
     }
 
@@ -309,13 +312,13 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
         urlToCheck.startsWith('http') ||
         urlToCheck.contains('firebasestorage');
 
-    debugPrint('🖼️ SecureNetworkImage validating URL: $urlToCheck');
+    AppLogger.network('🖼️ SecureNetworkImage validating URL: $urlToCheck');
     debugPrint(
       '🖼️ URI: $uri, Valid: $isValidUrl, Likely valid: $isLikelyValidUrl',
     );
 
     if (!isLikelyValidUrl) {
-      debugPrint('🖼️ SecureNetworkImage: URL failed validation');
+      AppLogger.network('🖼️ SecureNetworkImage: URL failed validation');
       return _buildErrorWidget(context, 'Invalid URL', null);
     }
 
@@ -344,7 +347,7 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       // Disable throwing on error to prevent app crashes
       errorListener: (error) {
         if (kDebugMode) {
-          print('🔇 CachedNetworkImage error suppressed: $error');
+          AppLogger.error('🔇 CachedNetworkImage error suppressed: $error');
         }
 
         // Handle thumbnail fallback for 404 errors via errorListener as well
@@ -361,7 +364,9 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
             print(
               '🔄 ErrorListener: Attempting thumbnail fallback for: ${widget.imageUrl}',
             );
-            print('🔄 ErrorListener: Generated thumbnail URL: $thumbnailUrl');
+            AppLogger.error(
+              '🔄 ErrorListener: Generated thumbnail URL: $thumbnailUrl',
+            );
           }
 
           // Try loading thumbnail

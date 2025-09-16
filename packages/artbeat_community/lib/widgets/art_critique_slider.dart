@@ -49,7 +49,7 @@ class _ArtCritiqueSliderState extends State<ArtCritiqueSlider> {
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading art posts for critique: $e');
+      AppLogger.error('Error loading art posts for critique: $e');
       setState(() {
         _isLoading = false;
       });

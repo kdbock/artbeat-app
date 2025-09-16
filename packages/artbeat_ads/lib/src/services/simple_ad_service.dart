@@ -7,6 +7,7 @@ import '../models/ad_model.dart';
 import '../models/ad_location.dart';
 import '../models/ad_status.dart';
 import '../models/ad_duration.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Simplified ad service for the new ad system
 class SimpleAdService extends ChangeNotifier {
@@ -54,7 +55,7 @@ class SimpleAdService extends ChangeNotifier {
       final doc = await _adsRef.add(adWithImages.toMap());
       return doc.id;
     } catch (e) {
-      debugPrint('Error creating ad with images: $e');
+      AppLogger.error('Error creating ad with images: $e');
       rethrow;
     }
   }
@@ -88,7 +89,7 @@ class SimpleAdService extends ChangeNotifier {
           }
 
           final fileSize = await images[i].length();
-          debugPrint('Image $i size: ${fileSize} bytes');
+          AppLogger.info('Image $i size: ${fileSize} bytes');
 
           // Check file size (limit to 10MB)
           if (fileSize > 10 * 1024 * 1024) {
@@ -107,7 +108,7 @@ class SimpleAdService extends ChangeNotifier {
           }
           final ref = _storage.ref().child(uploadPath);
 
-          debugPrint('Uploading to path: $uploadPath');
+          AppLogger.info('Uploading to path: $uploadPath');
 
           // Try putData instead of putFile for better reliability
           final imageBytes = await images[i].readAsBytes();
@@ -154,17 +155,17 @@ class SimpleAdService extends ChangeNotifier {
               );
             },
           );
-          debugPrint('Upload completed for image $i, getting download URL...');
+          AppLogger.info('Upload completed for image $i, getting download URL...');
 
           downloadUrl = await snapshot.ref.getDownloadURL();
-          debugPrint('Download URL obtained for image $i: $downloadUrl');
+          AppLogger.info('Download URL obtained for image $i: $downloadUrl');
 
           imageUrls.add(downloadUrl);
           break; // Success, exit retry loop
         } catch (e) {
           retryCount++;
-          debugPrint('Error uploading image $i (attempt $retryCount): $e');
-          debugPrint('Error type: ${e.runtimeType}');
+          AppLogger.error('Error uploading image $i (attempt $retryCount): $e');
+          AppLogger.error('Error type: ${e.runtimeType}');
 
           // If this was the last retry, throw the error
           if (retryCount >= maxRetries) {
@@ -192,7 +193,7 @@ class SimpleAdService extends ChangeNotifier {
             }
           } else {
             // Wait before retrying
-            debugPrint('Retrying upload for image $i in 2 seconds...');
+            AppLogger.info('Retrying upload for image $i in 2 seconds...');
             await Future<void>.delayed(const Duration(seconds: 2));
           }
         }
@@ -206,16 +207,18 @@ class SimpleAdService extends ChangeNotifier {
       }
     }
 
-    debugPrint('All images uploaded successfully. URLs: $imageUrls');
+    AppLogger.info('All images uploaded successfully. URLs: $imageUrls');
     return imageUrls;
   }
 
   /// Get ads by location for display
   Stream<List<AdModel>> getAdsByLocation(AdLocation location) {
+    final now = Timestamp.now();
     return _adsRef
         .where('location', isEqualTo: location.index)
         .where('status', isEqualTo: AdStatus.approved.index)
-        .where('endDate', isGreaterThan: Timestamp.now())
+        .where('startDate', isLessThanOrEqualTo: now)
+        .where('endDate', isGreaterThan: now)
         .snapshots()
         .map(
           (snap) =>
@@ -300,7 +303,7 @@ class SimpleAdService extends ChangeNotifier {
       await _adsRef.doc(adId).delete();
       notifyListeners();
     } catch (e) {
-      debugPrint('Error deleting ad: $e');
+      AppLogger.error('Error deleting ad: $e');
       rethrow;
     }
   }
@@ -314,7 +317,7 @@ class SimpleAdService extends ChangeNotifier {
           final ref = _storage.refFromURL(url);
           await ref.delete();
         } catch (e) {
-          debugPrint('Error deleting image $url: $e');
+          AppLogger.error('Error deleting image $url: $e');
           // Continue with other images even if one fails
         }
       }
@@ -325,11 +328,11 @@ class SimpleAdService extends ChangeNotifier {
           final ref = _storage.refFromURL(ad.imageUrl);
           await ref.delete();
         } catch (e) {
-          debugPrint('Error deleting primary image ${ad.imageUrl}: $e');
+          AppLogger.error('Error deleting primary image ${ad.imageUrl}: $e');
         }
       }
     } catch (e) {
-      debugPrint('Error deleting ad images: $e');
+      AppLogger.error('Error deleting ad images: $e');
       // Don't throw - we still want to delete the ad document
     }
   }
@@ -341,7 +344,7 @@ class SimpleAdService extends ChangeNotifier {
       if (!doc.exists) return null;
       return AdModel.fromMap(doc.data()!, doc.id);
     } catch (e) {
-      debugPrint('Error getting ad: $e');
+      AppLogger.error('Error getting ad: $e');
       return null;
     }
   }
@@ -379,7 +382,7 @@ class SimpleAdService extends ChangeNotifier {
       await _adsRef.doc(ad.id).update(updatedData);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating ad with images: $e');
+      AppLogger.error('Error updating ad with images: $e');
       rethrow;
     }
   }
@@ -417,7 +420,7 @@ class SimpleAdService extends ChangeNotifier {
       notifyListeners();
       return doc.id;
     } catch (e) {
-      debugPrint('Error duplicating ad: $e');
+      AppLogger.error('Error duplicating ad: $e');
       rethrow;
     }
   }
@@ -438,7 +441,7 @@ class SimpleAdService extends ChangeNotifier {
           .get();
       return query.docs.length;
     } catch (e) {
-      debugPrint('Error getting active ads count: $e');
+      AppLogger.error('Error getting active ads count: $e');
       return 0;
     }
   }
@@ -481,7 +484,7 @@ class SimpleAdService extends ChangeNotifier {
 
       return stats;
     } catch (e) {
-      debugPrint('Error getting ads statistics: $e');
+      AppLogger.error('Error getting ads statistics: $e');
       return {
         'total': 0,
         'pending': 0,

@@ -73,7 +73,7 @@ class GoogleMapsService {
       }
       return false;
     } catch (e) {
-      debugPrint('Error checking if device is emulator: $e');
+      AppLogger.error('Error checking if device is emulator: $e');
       return false; // Default to assuming it's not an emulator
     }
   }
@@ -89,14 +89,14 @@ class GoogleMapsService {
         // Asset not found, use built-in styles
         _isEmulator = await _checkIfEmulator();
         if (_isEmulator) {
-          debugPrint('🔍 Using simplified map style for emulator');
+          AppLogger.debug('🔍 Using simplified map style for emulator');
           return _emulatorMapStyleJson;
         } else {
           return _defaultMapStyleJson;
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Error determining map style: $e');
+      AppLogger.error('⚠️ Error determining map style: $e');
       return _defaultMapStyleJson;
     }
   }
@@ -104,22 +104,22 @@ class GoogleMapsService {
   /// Initialize Google Maps with secure configuration and retry logic
   Future<bool> initializeMaps() async {
     if (_mapsApiKey == null) {
-      debugPrint('❌ Google Maps API key not found in configuration');
+      AppLogger.error('❌ Google Maps API key not found in configuration');
       return false;
     }
 
     debugPrint(
       '🔑 Google Maps API key found: ${_mapsApiKey!.substring(0, 20)}...',
     );
-    debugPrint('🔑 API key length: ${_mapsApiKey!.length}');
+    AppLogger.info('🔑 API key length: ${_mapsApiKey!.length}');
 
     if (_initialized) {
-      debugPrint('🗺️ Google Maps already initialized');
+      AppLogger.info('🗺️ Google Maps already initialized');
       return true;
     }
 
     if (_initializing) {
-      debugPrint('🗺️ Google Maps initialization already in progress');
+      AppLogger.info('🗺️ Google Maps initialization already in progress');
       return false;
     }
 
@@ -136,7 +136,7 @@ class GoogleMapsService {
     while (_initRetryCount < _maxRetries) {
       try {
         if (defaultTargetPlatform == TargetPlatform.android) {
-          debugPrint('🗺️ Initializing Google Maps for Android...');
+          AppLogger.info('🗺️ Initializing Google Maps for Android...');
 
           final mapsImplementation = GoogleMapsFlutterAndroid();
 
@@ -146,7 +146,7 @@ class GoogleMapsService {
                     .latest // Use latest renderer for all devices
               : AndroidMapRenderer.latest; // Better for physical devices
 
-          debugPrint('🗺️ Using renderer: $renderer');
+          AppLogger.info('🗺️ Using renderer: $renderer');
           await mapsImplementation.initializeWithRenderer(renderer);
 
           _initialized = true;
@@ -159,7 +159,7 @@ class GoogleMapsService {
           return true;
         }
 
-        debugPrint('❌ Unsupported platform for Google Maps');
+        AppLogger.error('❌ Unsupported platform for Google Maps');
         return false;
       } catch (e) {
         _initRetryCount++;
@@ -173,7 +173,7 @@ class GoogleMapsService {
           if (_initRetryCount == 2 &&
               defaultTargetPlatform == TargetPlatform.android &&
               !_isEmulator) {
-            debugPrint('⚠️ Falling back to surface renderer for stability');
+            AppLogger.warning('⚠️ Falling back to surface renderer for stability');
             try {
               final fallbackImplementation = GoogleMapsFlutterAndroid();
               await fallbackImplementation.initializeWithRenderer(
@@ -183,7 +183,7 @@ class GoogleMapsService {
               _initializing = false;
               return true;
             } catch (fallbackError) {
-              debugPrint('❌ Surface renderer also failed: $fallbackError');
+              AppLogger.error('❌ Surface renderer also failed: $fallbackError');
             }
           }
           continue;

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../../widgets/enhanced_artwork_card.dart';
+import '../create_art_post_screen.dart';
+import '../../services/art_community_service.dart';
+import 'create_post_screen.dart';
 
 /// Enhanced community feed screen showcasing the new social engagement system
 class EnhancedCommunityFeedScreen extends StatefulWidget {
@@ -53,6 +57,13 @@ class _EnhancedCommunityFeedScreenState
             Tab(text: 'Posts'),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.admin_panel_settings),
+            tooltip: 'Developer Tools',
+            onPressed: () => _showDeveloperMenu(context),
+          ),
+        ],
       ),
       body: TabBarView(
         controller: _tabController,
@@ -66,7 +77,7 @@ class _EnhancedCommunityFeedScreenState
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCreateOptions(context),
+        onPressed: () => _handleCreatePost(context),
         backgroundColor: ArtbeatColors.primaryPurple,
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -685,38 +696,148 @@ class _EnhancedCommunityFeedScreenState
     ).showSnackBar(const SnackBar(content: Text('Opening artwork details...')));
   }
 
-  void _showCreateOptions(BuildContext context) {
-    showModalBottomSheet<void>(
+  /// Handle create post button tap - route based on user type
+  Future<void> _handleCreatePost(BuildContext context) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to create a post')),
+        );
+        return;
+      }
+
+      // Check if user is an artist by looking for artist profile
+      final communityService = ArtCommunityService();
+      final artistProfile = await communityService.getArtistProfile(user.uid);
+
+      if (artistProfile != null) {
+        // User is an artist - show the options screen for specialized posts
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => const CreatePostScreen(),
+          ),
+        );
+      } else {
+        // Regular user - go directly to the simple create post form
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) => const CreateArtPostScreen(),
+          ),
+        );
+      }
+
+      communityService.dispose();
+    } catch (e) {
+      // If there's an error checking artist status, default to simple create post
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (context) => const CreateArtPostScreen(),
+        ),
+      );
+    }
+  }
+
+  void _showDeveloperMenu(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Create New Content',
+              'Developer Tools',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 20),
-            _buildCreateOption(Icons.camera_alt, 'Capture Street Art', () {}),
-            _buildCreateOption(Icons.palette, 'Share Artwork', () {}),
-            _buildCreateOption(Icons.article, 'Create Post', () {}),
-            _buildCreateOption(Icons.event, 'Create Event', () {}),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.person_search),
+              title: const Text('Fix Anonymous Post Authors'),
+              subtitle: const Text(
+                'Update posts showing "Anonymous" with correct names',
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _fixAnonymousPosts();
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCreateOption(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: ArtbeatColors.primaryPurple),
-      title: Text(title),
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  Future<void> _fixAnonymousPosts() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Fix Anonymous Post Authors'),
+        content: const Text(
+          'This will update all posts that currently show "Anonymous" as the author name '
+          'by fetching the correct display names from user profiles.\n\n'
+          'This operation cannot be undone. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Fix Posts'),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed != true) return;
+
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Fixing anonymous post authors...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Call the fix method from the community service
+      await ArtCommunityService().fixAnonymousPosts();
+
+      Navigator.pop(context); // Close loading dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Anonymous posts fix completed! Check logs for details.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error fixing posts: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

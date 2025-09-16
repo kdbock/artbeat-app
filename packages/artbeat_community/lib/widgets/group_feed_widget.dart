@@ -66,7 +66,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
     });
 
     try {
-      debugPrint('Loading ${widget.groupType.value} group posts...');
+      AppLogger.info('Loading ${widget.groupType.value} group posts...');
 
       // Query posts for this specific group type
       final postsSnapshot = await FirebaseFirestore.instance
@@ -101,7 +101,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
           });
         }
       } else {
-        debugPrint('No ${widget.groupType.value} posts found');
+        AppLogger.info('No ${widget.groupType.value} posts found');
         if (mounted) {
           setState(() {
             _isLoading = false;
@@ -109,7 +109,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
         }
       }
     } catch (e) {
-      debugPrint('Error loading ${widget.groupType.value} posts: $e');
+      AppLogger.error('Error loading ${widget.groupType.value} posts: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -155,7 +155,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
         }
       }
     } catch (e) {
-      debugPrint('Error loading more ${widget.groupType.value} posts: $e');
+      AppLogger.error('Error loading more ${widget.groupType.value} posts: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -181,7 +181,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
           return ArtistWantedPost.fromFirestore(doc);
       }
     } catch (e) {
-      debugPrint('Error creating post from document ${doc.id}: $e');
+      AppLogger.error('Error creating post from document ${doc.id}: $e');
       return null;
     }
   }
@@ -243,7 +243,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
         }
       }
     } catch (e) {
-      debugPrint('Error appreciating post: $e');
+      AppLogger.error('Error appreciating post: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -289,7 +289,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
         ).showSnackBar(const SnackBar(content: Text('Post featured!')));
       }
     } catch (e) {
-      debugPrint('Error featuring post: $e');
+      AppLogger.error('Error featuring post: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -299,97 +299,15 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
   }
 
   void _handleGift(BaseGroupPost post) {
-    // Show dialog to select and send a virtual gift
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        String? selectedGift;
-        return AlertDialog(
-          title: const Text('Send a Gift'),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  DropdownButton<String>(
-                    value: selectedGift,
-                    hint: const Text(
-                      'Select a gift',
-                      style: TextStyle(color: ArtbeatColors.textPrimary),
-                    ),
-                    style: const TextStyle(color: ArtbeatColors.textPrimary),
-                    dropdownColor: ArtbeatColors.surface,
-                    items: const [
-                      DropdownMenuItem(
-                        value: '🌟',
-                        child: Text(
-                          'Star',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: '🎨',
-                        child: Text(
-                          'Palette',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: '💐',
-                        child: Text(
-                          'Bouquet',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                      DropdownMenuItem(
-                        value: '👏',
-                        child: Text(
-                          'Applause',
-                          style: TextStyle(color: ArtbeatColors.textPrimary),
-                        ),
-                      ),
-                    ],
-                    onChanged: (value) => setState(() => selectedGift = value),
-                  ),
-                ],
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedGift == null) return;
-
-                // Save gift to Firestore (as a subcollection 'gifts')
-                final postRef = FirebaseFirestore.instance
-                    .collection('posts')
-                    .doc(post.id);
-                final user = FirebaseAuth.instance.currentUser;
-
-                if (user != null) {
-                  await postRef.collection('gifts').add({
-                    'gift': selectedGift,
-                    'fromUserId': user.uid,
-                    'timestamp': FieldValue.serverTimestamp(),
-                  });
-                }
-
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Gift sent!')));
-                }
-              },
-              child: const Text('Send'),
-            ),
-          ],
-        );
-      },
+    // Navigate to enhanced gift purchasing flow for the post author/artist
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: post.userId,
+          recipientName: post.userName,
+        ),
+      ),
     );
   }
 
@@ -424,7 +342,7 @@ class _GroupFeedWidgetState extends State<GroupFeedWidget>
         transaction.update(postRef, {'shareCount': currentCount + 1});
       });
     } catch (e) {
-      debugPrint('Failed to update share count: $e');
+      AppLogger.info('Failed to update share count: $e');
     }
   }
 

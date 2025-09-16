@@ -452,7 +452,7 @@ class _CreateCouponDialogState extends State<CreateCouponDialog> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<CouponType>(
-                value: _selectedType,
+                initialValue: _selectedType,
                 decoration: const InputDecoration(labelText: 'Coupon Type'),
                 items: CouponType.values.map((type) {
                   return DropdownMenuItem(
@@ -693,7 +693,7 @@ class _EditCouponDialogState extends State<EditCouponDialog> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<CouponStatus>(
-              value: _selectedStatus,
+              initialValue: _selectedStatus,
               decoration: const InputDecoration(labelText: 'Status'),
               items: CouponStatus.values.map((status) {
                 return DropdownMenuItem(

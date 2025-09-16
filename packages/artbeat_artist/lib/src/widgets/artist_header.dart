@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Artist Package Specific Header
 ///
@@ -156,6 +157,18 @@ class _ArtistHeaderState extends State<ArtistHeader> {
       );
     }
 
+    // Profile Icon
+    actions.add(
+      IconButton(
+        icon: const Icon(
+          Icons.account_circle,
+          color: _iconTextColor,
+        ),
+        onPressed: () => _showProfileMenu(),
+        tooltip: 'Profile',
+      ),
+    );
+
     // Developer Icon
     if (widget.showDeveloper) {
       actions.add(
@@ -176,6 +189,15 @@ class _ArtistHeaderState extends State<ArtistHeader> {
     }
 
     return actions;
+  }
+
+  void _showProfileMenu() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const EnhancedProfileMenu(),
+    );
   }
 
   void _openDrawer() {

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/artwork_model.dart';
+import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
 
 /// Service for artwork discovery algorithms and recommendations
 class ArtworkDiscoveryService {
@@ -85,13 +85,13 @@ class ArtworkDiscoveryService {
             similarArtworks.add(ArtworkModel.fromFirestore(doc));
           }
         } catch (e) {
-          debugPrint('Error fetching similar artwork ${entry.key}: $e');
+          AppLogger.error('Error fetching similar artwork ${entry.key}: $e');
         }
       }
 
       return similarArtworks;
     } catch (e) {
-      debugPrint('Error getting similar artworks: $e');
+      AppLogger.error('Error getting similar artworks: $e');
       return [];
     }
   }
@@ -131,7 +131,7 @@ class ArtworkDiscoveryService {
 
       return sortedArtworks.take(limit).map((entry) => entry.key).toList();
     } catch (e) {
-      debugPrint('Error getting trending artworks: $e');
+      AppLogger.error('Error getting trending artworks: $e');
       return [];
     }
   }
@@ -215,7 +215,7 @@ class ArtworkDiscoveryService {
 
       return sortedArtworks.take(limit).map((entry) => entry.key).toList();
     } catch (e) {
-      debugPrint('Error getting personalized recommendations: $e');
+      AppLogger.error('Error getting personalized recommendations: $e');
       // Fallback to trending
       return getTrendingArtworks(limit: limit);
     }
@@ -262,7 +262,7 @@ class ArtworkDiscoveryService {
 
       return feed.take(limit).toList();
     } catch (e) {
-      debugPrint('Error getting discovery feed: $e');
+      AppLogger.error('Error getting discovery feed: $e');
       return [];
     }
   }
@@ -378,7 +378,7 @@ class ArtworkDiscoveryService {
       final doc = await _userPreferencesCollection.doc(userId).get();
       return doc.exists ? doc.data() as Map<String, dynamic> : {};
     } catch (e) {
-      debugPrint('Error getting user preferences: $e');
+      AppLogger.error('Error getting user preferences: $e');
       return {};
     }
   }
@@ -393,7 +393,7 @@ class ArtworkDiscoveryService {
 
       return query.docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
     } catch (e) {
-      debugPrint('Error getting user liked artworks: $e');
+      AppLogger.error('Error getting user liked artworks: $e');
       return [];
     }
   }
@@ -411,7 +411,7 @@ class ArtworkDiscoveryService {
 
       return query.docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
     } catch (e) {
-      debugPrint('Error getting user viewed artworks: $e');
+      AppLogger.error('Error getting user viewed artworks: $e');
       return [];
     }
   }
@@ -428,7 +428,7 @@ class ArtworkDiscoveryService {
 
       return query.docs.map((doc) => ArtworkModel.fromFirestore(doc)).toList();
     } catch (e) {
-      debugPrint('Error getting featured artworks: $e');
+      AppLogger.error('Error getting featured artworks: $e');
       return [];
     }
   }
@@ -465,7 +465,7 @@ class ArtworkDiscoveryService {
 
       await _userPreferencesCollection.doc(userId).set(preferences);
     } catch (e) {
-      debugPrint('Error updating user preferences: $e');
+      AppLogger.error('Error updating user preferences: $e');
     }
   }
 }

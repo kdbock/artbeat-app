@@ -74,6 +74,12 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
       return;
     }
 
+    // Handle demo content specially - just update UI without Firebase operations
+    if (_isDemoContent()) {
+      _handleDemoEngagement(type);
+      return;
+    }
+
     // Handle special engagement types
     if (EngagementConfigService.requiresSpecialHandling(type)) {
       await _handleSpecialEngagement(type);
@@ -111,6 +117,42 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
     }
   }
 
+  /// Check if this is demo content that doesn't exist in Firestore
+  bool _isDemoContent() {
+    return widget.contentId.startsWith('demo_');
+  }
+
+  /// Handle engagement for demo content (just UI feedback, no Firebase operations)
+  void _handleDemoEngagement(EngagementType type) {
+    final isCurrentlyEngaged = _userEngagements[type] ?? false;
+    final newEngagementState = !isCurrentlyEngaged;
+
+    setState(() {
+      _userEngagements[type] = newEngagementState;
+      _stats = _updateStatsForEngagement(type, newEngagementState);
+    });
+
+    // Show feedback for demo engagement
+    String message;
+    switch (type) {
+      case EngagementType.like:
+        message = newEngagementState ? 'Demo liked! ❤️' : 'Demo unliked';
+        break;
+      case EngagementType.comment:
+        message = 'Demo comment feature! 💬';
+        break;
+      case EngagementType.share:
+        message = 'Demo share feature! 📤';
+        break;
+      default:
+        message = 'Demo engagement! ✨';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
   Future<void> _handleSpecialEngagement(EngagementType type) async {
     switch (type) {
       case EngagementType.gift:
@@ -130,6 +172,9 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
         break;
       case EngagementType.rate:
         await _showRatingDialog();
+        break;
+      case EngagementType.comment:
+        await _handleComment();
         break;
       case EngagementType.share:
         await _handleShare();
@@ -843,6 +888,78 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  Future<void> _handleComment() async {
+    final TextEditingController commentController = TextEditingController();
+
+    final comment = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Comment'),
+          content: TextField(
+            controller: commentController,
+            decoration: const InputDecoration(
+              hintText: 'Write your comment...',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            maxLength: 500,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final text = commentController.text.trim();
+                if (text.isNotEmpty) {
+                  Navigator.pop(context, text);
+                }
+              },
+              child: const Text('Comment'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (comment != null && comment.isNotEmpty) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final service = context.read<ContentEngagementService>();
+        await service.addComment(
+          contentId: widget.contentId,
+          contentType: widget.contentType,
+          comment: comment,
+        );
+
+        if (mounted) {
+          setState(() {
+            _stats = _stats.copyWith(commentCount: _stats.commentCount + 1);
+            _isLoading = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Comment added successfully!')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error adding comment: $e')));
+        }
       }
     }
   }

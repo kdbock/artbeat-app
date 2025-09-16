@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
+import 'package:artbeat_core/artbeat_core.dart'
+    show CaptureModel, UserService, AppLogger;
 
 // Import ArtWalkService for achievement checking
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
@@ -14,6 +15,8 @@ class CaptureService {
   static final CaptureService _instance = CaptureService._internal();
 
   final Connectivity _connectivity = Connectivity();
+  final UserService _userService = UserService();
+  final art_walk.RewardsService _rewardsService = art_walk.RewardsService();
 
   // Cache for getAllCaptures
   List<CaptureModel>? _cachedAllCaptures;
@@ -32,7 +35,7 @@ class CaptureService {
     try {
       return FirebaseFirestore.instance;
     } catch (e) {
-      debugPrint('Firebase not initialized yet: $e');
+      AppLogger.firebase('Firebase not initialized yet: $e');
       rethrow;
     }
   }
@@ -62,7 +65,7 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error fetching captures: $e');
+      AppLogger.error('Error fetching captures: $e');
       return [];
     }
   }
@@ -90,11 +93,11 @@ class CaptureService {
           localImagePath: localImagePath,
         );
 
-        debugPrint('Capture added to offline queue: $localCaptureId');
+        AppLogger.info('Capture added to offline queue: $localCaptureId');
         return localCaptureId; // Return the local ID for immediate UI updates
       }
     } catch (e) {
-      debugPrint('Error saving capture with offline support: $e');
+      AppLogger.error('Error saving capture with offline support: $e');
       return null;
     }
   }
@@ -123,6 +126,9 @@ class CaptureService {
         'artMedium': capture.artMedium,
       });
 
+      // Update user's capture count
+      await _userService.incrementUserCaptureCount(capture.userId);
+
       // If capture is public and processed, also save to publicArt collection
       if (capture.isPublic && capture.isProcessed) {
         await _saveToPublicArt(capture.copyWith(id: docRef.id));
@@ -130,7 +136,7 @@ class CaptureService {
 
       return docRef.id;
     } catch (e) {
-      debugPrint('Error saving capture: $e');
+      AppLogger.error('Error saving capture: $e');
       return null;
     }
   }
@@ -158,9 +164,9 @@ class CaptureService {
         'updatedAt': capture.updatedAt,
         'captureId': capture.id, // Reference to original capture
       });
-      debugPrint('✅ Saved capture ${capture.id} to publicArt collection');
+      AppLogger.info('✅ Saved capture ${capture.id} to publicArt collection');
     } catch (e) {
-      debugPrint('❌ Error saving to publicArt collection: $e');
+      AppLogger.error('❌ Error saving to publicArt collection: $e');
     }
   }
 
@@ -169,6 +175,12 @@ class CaptureService {
     try {
       final docRef = await _capturesRef.add(capture.toFirestore());
       final newCapture = capture.copyWith(id: docRef.id);
+
+      // Update user's capture count
+      await _userService.incrementUserCaptureCount(capture.userId);
+
+      // Award XP for creating a capture
+      await _rewardsService.awardXP('art_capture_created');
 
       // If capture is public and processed, also save to publicArt collection
       if (newCapture.isPublic && newCapture.isProcessed) {
@@ -180,7 +192,7 @@ class CaptureService {
 
       return newCapture;
     } catch (e) {
-      debugPrint('Error creating capture: $e');
+      AppLogger.error('Error creating capture: $e');
       rethrow;
     }
   }
@@ -214,12 +226,14 @@ class CaptureService {
       // If the capture is being made private, remove from publicArt
       else if (updates['isPublic'] == false) {
         await _publicArtRef.doc(captureId).delete();
-        debugPrint('🗑️ Removed capture $captureId from publicArt collection');
+        AppLogger.info(
+          '🗑️ Removed capture $captureId from publicArt collection',
+        );
       }
 
       return true;
     } catch (e) {
-      debugPrint('Error updating capture: $e');
+      AppLogger.error('Error updating capture: $e');
       return false;
     }
   }
@@ -227,13 +241,29 @@ class CaptureService {
   /// Delete a capture
   Future<bool> deleteCapture(String captureId) async {
     try {
-      // Delete from both collections
-      await _capturesRef.doc(captureId).delete();
-      await _publicArtRef.doc(captureId).delete();
-      debugPrint('🗑️ Deleted capture $captureId from both collections');
-      return true;
+      // Get the capture document first to retrieve userId
+      final captureDoc = await _capturesRef.doc(captureId).get();
+      if (captureDoc.exists) {
+        final data = captureDoc.data() as Map<String, dynamic>?;
+        final userId = data?['userId'] as String?;
+
+        // Delete from both collections
+        await _capturesRef.doc(captureId).delete();
+        await _publicArtRef.doc(captureId).delete();
+
+        // Update user's capture count if we have userId
+        if (userId != null) {
+          await _userService.decrementUserCaptureCount(userId);
+        }
+
+        AppLogger.info('🗑️ Deleted capture $captureId from both collections');
+        return true;
+      } else {
+        AppLogger.error('❌ Capture $captureId not found');
+        return false;
+      }
     } catch (e) {
-      debugPrint('Error deleting capture: $e');
+      AppLogger.error('Error deleting capture: $e');
       return false;
     }
   }
@@ -249,7 +279,7 @@ class CaptureService {
         'id': docSnapshot.id,
       });
     } catch (e) {
-      debugPrint('Error fetching capture: $e');
+      AppLogger.error('Error fetching capture: $e');
       return null;
     }
   }
@@ -272,7 +302,9 @@ class CaptureService {
     if (_cachedAllCaptures != null &&
         _allCapturesCacheTime != null &&
         DateTime.now().difference(_allCapturesCacheTime!) < _cacheTimeout) {
-      debugPrint('📦 CaptureService.getAllCaptures() returning cached data');
+      AppLogger.info(
+        '📦 CaptureService.getAllCaptures() returning cached data',
+      );
       return _cachedAllCaptures!;
     }
 
@@ -298,7 +330,7 @@ class CaptureService {
             captures.add(capture);
           }
         } catch (e) {
-          debugPrint('❌ Error parsing capture ${doc.id}: $e');
+          AppLogger.error('❌ Error parsing capture ${doc.id}: $e');
           // Skip this document and continue with others
         }
       }
@@ -312,11 +344,11 @@ class CaptureService {
       );
       return captures;
     } catch (e) {
-      debugPrint('❌ Error fetching all captures with orderBy: $e');
+      AppLogger.error('❌ Error fetching all captures with orderBy: $e');
 
       // Fallback: Try without orderBy to avoid index requirement
       try {
-        debugPrint('🔄 Trying fallback query without orderBy...');
+        AppLogger.info('🔄 Trying fallback query without orderBy...');
         final fallbackQuery = await _capturesRef.limit(limit).get();
 
         final captures = <CaptureModel>[];
@@ -328,7 +360,9 @@ class CaptureService {
               captures.add(capture);
             }
           } catch (e) {
-            debugPrint('❌ Error parsing capture ${doc.id} in fallback: $e');
+            AppLogger.error(
+              '❌ Error parsing capture ${doc.id} in fallback: $e',
+            );
             // Skip this document and continue with others
           }
         }
@@ -340,10 +374,12 @@ class CaptureService {
         _cachedAllCaptures = captures;
         _allCapturesCacheTime = DateTime.now();
 
-        debugPrint('✅ Fallback query found ${captures.length} all captures');
+        AppLogger.info(
+          '✅ Fallback query found ${captures.length} all captures',
+        );
         return captures;
       } catch (fallbackError) {
-        debugPrint('❌ Fallback query also failed: $fallbackError');
+        AppLogger.error('❌ Fallback query also failed: $fallbackError');
         return [];
       }
     } finally {
@@ -376,11 +412,11 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error fetching public captures with index: $e');
+      AppLogger.error('Error fetching public captures with index: $e');
 
       // Fallback: Try without orderBy to avoid index requirement
       try {
-        debugPrint('🔄 Trying fallback query without orderBy...');
+        AppLogger.info('🔄 Trying fallback query without orderBy...');
         final fallbackQuery = await _capturesRef
             .where('isPublic', isEqualTo: true)
             .limit(limit)
@@ -397,10 +433,12 @@ class CaptureService {
 
         // Sort manually by createdAt
         captures.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        debugPrint('✅ Fallback query found ${captures.length} public captures');
+        AppLogger.info(
+          '✅ Fallback query found ${captures.length} public captures',
+        );
         return captures;
       } catch (fallbackError) {
-        debugPrint('❌ Fallback query also failed: $fallbackError');
+        AppLogger.error('❌ Fallback query also failed: $fallbackError');
         return [];
       }
     }
@@ -427,7 +465,7 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error fetching user captures: $e');
+      AppLogger.error('Error fetching user captures: $e');
 
       // Fallback without orderBy
       try {
@@ -467,7 +505,7 @@ class CaptureService {
 
       return querySnapshot.count ?? 0;
     } catch (e) {
-      debugPrint('Error getting user capture count: $e');
+      AppLogger.error('Error getting user capture count: $e');
 
       // Fallback: get all documents and count manually
       try {
@@ -501,7 +539,7 @@ class CaptureService {
 
       return totalViews;
     } catch (e) {
-      debugPrint('Error getting user capture views: $e');
+      AppLogger.error('Error getting user capture views: $e');
       return 0;
     }
   }
@@ -524,7 +562,7 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error fetching pending captures: $e');
+      AppLogger.error('Error fetching pending captures: $e');
 
       // Fallback without orderBy
       try {
@@ -560,14 +598,42 @@ class CaptureService {
     String? moderationNotes,
   }) async {
     try {
+      // Get capture data to find userId for XP awarding
+      final captureDoc = await _capturesRef.doc(captureId).get();
+      if (!captureDoc.exists) {
+        AppLogger.info('Capture $captureId not found');
+        return false;
+      }
+
+      final captureData = captureDoc.data() as Map<String, dynamic>;
+      final userId = captureData['userId'] as String?;
+
+      // Update capture status
       await _capturesRef.doc(captureId).update({
         'status': 'approved',
         'moderationNotes': moderationNotes,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      // Award XP for approved capture
+      if (userId != null) {
+        try {
+          final rewardsService = art_walk.RewardsService();
+          await rewardsService.awardXP('art_capture_approved');
+          debugPrint(
+            '✅ Awarded 50 XP for approved capture $captureId to user $userId',
+          );
+        } catch (xpError) {
+          AppLogger.error(
+            '⚠️ Error awarding XP for capture approval: $xpError',
+          );
+          // Don't fail the approval if XP fails
+        }
+      }
+
       return true;
     } catch (e) {
-      debugPrint('Error approving capture: $e');
+      AppLogger.error('Error approving capture: $e');
       return false;
     }
   }
@@ -585,7 +651,7 @@ class CaptureService {
       });
       return true;
     } catch (e) {
-      debugPrint('Error rejecting capture: $e');
+      AppLogger.error('Error rejecting capture: $e');
       return false;
     }
   }
@@ -593,10 +659,27 @@ class CaptureService {
   /// Admin: Delete a capture completely
   Future<bool> adminDeleteCapture(String captureId) async {
     try {
-      await _capturesRef.doc(captureId).delete();
-      return true;
+      // Get the capture document first to retrieve userId
+      final captureDoc = await _capturesRef.doc(captureId).get();
+      if (captureDoc.exists) {
+        final data = captureDoc.data() as Map<String, dynamic>?;
+        final userId = data?['userId'] as String?;
+
+        // Delete capture
+        await _capturesRef.doc(captureId).delete();
+
+        // Update user's capture count if we have userId
+        if (userId != null) {
+          await _userService.decrementUserCaptureCount(userId);
+        }
+
+        return true;
+      } else {
+        AppLogger.error('❌ Capture $captureId not found');
+        return false;
+      }
     } catch (e) {
-      debugPrint('Error admin deleting capture: $e');
+      AppLogger.error('Error admin deleting capture: $e');
       return false;
     }
   }
@@ -622,7 +705,7 @@ class CaptureService {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error fetching captures by status: $e');
+      AppLogger.error('Error fetching captures by status: $e');
 
       // Fallback without orderBy
       try {
@@ -665,7 +748,9 @@ class CaptureService {
           .where('isProcessed', isEqualTo: true)
           .get();
 
-      debugPrint('📊 Found ${snapshot.docs.length} public captures to migrate');
+      AppLogger.analytics(
+        '📊 Found ${snapshot.docs.length} public captures to migrate',
+      );
 
       int migrated = 0;
       int errors = 0;
@@ -680,19 +765,21 @@ class CaptureService {
           if (!existingDoc.exists) {
             await _saveToPublicArt(capture);
             migrated++;
-            debugPrint('✅ Migrated capture ${doc.id}');
+            AppLogger.info('✅ Migrated capture ${doc.id}');
           } else {
-            debugPrint('⏭️ Capture ${doc.id} already exists in publicArt');
+            AppLogger.info('⏭️ Capture ${doc.id} already exists in publicArt');
           }
         } catch (e) {
           errors++;
-          debugPrint('❌ Error migrating capture ${doc.id}: $e');
+          AppLogger.error('❌ Error migrating capture ${doc.id}: $e');
         }
       }
 
-      debugPrint('🎉 Migration completed: $migrated migrated, $errors errors');
+      AppLogger.error(
+        '🎉 Migration completed: $migrated migrated, $errors errors',
+      );
     } catch (e) {
-      debugPrint('❌ Migration failed: $e');
+      AppLogger.error('❌ Migration failed: $e');
     }
   }
 
@@ -703,7 +790,7 @@ class CaptureService {
       final artWalkService = art_walk.ArtWalkService();
       await artWalkService.checkCaptureAchievements(userId);
     } catch (e) {
-      debugPrint('❌ Error checking capture achievements: $e');
+      AppLogger.error('❌ Error checking capture achievements: $e');
       // Don't rethrow - achievement checking shouldn't break capture creation
     }
   }

@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/analytics_model.dart';
-import 'financial_analytics_service.dart';
+import 'financial_service.dart';
 
 /// Enhanced analytics service with comprehensive metrics
 class EnhancedAnalyticsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FinancialAnalyticsService _financialService =
-      FinancialAnalyticsService();
+  final FinancialService _financialService = FinancialService();
 
   /// Get comprehensive analytics data for the specified date range
   Future<AnalyticsModel> getEnhancedAnalytics({

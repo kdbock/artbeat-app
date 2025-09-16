@@ -59,10 +59,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     return core.MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: const core.EnhancedUniversalHeader(
-          title: 'Following',
-          showLogo: false,
-        ),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(

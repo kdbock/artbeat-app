@@ -3,9 +3,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
 
 class ImageModerationService {
   final String apiKey;
@@ -48,7 +48,7 @@ class ImageModerationService {
           'details': data,
         };
       } else {
-        debugPrint('API error: ${response.statusCode} - ${response.body}');
+        AppLogger.error('API error: ${response.statusCode} - ${response.body}');
         return {
           'isAppropriate': true, // Fail open - allow if API fails
           'confidence': 0,
@@ -57,7 +57,7 @@ class ImageModerationService {
         };
       }
     } catch (e) {
-      debugPrint('Image moderation error: $e');
+      AppLogger.error('Image moderation error: $e');
       return {
         'isAppropriate': true, // Fail open - allow if error occurs
         'confidence': 0,
@@ -81,7 +81,7 @@ class ImageModerationService {
         'imageSize': imageSize,
       });
     } catch (e) {
-      debugPrint('Error logging moderation result: $e');
+      AppLogger.error('Error logging moderation result: $e');
     }
   }
 

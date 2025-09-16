@@ -41,7 +41,7 @@ class _ArtworkDiscoveryWidgetState extends State<ArtworkDiscoveryWidget> {
         userId: widget.userId,
       );
       setState(() {
-        _recommendations = recommendations;
+        _recommendations = recommendations.cast<ArtworkModel>();
         _isLoading = false;
       });
     } catch (e) {

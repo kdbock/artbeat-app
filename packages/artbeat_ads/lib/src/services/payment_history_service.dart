@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/payment_history_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing payment history and transaction records
 ///
@@ -47,7 +48,7 @@ class PaymentHistoryService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error recording payment: $e');
+      AppLogger.error('Error recording payment: $e');
       rethrow;
     }
   }
@@ -80,7 +81,7 @@ class PaymentHistoryService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating payment status: $e');
+      AppLogger.error('Error updating payment status: $e');
       rethrow;
     }
   }
@@ -101,7 +102,7 @@ class PaymentHistoryService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error recording refund: $e');
+      AppLogger.error('Error recording refund: $e');
       rethrow;
     }
   }
@@ -143,7 +144,7 @@ class PaymentHistoryService extends ChangeNotifier {
             .toList();
       });
     } catch (e) {
-      debugPrint('Error getting user payment history: $e');
+      AppLogger.error('Error getting user payment history: $e');
       return Stream.value([]);
     }
   }
@@ -161,7 +162,7 @@ class PaymentHistoryService extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting payment by ID: $e');
+      AppLogger.error('Error getting payment by ID: $e');
       return null;
     }
   }
@@ -203,7 +204,7 @@ class PaymentHistoryService extends ChangeNotifier {
 
       return totalRevenue;
     } catch (e) {
-      debugPrint('Error calculating total revenue: $e');
+      AppLogger.error('Error calculating total revenue: $e');
       return 0.0;
     }
   }
@@ -273,7 +274,7 @@ class PaymentHistoryService extends ChangeNotifier {
             : 0.0,
       };
     } catch (e) {
-      debugPrint('Error getting payment statistics: $e');
+      AppLogger.error('Error getting payment statistics: $e');
       return {};
     }
   }
@@ -340,7 +341,7 @@ class PaymentHistoryService extends ChangeNotifier {
         (a, b) => (a['month'] as String).compareTo(b['month'] as String),
       );
     } catch (e) {
-      debugPrint('Error getting monthly payment summary: $e');
+      AppLogger.error('Error getting monthly payment summary: $e');
       return [];
     }
   }
@@ -393,7 +394,7 @@ class PaymentHistoryService extends ChangeNotifier {
 
       return results.take(limit).toList();
     } catch (e) {
-      debugPrint('Error searching payments: $e');
+      AppLogger.error('Error searching payments: $e');
       return [];
     }
   }
@@ -405,7 +406,7 @@ class PaymentHistoryService extends ChangeNotifier {
       // For now, return a placeholder URL
       return 'https://receipts.artbeat.com/receipt/$paymentId.pdf';
     } catch (e) {
-      debugPrint('Error generating receipt: $e');
+      AppLogger.error('Error generating receipt: $e');
       return null;
     }
   }

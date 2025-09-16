@@ -98,76 +98,14 @@ class AdminDrawer extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   children: [
-                    // Overview Section
-                    _buildSectionHeader('Overview'),
+                    // Main Admin Dashboard - All-in-One Interface
+                    _buildSectionHeader('Admin Dashboard'),
                     _buildDrawerItem(
                       context,
                       icon: Icons.dashboard,
-                      title: 'Dashboard',
+                      title: 'Unified Dashboard',
                       route: '/admin/dashboard',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.attach_money,
-                      title: 'Financial Analytics',
-                      route: '/admin/financial-analytics',
-                    ),
-
-                    const Divider(height: 16),
-
-                    // User Management Section
-                    _buildSectionHeader('User Management'),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.manage_accounts,
-                      title: 'User Management',
-                      route: '/admin/user-management',
-                    ),
-
-                    const Divider(height: 16),
-
-                    // Content Management Section
-                    _buildSectionHeader('Content Management'),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.rate_review,
-                      title: 'Content Review',
-                      route: '/admin/content-review',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.content_copy,
-                      title: 'Advanced Content Management',
-                      route: '/admin/advanced-content-management',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.campaign,
-                      title: 'Ads Management',
-                      route: '/admin/ads-management',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.event,
-                      title: 'Events Management',
-                      route: '/admin/events-management',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.people_alt,
-                      title: 'Community Moderation',
-                      route: '/admin/community-moderation',
-                    ),
-
-                    const Divider(height: 16),
-
-                    // Analytics Section
-                    _buildSectionHeader('Analytics'),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.analytics,
-                      title: 'Analytics',
-                      route: '/admin/analytics',
+                      subtitle: 'All admin functions in one place',
                     ),
 
                     const Divider(height: 16),
@@ -176,62 +114,49 @@ class AdminDrawer extends StatelessWidget {
                     _buildSectionHeader('System Management'),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.security,
-                      title: 'Security Center',
-                      route: '/admin/security',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.backup,
-                      title: 'Data Management',
-                      route: '/admin/data',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.notifications,
-                      title: 'System Alerts',
-                      route: '/admin/alerts',
-                    ),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.sync_alt,
-                      title: 'Data Migration',
-                      route: '/admin/migration',
-                    ),
-                    _buildDrawerItem(
-                      context,
                       icon: Icons.settings,
-                      title: 'Settings',
+                      title: 'Admin Settings',
                       route: '/admin/settings',
+                      subtitle: 'System configuration',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.payment,
+                      title: 'Payment Management',
+                      route: '/admin/payments',
+                      subtitle: 'Transaction & refund management',
                     ),
 
                     const Divider(height: 16),
 
-                    // Developer Tools Section
-                    _buildSectionHeader('Developer Tools'),
+                    // Quick Access Section
+                    _buildSectionHeader('Quick Access'),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.developer_mode,
-                      title: 'Developer Tools',
-                      onTap: () => _showDeveloperTools(context),
+                      icon: Icons.monitor,
+                      title: 'System Monitoring',
+                      route: '/admin/dashboard',
+                      subtitle: 'View in unified dashboard',
                     ),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.bug_report,
-                      title: 'System Diagnostics',
-                      onTap: () => _showSystemDiagnostics(context),
+                      icon: Icons.people,
+                      title: 'User Management',
+                      route: '/admin/dashboard',
+                      subtitle: 'View in unified dashboard',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.content_paste,
+                      title: 'Content Moderation',
+                      route: '/admin/dashboard',
+                      subtitle: 'View in unified dashboard',
                     ),
 
                     const Divider(height: 16),
 
                     // Support & Account Section
                     _buildSectionHeader('Support & Account'),
-                    _buildDrawerItem(
-                      context,
-                      icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      route: '/admin/help',
-                    ),
                     _buildDrawerItem(
                       context,
                       icon: Icons.logout,
@@ -254,6 +179,7 @@ class AdminDrawer extends StatelessWidget {
     BuildContext context, {
     required IconData icon,
     required String title,
+    String? subtitle,
     String? route,
     VoidCallback? onTap,
     bool isDestructive = false,
@@ -274,6 +200,15 @@ class AdminDrawer extends StatelessWidget {
           fontWeight: FontWeight.w500,
         ),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 11,
+              ),
+            )
+          : null,
       onTap: onTap ??
           () {
             Navigator.pop(context); // Close drawer
@@ -287,129 +222,6 @@ class AdminDrawer extends StatelessWidget {
       ),
       hoverColor: color.withValues(alpha: 0.1),
       splashColor: color.withValues(alpha: 0.2),
-    );
-  }
-
-  void _showDeveloperTools(BuildContext context) {
-    Navigator.pop(context); // Close drawer
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'Developer Tools',
-          style: TextStyle(
-            fontFamily: 'Limelight',
-            color: _headerColor,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.code, color: _headerColor),
-                title: const Text('API Console'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/settings');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.storage, color: _headerColor),
-                title: const Text('Database Tools'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/data');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.speed, color: _headerColor),
-                title: const Text('Performance Monitor'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/analytics');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.memory, color: _headerColor),
-                title: const Text('Memory Usage'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/alerts');
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSystemDiagnostics(BuildContext context) {
-    Navigator.pop(context); // Close drawer
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(
-          'System Diagnostics',
-          style: TextStyle(
-            fontFamily: 'Limelight',
-            color: _headerColor,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading:
-                    const Icon(Icons.health_and_safety, color: _headerColor),
-                title: const Text('System Health'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/alerts');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.network_check, color: _headerColor),
-                title: const Text('Network Status'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/security');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.error_outline, color: _headerColor),
-                title: const Text('Error Logs'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/alerts');
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.timeline, color: _headerColor),
-                title: const Text('Performance Metrics'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/admin/analytics');
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
     );
   }
 

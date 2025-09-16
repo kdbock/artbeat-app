@@ -118,9 +118,9 @@ class AdModel {
     try {
       safeLocation = intLocation >= 0 && intLocation < AdLocation.values.length
           ? AdLocation.values[intLocation]
-          : AdLocation.dashboard;
+          : AdLocation.fluidDashboard;
     } catch (e) {
-      safeLocation = AdLocation.dashboard;
+      safeLocation = AdLocation.fluidDashboard;
     }
 
     AdStatus safeStatus;

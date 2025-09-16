@@ -245,7 +245,9 @@ class ArtworkModel {
       isPublic: data['isPublic'] as bool? ?? true,
       externalLink: data['externalLink'] as String?,
       viewCount: data['viewCount'] as int? ?? 0,
-      engagementStats: EngagementStats.fromFirestore(data),
+      engagementStats: EngagementStats.fromFirestore(
+        data['engagementStats'] as Map<String, dynamic>? ?? data,
+      ),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       moderationStatus: ArtworkModerationStatus.fromString(
@@ -285,7 +287,7 @@ class ArtworkModel {
       'isPublic': isPublic,
       'externalLink': externalLink,
       'viewCount': viewCount,
-      ...engagementStats.toFirestore(),
+      'engagementStats': engagementStats.toFirestore(),
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'moderationStatus': moderationStatus.value,

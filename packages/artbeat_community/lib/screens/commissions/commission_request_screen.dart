@@ -231,7 +231,7 @@ class _CommissionRequestScreenState extends State<CommissionRequestScreen> {
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<CommissionType>(
-                        value: _selectedType,
+                        initialValue: _selectedType,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Type',

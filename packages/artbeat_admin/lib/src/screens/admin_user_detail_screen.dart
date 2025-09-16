@@ -3,6 +3,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_admin_model.dart';
 import '../widgets/admin_drawer.dart';
+import '../services/admin_service.dart';
 
 /// Detailed view of a user for admin management
 class AdminUserDetailScreen extends StatefulWidget {
@@ -21,18 +22,39 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late UserAdminModel _currentUser;
-  final bool _isLoading = false;
+  bool _isLoading = false;
+  bool _isEditing = false;
+  late TextEditingController _fullNameController;
+  late TextEditingController _usernameController;
+  late TextEditingController _emailController;
+  late TextEditingController _bioController;
+  late TextEditingController _locationController;
+  late TextEditingController _zipCodeController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _currentUser = widget.user;
+
+    // Initialize text controllers
+    _fullNameController = TextEditingController(text: _currentUser.fullName);
+    _usernameController = TextEditingController(text: _currentUser.username);
+    _emailController = TextEditingController(text: _currentUser.email);
+    _bioController = TextEditingController(text: _currentUser.bio);
+    _locationController = TextEditingController(text: _currentUser.location);
+    _zipCodeController = TextEditingController(text: _currentUser.zipCode);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _fullNameController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    _bioController.dispose();
+    _locationController.dispose();
+    _zipCodeController.dispose();
     super.dispose();
   }
 
@@ -519,6 +541,140 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
               ),
             ),
           ],
+          const SizedBox(height: 16),
+          // User Management Actions
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'User Management',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(height: 16),
+                  // Edit Profile Section
+                  if (_isEditing) ...[
+                    const Text('Edit Profile',
+                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _fullNameController,
+                      decoration: const InputDecoration(labelText: 'Full Name'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _usernameController,
+                      decoration: const InputDecoration(labelText: 'Username'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(labelText: 'Email'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _bioController,
+                      decoration: const InputDecoration(labelText: 'Bio'),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _locationController,
+                      decoration: const InputDecoration(labelText: 'Location'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _zipCodeController,
+                      decoration: const InputDecoration(labelText: 'Zip Code'),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _updateUserProfile,
+                          child: const Text('Save Changes'),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () {
+                            setState(() => _isEditing = false);
+                            // Reset controllers to original values
+                            _fullNameController.text = _currentUser.fullName;
+                            _usernameController.text = _currentUser.username;
+                            _emailController.text = _currentUser.email;
+                            _bioController.text = _currentUser.bio;
+                            _locationController.text = _currentUser.location;
+                            _zipCodeController.text =
+                                _currentUser.zipCode ?? '';
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    ElevatedButton.icon(
+                      onPressed: () => setState(() => _isEditing = true),
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit Profile'),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  // Image Management
+                  const Text('Image Management',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 12),
+                  if (_currentUser.profileImageUrl.isNotEmpty) ...[
+                    ElevatedButton.icon(
+                      onPressed: _removeProfileImage,
+                      icon: const Icon(Icons.delete),
+                      label: const Text('Remove Profile Image'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  // User Type Management
+                  const SizedBox(height: 16),
+                  const Text('User Type',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 12),
+                  DropdownButton<UserType>(
+                    value: _getUserTypeFromString(_currentUser.userType),
+                    onChanged: (UserType? newType) {
+                      if (newType != null) {
+                        _updateUserType(newType);
+                      }
+                    },
+                    items: UserType.values.map((UserType type) {
+                      return DropdownMenuItem<UserType>(
+                        value: type,
+                        child: Text(type.name.toUpperCase()),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  // Verification and Featured Status
+                  const Text('Status Management',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    title: const Text('Verified'),
+                    value: _currentUser.isVerified,
+                    onChanged: (_) => _toggleVerificationStatus(),
+                  ),
+                  SwitchListTile(
+                    title: const Text('Featured'),
+                    value: _currentUser.isFeatured,
+                    onChanged: (_) => _toggleFeaturedStatus(),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -736,5 +892,190 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  /// Update user profile
+  Future<void> _updateUserProfile() async {
+    setState(() => _isLoading = true);
+    try {
+      final adminService = AdminService();
+      final profileData = {
+        'fullName': _fullNameController.text.trim(),
+        'username': _usernameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'bio': _bioController.text.trim(),
+        'location': _locationController.text.trim(),
+        'zipCode': _zipCodeController.text.trim(),
+      };
+
+      await adminService.updateUserProfile(_currentUser.id, profileData);
+
+      setState(() {
+        _currentUser = _currentUser.copyWithAdmin(
+          fullName: _fullNameController.text.trim(),
+          username: _usernameController.text.trim(),
+          email: _emailController.text.trim(),
+          bio: _bioController.text.trim(),
+          location: _locationController.text.trim(),
+          zipCode: _zipCodeController.text.trim(),
+        );
+        _isEditing = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User profile updated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update profile: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Remove user profile image
+  Future<void> _removeProfileImage() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Profile Image'),
+        content: const Text(
+            'Are you sure you want to remove this user\'s profile image?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        final adminService = AdminService();
+        await adminService.removeUserProfileImage(_currentUser.id);
+
+        setState(() {
+          _currentUser = _currentUser.copyWithAdmin(profileImageUrl: '');
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile image removed successfully')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to remove profile image: $e')),
+          );
+        }
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Toggle user featured status
+  Future<void> _toggleFeaturedStatus() async {
+    setState(() => _isLoading = true);
+    try {
+      final adminService = AdminService();
+      final newFeaturedStatus = !_currentUser.isFeatured;
+
+      await adminService.setUserFeatured(_currentUser.id, newFeaturedStatus);
+
+      setState(() {
+        _currentUser =
+            _currentUser.copyWithAdmin(isFeatured: newFeaturedStatus);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'User ${newFeaturedStatus ? 'marked as featured' : 'unfeatured'} successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update featured status: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Update user type
+  Future<void> _updateUserType(UserType newType) async {
+    setState(() => _isLoading = true);
+    try {
+      final adminService = AdminService();
+      await adminService.updateUserType(_currentUser.id, newType);
+
+      setState(() {
+        _currentUser = _currentUser.copyWithAdmin(userType: newType.name);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User type updated to ${newType.name}')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update user type: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  /// Toggle user verification status
+  Future<void> _toggleVerificationStatus() async {
+    setState(() => _isLoading = true);
+    try {
+      final adminService = AdminService();
+      if (_currentUser.isVerified) {
+        await adminService.unverifyUser(_currentUser.id);
+      } else {
+        await adminService.verifyUser(_currentUser.id);
+      }
+
+      setState(() {
+        _currentUser =
+            _currentUser.copyWithAdmin(isVerified: !_currentUser.isVerified);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'User ${!_currentUser.isVerified ? 'verified' : 'unverified'} successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update verification status: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 
 /// Service for authentication-related operations
 class AuthService {
@@ -31,7 +31,7 @@ class AuthService {
       );
       return credentials;
     } catch (e) {
-      debugPrint('Sign in error: $e');
+      AppLogger.error('Sign in error: $e');
       rethrow;
     }
   }
@@ -48,7 +48,7 @@ class AuthService {
       );
       return credentials;
     } catch (e) {
-      debugPrint('Registration error: $e');
+      AppLogger.error('Registration error: $e');
       rethrow;
     }
   }
@@ -58,7 +58,7 @@ class AuthService {
     try {
       await _auth.sendPasswordResetEmail(email: email);
     } catch (e) {
-      debugPrint('Password reset error: $e');
+      AppLogger.error('Password reset error: $e');
       rethrow;
     }
   }
@@ -68,7 +68,7 @@ class AuthService {
     try {
       await _auth.signOut();
     } catch (e) {
-      debugPrint('Sign out error: $e');
+      AppLogger.error('Sign out error: $e');
       rethrow;
     }
   }

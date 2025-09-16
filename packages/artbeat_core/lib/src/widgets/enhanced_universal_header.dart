@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../theme/artbeat_colors.dart';
 import '../providers/messaging_provider.dart';
+import 'enhanced_profile_menu.dart';
 
 /// Enhanced Universal Header with improved visual hierarchy and user experience
 ///
@@ -162,7 +163,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       children: [
         // Back button from search
         IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: ArtbeatColors.headerText),
           onPressed: _toggleSearch,
           tooltip: 'Back',
         ),
@@ -201,7 +202,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
         IconButton(
           icon: Icon(
             _searchController.text.isEmpty ? Icons.mic : Icons.clear,
-            color: ArtbeatColors.textSecondary,
+            color: ArtbeatColors.headerText,
           ),
           onPressed: () {
             if (_searchController.text.isEmpty) {
@@ -225,7 +226,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
           ? IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+                color: widget.foregroundColor ?? ArtbeatColors.headerText,
               ),
               onPressed:
                   widget.onBackPressed ?? () => Navigator.maybePop(context),
@@ -234,7 +235,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
           : IconButton(
               icon: Icon(
                 Icons.menu,
-                color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+                color: widget.foregroundColor ?? ArtbeatColors.headerText,
               ),
               onPressed: widget.onMenuPressed ?? () => _openDrawer(),
               tooltip: 'Menu',
@@ -248,28 +249,22 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
         child: Container(
           height: 36,
           constraints: const BoxConstraints(maxWidth: 200),
-          child: Image.asset(
-            'assets/images/artbeat_header.png',
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Text(
-                widget.title ?? 'ARTbeat',
-                style: TextStyle(
-                  color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  letterSpacing: 1,
-                ),
-                textAlign: TextAlign.center,
-              );
-            },
+          child: Text(
+            widget.title ?? 'ARTbeat',
+            style: TextStyle(
+              color: widget.foregroundColor ?? ArtbeatColors.headerText,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              letterSpacing: 1,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       );
     } else if (widget.title != null) {
       final textStyle = TextStyle(
         color: widget.titleGradient == null
-            ? (widget.foregroundColor ?? ArtbeatColors.textPrimary)
+            ? (widget.foregroundColor ?? ArtbeatColors.headerText)
             : null,
         fontWeight: FontWeight.w900,
         fontSize: widget.titleFontSize ?? 24,
@@ -316,7 +311,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
         IconButton(
           icon: Icon(
             Icons.search,
-            color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+            color: widget.foregroundColor ?? ArtbeatColors.headerText,
           ),
           onPressed: _toggleSearch,
           tooltip: 'Search',
@@ -327,13 +322,16 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
     // Messaging icon with unread dot
     actions.add(_buildMessagingIcon());
 
+    // Profile icon
+    actions.add(_buildProfileIcon());
+
     // Developer tools (if enabled)
     if (widget.showDeveloperTools) {
       actions.add(
         IconButton(
           icon: Icon(
             Icons.developer_mode,
-            color: widget.foregroundColor ?? ArtbeatColors.textSecondary,
+            color: widget.foregroundColor ?? ArtbeatColors.headerText,
           ),
           onPressed: widget.onDeveloperPressed ?? () => _showDeveloperTools(),
           tooltip: 'Developer Tools',
@@ -356,7 +354,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
       return IconButton(
         icon: Icon(
           Icons.message_outlined,
-          color: widget.foregroundColor ?? ArtbeatColors.textPrimary,
+          color: widget.foregroundColor ?? ArtbeatColors.headerText,
         ),
         onPressed: () async {
           // Navigate to messaging and refresh count when returning
@@ -382,7 +380,7 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
                 Icons.message_outlined,
                 color: messagingProvider.hasError
                     ? ArtbeatColors.error.withValues(alpha: 0.6)
-                    : widget.foregroundColor ?? ArtbeatColors.textPrimary,
+                    : widget.foregroundColor ?? ArtbeatColors.headerText,
               ),
               onPressed: () async {
                 // Navigate to messaging and refresh count when returning
@@ -446,6 +444,26 @@ class _EnhancedUniversalHeaderState extends State<EnhancedUniversalHeader>
           ],
         );
       },
+    );
+  }
+
+  Widget _buildProfileIcon() {
+    return IconButton(
+      icon: Icon(
+        Icons.account_circle,
+        color: widget.foregroundColor ?? ArtbeatColors.headerText,
+      ),
+      onPressed: widget.onProfilePressed ?? () => _showProfileMenu(),
+      tooltip: 'Profile',
+    );
+  }
+
+  void _showProfileMenu() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const EnhancedProfileMenu(),
     );
   }
 

@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'coordinate_validator.dart' show SimpleLatLng;
 import 'dart:math';
+import 'logger.dart';
 
 class LocationUtils {
   static const String _zipCodeKey = 'user_zip_code';
@@ -56,7 +56,7 @@ class LocationUtils {
       }
       return '';
     } catch (e) {
-      debugPrint('Error getting zip code from coordinates: $e');
+      AppLogger.error('Error getting zip code from coordinates: $e');
       return '';
     }
   }
@@ -66,7 +66,7 @@ class LocationUtils {
       final position = await getCurrentPosition();
       return getZipCodeFromGeoPoint(position.latitude, position.longitude);
     } catch (e) {
-      debugPrint('Error getting current zip code: $e');
+      AppLogger.error('Error getting current zip code: $e');
       return '';
     }
   }
@@ -87,7 +87,7 @@ class LocationUtils {
 
   /// Log invalid coordinates for debugging
   static void logInvalidCoordinates(String source, double? lat, double? lng) {
-    debugPrint('❌ Invalid coordinates from $source: lat=$lat, lng=$lng');
+    AppLogger.error('❌ Invalid coordinates from $source: lat=$lat, lng=$lng');
   }
 
   static Future<String?> getStoredZipCode() async {
@@ -111,7 +111,7 @@ class LocationUtils {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting coordinates from ZIP code: $e');
+      AppLogger.error('Error getting coordinates from ZIP code: $e');
       return null;
     }
   }
@@ -136,7 +136,7 @@ class LocationUtils {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting location from address: $e');
+      AppLogger.error('Error getting location from address: $e');
       return null;
     }
   }

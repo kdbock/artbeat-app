@@ -89,7 +89,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
               'Unknown Artist';
           fallbackArtistImageUrl = userData?['profileImageUrl'] as String?;
         } catch (e) {
-          debugPrint('Error getting user profile for artist: $e');
+          AppLogger.error('Error getting user profile for artist: $e');
           fallbackArtistName = 'Unknown Artist';
           fallbackArtistImageUrl = null;
         }
@@ -140,7 +140,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
   Future<void> _loadRatingsAndReviews() async {
     if (_artwork == null) return;
 
-    debugPrint('Loading ratings and reviews for artwork: ${_artwork!.id}');
+    AppLogger.info('Loading ratings and reviews for artwork: ${_artwork!.id}');
     setState(() {
       _ratingsLoading = true;
     });
@@ -153,21 +153,21 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         contentType: 'artwork',
       );
 
-      debugPrint('Fetched ${ratings.length} ratings');
+      AppLogger.info('Fetched ${ratings.length} ratings');
 
       final reviews = await engagementService.getReviews(
         contentId: _artwork!.id,
         contentType: 'artwork',
       );
 
-      debugPrint('Fetched ${reviews.length} reviews');
+      AppLogger.info('Fetched ${reviews.length} reviews');
 
       final averageRating = await engagementService.getAverageRating(
         contentId: _artwork!.id,
         contentType: 'artwork',
       );
 
-      debugPrint('Average rating: $averageRating');
+      AppLogger.info('Average rating: $averageRating');
 
       if (mounted) {
         setState(() {
@@ -176,10 +176,10 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
           _averageRating = averageRating;
           _ratingsLoading = false;
         });
-        debugPrint('UI updated with ratings and reviews');
+        AppLogger.info('UI updated with ratings and reviews');
       }
     } catch (e) {
-      debugPrint('Error loading ratings and reviews: $e');
+      AppLogger.error('Error loading ratings and reviews: $e');
       if (mounted) {
         setState(() {
           _ratingsLoading = false;
@@ -387,7 +387,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         },
       );
     } catch (e) {
-      debugPrint('Error tracking share: $e');
+      AppLogger.error('Error tracking share: $e');
     }
   }
 
@@ -522,7 +522,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
 
       setState(() => _comments = comments);
     } catch (e) {
-      debugPrint('Error loading comments: $e');
+      AppLogger.error('Error loading comments: $e');
     } finally {
       setState(() => _commentsLoading = false);
     }
@@ -563,7 +563,7 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
       _commentController.clear();
       await _loadComments(); // Refresh comments
     } catch (e) {
-      debugPrint('Error posting comment: $e');
+      AppLogger.error('Error posting comment: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to post comment: $e')),
       );

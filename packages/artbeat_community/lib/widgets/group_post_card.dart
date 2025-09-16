@@ -101,7 +101,7 @@ class GroupPostCard extends StatelessWidget {
           final imageUrl = post.imageUrls[index];
 
           // Debug: Print image URL to see what we're working with
-          debugPrint('🖼️ Displaying image URL: $imageUrl');
+          AppLogger.info('🖼️ Displaying image URL: $imageUrl');
 
           // More permissive validation - just check if it's not empty
           final isValidUrl = imageUrl.isNotEmpty;

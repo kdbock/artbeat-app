@@ -18,6 +18,7 @@ class DashboardViewModel extends ChangeNotifier {
   final SubscriptionService _subscriptionService;
   final UserService _userService;
   final CaptureService _captureService;
+  final ContentEngagementService _engagementService;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   UserModel? _currentUser;
@@ -57,12 +58,14 @@ class DashboardViewModel extends ChangeNotifier {
     required SubscriptionService subscriptionService,
     required UserService userService,
     CaptureService? captureService,
+    ContentEngagementService? engagementService,
   }) : _eventService = eventService,
        _artworkService = artworkService,
        _artWalkService = artWalkService,
        _subscriptionService = subscriptionService,
        _userService = userService,
-       _captureService = captureService ?? CaptureService();
+       _captureService = captureService ?? CaptureService(),
+       _engagementService = engagementService ?? ContentEngagementService();
 
   /// Initializes dashboard data and state
   Future<void> initialize() async {
@@ -72,7 +75,7 @@ class DashboardViewModel extends ChangeNotifier {
       _resetLoadingStates();
       // First load current user since other operations depend on it
       await _loadCurrentUser();
-      debugPrint('👤 Current user loaded: ${_currentUser?.id}');
+      AppLogger.info('👤 Current user loaded: ${_currentUser?.id}');
 
       // Then load all other data in parallel
       await Future.wait<void>([
@@ -85,8 +88,8 @@ class DashboardViewModel extends ChangeNotifier {
         // _loadPosts(), // TODO: Implement posts loading
       ]);
     } catch (e, stack) {
-      debugPrint('❌ Error initializing dashboard: $e');
-      debugPrint('❌ Stack trace: $stack');
+      AppLogger.error('❌ Error initializing dashboard: $e');
+      AppLogger.error('❌ Stack trace: $stack');
     } finally {
       _isInitializing = false;
       _safeNotifyListeners();
@@ -110,7 +113,9 @@ class DashboardViewModel extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       // Ignore errors if widget is disposed
-      debugPrint('⚠️ Attempted to notify listeners on disposed ViewModel');
+      AppLogger.warning(
+        '⚠️ Attempted to notify listeners on disposed ViewModel',
+      );
     }
   }
 
@@ -123,7 +128,7 @@ class DashboardViewModel extends ChangeNotifier {
     try {
       _currentUser = await _userService.getCurrentUserModel();
     } catch (e) {
-      debugPrint('Error loading current user: $e');
+      AppLogger.error('Error loading current user: $e');
       _currentUser = null;
     }
   }
@@ -179,8 +184,8 @@ class DashboardViewModel extends ChangeNotifier {
         _loadLocalCaptures(),
       ]);
     } catch (e, stack) {
-      debugPrint('❌ Error refreshing dashboard: $e');
-      debugPrint('❌ Stack trace: $stack');
+      AppLogger.error('❌ Error refreshing dashboard: $e');
+      AppLogger.error('❌ Stack trace: $stack');
     } finally {
       _safeNotifyListeners();
     }
@@ -197,7 +202,7 @@ class DashboardViewModel extends ChangeNotifier {
       _achievements = await _userService.getUserAchievements(_currentUser!.id);
       _achievementsError = null;
     } catch (e) {
-      debugPrint('Error loading achievements: $e');
+      AppLogger.error('Error loading achievements: $e');
       _achievementsError = e.toString();
       _achievements = [];
     } finally {
@@ -232,7 +237,7 @@ class DashboardViewModel extends ChangeNotifier {
           .toList();
       _eventsError = null;
     } catch (e) {
-      debugPrint('Error loading events: $e');
+      AppLogger.error('Error loading events: $e');
       _eventsError = e.toString();
       _events = [];
     } finally {
@@ -249,7 +254,7 @@ class DashboardViewModel extends ChangeNotifier {
       // Try featured artwork first, fallback to public artwork
       var artworkServiceModels = await _artworkService.getFeaturedArtwork();
       if (artworkServiceModels.isEmpty) {
-        debugPrint('No featured artwork found, loading public artwork...');
+        AppLogger.info('No featured artwork found, loading public artwork...');
         artworkServiceModels = await _artworkService.getAllPublicArtwork(
           limit: 10,
         );
@@ -277,9 +282,9 @@ class DashboardViewModel extends ChangeNotifier {
           .toList();
 
       _artworkError = null;
-      debugPrint('✅ Loaded ${_artwork.length} artworks successfully');
+      AppLogger.info('✅ Loaded ${_artwork.length} artworks successfully');
     } catch (e) {
-      debugPrint('Error loading artwork: $e');
+      AppLogger.error('Error loading artwork: $e');
       _artworkError = e.toString();
       _artwork = [];
     } finally {
@@ -306,7 +311,7 @@ class DashboardViewModel extends ChangeNotifier {
       }
       _artistsError = null;
     } catch (e) {
-      debugPrint('Error loading artists: $e');
+      AppLogger.error('Error loading artists: $e');
       _artistsError = e.toString();
       _artists = [];
     } finally {
@@ -323,32 +328,12 @@ class DashboardViewModel extends ChangeNotifier {
       // Get all captures
       final allCaptures = await _captureService.getAllCaptures();
 
-      // Filter captures within 15 miles (24.14 km) of user location if available
-      if (_currentLocation != null) {
-        _localCaptures = allCaptures.where((capture) {
-          if (capture.location == null) {
-            return false;
-          }
-
-          final distance = Geolocator.distanceBetween(
-            _currentLocation!.latitude,
-            _currentLocation!.longitude,
-            capture.location!.latitude,
-            capture.location!.longitude,
-          );
-
-          // Convert meters to miles (1 mile = 1609.34 meters)
-          final distanceInMiles = distance / 1609.34;
-          return distanceInMiles <= 15.0;
-        }).toList();
-      } else {
-        // If no location available, show all captures (or limit to a reasonable number)
-        _localCaptures = allCaptures.take(10).toList();
-      }
+      // Show all captures regardless of location (removed 15-mile restriction)
+      _localCaptures = allCaptures;
 
       _localCapturesError = null;
     } catch (e) {
-      debugPrint('Error loading local captures: $e');
+      AppLogger.error('Error loading local captures: $e');
       _localCapturesError = e.toString();
       _localCaptures = [];
     } finally {
@@ -369,7 +354,9 @@ class DashboardViewModel extends ChangeNotifier {
           ).timeout(
             const Duration(seconds: 10), // Overall timeout reduced
             onTimeout: () {
-              debugPrint('⚠️ Location request timed out after 10 seconds');
+              AppLogger.warning(
+                '⚠️ Location request timed out after 10 seconds',
+              );
               throw TimeoutException(
                 'Location request timed out',
                 const Duration(seconds: 10),
@@ -386,12 +373,12 @@ class DashboardViewModel extends ChangeNotifier {
         '✅ Location loaded successfully: ${position.latitude}, ${position.longitude}',
       );
     } catch (e) {
-      debugPrint('❌ Error loading location: $e');
+      AppLogger.error('❌ Error loading location: $e');
       _locationError = e.toString();
 
       // Set default location to Raleigh, NC if location fails
       _mapLocation = const LatLng(35.7796, -78.6382);
-      debugPrint('🌍 Using default location: Raleigh, NC');
+      AppLogger.info('🌍 Using default location: Raleigh, NC');
 
       // Still try to load markers for default location
       try {
@@ -450,7 +437,7 @@ class DashboardViewModel extends ChangeNotifier {
       _isMapPreviewReady = true;
       _safeNotifyListeners();
     } catch (e) {
-      debugPrint('Error loading nearby art markers: $e');
+      AppLogger.error('Error loading nearby art markers: $e');
       _isMapPreviewReady = false;
       _safeNotifyListeners();
     }
@@ -473,7 +460,7 @@ class DashboardViewModel extends ChangeNotifier {
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
         // TODO: Implement artist following with ArtistService
-        debugPrint('Artist follow requested: $artistId');
+        AppLogger.info('Artist follow requested: $artistId');
       }
     } catch (e) {
       // Revert on error
@@ -500,7 +487,7 @@ class DashboardViewModel extends ChangeNotifier {
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
         // TODO: Implement artist unfollowing with ArtistService
-        debugPrint('Artist unfollow requested: $artistId');
+        AppLogger.info('Artist unfollow requested: $artistId');
       }
     } catch (e) {
       // Revert on error
@@ -525,5 +512,51 @@ class DashboardViewModel extends ChangeNotifier {
   void onMapCreated(GoogleMapController controller) {
     // Map controller initialization
     _safeNotifyListeners();
+  }
+
+  /// Toggle like for a capture
+  Future<bool> toggleCaptureLike(String captureId) async {
+    if (!isAuthenticated) {
+      throw Exception('User must be logged in to like captures');
+    }
+
+    try {
+      final isLiked = await _engagementService.toggleEngagement(
+        contentId: captureId,
+        contentType: 'capture',
+        engagementType: EngagementType.like,
+      );
+
+      // Update local captures list to reflect the change
+      _localCaptures = _localCaptures.map((capture) {
+        if (capture.id == captureId) {
+          // Note: CaptureModel doesn't have a likes count field
+          // We'll handle the liked state separately in the UI
+          return capture;
+        }
+        return capture;
+      }).toList();
+
+      _safeNotifyListeners();
+      return isLiked;
+    } catch (e) {
+      AppLogger.error('Error toggling capture like: $e');
+      rethrow;
+    }
+  }
+
+  /// Check if current user has liked a capture
+  Future<bool> hasUserLikedCapture(String captureId) async {
+    if (!isAuthenticated) return false;
+
+    try {
+      return await _engagementService.hasUserEngaged(
+        contentId: captureId,
+        engagementType: EngagementType.like,
+      );
+    } catch (e) {
+      AppLogger.error('Error checking capture like status: $e');
+      return false;
+    }
   }
 }

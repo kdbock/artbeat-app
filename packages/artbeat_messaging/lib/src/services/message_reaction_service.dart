@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../models/message_reaction_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for handling message reactions
 class MessageReactionService extends ChangeNotifier {
@@ -55,7 +56,7 @@ class MessageReactionService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error adding reaction: $e');
+      AppLogger.error('Error adding reaction: $e');
       rethrow;
     }
   }
@@ -84,7 +85,7 @@ class MessageReactionService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error removing reaction: $e');
+      AppLogger.error('Error removing reaction: $e');
       rethrow;
     }
   }
@@ -118,7 +119,7 @@ class MessageReactionService extends ChangeNotifier {
         );
       }
     } catch (e) {
-      debugPrint('Error toggling reaction: $e');
+      AppLogger.error('Error toggling reaction: $e');
       rethrow;
     }
   }
@@ -144,7 +145,7 @@ class MessageReactionService extends ChangeNotifier {
 
       return doc.exists;
     } catch (e) {
-      debugPrint('Error checking user reaction: $e');
+      AppLogger.error('Error checking user reaction: $e');
       return false;
     }
   }
@@ -168,7 +169,7 @@ class MessageReactionService extends ChangeNotifier {
           .map((doc) => MessageReactionModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting message reactions: $e');
+      AppLogger.error('Error getting message reactions: $e');
       return [];
     }
   }
@@ -186,7 +187,7 @@ class MessageReactionService extends ChangeNotifier {
 
       return MessageReactionsSummary.fromReactions(messageId, reactions);
     } catch (e) {
-      debugPrint('Error getting reactions summary: $e');
+      AppLogger.error('Error getting reactions summary: $e');
       return MessageReactionsSummary.fromReactions(messageId, []);
     }
   }
@@ -252,7 +253,7 @@ class MessageReactionService extends ChangeNotifier {
       allReactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return allReactions.take(limit).toList();
     } catch (e) {
-      debugPrint('Error getting user reactions: $e');
+      AppLogger.error('Error getting user reactions: $e');
       return [];
     }
   }
@@ -282,7 +283,7 @@ class MessageReactionService extends ChangeNotifier {
 
       return reactionCounts;
     } catch (e) {
-      debugPrint('Error getting chat reaction stats: $e');
+      AppLogger.error('Error getting chat reaction stats: $e');
       return {};
     }
   }
@@ -308,7 +309,7 @@ class MessageReactionService extends ChangeNotifier {
 
       await batch.commit();
     } catch (e) {
-      debugPrint('Error removing all reactions from message: $e');
+      AppLogger.error('Error removing all reactions from message: $e');
       rethrow;
     }
   }
@@ -336,7 +337,7 @@ class MessageReactionService extends ChangeNotifier {
           .doc(messageId)
           .update({'reactionCount': reactionCount});
     } catch (e) {
-      debugPrint('Error updating message reaction count: $e');
+      AppLogger.error('Error updating message reaction count: $e');
       // Don't rethrow as this is not critical
     }
   }

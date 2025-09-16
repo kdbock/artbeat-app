@@ -105,6 +105,7 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
         showBackButton: true,
         showSearch: true,
         showDeveloperTools: true,
+        onSearchPressed: _handleSearch,
         actions: [
           if (_hasUnsavedChanges)
             TextButton(

@@ -50,7 +50,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
         setState(() => _isLoading = false);
       }
     } on Exception catch (e) {
-      debugPrint('Error loading current user: $e');
+      AppLogger.error('Error loading current user: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -72,7 +72,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
         }
       }
     } on Exception catch (e) {
-      debugPrint('Error loading user events: $e');
+      AppLogger.error('Error loading user events: $e');
     }
   }
 

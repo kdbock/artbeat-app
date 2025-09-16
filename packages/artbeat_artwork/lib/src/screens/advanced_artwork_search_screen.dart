@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show EnhancedUniversalHeader, MainLayout;
+    show EnhancedUniversalHeader, MainLayout, AppLogger;
 import '../models/artwork_model.dart';
 import '../services/artwork_service.dart';
 
@@ -74,7 +74,7 @@ class _AdvancedArtworkSearchScreenState
         _savedSearches = savedSearches;
       });
     } catch (e) {
-      debugPrint('Error loading saved searches: $e');
+      AppLogger.error('Error loading saved searches: $e');
     }
   }
 
@@ -85,7 +85,7 @@ class _AdvancedArtworkSearchScreenState
         _searchSuggestions = suggestions;
       });
     } catch (e) {
-      debugPrint('Error loading search suggestions: $e');
+      AppLogger.error('Error loading search suggestions: $e');
     }
   }
 
@@ -113,7 +113,7 @@ class _AdvancedArtworkSearchScreenState
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error performing advanced search: $e');
+      AppLogger.error('Error performing advanced search: $e');
       setState(() {
         _isLoading = false;
       });

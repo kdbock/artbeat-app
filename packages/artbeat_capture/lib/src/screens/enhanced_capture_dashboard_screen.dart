@@ -242,184 +242,11 @@ class _EnhancedCaptureDashboardScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        maxChildSize: 0.8,
-        minChildSize: 0.3,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle bar
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Header
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.camera_alt,
-                      color: ArtbeatColors.primaryGreen,
-                      size: 24,
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Capture Profile',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: ArtbeatColors.textPrimary,
-                            ),
-                          ),
-                          Text(
-                            'Your art discovery journey',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: ArtbeatColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Profile options
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _buildProfileOption(
-                      icon: Icons.person,
-                      title: 'My Profile',
-                      subtitle: 'View and edit your profile',
-                      color: ArtbeatColors.primaryGreen,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/profile');
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.photo_library,
-                      title: 'My Captures',
-                      subtitle: 'View your art discoveries',
-                      color: ArtbeatColors.primaryPurple,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/capture/my-captures');
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.map,
-                      title: 'Capture Map',
-                      subtitle: 'See all captures on the map',
-                      color: ArtbeatColors.secondaryTeal,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/capture/map');
-                      },
-                    ),
-                    _buildProfileOption(
-                      icon: Icons.settings,
-                      title: 'Capture Settings',
-                      subtitle: 'Privacy and capture preferences',
-                      color: ArtbeatColors.accentYellow,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/settings');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      builder: (context) => const EnhancedProfileMenu(),
     );
   }
 
   Widget _buildSearchOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: ArtbeatColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: ArtbeatColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileOption({
     required IconData icon,
     required String title,
     required String subtitle,
@@ -505,7 +332,7 @@ class _EnhancedCaptureDashboardScreenState
             onSearchPressed: (String query) => _showSearchModal(context),
             onProfilePressed: () => _showProfileMenu(context),
             backgroundColor: Colors.transparent,
-            foregroundColor: ArtbeatColors.textPrimary,
+            // Removed foregroundColor to use deep purple default
             elevation: 0,
           ),
         ),
@@ -531,6 +358,16 @@ class _EnhancedCaptureDashboardScreenState
                   child: CustomScrollView(
                     controller: _scrollController,
                     slivers: [
+                      // General capture dashboard ad placement
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: BannerAdWidget(
+                            location: AdLocation.captureDashboard,
+                          ),
+                        ),
+                      ),
+
                       // Header Section
                       SliverToBoxAdapter(
                         child: Container(
@@ -665,7 +502,7 @@ class _EnhancedCaptureDashboardScreenState
                               // Ad placement beneath stats section
                               if (_currentUser != null)
                                 const BannerAdWidget(
-                                  location: AdLocation.captureStats,
+                                  location: AdLocation.captureDashboard,
                                 ),
                             ],
                           ),
@@ -721,7 +558,7 @@ class _EnhancedCaptureDashboardScreenState
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.0),
                             child: BannerAdWidget(
-                              location: AdLocation.captureRecent,
+                              location: AdLocation.captureDashboard,
                             ),
                           ),
                         ),
@@ -782,7 +619,7 @@ class _EnhancedCaptureDashboardScreenState
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.0),
                             child: BannerAdWidget(
-                              location: AdLocation.captureCommunity,
+                              location: AdLocation.captureDashboard,
                             ),
                           ),
                         ),

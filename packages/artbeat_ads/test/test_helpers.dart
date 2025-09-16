@@ -22,7 +22,7 @@ class AdTestHelpers {
     List<String> artworkUrls = const [],
     String title = 'Test Ad Title',
     String description = 'Test ad description',
-    AdLocation location = AdLocation.dashboard,
+    AdLocation location = AdLocation.fluidDashboard,
     AdDuration duration = AdDuration.weekly,
     DateTime? startDate,
     DateTime? endDate,
@@ -361,7 +361,7 @@ class AdTestHelpers {
       'ownerId': 'a' * 1000, // Very long owner ID
       'type': 0,
       'size': 0,
-      'imageUrl': 'https://example.com/' + 'a' * 2000 + '.jpg', // Very long URL
+      'imageUrl': 'https://example.com/${'a' * 2000}.jpg', // Very long URL
       'title': 'Title with special chars: äöü@#\$%^&*()',
       'description': 'Description with unicode: 🎨💰📊',
       'location': 0,

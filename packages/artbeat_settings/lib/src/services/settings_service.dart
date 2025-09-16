@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Settings service for managing user settings and preferences
 class SettingsService extends ChangeNotifier {
@@ -46,7 +47,7 @@ class SettingsService extends ChangeNotifier {
 
       return doc.data() as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error getting user settings: $e');
+      AppLogger.error('Error getting user settings: $e');
       rethrow;
     }
   }
@@ -70,7 +71,7 @@ class SettingsService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating setting: $e');
+      AppLogger.error('Error updating setting: $e');
       rethrow;
     }
   }
@@ -110,7 +111,7 @@ class SettingsService extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error updating notification settings: $e');
+      AppLogger.error('Error updating notification settings: $e');
       rethrow;
     }
   }
@@ -150,7 +151,7 @@ class SettingsService extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error updating privacy settings: $e');
+      AppLogger.error('Error updating privacy settings: $e');
       rethrow;
     }
   }
@@ -172,7 +173,7 @@ class SettingsService extends ChangeNotifier {
       final blockedUsers = doc.data()!['blockedUsers'] as List<dynamic>;
       return blockedUsers.cast<String>();
     } catch (e) {
-      debugPrint('Error getting blocked users: $e');
+      AppLogger.error('Error getting blocked users: $e');
       return [];
     }
   }
@@ -191,7 +192,7 @@ class SettingsService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error blocking user: $e');
+      AppLogger.error('Error blocking user: $e');
       rethrow;
     }
   }
@@ -210,7 +211,7 @@ class SettingsService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error unblocking user: $e');
+      AppLogger.error('Error unblocking user: $e');
       rethrow;
     }
   }

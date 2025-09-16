@@ -148,9 +148,9 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<messaging.UserModel>>(
+            child: FutureBuilder(
               future: chatService.searchUsers(_searchQuery),
-              builder: (context, snapshot) {
+              builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -183,7 +183,7 @@ class _GroupCreationScreenState extends State<GroupCreationScreen> {
                 return ListView.builder(
                   itemCount: availableUsers.length,
                   itemBuilder: (context, index) {
-                    final user = availableUsers[index];
+                    final user = availableUsers[index] as messaging.UserModel;
                     return ListTile(
                       leading: ImageUtils.safeCircleAvatar(
                         imageUrl: user.photoUrl,

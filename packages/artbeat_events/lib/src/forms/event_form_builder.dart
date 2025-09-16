@@ -145,7 +145,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   onProfilePressed: () => _showProfileMenu(context),
                   onDeveloperPressed: () => _showDeveloperTools(context),
                   backgroundColor: Colors.transparent,
-                  foregroundColor: core.ArtbeatColors.textPrimary,
+                  // Removed foregroundColor to use deep purple default
                   actions: [
                     TextButton(
                       onPressed: _submitForm,
@@ -684,29 +684,28 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                     core.ArtbeatColors.backgroundPrimary, // match login_screen
                 border: OutlineInputBorder(),
               ),
-              dropdownColor:
-                  core.ArtbeatColors.backgroundPrimary, // match login_screen
-              style: const TextStyle(color: Colors.black),
+              dropdownColor: core.ArtbeatColors.backgroundPrimary,
+              style: const TextStyle(color: core.ArtbeatColors.textPrimary),
               items: const [
                 DropdownMenuItem(
                   value: 'standard',
                   child: Text(
                     'Standard (24 hours)',
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(color: core.ArtbeatColors.textPrimary),
                   ),
                 ),
                 DropdownMenuItem(
                   value: 'flexible',
                   child: Text(
                     'Flexible (7 days)',
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(color: core.ArtbeatColors.textPrimary),
                   ),
                 ),
                 DropdownMenuItem(
                   value: 'no_refunds',
                   child: Text(
                     'No Refunds',
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(color: core.ArtbeatColors.textPrimary),
                   ),
                 ),
               ],

@@ -136,6 +136,7 @@ class EngagementConfigService {
       case EngagementType.message:
       case EngagementType.review:
       case EngagementType.rate:
+      case EngagementType.comment:
       case EngagementType.share:
         return true;
       default:

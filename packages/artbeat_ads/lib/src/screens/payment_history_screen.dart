@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import '../models/payment_history_model.dart';
 import '../services/payment_history_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Screen for displaying user's payment history and transaction details
 ///
@@ -205,7 +206,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          DateFormat(
+                          intl.DateFormat(
                             'MMM d, y • h:mm a',
                           ).format(payment.transactionDate),
                           style: theme.textTheme.bodySmall?.copyWith(
@@ -512,7 +513,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      DateFormat(
+                      intl.DateFormat(
                         'MMMM y',
                       ).format(DateTime.parse('${data['month']}-01')),
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -611,7 +612,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                     title: Text(
                       tempDateRange == null
                           ? 'Select Date Range'
-                          : '${DateFormat('MMM d, y').format(tempDateRange!.start)} - ${DateFormat('MMM d, y').format(tempDateRange!.end)}',
+                          : '${intl.DateFormat('MMM d, y').format(tempDateRange!.start)} - ${intl.DateFormat('MMM d, y').format(tempDateRange!.end)}',
                     ),
                     trailing: const Icon(Icons.date_range),
                     onTap: () async {
@@ -694,7 +695,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
         _searchResults = results;
       });
     } catch (e) {
-      debugPrint('Search error: $e');
+      AppLogger.error('Search error: $e');
     }
   }
 
@@ -743,7 +744,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                     ),
                     _buildDetailRow(
                       'Date',
-                      DateFormat(
+                      intl.DateFormat(
                         'MMM d, y • h:mm a',
                       ).format(payment.transactionDate),
                     ),
@@ -763,7 +764,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                       if (payment.refundedAt != null)
                         _buildDetailRow(
                           'Refunded Date',
-                          DateFormat(
+                          intl.DateFormat(
                             'MMM d, y • h:mm a',
                           ).format(payment.refundedAt!),
                         ),

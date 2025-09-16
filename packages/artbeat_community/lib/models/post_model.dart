@@ -65,6 +65,8 @@ class PostModel {
   final String userPhotoUrl;
   final String content;
   final List<String> imageUrls;
+  final String? videoUrl;
+  final String? audioUrl;
   final List<String> tags;
   final String location;
   final GeoPoint? geoPoint;
@@ -79,6 +81,7 @@ class PostModel {
   final bool flagged;
   final DateTime? flaggedAt;
   final String? moderationNotes;
+  final bool isLikedByCurrentUser;
 
   // Legacy constant for backward compatibility during migration
   static const int maxApplausePerUser = 5;
@@ -90,6 +93,8 @@ class PostModel {
     required this.userPhotoUrl,
     required this.content,
     required this.imageUrls,
+    this.videoUrl,
+    this.audioUrl,
     required this.tags,
     required this.location,
     this.geoPoint,
@@ -104,6 +109,7 @@ class PostModel {
     this.flagged = false,
     this.flaggedAt,
     this.moderationNotes,
+    this.isLikedByCurrentUser = false,
   }) : engagementStats =
            engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
@@ -116,6 +122,8 @@ class PostModel {
       userPhotoUrl: post.userPhotoUrl,
       content: post.content,
       imageUrls: post.imageUrls,
+      videoUrl: null, // BaseGroupPost doesn't have video
+      audioUrl: null, // BaseGroupPost doesn't have audio
       tags: post.tags, // tags map to tags
       location: post.location,
       createdAt: post.createdAt,
@@ -129,6 +137,7 @@ class PostModel {
       isUserVerified: post.isUserVerified,
       moderationStatus: PostModerationStatus.approved,
       flagged: false,
+      isLikedByCurrentUser: false, // This will be set separately when loading
     );
   }
 
@@ -148,12 +157,16 @@ class PostModel {
       userPhotoUrl: (data['userPhotoUrl'] as String?) ?? '',
       content: (data['content'] as String?) ?? '',
       imageUrls: List<String>.from(data['imageUrls'] as Iterable? ?? []),
+      videoUrl: data['videoUrl'] as String?,
+      audioUrl: data['audioUrl'] as String?,
       tags: List<String>.from(data['tags'] as Iterable? ?? []),
       location: (data['location'] as String?) ?? '',
       geoPoint: data['geoPoint'] as GeoPoint?,
       zipCode: data['zipCode'] as String?,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      engagementStats: EngagementStats.fromFirestore(data),
+      engagementStats: EngagementStats.fromFirestore(
+        data['engagementStats'] as Map<String, dynamic>? ?? data,
+      ),
       isPublic: (data['isPublic'] as bool?) ?? true,
       mentionedUsers: data['mentionedUsers'] != null
           ? List<String>.from(data['mentionedUsers'] as Iterable)
@@ -166,6 +179,8 @@ class PostModel {
       flagged: (data['flagged'] as bool?) ?? false,
       flaggedAt: (data['flaggedAt'] as Timestamp?)?.toDate(),
       moderationNotes: data['moderationNotes'] as String?,
+      isLikedByCurrentUser:
+          false, // This will be set separately when loading posts with user context
     );
 
     return result;
@@ -178,12 +193,14 @@ class PostModel {
       'userPhotoUrl': userPhotoUrl,
       'content': content,
       'imageUrls': imageUrls,
+      'videoUrl': videoUrl,
+      'audioUrl': audioUrl,
       'tags': tags,
       'location': location,
       'geoPoint': geoPoint,
       'zipCode': zipCode,
       'createdAt': Timestamp.fromDate(createdAt),
-      ...engagementStats.toFirestore(),
+      'engagementStats': engagementStats.toFirestore(),
       'isPublic': isPublic,
       'mentionedUsers': mentionedUsers,
       'metadata': metadata,
@@ -201,6 +218,8 @@ class PostModel {
     String? userPhotoUrl,
     String? content,
     List<String>? imageUrls,
+    String? videoUrl,
+    String? audioUrl,
     List<String>? tags,
     String? location,
     GeoPoint? geoPoint,
@@ -215,6 +234,7 @@ class PostModel {
     bool? flagged,
     DateTime? flaggedAt,
     String? moderationNotes,
+    bool? isLikedByCurrentUser,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -223,6 +243,8 @@ class PostModel {
       userPhotoUrl: userPhotoUrl ?? this.userPhotoUrl,
       content: content ?? this.content,
       imageUrls: imageUrls ?? this.imageUrls,
+      videoUrl: videoUrl ?? this.videoUrl,
+      audioUrl: audioUrl ?? this.audioUrl,
       tags: tags ?? this.tags,
       location: location ?? this.location,
       geoPoint: geoPoint ?? this.geoPoint,
@@ -237,6 +259,7 @@ class PostModel {
       flagged: flagged ?? this.flagged,
       flaggedAt: flaggedAt ?? this.flaggedAt,
       moderationNotes: moderationNotes ?? this.moderationNotes,
+      isLikedByCurrentUser: isLikedByCurrentUser ?? this.isLikedByCurrentUser,
     );
   }
 

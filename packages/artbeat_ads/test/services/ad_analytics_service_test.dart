@@ -55,7 +55,9 @@ void main() {
       when(mockClicksCollection.doc(any)).thenReturn(mockDocRef);
 
       // Setup runTransaction mock
-      when(mockFirestore.runTransaction(any)).thenAnswer((invocation) async {
+      when(mockFirestore.runTransaction<void>(any)).thenAnswer((
+        invocation,
+      ) async {
         final transactionFunction =
             invocation.positionalArguments[0] as Function;
         final mockTransaction = MockTransaction();
@@ -83,7 +85,7 @@ void main() {
           'test-ad-id',
           'test-owner-id',
           viewerId: 'test-viewer-id',
-          location: AdLocation.dashboard,
+          location: AdLocation.fluidDashboard,
           viewDuration: const Duration(seconds: 5),
           metadata: {'test': 'data'},
         );
@@ -100,7 +102,7 @@ void main() {
         await analyticsService.trackAdImpression(
           'test-ad-id',
           'test-owner-id',
-          location: AdLocation.dashboard,
+          location: AdLocation.fluidDashboard,
         );
 
         verify(mockImpressionsCollection.add(any)).called(1);
@@ -114,7 +116,7 @@ void main() {
         await analyticsService.trackAdImpression(
           'test-ad-id',
           'test-owner-id',
-          location: AdLocation.feed,
+          location: AdLocation.communityInFeed,
         );
 
         verify(mockImpressionsCollection.add(any)).called(1);
@@ -129,7 +131,7 @@ void main() {
           'test-ad-id',
           'test-owner-id',
           viewerId: 'test-viewer-id',
-          location: AdLocation.dashboard,
+          location: AdLocation.fluidDashboard,
           destinationUrl: 'https://example.com',
           clickType: 'cta_button',
           metadata: {'button': 'shop_now'},
@@ -147,7 +149,7 @@ void main() {
         await analyticsService.trackAdClick(
           'test-ad-id',
           'test-owner-id',
-          location: AdLocation.profile,
+          location: AdLocation.artistPublicProfile,
         );
 
         verify(mockClicksCollection.add(any)).called(1);
@@ -159,7 +161,7 @@ void main() {
         await analyticsService.trackAdClick(
           'test-ad-id',
           'test-owner-id',
-          location: AdLocation.feed,
+          location: AdLocation.communityInFeed,
         );
 
         verify(mockClicksCollection.add(any)).called(1);
@@ -258,7 +260,7 @@ void main() {
         await analyticsService.trackAdImpression(
           'test-ad-id',
           'test-owner-id',
-          location: AdLocation.dashboard,
+          location: AdLocation.fluidDashboard,
         );
 
         // Note: In the actual implementation, notifications might be triggered

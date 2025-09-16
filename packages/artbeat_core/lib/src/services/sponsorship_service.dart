@@ -1,15 +1,17 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import '../models/sponsorship_model.dart';
-import 'payment_service.dart';
+import 'enhanced_payment_service_working.dart'; // Use enhanced payment service
 import 'user_service.dart';
+import '../utils/logger.dart';
 
 /// Service for managing artist sponsorships
 class SponsorshipService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final PaymentService _paymentService = PaymentService();
+  final EnhancedPaymentService _paymentService =
+      EnhancedPaymentService(); // Use enhanced service
   final UserService _userService = UserService();
 
   /// Create a new sponsorship
@@ -29,18 +31,20 @@ class SponsorshipService {
       if (sponsorProfile == null) throw Exception('Sponsor profile not found');
       if (artistProfile == null) throw Exception('Artist profile not found');
 
-      // Create Stripe subscription
-      final subscriptionResult = await _paymentService.createCustomSubscription(
-        customerId: user.uid,
+      // Create Stripe subscription using enhanced payment service
+      final subscriptionResult = await _createSponsorshipSubscription(
+        tier: tier,
         paymentMethodId: paymentMethodId,
-        priceAmount: tier.monthlyPrice,
-        currency: 'usd',
-        metadata: {
-          'type': 'sponsorship',
-          'artistId': artistId,
-          'tier': tier.name,
-        },
+        artistId: artistId,
+        sponsorProfile: sponsorProfile,
+        artistProfile: artistProfile,
       );
+
+      if (!subscriptionResult.success) {
+        throw Exception(
+          subscriptionResult.error ?? 'Failed to create subscription',
+        );
+      }
 
       // Create sponsorship record
       final sponsorship = SponsorshipModel(
@@ -54,11 +58,12 @@ class SponsorshipService {
         status: SponsorshipStatus.active,
         createdAt: DateTime.now(),
         nextBillingDate: DateTime.now().add(const Duration(days: 30)),
-        stripeSubscriptionId: subscriptionResult['subscriptionId'] as String?,
+        stripeSubscriptionId: subscriptionResult.subscriptionId,
         benefits: tier.defaultBenefits,
         metadata: {
-          'stripeCustomerId': subscriptionResult['customerId'],
-          'stripePriceId': subscriptionResult['priceId'],
+          'stripeCustomerId': subscriptionResult
+              .subscriptionId, // Using subscriptionId as customer reference
+          'stripePriceId': tier.name, // Using tier name as price reference
         },
       );
 
@@ -79,6 +84,56 @@ class SponsorshipService {
       return sponsorship;
     } catch (e) {
       throw Exception('Failed to create sponsorship: $e');
+    }
+  }
+
+  /// Create sponsorship subscription using enhanced payment service
+  Future<SubscriptionResult> _createSponsorshipSubscription({
+    required SponsorshipTier tier,
+    required String paymentMethodId,
+    required String artistId,
+    required Map<String, dynamic> sponsorProfile,
+    required Map<String, dynamic> artistProfile,
+  }) async {
+    try {
+      // Use the enhanced payment service to make authenticated request
+      final body = {
+        'tierApiName': tier.name.toLowerCase(),
+        'paymentMethodId': paymentMethodId,
+        'amount': (tier.monthlyPrice * 100).toInt(), // Convert to cents
+        'currency': 'usd',
+        'deviceFingerprint': await _paymentService.getDeviceFingerprint(),
+        'metadata': {
+          'type': 'sponsorship',
+          'artistId': artistId,
+          'tier': tier.name,
+          'sponsorName':
+              sponsorProfile['displayName'] as String? ?? 'Anonymous',
+          'artistName': artistProfile['displayName'] as String? ?? 'Artist',
+        },
+      };
+
+      final response = await _paymentService.makeAuthenticatedRequest(
+        functionKey: 'processSponsorshipPayment',
+        body: body,
+      );
+
+      if (response.statusCode != 200) {
+        return SubscriptionResult(
+          success: false,
+          error: 'Failed to create sponsorship: ${response.body}',
+        );
+      }
+
+      final data = json.decode(response.body) as Map<String, dynamic>;
+
+      return SubscriptionResult(
+        success: true,
+        subscriptionId: data['subscriptionId'] as String?,
+        clientSecret: data['clientSecret'] as String?,
+      );
+    } catch (e) {
+      return SubscriptionResult(success: false, error: e.toString());
     }
   }
 
@@ -177,11 +232,21 @@ class SponsorshipService {
         throw Exception('Not authorized to cancel this sponsorship');
       }
 
-      // Cancel Stripe subscription
+      // Cancel Stripe subscription using enhanced payment service
       if (sponsorship.stripeSubscriptionId != null) {
-        await _paymentService.cancelSubscription(
-          sponsorship.stripeSubscriptionId!,
+        final body = {
+          'subscriptionId': sponsorship.stripeSubscriptionId,
+          'deviceFingerprint': await _paymentService.getDeviceFingerprint(),
+        };
+
+        final response = await _paymentService.makeAuthenticatedRequest(
+          functionKey: 'cancelSubscription',
+          body: body,
         );
+
+        if (response.statusCode != 200) {
+          throw Exception('Failed to cancel subscription: ${response.body}');
+        }
       }
 
       // Update sponsorship status
@@ -298,8 +363,8 @@ class SponsorshipService {
       // Update Stripe subscription
       if (sponsorship.stripeSubscriptionId != null) {
         await _paymentService.updateSubscriptionPrice(
-          subscriptionId: sponsorship.stripeSubscriptionId!,
-          newPriceAmount: newTier.monthlyPrice,
+          sponsorship.stripeSubscriptionId!,
+          newTier.name, // Use tier name as price ID
         );
       }
 
@@ -402,7 +467,7 @@ class SponsorshipService {
       });
     } catch (e) {
       // Log error but don't fail the sponsorship creation
-      debugPrint('Failed to update artist earnings: $e');
+      AppLogger.info('Failed to update artist earnings: $e');
     }
   }
 

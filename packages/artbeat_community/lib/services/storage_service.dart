@@ -1,15 +1,16 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class StorageService {
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
   Future<String?> uploadFile(File file, String path) async {
     try {
-      debugPrint('Uploading file to path: $path');
-      debugPrint('File exists: ${await file.exists()}');
-      debugPrint('File size: ${await file.length()} bytes');
+      AppLogger.info('Uploading file to path: $path');
+      AppLogger.info('File exists: ${await file.exists()}');
+      AppLogger.info('File size: ${await file.length()} bytes');
 
       final ref = _storage.ref().child(path);
 
@@ -29,17 +30,17 @@ class StorageService {
       // Monitor upload progress
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
         final progress = snapshot.bytesTransferred / snapshot.totalBytes;
-        debugPrint('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
+        AppLogger.info('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
       });
 
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
 
-      debugPrint('Upload successful. Download URL: $downloadUrl');
+      AppLogger.info('Upload successful. Download URL: $downloadUrl');
       return downloadUrl;
     } catch (e) {
-      debugPrint('Error uploading file: $e');
-      debugPrint('Stack trace: ${StackTrace.current}');
+      AppLogger.error('Error uploading file: $e');
+      AppLogger.info('Stack trace: ${StackTrace.current}');
       return null;
     }
   }
@@ -50,7 +51,7 @@ class StorageService {
       await ref.delete();
       return true;
     } catch (e) {
-      debugPrint('Error deleting file: $e');
+      AppLogger.error('Error deleting file: $e');
       return false;
     }
   }

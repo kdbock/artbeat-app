@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/profile_activity_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing profile activity tracking
 class ProfileActivityService extends ChangeNotifier {
@@ -40,7 +41,7 @@ class ProfileActivityService extends ChangeNotifier {
 
       await _activityCollection.add(activity.toFirestore());
     } catch (e) {
-      debugPrint('Error recording activity: $e');
+      AppLogger.error('Error recording activity: $e');
     }
   }
 
@@ -70,7 +71,7 @@ class ProfileActivityService extends ChangeNotifier {
           .map((doc) => ProfileActivityModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      debugPrint('Error getting profile activities: $e');
+      AppLogger.error('Error getting profile activities: $e');
       return [];
     }
   }
@@ -86,7 +87,7 @@ class ProfileActivityService extends ChangeNotifier {
 
       return snapshot.count ?? 0;
     } catch (e) {
-      debugPrint('Error getting unread count: $e');
+      AppLogger.error('Error getting unread count: $e');
       return 0;
     }
   }
@@ -103,7 +104,7 @@ class ProfileActivityService extends ChangeNotifier {
       await batch.commit();
       notifyListeners();
     } catch (e) {
-      debugPrint('Error marking activities as read: $e');
+      AppLogger.error('Error marking activities as read: $e');
     }
   }
 
@@ -126,7 +127,7 @@ class ProfileActivityService extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error marking all activities as read: $e');
+      AppLogger.error('Error marking all activities as read: $e');
     }
   }
 
@@ -150,7 +151,7 @@ class ProfileActivityService extends ChangeNotifier {
         await batch.commit();
       }
     } catch (e) {
-      debugPrint('Error deleting old activities: $e');
+      AppLogger.error('Error deleting old activities: $e');
     }
   }
 
@@ -176,7 +177,7 @@ class ProfileActivityService extends ChangeNotifier {
             .toList(),
       );
     } catch (e) {
-      debugPrint('Error streaming activities: $e');
+      AppLogger.error('Error streaming activities: $e');
       return Stream.value([]);
     }
   }

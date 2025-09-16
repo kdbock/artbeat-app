@@ -23,11 +23,13 @@ void main() async {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(options: mockFirebaseOptions);
     } else {
-      debugPrint('Firebase already initialized, using existing app instance');
+      core.AppLogger.firebase(
+        'Firebase already initialized, using existing app instance',
+      );
     }
-    debugPrint('Firebase initialized successfully');
+    core.AppLogger.firebase('Firebase initialized successfully');
   } catch (e) {
-    debugPrint('Failed to initialize Firebase: $e');
+    core.AppLogger.firebase('Failed to initialize Firebase: $e');
     // Continue without Firebase when in development mode
     if (!kDebugMode) rethrow;
   }

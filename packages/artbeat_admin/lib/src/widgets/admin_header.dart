@@ -247,7 +247,7 @@ class _AdminHeaderState extends State<AdminHeader> {
               title: const Text('Content Review'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, '/admin/content-review');
+                Navigator.pushNamed(context, '/admin/content-management-suite');
               },
             ),
             ListTile(

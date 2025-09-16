@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'logger.dart';
 
 /// Utility class for handling permissions consistently across the app
 class PermissionUtils {
@@ -62,7 +63,7 @@ class PermissionUtils {
       }
       return false;
     } catch (e) {
-      debugPrint('Error requesting photo permission: $e');
+      AppLogger.error('Error requesting photo permission: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -127,7 +128,7 @@ class PermissionUtils {
       }
       return false;
     } catch (e) {
-      debugPrint('Error requesting camera permission: $e');
+      AppLogger.error('Error requesting camera permission: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -192,7 +193,7 @@ class PermissionUtils {
       }
       return false;
     } catch (e) {
-      debugPrint('Error requesting location permission: $e');
+      AppLogger.error('Error requesting location permission: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

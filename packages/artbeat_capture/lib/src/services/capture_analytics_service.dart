@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Analytics Integration Service for capture performance tracking
 /// Provides comprehensive analytics for capture usage and performance
@@ -218,7 +219,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
       // Analyze the events
       return _analyzeEvents(events);
     } catch (e) {
-      debugPrint('CaptureAnalyticsService: Error getting analytics: $e');
+      AppLogger.error('CaptureAnalyticsService: Error getting analytics: $e');
       return {'error': e.toString()};
     }
   }
@@ -315,7 +316,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
         'lastCaptureTime': todayAnalytics['lastCaptureTime'],
       };
     } catch (e) {
-      debugPrint('CaptureAnalyticsService: Error getting real-time stats: $e');
+      AppLogger.error('CaptureAnalyticsService: Error getting real-time stats: $e');
       return {'error': e.toString()};
     }
   }
@@ -522,7 +523,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
 
       return streak;
     } catch (e) {
-      debugPrint('CaptureAnalyticsService: Error calculating streak: $e');
+      AppLogger.error('CaptureAnalyticsService: Error calculating streak: $e');
       return 0;
     }
   }
@@ -556,7 +557,7 @@ class CaptureAnalyticsService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('CaptureAnalyticsService: Error tracking event: $e');
+      AppLogger.error('CaptureAnalyticsService: Error tracking event: $e');
     }
   }
 

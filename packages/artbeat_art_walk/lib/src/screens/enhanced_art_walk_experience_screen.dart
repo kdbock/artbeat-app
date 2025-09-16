@@ -3,6 +3,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
 /// Enhanced art walk experience screen with turn-by-turn navigation
 class EnhancedArtWalkExperienceScreen extends StatefulWidget {
@@ -23,17 +25,29 @@ class EnhancedArtWalkExperienceScreen extends StatefulWidget {
 }
 
 class _EnhancedArtWalkExperienceScreenState
-    extends State<EnhancedArtWalkExperienceScreen> {
+    extends State<EnhancedArtWalkExperienceScreen>
+    with WidgetsBindingObserver {
   GoogleMapController? _mapController;
   Position? _currentPosition;
   List<PublicArtModel> _artPieces = [];
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
-  List<String> _visitedArtIds = [];
   bool _isLoading = true;
-  bool _isWalkCompleted = false;
   bool _isNavigationMode = false;
   bool _showCompactNavigation = false;
+
+  // Progress tracking
+  ArtWalkProgress? _currentProgress;
+  final ArtWalkProgressService _progressService = ArtWalkProgressService();
+  final AudioNavigationService _audioService = AudioNavigationService();
+
+  // New services for enhanced UX
+  SmartOnboardingService? _onboardingService;
+  HapticFeedbackService? _hapticService;
+
+  // Tutorial overlay state
+  TutorialStep? _currentTutorialStep;
+  bool _showTutorialOverlay = false;
 
   // Navigation services
   ArtWalkService? _artWalkService;
@@ -45,24 +59,100 @@ class _EnhancedArtWalkExperienceScreenState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _navigationService = ArtWalkNavigationService();
+    _initializeServices();
     _initializeWalk();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _navigationService.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.paused:
+        // App is going to background - pause navigation to prevent crashes
+        if (_isNavigationMode) {
+          _pauseNavigationForBackground();
+        }
+        break;
+      case AppLifecycleState.resumed:
+        // App is coming back to foreground - resume navigation if it was active
+        if (_isNavigationMode && _currentRoute != null) {
+          _resumeNavigationFromBackground();
+        }
+        break;
+      case AppLifecycleState.detached:
+      case AppLifecycleState.inactive:
+        // App is being closed or becoming inactive - stop navigation
+        if (_isNavigationMode) {
+          _stopNavigation();
+        }
+        break;
+      case AppLifecycleState.hidden:
+        // Handle hidden state if needed
+        break;
+    }
+  }
+
+  /// Pause navigation when app goes to background
+  void _pauseNavigationForBackground() {
+    // Don't fully stop navigation, just pause location tracking
+    // This prevents crashes while maintaining navigation state
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Navigation paused while app is in background'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Resume navigation when app comes back to foreground
+  void _resumeNavigationFromBackground() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Navigation resumed'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _initializeServices() async {
+    await _audioService.initialize();
+
+    // Initialize new services
+    final prefs = await SharedPreferences.getInstance();
+    _onboardingService = SmartOnboardingService(prefs, _audioService);
+    await _onboardingService!.initializeOnboarding();
+
+    _hapticService = await HapticFeedbackService.getInstance();
   }
 
   Future<void> _initializeWalk() async {
     await _getCurrentLocation();
     await _loadArtPieces();
-    await _loadVisitedArt();
+    await _loadOrCreateProgress();
     _createMarkersAndRoute();
 
     setState(() {
       _isLoading = false;
+    });
+
+    // Show tutorial for first-time users
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showTutorial();
     });
 
     // Auto-start navigation if user location is available and there are art pieces
@@ -102,20 +192,77 @@ class _EnhancedArtWalkExperienceScreenState
   Future<void> _getCurrentLocation() async {
     try {
       final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location services are disabled. Please enable them in settings.',
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) return;
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Location permission denied. Navigation features will be limited.',
+                ),
+                backgroundColor: Colors.orange,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+          return;
+        }
       }
 
-      final position = await Geolocator.getCurrentPosition();
-      setState(() {
-        _currentPosition = position;
-      });
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission permanently denied. Please enable in app settings.',
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 5),
+            ),
+          );
+        }
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      if (mounted) {
+        setState(() {
+          _currentPosition = position;
+        });
+      }
     } catch (e) {
-      // debugPrint('Error getting current location: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error getting location: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -130,18 +277,34 @@ class _EnhancedArtWalkExperienceScreenState
     }
   }
 
-  Future<void> _loadVisitedArt() async {
+  Future<void> _loadOrCreateProgress() async {
     try {
-      final visitedIds = await artWalkService.getUserVisitedArt(
+      final userId = artWalkService.getCurrentUserId();
+      if (userId == null) return;
+
+      // Try to load existing progress
+      final existingProgress = await _progressService.getWalkProgress(
+        userId,
         widget.artWalkId,
       );
-      setState(() {
-        _visitedArtIds = visitedIds;
-        _isWalkCompleted =
-            _visitedArtIds.length == _artPieces.length && _artPieces.isNotEmpty;
-      });
+
+      if (existingProgress != null) {
+        setState(() {
+          _currentProgress = existingProgress;
+        });
+      } else {
+        // Create new progress if none exists
+        final newProgress = await _progressService.startWalk(
+          artWalkId: widget.artWalkId,
+          totalArtCount: _artPieces.length,
+          userId: userId,
+        );
+        setState(() {
+          _currentProgress = newProgress;
+        });
+      }
     } catch (e) {
-      // debugPrint('Error loading visited art: $e');
+      // debugPrint('Error loading progress: $e');
     }
   }
 
@@ -172,7 +335,7 @@ class _EnhancedArtWalkExperienceScreenState
     // Create markers for each art piece
     for (int i = 0; i < _artPieces.length; i++) {
       final art = _artPieces[i];
-      final isVisited = _visitedArtIds.contains(art.id);
+      final isVisited = _isArtVisited(art.id);
       final isNext = i == _getNextUnvisitedIndex() && !isVisited;
 
       markers.add(
@@ -218,6 +381,9 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   Future<void> _startNavigation() async {
+    // Haptic feedback for button press
+    await _hapticService?.buttonPressed();
+
     if (_currentPosition == null || _artPieces.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -276,6 +442,9 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   Future<void> _stopNavigation() async {
+    // Haptic feedback for button press
+    await _hapticService?.buttonPressed();
+
     await _navigationService.stopNavigation();
     setState(() {
       _isNavigationMode = false;
@@ -322,6 +491,9 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   void _showArtDetail(PublicArtModel art) {
+    // Haptic feedback for marker tap
+    _hapticService?.markerTapped();
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -329,40 +501,56 @@ class _EnhancedArtWalkExperienceScreenState
       builder: (context) => ArtDetailBottomSheet(
         art: art,
         onVisitPressed: () => _markAsVisited(art),
-        isVisited: _visitedArtIds.contains(art.id),
+        isVisited: _isArtVisited(art.id),
         distanceText: _getDistanceToArt(art),
       ),
     );
   }
 
   Future<void> _markAsVisited(PublicArtModel art) async {
-    if (_visitedArtIds.contains(art.id)) return;
+    if (_isArtVisited(art.id) || _currentProgress == null) return;
 
     try {
-      final success = await artWalkService.recordArtVisit(
-        artWalkId: widget.artWalkId,
+      // Use the progress service to record the visit
+      final updatedProgress = await _progressService.recordArtVisit(
         artId: art.id,
+        userLocation: _currentPosition!,
+        artLocation: Position(
+          latitude: art.location.latitude,
+          longitude: art.location.longitude,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          heading: 0,
+          speed: 0,
+          speedAccuracy: 0,
+          altitudeAccuracy: 0,
+          headingAccuracy: 0,
+        ),
       );
 
-      if (success) {
-        setState(() {
-          _visitedArtIds.add(art.id);
-          _isWalkCompleted = _visitedArtIds.length == _artPieces.length;
-        });
+      setState(() {
+        _currentProgress = updatedProgress;
+      });
 
-        _createMarkersAndRoute();
+      _createMarkersAndRoute();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${art.title} marked as visited! +5 XP'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+      // Announce visit with audio
+      await _audioService.celebrateArtVisit(art, 10);
 
-        if (_isWalkCompleted) {
-          _showWalkCompletionDialog();
-        }
+      // Haptic feedback for achievement
+      await _hapticService?.artPieceVisited();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${art.title} marked as visited! +10 XP'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      if (_isWalkCompleted()) {
+        _showWalkCompletionDialog();
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -375,6 +563,9 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   void _showWalkCompletionDialog() {
+    // Haptic feedback for walk completion
+    _hapticService?.walkCompleted();
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -405,15 +596,44 @@ class _EnhancedArtWalkExperienceScreenState
 
   Future<void> _completeWalk() async {
     try {
-      await artWalkService.recordArtWalkCompletion(artWalkId: widget.artWalkId);
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error completing walk: $e'),
-          backgroundColor: Colors.red,
-        ),
+      final completedProgress = await _progressService.completeWalk();
+
+      // Create celebration data
+      final celebrationData = CelebrationData(
+        walk: widget.artWalk,
+        progress: completedProgress,
+        walkDuration: completedProgress.timeSpent,
+        distanceWalked: 0.0, // TODO: Calculate actual distance
+        artPiecesVisited: completedProgress.visitedArt.length,
+        pointsEarned: completedProgress.totalPointsEarned,
+        newAchievements: const [], // TODO: Get new achievements
+        visitedArtPhotos: completedProgress.visitedArt
+            .where((visit) => visit.photoTaken != null)
+            .map((visit) => visit.photoTaken!)
+            .toList(),
+        personalBests: const {}, // TODO: Calculate personal bests
+        milestones: const [], // TODO: Get milestones
+        celebrationType: CelebrationType.regularCompletion,
       );
+
+      // Navigate to celebration screen
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (context) =>
+                ArtWalkCelebrationScreen(celebrationData: celebrationData),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error completing walk: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -435,12 +655,24 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   int _getNextUnvisitedIndex() {
+    if (_currentProgress == null) return 0;
+
     for (int i = 0; i < _artPieces.length; i++) {
-      if (!_visitedArtIds.contains(_artPieces[i].id)) {
+      if (!_isArtVisited(_artPieces[i].id)) {
         return i;
       }
     }
     return 0;
+  }
+
+  bool _isArtVisited(String artId) {
+    if (_currentProgress == null) return false;
+    return _currentProgress!.visitedArt.any((visit) => visit.artId == artId);
+  }
+
+  bool _isWalkCompleted() {
+    if (_currentProgress == null) return false;
+    return _currentProgress!.isCompleted;
   }
 
   @override
@@ -560,117 +792,51 @@ class _EnhancedArtWalkExperienceScreenState
         body: Stack(
           children: [
             // Map
-            GoogleMap(
-              onMapCreated: (controller) {
-                _mapController = controller;
-                _centerOnUserLocation();
-              },
-              initialCameraPosition: CameraPosition(
-                target: _currentPosition != null
-                    ? LatLng(
-                        _currentPosition!.latitude,
-                        _currentPosition!.longitude,
-                      )
-                    : _artPieces.isNotEmpty
-                    ? LatLng(
-                        _artPieces[0].location.latitude,
-                        _artPieces[0].location.longitude,
-                      )
-                    : const LatLng(35.5951, -82.5515),
-                zoom: 16.0,
+            if (kIsWeb)
+              _buildWebMapFallback()
+            else
+              GoogleMap(
+                onMapCreated: (controller) {
+                  _mapController = controller;
+                  _centerOnUserLocation();
+                },
+                initialCameraPosition: CameraPosition(
+                  target: _currentPosition != null
+                      ? LatLng(
+                          _currentPosition!.latitude,
+                          _currentPosition!.longitude,
+                        )
+                      : _artPieces.isNotEmpty
+                      ? LatLng(
+                          _artPieces[0].location.latitude,
+                          _artPieces[0].location.longitude,
+                        )
+                      : const LatLng(35.5951, -82.5515),
+                  zoom: 16.0,
+                ),
+                markers: _markers,
+                polylines: _polylines,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
               ),
-              markers: _markers,
-              polylines: _polylines,
-              myLocationEnabled: true,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-            ),
 
-            // Progress card
+            // Enhanced Progress Visualization
             if (!_isNavigationMode || _showCompactNavigation)
               Positioned(
                 top: 16,
                 left: 16,
                 right: 16,
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Progress: ${_visitedArtIds.length}/${_artPieces.length}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (_currentRoute != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[50],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  _currentRoute!.formattedTotalDistance,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.blue[700],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: _artPieces.isEmpty
-                              ? 0.0
-                              : _visitedArtIds.length / _artPieces.length,
-                          backgroundColor: Colors.grey[300],
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            _isWalkCompleted ? Colors.green : Colors.blue,
-                          ),
-                        ),
-                        if (!_isWalkCompleted && _artPieces.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Next: ${_artPieces[_getNextUnvisitedIndex()].title}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
-                        if (_isWalkCompleted) ...[
-                          const SizedBox(height: 8),
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.check_circle,
-                                color: Colors.green,
-                                size: 16,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Walk Completed! 🎉',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
+                child: EnhancedProgressVisualization(
+                  visitedCount: _currentProgress?.visitedArt.length ?? 0,
+                  totalCount: _artPieces.length,
+                  progressPercentage:
+                      _currentProgress?.progressPercentage ?? 0.0,
+                  isNavigationMode: _isNavigationMode,
+                  onTap: () {
+                    // Could expand to show detailed progress or achievements
+                    _hapticService?.buttonPressed();
+                  },
                 ),
               ),
 
@@ -728,6 +894,14 @@ class _EnhancedArtWalkExperienceScreenState
                 ],
               ),
             ),
+
+            // Tutorial overlay
+            if (_showTutorialOverlay && _currentTutorialStep != null)
+              TutorialOverlay(
+                step: _currentTutorialStep!,
+                onDismiss: _dismissTutorial,
+                onComplete: _completeTutorial,
+              ),
           ],
         ),
         floatingActionButton: _currentPosition != null
@@ -744,12 +918,80 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   void _centerOnUserLocation() {
+    // Haptic feedback for button press
+    _hapticService?.buttonPressed();
+
     if (_currentPosition == null || _mapController == null) return;
 
     _mapController!.animateCamera(
       CameraUpdate.newLatLngZoom(
         LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
         16.0,
+      ),
+    );
+  }
+
+  /// Show tutorial overlay
+  void _showTutorial() {
+    if (_onboardingService == null) return;
+
+    final tutorialStep = _onboardingService!.getNextTutorialStep(
+      'art_walk_experience',
+    );
+    if (tutorialStep != null) {
+      setState(() {
+        _currentTutorialStep = tutorialStep;
+        _showTutorialOverlay = true;
+      });
+    }
+  }
+
+  /// Dismiss tutorial overlay
+  void _dismissTutorial() {
+    setState(() {
+      _showTutorialOverlay = false;
+      _currentTutorialStep = null;
+    });
+  }
+
+  /// Complete tutorial step
+  void _completeTutorial() {
+    if (_onboardingService != null && _currentTutorialStep != null) {
+      _onboardingService!.completeTutorialStep(_currentTutorialStep!.id);
+    }
+    _dismissTutorial();
+
+    // Show next tutorial if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showTutorial();
+    });
+  }
+
+  Widget _buildWebMapFallback() {
+    return Container(
+      color: Colors.grey[100],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Enhanced Art Walk',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Interactive map features are optimized for mobile devices.\nUse the navigation controls below to explore art pieces.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
       ),
     );
   }

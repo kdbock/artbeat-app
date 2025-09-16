@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Authentication service for handling user authentication
 class AuthService {
@@ -57,7 +58,7 @@ class AuthService {
     required String zipCode, // Required parameter
   }) async {
     try {
-      debugPrint('📝 Starting registration for email: $email');
+      AppLogger.info('📝 Starting registration for email: $email');
 
       // Create user with email and password
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -66,11 +67,11 @@ class AuthService {
       );
 
       final uid = userCredential.user?.uid;
-      debugPrint('✅ Authentication account created with UID: $uid');
+      AppLogger.auth('✅ Authentication account created with UID: $uid');
 
       // Set display name
       await userCredential.user?.updateDisplayName(fullName);
-      debugPrint('✅ Display name set to: $fullName');
+      AppLogger.info('✅ Display name set to: $fullName');
 
       try {
         // Create user document in Firestore with zipCode
@@ -93,7 +94,7 @@ class AuthService {
           'isVerified': false,
         }, SetOptions(merge: true));
 
-        debugPrint('✅ User document created in Firestore');
+        AppLogger.info('✅ User document created in Firestore');
       } catch (firestoreError) {
         debugPrint(
           '❌ Failed to create user document in Firestore: $firestoreError',
@@ -104,7 +105,7 @@ class AuthService {
 
       return userCredential;
     } catch (e) {
-      debugPrint('❌ Error in registerWithEmailAndPassword: $e');
+      AppLogger.error('❌ Error in registerWithEmailAndPassword: $e');
       rethrow;
     }
   }
@@ -136,14 +137,14 @@ class AuthService {
       final user = currentUser;
       if (user != null && !user.emailVerified) {
         await user.sendEmailVerification();
-        debugPrint('✅ Email verification sent to ${user.email}');
+        AppLogger.info('✅ Email verification sent to ${user.email}');
       } else if (user?.emailVerified == true) {
-        debugPrint('ℹ️ Email already verified');
+        AppLogger.info('ℹ️ Email already verified');
       } else {
         throw Exception('No authenticated user found');
       }
     } catch (e) {
-      debugPrint('❌ Error sending email verification: $e');
+      AppLogger.error('❌ Error sending email verification: $e');
       rethrow;
     }
   }
@@ -155,9 +156,9 @@ class AuthService {
   Future<void> reloadUser() async {
     try {
       await currentUser?.reload();
-      debugPrint('✅ User data reloaded');
+      AppLogger.info('✅ User data reloaded');
     } catch (e) {
-      debugPrint('❌ Error reloading user: $e');
+      AppLogger.error('❌ Error reloading user: $e');
       rethrow;
     }
   }

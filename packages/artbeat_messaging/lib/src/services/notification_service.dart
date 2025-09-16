@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for handling chat and message notifications
 class NotificationService {
@@ -74,7 +75,7 @@ class NotificationService {
         _startNotificationListener();
       }
     } catch (e) {
-      debugPrint('❌ Error initializing notifications: $e');
+      AppLogger.error('❌ Error initializing notifications: $e');
     }
   }
 
@@ -92,7 +93,7 @@ class NotificationService {
         );
       }
     } catch (e) {
-      debugPrint('❌ Error handling foreground message: $e');
+      AppLogger.error('❌ Error handling foreground message: $e');
     }
   }
 
@@ -105,7 +106,7 @@ class NotificationService {
         // This will be handled by the app's navigation system
       }
     } catch (e) {
-      debugPrint('❌ Error handling opened notification: $e');
+      AppLogger.error('❌ Error handling opened notification: $e');
     }
   }
 
@@ -122,7 +123,7 @@ class NotificationService {
         _deviceTokensField: FieldValue.arrayUnion([token]),
       }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('❌ Error saving device token: $e');
+      AppLogger.error('❌ Error saving device token: $e');
     }
   }
 
@@ -148,7 +149,7 @@ class NotificationService {
             'isRead': false,
           });
     } catch (e) {
-      debugPrint('❌ Error storing notification: $e');
+      AppLogger.error('❌ Error storing notification: $e');
     }
   }
 
@@ -164,7 +165,7 @@ class NotificationService {
         _deviceTokensField: FieldValue.arrayRemove([token]),
       });
     } catch (e) {
-      debugPrint('❌ Error removing device token: $e');
+      AppLogger.error('❌ Error removing device token: $e');
     }
   }
 
@@ -181,7 +182,7 @@ class NotificationService {
           .doc(notificationId)
           .update({'isRead': true});
     } catch (e) {
-      debugPrint('❌ Error marking notification as read: $e');
+      AppLogger.error('❌ Error marking notification as read: $e');
     }
   }
 
@@ -237,9 +238,9 @@ class NotificationService {
             'type': data['type'] ?? 'message',
           });
 
-      debugPrint('📱 Notification sent to user $userId: $title');
+      AppLogger.info('📱 Notification sent to user $userId: $title');
     } catch (e) {
-      debugPrint('❌ Error sending notification to user $userId: $e');
+      AppLogger.error('❌ Error sending notification to user $userId: $e');
       rethrow;
     }
   }
@@ -267,7 +268,7 @@ class NotificationService {
             }
           });
     } catch (e) {
-      debugPrint('❌ Error starting notification listener: $e');
+      AppLogger.error('❌ Error starting notification listener: $e');
     }
   }
 
@@ -279,7 +280,7 @@ class NotificationService {
       final type = notificationData['type'] as String? ?? 'message';
 
       if (type == 'message') {
-        debugPrint('📱 New message notification: $title - $body');
+        AppLogger.info('📱 New message notification: $title - $body');
         _localNotifications.show(
           0,
           title,
@@ -298,7 +299,7 @@ class NotificationService {
         );
       }
     } catch (e) {
-      debugPrint('❌ Error triggering local notification: $e');
+      AppLogger.error('❌ Error triggering local notification: $e');
     }
   }
 
@@ -334,7 +335,7 @@ class NotificationService {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
-      debugPrint('Error scheduling notification: $e');
+      AppLogger.error('Error scheduling notification: $e');
       rethrow;
     }
   }
@@ -364,7 +365,7 @@ class NotificationService {
             'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
     } catch (e) {
-      debugPrint('Error configuring chat notifications: $e');
+      AppLogger.error('Error configuring chat notifications: $e');
       rethrow;
     }
   }
@@ -386,7 +387,7 @@ class NotificationService {
 
       return doc.exists ? doc.data() : null;
     } catch (e) {
-      debugPrint('Error getting chat notification settings: $e');
+      AppLogger.error('Error getting chat notification settings: $e');
       return null;
     }
   }
@@ -407,7 +408,7 @@ class NotificationService {
       // Handle messages when app is in background
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageClick);
     } catch (e) {
-      debugPrint('Error setting up background message handling: $e');
+      AppLogger.error('Error setting up background message handling: $e');
     }
   }
 
@@ -421,15 +422,15 @@ class NotificationService {
       if (chatId != null) {
         // Navigate to specific chat
         // This would typically be handled by the app's navigation system
-        debugPrint('Navigate to chat: $chatId');
+        AppLogger.info('Navigate to chat: $chatId');
 
         if (messageId != null) {
           // Navigate to specific message
-          debugPrint('Navigate to message: $messageId in chat: $chatId');
+          AppLogger.info('Navigate to message: $messageId in chat: $chatId');
         }
       }
     } catch (e) {
-      debugPrint('Error handling message click: $e');
+      AppLogger.error('Error handling message click: $e');
     }
   }
 
@@ -466,7 +467,7 @@ class NotificationService {
             onDidReceiveNotificationResponse: _onNotificationResponse,
           );
     } catch (e) {
-      debugPrint('Error setting up notification categories: $e');
+      AppLogger.error('Error setting up notification categories: $e');
     }
   }
 
@@ -478,16 +479,16 @@ class NotificationService {
 
       switch (actionId) {
         case 'reply':
-          debugPrint('Reply action triggered with payload: $payload');
+          AppLogger.info('Reply action triggered with payload: $payload');
           break;
         case 'mark_read':
-          debugPrint('Mark as read action triggered with payload: $payload');
+          AppLogger.info('Mark as read action triggered with payload: $payload');
           break;
         default:
-          debugPrint('Notification tapped with payload: $payload');
+          AppLogger.info('Notification tapped with payload: $payload');
       }
     } catch (e) {
-      debugPrint('Error handling notification response: $e');
+      AppLogger.error('Error handling notification response: $e');
     }
   }
 
@@ -496,7 +497,7 @@ class NotificationService {
     try {
       await _localNotifications.cancelAll();
     } catch (e) {
-      debugPrint('Error cancelling scheduled notifications: $e');
+      AppLogger.error('Error cancelling scheduled notifications: $e');
     }
   }
 
@@ -505,7 +506,7 @@ class NotificationService {
     try {
       await _localNotifications.cancel(notificationId);
     } catch (e) {
-      debugPrint('Error cancelling scheduled notification: $e');
+      AppLogger.error('Error cancelling scheduled notification: $e');
     }
   }
 

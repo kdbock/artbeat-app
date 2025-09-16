@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/subscription_tier.dart';
 import '../services/usage_tracking_service.dart';
+import '../utils/logger.dart';
 
 /// AI-powered features service implementing 2025 industry standards
 /// Provides smart content tools with usage-based billing
@@ -125,7 +126,7 @@ class AIFeaturesService extends ChangeNotifier {
         confidence: 0.92,
       );
     } catch (e) {
-      debugPrint('Error in smart cropping: $e');
+      AppLogger.error('Error in smart cropping: $e');
       return AIResult.error(
         'Failed to process image. Please try again or contact support if the issue persists.',
       );
@@ -176,7 +177,7 @@ class AIFeaturesService extends ChangeNotifier {
         confidence: 0.89,
       );
     } catch (e) {
-      debugPrint('Error in background removal: $e');
+      AppLogger.error('Error in background removal: $e');
       return AIResult.error(
         'Failed to remove background. Please try again or contact support if the issue persists.',
       );
@@ -267,7 +268,7 @@ class AIFeaturesService extends ChangeNotifier {
         confidence: 0.85,
       );
     } catch (e) {
-      debugPrint('Error in tag generation: $e');
+      AppLogger.error('Error in tag generation: $e');
       return AIResult.error(
         'Failed to generate tags. Please try again or contact support if the issue persists.',
       );
@@ -298,7 +299,7 @@ class AIFeaturesService extends ChangeNotifier {
         confidence: 1.0,
       );
     } catch (e) {
-      debugPrint('Error in color extraction: $e');
+      AppLogger.error('Error in color extraction: $e');
       return AIResult.error('Color extraction error: $e');
     }
   }
@@ -353,7 +354,7 @@ class AIFeaturesService extends ChangeNotifier {
         confidence: 0.85,
       );
     } catch (e) {
-      debugPrint('Error getting recommendations: $e');
+      AppLogger.error('Error getting recommendations: $e');
       return AIResult.error('Recommendations error: $e');
     }
   }
@@ -406,7 +407,7 @@ class AIFeaturesService extends ChangeNotifier {
         confidence: 0.91,
       );
     } catch (e) {
-      debugPrint('Error generating insights: $e');
+      AppLogger.error('Error generating insights: $e');
       return AIResult.error('Performance insights error: $e');
     }
   }
@@ -427,7 +428,7 @@ class AIFeaturesService extends ChangeNotifier {
         'hasUnlimitedCredits': false,
       };
     } catch (e) {
-      debugPrint('Error getting AI usage stats: $e');
+      AppLogger.error('Error getting AI usage stats: $e');
       return {
         'creditsUsed': 0,
         'creditsLimit': 5,

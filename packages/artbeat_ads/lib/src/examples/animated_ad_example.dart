@@ -24,7 +24,7 @@ class AnimatedAdExample extends StatelessWidget {
 
             // Banner ad placement - automatically shows ads with image rotation
             SimpleAdPlacementWidget(
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               showIfEmpty: true,
             ),
 
@@ -38,7 +38,7 @@ class AnimatedAdExample extends StatelessWidget {
 
             // Feed ad placement - automatically shows ads with image rotation
             SimpleAdPlacementWidget(
-              location: AdLocation.communityFeed,
+              location: AdLocation.communityInFeed,
               showIfEmpty: true,
             ),
 

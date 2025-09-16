@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
 import '../services/chat_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class ChatController extends ChangeNotifier {
   final ChatService _chatService;
@@ -21,7 +22,7 @@ class ChatController extends ChangeNotifier {
     try {
       _chats = await _chatService.getChats();
     } catch (e) {
-      debugPrint('Error loading chats: $e');
+      AppLogger.error('Error loading chats: $e');
     }
 
     _isLoading = false;
@@ -33,7 +34,7 @@ class ChatController extends ChangeNotifier {
       await _chatService.sendMessage(chatId, text);
       await loadChats(); // Refresh chat list
     } catch (e) {
-      debugPrint('Error sending message: $e');
+      AppLogger.error('Error sending message: $e');
       rethrow;
     }
   }
@@ -43,7 +44,7 @@ class ChatController extends ChangeNotifier {
       await _chatService.sendImage(chatId, imagePath);
       await loadChats(); // Refresh chat list
     } catch (e) {
-      debugPrint('Error sending image: $e');
+      AppLogger.error('Error sending image: $e');
       rethrow;
     }
   }
@@ -56,7 +57,7 @@ class ChatController extends ChangeNotifier {
     try {
       _chatService.updateTypingStatus(chatId, currentUserId, isTyping);
     } catch (e) {
-      debugPrint('Error updating typing status: $e');
+      AppLogger.error('Error updating typing status: $e');
     }
   }
 }

@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'dart:io';
+
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Manages network connectivity and Firebase connection health
 class NetworkManager {
-  static final NetworkManager _instance = NetworkManager._internal();
   factory NetworkManager() => _instance;
   NetworkManager._internal();
+  static final NetworkManager _instance = NetworkManager._internal();
 
   final StreamController<bool> _connectionStreamController =
       StreamController<bool>.broadcast();
@@ -28,7 +30,7 @@ class NetworkManager {
       _startNetworkMonitoring();
       _isInitialized = true;
       if (kDebugMode) {
-        print('🌐 NetworkManager initialized');
+        AppLogger.network('🌐 NetworkManager initialized');
       }
     }
   }
@@ -39,7 +41,7 @@ class NetworkManager {
     _connectionStreamController.close();
     _isInitialized = false;
     if (kDebugMode) {
-      print('🌐 NetworkManager disposed');
+      AppLogger.network('🌐 NetworkManager disposed');
     }
   }
 
@@ -83,7 +85,7 @@ class NetworkManager {
       _updateConnectionStatus(true, 'Connected');
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Firebase connection failed: $e');
+        AppLogger.error('❌ Firebase connection failed: $e');
       }
 
       // Try to re-enable network if it was disabled
@@ -120,20 +122,20 @@ class NetworkManager {
   Future<bool> reconnectFirebase() async {
     try {
       if (kDebugMode) {
-        print('🔄 Attempting to reconnect to Firebase...');
+        AppLogger.firebase('🔄 Attempting to reconnect to Firebase...');
       }
 
       await FirebaseFirestore.instance.enableNetwork();
       await _checkFirebaseConnection();
 
       if (kDebugMode) {
-        print('✅ Firebase reconnection successful');
+        AppLogger.firebase('✅ Firebase reconnection successful');
       }
 
       return _isConnected;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Firebase reconnection failed: $e');
+        AppLogger.error('❌ Firebase reconnection failed: $e');
       }
       return false;
     }
@@ -142,14 +144,14 @@ class NetworkManager {
 
 /// Widget to show network status
 class NetworkStatusWidget extends StatefulWidget {
-  final Widget child;
-  final bool showOfflineMessage;
 
   const NetworkStatusWidget({
-    Key? key,
+    super.key,
     required this.child,
     this.showOfflineMessage = true,
-  }) : super(key: key);
+  });
+  final Widget child;
+  final bool showOfflineMessage;
 
   @override
   State<NetworkStatusWidget> createState() => _NetworkStatusWidgetState();
@@ -179,8 +181,7 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
+  Widget build(BuildContext context) => Stack(
       children: [
         widget.child,
         if (!_isConnected && widget.showOfflineMessage)
@@ -189,7 +190,7 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget> {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               color: Colors.red,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -220,5 +221,4 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget> {
           ),
       ],
     );
-  }
 }

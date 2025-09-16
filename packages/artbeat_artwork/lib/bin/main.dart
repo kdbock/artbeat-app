@@ -27,11 +27,11 @@ void main() async {
         ),
       );
     } else {
-      debugPrint('Firebase already initialized, using existing app instance');
+      AppLogger.firebase('Firebase already initialized, using existing app instance');
     }
-    debugPrint('Firebase initialized successfully');
+    AppLogger.firebase('Firebase initialized successfully');
   } catch (e) {
-    debugPrint('Failed to initialize Firebase: $e');
+    AppLogger.firebase('Failed to initialize Firebase: $e');
     // Continue without Firebase when in development mode
     if (!kDebugMode) rethrow;
   }

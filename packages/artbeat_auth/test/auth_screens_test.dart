@@ -7,8 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_auth/src/screens/login_screen.dart';
 import 'package:artbeat_auth/src/screens/register_screen.dart';
 import 'package:artbeat_auth/src/screens/forgot_password_screen.dart';
-import 'package:artbeat_auth/src/screens/email_verification_screen.dart';
-import 'package:artbeat_auth/src/screens/profile_create_screen.dart';
 import 'package:artbeat_auth/src/services/auth_service.dart';
 import 'package:artbeat_core/artbeat_core.dart' show ArtbeatButton;
 

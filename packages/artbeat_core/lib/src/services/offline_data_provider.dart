@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 
 /// Utility class for managing offline data storage (simplified)
 class OfflineDataProvider {
@@ -15,9 +15,9 @@ class OfflineDataProvider {
   Future<void> init() async {
     try {
       // This would normally initialize SharedPreferences
-      debugPrint('✅ Offline data provider initialized');
+      AppLogger.info('✅ Offline data provider initialized');
     } catch (e) {
-      debugPrint('❌ Error initializing offline data provider: $e');
+      AppLogger.error('❌ Error initializing offline data provider: $e');
     }
   }
 
@@ -29,10 +29,10 @@ class OfflineDataProvider {
       } else {
         _cache[key] = jsonEncode(value);
       }
-      debugPrint('✅ Saved data to key: $key');
+      AppLogger.info('✅ Saved data to key: $key');
       return true;
     } catch (e) {
-      debugPrint('❌ Error saving data for key $key: $e');
+      AppLogger.error('❌ Error saving data for key $key: $e');
       return false;
     }
   }
@@ -56,7 +56,7 @@ class OfflineDataProvider {
 
       return defaultValue;
     } catch (e) {
-      debugPrint('❌ Error getting data for key $key: $e');
+      AppLogger.error('❌ Error getting data for key $key: $e');
       return defaultValue;
     }
   }
@@ -65,10 +65,10 @@ class OfflineDataProvider {
   Future<bool> removeData(String key) async {
     try {
       _cache.remove(key);
-      debugPrint('✅ Removed data for key: $key');
+      AppLogger.info('✅ Removed data for key: $key');
       return true;
     } catch (e) {
-      debugPrint('❌ Error removing data for key $key: $e');
+      AppLogger.error('❌ Error removing data for key $key: $e');
       return false;
     }
   }
@@ -77,10 +77,10 @@ class OfflineDataProvider {
   Future<bool> clearAll() async {
     try {
       _cache.clear();
-      debugPrint('✅ Cleared all cache data');
+      AppLogger.info('✅ Cleared all cache data');
       return true;
     } catch (e) {
-      debugPrint('❌ Error clearing cache data: $e');
+      AppLogger.error('❌ Error clearing cache data: $e');
       return false;
     }
   }

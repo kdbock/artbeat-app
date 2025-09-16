@@ -289,7 +289,7 @@ class DashboardEventsSection extends StatelessWidget {
                       ),
                       image: NetworkImage(event.imageUrl!),
                       imageErrorBuilder: (context, error, stackTrace) {
-                        debugPrint('Error loading event image: $error');
+                        AppLogger.error('Error loading event image: $error');
                         return Container(
                           height: 80,
                           width: double.infinity,

@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
-import 'package:artbeat_core/artbeat_core.dart' show CaptureModel;
+import 'package:artbeat_core/artbeat_core.dart' show CaptureModel, AppLogger;
 import '../models/offline_queue_item.dart';
 import 'offline_database_service.dart';
 import 'capture_service.dart';
@@ -43,7 +42,7 @@ class OfflineQueueService {
     // Start periodic sync
     _startPeriodicSync();
 
-    debugPrint('OfflineQueueService initialized');
+    AppLogger.info('OfflineQueueService initialized');
   }
 
   /// Stream for sync events
@@ -74,7 +73,7 @@ class OfflineQueueService {
       final added = await _dbService.addToQueue(queueItem);
 
       if (added) {
-        debugPrint('Added capture to offline queue: $localCaptureId');
+        AppLogger.info('Added capture to offline queue: $localCaptureId');
         _notifySyncEvent(
           OfflineSyncEvent(
             type: OfflineSyncEventType.itemAdded,
@@ -92,7 +91,7 @@ class OfflineQueueService {
         throw Exception('Failed to add capture to offline queue');
       }
     } catch (e) {
-      debugPrint('Error adding capture to offline queue: $e');
+      AppLogger.error('Error adding capture to offline queue: $e');
       rethrow;
     }
   }
@@ -103,7 +102,7 @@ class OfflineQueueService {
       final allUserItems = await _dbService.getUserQueueItems(userId);
       return allUserItems.where((item) => !item.status.isSynced).toList();
     } catch (e) {
-      debugPrint('Error getting user pending items: $e');
+      AppLogger.error('Error getting user pending items: $e');
       return [];
     }
   }
@@ -122,7 +121,7 @@ class OfflineQueueService {
         isSyncing: _isSyncing,
       );
     } catch (e) {
-      debugPrint('Error getting queue statistics: $e');
+      AppLogger.error('Error getting queue statistics: $e');
       return OfflineQueueStatistics.empty();
     }
   }
@@ -130,7 +129,7 @@ class OfflineQueueService {
   /// Manually trigger sync
   Future<bool> forceSyncNow() async {
     if (_isSyncing) {
-      debugPrint('Sync already in progress');
+      AppLogger.info('Sync already in progress');
       return false;
     }
 
@@ -150,7 +149,7 @@ class OfflineQueueService {
 
   /// Handle connectivity changes
   void _onConnectivityChanged(List<ConnectivityResult> results) {
-    debugPrint('Connectivity changed: $results');
+    AppLogger.info('Connectivity changed: $results');
 
     // Check if any connection is available
     final hasConnection = results.any(
@@ -174,7 +173,7 @@ class OfflineQueueService {
           }
         }
       } catch (e) {
-        debugPrint('Error in immediate sync attempt: $e');
+        AppLogger.error('Error in immediate sync attempt: $e');
       }
     });
   }
@@ -202,7 +201,7 @@ class OfflineQueueService {
       final allItems = [...pendingItems, ...retryItems];
 
       if (allItems.isEmpty) {
-        debugPrint('No items to sync');
+        AppLogger.info('No items to sync');
         _notifySyncEvent(
           OfflineSyncEvent(
             type: OfflineSyncEventType.syncCompleted,
@@ -212,7 +211,7 @@ class OfflineQueueService {
         return true;
       }
 
-      debugPrint('Syncing ${allItems.length} items');
+      AppLogger.info('Syncing ${allItems.length} items');
 
       int successCount = 0;
       int failureCount = 0;
@@ -226,7 +225,7 @@ class OfflineQueueService {
             failureCount++;
           }
         } catch (e) {
-          debugPrint('Error syncing item ${item.id}: $e');
+          AppLogger.error('Error syncing item ${item.id}: $e');
           failureCount++;
 
           // Update item with error
@@ -241,7 +240,7 @@ class OfflineQueueService {
 
       final message =
           'Sync completed: $successCount success, $failureCount failed';
-      debugPrint(message);
+      AppLogger.info(message);
 
       _notifySyncEvent(
         OfflineSyncEvent(
@@ -254,7 +253,7 @@ class OfflineQueueService {
 
       return failureCount == 0;
     } catch (e) {
-      debugPrint('Error during sync: $e');
+      AppLogger.error('Error during sync: $e');
       _notifySyncEvent(
         OfflineSyncEvent(
           type: OfflineSyncEventType.syncFailed,
@@ -344,7 +343,7 @@ class OfflineQueueService {
 
       return true;
     } catch (e) {
-      debugPrint('Error syncing item ${item.id}: $e');
+      AppLogger.error('Error syncing item ${item.id}: $e');
 
       final failedItem = item.copyWith(
         status: OfflineQueueStatus.failed,
@@ -374,7 +373,7 @@ class OfflineQueueService {
         (result) => result != ConnectivityResult.none,
       );
     } catch (e) {
-      debugPrint('Error checking connectivity: $e');
+      AppLogger.error('Error checking connectivity: $e');
       return false;
     }
   }
@@ -384,7 +383,7 @@ class OfflineQueueService {
     _syncTimer = Timer.periodic(const Duration(minutes: 5), (timer) async {
       final isConnected = await _isConnectedToInternet();
       if (isConnected && !_isSyncing) {
-        debugPrint('Performing periodic sync');
+        AppLogger.info('Performing periodic sync');
         await _performSync();
       }
     });

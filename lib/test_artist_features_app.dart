@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:logging/logging.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 /// Test app to verify all artist features work properly
 class ArtistFeatureTestApp extends StatefulWidget {
-  const ArtistFeatureTestApp({Key? key}) : super(key: key);
+  const ArtistFeatureTestApp({super.key});
 
   @override
   State<ArtistFeatureTestApp> createState() => _ArtistFeatureTestAppState();
@@ -19,22 +19,21 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
   String? _selectedTier;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('🧪 Artist Features Test'),
         backgroundColor: ArtbeatColors.primary,
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Test Controls
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -54,14 +53,12 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
                         labelText: 'Select Subscription Tier',
                         border: OutlineInputBorder(),
                       ),
-                      items: SubscriptionTier.values.map((tier) {
-                        return DropdownMenuItem(
+                      items: SubscriptionTier.values.map((tier) => DropdownMenuItem(
                           value: tier.name,
                           child: Text(
                             '${tier.displayName} - \$${tier.monthlyPrice}/month',
                           ),
-                        );
-                      }).toList(),
+                        )).toList(),
                       onChanged: (value) {
                         setState(() {
                           _selectedTier = value;
@@ -122,7 +119,7 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
             Expanded(
               child: Card(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -154,7 +151,6 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
         ),
       ),
     );
-  }
 
   Widget _buildSummaryChip() {
     final passed = _testResults.values.where((r) => r.passed).length;
@@ -174,8 +170,7 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
+  Widget _buildEmptyState() => Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -194,10 +189,8 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
         ],
       ),
     );
-  }
 
-  Widget _buildTestResults() {
-    return ListView.builder(
+  Widget _buildTestResults() => ListView.builder(
       itemCount: _testResults.length,
       itemBuilder: (context, index) {
         final entry = _testResults.entries.elementAt(index);
@@ -227,14 +220,11 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
         );
       },
     );
-  }
 
-  String _formatFeatureName(String feature) {
-    return feature
+  String _formatFeatureName(String feature) => feature
         .split('_')
         .map((word) => word[0].toUpperCase() + word.substring(1))
         .join(' ');
-  }
 
   Future<void> _runAllTests() async {
     if (_selectedTier == null) return;

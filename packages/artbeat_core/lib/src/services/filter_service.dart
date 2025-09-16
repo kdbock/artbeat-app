@@ -3,7 +3,6 @@ import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 import 'package:artbeat_core/artbeat_core.dart';
 
 import '../models/filter_types.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 
 /// Service for handling all filtering operations
 class FilterService {
@@ -78,7 +77,7 @@ class FilterService {
 
       return artists;
     } catch (e, stackTrace) {
-      debugPrint('Error filtering artists: $e\n$stackTrace');
+      AppLogger.error('Error filtering artists: $e\n$stackTrace');
       return [];
     }
   }
@@ -191,7 +190,7 @@ class FilterService {
 
       return artworks;
     } catch (e, stackTrace) {
-      debugPrint('Error filtering artwork: $e\n$stackTrace');
+      AppLogger.error('Error filtering artwork: $e\n$stackTrace');
       return [];
     }
   }
@@ -254,7 +253,7 @@ class FilterService {
 
       return events;
     } catch (e, stackTrace) {
-      debugPrint('Error filtering events: $e\n$stackTrace');
+      AppLogger.error('Error filtering events: $e\n$stackTrace');
       return [];
     }
   }

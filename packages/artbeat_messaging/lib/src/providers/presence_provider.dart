@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/presence_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Provider for managing user presence across the app
 class PresenceProvider extends ChangeNotifier {
@@ -7,7 +8,7 @@ class PresenceProvider extends ChangeNotifier {
   bool _isInitialized = false;
 
   PresenceProvider(this._presenceService) {
-    debugPrint('PresenceProvider: Initializing');
+    AppLogger.info('PresenceProvider: Initializing');
     _initialize();
   }
 
@@ -16,7 +17,7 @@ class PresenceProvider extends ChangeNotifier {
   void _initialize() {
     // The PresenceService handles its own initialization
     _isInitialized = true;
-    debugPrint('PresenceProvider: Initialized');
+    AppLogger.info('PresenceProvider: Initialized');
   }
 
   /// Update user activity (call when user interacts with the app)
@@ -46,7 +47,7 @@ class PresenceProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    debugPrint('PresenceProvider: Disposing');
+    AppLogger.info('PresenceProvider: Disposing');
     _presenceService.dispose();
     super.dispose();
   }

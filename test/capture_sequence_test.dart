@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 
-import 'package:artbeat_capture/src/services/storage_service.dart';
 import 'package:artbeat_capture/src/services/capture_service.dart';
+import 'package:artbeat_capture/src/services/storage_service.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
 import 'capture_sequence_test.mocks.dart';
 import 'test_setup.dart';
@@ -36,7 +36,7 @@ void main() {
 
       // Verify that the service throws the expected error
       expect(
-        () async => await mockStorageService.uploadCaptureImage(
+        () async => mockStorageService.uploadCaptureImage(
           testImageFile,
           'test-user-id',
         ),

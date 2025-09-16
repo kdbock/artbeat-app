@@ -51,6 +51,7 @@ class _GiftCampaignScreenState extends State<GiftCampaignScreen>
         children: [_buildMyCampaignsTab(), _buildDiscoverTab()],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: "gift_campaign_fab",
         onPressed: () => _showCreateCampaignDialog(),
         backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),

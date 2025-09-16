@@ -57,7 +57,7 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen>
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('Error loading moderation queue: $e');
+      AppLogger.error('Error loading moderation queue: $e');
       setState(() {
         _isLoading = false;
       });

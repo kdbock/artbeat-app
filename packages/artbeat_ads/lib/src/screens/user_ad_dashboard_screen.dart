@@ -103,7 +103,7 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
         });
       }
     } catch (e) {
-      debugPrint('Error loading analytics: $e');
+      AppLogger.error('Error loading analytics: $e');
     }
   }
 
@@ -447,7 +447,7 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
                   imageUrl: '',
                   title: 'Deleted Ad',
                   description: '',
-                  location: AdLocation.dashboard,
+                  location: AdLocation.fluidDashboard,
                   duration: AdDuration.oneDay,
                   startDate: DateTime.now(),
                   endDate: DateTime.now(),

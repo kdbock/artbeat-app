@@ -30,7 +30,7 @@ void main() {
         ],
         title: 'Test Ad Title',
         description: 'Test ad description',
-        location: AdLocation.dashboard,
+        location: AdLocation.fluidDashboard,
         duration: AdDuration.weekly,
         startDate: testStartDate,
         endDate: testEndDate,
@@ -51,7 +51,7 @@ void main() {
       expect(testAd.artworkUrls, hasLength(2));
       expect(testAd.title, equals('Test Ad Title'));
       expect(testAd.description, equals('Test ad description'));
-      expect(testAd.location, equals(AdLocation.dashboard));
+      expect(testAd.location, equals(AdLocation.fluidDashboard));
       expect(testAd.duration, equals(AdDuration.weekly));
       expect(testAd.startDate, equals(testStartDate));
       expect(testAd.endDate, equals(testEndDate));
@@ -81,7 +81,7 @@ void main() {
         imageUrl: 'https://example.com/image.jpg',
         title: 'Minimal Ad',
         description: 'Minimal description',
-        location: AdLocation.feed,
+        location: AdLocation.communityInFeed,
         duration: AdDuration.daily,
         startDate: testStartDate,
         endDate: testEndDate,
@@ -106,7 +106,7 @@ void main() {
               'https://example.com/image1.jpg,https://example.com/image2.jpg',
           'title': 'Test Title',
           'description': 'Test Description',
-          'location': 0, // AdLocation.dashboard
+          'location': 0, // AdLocation.fluidDashboard
           'duration': {'type': 'weekly', 'days': 7},
           'startDate': Timestamp.fromDate(testStartDate),
           'endDate': Timestamp.fromDate(testEndDate),
@@ -147,7 +147,7 @@ void main() {
 
         expect(ad.type, equals(AdType.banner_ad)); // Default
         expect(ad.size, equals(AdSize.small)); // Default
-        expect(ad.location, equals(AdLocation.dashboard)); // Default
+        expect(ad.location, equals(AdLocation.fluidDashboard)); // Default
         expect(ad.status, equals(AdStatus.pending)); // Default
       });
 
@@ -212,7 +212,7 @@ void main() {
         );
         expect(map['title'], equals('Test Ad Title'));
         expect(map['description'], equals('Test ad description'));
-        expect(map['location'], equals(0)); // AdLocation.dashboard.index
+        expect(map['location'], equals(0)); // AdLocation.fluidDashboard.index
         expect(map['status'], equals(0)); // AdStatus.pending.index
         expect(map['approvalId'], equals('approval-123'));
         expect(map['destinationUrl'], equals('https://example.com'));
@@ -231,7 +231,7 @@ void main() {
           imageUrl: 'https://example.com/image.jpg',
           title: 'Test Title',
           description: 'Test Description',
-          location: AdLocation.feed,
+          location: AdLocation.communityInFeed,
           duration: AdDuration.daily,
           startDate: testStartDate,
           endDate: testEndDate,

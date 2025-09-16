@@ -245,7 +245,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (networkImage != null) {
         return networkImage;
       } else {
-        debugPrint('⚠️ Invalid profile image URL format: $profileImageUrl');
+        AppLogger.warning('⚠️ Invalid profile image URL format: $profileImageUrl');
       }
     }
 
@@ -256,7 +256,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (networkImage != null) {
         return networkImage;
       } else {
-        debugPrint('⚠️ Invalid photo URL format: $photoURL');
+        AppLogger.warning('⚠️ Invalid photo URL format: $photoURL');
       }
     }
     return null;

@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/enhanced_gift_service.dart';
-import '../services/payment_service.dart';
 import '../models/gift_campaign_model.dart';
 import '../models/gift_subscription_model.dart';
+import '../models/artist_profile_model.dart';
+import '../utils/order_review_helpers.dart';
+import '../utils/logger.dart';
+import '../widgets/main_layout.dart';
+import '../theme/artbeat_colors.dart';
 
 /// Enhanced screen for purchasing gifts with custom amounts, campaigns, and subscriptions
+/// Modern themed design with glassmorphism and gradient backgrounds
 class EnhancedGiftPurchaseScreen extends StatefulWidget {
   final String recipientId;
   final String recipientName;
   final GiftCampaignModel? campaign; // Optional campaign context
+  final int initialTab; // 0: preset, 1: custom, 2: subscription
 
   const EnhancedGiftPurchaseScreen({
     super.key,
     required this.recipientId,
     required this.recipientName,
     this.campaign,
+    this.initialTab = 0, // Default to preset tab
   });
 
   @override
@@ -24,15 +32,17 @@ class EnhancedGiftPurchaseScreen extends StatefulWidget {
 }
 
 class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final EnhancedGiftService _giftService = EnhancedGiftService();
-  final PaymentService _paymentService = PaymentService();
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _customAmountController = TextEditingController();
 
   late TabController _tabController;
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Artist Profile
+  ArtistProfileModel? _recipientProfile;
 
   // Gift Type Selection
   String _giftMode = 'preset'; // preset, custom, subscription
@@ -42,16 +52,65 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   // Subscription Settings
   SubscriptionFrequency _subscriptionFrequency = SubscriptionFrequency.monthly;
 
+  // Animation
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
 
-    // If opened from a campaign, default to custom mode
+    // Initialize fade animation
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _fadeController.forward();
+
+    debugPrint(
+      '🎁 EnhancedGiftPurchaseScreen initialized with recipient: ${widget.recipientName}',
+    );
+    debugPrint('🎁 Initial tab index: ${widget.initialTab}');
+    debugPrint(
+      '🎁 Initial selected amount: \$${_selectedAmount.toStringAsFixed(2)}',
+    );
+
+    // Set initial mode based on tab
+    switch (widget.initialTab) {
+      case 0:
+        _giftMode = 'preset';
+        // Set a default amount for preset mode to prevent $0.00 payments
+        _selectedAmount = 5.0; // Default to "Brush Pack" amount
+        _selectedPresetGift = 'Brush Pack';
+        debugPrint(
+          '🎁 Set default amount: \$${_selectedAmount.toStringAsFixed(2)}',
+        );
+        break;
+      case 1:
+        _giftMode = 'custom';
+        break;
+      case 2:
+        _giftMode = 'subscription';
+        break;
+    }
+
+    // If opened from a campaign, override to custom mode
     if (widget.campaign != null) {
       _giftMode = 'custom';
       _tabController.index = 1;
     }
+
+    // Load recipient profile
+    _loadRecipientProfile();
   }
 
   @override
@@ -59,72 +118,124 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
     _tabController.dispose();
     _messageController.dispose();
     _customAmountController.dispose();
+    _fadeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadRecipientProfile() async {
+    try {
+      debugPrint(
+        '🎁 Loading recipient profile for user: ${widget.recipientId}',
+      );
+      final snapshot = await FirebaseFirestore.instance
+          .collection('artistProfiles')
+          .where('userId', isEqualTo: widget.recipientId)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        _recipientProfile = ArtistProfileModel.fromFirestore(
+          snapshot.docs.first,
+        );
+        debugPrint(
+          '🎁 Loaded recipient profile: ${_recipientProfile!.displayName}',
+        );
+        if (mounted) setState(() {});
+      } else {
+        debugPrint(
+          '🎁 No artist profile found for recipient: ${widget.recipientId}',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading recipient profile: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return MainLayout(
+      currentIndex: -1, // Not in main navigation
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Send Gift to ${widget.recipientName}'),
-          backgroundColor: Theme.of(context).primaryColor,
-          foregroundColor: Colors.white,
-          bottom: TabBar(
-            controller: _tabController,
-            onTap: (index) {
-              setState(() {
-                switch (index) {
-                  case 0:
-                    _giftMode = 'preset';
-                    break;
-                  case 1:
-                    _giftMode = 'custom';
-                    break;
-                  case 2:
-                    _giftMode = 'subscription';
-                    break;
-                }
-                _selectedAmount = 0.0;
-                _selectedPresetGift = null;
-                _customAmountController.clear();
-              });
-            },
-            tabs: const [
-              Tab(text: 'Preset Gifts'),
-              Tab(text: 'Custom Amount'),
-              Tab(text: 'Subscription'),
-            ],
-          ),
-        ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SafeArea(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildPresetGiftsTab(),
-                          _buildCustomAmountTab(),
-                          _buildSubscriptionTab(),
-                        ],
-                      ),
-                    ),
-                    Flexible(
-                      child: SingleChildScrollView(
-                        child: _buildBottomSection(),
-                      ),
-                    ),
-                  ],
-                ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.topRight,
+                colors: [
+                  ArtbeatColors.secondaryTeal, // Light Teal
+                  ArtbeatColors.accentOrange, // Light Orange/Peach
+                ],
               ),
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            'Send Gift to ${widget.recipientName}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.search, color: Colors.white),
+              onPressed: () {
+                // TODO: Implement search functionality
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.message, color: Colors.white),
+              onPressed: () {
+                // TODO: Implement messaging functionality
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.person, color: Colors.white),
+              onPressed: () {
+                // TODO: Implement profile functionality
+              },
+            ),
+          ],
+        ),
+        body: Container(
+          decoration: _buildBackgroundDecoration(),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        _buildModernTabBar(),
+                        Expanded(child: _buildUnifiedScrollableContent()),
+                      ],
+                    ),
+                  ),
+                ),
+        ),
       ),
     );
   }
 
-  Widget _buildPresetGiftsTab() {
+  Widget _buildUnifiedScrollableContent() {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        _buildPresetGiftsContent(),
+        _buildCustomAmountContent(),
+        _buildSubscriptionContent(),
+      ],
+    );
+  }
+
+  Widget _buildPresetGiftsContent() {
     final presetGifts = _giftService.getPresetGiftTypes();
 
     return SingleChildScrollView(
@@ -134,21 +245,22 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
         children: [
           _buildRecipientInfo(),
           const SizedBox(height: 24),
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          Container(
+            decoration: _buildGlassDecoration(),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Choose a Preset Gift',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   ...presetGifts.entries.map(
                     (entry) => _buildPresetGiftOption(entry.key, entry.value),
                   ),
@@ -158,12 +270,17 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           ),
           const SizedBox(height: 24),
           _buildMessageSection(),
+          const SizedBox(height: 24),
+          _buildOrderSummarySection(),
+          const SizedBox(height: 24),
+          _buildPurchaseButtonSection(),
+          const SizedBox(height: 100), // Bottom padding
         ],
       ),
     );
   }
 
-  Widget _buildCustomAmountTab() {
+  Widget _buildCustomAmountContent() {
     final suggestions = _giftService.getCustomGiftSuggestions();
 
     return SingleChildScrollView(
@@ -177,21 +294,22 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           // Campaign info if applicable
           if (widget.campaign != null) _buildCampaignInfo(),
 
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          Container(
+            decoration: _buildGlassDecoration(),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Custom Gift Amount',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Custom amount input
                   TextField(
@@ -245,12 +363,17 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           ),
           const SizedBox(height: 24),
           _buildMessageSection(),
+          const SizedBox(height: 24),
+          _buildOrderSummarySection(),
+          const SizedBox(height: 24),
+          _buildPurchaseButtonSection(),
+          const SizedBox(height: 100), // Bottom padding
         ],
       ),
     );
   }
 
-  Widget _buildSubscriptionTab() {
+  Widget _buildSubscriptionContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -259,26 +382,30 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           _buildRecipientInfo(),
           const SizedBox(height: 24),
 
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          Container(
+            decoration: _buildGlassDecoration(),
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Recurring Gift Subscription',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Support this artist with regular gifts. Different from sponsorships, these are simple recurring donations.',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Amount input
                   TextField(
@@ -350,58 +477,325 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           ),
           const SizedBox(height: 24),
           _buildMessageSection(),
+          const SizedBox(height: 24),
+          _buildOrderSummarySection(),
+          const SizedBox(height: 24),
+          _buildPurchaseButtonSection(),
+          const SizedBox(height: 100), // Bottom padding
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderSummarySection() {
+    // Show order summary if a gift is selected, even if amount is $0.00 (coupon case)
+    bool hasValidSelection = false;
+    switch (_giftMode) {
+      case 'preset':
+        hasValidSelection =
+            _selectedPresetGift != null && _selectedPresetGift!.isNotEmpty;
+        break;
+      case 'custom':
+        hasValidSelection = _customAmountController.text.isNotEmpty;
+        break;
+      case 'subscription':
+        hasValidSelection = _customAmountController.text.isNotEmpty;
+        break;
+    }
+
+    if (!hasValidSelection) return const SizedBox.shrink();
+
+    return Container(
+      decoration: _buildGlassDecoration(),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Order Summary',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _getGiftTypeDisplay(),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _selectedAmount == 0.0
+                          ? 'FREE'
+                          : '\$${_selectedAmount.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: _selectedAmount == 0.0
+                            ? Colors.greenAccent
+                            : Colors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    if (_selectedAmount == 0.0)
+                      Text(
+                        '(100% coupon)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.greenAccent.withValues(alpha: 0.7),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+            if (_giftMode == 'subscription')
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  _subscriptionFrequency.name.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPurchaseButtonSection() {
+    return Column(
+      children: [
+        if (_errorMessage != null)
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            margin: const EdgeInsets.only(bottom: 20.0),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: Colors.red.withValues(alpha: 0.8),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+        AnimatedScale(
+          scale: _selectedAmount > 0 ? 1.0 : 0.95,
+          duration: const Duration(milliseconds: 200),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _selectedAmount > 0 ? _handlePurchase : null,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                backgroundColor: _selectedAmount > 0
+                    ? ArtbeatColors.surface
+                    : ArtbeatColors.buttonDisabled,
+                foregroundColor: ArtbeatColors.secondaryTeal,
+                disabledBackgroundColor: ArtbeatColors.buttonDisabled,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: Text(
+                _getButtonText(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: _selectedAmount > 0
+                      ? ArtbeatColors.secondaryTeal
+                      : ArtbeatColors.textDisabled,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white.withValues(alpha: 0.7),
+          ),
+          child: const Text('Cancel', style: TextStyle(fontSize: 16)),
+        ),
+      ],
+    );
+  }
+
+  BoxDecoration _buildBackgroundDecoration() {
+    return BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          ArtbeatColors.secondaryTeal, // Light Teal
+          ArtbeatColors.secondaryTeal.withValues(alpha: 0.8), // Darker Teal
+          ArtbeatColors.accentOrange, // Light Orange/Peach
+          ArtbeatColors.accentOrange.withValues(alpha: 0.8), // Darker Orange
+        ],
+        stops: const [0.0, 0.4, 0.6, 1.0],
+      ),
+    );
+  }
+
+  BoxDecoration _buildGlassDecoration() {
+    return BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      boxShadow: [
+        BoxShadow(
+          color: ArtbeatColors.secondaryTeal.withValues(alpha: 0.1),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModernTabBar() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: _buildGlassDecoration(),
+      child: TabBar(
+        controller: _tabController,
+        onTap: (index) {
+          setState(() {
+            switch (index) {
+              case 0:
+                _giftMode = 'preset';
+                break;
+              case 1:
+                _giftMode = 'custom';
+                break;
+              case 2:
+                _giftMode = 'subscription';
+                break;
+            }
+            _selectedAmount = 0.0;
+            _selectedPresetGift = null;
+            _customAmountController.clear();
+          });
+        },
+        indicator: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
+        tabs: const [
+          Tab(
+            child: Text(
+              'Preset Gifts',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Tab(
+            child: Text(
+              'Custom Amount',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Tab(
+            child: Text(
+              'Subscription',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildRecipientInfo() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: _buildGlassDecoration(),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Sending Gift To',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
                 CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).primaryColor.withValues(alpha: 0.1),
-                  child: Text(
-                    widget.recipientName.isNotEmpty
-                        ? widget.recipientName[0].toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
+                  radius: 28,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundImage: _recipientProfile?.profileImageUrl != null
+                      ? NetworkImage(_recipientProfile!.profileImageUrl!)
+                      : null,
+                  child: _recipientProfile?.profileImageUrl == null
+                      ? Text(
+                          widget.recipientName.isNotEmpty
+                              ? widget.recipientName[0].toUpperCase()
+                              : '?',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white.withValues(alpha: 0.9),
+                          ),
+                        )
+                      : null,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.recipientName,
-                        style: const TextStyle(
-                          fontSize: 16,
+                        _recipientProfile?.displayName ?? widget.recipientName,
+                        style: TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Artist',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withValues(alpha: 0.7),
+                        ),
                       ),
                     ],
                   ),
@@ -484,7 +878,7 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
     final isSelected = _selectedPresetGift == giftType;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
         onTap: () {
           setState(() {
@@ -492,36 +886,46 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
             _selectedAmount = price;
           });
         },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.all(12),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
-                  ? Theme.of(context).primaryColor
-                  : Colors.grey.shade300,
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.2),
               width: isSelected ? 2 : 1,
             ),
             color: isSelected
-                ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
-                : Colors.transparent,
+                ? Colors.white.withValues(alpha: 0.2)
+                : Colors.white.withValues(alpha: 0.1),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF4FB3BE).withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getGiftIcon(giftType),
-                  color: Theme.of(context).primaryColor,
-                  size: 24,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  size: 28,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,39 +933,44 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
                     Text(
                       giftType,
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: isSelected
-                            ? Theme.of(context).primaryColor
-                            : Colors.black,
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       _getGiftDescription(giftType),
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
                     ),
                   ],
                 ),
               ),
-              Text(
-                '\$${price.toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.black,
-                ),
-              ),
-              if (isSelected)
-                Container(
-                  margin: const EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.check_circle,
-                    color: Theme.of(context).primaryColor,
-                    size: 20,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '\$${price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
                   ),
-                ),
+                  if (isSelected)
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      child: Icon(
+                        Icons.check_circle,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: 20,
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -586,141 +995,52 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   }
 
   Widget _buildMessageSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: _buildGlassDecoration(),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Personal Message (Optional)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white.withValues(alpha: 0.9),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: _messageController,
               maxLines: 3,
               maxLength: 200,
+              style: const TextStyle(color: Colors.black87),
               decoration: InputDecoration(
                 hintText:
                     'Write a personal message to ${widget.recipientName}...',
+                hintStyle: const TextStyle(color: Colors.black45),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomSection() {
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.3),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_errorMessage != null)
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              margin: const EdgeInsets.only(bottom: 16.0),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.error_outline, color: Colors.red.shade700),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(color: Colors.red.shade700),
-                    ),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
-                ],
-              ),
-            ),
-
-          // Order summary
-          if (_selectedAmount > 0) _buildOrderSummary(),
-
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selectedAmount > 0 ? _handlePurchase : null,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.grey.shade300,
-              ),
-              child: Text(
-                _getButtonText(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderSummary() {
-    return Card(
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Order Summary',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(_getGiftTypeDisplay()),
-                Text(
-                  '\$${_selectedAmount.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                 ),
-              ],
-            ),
-            if (_giftMode == 'subscription')
-              Text(
-                _subscriptionFrequency.name.toUpperCase(),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                counterStyle: const TextStyle(color: Colors.black54),
               ),
+            ),
           ],
         ),
       ),
@@ -728,7 +1048,8 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   }
 
   String _getButtonText() {
-    if (_selectedAmount <= 0) return 'Select Amount';
+    if (_selectedAmount < 0) return 'Select Amount';
+    if (_selectedAmount == 0.0) return 'Send Free Gift';
 
     switch (_giftMode) {
       case 'subscription':
@@ -752,9 +1073,42 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
   }
 
   Future<void> _handlePurchase() async {
-    if (_selectedAmount <= 0) {
+    debugPrint(
+      '🎁 _handlePurchase called with amount: \$${_selectedAmount.toStringAsFixed(2)}',
+    );
+    AppLogger.info('🎁 Gift mode: $_giftMode');
+    AppLogger.info('🎁 Selected preset gift: $_selectedPresetGift');
+
+    // Check if a valid gift selection has been made
+    bool hasValidSelection = false;
+    switch (_giftMode) {
+      case 'preset':
+        hasValidSelection =
+            _selectedPresetGift != null && _selectedPresetGift!.isNotEmpty;
+        break;
+      case 'custom':
+        hasValidSelection = _customAmountController.text.isNotEmpty;
+        break;
+      case 'subscription':
+        hasValidSelection = _customAmountController.text.isNotEmpty;
+        break;
+    }
+
+    if (!hasValidSelection) {
+      AppLogger.error('❌ No gift selection made');
       setState(() {
-        _errorMessage = 'Please select or enter a valid amount.';
+        _errorMessage = 'Please select a gift type or enter an amount.';
+      });
+      return;
+    }
+
+    // Allow $0.00 amounts for 100% coupon scenarios, but validate reasonable bounds for non-coupon cases
+    if (_selectedAmount < 0) {
+      AppLogger.error(
+        '❌ Invalid amount: \$${_selectedAmount.toStringAsFixed(2)}',
+      );
+      setState(() {
+        _errorMessage = 'Amount cannot be negative.';
       });
       return;
     }
@@ -775,86 +1129,54 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
     });
 
     try {
-      // Get user's default payment method
-      final paymentMethodId = await _paymentService.getDefaultPaymentMethodId();
-
-      if (paymentMethodId == null) {
-        setState(() {
-          _errorMessage =
-              'No payment method found. Please add a payment method first.';
-        });
-        return;
-      }
-
       final message = _messageController.text.trim().isNotEmpty
           ? _messageController.text.trim()
           : null;
 
-      Map<String, dynamic> result;
+      // Use order review system with coupon support
+      debugPrint(
+        '🎁 Calling reviewGiftOrder with amount: \$${_selectedAmount.toStringAsFixed(2)}',
+      );
+      final result = await context.reviewGiftOrder(
+        recipientId: widget.recipientId,
+        recipientName: widget.recipientName,
+        amount: _selectedAmount,
+        giftType: _giftMode == 'preset' ? _selectedPresetGift! : 'Custom Gift',
+        message: message,
+      );
 
-      switch (_giftMode) {
-        case 'preset':
-          // Use existing enhanced gift payment
-          result = await _paymentService.processEnhancedGiftPayment(
-            recipientId: widget.recipientId,
-            paymentMethodId: paymentMethodId,
-            giftType: _selectedPresetGift!,
-            amount: _selectedAmount,
-            message: message,
-          );
-          break;
-
-        case 'custom':
-          // Use custom gift payment
-          result = await _giftService.sendCustomGift(
-            recipientId: widget.recipientId,
-            amount: _selectedAmount,
-            paymentMethodId: paymentMethodId,
-            message: message,
-            campaignId: widget.campaign?.id,
-          );
-          break;
-
-        case 'subscription':
-          // Create gift subscription
-          await _giftService.createGiftSubscription(
-            recipientId: widget.recipientId,
-            amount: _selectedAmount,
-            frequency: _subscriptionFrequency,
-            message: message,
-            paymentMethodId: paymentMethodId,
-          );
-          result = {'status': 'succeeded'};
-          break;
-
-        default:
-          throw Exception('Invalid gift mode');
-      }
-
-      if (result['status'] == 'succeeded') {
+      if (result != null && result['status'] == 'success') {
+        // Payment successful
         if (mounted) {
-          // Show success dialog
-          await showDialog<void>(
+          showDialog<void>(
             context: context,
-            builder: (context) => AlertDialog(
+            barrierDismissible: false,
+            builder: (BuildContext context) => AlertDialog(
               title: Text(_getSuccessTitle()),
               content: Text(_getSuccessMessage()),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.pop(context, true);
+                  },
                   child: const Text('OK'),
                 ),
               ],
             ),
           );
-
-          // Return to previous screen with success result
-          if (mounted) {
-            Navigator.pop(context, true);
-          }
         }
+      } else if (result != null) {
+        // Payment failed
+        throw Exception(result['message'] ?? 'Payment failed');
       } else {
-        throw Exception('Payment failed with status: ${result['status']}');
+        // User cancelled - just reset loading state and return
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+        return;
       }
     } catch (e) {
       if (mounted) {

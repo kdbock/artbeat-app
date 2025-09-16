@@ -401,7 +401,7 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      debugPrint('Error creating post: $e');
+      AppLogger.error('Error creating post: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -620,7 +620,7 @@ class _CreateGroupPostScreenState extends State<CreateGroupPostScreen> {
 
       return imageUrls;
     } catch (e) {
-      debugPrint('Failed to upload images: $e');
+      AppLogger.info('Failed to upload images: $e');
       return [];
     }
   }

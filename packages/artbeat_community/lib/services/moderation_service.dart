@@ -1,7 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/post_model.dart';
 import '../models/comment_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 class ModerationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -20,6 +21,51 @@ class ModerationService {
     r'[A-Z]{5,}', // Excessive caps
     r'(.)\1{4,}', // Repeated characters
   ];
+
+  /// Enhanced content moderation for multimedia posts
+  Future<EnhancedModerationResult> moderateContent({
+    required String content,
+    List<File>? imageFiles,
+    File? videoFile,
+    File? audioFile,
+  }) async {
+    final violations = <ModerationViolation>[];
+
+    // Check text content
+    final textResult = checkContent(content);
+    violations.addAll(textResult.violations);
+
+    // Check image content
+    if (imageFiles != null && imageFiles.isNotEmpty) {
+      for (int i = 0; i < imageFiles.length; i++) {
+        final imageViolations = await _checkImageContent(imageFiles[i], i);
+        violations.addAll(imageViolations);
+      }
+    }
+
+    // Check video content
+    if (videoFile != null) {
+      final videoViolations = await _checkVideoContent(videoFile);
+      violations.addAll(videoViolations);
+    }
+
+    // Check audio content
+    if (audioFile != null) {
+      final audioViolations = await _checkAudioContent(audioFile);
+      violations.addAll(audioViolations);
+    }
+
+    final status = _determinePostStatus(violations);
+
+    return EnhancedModerationResult(
+      isApproved: status == PostModerationStatus.approved,
+      status: status,
+      violations: violations,
+      reason: violations.isNotEmpty
+          ? violations.map((v) => v.description).join(', ')
+          : null,
+    );
+  }
 
   /// Check content for automated moderation
   ModerationResult checkContent(String content) {
@@ -53,13 +99,13 @@ class ModerationService {
       }
     }
 
-    // Check content length
-    if (content.length < 10) {
+    // Check content length - allow empty content if media is present
+    if (content.trim().isEmpty) {
       violations.add(
         const ModerationViolation(
           type: ModerationViolationType.shortContent,
           severity: ModerationSeverity.low,
-          description: 'Content too short',
+          description: 'No text content provided',
         ),
       );
     }
@@ -69,6 +115,174 @@ class ModerationService {
       violations: violations,
       recommendedAction: _getRecommendedAction(violations),
     );
+  }
+
+  /// Check image content for violations
+  Future<List<ModerationViolation>> _checkImageContent(
+    File imageFile,
+    int index,
+  ) async {
+    final violations = <ModerationViolation>[];
+
+    try {
+      // Check file size (max 15MB as per storage service)
+      final fileSize = await imageFile.length();
+      if (fileSize > 15 * 1024 * 1024) {
+        violations.add(
+          ModerationViolation(
+            type: ModerationViolationType.inappropriate,
+            severity: ModerationSeverity.medium,
+            description: 'Image ${index + 1} exceeds size limit',
+          ),
+        );
+      }
+
+      // Basic image validation
+      if (!await imageFile.exists()) {
+        violations.add(
+          ModerationViolation(
+            type: ModerationViolationType.inappropriate,
+            severity: ModerationSeverity.high,
+            description: 'Image ${index + 1} file not found',
+          ),
+        );
+      }
+
+      // TODO: Add AI-based image content analysis here
+      // This could include:
+      // - NSFW content detection
+      // - Violence detection
+      // - Copyright infringement detection
+      // - Face recognition for privacy
+    } catch (e) {
+      violations.add(
+        ModerationViolation(
+          type: ModerationViolationType.inappropriate,
+          severity: ModerationSeverity.medium,
+          description: 'Error processing image ${index + 1}: $e',
+        ),
+      );
+    }
+
+    return violations;
+  }
+
+  /// Check video content for violations
+  Future<List<ModerationViolation>> _checkVideoContent(File videoFile) async {
+    final violations = <ModerationViolation>[];
+
+    try {
+      // Check file size (max 50MB)
+      final fileSize = await videoFile.length();
+      if (fileSize > 50 * 1024 * 1024) {
+        violations.add(
+          const ModerationViolation(
+            type: ModerationViolationType.inappropriate,
+            severity: ModerationSeverity.medium,
+            description: 'Video exceeds size limit (50MB)',
+          ),
+        );
+      }
+
+      // Basic video validation
+      if (!await videoFile.exists()) {
+        violations.add(
+          const ModerationViolation(
+            type: ModerationViolationType.inappropriate,
+            severity: ModerationSeverity.high,
+            description: 'Video file not found',
+          ),
+        );
+      }
+
+      // TODO: Add AI-based video content analysis here
+      // This could include:
+      // - NSFW content detection
+      // - Violence detection
+      // - Audio analysis for inappropriate content
+      // - Duration limits
+    } catch (e) {
+      violations.add(
+        ModerationViolation(
+          type: ModerationViolationType.inappropriate,
+          severity: ModerationSeverity.medium,
+          description: 'Error processing video: $e',
+        ),
+      );
+    }
+
+    return violations;
+  }
+
+  /// Check audio content for violations
+  Future<List<ModerationViolation>> _checkAudioContent(File audioFile) async {
+    final violations = <ModerationViolation>[];
+
+    try {
+      // Check file size (max 10MB)
+      final fileSize = await audioFile.length();
+      if (fileSize > 10 * 1024 * 1024) {
+        violations.add(
+          const ModerationViolation(
+            type: ModerationViolationType.inappropriate,
+            severity: ModerationSeverity.medium,
+            description: 'Audio exceeds size limit (10MB)',
+          ),
+        );
+      }
+
+      // Basic audio validation
+      if (!await audioFile.exists()) {
+        violations.add(
+          const ModerationViolation(
+            type: ModerationViolationType.inappropriate,
+            severity: ModerationSeverity.high,
+            description: 'Audio file not found',
+          ),
+        );
+      }
+
+      // TODO: Add AI-based audio content analysis here
+      // This could include:
+      // - Speech-to-text analysis for inappropriate language
+      // - Music copyright detection
+      // - Duration limits
+      // - Volume level checks
+    } catch (e) {
+      violations.add(
+        ModerationViolation(
+          type: ModerationViolationType.inappropriate,
+          severity: ModerationSeverity.medium,
+          description: 'Error processing audio: $e',
+        ),
+      );
+    }
+
+    return violations;
+  }
+
+  /// Determine post moderation status based on violations
+  PostModerationStatus _determinePostStatus(
+    List<ModerationViolation> violations,
+  ) {
+    if (violations.isEmpty) {
+      return PostModerationStatus.approved;
+    }
+
+    final hasHighSeverity = violations.any(
+      (v) => v.severity == ModerationSeverity.high,
+    );
+    final hasMediumSeverity = violations.any(
+      (v) => v.severity == ModerationSeverity.medium,
+    );
+
+    if (hasHighSeverity) {
+      return PostModerationStatus.rejected;
+    } else if (hasMediumSeverity) {
+      return PostModerationStatus.pending;
+    } else {
+      return PostModerationStatus.approved;
+    }
   }
 
   ModerationAction _getRecommendedAction(List<ModerationViolation> violations) {
@@ -92,7 +306,7 @@ class ModerationService {
 
       return query.docs.map((doc) => PostModel.fromFirestore(doc)).toList();
     } catch (e) {
-      debugPrint('Error getting flagged posts: $e');
+      AppLogger.error('Error getting flagged posts: $e');
       return [];
     }
   }
@@ -107,7 +321,7 @@ class ModerationService {
 
       return query.docs.map((doc) => CommentModel.fromFirestore(doc)).toList();
     } catch (e) {
-      debugPrint('Error getting flagged comments: $e');
+      AppLogger.error('Error getting flagged comments: $e');
       return [];
     }
   }
@@ -230,7 +444,7 @@ class ModerationService {
         pendingModeration: flaggedPosts + flaggedComments,
       );
     } catch (e) {
-      debugPrint('Error getting moderation stats: $e');
+      AppLogger.error('Error getting moderation stats: $e');
       return ModerationStats.empty();
     }
   }
@@ -328,4 +542,19 @@ class ModerationStats {
       pendingModeration: 0,
     );
   }
+}
+
+/// Enhanced moderation result for multimedia content
+class EnhancedModerationResult {
+  final bool isApproved;
+  final PostModerationStatus status;
+  final List<ModerationViolation> violations;
+  final String? reason;
+
+  const EnhancedModerationResult({
+    required this.isApproved,
+    required this.status,
+    required this.violations,
+    this.reason,
+  });
 }

@@ -21,6 +21,7 @@ class UserAdminModel extends UserModel {
   final DateTime? updatedAt;
   final bool isVerified;
   final List<String> achievements;
+  final bool isFeatured;
 
   UserAdminModel({
     required super.id,
@@ -58,6 +59,7 @@ class UserAdminModel extends UserModel {
     this.updatedAt,
     this.isVerified = false,
     this.achievements = const [],
+    this.isFeatured = false,
   });
 
   factory UserAdminModel.fromUserModel(UserModel user) {
@@ -113,6 +115,7 @@ class UserAdminModel extends UserModel {
       achievements: List<String>.from(
         data['achievements'] as List<dynamic>? ?? [],
       ),
+      isFeatured: data['isFeatured'] as bool? ?? false,
       lastLoginAt: (data['lastLoginAt'] as Timestamp?)?.toDate(),
       lastActiveAt: (data['lastActiveAt'] as Timestamp?)?.toDate(),
       isSuspended: data['isSuspended'] as bool? ?? false,
@@ -146,6 +149,7 @@ class UserAdminModel extends UserModel {
       'experiencePoints': experiencePoints,
       'level': level,
       'achievements': achievements,
+      'isFeatured': isFeatured,
       'lastLoginAt':
           lastLoginAt != null ? Timestamp.fromDate(lastLoginAt!) : null,
       'lastActiveAt':
@@ -194,6 +198,7 @@ class UserAdminModel extends UserModel {
     DateTime? updatedAt,
     bool? isVerified,
     List<String>? achievements,
+    bool? isFeatured,
     DateTime? lastLoginAt,
     DateTime? lastActiveAt,
     bool? isSuspended,
@@ -232,6 +237,7 @@ class UserAdminModel extends UserModel {
       updatedAt: updatedAt ?? this.updatedAt,
       isVerified: isVerified ?? this.isVerified,
       achievements: achievements ?? this.achievements,
+      isFeatured: isFeatured ?? this.isFeatured,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       isSuspended: isSuspended ?? this.isSuspended,

@@ -9,6 +9,7 @@ import '../models/ad_size.dart';
 import '../models/image_fit.dart';
 import '../models/ad_location.dart';
 import '../services/ad_analytics_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Simplified ad display widget that handles image rotation and click actions
 class SimpleAdDisplayWidget extends StatefulWidget {
@@ -46,6 +47,13 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
   @override
   void initState() {
     super.initState();
+    // Ensure initial image index is valid
+    if (widget.ad.artworkUrls.isNotEmpty) {
+      _currentImageIndex = _currentImageIndex.clamp(
+        0,
+        widget.ad.artworkUrls.length - 1,
+      );
+    }
     if (widget.trackAnalytics) {
       _analyticsService = widget.analyticsService ?? AdAnalyticsService();
       _getCurrentUserId();
@@ -107,7 +115,7 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
     // Only rotate if there are multiple images
     if (widget.ad.artworkUrls.length > 1) {
       _rotationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-        if (mounted) {
+        if (mounted && widget.ad.artworkUrls.isNotEmpty) {
           setState(() {
             _currentImageIndex =
                 (_currentImageIndex + 1) % widget.ad.artworkUrls.length;
@@ -156,7 +164,7 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
       } catch (e) {
-        debugPrint('Error launching URL: $e');
+        AppLogger.error('Error launching URL: $e');
       }
     }
   }
@@ -165,7 +173,12 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
     if (widget.ad.artworkUrls.isEmpty) {
       return widget.ad.imageUrl;
     }
-    return widget.ad.artworkUrls[_currentImageIndex];
+    // Ensure the index is within bounds
+    final safeIndex = _currentImageIndex.clamp(
+      0,
+      widget.ad.artworkUrls.length - 1,
+    );
+    return widget.ad.artworkUrls[safeIndex];
   }
 
   @override
@@ -188,7 +201,7 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
           400.0,
         ); // Allow up to 400px for better display
         final calculatedHeight = constrainedWidth / aspectRatio;
-        final minHeight = 50.0;
+        const minHeight = 50.0;
         final maxHeight = availableHeight.isFinite
             ? availableHeight
             : calculatedHeight;
@@ -246,6 +259,30 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
                       ),
                     ),
 
+                  // Sponsored/Ad disclosure label (legal requirement)
+                  Positioned(
+                    top: 4,
+                    left: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Sponsored',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+
                   // Image rotation indicator (if multiple images)
                   if (widget.ad.artworkUrls.length > 1)
                     Positioned(
@@ -261,7 +298,7 @@ class _SimpleAdDisplayWidgetState extends State<SimpleAdDisplayWidget> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '${_currentImageIndex + 1}/${widget.ad.artworkUrls.length}',
+                          '${(_currentImageIndex.clamp(0, widget.ad.artworkUrls.length - 1) + 1)}/${widget.ad.artworkUrls.length}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,

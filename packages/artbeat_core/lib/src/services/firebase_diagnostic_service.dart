@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 
 /// Service for Firebase diagnostics and error logging
 class FirebaseDiagnosticService {
@@ -11,33 +11,33 @@ class FirebaseDiagnosticService {
 
   /// Log an error message
   void logError(String message, {Object? error, StackTrace? stackTrace}) {
-    debugPrint('❌ ERROR: $message');
+    AppLogger.error('❌ ERROR: $message');
     if (error != null) {
-      debugPrint('Error details: $error');
+      AppLogger.error('Error details: $error');
     }
     if (stackTrace != null) {
-      debugPrint('Stack trace: $stackTrace');
+      AppLogger.info('Stack trace: $stackTrace');
     }
   }
 
   /// Log an info message
   void logInfo(String message) {
-    debugPrint('ℹ️ INFO: $message');
+    AppLogger.info('ℹ️ INFO: $message');
   }
 
   /// Log a warning message
   void logWarning(String message, {Object? warning}) {
-    debugPrint('⚠️ WARNING: $message');
+    AppLogger.warning('⚠️ WARNING: $message');
     if (warning != null) {
-      debugPrint('Warning details: $warning');
+      AppLogger.warning('Warning details: $warning');
     }
   }
 
   /// Record a custom event
   void recordEvent(String eventName, {Map<String, dynamic>? parameters}) {
-    debugPrint('📊 EVENT: $eventName');
+    AppLogger.analytics('📊 EVENT: $eventName');
     if (parameters != null) {
-      debugPrint('Parameters: $parameters');
+      AppLogger.info('Parameters: $parameters');
     }
   }
 }

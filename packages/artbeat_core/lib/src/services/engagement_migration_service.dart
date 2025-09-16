@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import '../models/engagement_model.dart';
+import '../utils/logger.dart';
 
 /// Service to migrate from old engagement system to new universal system
 /// Handles migration of likes, applause, follows, etc. to the new system
@@ -9,7 +9,7 @@ class EngagementMigrationService {
 
   /// Migrate all engagement data from old system to new universal system
   Future<void> migrateAllEngagements() async {
-    debugPrint('🔄 Starting engagement migration...');
+    AppLogger.info('🔄 Starting engagement migration...');
 
     try {
       // Migrate in parallel for better performance
@@ -21,16 +21,16 @@ class EngagementMigrationService {
         _migrateUserConnections(),
       ]);
 
-      debugPrint('✅ Engagement migration completed successfully');
+      AppLogger.info('✅ Engagement migration completed successfully');
     } catch (e) {
-      debugPrint('❌ Error during engagement migration: $e');
+      AppLogger.error('❌ Error during engagement migration: $e');
       rethrow;
     }
   }
 
   /// Migrate post engagements (applause, comments, shares)
   Future<void> _migratePosts() async {
-    debugPrint('🔄 Migrating post engagements...');
+    AppLogger.info('🔄 Migrating post engagements...');
 
     final postsQuery = _firestore.collection('posts');
     final postsSnapshot = await postsQuery.get();
@@ -55,13 +55,13 @@ class EngagementMigrationService {
       // Migrate individual applause records
       await _migratePostApplause(postId);
 
-      debugPrint('✅ Migrated post: $postId');
+      AppLogger.info('✅ Migrated post: $postId');
     }
   }
 
   /// Migrate artwork engagements (likes, applause, comments)
   Future<void> _migrateArtworks() async {
-    debugPrint('🔄 Migrating artwork engagements...');
+    AppLogger.info('🔄 Migrating artwork engagements...');
 
     final artworksQuery = _firestore.collection('artwork');
     final artworksSnapshot = await artworksQuery.get();
@@ -82,13 +82,13 @@ class EngagementMigrationService {
       // Update artwork with new engagement stats
       await artworkDoc.reference.update(stats.toFirestore());
 
-      debugPrint('✅ Migrated artwork: $artworkId');
+      AppLogger.info('✅ Migrated artwork: $artworkId');
     }
   }
 
   /// Migrate art walk engagements
   Future<void> _migrateArtWalks() async {
-    debugPrint('🔄 Migrating art walk engagements...');
+    AppLogger.info('🔄 Migrating art walk engagements...');
 
     final artWalksQuery = _firestore.collection('art_walks');
     final artWalksSnapshot = await artWalksQuery.get();
@@ -108,13 +108,13 @@ class EngagementMigrationService {
       // Update art walk with new engagement stats
       await artWalkDoc.reference.update(stats.toFirestore());
 
-      debugPrint('✅ Migrated art walk: $artWalkId');
+      AppLogger.info('✅ Migrated art walk: $artWalkId');
     }
   }
 
   /// Migrate event engagements
   Future<void> _migrateEvents() async {
-    debugPrint('🔄 Migrating event engagements...');
+    AppLogger.info('🔄 Migrating event engagements...');
 
     final eventsQuery = _firestore.collection('events');
     final eventsSnapshot = await eventsQuery.get();
@@ -136,13 +136,13 @@ class EngagementMigrationService {
       // Update event with new engagement stats
       await eventDoc.reference.update(stats.toFirestore());
 
-      debugPrint('✅ Migrated event: $eventId');
+      AppLogger.info('✅ Migrated event: $eventId');
     }
   }
 
   /// Migrate user connections (followers/following to connections)
   Future<void> _migrateUserConnections() async {
-    debugPrint('🔄 Migrating user connections...');
+    AppLogger.info('🔄 Migrating user connections...');
 
     final usersQuery = _firestore.collection('users');
     final usersSnapshot = await usersQuery.get();
@@ -169,7 +169,7 @@ class EngagementMigrationService {
       // Update user with new engagement stats
       await userDoc.reference.update(stats.toFirestore());
 
-      debugPrint('✅ Migrated user connections: $userId');
+      AppLogger.info('✅ Migrated user connections: $userId');
     }
   }
 
@@ -194,7 +194,7 @@ class EngagementMigrationService {
         }
       }
     } catch (e) {
-      debugPrint('Error migrating post applause for $postId: $e');
+      AppLogger.error('Error migrating post applause for $postId: $e');
     }
   }
 
@@ -220,7 +220,7 @@ class EngagementMigrationService {
           .doc(engagementId)
           .set(engagement.toFirestore());
     } catch (e) {
-      debugPrint('Error creating connection engagement: $e');
+      AppLogger.error('Error creating connection engagement: $e');
     }
   }
 
@@ -248,13 +248,13 @@ class EngagementMigrationService {
           .doc(engagementId)
           .set(engagement.toFirestore());
     } catch (e) {
-      debugPrint('Error creating appreciation engagement: $e');
+      AppLogger.error('Error creating appreciation engagement: $e');
     }
   }
 
   /// Clean up old engagement fields after migration
   Future<void> cleanupOldEngagementFields() async {
-    debugPrint('🧹 Cleaning up old engagement fields...');
+    AppLogger.info('🧹 Cleaning up old engagement fields...');
 
     try {
       // Clean up posts
@@ -266,9 +266,9 @@ class EngagementMigrationService {
       // Clean up users
       await _cleanupUserFields();
 
-      debugPrint('✅ Cleanup completed successfully');
+      AppLogger.info('✅ Cleanup completed successfully');
     } catch (e) {
-      debugPrint('❌ Error during cleanup: $e');
+      AppLogger.error('❌ Error during cleanup: $e');
       rethrow;
     }
   }
@@ -315,7 +315,7 @@ class EngagementMigrationService {
 
   /// Verify migration integrity
   Future<bool> verifyMigration() async {
-    debugPrint('🔍 Verifying migration integrity...');
+    AppLogger.debug('🔍 Verifying migration integrity...');
 
     try {
       // Check if engagement collection exists and has data
@@ -323,7 +323,7 @@ class EngagementMigrationService {
       final engagementsSnapshot = await engagementsQuery.get();
 
       if (engagementsSnapshot.docs.isEmpty) {
-        debugPrint('❌ No engagements found in new collection');
+        AppLogger.error('❌ No engagements found in new collection');
         return false;
       }
 
@@ -334,15 +334,15 @@ class EngagementMigrationService {
       if (postsSnapshot.docs.isNotEmpty) {
         final postData = postsSnapshot.docs.first.data();
         if (!postData.containsKey('likeCount')) {
-          debugPrint('❌ Posts missing new engagement stats');
+          AppLogger.error('❌ Posts missing new engagement stats');
           return false;
         }
       }
 
-      debugPrint('✅ Migration verification passed');
+      AppLogger.info('✅ Migration verification passed');
       return true;
     } catch (e) {
-      debugPrint('❌ Error during migration verification: $e');
+      AppLogger.error('❌ Error during migration verification: $e');
       return false;
     }
   }

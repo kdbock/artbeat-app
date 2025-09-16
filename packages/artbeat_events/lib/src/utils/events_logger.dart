@@ -8,7 +8,6 @@ class EventsLogger {
     filter: kDebugMode ? DevelopmentFilter() : ProductionFilter(),
     printer: kDebugMode
         ? PrettyPrinter(
-            errorMethodCount: 8,
             dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
           )
         : SimplePrinter(),

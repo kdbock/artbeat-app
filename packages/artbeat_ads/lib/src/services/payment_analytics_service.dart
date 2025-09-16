@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Advanced payment analytics service for revenue reporting and financial insights
 ///
@@ -153,7 +154,7 @@ class PaymentAnalyticsService extends ChangeNotifier {
         'currency': currency,
       };
     } catch (e) {
-      debugPrint('Error getting revenue analytics: $e');
+      AppLogger.error('Error getting revenue analytics: $e');
       return {};
     }
   }
@@ -238,7 +239,7 @@ class PaymentAnalyticsService extends ChangeNotifier {
 
       return sortedMethods;
     } catch (e) {
-      debugPrint('Error getting payment method analytics: $e');
+      AppLogger.error('Error getting payment method analytics: $e');
       return [];
     }
   }
@@ -377,7 +378,7 @@ class PaymentAnalyticsService extends ChangeNotifier {
         'topCustomers': _getTopCustomersDetailed(customerData, 20),
       };
     } catch (e) {
-      debugPrint('Error getting customer analytics: $e');
+      AppLogger.error('Error getting customer analytics: $e');
       return {};
     }
   }
@@ -475,7 +476,7 @@ class PaymentAnalyticsService extends ChangeNotifier {
         'methodology': 'Linear trend analysis with moving average baseline',
       };
     } catch (e) {
-      debugPrint('Error getting revenue forecast: $e');
+      AppLogger.error('Error getting revenue forecast: $e');
       return {};
     }
   }
@@ -586,7 +587,7 @@ class PaymentAnalyticsService extends ChangeNotifier {
         ),
       };
     } catch (e) {
-      debugPrint('Error getting retention analytics: $e');
+      AppLogger.error('Error getting retention analytics: $e');
       return {};
     }
   }

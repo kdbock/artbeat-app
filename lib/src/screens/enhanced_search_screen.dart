@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:flutter/material.dart';
+
 import '../services/navigation_service.dart';
 import '../services/route_analytics_service.dart';
 
@@ -26,144 +27,148 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return core.MainLayout(
+      currentIndex: 1, // Search tab index
+      appBar: core.EnhancedUniversalHeader(
+        title: 'Search',
+        showLogo: false,
+        showSearch: false, // Don't show search button in search screen
+        showBackButton: false,
+        backgroundColor: Colors.white,
+        foregroundColor: core.ArtbeatColors.textPrimary,
+        elevation: 1,
+      ),
+      child: Column(
+        children: [
+          _buildSearchHeader(),
+          _buildSearchCategories(),
+          Expanded(
+            child: _searchController.text.isEmpty
+                ? _buildSearchSuggestions()
+                : _buildSearchResults(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchHeader() => Container(
+    padding: const EdgeInsets.all(16),
+    child: Column(
       children: [
-        _buildSearchHeader(),
-        _buildSearchCategories(),
-        Expanded(
-          child: _searchController.text.isEmpty
-              ? _buildSearchSuggestions()
-              : _buildSearchResults(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSearchHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Search bar
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search ${_selectedCategory.displayName}...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                        },
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {});
-                _performSearch(value);
-              },
-            ),
+        // Search bar
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
           ),
-          if (_isLoading) ...[
-            const SizedBox(height: 16),
-            const LinearProgressIndicator(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchCategories() {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: SearchCategory.values.map((category) {
-          final isSelected = _selectedCategory == category;
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedCategory = category;
-              });
-              trackNavigationSource('/search', 'category_${category.name}');
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search ${_selectedCategory.displayName}...',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {});
+                      },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+            onChanged: (value) {
+              setState(() {});
+              _performSearch(value);
             },
-            child: Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? core.ArtbeatColors.primaryPurple
-                    : Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Center(
-                child: Text(
-                  category.displayName,
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                  ),
+          ),
+        ),
+        if (_isLoading) ...[
+          const SizedBox(height: 16),
+          const LinearProgressIndicator(),
+        ],
+      ],
+    ),
+  );
+
+  Widget _buildSearchCategories() => Container(
+    height: 50,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      children: SearchCategory.values.map((category) {
+        final isSelected = _selectedCategory == category;
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              _selectedCategory = category;
+            });
+            trackNavigationSource('/search', 'category_${category.name}');
+          },
+          child: Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? core.ArtbeatColors.primaryPurple
+                  : Colors.grey[200],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Center(
+              child: Text(
+                category.displayName,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
             ),
-          );
-        }).toList(),
-      ),
-    );
-  }
+          ),
+        );
+      }).toList(),
+    ),
+  );
 
-  Widget _buildSearchSuggestions() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Quick actions
+  Widget _buildSearchSuggestions() => SingleChildScrollView(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Quick actions
+        const Text(
+          'Quick Actions',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        _buildQuickActionGrid(),
+
+        const SizedBox(height: 32),
+
+        // Recent searches
+        if (_recentSearches.isNotEmpty) ...[
           const Text(
-            'Quick Actions',
+            'Recent Searches',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          _buildQuickActionGrid(),
-
-          const SizedBox(height: 32),
-
-          // Recent searches
-          if (_recentSearches.isNotEmpty) ...[
-            const Text(
-              'Recent Searches',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            ..._recentSearches.map((search) => _buildRecentSearchItem(search)),
-          ],
-
-          // Popular searches
-          const Text(
-            'Popular Searches',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _buildPopularSearches(),
+          ..._recentSearches.map(_buildRecentSearchItem),
         ],
-      ),
-    );
-  }
+
+        // Popular searches
+        const Text(
+          'Popular Searches',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        _buildPopularSearches(),
+      ],
+    ),
+  );
 
   Widget _buildQuickActionGrid() {
     final quickActions = [
@@ -250,24 +255,22 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
     );
   }
 
-  Widget _buildRecentSearchItem(String search) {
-    return ListTile(
-      leading: const Icon(Icons.history),
-      title: Text(search),
-      trailing: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () {
-          setState(() {
-            _recentSearches.remove(search);
-          });
-        },
-      ),
-      onTap: () {
-        _searchController.text = search;
-        _performSearch(search);
+  Widget _buildRecentSearchItem(String search) => ListTile(
+    leading: const Icon(Icons.history),
+    title: Text(search),
+    trailing: IconButton(
+      icon: const Icon(Icons.close),
+      onPressed: () {
+        setState(() {
+          _recentSearches.remove(search);
+        });
       },
-    );
-  }
+    ),
+    onTap: () {
+      _searchController.text = search;
+      _performSearch(search);
+    },
+  );
 
   Widget _buildPopularSearches() {
     final popularSearches = [
@@ -281,45 +284,48 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: popularSearches.map((search) {
-        return GestureDetector(
-          onTap: () {
-            _searchController.text = search;
-            _performSearch(search);
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(16),
+      children: popularSearches
+          .map(
+            (search) => GestureDetector(
+              onTap: () {
+                _searchController.text = search;
+                _performSearch(search);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(search),
+              ),
             ),
-            child: Text(search),
-          ),
-        );
-      }).toList(),
+          )
+          .toList(),
     );
   }
 
-  Widget _buildSearchResults() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search, size: 64, color: Colors.grey),
-          SizedBox(height: 16),
-          Text(
-            'Search Results',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Search functionality will be implemented here',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildSearchResults() => const Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.search, size: 64, color: Colors.grey),
+        SizedBox(height: 16),
+        Text(
+          'Search Results',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Search functionality will be implemented here',
+          style: TextStyle(color: Colors.grey),
+        ),
+      ],
+    ),
+  );
 
   void _performSearch(String query) {
     if (query.isEmpty) return;
@@ -377,15 +383,14 @@ enum SearchCategory {
 }
 
 class QuickAction {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
   QuickAction({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
   });
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 }

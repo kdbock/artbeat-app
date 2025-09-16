@@ -35,7 +35,10 @@ dependencies:
   geocoding: ^4.0.0
 
   # Payments and data
-  flutter_stripe: ^11.1.0
+  in_app_purchase: ^3.2.0
+  in_app_purchase_android: ^0.3.0+4
+  in_app_purchase_storekit: ^0.3.2
+  flutter_stripe: ^11.2.0
   http: ^1.1.0
 
   # Storage and preferences
@@ -48,9 +51,11 @@ dependencies:
   uuid: ^4.0.0
   path: ^1.8.3
   device_info_plus: ^11.5.0
+  local_auth: ^2.3.0
   package_info_plus: ^8.2.0
   permission_handler: ^12.0.1
   share_plus: ^11.0.0
+  url_launcher: ^6.1.7
 
   # Local modules
   artbeat_ads:
@@ -85,6 +90,9 @@ dev_dependencies:
   mockito: ^5.4.4
   build_runner: ^2.4.10
   firebase_crashlytics: ^5.0.1
+  integration_test:
+    sdk: flutter
+  fake_cloud_firestore: ^4.0.0
 
   # The following section is specific to Flutter packages.
   firebase_auth_platform_interface: any

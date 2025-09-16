@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing artwork analytics
 class ArtworkAnalyticsService {
@@ -27,7 +27,7 @@ class ArtworkAnalyticsService {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error tracking artwork view: $e');
+      AppLogger.error('Error tracking artwork view: $e');
       // Non-critical error, don't throw
     }
   }
@@ -45,7 +45,7 @@ class ArtworkAnalyticsService {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error tracking search: $e');
+      AppLogger.error('Error tracking search: $e');
       // Non-critical error, don't throw
     }
   }
@@ -73,7 +73,7 @@ class ArtworkAnalyticsService {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      debugPrint('Error tracking artwork sale: $e');
+      AppLogger.error('Error tracking artwork sale: $e');
       // Non-critical error, don't throw
     }
   }
@@ -113,7 +113,7 @@ class ArtworkAnalyticsService {
             viewCount > 0 ? (engagementCount / viewCount) * 100 : 0.0,
       };
     } catch (e) {
-      debugPrint('Error getting artwork performance: $e');
+      AppLogger.error('Error getting artwork performance: $e');
       return {
         'totalViews': 0,
         'totalEngagement': 0,
@@ -159,7 +159,7 @@ class ArtworkAnalyticsService {
 
       return performanceData.take(limit).toList();
     } catch (e) {
-      debugPrint('Error getting top artworks: $e');
+      AppLogger.error('Error getting top artworks: $e');
       return [];
     }
   }
@@ -184,7 +184,7 @@ class ArtworkAnalyticsService {
 
       return distribution;
     } catch (e) {
-      debugPrint('Error getting geographic distribution: $e');
+      AppLogger.error('Error getting geographic distribution: $e');
       return {};
     }
   }
@@ -228,7 +228,7 @@ class ArtworkAnalyticsService {
 
       return trends;
     } catch (e) {
-      debugPrint('Error getting view trends: $e');
+      AppLogger.error('Error getting view trends: $e');
       return [];
     }
   }
@@ -283,7 +283,7 @@ class ArtworkAnalyticsService {
             : 0.0,
       };
     } catch (e) {
-      debugPrint('Error getting search analytics: $e');
+      AppLogger.error('Error getting search analytics: $e');
       return {
         'totalSearches': 0,
         'uniqueQueries': 0,
@@ -349,7 +349,7 @@ class ArtworkAnalyticsService {
         'revenueTrend': revenueTrend,
       };
     } catch (e) {
-      debugPrint('Error getting revenue analytics: $e');
+      AppLogger.error('Error getting revenue analytics: $e');
       return {
         'totalRevenue': 0.0,
         'totalSales': 0,
@@ -398,7 +398,7 @@ class ArtworkAnalyticsService {
         'searchAnalytics': searchAnalytics,
       };
     } catch (e) {
-      debugPrint('Error getting cross-package analytics: $e');
+      AppLogger.error('Error getting cross-package analytics: $e');
       return {
         'totalViews': 0,
         'totalRevenue': 0.0,
@@ -468,7 +468,7 @@ class ArtworkAnalyticsService {
 
       throw Exception('Unsupported export format: $format');
     } catch (e) {
-      debugPrint('Error exporting analytics: $e');
+      AppLogger.error('Error exporting analytics: $e');
       throw Exception('Failed to export analytics data');
     }
   }
@@ -523,7 +523,7 @@ class ArtworkAnalyticsService {
             : 0.0,
       };
     } catch (e) {
-      debugPrint('Error getting optimized analytics: $e');
+      AppLogger.error('Error getting optimized analytics: $e');
       return {
         'totalAnalytics': 0,
         'totalSales': 0,

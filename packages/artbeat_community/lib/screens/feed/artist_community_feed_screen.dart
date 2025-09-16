@@ -8,6 +8,7 @@ import '../../models/group_models.dart';
 import '../../widgets/group_post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import '../../theme/community_colors.dart';
+import '../sponsorships/sponsor_tier_selection_dialog.dart';
 import 'create_group_post_screen.dart';
 
 /// Screen showing an individual artist's community feed
@@ -273,11 +274,28 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   }
 
   void _handleSponsor(BaseGroupPost post) {
-    // Navigate to sponsorship screen for the artist
-    Navigator.pushNamed(
-      context,
-      '/sponsorship/create',
-      arguments: {'artistId': post.userId, 'artistName': post.userName},
+    // Show sponsorship dialog for the artist
+    showDialog<void>(
+      context: context,
+      builder: (context) => SponsorTierSelectionDialog(
+        artistId: post.userId,
+        artistName: post.userName,
+        onSponsorshipCreated: () {
+          // Close the dialog
+          Navigator.pop(context);
+          // Show success message
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Successfully started sponsoring ${post.userName}!',
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
@@ -364,50 +382,14 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   }
 
   void _handleArtistGift() {
-    // Show gift options dialog
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.card_giftcard, color: ArtbeatColors.accentGold),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Send Gift to ${widget.artist.displayName}',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
+    // Navigate to enhanced gift purchasing flow for the artist
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: widget.artist.userId,
+          recipientName: widget.artist.displayName,
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Show your appreciation with a virtual gift!',
-              style: TextStyle(color: ArtbeatColors.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _buildGiftOption('🌟', 'Star'),
-                _buildGiftOption('🎨', 'Palette'),
-                _buildGiftOption('💐', 'Bouquet'),
-                _buildGiftOption('👏', 'Applause'),
-                _buildGiftOption('🎁', 'Gift Box'),
-                _buildGiftOption('💝', 'Heart'),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
       ),
     );
   }
@@ -927,44 +909,6 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGiftOption(String emoji, String name) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '🎁 Sent $emoji $name to ${widget.artist.displayName}!',
-            ),
-          ),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: ArtbeatColors.textSecondary.withValues(alpha: 0.3),
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 20)),
-            const SizedBox(height: 4),
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 12,
-                color: ArtbeatColors.textSecondary,
-              ),
             ),
           ],
         ),

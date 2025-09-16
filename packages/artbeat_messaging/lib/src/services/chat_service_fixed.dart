@@ -5,21 +5,22 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
-import 'notification_service.dart';
+import 'notification_service.dart' as messaging_notifications;
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class ChatService {
   FirebaseFirestore? _firestoreInstance;
   FirebaseAuth? _authInstance;
   FirebaseStorage? _storageInstance;
-  NotificationService? _notificationService;
+  messaging_notifications.NotificationService? _notificationService;
 
   // Lazy initialization getters
   FirebaseFirestore get firestore =>
       _firestoreInstance ??= FirebaseFirestore.instance;
   FirebaseAuth get auth => _authInstance ??= FirebaseAuth.instance;
   FirebaseStorage get storage => _storageInstance ??= FirebaseStorage.instance;
-  NotificationService get notificationService =>
-      _notificationService ??= NotificationService();
+  messaging_notifications.NotificationService get notificationService =>
+      _notificationService ??= messaging_notifications.NotificationService();
 
   ChatService._();
   static final ChatService _instance = ChatService._();
@@ -30,7 +31,7 @@ class ChatService {
     FirebaseFirestore? firestore,
     FirebaseAuth? auth,
     FirebaseStorage? storage,
-    NotificationService? notificationService,
+    messaging_notifications.NotificationService? notificationService,
   }) : _firestoreInstance = firestore,
        _authInstance = auth,
        _storageInstance = storage,
@@ -39,7 +40,7 @@ class ChatService {
   // Get chats for user
   Stream<List<ChatModel>> getChatsForUser(String userId) {
     if (kDebugMode) {
-      print('Getting chats for user: $userId');
+      core.AppLogger.info('Getting chats for user: $userId');
     }
 
     return firestore
@@ -55,7 +56,9 @@ class ChatService {
               chats.add(chat);
             } catch (e) {
               if (kDebugMode) {
-                print('Error processing chat document ${doc.id}: $e');
+                core.AppLogger.error(
+                  'Error processing chat document ${doc.id}: $e',
+                );
               }
             }
           }
@@ -91,7 +94,7 @@ class ChatService {
               messages.add(message);
             } catch (e) {
               if (kDebugMode) {
-                print('Error processing message: $e');
+                core.AppLogger.error('Error processing message: $e');
               }
             }
           }

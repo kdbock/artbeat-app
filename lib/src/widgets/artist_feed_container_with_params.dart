@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_community/artbeat_community.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 /// Container widget that loads an artist profile by ID (or current user if no ID provided)
 /// and displays their community feed
-class ArtistFeedContainerWithParams extends StatefulWidget {
-  final String? artistUserId; // If null, shows current user's feed
+class ArtistFeedContainerWithParams extends StatefulWidget { // If null, shows current user's feed
 
   const ArtistFeedContainerWithParams({super.key, this.artistUserId});
+  final String? artistUserId;
 
   @override
   State<ArtistFeedContainerWithParams> createState() =>

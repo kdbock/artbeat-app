@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Admin Service Migration Utility
 ///
@@ -26,7 +27,7 @@ class AdminServiceMigrator {
         'status': 'migrated',
       });
     } catch (e) {
-      debugPrint('Error logging migration: $e');
+      AppLogger.error('Error logging migration: $e');
     }
   }
 
@@ -145,7 +146,7 @@ class AdminServiceMigrator {
         }).toList(),
       };
     } catch (e) {
-      debugPrint('Error generating migration report: $e');
+      AppLogger.error('Error generating migration report: $e');
       return {
         'error': e.toString(),
         'completionPercentage': 0,
@@ -266,7 +267,7 @@ Replace old admin screens:
 Navigator.pushNamed(context, '/capture/admin/moderation');
 
 // NEW
-Navigator.pushNamed(context, '/admin/community-moderation');
+Navigator.pushNamed(context, '/admin/content-management-suite');
 ```
 
 ## Benefits of Migration
@@ -281,6 +282,6 @@ Contact the development team for migration assistance.
 ''';
 
   static void printMigrationGuide() {
-    debugPrint(migrationGuide);
+    AppLogger.info(migrationGuide);
   }
 }

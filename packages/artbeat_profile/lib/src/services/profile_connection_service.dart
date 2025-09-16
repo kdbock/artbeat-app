@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/profile_connection_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing profile connections, mutual friends, and friend suggestions
 class ProfileConnectionService extends ChangeNotifier {
@@ -98,13 +99,13 @@ class ProfileConnectionService extends ChangeNotifier {
             connections.add(connection);
           }
         } catch (e) {
-          debugPrint('Error creating connection model for $mutualId: $e');
+          AppLogger.error('Error creating connection model for $mutualId: $e');
         }
       }
 
       return connections;
     } catch (e) {
-      debugPrint('Error getting mutual connections: $e');
+      AppLogger.error('Error getting mutual connections: $e');
       return [];
     }
   }
@@ -193,7 +194,7 @@ class ProfileConnectionService extends ChangeNotifier {
             suggestions.add(connection);
           }
         } catch (e) {
-          debugPrint('Error creating suggestion for $connectionId: $e');
+          AppLogger.error('Error creating suggestion for $connectionId: $e');
         }
       }
 
@@ -204,7 +205,7 @@ class ProfileConnectionService extends ChangeNotifier {
 
       return suggestions;
     } catch (e) {
-      debugPrint('Error getting friend suggestions: $e');
+      AppLogger.error('Error getting friend suggestions: $e');
       return [];
     }
   }
@@ -226,7 +227,7 @@ class ProfileConnectionService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating connection score: $e');
+      AppLogger.error('Error updating connection score: $e');
     }
   }
 
@@ -308,7 +309,7 @@ class ProfileConnectionService extends ChangeNotifier {
 
       return sortedRecommendations.take(limit).toList();
     } catch (e) {
-      debugPrint('Error generating friend recommendations: $e');
+      AppLogger.error('Error generating friend recommendations: $e');
       return [];
     }
   }
@@ -323,7 +324,7 @@ class ProfileConnectionService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error dismissing connection: $e');
+      AppLogger.error('Error dismissing connection: $e');
     }
   }
 
@@ -337,7 +338,7 @@ class ProfileConnectionService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error blocking connection: $e');
+      AppLogger.error('Error blocking connection: $e');
     }
   }
 
@@ -371,7 +372,7 @@ class ProfileConnectionService extends ChangeNotifier {
           )
           .toList();
     } catch (e) {
-      debugPrint('Error getting connections: $e');
+      AppLogger.error('Error getting connections: $e');
       return [];
     }
   }
@@ -428,7 +429,7 @@ class ProfileConnectionService extends ChangeNotifier {
         final theirFollowing = await _getFollowingIds(followingId);
         friendsOfFriends.addAll(theirFollowing);
       } catch (e) {
-        debugPrint('Error getting friends of friends for $followingId: $e');
+        AppLogger.error('Error getting friends of friends for $followingId: $e');
       }
     }
 
@@ -512,7 +513,7 @@ class ProfileConnectionService extends ChangeNotifier {
 
       return users.toList();
     } catch (e) {
-      debugPrint('Error finding users by interests: $e');
+      AppLogger.error('Error finding users by interests: $e');
       return [];
     }
   }
@@ -533,7 +534,7 @@ class ProfileConnectionService extends ChangeNotifier {
           .map((doc) => doc.id)
           .toList();
     } catch (e) {
-      debugPrint('Error finding users by location: $e');
+      AppLogger.error('Error finding users by location: $e');
       return [];
     }
   }
@@ -543,7 +544,7 @@ class ProfileConnectionService extends ChangeNotifier {
       final userFollowing = await _getFollowingIds(userId);
       return await _getFriendsOfFriends(userId, userFollowing);
     } catch (e) {
-      debugPrint('Error finding users by mutual friends: $e');
+      AppLogger.error('Error finding users by mutual friends: $e');
       return [];
     }
   }
@@ -592,7 +593,7 @@ class ProfileConnectionService extends ChangeNotifier {
           connections.add(connection);
         }
       } catch (e) {
-        debugPrint('Error creating connection model for $connectedId: $e');
+        AppLogger.error('Error creating connection model for $connectedId: $e');
       }
     }
 

@@ -815,12 +815,9 @@ class ContentReviewService {
 
       return {
         'totalContent': content.length,
-        'pendingReviews':
-            content.where((c) => c.moderationStatus == 'pending').length,
-        'approvedContent':
-            content.where((c) => c.moderationStatus == 'approved').length,
-        'rejectedContent':
-            content.where((c) => c.moderationStatus == 'rejected').length,
+        'pendingReviews': content.where((c) => c.status == 'pending').length,
+        'approvedContent': content.where((c) => c.status == 'approved').length,
+        'rejectedContent': content.where((c) => c.status == 'rejected').length,
         'averageEngagement': content.isNotEmpty
             ? content.map((c) => c.engagementScore).reduce((a, b) => a + b) /
                 content.length

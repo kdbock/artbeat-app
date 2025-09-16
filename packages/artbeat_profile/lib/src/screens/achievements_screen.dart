@@ -41,9 +41,9 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     setState(() => _isLoading = true);
 
     try {
-      debugPrint('DEBUG: Loading achievements for user...');
+      AppLogger.info('DEBUG: Loading achievements for user...');
       final achievements = await _achievementService.getUserAchievements();
-      debugPrint('DEBUG: Found ${achievements.length} achievements');
+      AppLogger.info('DEBUG: Found ${achievements.length} achievements');
 
       // Debug: Print each achievement
       for (final achievement in achievements) {
@@ -97,7 +97,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint('DEBUG: Error loading achievements: $e');
+      AppLogger.error('DEBUG: Error loading achievements: $e');
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

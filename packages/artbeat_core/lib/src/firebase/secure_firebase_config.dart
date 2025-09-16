@@ -3,6 +3,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/firebase_options.dart' as fb_opts;
+import '../utils/logger.dart';
 
 /// Handles Firebase initialization and App Check configuration
 class SecureFirebaseConfig {
@@ -29,7 +30,9 @@ class SecureFirebaseConfig {
     _debug = debug;
 
     if (kDebugMode) {
-      print('🔐 App Check configured - Team ID: $teamId, Debug: $debug');
+      AppLogger.debug(
+        '🔐 App Check configured - Team ID: $teamId, Debug: $debug',
+      );
     }
   }
 
@@ -37,7 +40,9 @@ class SecureFirebaseConfig {
   static Future<FirebaseApp> initializeFirebase() async {
     if (_initialized) {
       if (kDebugMode) {
-        print('🔥 Firebase already initialized via SecureFirebaseConfig');
+        AppLogger.firebase(
+          '🔥 Firebase already initialized via SecureFirebaseConfig',
+        );
       }
       return Firebase.app();
     }
@@ -58,7 +63,7 @@ class SecureFirebaseConfig {
 
     try {
       if (kDebugMode) {
-        print('🔥 Initializing Firebase with options...');
+        AppLogger.firebase('🔥 Initializing Firebase with options...');
       }
 
       final app = await Firebase.initializeApp(
@@ -66,20 +71,20 @@ class SecureFirebaseConfig {
       );
 
       if (kDebugMode) {
-        print('🔥 Firebase core initialized successfully');
+        AppLogger.firebase('🔥 Firebase core initialized successfully');
       }
 
       await _initializeAppCheck();
       _initialized = true;
 
       if (kDebugMode) {
-        print('✅ Complete Firebase initialization finished');
+        AppLogger.firebase('✅ Complete Firebase initialization finished');
       }
 
       return app;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Firebase initialization failed: $e');
+        AppLogger.error('❌ Firebase initialization failed: $e');
       }
 
       // If it's a duplicate app error, that means Firebase is already initialized
@@ -118,16 +123,16 @@ class SecureFirebaseConfig {
   static Future<void> _initializeAppCheck() async {
     if (_appCheckInitialized) {
       if (kDebugMode) {
-        print('🔐 App Check already initialized');
+        AppLogger.auth('🔐 App Check already initialized');
       }
       return;
     }
 
     try {
       if (kDebugMode) {
-        print('🔐 Initializing App Check...');
-        print('🔐 Debug mode: $_debug');
-        print('🔐 Team ID: $_teamId');
+        AppLogger.auth('🔐 Initializing App Check...');
+        AppLogger.debug('🔐 Debug mode: $_debug');
+        AppLogger.auth('🔐 Team ID: $_teamId');
 
         // Always use debug provider in debug mode
         await FirebaseAppCheck.instance.activate(
@@ -139,13 +144,15 @@ class SecureFirebaseConfig {
         // Get and log the debug token
         final token = await FirebaseAppCheck.instance.getToken();
         if (token != null) {
-          print('🔐 Debug token: $token');
+          AppLogger.debug('🔐 Debug token: $token');
           print(
             '🔐 COPY THIS TOKEN TO FIREBASE CONSOLE APP CHECK DEBUG TOKENS',
           );
-          print('🔐 Token: $token');
+          AppLogger.auth('🔐 Token: $token');
         } else {
-          print('🔐 No debug token received - this may indicate an issue');
+          AppLogger.debug(
+            '🔐 No debug token received - this may indicate an issue',
+          );
         }
       } else {
         // Production mode - use secure providers
@@ -158,7 +165,7 @@ class SecureFirebaseConfig {
       }
 
       if (kDebugMode) {
-        print('🔐 App Check activated successfully');
+        AppLogger.auth('🔐 App Check activated successfully');
       }
 
       _appCheckInitialized = true;
@@ -168,7 +175,7 @@ class SecureFirebaseConfig {
         try {
           await FirebaseAppCheck.instance.getToken(true);
           if (kDebugMode) {
-            print('🔐 App Check token retrieved successfully');
+            AppLogger.auth('🔐 App Check token retrieved successfully');
           }
         } catch (e) {
           if (kDebugMode) {
@@ -181,12 +188,12 @@ class SecureFirebaseConfig {
 
       _appCheckInitialized = true;
       if (kDebugMode) {
-        print('✅ App Check initialization complete');
+        AppLogger.info('✅ App Check initialization complete');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('⚠️ App Check initialization error: $e');
-        print('⚠️ This may be expected in debug mode');
+        AppLogger.error('⚠️ App Check initialization error: $e');
+        AppLogger.warning('⚠️ This may be expected in debug mode');
       }
       // Don't throw in debug mode to allow development
       if (!kDebugMode) {
@@ -201,7 +208,7 @@ class SecureFirebaseConfig {
     _initialized = false;
     _appCheckInitialized = false;
     if (kDebugMode) {
-      print('🔄 SecureFirebaseConfig initialization state reset');
+      AppLogger.firebase('🔄 SecureFirebaseConfig initialization state reset');
     }
   }
 
@@ -241,7 +248,9 @@ class SecureFirebaseConfig {
       if (e.toString().contains('duplicate-app') ||
           e.toString().contains('already exists')) {
         if (kDebugMode) {
-          print('🔥 Handled duplicate app error in ensureInitialized');
+          AppLogger.error(
+            '🔥 Handled duplicate app error in ensureInitialized',
+          );
         }
         _initialized = true;
         if (!_appCheckInitialized && teamId != null) {
@@ -270,7 +279,7 @@ class SecureFirebaseConfig {
   static Future<bool> testStorageAccess() async {
     if (!_initialized) {
       if (kDebugMode) {
-        print('⚠️ Firebase not initialized for storage test');
+        AppLogger.warning('⚠️ Firebase not initialized for storage test');
       }
       return false;
     }
@@ -283,15 +292,17 @@ class SecureFirebaseConfig {
       await ref.listAll();
 
       if (kDebugMode) {
-        print('✅ Firebase Storage access test passed');
+        AppLogger.firebase('✅ Firebase Storage access test passed');
       }
       return true;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Firebase Storage access test failed: $e');
+        AppLogger.error('❌ Firebase Storage access test failed: $e');
         if (e.toString().contains('-13020')) {
-          print('💡 Error -13020 indicates App Check authentication issue');
-          print('💡 This is often expected in debug mode');
+          AppLogger.error(
+            '💡 Error -13020 indicates App Check authentication issue',
+          );
+          AppLogger.debug('💡 This is often expected in debug mode');
         }
       }
       return false;
@@ -302,7 +313,9 @@ class SecureFirebaseConfig {
   static Future<String?> getAppCheckDebugToken() async {
     if (!_appCheckInitialized) {
       if (kDebugMode) {
-        print('⚠️ App Check not initialized, cannot get debug token');
+        AppLogger.warning(
+          '⚠️ App Check not initialized, cannot get debug token',
+        );
       }
       return null;
     }
@@ -310,12 +323,12 @@ class SecureFirebaseConfig {
     try {
       final token = await FirebaseAppCheck.instance.getToken();
       if (kDebugMode && token != null) {
-        debugPrint('🔐 Current App Check token: $token');
+        AppLogger.auth('🔐 Current App Check token: $token');
       }
       return token;
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Failed to get App Check token: $e');
+        AppLogger.error('❌ Failed to get App Check token: $e');
       }
       return null;
     }
@@ -341,15 +354,15 @@ class SecureFirebaseConfig {
       result['token'] = token;
 
       if (kDebugMode) {
-        print('✅ App Check validation successful');
+        AppLogger.info('✅ App Check validation successful');
         if (token != null) {
-          print('🔐 Token available: ${token.substring(0, 20)}...');
+          AppLogger.auth('🔐 Token available: ${token.substring(0, 20)}...');
         }
       }
     } catch (e) {
       result['error'] = e.toString();
       if (kDebugMode) {
-        print('❌ App Check validation failed: $e');
+        AppLogger.error('❌ App Check validation failed: $e');
       }
     }
 

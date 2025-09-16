@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'user_type.dart';
 import 'capture_model.dart';
 import 'engagement_model.dart';
+import '../utils/logger.dart';
 
 class UserModel {
   final String id;
@@ -103,7 +104,7 @@ class UserModel {
 
     // Only log in debug mode and when there are issues
     if (kDebugMode && (profileImageUrl == null && photoUrl == null)) {
-      debugPrint('⚠️ UserModel.fromJson: No profile image URL found');
+      AppLogger.warning('⚠️ UserModel.fromJson: No profile image URL found');
     }
 
     return UserModel(
@@ -160,7 +161,7 @@ class UserModel {
       'bio': bio,
       'location': location,
       'profileImageUrl': profileImageUrl,
-      ...engagementStats.toFirestore(),
+      'engagementStats': engagementStats.toFirestore(),
       'captures': captures.map((capture) => capture.toJson()).toList(),
       'posts': posts,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -184,7 +185,7 @@ class UserModel {
       'bio': bio,
       'location': location,
       'profileImageUrl': profileImageUrl,
-      ...engagementStats.toFirestore(),
+      'engagementStats': engagementStats.toFirestore(),
       'captures': captures.map((capture) => capture.toJson()).toList(),
       'posts': posts,
       'createdAt': Timestamp.fromDate(createdAt),

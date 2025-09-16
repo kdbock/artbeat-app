@@ -8,11 +8,13 @@ import '../services/user_service.dart';
 import '../models/user_model.dart';
 import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
+import '../utils/logger.dart';
 
 // Define main navigation routes that should use pushReplacement
 // Only include true top-level destinations that should replace the current screen
 const Set<String> mainRoutes = {
   '/dashboard',
+  '/browse',
   '/community/feed',
   '/events/discover',
   '/artist/dashboard',
@@ -70,7 +72,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         }
       }
     } catch (error) {
-      debugPrint('❌ Error loading user model: $error');
+      AppLogger.error('❌ Error loading user model: $error');
     }
   }
 
@@ -87,6 +89,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/profile/edit',
       '/login',
       '/register',
+      '/browse', // ✅ Full browse screen with all content types
       '/artist/dashboard',
       '/artist/onboarding',
       '/artist/profile-edit',
@@ -110,6 +113,8 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/gallery/artists-management',
       '/gallery/analytics',
       '/gallery/commissions',
+      '/commission/hub',
+      '/commission/request',
       '/community/feed',
       '/community/dashboard',
       '/community/artists',
@@ -125,6 +130,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/community/messaging',
       '/community/trending',
       '/community/featured',
+      '/community/hub',
       '/community',
       '/art-walk/map',
       '/art-walk/list',
@@ -148,24 +154,15 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/events/my-tickets',
       '/events/detail',
       '/admin/dashboard',
-      '/admin/enhanced-dashboard',
-      '/admin/user-management',
-      '/admin/content-review',
-      '/admin/advanced-content-management',
-      '/admin/ad-management',
-      '/admin/analytics',
-      '/admin/financial-analytics',
       '/admin/settings',
-      '/admin/coupons',
-      '/admin/coupon-management',
-      '/admin/users',
-      '/admin/moderation',
+      '/settings', // ✅ Generic settings route
       '/settings/account',
       '/settings/notifications',
       '/settings/privacy',
       '/settings/security',
       '/payment/methods',
       '/payment/refund',
+      '/payment/screen',
       '/subscription/plans',
       '/subscription/comparison',
       '/captures',
@@ -195,14 +192,17 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/search',
       '/search/results',
       '/feedback',
+      '/favorites',
       '/developer-feedback-admin',
       '/system/info',
       '/support',
+      '/profile/following',
+      '/profile/followers',
     };
 
     if (implementedRoutes.contains(route)) {
       try {
-        debugPrint('🔄 Navigating to: $route (isMainRoute: $isMainRoute)');
+        AppLogger.info('🔄 Navigating to: $route (isMainRoute: $isMainRoute)');
 
         // Use push for most routes to maintain navigation stack
         // Only use pushReplacementNamed for true top-level destinations
@@ -213,7 +213,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
           Navigator.pushNamed(context, route);
         }
       } catch (error) {
-        debugPrint('⚠️ Navigation error for route $route: $error');
+        AppLogger.error('⚠️ Navigation error for route $route: $error');
         _showError(snackBarContext, error.toString());
       }
     } else {
@@ -249,6 +249,10 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
   String? _getUserRole() {
     // If admin is using role override, return the override
     if (_roleOverride != null && _isCurrentUserAdmin()) {
+      // If override is 'user', return null to show regular user view
+      if (_roleOverride == 'user') {
+        return null;
+      }
       return _roleOverride;
     }
 
@@ -274,6 +278,9 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
     setState(() {
       switch (_roleOverride) {
         case null:
+          _roleOverride = 'user';
+          break;
+        case 'user':
           _roleOverride = 'artist';
           break;
         case 'artist':
@@ -283,7 +290,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
           _roleOverride = 'moderator';
           break;
         case 'moderator':
-          _roleOverride = null; // Back to regular user view
+          _roleOverride = null; // Back to admin view
           break;
         default:
           _roleOverride = null;
@@ -294,7 +301,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
   @override
   Widget build(BuildContext context) {
     final userRole = _getUserRole();
-    final drawerItems = ArtbeatDrawerItems.getItemsForRole(userRole);
+    final drawerSections = ArtbeatDrawerItems.getSectionsForRole(userRole);
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -311,22 +318,13 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: drawerItems.length,
+                  itemCount: _calculateTotalItems(drawerSections),
                   itemBuilder: (context, index) {
-                    final item = drawerItems[index];
-
-                    // Add divider before sign out
-                    if (item.route == '/login') {
-                      return Column(
-                        children: [
-                          const Divider(height: 1),
-                          const SizedBox(height: 8),
-                          _buildDrawerItem(context, item),
-                        ],
-                      );
-                    }
-
-                    return _buildDrawerItem(context, item);
+                    return _buildDrawerItemAtIndex(
+                      context,
+                      drawerSections,
+                      index,
+                    );
                   },
                 ),
               ),
@@ -335,6 +333,62 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         ),
       ),
     );
+  }
+
+  int _calculateTotalItems(List<DrawerSection> sections) {
+    int total = 0;
+    for (final section in sections) {
+      if (section.title != null) total++; // Header
+      total += section.items.length;
+      if (section.showDivider) total++; // Divider
+    }
+    return total;
+  }
+
+  Widget _buildDrawerItemAtIndex(
+    BuildContext context,
+    List<DrawerSection> sections,
+    int index,
+  ) {
+    int currentIndex = 0;
+
+    for (final section in sections) {
+      // Add section header if it exists
+      if (section.title != null) {
+        if (currentIndex == index) {
+          return _buildSectionHeader(section.title!);
+        }
+        currentIndex++;
+      }
+
+      // Add section items
+      for (final item in section.items) {
+        if (currentIndex == index) {
+          // Add divider before sign out
+          if (item.route == '/login') {
+            return Column(
+              children: [
+                const Divider(height: 1),
+                const SizedBox(height: 8),
+                _buildDrawerItem(context, item),
+              ],
+            );
+          }
+          return _buildDrawerItem(context, item);
+        }
+        currentIndex++;
+      }
+
+      // Add divider if specified
+      if (section.showDivider) {
+        if (currentIndex == index) {
+          return const Divider(height: 1);
+        }
+        currentIndex++;
+      }
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildDrawerHeader() {
@@ -505,6 +559,11 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         badgeColor = ArtbeatColors.primaryPurple;
         icon = Icons.admin_panel_settings;
         break;
+      case 'user':
+        displayText = 'USER';
+        badgeColor = ArtbeatColors.textSecondary;
+        icon = Icons.person;
+        break;
       case 'artist':
         displayText = 'ARTIST';
         badgeColor = ArtbeatColors.primaryGreen;
@@ -521,9 +580,9 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
         icon = Icons.gavel;
         break;
       default:
-        displayText = 'USER';
-        badgeColor = ArtbeatColors.textSecondary;
-        icon = Icons.person;
+        displayText = 'ADMIN';
+        badgeColor = ArtbeatColors.primaryPurple;
+        icon = Icons.admin_panel_settings;
     }
 
     return GestureDetector(
@@ -565,6 +624,20 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
               color: badgeColor.withValues(alpha: 0.7),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: ArtbeatTypography.textTheme.bodySmall?.copyWith(
+          color: ArtbeatColors.textSecondary,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
         ),
       ),
     );
@@ -618,7 +691,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
                   isMainNavigationRoute,
                 );
               } catch (error) {
-                debugPrint('⚠️ Error in drawer navigation: $error');
+                AppLogger.error('⚠️ Error in drawer navigation: $error');
                 _showError(context, 'Navigation failed: ${error.toString()}');
               }
             }

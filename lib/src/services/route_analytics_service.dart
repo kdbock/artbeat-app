@@ -1,14 +1,15 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 /// Service for tracking route usage analytics
 class RouteAnalyticsService {
-  static final RouteAnalyticsService _instance =
-      RouteAnalyticsService._internal();
   factory RouteAnalyticsService() => _instance;
   RouteAnalyticsService._internal();
+  static final RouteAnalyticsService _instance =
+      RouteAnalyticsService._internal();
 
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -54,7 +55,7 @@ class RouteAnalyticsService {
     } catch (error) {
       // Don't let analytics errors break the app
       if (kDebugMode) {
-        debugPrint('Route analytics error: $error');
+        AppLogger.error('Route analytics error: $error');
       }
     }
   }
@@ -78,7 +79,7 @@ class RouteAnalyticsService {
       );
     } catch (error) {
       if (kDebugMode) {
-        debugPrint('Route performance tracking error: $error');
+        AppLogger.error('Route performance tracking error: $error');
       }
     }
   }
@@ -125,7 +126,7 @@ class RouteAnalyticsService {
       return sortedRoutes.take(limit).toList();
     } catch (error) {
       if (kDebugMode) {
-        debugPrint('Error getting popular routes: $error');
+        AppLogger.error('Error getting popular routes: $error');
       }
       return [];
     }
@@ -161,7 +162,7 @@ class RouteAnalyticsService {
       };
     } catch (error) {
       if (kDebugMode) {
-        debugPrint('Error getting route statistics: $error');
+        AppLogger.error('Error getting route statistics: $error');
       }
       return {};
     }
@@ -176,7 +177,7 @@ class RouteAnalyticsService {
       );
     } catch (error) {
       if (kDebugMode) {
-        debugPrint('Navigation source tracking error: $error');
+        AppLogger.error('Navigation source tracking error: $error');
       }
     }
   }
@@ -192,15 +193,13 @@ class RouteAnalyticsService {
       }, SetOptions(merge: true));
     } catch (error) {
       if (kDebugMode) {
-        debugPrint('Error updating route popularity: $error');
+        AppLogger.error('Error updating route popularity: $error');
       }
     }
   }
 
   /// Generate session ID
-  String _generateSessionId() {
-    return DateTime.now().millisecondsSinceEpoch.toString();
-  }
+  String _generateSessionId() => DateTime.now().millisecondsSinceEpoch.toString();
 }
 
 /// Mixin for widgets to easily track route analytics

@@ -6,6 +6,7 @@ import '../services/user_service.dart';
 import '../models/user_model.dart';
 import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
+import '../utils/logger.dart';
 
 /// Enhanced navigation menu with comprehensive feature access
 ///
@@ -52,7 +53,7 @@ class _EnhancedNavigationMenuState extends State<EnhancedNavigationMenu>
         }
       }
     } catch (error) {
-      debugPrint('❌ Error loading user model: $error');
+      AppLogger.error('❌ Error loading user model: $error');
     }
   }
 
@@ -204,10 +205,8 @@ class _EnhancedNavigationMenuState extends State<EnhancedNavigationMenu>
   Widget _buildCoreFeatures() {
     final items = [
       ArtbeatDrawerItems.dashboard,
-      ArtbeatDrawerItems.profile,
-      ArtbeatDrawerItems.browseCaptures,
-      ArtbeatDrawerItems.browseArtists,
-      ArtbeatDrawerItems.browseArtwork,
+      ArtbeatDrawerItems.browse,
+      ArtbeatDrawerItems.community,
       ArtbeatDrawerItems.messaging,
       ArtbeatDrawerItems.enhancedSearch,
     ];

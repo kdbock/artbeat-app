@@ -130,6 +130,7 @@ class _AnalyticsDashboardScreenState extends State<AnalyticsDashboardScreen> {
       appBar: core.EnhancedUniversalHeader(
         title: 'Analytics Dashboard',
         showLogo: false,
+        showBackButton: true,
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.refresh),

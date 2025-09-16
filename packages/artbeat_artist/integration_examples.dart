@@ -17,13 +17,15 @@ class IntegrationExamples {
     final integration = IntegrationService.instance;
     final capabilities = await integration.getSubscriptionCapabilities(userId);
 
-    debugPrint('🎯 User Capabilities:');
+    core.AppLogger.info('🎯 User Capabilities:');
     debugPrint(
         '  Can access basic features: ${capabilities.canAccessBasicFeatures}');
     debugPrint(
         '  Can access pro features: ${capabilities.canAccessProFeatures}');
-    debugPrint('  Can create artwork: ${capabilities.canCreateArtwork}');
-    debugPrint('  Can access analytics: ${capabilities.canAccessAnalytics}');
+    core.AppLogger.info(
+        '  Can create artwork: ${capabilities.canCreateArtwork}');
+    core.AppLogger.analytics(
+        '  Can access analytics: ${capabilities.canAccessAnalytics}');
     debugPrint(
         '  Max artwork uploads: ${capabilities.maxArtworkUploads == -1 ? "Unlimited" : capabilities.maxArtworkUploads}');
     debugPrint(
@@ -39,9 +41,9 @@ class IntegrationExamples {
     final unifiedData = await integration.getUnifiedArtistData(userId);
 
     if (unifiedData != null) {
-      debugPrint('👤 Unified User Data:');
-      debugPrint('  User: ${unifiedData.userModel.fullName}');
-      debugPrint('  Is Artist: ${unifiedData.artistProfile != null}');
+      core.AppLogger.info('👤 Unified User Data:');
+      core.AppLogger.info('  User: ${unifiedData.userModel.fullName}');
+      core.AppLogger.info('  Is Artist: ${unifiedData.artistProfile != null}');
       debugPrint(
           '  Core Subscription: ${unifiedData.coreSubscription?.tier.displayName ?? "None"}');
       debugPrint(
@@ -58,9 +60,9 @@ class IntegrationExamples {
     final success = await integration.enableArtistFeatures(userId);
 
     if (success) {
-      debugPrint('✅ Artist features enabled successfully!');
+      core.AppLogger.info('✅ Artist features enabled successfully!');
     } else {
-      debugPrint('❌ Failed to enable artist features');
+      core.AppLogger.error('❌ Failed to enable artist features');
     }
   }
 
@@ -73,10 +75,10 @@ class IntegrationExamples {
     final recommendation =
         await integration.getSubscriptionRecommendation(userId);
 
-    debugPrint('💡 Recommendation:');
-    debugPrint('  Type: ${recommendation.type}');
-    debugPrint('  Title: ${recommendation.title}');
-    debugPrint('  Description: ${recommendation.description}');
+    core.AppLogger.info('💡 Recommendation:');
+    core.AppLogger.info('  Type: ${recommendation.type}');
+    core.AppLogger.info('  Title: ${recommendation.title}');
+    core.AppLogger.info('  Description: ${recommendation.description}');
   }
 
   /// Example 5: Migration from old ArtistService
@@ -92,9 +94,9 @@ class IntegrationExamples {
     final newService = core.ArtistService(); // From artbeat_core
     final artists = await newService.getFeaturedArtistProfiles(); // Enhanced!
 
-    debugPrint('🔄 Migration complete:');
-    debugPrint('  Found ${artists.length} featured artists');
-    debugPrint('  Using enhanced search functionality');
+    core.AppLogger.info('🔄 Migration complete:');
+    core.AppLogger.info('  Found ${artists.length} featured artists');
+    core.AppLogger.info('  Using enhanced search functionality');
   }
 
   /// Example 6: Widget example showing integration usage

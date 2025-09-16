@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,7 +21,7 @@ class StripeService {
   /// Initialize Stripe
   void initialize() {
     // Stripe is already initialized in PaymentService
-    debugPrint('✅ Stripe service initialized for commissions');
+    AppLogger.info('✅ Stripe service initialized for commissions');
   }
 
   /// Process commission deposit payment
@@ -61,7 +60,7 @@ class StripeService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing commission deposit: $e');
+      AppLogger.error('Error processing commission deposit: $e');
       rethrow;
     }
   }
@@ -101,7 +100,7 @@ class StripeService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing commission milestone: $e');
+      AppLogger.error('Error processing commission milestone: $e');
       rethrow;
     }
   }
@@ -142,7 +141,7 @@ class StripeService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing commission final payment: $e');
+      AppLogger.error('Error processing commission final payment: $e');
       rethrow;
     }
   }
@@ -189,7 +188,7 @@ class StripeService {
       final result = jsonDecode(response.body) as Map<String, dynamic>;
       return result['clientSecret'] as String;
     } catch (e) {
-      debugPrint('Error creating commission payment intent: $e');
+      AppLogger.error('Error creating commission payment intent: $e');
       rethrow;
     }
   }
@@ -202,9 +201,11 @@ class StripeService {
     try {
       // Payment confirmation is handled by the PaymentService
       // This method is kept for future use if direct Stripe confirmation is needed
-      debugPrint('Commission payment confirmation handled by PaymentService');
+      AppLogger.info(
+        'Commission payment confirmation handled by PaymentService',
+      );
     } catch (e) {
-      debugPrint('Error confirming commission payment: $e');
+      AppLogger.error('Error confirming commission payment: $e');
       rethrow;
     }
   }
@@ -223,7 +224,7 @@ class StripeService {
             'updatedAt': FieldValue.serverTimestamp(),
           });
     } catch (e) {
-      debugPrint('Error updating commission status: $e');
+      AppLogger.error('Error updating commission status: $e');
     }
   }
 
@@ -288,7 +289,7 @@ class StripeService {
           throw Exception('Invalid payment type: $paymentType');
       }
     } catch (e) {
-      debugPrint('Error processing commission payment: $e');
+      AppLogger.error('Error processing commission payment: $e');
       rethrow;
     }
   }
@@ -345,7 +346,7 @@ class StripeService {
 
       return result;
     } catch (e) {
-      debugPrint('Error processing refund: $e');
+      AppLogger.error('Error processing refund: $e');
       rethrow;
     }
   }
@@ -396,7 +397,7 @@ class StripeService {
 
       return payments;
     } catch (e) {
-      debugPrint('Error getting payment history: $e');
+      AppLogger.error('Error getting payment history: $e');
       rethrow;
     }
   }

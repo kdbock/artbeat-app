@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart'
-    show CaptureModel, OptimizedGridImage;
+    show CaptureModel, OptimizedGridImage, AppLogger;
 
 class CapturesGrid extends StatefulWidget {
   final String userId;
@@ -31,7 +31,7 @@ class _CapturesGridState extends State<CapturesGrid> {
   void _setupCapturesStream() {
     try {
       if (widget.userId.isEmpty) {
-        debugPrint('Warning: Empty userId provided to CapturesGrid');
+        AppLogger.warning('Warning: Empty userId provided to CapturesGrid');
         // Create a dummy stream with no results
         _capturesStream = Stream.value(
           FirebaseFirestore.instance
@@ -67,7 +67,7 @@ class _CapturesGridState extends State<CapturesGrid> {
         'CapturesGrid: Stream setup successfully for userId: ${widget.userId}',
       );
     } catch (e) {
-      debugPrint('Error setting up captures stream: $e');
+      AppLogger.error('Error setting up captures stream: $e');
       // Fallback to empty stream
       _capturesStream = FirebaseFirestore.instance
           .collection('captures')
@@ -87,7 +87,7 @@ class _CapturesGridState extends State<CapturesGrid> {
       stream: _capturesStream,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          debugPrint('Error loading captures: ${snapshot.error}');
+          AppLogger.error('Error loading captures: ${snapshot.error}');
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

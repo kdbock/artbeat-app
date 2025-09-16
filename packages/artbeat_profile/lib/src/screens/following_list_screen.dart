@@ -13,8 +13,9 @@ class FollowingListScreen extends StatefulWidget {
 
 class _FollowingListScreenState extends State<FollowingListScreen> {
   bool _isLoading = true;
-  List<Map<String, dynamic>> _following = [];
+  List<UserModel> _following = [];
   final User? _currentUser = FirebaseAuth.instance.currentUser;
+  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -23,36 +24,42 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
   }
 
   Future<void> _loadFollowing() async {
-    // In a real app, fetch following from Firestore
-    // For now, use placeholder data
-    await Future<void>.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate network delay
+    if (!mounted) return;
 
-    if (mounted) {
+    try {
       setState(() {
-        _following = List.generate(
-          10,
-          (index) => {
-            'id': 'user_${index + 100}',
-            'username': 'wordnerd_${index + 100}',
-            'name': 'WordNerd User ${index + 1}',
-            'profileImageUrl': '', // This would come from Firebase Storage
-            'isFollowing': true, // By definition, all are being followed
-          },
-        );
-        _isLoading = false;
+        _isLoading = true;
       });
+
+      final following = await _userService.getFollowing(widget.userId);
+
+      if (mounted) {
+        setState(() {
+          _following = following;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading following: ${e.toString()}')),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _unfollow(int index) async {
+    final followedUser = _following[index];
+
     // Show confirmation dialog
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Unfollow ${_following[index]['username']}?'),
+          title: Text('Unfollow ${followedUser.username}?'),
           content: const Text('Are you sure you want to unfollow this user?'),
           actions: <Widget>[
             TextButton(
@@ -69,21 +76,31 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
     );
 
     if (confirm == true) {
-      // In a real app, update follow status in Firestore
-      final username = _following[index]['username'];
+      try {
+        await _userService.unfollowUser(followedUser.id);
 
-      setState(() {
-        _following.removeAt(index);
-      });
+        setState(() {
+          _following.removeAt(index);
+        });
 
-      // Show confirmation
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('You unfollowed $username'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        // Show confirmation
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('You unfollowed ${followedUser.fullName}'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error unfollowing user: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -93,10 +110,6 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: 'Following ${_isLoading ? '' : '(${_following.length})'}',
-          showLogo: false,
-        ),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -143,7 +156,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                     itemBuilder: (context, index) {
                       final followedUser = _following[index];
                       final isCurrentUser =
-                          (followedUser['id'] as String) == _currentUser?.uid;
+                          followedUser.id == _currentUser?.uid;
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -159,19 +172,13 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                             radius: 25,
                             backgroundColor: ArtbeatColors.primaryPurple,
                             backgroundImage:
-                                (followedUser['profileImageUrl'] as String)
-                                    .isNotEmpty
-                                ? NetworkImage(
-                                    followedUser['profileImageUrl'] as String,
-                                  )
+                                followedUser.profileImageUrl.isNotEmpty
+                                ? NetworkImage(followedUser.profileImageUrl)
                                 : null,
-                            child:
-                                (followedUser['profileImageUrl'] as String)
-                                    .isEmpty
+                            child: followedUser.profileImageUrl.isEmpty
                                 ? Text(
-                                    (followedUser['name'] as String).isNotEmpty
-                                        ? (followedUser['name'] as String)[0]
-                                              .toUpperCase()
+                                    followedUser.fullName.isNotEmpty
+                                        ? followedUser.fullName[0].toUpperCase()
                                         : '?',
                                     style: const TextStyle(
                                       color: Colors.white,
@@ -181,14 +188,14 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                                 : null,
                           ),
                           title: Text(
-                            followedUser['username'] as String,
+                            followedUser.username,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: ArtbeatColors.textPrimary,
                             ),
                           ),
                           subtitle: Text(
-                            followedUser['name'] as String,
+                            followedUser.fullName,
                             style: const TextStyle(
                               color: ArtbeatColors.textSecondary,
                             ),
@@ -223,7 +230,7 @@ class _FollowingListScreenState extends State<FollowingListScreen> {
                               context,
                               '/profile/view',
                               arguments: {
-                                'userId': followedUser['id'],
+                                'userId': followedUser.id,
                                 'isCurrentUser': isCurrentUser,
                               },
                             );

@@ -196,7 +196,7 @@ class _PostDetailModalState extends State<PostDetailModal> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading comments: $e');
+      AppLogger.error('Error loading comments: $e');
       if (mounted) {
         setState(() {
           _isLoadingComments = false;
@@ -266,7 +266,7 @@ class _PostDetailModalState extends State<PostDetailModal> {
         );
       }
     } catch (e) {
-      debugPrint('Error adding comment: $e');
+      AppLogger.error('Error adding comment: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -339,7 +339,7 @@ class _PostDetailModalState extends State<PostDetailModal> {
         );
       }
     } catch (e) {
-      debugPrint('Error reporting comment: $e');
+      AppLogger.error('Error reporting comment: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -350,22 +350,30 @@ class _PostDetailModalState extends State<PostDetailModal> {
 
   void _handleApplause(BaseGroupPost post) {
     // Handle post applause action
-    debugPrint('Applause for post: ${post.id}');
+    AppLogger.info('Applause for post: ${post.id}');
   }
 
   void _handleFeature(BaseGroupPost post) {
     // Handle post feature action
-    debugPrint('Feature post: ${post.id}');
+    AppLogger.info('Feature post: ${post.id}');
   }
 
   void _handleGift(BaseGroupPost post) {
-    // Handle post gift action
-    debugPrint('Gift for post: ${post.id}');
+    // Navigate to enhanced gift purchasing flow for the post author/artist
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: post.userId,
+          recipientName: post.userName,
+        ),
+      ),
+    );
   }
 
   void _handleShare(BaseGroupPost post) {
     // Handle post share action
-    debugPrint('Share post: ${post.id}');
+    AppLogger.info('Share post: ${post.id}');
   }
 
   void _navigateToSearch(BuildContext context) {

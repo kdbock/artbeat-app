@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -13,6 +14,7 @@ import 'package:logger/logger.dart';
 
 // Core package imports with prefix
 import 'package:artbeat_core/src/services/connectivity_service.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 
 // Local imports
 import '../models/public_art_model.dart';
@@ -23,6 +25,7 @@ import '../models/search_criteria_model.dart';
 import '../services/art_walk_cache_service.dart';
 import '../services/rewards_service.dart';
 import '../services/achievement_service.dart';
+import '../services/art_location_clustering_service.dart';
 
 /// Service for managing Art Walks and Public Art
 class ArtWalkService {
@@ -61,6 +64,10 @@ class ArtWalkService {
 
   /// Instance of achievement service from art walk package
   final AchievementService _achievementService = AchievementService();
+
+  /// Instance of ArtLocationClusteringService for handling duplicate art locations
+  final ArtLocationClusteringService _clusteringService =
+      ArtLocationClusteringService();
 
   /// Get current user ID
   String? getCurrentUserId() {
@@ -157,6 +164,28 @@ class ArtWalkService {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      // Create PublicArtModel for clustering
+      final newArt = PublicArtModel(
+        id: docRef.id,
+        userId: userId,
+        title: title,
+        description: description,
+        imageUrl: imageUrl,
+        artistName: artistName,
+        location: GeoPoint(latitude, longitude),
+        address: address,
+        tags: tags ?? [],
+        artType: artType,
+        isVerified: false,
+        viewCount: 0,
+        likeCount: 0,
+        usersFavorited: [userId],
+        createdAt: Timestamp.now(),
+      );
+
+      // Find or create cluster for this art location
+      await _clusteringService.findOrCreateCluster(newArt);
+
       return docRef.id;
     } catch (e) {
       _logger.e('Error creating public art: $e');
@@ -179,7 +208,7 @@ class ArtWalkService {
     }
   }
 
-  /// Get public art near a location
+  /// Get public art near a location (using clustering to avoid duplicates)
   Future<List<PublicArtModel>> getPublicArtNearLocation({
     required double latitude,
     required double longitude,
@@ -190,35 +219,34 @@ class ArtWalkService {
         '🎯 [DEBUG] getPublicArtNearLocation: lat=$latitude, lng=$longitude, radiusKm=$radiusKm',
       );
 
-      // Search the publicArt collection directly
-      final snapshot = await _publicArtCollection.get();
-
-      debugPrint(
-        '🎯 [DEBUG] Firestore returned ${snapshot.docs.length} public art docs',
+      // Get clustered art near the location
+      final clusters = await _clusteringService.getClusteredArtNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: radiusKm,
       );
 
+      debugPrint('🎯 [DEBUG] Found ${clusters.length} art clusters');
+
       final List<PublicArtModel> nearbyArt = [];
-      for (final doc in snapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
-        if (data['location'] is GeoPoint) {
-          final geo = data['location'] as GeoPoint;
-          final dist = _distanceKm(
-            latitude,
-            longitude,
-            geo.latitude,
-            geo.longitude,
-          );
-          if (dist <= radiusKm) {
-            try {
-              final art = PublicArtModel.fromJson({...data, 'id': doc.id});
-              nearbyArt.add(art);
-            } catch (e) {
-              debugPrint('❌ [DEBUG] Error parsing PublicArtModel: $e');
-            }
+
+      // For each cluster, get the primary art piece
+      for (final cluster in clusters) {
+        try {
+          final primaryArt = await getPublicArtById(cluster.primaryArtId);
+          if (primaryArt != null) {
+            nearbyArt.add(primaryArt);
           }
+        } catch (e) {
+          core.AppLogger.error(
+            '❌ [DEBUG] Error getting primary art for cluster ${cluster.id}: $e',
+          );
         }
       }
-      debugPrint('🎯 [DEBUG] Found ${nearbyArt.length} nearby art pieces');
+
+      core.AppLogger.info(
+        '🎯 [DEBUG] Found ${nearbyArt.length} primary art pieces from clusters',
+      );
       return nearbyArt;
     } catch (e) {
       _logger.e('[DEBUG] Error in getPublicArtNearLocation: $e');
@@ -229,7 +257,9 @@ class ArtWalkService {
   /// Get all public art
   Future<List<PublicArtModel>> getAllPublicArt() async {
     try {
-      debugPrint('🔍 [ArtWalkService] Starting getAllPublicArt query...');
+      core.AppLogger.debug(
+        '🔍 [ArtWalkService] Starting getAllPublicArt query...',
+      );
 
       final snapshot = await _publicArtCollection
           .orderBy('createdAt', descending: true)
@@ -247,9 +277,9 @@ class ArtWalkService {
 
           final artwork = PublicArtModel.fromJson({...data, 'id': doc.id});
           artworks.add(artwork);
-          debugPrint('  ✅ Successfully parsed artwork: ${artwork.id}');
+          core.AppLogger.info('  ✅ Successfully parsed artwork: ${artwork.id}');
         } catch (e) {
-          debugPrint('  ❌ Error parsing document ${i + 1}: $e');
+          core.AppLogger.error('  ❌ Error parsing document ${i + 1}: $e');
         }
       }
 
@@ -258,7 +288,9 @@ class ArtWalkService {
       );
       return artworks;
     } catch (e) {
-      debugPrint('❌ [ArtWalkService] Error getting all public art: $e');
+      core.AppLogger.error(
+        '❌ [ArtWalkService] Error getting all public art: $e',
+      );
       _logger.e('Error getting all public art: $e');
       return [];
     }
@@ -390,11 +422,24 @@ class ArtWalkService {
 
   /// Get an art walk by ID
   Future<ArtWalkModel?> getArtWalkById(String id) async {
+    if (id.isEmpty) {
+      _logger.e('Invalid art walk ID provided');
+      return null;
+    }
+
     try {
       // First try to get from Firestore
       try {
         final doc = await _artWalksCollection.doc(id).get();
-        if (doc.exists) {
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data() as Map<String, dynamic>;
+
+          // Validate required fields before creating model
+          if (!_isValidArtWalkData(data)) {
+            _logger.e('Invalid art walk data structure for ID: $id');
+            throw Exception('Art walk data is corrupted or incomplete');
+          }
+
           final artWalk = ArtWalkModel.fromFirestore(doc);
 
           // Cache the art walk for offline use
@@ -414,23 +459,94 @@ class ArtWalkService {
       }
 
       // If Firestore failed or the document doesn't exist, try to get from cache
-      return await _cacheService.getCachedArtWalk(id);
+      final cachedWalk = await _cacheService.getCachedArtWalk(id);
+      if (cachedWalk != null) {
+        _logger.i('Retrieved art walk from cache: $id');
+        return cachedWalk;
+      }
+
+      _logger.w('Art walk not found in Firestore or cache: $id');
+      return null;
     } catch (e) {
       _logger.e('Error getting art walk: $e');
       return null;
     }
   }
 
+  /// Validates art walk data structure to prevent crashes
+  bool _isValidArtWalkData(Map<String, dynamic> data) {
+    try {
+      // Check for required fields
+      if (!data.containsKey('title') || data['title'] == null) return false;
+      if (!data.containsKey('description') || data['description'] == null)
+        return false;
+      if (!data.containsKey('createdAt') || data['createdAt'] == null)
+        return false;
+      if (!data.containsKey('createdBy') || data['createdBy'] == null)
+        return false;
+
+      // Validate artPieceIds if present
+      if (data.containsKey('artPieceIds') && data['artPieceIds'] != null) {
+        final artPieceIds = data['artPieceIds'];
+        if (artPieceIds is! List) return false;
+      }
+
+      return true;
+    } catch (e) {
+      _logger.e('Error validating art walk data: $e');
+      return false;
+    }
+  }
+
+  /// Validates public art data to prevent crashes
+  bool _isValidPublicArt(PublicArtModel art) {
+    try {
+      // Check for required fields
+      if (art.id.isEmpty) return false;
+      if (art.title.isEmpty) return false;
+
+      // Validate coordinates are finite numbers
+      if (!art.location.latitude.isFinite || !art.location.longitude.isFinite) {
+        _logger.w(
+          'Invalid coordinates for art ${art.id}: ${art.location.latitude}, ${art.location.longitude}',
+        );
+        return false;
+      }
+
+      // Check for reasonable coordinate ranges
+      if (art.location.latitude < -90 || art.location.latitude > 90)
+        return false;
+      if (art.location.longitude < -180 || art.location.longitude > 180)
+        return false;
+
+      return true;
+    } catch (e) {
+      _logger.e('Error validating public art: $e');
+      return false;
+    }
+  }
+
   /// Get public art pieces in an art walk
   Future<List<PublicArtModel>> getArtInWalk(String walkId) async {
+    if (walkId.isEmpty) {
+      _logger.e('Invalid walk ID provided to getArtInWalk');
+      return [];
+    }
+
     try {
       ArtWalkModel? walk;
 
       // First try to get from Firestore
       try {
         final walkDoc = await _artWalksCollection.doc(walkId).get();
-        if (walkDoc.exists) {
-          walk = ArtWalkModel.fromFirestore(walkDoc);
+        if (walkDoc.exists && walkDoc.data() != null) {
+          final data = walkDoc.data() as Map<String, dynamic>;
+          if (_isValidArtWalkData(data)) {
+            walk = ArtWalkModel.fromFirestore(walkDoc);
+          } else {
+            _logger.e('Invalid art walk data for ID: $walkId');
+            throw Exception('Art walk data is corrupted');
+          }
         }
       } catch (firestoreError) {
         _logger.w('Error getting art walk from Firestore: $firestoreError');
@@ -441,47 +557,89 @@ class ArtWalkService {
       if (walk == null) {
         walk = await _cacheService.getCachedArtWalk(walkId);
         if (walk == null) {
-          throw Exception('Art walk not found in Firestore or cache');
+          _logger.e('Art walk not found in Firestore or cache: $walkId');
+          return []; // Return empty list instead of throwing
         }
 
         // If found in cache, return cached art pieces
-        return await _cacheService.getCachedArtInWalk(walk);
+        try {
+          return await _cacheService.getCachedArtInWalk(walk);
+        } catch (cacheError) {
+          _logger.w('Error getting cached art pieces: $cacheError');
+          // Continue to fetch from Firestore
+        }
+      }
+
+      // Validate that walk has artwork IDs
+      if (walk.artworkIds.isEmpty) {
+        _logger.w('Art walk has no artwork IDs: $walkId');
+        return [];
       }
 
       // Fetch all art pieces in the walk from Firestore
       final List<PublicArtModel> artPieces = [];
+      int successCount = 0;
+      int errorCount = 0;
 
       for (final artId in walk.artworkIds) {
+        if (artId.isEmpty) {
+          _logger.w('Empty art ID found in walk: $walkId');
+          continue;
+        }
+
         try {
           // First try to get from publicArt collection
           var artDoc = await _publicArtCollection.doc(artId).get();
-          if (artDoc.exists) {
-            artPieces.add(PublicArtModel.fromFirestore(artDoc));
-            continue;
+          if (artDoc.exists && artDoc.data() != null) {
+            try {
+              final publicArt = PublicArtModel.fromFirestore(artDoc);
+              // Validate the art piece has valid coordinates
+              if (_isValidPublicArt(publicArt)) {
+                artPieces.add(publicArt);
+                successCount++;
+                continue;
+              } else {
+                _logger.w('Invalid public art data for ID: $artId');
+              }
+            } catch (parseError) {
+              _logger.w('Error parsing public art $artId: $parseError');
+            }
           }
 
           // If not found in publicArt, try captures collection
           artDoc = await _capturesCollection.doc(artId).get();
-          if (artDoc.exists) {
-            final capture = CaptureModel.fromFirestore(
-              artDoc as DocumentSnapshot<Map<String, dynamic>>,
-              null,
-            );
-            // Convert CaptureModel to PublicArtModel for consistency
-            final publicArt = _convertCaptureToPublicArt(capture);
-            artPieces.add(publicArt);
-            continue;
+          if (artDoc.exists && artDoc.data() != null) {
+            try {
+              final capture = CaptureModel.fromFirestore(
+                artDoc as DocumentSnapshot<Map<String, dynamic>>,
+                null,
+              );
+              // Convert CaptureModel to PublicArtModel for consistency
+              final publicArt = _convertCaptureToPublicArt(capture);
+              if (_isValidPublicArt(publicArt)) {
+                artPieces.add(publicArt);
+                successCount++;
+                continue;
+              } else {
+                _logger.w('Invalid converted art data for capture ID: $artId');
+              }
+            } catch (parseError) {
+              _logger.w('Error parsing capture $artId: $parseError');
+            }
           }
 
-          // If not found in either collection, skip silently
-          // Art pieces may have been deleted, which is normal
-          continue;
+          // If not found in either collection, log but continue
+          _logger.i('Art piece not found: $artId (may have been deleted)');
         } catch (artError) {
           _logger.w('Error getting art piece $artId: $artError');
+          errorCount++;
           // Continue with other art pieces
         }
       }
 
+      _logger.i(
+        'Loaded $successCount art pieces for walk $walkId (${errorCount} errors)',
+      );
       return artPieces;
     } catch (e) {
       _logger.e('Error getting art in walk: $e');
@@ -778,55 +936,19 @@ class ArtWalkService {
       final userId = getCurrentUserId();
       if (userId == null) throw Exception('User not authenticated');
 
-      debugPrint('📸 ArtWalkService: Starting cover image upload');
+      core.AppLogger.info('📸 ArtWalkService: Starting cover image upload');
       final result = await _enhancedStorage.uploadImageWithOptimization(
         imageFile: imageFile,
         category: 'art_walk_covers/$userId/$walkId',
       );
 
-      debugPrint('✅ ArtWalkService: Cover image uploaded successfully');
+      core.AppLogger.info(
+        '✅ ArtWalkService: Cover image uploaded successfully',
+      );
       return result['imageUrl']!;
     } catch (e) {
       _logger.e('Error uploading cover image: $e');
       throw Exception('Failed to upload cover image: $e');
-    }
-  }
-
-  /// Delete an art walk
-  Future<void> deleteArtWalk(String walkId) async {
-    final userId = getCurrentUserId();
-    if (userId == null) {
-      throw Exception('User not authenticated');
-    }
-
-    try {
-      // Verify ownership
-      final walkDoc = await _artWalksCollection.doc(walkId).get();
-      if (!walkDoc.exists) {
-        throw Exception('Art walk not found');
-      }
-
-      final walkData = walkDoc.data() as Map<String, dynamic>;
-      if (walkData['userId'] != userId) {
-        throw Exception('Not authorized to delete this art walk');
-      }
-
-      // Delete cover image if it exists
-      final coverImageUrl = walkData['coverImageUrl'] as String?;
-      if (coverImageUrl != null && coverImageUrl.isNotEmpty) {
-        try {
-          await _storage.refFromURL(coverImageUrl).delete();
-        } catch (e) {
-          // Continue even if image deletion fails
-          _logger.w('Failed to delete cover image: $e');
-        }
-      }
-
-      // Delete the art walk document
-      await _artWalksCollection.doc(walkId).delete();
-    } catch (e) {
-      _logger.e('Error deleting art walk: $e');
-      throw Exception('Failed to delete art walk: $e');
     }
   }
 
@@ -1057,7 +1179,9 @@ class ArtWalkService {
           startLocation.longitude,
         );
       } catch (e) {
-        debugPrint('Warning: Could not get ZIP code for art walk: $e');
+        core.AppLogger.warning(
+          'Warning: Could not get ZIP code for art walk: $e',
+        );
       }
 
       final docRef = await _artWalksCollection.add({
@@ -1118,42 +1242,69 @@ class ArtWalkService {
     }
 
     try {
-      final completionData = {
-        'userId': userId,
-        'artWalkId': artWalkId,
-        'completedAt': FieldValue.serverTimestamp(),
-      };
+      // Add timeout to prevent hanging
+      return await (() async {
+        final completionData = {
+          'userId': userId,
+          'artWalkId': artWalkId,
+          'completedAt': FieldValue.serverTimestamp(),
+        };
 
-      // Store completion in art walk's subcollection (for analytics)
-      await _artWalksCollection
-          .doc(artWalkId)
-          .collection('completions')
-          .doc(userId)
-          .set(completionData);
+        // Use batch write for better performance and atomicity
+        final batch = _firestore.batch();
 
-      // Store completion in user's subcollection (for achievements)
-      await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('completedWalks')
-          .doc(artWalkId)
-          .set(completionData);
+        // Store completion in art walk's subcollection (for analytics)
+        final artWalkCompletionRef = _artWalksCollection
+            .doc(artWalkId)
+            .collection('completions')
+            .doc(userId);
+        batch.set(artWalkCompletionRef, completionData);
 
-      // Increment art walk completion count
-      await _artWalksCollection.doc(artWalkId).update({
-        'completionCount': FieldValue.increment(1),
-      });
+        // Store completion in user's subcollection (for achievements)
+        final userCompletionRef = _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('completedWalks')
+            .doc(artWalkId);
+        batch.set(userCompletionRef, completionData);
 
-      // Award XP for completion
-      await _rewardsService.awardXP('art_walk_completion');
+        // Increment art walk completion count
+        final artWalkRef = _artWalksCollection.doc(artWalkId);
+        batch.update(artWalkRef, {'completionCount': FieldValue.increment(1)});
 
-      // Update user achievements - this should now work correctly
-      await _updateUserAchievements(userId);
+        // Commit all changes atomically
+        await batch.commit();
 
-      _logger.i(
-        'Successfully recorded art walk completion for user $userId, walk $artWalkId',
+        // Award XP for completion (with timeout)
+        try {
+          await _rewardsService
+              .awardXP('art_walk_completion')
+              .timeout(const Duration(seconds: 10));
+        } catch (e) {
+          _logger.w('XP award timed out or failed: $e');
+          // Continue execution even if XP award fails
+        }
+
+        // Update user achievements (with timeout)
+        try {
+          await _updateUserAchievements(
+            userId,
+          ).timeout(const Duration(seconds: 10));
+        } catch (e) {
+          _logger.w('Achievement update timed out or failed: $e');
+          // Continue execution even if achievement update fails
+        }
+
+        _logger.i(
+          'Successfully recorded art walk completion for user $userId, walk $artWalkId',
+        );
+        return true;
+      })().timeout(const Duration(seconds: 30));
+    } on TimeoutException {
+      _logger.e(
+        'Art walk completion recording timed out for user $userId, walk $artWalkId',
       );
-      return true;
+      return false;
     } catch (e) {
       _logger.e('Error recording art walk completion: $e');
       return false;
@@ -1729,7 +1880,9 @@ class ArtWalkService {
             results.add(artWalk);
           }
         } catch (e) {
-          debugPrint('⚠️ [SEARCH] Error parsing art walk ${doc.id}: $e');
+          core.AppLogger.error(
+            '⚠️ [SEARCH] Error parsing art walk ${doc.id}: $e',
+          );
         }
       }
 
@@ -1845,7 +1998,9 @@ class ArtWalkService {
             results.add(publicArt);
           }
         } catch (e) {
-          debugPrint('⚠️ [SEARCH] Error parsing public art ${doc.id}: $e');
+          core.AppLogger.error(
+            '⚠️ [SEARCH] Error parsing public art ${doc.id}: $e',
+          );
         }
       }
 
@@ -2117,5 +2272,118 @@ class ArtWalkService {
     }
 
     return true;
+  }
+
+  /// Get user's created art walks
+  Future<List<ArtWalkModel>> getUserCreatedWalks(String userId) async {
+    try {
+      final snapshot = await _artWalksCollection
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => ArtWalkModel.fromFirestore(doc))
+          .toList();
+    } catch (e) {
+      _logger.e('Error getting user created walks: $e');
+      return [];
+    }
+  }
+
+  /// Get user's saved art walks
+  Future<List<ArtWalkModel>> getUserSavedWalks(String userId) async {
+    try {
+      // Get user's saved walk IDs
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (!userDoc.exists) return [];
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final savedWalkIds = List<String>.from(
+        userData['savedWalks'] as List? ?? [],
+      );
+
+      if (savedWalkIds.isEmpty) return [];
+
+      // Get the actual walks
+      final walks = <ArtWalkModel>[];
+      for (final walkId in savedWalkIds) {
+        final walkDoc = await _artWalksCollection.doc(walkId).get();
+        if (walkDoc.exists) {
+          walks.add(ArtWalkModel.fromFirestore(walkDoc));
+        }
+      }
+
+      return walks;
+    } catch (e) {
+      _logger.e('Error getting user saved walks: $e');
+      return [];
+    }
+  }
+
+  /// Save an art walk for later
+  Future<bool> saveArtWalk(String walkId) async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'savedWalks': FieldValue.arrayUnion([walkId]),
+      });
+      return true;
+    } catch (e) {
+      _logger.e('Error saving art walk: $e');
+      return false;
+    }
+  }
+
+  /// Unsave an art walk
+  Future<bool> unsaveArtWalk(String walkId) async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'savedWalks': FieldValue.arrayRemove([walkId]),
+      });
+      return true;
+    } catch (e) {
+      _logger.e('Error unsaving art walk: $e');
+      return false;
+    }
+  }
+
+  /// Delete an art walk (only by creator)
+  Future<bool> deleteArtWalk(String walkId) async {
+    final userId = getCurrentUserId();
+    if (userId == null) {
+      throw Exception('User not authenticated');
+    }
+
+    try {
+      // Check if user is the creator
+      final walkDoc = await _artWalksCollection.doc(walkId).get();
+      if (!walkDoc.exists) return false;
+
+      final walkData = walkDoc.data() as Map<String, dynamic>;
+      if (walkData['userId'] != userId) {
+        throw Exception('Not authorized to delete this walk');
+      }
+
+      // Delete the walk
+      await _artWalksCollection.doc(walkId).delete();
+      return true;
+    } catch (e) {
+      _logger.e('Error deleting art walk: $e');
+      return false;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../utils/logger.dart';
 
 /// Comprehensive internationalization service for ARTbeat platform
 /// Supports multiple languages, localization, and cultural adaptations
@@ -56,7 +57,7 @@ class InternationalizationService {
         );
       } catch (e) {
         // If translation file doesn't exist, use default English translations
-        debugPrint('Translation file not found for $localeKey, using defaults');
+        AppLogger.info('Translation file not found for $localeKey, using defaults');
         _allTranslations[localeKey] = _getDefaultTranslations(locale);
       }
     }

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'logger.dart';
 
 /// Utility class for loading environment variables and configuration
 class EnvLoader {
@@ -23,9 +23,9 @@ class EnvLoader {
         'FIREBASE_REGION': 'us-central1',
       });
 
-      debugPrint('✅ Environment variables loaded successfully');
+      AppLogger.info('✅ Environment variables loaded successfully');
     } catch (e) {
-      debugPrint('❌ Error loading environment variables: $e');
+      AppLogger.error('❌ Error loading environment variables: $e');
     }
   }
 

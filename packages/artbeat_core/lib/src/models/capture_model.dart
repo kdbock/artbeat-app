@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'engagement_model.dart';
 
 enum CaptureStatus { pending, approved, rejected }
 
@@ -59,6 +60,7 @@ class CaptureModel {
   final String? artMedium;
   final CaptureStatus status;
   final String? moderationNotes;
+  final EngagementStats engagementStats;
 
   CaptureModel({
     required this.id,
@@ -81,7 +83,9 @@ class CaptureModel {
     this.artMedium,
     this.status = CaptureStatus.pending,
     this.moderationNotes,
-  });
+    EngagementStats? engagementStats,
+  }) : engagementStats =
+           engagementStats ?? EngagementStats(lastUpdated: DateTime.now());
 
   factory CaptureModel.fromJson(Map<String, dynamic> json) {
     // Validate required fields
@@ -137,6 +141,9 @@ class CaptureModel {
         json['status'] as String? ?? 'pending',
       ),
       moderationNotes: json['moderationNotes'] as String?,
+      engagementStats: EngagementStats.fromFirestore(
+        json['engagementStats'] as Map<String, dynamic>? ?? json,
+      ),
     );
   }
 
@@ -172,6 +179,7 @@ class CaptureModel {
       'artMedium': artMedium,
       'status': status.value,
       'moderationNotes': moderationNotes,
+      'engagementStats': engagementStats.toFirestore(),
     };
   }
 
@@ -198,6 +206,7 @@ class CaptureModel {
     String? artMedium,
     CaptureStatus? status,
     String? moderationNotes,
+    EngagementStats? engagementStats,
   }) {
     return CaptureModel(
       id: id ?? this.id,
@@ -220,6 +229,7 @@ class CaptureModel {
       artMedium: artMedium ?? this.artMedium,
       status: status ?? this.status,
       moderationNotes: moderationNotes ?? this.moderationNotes,
+      engagementStats: engagementStats ?? this.engagementStats,
     );
   }
 

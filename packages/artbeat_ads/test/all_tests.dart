@@ -92,9 +92,9 @@ void main() {
         expect(AdStatus.expired.index, equals(5));
 
         // AdLocation consistency (check a few known locations)
-        expect(AdLocation.values, contains(AdLocation.dashboard));
+        expect(AdLocation.values, contains(AdLocation.fluidDashboard));
         expect(AdLocation.values, contains(AdLocation.artWalkDashboard));
-        expect(AdLocation.values, contains(AdLocation.communityDashboard));
+        expect(AdLocation.values, contains(AdLocation.unifiedCommunityHub));
       });
 
       test('should have consistent pricing across ad sizes', () {
@@ -221,7 +221,7 @@ void main() {
             imageUrl: 'url',
             title: 'title',
             description: 'desc',
-            location: AdLocation.dashboard,
+            location: AdLocation.fluidDashboard,
             duration: AdDuration.oneDay,
             startDate: DateTime.now(),
             endDate: DateTime.now().add(const Duration(days: 1)),
@@ -285,13 +285,13 @@ void main() {
               imageUrl: 'url',
               title: 'title',
               description: 'desc',
-              location: AdLocation.dashboard,
+              location: AdLocation.fluidDashboard,
               duration: AdDuration.oneDay,
               startDate: DateTime.now(),
               endDate: DateTime.now().add(const Duration(days: 1)),
               status: AdStatus.pending,
             ),
-            location: AdLocation.dashboard,
+            location: AdLocation.fluidDashboard,
           ).runtimeType.toString(),
           contains('SimpleAdDisplayWidget'),
         );
@@ -358,7 +358,7 @@ void main() {
             imageUrl: 'https://example.com/temp$i.jpg',
             title: 'Temp Ad $i',
             description: 'Temp Description $i',
-            location: AdLocation.dashboard,
+            location: AdLocation.fluidDashboard,
             duration: AdDuration.oneDay,
             startDate: DateTime.now(),
             endDate: DateTime.now().add(const Duration(days: 1)),

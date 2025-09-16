@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/profile_customization_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service for managing profile customization settings
 class ProfileCustomizationService extends ChangeNotifier {
@@ -25,7 +26,7 @@ class ProfileCustomizationService extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint('Error getting customization settings: $e');
+      AppLogger.error('Error getting customization settings: $e');
       return null;
     }
   }
@@ -59,7 +60,7 @@ class ProfileCustomizationService extends ChangeNotifier {
           .set(defaultSettings.toFirestore());
       return defaultSettings;
     } catch (e) {
-      debugPrint('Error creating default settings: $e');
+      AppLogger.error('Error creating default settings: $e');
       rethrow;
     }
   }
@@ -75,7 +76,7 @@ class ProfileCustomizationService extends ChangeNotifier {
           .set(updatedSettings.toFirestore(), SetOptions(merge: true));
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating customization settings: $e');
+      AppLogger.error('Error updating customization settings: $e');
       rethrow;
     }
   }
@@ -96,7 +97,7 @@ class ProfileCustomizationService extends ChangeNotifier {
       });
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating theme: $e');
+      AppLogger.error('Error updating theme: $e');
       rethrow;
     }
   }
@@ -113,7 +114,7 @@ class ProfileCustomizationService extends ChangeNotifier {
       });
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating visibility settings: $e');
+      AppLogger.error('Error updating visibility settings: $e');
       rethrow;
     }
   }
@@ -127,7 +128,7 @@ class ProfileCustomizationService extends ChangeNotifier {
       });
       notifyListeners();
     } catch (e) {
-      debugPrint('Error updating cover photo: $e');
+      AppLogger.error('Error updating cover photo: $e');
       rethrow;
     }
   }
@@ -139,7 +140,7 @@ class ProfileCustomizationService extends ChangeNotifier {
       await createDefaultSettings(userId);
       notifyListeners();
     } catch (e) {
-      debugPrint('Error resetting to defaults: $e');
+      AppLogger.error('Error resetting to defaults: $e');
       rethrow;
     }
   }

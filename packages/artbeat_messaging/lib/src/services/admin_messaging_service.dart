@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../models/chat_model.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Admin Messaging Service for real-time messaging analytics and management
 ///
@@ -124,7 +125,7 @@ class AdminMessagingService extends ChangeNotifier {
         'averageResponseTime': await _getAverageResponseTime(),
       };
     } catch (e) {
-      debugPrint('Error getting messaging stats: $e');
+      AppLogger.error('Error getting messaging stats: $e');
       rethrow;
     }
   }
@@ -137,7 +138,7 @@ class AdminMessagingService extends ChangeNotifier {
         .limit(20)
         .snapshots()
         .handleError((Object error) {
-          debugPrint('Error in getRecentActivityStream: $error');
+          AppLogger.error('Error in getRecentActivityStream: $error');
           return const Stream<QuerySnapshot<Map<String, dynamic>>>.empty();
         })
         .map(
@@ -158,7 +159,7 @@ class AdminMessagingService extends ChangeNotifier {
                 'color': _getColorForSeverity(severity),
               };
             } catch (e) {
-              debugPrint('Error processing activity document ${doc.id}: $e');
+              AppLogger.error('Error processing activity document ${doc.id}: $e');
               // Return a safe fallback activity
               return {
                 'id': doc.id,
@@ -184,7 +185,7 @@ class AdminMessagingService extends ChangeNotifier {
         .limit(50)
         .snapshots()
         .handleError((Object error) {
-          debugPrint('Error in getOnlineUsersStream: $error');
+          AppLogger.error('Error in getOnlineUsersStream: $error');
           return const Stream<QuerySnapshot<Map<String, dynamic>>>.empty();
         })
         .map(
@@ -208,7 +209,7 @@ class AdminMessagingService extends ChangeNotifier {
                 'role': data['role'] ?? 'User',
               };
             } catch (e) {
-              debugPrint('Error processing user document ${doc.id}: $e');
+              AppLogger.error('Error processing user document ${doc.id}: $e');
               // Return a safe fallback user
               return {
                 'id': doc.id,
@@ -299,7 +300,7 @@ class AdminMessagingService extends ChangeNotifier {
 
       return conversations;
     } catch (e) {
-      debugPrint('Error getting top conversations: $e');
+      AppLogger.error('Error getting top conversations: $e');
       return [];
     }
   }
@@ -345,7 +346,7 @@ class AdminMessagingService extends ChangeNotifier {
       // Trigger notifications (you might want to use Cloud Functions for this)
       notifyListeners();
     } catch (e) {
-      debugPrint('Error sending broadcast message: $e');
+      AppLogger.error('Error sending broadcast message: $e');
       rethrow;
     }
   }
@@ -370,7 +371,7 @@ class AdminMessagingService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error toggling user block: $e');
+      AppLogger.error('Error toggling user block: $e');
       rethrow;
     }
   }

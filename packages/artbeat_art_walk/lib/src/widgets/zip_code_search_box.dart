@@ -5,12 +5,14 @@ class ZipCodeSearchBox extends StatefulWidget {
   final String initialValue;
   final void Function(String) onZipCodeSubmitted;
   final bool isLoading;
+  final VoidCallback? onNavigateToMap;
 
   const ZipCodeSearchBox({
     super.key,
     required this.initialValue,
     required this.onZipCodeSubmitted,
     this.isLoading = false,
+    this.onNavigateToMap,
   });
 
   @override
@@ -95,10 +97,12 @@ class _ZipCodeSearchBoxState extends State<ZipCodeSearchBox> {
                 onPressed: () {
                   if (_controller.text.isNotEmpty) {
                     widget.onZipCodeSubmitted(_controller.text);
+                    // Navigate to art walk map after submitting zip code
+                    widget.onNavigateToMap?.call();
                   }
                 },
-                icon: const Icon(Icons.send),
-                tooltip: 'Search',
+                icon: const Icon(Icons.arrow_forward),
+                tooltip: 'Go to Art Walk Map',
               ),
             ),
         ],

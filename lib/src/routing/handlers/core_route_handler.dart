@@ -1,18 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_auth/artbeat_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_profile/artbeat_profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
-import '../route_utils.dart';
 import '../app_routes.dart';
+import '../route_utils.dart';
 
 /// Handles core application routes (auth, dashboard, profile)
 class CoreRouteHandler implements RouteHandler {
   @override
-  bool canHandle(String routeName) {
-    return _coreRoutes.contains(routeName);
-  }
+  bool canHandle(String routeName) => _coreRoutes.contains(routeName);
 
   static const List<String> _coreRoutes = [
     AppRoutes.splash,
@@ -38,8 +36,8 @@ class CoreRouteHandler implements RouteHandler {
 
       case AppRoutes.dashboard:
         return RouteUtils.createSafeRoute(AppRoutes.dashboard, () {
-          debugPrint('🏠 Building dashboard screen...');
-          return const core.FluidDashboardScreen();
+          core.AppLogger.info('🏠 Building dashboard screen...');
+          return const core.ArtbeatDashboardScreen();
         });
 
       case AppRoutes.auth:
@@ -80,53 +78,53 @@ class CoreRouteHandler implements RouteHandler {
     }
   }
 
-  MaterialPageRoute<dynamic> _createProfileRoute() {
-    return RouteUtils.createAuthRequiredRoute(
-      authenticatedBuilder: () {
-        final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-        return core.MainLayout(
+  MaterialPageRoute<dynamic> _createProfileRoute() =>
+      RouteUtils.createAuthRequiredRoute(
+        authenticatedBuilder: () {
+          final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+          return core.MainLayout(
+            currentIndex: -1,
+            drawer: const core.ArtbeatDrawer(),
+            child: ProfileViewScreen(
+              userId: currentUserId,
+              isCurrentUser: true,
+            ),
+          );
+        },
+        unauthenticatedBuilder: () => const core.MainLayout(
           currentIndex: -1,
-          drawer: const core.ArtbeatDrawer(),
-          child: ProfileViewScreen(userId: currentUserId, isCurrentUser: true),
-        );
-      },
-      unauthenticatedBuilder: () => const core.MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          body: Center(child: Text('Please log in to view your profile')),
+          child: Scaffold(
+            body: Center(child: Text('Please log in to view your profile')),
+          ),
         ),
-      ),
-    );
-  }
+      );
 
-  MaterialPageRoute<dynamic> _createProfileEditRoute() {
-    return RouteUtils.createAuthRequiredRoute(
-      authenticatedBuilder: () {
-        final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-        return EditProfileScreen(userId: currentUserId);
-      },
-      unauthenticatedBuilder: () => const core.MainLayout(
-        currentIndex: -1,
-        child: Scaffold(
-          body: Center(child: Text('Please log in to edit your profile')),
-        ),
-      ),
-    );
-  }
-
-  MaterialPageRoute<dynamic> _createProfileCreateRoute() {
-    return RouteUtils.createAuthRequiredRoute(
-      authenticatedBuilder: () {
-        final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-        return core.MainLayout(
+  MaterialPageRoute<dynamic> _createProfileEditRoute() =>
+      RouteUtils.createAuthRequiredRoute(
+        authenticatedBuilder: () {
+          final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+          return EditProfileScreen(userId: currentUserId);
+        },
+        unauthenticatedBuilder: () => const core.MainLayout(
           currentIndex: -1,
-          child: CreateProfileScreen(userId: currentUserId),
-        );
-      },
-      unauthenticatedBuilder: () =>
-          const core.MainLayout(currentIndex: -1, child: LoginScreen()),
-    );
-  }
+          child: Scaffold(
+            body: Center(child: Text('Please log in to edit your profile')),
+          ),
+        ),
+      );
+
+  MaterialPageRoute<dynamic> _createProfileCreateRoute() =>
+      RouteUtils.createAuthRequiredRoute(
+        authenticatedBuilder: () {
+          final currentUserId = FirebaseAuth.instance.currentUser!.uid;
+          return core.MainLayout(
+            currentIndex: -1,
+            child: CreateProfileScreen(userId: currentUserId),
+          );
+        },
+        unauthenticatedBuilder: () =>
+            const core.MainLayout(currentIndex: -1, child: LoginScreen()),
+      );
 
   MaterialPageRoute<dynamic> _createProfileDeepRoute(RouteSettings settings) {
     final userId = RouteUtils.getArgument<String>(settings, 'userId');
@@ -134,7 +132,7 @@ class CoreRouteHandler implements RouteHandler {
       return RouteUtils.createErrorRoute('No user ID provided');
     }
     return RouteUtils.createMainLayoutRoute(
-      child: ProfileViewScreen(userId: userId, isCurrentUser: false),
+      child: ProfileViewScreen(userId: userId),
     );
   }
 
@@ -150,12 +148,11 @@ class CoreRouteHandler implements RouteHandler {
     );
   }
 
-  MaterialPageRoute<dynamic> _createFavoritesRoute() {
-    return RouteUtils.createMainLayoutRoute(
-      appBar: RouteUtils.createAppBar('Following'),
-      child: const Center(child: Text('Following coming soon')),
-    );
-  }
+  MaterialPageRoute<dynamic> _createFavoritesRoute() =>
+      RouteUtils.createMainLayoutRoute(
+        appBar: RouteUtils.createAppBar('Following'),
+        child: const Center(child: Text('Following coming soon')),
+      );
 
   MaterialPageRoute<dynamic> _createFavoriteDeepRoute(RouteSettings settings) {
     final favoriteId = RouteUtils.getArgument<String>(settings, 'favoriteId');

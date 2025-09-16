@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/artbeat_colors.dart';
+import '../utils/logger.dart';
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({super.key, this.enableNavigation = true});
@@ -57,7 +58,7 @@ class _LoadingScreenState extends State<LoadingScreen>
         Navigator.pushReplacementNamed(context, '/splash');
       } catch (e) {
         // If navigation fails, just stay on the loading screen
-        debugPrint('Navigation to splash failed: $e');
+        AppLogger.info('Navigation to splash failed: $e');
       }
     }
   }

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Service to handle user presence (online/offline status)
 class PresenceService {
@@ -33,7 +34,7 @@ class PresenceService {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
-    debugPrint('PresenceService: Starting presence updates for user $userId');
+    AppLogger.info('PresenceService: Starting presence updates for user $userId');
 
     // Set user as online immediately
     _setUserOnline(userId);
@@ -62,7 +63,7 @@ class PresenceService {
     _presenceTimer = null;
     _isOnline = false;
 
-    debugPrint('PresenceService: Stopped presence updates');
+    AppLogger.info('PresenceService: Stopped presence updates');
   }
 
   /// Set user as online
@@ -84,7 +85,7 @@ class PresenceService {
           'lastActive': Timestamp.now(),
           'createdAt': Timestamp.now(),
         });
-        debugPrint('PresenceService: Created user document for $userId');
+        AppLogger.info('PresenceService: Created user document for $userId');
       } else {
         // Update existing user document
         await _firestore.collection('users').doc(userId).update({
@@ -97,9 +98,9 @@ class PresenceService {
       // Also update artist profile if exists
       await _updateArtistProfileOnlineStatus(userId, true);
 
-      debugPrint('PresenceService: Set user $userId as online');
+      AppLogger.info('PresenceService: Set user $userId as online');
     } catch (e) {
-      debugPrint('PresenceService: Error setting user online: $e');
+      AppLogger.error('PresenceService: Error setting user online: $e');
     }
   }
 
@@ -116,9 +117,9 @@ class PresenceService {
       // Also update artist profile if exists
       await _updateArtistProfileOnlineStatus(userId, false);
 
-      debugPrint('PresenceService: Set user $userId as offline');
+      AppLogger.info('PresenceService: Set user $userId as offline');
     } catch (e) {
-      debugPrint('PresenceService: Error setting user offline: $e');
+      AppLogger.error('PresenceService: Error setting user offline: $e');
     }
   }
 
@@ -202,7 +203,7 @@ class PresenceService {
         );
       }
     } catch (e) {
-      debugPrint('PresenceService Debug: Error checking status: $e');
+      AppLogger.error('PresenceService Debug: Error checking status: $e');
     }
   }
 
@@ -243,7 +244,7 @@ class PresenceService {
       // Also update artist profile if exists
       await _updateArtistProfileOnlineStatus(userId, true);
     } catch (e) {
-      debugPrint('PresenceService: Error updating activity: $e');
+      AppLogger.error('PresenceService: Error updating activity: $e');
     }
   }
 
@@ -301,7 +302,7 @@ class PresenceService {
 
       return isOnline;
     } catch (e) {
-      debugPrint('PresenceService: Error checking if user is online: $e');
+      AppLogger.error('PresenceService: Error checking if user is online: $e');
       return false;
     }
   }
@@ -316,7 +317,7 @@ class PresenceService {
       return (data['lastSeen'] as Timestamp?)?.toDate() ??
           (data['lastActive'] as Timestamp?)?.toDate();
     } catch (e) {
-      debugPrint('PresenceService: Error getting user last seen: $e');
+      AppLogger.error('PresenceService: Error getting user last seen: $e');
       return null;
     }
   }
@@ -325,18 +326,18 @@ class PresenceService {
   Future<void> forcePresenceUpdate() async {
     final userId = _auth.currentUser?.uid;
     if (userId == null) {
-      debugPrint('PresenceService: No authenticated user for force update');
+      AppLogger.auth('PresenceService: No authenticated user for force update');
       return;
     }
 
-    debugPrint('PresenceService: Force updating presence for $userId');
+    AppLogger.info('PresenceService: Force updating presence for $userId');
     await _setUserOnline(userId);
     await _debugCheckOnlineStatus(userId);
   }
 
   /// Dispose the service
   void dispose() {
-    debugPrint('PresenceService: Disposing');
+    AppLogger.info('PresenceService: Disposing');
     _stopPresenceUpdates();
     _authSubscription?.cancel();
   }
