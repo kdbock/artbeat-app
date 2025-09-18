@@ -8,22 +8,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:flutter/foundation.dart';
-import '../models/models.dart';
-import '../services/services.dart';
 
-// Enhanced Create Art Walk specific colors
+// Enhanced Create Art Walk specific colors (matching Dashboard theme)
 class EnhancedCreateColors {
-  static const Color primaryIndigo = Color(0xFF3F51B5);
-  static const Color primaryIndigoLight = Color(0xFF5C6BC0);
-  static const Color primaryIndigoDark = Color(0xFF303F9F);
-  static const Color accentCyan = Color(0xFF00BCD4);
-  static const Color accentCyanLight = Color(0xFF4DD0E1);
-  static const Color backgroundGradientStart = Color(0xFFE8EAF6);
-  static const Color backgroundGradientEnd = Color(0xFFE0F2F1);
-  static const Color cardBackground = Color(0xFFFAFAFA);
-  static const Color textPrimary = Color(0xFF1A237E);
-  static const Color textSecondary = Color(0xFF3F51B5);
+  static const Color primaryTeal = ArtWalkDesignSystem.primaryTeal;
+  static const Color primaryTealLight = ArtWalkDesignSystem.primaryTealLight;
+  static const Color primaryTealDark = ArtWalkDesignSystem.primaryTealDark;
+  static const Color accentOrange = ArtWalkDesignSystem.accentOrange;
+  static const Color accentOrangeLight = ArtWalkDesignSystem.accentOrangeLight;
+  static const Color backgroundGradientStart =
+      ArtWalkDesignSystem.backgroundGradientStart;
+  static const Color backgroundGradientEnd =
+      ArtWalkDesignSystem.backgroundGradientEnd;
+  static const Color cardBackground = ArtWalkDesignSystem.cardBackground;
+  static const Color textPrimary = ArtWalkDesignSystem.textPrimary;
+  static const Color textSecondary = ArtWalkDesignSystem.textSecondary;
+  static const Color headingDarkPurple = Color(
+    0xFF2D1B69,
+  ); // Dark purple, almost black
 }
 
 /// Enhanced Art Walk Create Screen with Map View
@@ -74,8 +78,6 @@ class _EnhancedArtWalkCreateScreenState
 
   // Animation
   late AnimationController _introAnimationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
   bool _hasShownIntro = false;
 
   // Services
@@ -92,19 +94,6 @@ class _EnhancedArtWalkCreateScreenState
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _introAnimationController,
-      curve: Curves.easeInOut,
-    );
-
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0.0, 0.3), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _introAnimationController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
 
     // Start with intro if not editing
     if (widget.artWalkId == null) {
@@ -210,7 +199,7 @@ class _EnhancedArtWalkCreateScreenState
       // Convert captures to PublicArtModel
       final List<PublicArtModel> captureArt = captures
           .map(
-            (capture) => PublicArtModel(
+            (CaptureModel capture) => PublicArtModel(
               id: capture.id,
               title: capture.title ?? 'Captured Art',
               artistName: capture.artistName ?? 'Unknown Artist',
@@ -463,13 +452,41 @@ class _EnhancedArtWalkCreateScreenState
           }
         }
 
-        await _firestore.collection('art_walks').add(artWalkData);
+        final docRef = await _firestore
+            .collection('art_walks')
+            .add(artWalkData);
 
         if (mounted) {
+          // Create ArtWalkModel from the created data
+          final createdArtWalk = ArtWalkModel(
+            id: docRef.id,
+            title: _titleController.text,
+            description: _descriptionController.text,
+            userId: userId,
+            artworkIds: artworkIds,
+            isPublic: _isPublic,
+            zipCode: _zipCodeController.text,
+            estimatedDuration: estimatedMinutes,
+            estimatedDistance: _estimatedDistance,
+            routeData: routeData,
+            createdAt: DateTime.now(),
+            viewCount: 0,
+            imageUrls:
+                _coverImageFile != null && artWalkData['coverImageUrl'] != null
+                ? [artWalkData['coverImageUrl'] as String]
+                : [],
+            coverImageUrl: artWalkData['coverImageUrl'] as String?,
+          );
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Art Walk created successfully!')),
           );
-          Navigator.of(context).pop();
+
+          // Navigate to review screen instead of just popping back
+          Navigator.of(context).pushReplacementNamed(
+            ArtWalkRoutes.review,
+            arguments: {'artWalkId': docRef.id, 'artWalk': createdArtWalk},
+          );
         }
       }
     } catch (e) {
@@ -541,40 +558,66 @@ class _EnhancedArtWalkCreateScreenState
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: AlertDialog(
-            title: const Text('Create Your Art Walk Journey'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.directions_walk, size: 48, color: Colors.blue),
-                const SizedBox(height: 16),
-                Text(
-                  'Ready to curate your own artistic adventure?',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Create a unique path through local art pieces, share your favorite spots, and inspire others to explore the artistic side of your city.',
-                  textAlign: TextAlign.center,
-                ),
-              ],
+      builder: (context) => AlertDialog(
+        title: const Text('Create Your Art Walk Journey'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.directions_walk, size: 48, color: Colors.blue),
+            const SizedBox(height: 16),
+            Text(
+              'Ready to curate your own artistic adventure?',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _introAnimationController.forward();
-                },
-                child: const Text('Let\'s Begin'),
-              ),
-            ],
-          ),
+            const SizedBox(height: 8),
+            const Text(
+              'Create a unique path through local art pieces, share your favorite spots, and inspire others to explore the artistic side of your city.',
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Let\'s Begin'),
+          ),
+        ],
       ),
+    );
+  }
+
+  // ==================== MODERN DESIGN METHODS ====================
+
+  BoxDecoration _buildBackgroundDecoration() {
+    return const BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          EnhancedCreateColors.primaryTealLight,
+          EnhancedCreateColors.accentOrangeLight,
+          EnhancedCreateColors.backgroundGradientStart,
+          EnhancedCreateColors.backgroundGradientEnd,
+        ],
+        stops: [0.0, 0.3, 0.7, 1.0],
+      ),
+    );
+  }
+
+  BoxDecoration _buildGlassDecoration() {
+    return BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      boxShadow: [
+        BoxShadow(
+          color: EnhancedCreateColors.primaryTeal.withValues(alpha: 0.1),
+          blurRadius: 20,
+          offset: const Offset(0, 10),
+        ),
+      ],
     );
   }
 
@@ -608,27 +651,27 @@ class _EnhancedArtWalkCreateScreenState
       },
       child: MainLayout(
         currentIndex: -1,
-        child: Scaffold(
-          appBar: EnhancedUniversalHeader(
-            title: widget.artWalkId == null
-                ? 'Create Art Walk'
-                : 'Edit Art Walk',
-            showLogo: false,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.chat),
-                onPressed: () => Navigator.pushNamed(context, '/messaging'),
-              ),
+        appBar: EnhancedUniversalHeader(
+          title: widget.artWalkId == null ? 'Create Art Walk' : 'Edit Art Walk',
+          showLogo: false,
+          backgroundGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
             ],
           ),
-          body: FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position: _slideAnimation,
-              child: _buildForm(),
-            ),
+          titleGradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.topRight,
+            colors: [
+              Color(0xFF4FB3BE), // Light Teal
+              Color(0xFFFF9E80), // Light Orange/Peach
+            ],
           ),
         ),
+        child: _buildForm(),
       ),
     );
   }
@@ -636,27 +679,38 @@ class _EnhancedArtWalkCreateScreenState
   Widget _buildForm() {
     return Stack(
       children: [
-        SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildProgressIndicator(),
-                const SizedBox(height: 24),
-                _buildTitleField(),
-                const SizedBox(height: 16),
-                _buildDescriptionField(),
-                const SizedBox(height: 24),
-                _buildMapSection(),
-                const SizedBox(height: 24),
-                _buildArtPiecesSection(),
-                const SizedBox(height: 32),
-                _buildSubmitButton(),
-              ],
+        // Background gradient
+        Container(decoration: _buildBackgroundDecoration()),
+        Column(
+          children: [
+            // Persistent selected items bar
+            if (_selectedArtPieces.isNotEmpty) _buildPersistentSelectedBar(),
+            // Scrollable content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildProgressIndicator(),
+                      const SizedBox(height: 16),
+                      _buildTitleField(),
+                      const SizedBox(height: 16),
+                      _buildDescriptionField(),
+                      const SizedBox(height: 24),
+                      _buildMapSection(),
+                      const SizedBox(height: 24),
+                      _buildArtPiecesSection(),
+                      const SizedBox(height: 32),
+                      _buildSubmitButton(),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
         if (_isUploading) // Add loading overlay
           Container(
@@ -664,6 +718,80 @@ class _EnhancedArtWalkCreateScreenState
             child: const Center(child: CircularProgressIndicator()),
           ),
       ],
+    );
+  }
+
+  Widget _buildPersistentSelectedBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: _buildGlassDecoration().copyWith(
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, color: Colors.white, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            '${_selectedArtPieces.length} art piece${_selectedArtPieces.length == 1 ? '' : 's'} selected',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const Spacer(),
+          // Show thumbnails of first few selected items
+          ..._selectedArtPieces
+              .take(3)
+              .map(
+                (art) => Container(
+                  margin: const EdgeInsets.only(left: 4),
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      art.title.isNotEmpty ? art.title[0].toUpperCase() : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          if (_selectedArtPieces.length > 3)
+            Container(
+              margin: const EdgeInsets.only(left: 4),
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+              ),
+              child: Center(
+                child: Text(
+                  '+${_selectedArtPieces.length - 3}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -709,41 +837,55 @@ class _EnhancedArtWalkCreateScreenState
   }
 
   Widget _buildTitleField() {
-    return TextFormField(
-      controller: _titleController,
-      decoration: InputDecoration(
-        labelText: 'Title',
-        hintText: 'Give your art walk a creative name',
-        prefixIcon: const Icon(Icons.title),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: _buildGlassDecoration(),
+      child: TextFormField(
+        controller: _titleController,
+        decoration: InputDecoration(
+          labelText: 'Title',
+          hintText: 'Give your art walk a creative name',
+          prefixIcon: const Icon(Icons.title, color: Colors.white70),
+          border: InputBorder.none,
+          filled: false,
+          labelStyle: const TextStyle(color: Colors.white70),
+          hintStyle: const TextStyle(color: Colors.white54),
+        ),
+        style: const TextStyle(color: Colors.white),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a title';
+          }
+          return null;
+        },
+        onChanged: (_) => setState(() {}), // Update progress
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a title';
-        }
-        return null;
-      },
-      onChanged: (_) => setState(() {}), // Update progress
     );
   }
 
   Widget _buildDescriptionField() {
-    return TextFormField(
-      controller: _descriptionController,
-      decoration: InputDecoration(
-        labelText: 'Description',
-        hintText: 'Describe your art walk experience',
-        prefixIcon: const Icon(Icons.description),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: _buildGlassDecoration(),
+      child: TextFormField(
+        controller: _descriptionController,
+        decoration: InputDecoration(
+          labelText: 'Description',
+          hintText: 'Describe your art walk experience',
+          prefixIcon: const Icon(Icons.description, color: Colors.white70),
+          border: InputBorder.none,
+          filled: false,
+          labelStyle: const TextStyle(color: Colors.white70),
+          hintStyle: const TextStyle(color: Colors.white54),
+        ),
+        style: const TextStyle(color: Colors.white),
+        maxLines: 3,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter a description';
+          }
+          return null;
+        },
+        onChanged: (_) => setState(() {}), // Update progress
       ),
-      maxLines: 3,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter a description';
-        }
-        return null;
-      },
-      onChanged: (_) => setState(() {}), // Update progress
     );
   }
 
@@ -758,37 +900,68 @@ class _EnhancedArtWalkCreateScreenState
         const SizedBox(height: 12),
 
         // Map or List View Toggle
-        Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _showMapView = true;
-                  });
-                },
-                child: const Text('Map View'),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _showMapView = true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _showMapView
+                          ? EnhancedCreateColors.primaryTeal
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Map',
+                        style: TextStyle(
+                          color: _showMapView ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _showMapView = false;
-                  });
-                },
-                child: const Text('List View'),
+              Expanded(
+                child: InkWell(
+                  onTap: () => setState(() => _showMapView = false),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: !_showMapView
+                          ? EnhancedCreateColors.primaryTeal
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'List',
+                        style: TextStyle(
+                          color: !_showMapView ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
 
         const SizedBox(height: 12),
 
         // Map or List View
         SizedBox(
-          height: 300,
+          height: 200, // Reduced from 300
           child: _showMapView ? _buildMapView() : _buildListView(),
         ),
       ],
@@ -799,16 +972,11 @@ class _EnhancedArtWalkCreateScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Art Pieces',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Text(
+          'Available Art Pieces (${_availableArtPieces.length})',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
-
-        // Selected Art Pieces Summary
-        _buildSelectedArtSummary(),
-
-        const SizedBox(height: 16),
 
         // Available Art Pieces
         if (_isLoading)
@@ -816,69 +984,199 @@ class _EnhancedArtWalkCreateScreenState
         else
           _availableArtPieces.isEmpty
               ? const Center(child: Text('No art pieces available.'))
-              : GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 1.0,
-                    crossAxisSpacing: 8.0,
-                    mainAxisSpacing: 8.0,
-                  ),
-                  itemCount: _availableArtPieces.length,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final art = _availableArtPieces[index];
-                    final isSelected = _selectedArtPieces.contains(art);
+              : SizedBox(
+                  height: 300, // Fixed height for grid
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 1.2,
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                        ),
+                    itemCount: _availableArtPieces.length,
+                    itemBuilder: (context, index) {
+                      final art = _availableArtPieces[index];
+                      final isSelected = _selectedArtPieces.contains(art);
 
-                    return GestureDetector(
-                      onTap: () => _toggleArtPieceSelection(art),
-                      child: Card(
-                        elevation: isSelected ? 4 : 1,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(8),
-                                ),
-                                child: Image.network(
-                                  art.imageUrl,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    art.title,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    art.artistName ?? 'Unknown Artist',
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      return _buildCompactArtCard(art, isSelected);
+                    },
+                  ),
+                ),
+      ],
+    );
+  }
+
+  Widget _buildCompactArtCard(PublicArtModel art, bool isSelected) {
+    return Card(
+      color: isSelected
+          ? EnhancedCreateColors.primaryTeal.withValues(alpha: 0.1)
+          : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isSelected
+              ? EnhancedCreateColors.primaryTeal
+              : Colors.grey.withValues(alpha: 0.3),
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: InkWell(
+        onTap: () => _toggleArtPieceSelection(art),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 140, // Increased height for larger image
+          child: Stack(
+            children: [
+              // Image section with larger size
+              Container(
+                height: 140,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: EnhancedCreateColors.backgroundGradientStart,
+                  image:
+                      ImageUrlValidator.safeCorrectedNetworkImage(
+                            art.imageUrl,
+                          ) !=
+                          null
+                      ? DecorationImage(
+                          image: ImageUrlValidator.safeCorrectedNetworkImage(
+                            art.imageUrl,
+                          )!,
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: !ImageUrlValidator.isValidImageUrl(art.imageUrl)
+                    ? const Icon(
+                        Icons.palette,
+                        color: EnhancedCreateColors.primaryTeal,
+                        size: 40,
+                      )
+                    : null,
+              ),
+
+              // Bottom fade overlay
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 60, // Height of the fade area
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.7),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Title and distance overlay on fade
+              Positioned(
+                bottom: 8,
+                left: 8,
+                right: 8,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title
+                    Text(
+                      art.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 12,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    // Distance indicator
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: EnhancedCreateColors.accentOrange.withValues(
+                          alpha: 0.9,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '~${_calculateDistance(art)}mi',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black,
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
                             ),
                           ],
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-      ],
+              ),
+
+              // Selection indicator
+              if (isSelected)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: EnhancedCreateColors.primaryTeal.withValues(
+                        alpha: 0.9,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
+  }
+
+  String _calculateDistance(PublicArtModel art) {
+    if (_currentPosition == null) return '?';
+    final distance = Geolocator.distanceBetween(
+      _currentPosition!.latitude,
+      _currentPosition!.longitude,
+      art.location.latitude,
+      art.location.longitude,
+    );
+    return (distance / 1609.34).toStringAsFixed(1); // Convert to miles
   }
 
   Widget _buildMapView() {
@@ -914,13 +1212,56 @@ class _EnhancedArtWalkCreateScreenState
         return Card(
           child: ListTile(
             leading:
-                art.imageUrl.isNotEmpty &&
-                    Uri.tryParse(art.imageUrl)?.hasScheme == true
+                ImageUrlValidator.safeCorrectedNetworkImage(art.imageUrl) !=
+                    null
                 ? CircleAvatar(
-                    backgroundImage:
-                        NetworkImage(art.imageUrl) as ImageProvider,
+                    child: Builder(
+                      builder: (context) {
+                        if (kDebugMode) {
+                          print('🖼️ Loading art image: ${art.imageUrl}');
+                        }
+                        return Image(
+                          image: ImageUrlValidator.safeCorrectedNetworkImage(
+                            art.imageUrl,
+                          )!,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) {
+                              if (kDebugMode) {
+                                print(
+                                  '✅ Art image loaded successfully: ${art.imageUrl}',
+                                );
+                              }
+                              return child;
+                            }
+                            return const CircularProgressIndicator();
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            if (kDebugMode) {
+                              print(
+                                '❌ Art image load error: $error for ${art.imageUrl}',
+                              );
+                              print('Stack trace: $stackTrace');
+                            }
+                            return const Icon(Icons.art_track);
+                          },
+                        );
+                      },
+                    ),
                   )
-                : const CircleAvatar(child: Icon(Icons.art_track)),
+                : Builder(
+                    builder: (context) {
+                      if (kDebugMode) {
+                        print(
+                          '⚠️ Art image URL invalid or empty: "${art.imageUrl}"',
+                        );
+                      }
+                      return CircleAvatar(
+                        backgroundColor: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported),
+                      );
+                    },
+                  ),
             title: Text(art.title),
             subtitle: Text(art.artistName ?? 'Unknown Artist'),
             trailing: Checkbox(
@@ -934,66 +1275,29 @@ class _EnhancedArtWalkCreateScreenState
     );
   }
 
-  Widget _buildSelectedArtSummary() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Selected Art Pieces (${_selectedArtPieces.length})',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-
-        if (_selectedArtPieces.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'No art pieces selected. Tap on markers in the map or use the list view to select art pieces.',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-          ),
-
-        if (_selectedArtPieces.isNotEmpty)
-          Column(
-            children: _selectedArtPieces.asMap().entries.map((entry) {
-              final index = entry.key;
-              final art = entry.value;
-
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(child: Text('${index + 1}')),
-                  title: Text(art.title),
-                  subtitle: Text(art.artistName ?? 'Unknown Artist'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    onPressed: () => _toggleArtPieceSelection(art),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-      ],
-    );
-  }
-
   Widget _buildSubmitButton() {
     final progress = _calculateProgress();
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      height: 56,
-      child: ElevatedButton(
-        onPressed: progress == 100 ? _submitForm : null,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return Container(
+      decoration: _buildGlassDecoration(),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: 56,
+        child: ElevatedButton(
+          onPressed: progress == 100 ? _submitForm : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: progress == 100
+                ? EnhancedCreateColors.primaryTeal
+                : Colors.white24,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: progress == 100 ? 4 : 0,
           ),
-          elevation: progress == 100 ? 4 : 0,
-        ),
-        child: Text(
-          progress == 100 ? 'Share Your Art Walk' : 'Complete Your Walk',
-          style: const TextStyle(fontSize: 16),
+          child: Text(
+            progress == 100 ? 'Share Your Art Walk' : 'Complete Your Walk',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );

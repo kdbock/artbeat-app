@@ -43,7 +43,8 @@ class PaymentAuditService extends ChangeNotifier {
         'severity': _getActionSeverity(action),
       });
 
-      debugPrint('Payment audit logged: $action for transaction $transactionId');
+      debugPrint(
+          'Payment audit logged: $action for transaction $transactionId');
     } catch (e) {
       debugPrint('Failed to log payment audit: $e');
       // Don't throw - audit logging failures shouldn't break the app
@@ -121,7 +122,8 @@ class PaymentAuditService extends ChangeNotifier {
   }
 
   /// Get audit trail for a specific transaction
-  Future<List<Map<String, dynamic>>> getTransactionAuditTrail(String transactionId) async {
+  Future<List<Map<String, dynamic>>> getTransactionAuditTrail(
+      String transactionId) async {
     try {
       final query = await _firestore
           .collection('payment_audit_log')
@@ -129,10 +131,12 @@ class PaymentAuditService extends ChangeNotifier {
           .orderBy('timestamp', descending: true)
           .get();
 
-      return query.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data(),
-      }).toList();
+      return query.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+          .toList();
     } catch (e) {
       debugPrint('Failed to get transaction audit trail: $e');
       return [];
@@ -140,17 +144,20 @@ class PaymentAuditService extends ChangeNotifier {
   }
 
   /// Get admin activity summary
-  Future<Map<String, dynamic>> getAdminActivitySummary(String adminId, {DateTime? startDate, DateTime? endDate}) async {
+  Future<Map<String, dynamic>> getAdminActivitySummary(String adminId,
+      {DateTime? startDate, DateTime? endDate}) async {
     try {
       var query = _firestore
           .collection('payment_audit_log')
           .where('adminId', isEqualTo: adminId);
 
       if (startDate != null) {
-        query = query.where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
+        query = query.where('timestamp',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startDate));
       }
       if (endDate != null) {
-        query = query.where('timestamp', isLessThanOrEqualTo: Timestamp.fromDate(endDate));
+        query = query.where('timestamp',
+            isLessThanOrEqualTo: Timestamp.fromDate(endDate));
       }
 
       final snapshot = await query.get();
@@ -170,12 +177,17 @@ class PaymentAuditService extends ChangeNotifier {
       };
     } catch (e) {
       debugPrint('Failed to get admin activity summary: $e');
-      return <String, dynamic>{'totalActions': 0, 'actionsByType': <String, int>{}, 'lastActivity': null};
+      return <String, dynamic>{
+        'totalActions': 0,
+        'actionsByType': <String, int>{},
+        'lastActivity': null
+      };
     }
   }
 
   /// Get recent audit entries for monitoring
-  Future<List<Map<String, dynamic>>> getRecentAuditEntries({int limit = 50}) async {
+  Future<List<Map<String, dynamic>>> getRecentAuditEntries(
+      {int limit = 50}) async {
     try {
       final query = await _firestore
           .collection('payment_audit_log')
@@ -183,10 +195,12 @@ class PaymentAuditService extends ChangeNotifier {
           .limit(limit)
           .get();
 
-      return query.docs.map((doc) => {
-        'id': doc.id,
-        ...doc.data(),
-      }).toList();
+      return query.docs
+          .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+          .toList();
     } catch (e) {
       debugPrint('Failed to get recent audit entries: $e');
       return [];
@@ -194,16 +208,21 @@ class PaymentAuditService extends ChangeNotifier {
   }
 
   /// Check for suspicious activity patterns
-  Future<List<Map<String, dynamic>>> detectSuspiciousActivity({Duration? timeWindow}) async {
+  Future<List<Map<String, dynamic>>> detectSuspiciousActivity(
+      {Duration? timeWindow}) async {
     try {
       final window = timeWindow ?? const Duration(hours: 24);
       final cutoff = DateTime.now().subtract(window);
 
       final query = await _firestore
           .collection('payment_audit_log')
-          .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(cutoff))
-          .where('action', whereIn: ['REFUND_PROCESSED', 'DATA_EXPORT', 'SENSITIVE_DATA_ACCESS'])
-          .get();
+          .where('timestamp',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(cutoff))
+          .where('action', whereIn: [
+        'REFUND_PROCESSED',
+        'DATA_EXPORT',
+        'SENSITIVE_DATA_ACCESS'
+      ]).get();
 
       // Group by admin and count suspicious actions
       final suspiciousActivity = <String, Map<String, dynamic>>{};
@@ -233,7 +252,9 @@ class PaymentAuditService extends ChangeNotifier {
         }
       }
 
-      return suspiciousActivity.values.where((activity) => activity['suspicious'] == true).toList();
+      return suspiciousActivity.values
+          .where((activity) => activity['suspicious'] == true)
+          .toList();
     } catch (e) {
       debugPrint('Failed to detect suspicious activity: $e');
       return [];
@@ -262,7 +283,8 @@ class PaymentAuditService extends ChangeNotifier {
   /// Clean up old audit entries (compliance requirement)
   Future<void> cleanupOldEntries({Duration? retentionPeriod}) async {
     try {
-      final period = retentionPeriod ?? const Duration(days: 2555); // 7 years for financial records
+      final period = retentionPeriod ??
+          const Duration(days: 2555); // 7 years for financial records
       final cutoff = DateTime.now().subtract(period);
 
       final query = await _firestore

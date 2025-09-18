@@ -284,7 +284,7 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: allEngagementTypes
-            .map((type) => _buildEngagementButton(type))
+            .map((type) => Flexible(child: _buildEngagementButton(type)))
             .toList(),
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
-
 import 'package:lottie/lottie.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 
 /// Celebratory screen shown when an art walk is completed
@@ -460,16 +460,27 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                widget.celebrationData.visitedArtPhotos[index],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    child: const Icon(Icons.image, color: Colors.white54),
-                  );
-                },
-              ),
+              child:
+                  ImageUrlValidator.safeCorrectedNetworkImage(
+                        widget.celebrationData.visitedArtPhotos[index],
+                      ) !=
+                      null
+                  ? Image(
+                      image: ImageUrlValidator.safeCorrectedNetworkImage(
+                        widget.celebrationData.visitedArtPhotos[index],
+                      )!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          child: const Icon(Icons.image, color: Colors.white54),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      child: const Icon(Icons.image, color: Colors.white54),
+                    ),
             ),
           );
         },

@@ -393,7 +393,7 @@ class FirebaseStorageService {
     }
 
     final snapshot = await uploadTask.whenComplete(() => null);
-    return await snapshot.ref.getDownloadURL();
+    return snapshot.ref.getDownloadURL();
   }
 
   /// Upload using regular storage (fallback when debug storage fails)
@@ -430,7 +430,7 @@ class FirebaseStorageService {
     }
 
     final snapshot = await uploadTask.whenComplete(() => null);
-    return await snapshot.ref.getDownloadURL();
+    return snapshot.ref.getDownloadURL();
   }
 
   /// Upload with App Check temporarily disabled (last resort)
@@ -479,7 +479,7 @@ class FirebaseStorageService {
       // Clean up on error
       if (tempStorage != null) {
         try {
-          await tempStorage.app?.delete();
+          await tempStorage.app.delete();
         } catch (_) {}
       }
       rethrow;

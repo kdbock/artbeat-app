@@ -1,4 +1,4 @@
-import 'package:artbeat/src/services/crash_prevention_service.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -163,7 +163,7 @@ void main() {
           operationName: 'always_fails',
         );
         fail('Should have thrown an exception');
-      } catch (e) {
+      } on Exception catch (e) {
         expect(attempts, equals(2));
         expect(e.toString(), contains('Always fails'));
       }

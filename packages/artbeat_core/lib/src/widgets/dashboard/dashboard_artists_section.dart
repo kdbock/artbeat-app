@@ -315,9 +315,9 @@ class _DashboardArtistsSectionState extends State<DashboardArtistsSection> {
                         child: ClipOval(
                           child:
                               (artist.profileImageUrl != null &&
-                                  artist.profileImageUrl!.isNotEmpty)
+                                  artist.profileImageUrl?.isNotEmpty == true)
                               ? CachedNetworkImage(
-                                  imageUrl: artist.profileImageUrl!,
+                                  imageUrl: artist.profileImageUrl ?? '',
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator(

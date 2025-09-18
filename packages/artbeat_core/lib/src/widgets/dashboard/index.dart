@@ -1,6 +1,6 @@
 // Dashboard section widgets
 export 'dashboard_hero_section.dart';
-export 'dashboard_profile_menu.dart';
+export 'dashboard_connect_menu.dart';
 export 'dashboard_app_explanation.dart';
 export 'dashboard_user_section.dart';
 export 'dashboard_captures_section.dart';

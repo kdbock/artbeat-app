@@ -20,6 +20,15 @@ class ArtWalkRouteConfig {
           builder: (_) => ArtWalkDetailScreen(walkId: args['walkId'] as String),
         );
 
+      case ArtWalkRoutes.review:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => ArtWalkReviewScreen(
+            artWalkId: args['artWalkId'] as String,
+            artWalk: args['artWalk'] as ArtWalkModel,
+          ),
+        );
+
       case ArtWalkRoutes.experience:
         final args = settings.arguments as Map<String, dynamic>;
         // Redirect to enhanced experience for better UX

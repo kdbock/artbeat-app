@@ -5,6 +5,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import '../utils/logger.dart';
+import '../services/image_management_service.dart';
 
 /// A secure network image widget that handles Firebase Storage authentication
 /// and App Check token issues gracefully
@@ -146,6 +147,31 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
     }
   }
 
+  /// Generate corrected URL from old artwork path to new artwork_images path
+  String _generateCorrectedArtworkUrl(String originalUrl) {
+    try {
+      // Replace old 'artwork/' path with correct 'artwork_images/' path
+      // Handle both regular and URL-encoded versions
+      String correctedUrl = originalUrl;
+      if (originalUrl.contains('artwork/') &&
+          !originalUrl.contains('artwork_images/')) {
+        correctedUrl = originalUrl.replaceAll('artwork/', 'artwork_images/');
+      } else if (originalUrl.contains('artwork%2F') &&
+          !originalUrl.contains('artwork_images%2F')) {
+        correctedUrl = originalUrl.replaceAll(
+          'artwork%2F',
+          'artwork_images%2F',
+        );
+      }
+      return correctedUrl;
+    } catch (e) {
+      if (kDebugMode) {
+        AppLogger.error('❌ Error generating corrected artwork URL: $e');
+      }
+    }
+    return originalUrl; // Return original if can't generate corrected URL
+  }
+
   Widget _buildErrorWidget(
     BuildContext context,
     Object error,
@@ -177,6 +203,47 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
     } else if (kDebugMode && is404Error) {
       _logger.info(
         '🖼️ SecureNetworkImage: Missing image (404) ${widget.imageUrl}',
+      );
+    }
+
+    // If 404 error and the URL contains old 'artwork/' path (URL-encoded or not), try corrected 'artwork_images/' path
+    if (kDebugMode) {
+      _logger.info(
+        '🔍 Checking fallback conditions: is404Error=$is404Error, contains artwork/=${widget.imageUrl.contains('artwork/')}, contains artwork%2F=${widget.imageUrl.contains('artwork%2F')}, contains artwork_images/=${widget.imageUrl.contains('artwork_images/')}',
+      );
+    }
+    if (is404Error &&
+        (widget.imageUrl.contains('artwork/') ||
+            widget.imageUrl.contains('artwork%2F')) &&
+        !widget.imageUrl.contains('artwork_images/') &&
+        widget.imageUrl != _generateCorrectedArtworkUrl(widget.imageUrl)) {
+      final correctedUrl = _generateCorrectedArtworkUrl(widget.imageUrl);
+      if (kDebugMode) {
+        _logger.info(
+          '🔄 Attempting path correction fallback for: ${widget.imageUrl}',
+        );
+        _logger.info('🔄 Generated corrected URL: $correctedUrl');
+      }
+
+      // Try loading with corrected path
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _authenticatedUrl = correctedUrl;
+        });
+      });
+
+      // Return loading indicator while trying corrected URL
+      return Container(
+        width: widget.width,
+        height: widget.height,
+        color: Colors.grey[200],
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       );
     }
 
@@ -317,6 +384,11 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       '🖼️ URI: $uri, Valid: $isValidUrl, Likely valid: $isLikelyValidUrl',
     );
 
+    final cacheManager = ImageManagementService().cacheManager;
+    AppLogger.network(
+      '🖼️ SecureNetworkImage using cache manager: ${cacheManager != null}',
+    );
+
     if (!isLikelyValidUrl) {
       AppLogger.network('🖼️ SecureNetworkImage: URL failed validation');
       return _buildErrorWidget(context, 'Invalid URL', null);
@@ -327,6 +399,8 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       width: widget.width,
       height: widget.height,
       fit: widget.fit,
+      cacheManager:
+          cacheManager, // Will be null if not initialized, which is fine
       placeholder: _buildPlaceholder,
       errorWidget: (context, url, error) {
         // Catch and handle the error to prevent it from bubbling up
@@ -344,10 +418,10 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       },
       // Add headers for Firebase Storage
       httpHeaders: const {'Cache-Control': 'no-cache'},
-      // Disable throwing on error to prevent app crashes
       errorListener: (error) {
         if (kDebugMode) {
           AppLogger.error('🔇 CachedNetworkImage error suppressed: $error');
+          print('🔇 CachedNetworkImage error for $urlToCheck: $error');
         }
 
         // Handle thumbnail fallback for 404 errors via errorListener as well

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/art_walk_model.dart';
 
 /// Individual art walk card for display in lists and search results
@@ -64,12 +65,17 @@ class ArtWalkCard extends StatelessWidget {
                       color: Colors.grey.shade200,
                     ),
                     child:
-                        artWalk.coverImageUrl != null &&
-                            artWalk.coverImageUrl!.isNotEmpty
+                        ImageUrlValidator.safeCorrectedNetworkImage(
+                              artWalk.coverImageUrl,
+                            ) !=
+                            null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              artWalk.coverImageUrl!,
+                            child: Image(
+                              image:
+                                  ImageUrlValidator.safeCorrectedNetworkImage(
+                                    artWalk.coverImageUrl,
+                                  )!,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(

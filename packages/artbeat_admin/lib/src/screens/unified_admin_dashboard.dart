@@ -134,6 +134,11 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
     });
   }
 
+  void _handleSearch(String query) {
+    // Navigate to main search screen
+    Navigator.pushNamed(context, '/search');
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -144,6 +149,7 @@ class _UnifiedAdminDashboardState extends State<UnifiedAdminDashboard>
         showBackButton: false,
         showSearch: true,
         showDeveloperTools: true,
+        onSearchPressed: _handleSearch,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

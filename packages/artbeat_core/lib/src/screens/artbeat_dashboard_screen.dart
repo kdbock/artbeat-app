@@ -61,8 +61,8 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
             showSearch: true,
             showDeveloperTools: false,
             backgroundColor: Colors.transparent,
+
             // Removed foregroundColor: Colors.white to use the deep purple default
-            onSearchPressed: (String query) => _handleSearch(context, query),
             onProfilePressed: () => _showProfileMenu(context),
             onMenuPressed: () => _openDrawer(),
           ),
@@ -94,7 +94,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
               SliverToBoxAdapter(
                 child: DashboardHeroSection(
                   viewModel: viewModel,
-                  onProfileMenuTap: () => _showProfileMenu(context),
+                  onProfileMenuTap: () => _showConnectMenu(context),
                   onFindArtTap: () => _navigateToArtWalk(context),
                 ),
               ),
@@ -217,13 +217,17 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const DashboardProfileMenu(),
+      builder: (context) => const EnhancedProfileMenu(),
     );
   }
 
-  void _handleSearch(BuildContext context, String query) {
-    // Navigate to search screen, optionally passing the search query
-    Navigator.pushNamed(context, '/search', arguments: {'query': query});
+  void _showConnectMenu(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const DashboardConnectMenu(),
+    );
   }
 
   void _navigateToArtWalk(BuildContext context) {

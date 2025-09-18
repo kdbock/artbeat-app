@@ -335,8 +335,16 @@ class _ArtWalkEditScreenState extends State<ArtWalkEditScreen> {
           ),
           child: _newCoverImage != null
               ? Image.file(_newCoverImage!, fit: BoxFit.cover)
-              : _artWalk!.coverImageUrl?.isNotEmpty == true
-              ? Image.network(_artWalk!.coverImageUrl!, fit: BoxFit.cover)
+              : ImageUrlValidator.safeCorrectedNetworkImage(
+                      _artWalk!.coverImageUrl,
+                    ) !=
+                    null
+              ? Image(
+                  image: ImageUrlValidator.safeCorrectedNetworkImage(
+                    _artWalk!.coverImageUrl,
+                  )!,
+                  fit: BoxFit.cover,
+                )
               : const Icon(Icons.image, size: 64, color: Colors.grey),
         ),
         const SizedBox(height: 16),

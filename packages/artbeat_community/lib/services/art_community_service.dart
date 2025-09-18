@@ -422,7 +422,7 @@ class ArtCommunityService extends ChangeNotifier {
       // Debug: Log the query details
       AppLogger.info('💬 Query details: postId="$postId", limit=$limit');
 
-      List<ArtComment> comments = [];
+      final List<ArtComment> comments = [];
 
       // Debug: If no comments found, let's see what post IDs exist in the comments collection
       if (snapshot.docs.isEmpty) {

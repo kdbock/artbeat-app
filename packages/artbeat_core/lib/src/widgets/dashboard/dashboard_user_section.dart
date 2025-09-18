@@ -12,14 +12,15 @@ class DashboardUserSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (viewModel.currentUser == null) {
+    final currentUser = viewModel.currentUser;
+    if (currentUser == null) {
       return const SizedBox.shrink();
     }
 
     return Container(
       margin: const EdgeInsets.all(16),
       child: UserExperienceCard(
-        user: viewModel.currentUser!,
+        user: currentUser,
         achievements: _convertAchievements(viewModel.achievements),
         onTap: () => _handleUserAction(context, 'profile'),
         onProfileTap: () => _handleUserAction(context, 'profile'),

@@ -34,4 +34,40 @@ class ImageUrlValidator {
   static NetworkImage? safeNetworkImage(String? url) {
     return isValidImageUrl(url) ? NetworkImage(url!) : null;
   }
+
+  /// Creates a corrected NetworkImage for old artwork paths
+  ///
+  /// Automatically corrects 'artwork/' paths to 'artwork_images/' paths
+  /// to handle legacy Firebase Storage URLs.
+  static NetworkImage? safeCorrectedNetworkImage(String? url) {
+    if (!isValidImageUrl(url)) {
+      return null;
+    }
+
+    final correctedUrl = _generateCorrectedArtworkUrl(url!);
+    return NetworkImage(correctedUrl);
+  }
+
+  /// Generate corrected URL from old artwork path to new artwork_images path
+  static String _generateCorrectedArtworkUrl(String originalUrl) {
+    try {
+      // Replace old 'artwork/' path with correct 'artwork_images/' path
+      // Handle both regular and URL-encoded versions
+      String correctedUrl = originalUrl;
+      if (originalUrl.contains('artwork/') &&
+          !originalUrl.contains('artwork_images/')) {
+        correctedUrl = originalUrl.replaceAll('artwork/', 'artwork_images/');
+      } else if (originalUrl.contains('artwork%2F') &&
+          !originalUrl.contains('artwork_images%2F')) {
+        correctedUrl = originalUrl.replaceAll(
+          'artwork%2F',
+          'artwork_images%2F',
+        );
+      }
+      return correctedUrl;
+    } catch (e) {
+      // If correction fails, return original URL
+      return originalUrl;
+    }
+  }
 }

@@ -315,8 +315,9 @@ class CaptureService {
         '🚀 CaptureService.getAllCaptures() fetching from Firestore with limit: $limit',
       );
 
-      // Try with orderBy first
+      // Try with orderBy first - only get approved captures for public display
       final querySnapshot = await _capturesRef
+          .where('status', isEqualTo: 'approved')
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .get();

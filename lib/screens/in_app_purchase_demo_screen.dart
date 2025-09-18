@@ -39,14 +39,14 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
       foregroundColor: Colors.white,
     ),
     body: SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Status card
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,7 +84,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
           const SizedBox(height: 16),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -134,7 +134,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
           const SizedBox(height: 16),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -143,8 +143,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  ...PurchaseHelper.getAvailableGifts().take(3).map((gift) {
-                    return ListTile(
+                  ...PurchaseHelper.getAvailableGifts().take(3).map((gift) => ListTile(
                       leading: const Icon(Icons.card_giftcard),
                       title: Text(gift['title'] as String),
                       subtitle: Text(
@@ -156,8 +155,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                             : null,
                         child: const Text('Send'),
                       ),
-                    );
-                  }),
+                    )),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -180,7 +178,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
           const SizedBox(height: 16),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -191,8 +189,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                   const SizedBox(height: 12),
                   ...PurchaseHelper.getAvailableAdPackages().take(3).map((
                     package,
-                  ) {
-                    return ListTile(
+                  ) => ListTile(
                       leading: const Icon(Icons.campaign),
                       title: Text(package['title'] as String),
                       subtitle: Text(
@@ -204,8 +201,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                             : null,
                         child: const Text('Promote'),
                       ),
-                    );
-                  }),
+                    )),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -229,7 +225,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
             const SizedBox(height: 16),
             Card(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

@@ -143,7 +143,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
                       context,
                       'My Captures',
                       Icons.camera_alt,
-                      '/capture/public',
+                      '/art-walk/my-captures',
                       ArtWalkColors.primaryTeal,
                     ),
                     _buildDrawerItem(
@@ -212,10 +212,12 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
               return CircleAvatar(
                 radius: 30,
                 backgroundColor: Colors.white,
-                backgroundImage: profileImageUrl != null
-                    ? NetworkImage(profileImageUrl)
-                    : null,
-                child: profileImageUrl == null
+                backgroundImage: ImageUrlValidator.safeNetworkImage(
+                  profileImageUrl,
+                ),
+                child:
+                    profileImageUrl == null ||
+                        !ImageUrlValidator.isValidImageUrl(profileImageUrl)
                     ? Text(
                         displayName.isNotEmpty
                             ? displayName[0].toUpperCase()

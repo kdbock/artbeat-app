@@ -517,7 +517,7 @@ class ArtbeatDrawerItems {
     }
 
     // 3. Messaging (always available for authenticated users)
-    sections.add(DrawerSection(items: [messaging]));
+    sections.add(const DrawerSection(items: [messaging]));
 
     // 4. Role-Specific Management Tools
     switch (userRole) {
@@ -531,7 +531,7 @@ class ArtbeatDrawerItems {
         sections.add(DrawerSection(title: 'Admin', items: adminItems));
         // Also show artist tools for admins
         sections.add(
-          DrawerSection(
+          const DrawerSection(
             title: 'Artist Tools',
             items: [
               commissionRequests,

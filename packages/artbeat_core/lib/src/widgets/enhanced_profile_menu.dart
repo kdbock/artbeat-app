@@ -362,7 +362,9 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
             child: ClipOval(
               child:
                   (_currentUser != null &&
-                      _currentUser!.profileImageUrl.isNotEmpty)
+                      ImageUrlValidator.isValidImageUrl(
+                        _currentUser!.profileImageUrl,
+                      ))
                   ? Image.network(
                       _currentUser!.profileImageUrl,
                       fit: BoxFit.cover,

@@ -22,6 +22,7 @@ export 'src/services/connectivity_service.dart' show ConnectivityService;
 export 'src/services/subscription_service.dart' show SubscriptionService;
 export 'src/services/artist_service.dart' show ArtistService;
 export 'src/services/payment_service.dart' show PaymentService;
+export 'src/services/crash_prevention_service.dart' show CrashPreventionService;
 export 'src/services/enhanced_payment_service_working.dart'
     show
         EnhancedPaymentService,

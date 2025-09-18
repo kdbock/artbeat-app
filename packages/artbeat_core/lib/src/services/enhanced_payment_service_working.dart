@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/logger.dart';
 import 'biometric_auth_service.dart';
+import 'crash_prevention_service.dart';
 
 /// Risk assessment result
 class RiskAssessment {
@@ -246,19 +247,25 @@ class EnhancedPaymentService {
         }
       }
 
-      // Initialize payment sheet
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          merchantDisplayName: 'ARTbeat',
-          style: ThemeMode.system,
-          paymentIntentClientSecret: paymentIntentClientSecret,
-          customerId: _auth.currentUser?.uid,
-          allowsDelayedPaymentMethods: true,
+      // Initialize payment sheet with crash prevention
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            merchantDisplayName: 'ARTbeat',
+            style: ThemeMode.system,
+            paymentIntentClientSecret: paymentIntentClientSecret,
+            customerId: _auth.currentUser?.uid,
+            allowsDelayedPaymentMethods: true,
+          ),
         ),
+        operationName: 'initPaymentSheet_enhanced',
       );
 
-      // Present payment sheet to user
-      await Stripe.instance.presentPaymentSheet();
+      // Present payment sheet to user with crash prevention
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.presentPaymentSheet(),
+        operationName: 'presentPaymentSheet_enhanced',
+      );
 
       // Log successful payment with risk data
       await _logPaymentEvent('success', amount, currency, riskAssessment);
@@ -458,19 +465,25 @@ class EnhancedPaymentService {
 
       final clientSecret = paymentIntentData['clientSecret'] as String;
 
-      // Initialize payment sheet for wallet payment
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          merchantDisplayName: 'ARTbeat',
-          style: ThemeMode.system,
-          paymentIntentClientSecret: clientSecret,
-          customerId: _auth.currentUser?.uid,
-          allowsDelayedPaymentMethods: true,
+      // Initialize payment sheet for wallet payment with crash prevention
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            merchantDisplayName: 'ARTbeat',
+            style: ThemeMode.system,
+            paymentIntentClientSecret: clientSecret,
+            customerId: _auth.currentUser?.uid,
+            allowsDelayedPaymentMethods: true,
+          ),
         ),
+        operationName: 'initPaymentSheet_wallet',
       );
 
-      // Present payment sheet
-      await Stripe.instance.presentPaymentSheet();
+      // Present payment sheet with crash prevention
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.presentPaymentSheet(),
+        operationName: 'presentPaymentSheet_wallet',
+      );
 
       return PaymentResult(
         success: true,
@@ -548,19 +561,25 @@ class EnhancedPaymentService {
 
       final clientSecret = paymentIntentData['clientSecret'] as String;
 
-      // Initialize payment sheet
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          merchantDisplayName: 'ARTbeat',
-          style: ThemeMode.system,
-          paymentIntentClientSecret: clientSecret,
-          customerId: _auth.currentUser?.uid,
-          allowsDelayedPaymentMethods: true,
+      // Initialize payment sheet with crash prevention
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            merchantDisplayName: 'ARTbeat',
+            style: ThemeMode.system,
+            paymentIntentClientSecret: clientSecret,
+            customerId: _auth.currentUser?.uid,
+            allowsDelayedPaymentMethods: true,
+          ),
         ),
+        operationName: 'initPaymentSheet_oneclick',
       );
 
-      // Present payment sheet
-      await Stripe.instance.presentPaymentSheet();
+      // Present payment sheet with crash prevention
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.presentPaymentSheet(),
+        operationName: 'presentPaymentSheet_oneclick',
+      );
 
       return PaymentResult(
         success: true,

@@ -58,16 +58,22 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
     super.dispose();
   }
 
+  void _handleSearch(String query) {
+    // Navigate to main search screen
+    Navigator.pushNamed(context, '/search');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: const AdminDrawer(),
-      appBar: const EnhancedUniversalHeader(
+      appBar: EnhancedUniversalHeader(
         title: 'User Details',
         showBackButton: true,
         showSearch: true,
         showDeveloperTools: true,
+        onSearchPressed: _handleSearch,
       ),
       body: Column(
         children: [

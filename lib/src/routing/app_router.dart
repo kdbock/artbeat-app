@@ -66,14 +66,7 @@ class AppRouter {
           child: const auth.ForgotPasswordScreen(),
         );
 
-      case AppRoutes.profile:
-        final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-        return RouteUtils.createMainNavRoute(
-          child: profile.ProfileViewScreen(
-            userId: currentUserId,
-            isCurrentUser: true,
-          ),
-        );
+      // Profile route is handled in _handleProfileRoutes method
 
       case AppRoutes.profileEdit:
         final currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -929,12 +922,20 @@ class AppRouter {
                 child: Center(child: Text('Profile not available')),
               );
             }
+
+            // Check if a specific userId was provided in arguments
+            final args = settings.arguments as Map<String, dynamic>?;
+            final targetUserId = args?['userId'] as String? ?? currentUser.uid;
+            final isCurrentUser = targetUserId == currentUser.uid;
+
             return core.MainLayout(
               currentIndex: -1,
-              appBar: RouteUtils.createAppBar('Profile'),
+              appBar: RouteUtils.createAppBar(
+                isCurrentUser ? 'Profile' : 'User Profile',
+              ),
               child: profile.ProfileViewScreen(
-                userId: currentUser.uid,
-                isCurrentUser: true,
+                userId: targetUserId,
+                isCurrentUser: isCurrentUser,
               ),
             );
           },
@@ -1191,6 +1192,16 @@ class AppRouter {
       case AppRoutes.capturePublic:
         return RouteUtils.createMainLayoutRoute(
           child: const capture.CapturesListScreen(),
+        );
+
+      case AppRoutes.captureDetail:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final captureId = args?['captureId'] as String?;
+        if (captureId == null) {
+          return RouteUtils.createNotFoundRoute('Capture ID required');
+        }
+        return RouteUtils.createMainLayoutRoute(
+          child: capture.CaptureDetailWrapperScreen(captureId: captureId),
         );
 
       default:

@@ -95,6 +95,11 @@ class _AdminSettingsScreenState extends State<AdminSettingsScreen> {
     }
   }
 
+  void _handleSearch(String query) {
+    // Navigate to main search screen
+    Navigator.pushNamed(context, '/search');
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(

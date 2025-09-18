@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 /// Bottom sheet widget for displaying art details during art walk experience
@@ -62,7 +63,10 @@ class ArtDetailBottomSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Image
-                      if (art.imageUrl.isNotEmpty) ...[
+                      if (ImageUrlValidator.safeCorrectedNetworkImage(
+                            art.imageUrl,
+                          ) !=
+                          null) ...[
                         Container(
                           width: double.infinity,
                           height: 200,
@@ -72,8 +76,11 @@ class ArtDetailBottomSheet extends StatelessWidget {
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              art.imageUrl,
+                            child: Image(
+                              image:
+                                  ImageUrlValidator.safeCorrectedNetworkImage(
+                                    art.imageUrl,
+                                  )!,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(

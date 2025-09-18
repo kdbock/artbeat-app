@@ -2,11 +2,11 @@ import 'package:flutter/foundation.dart';
 
 /// Admin role definitions for payment management
 enum AdminRole {
-  superAdmin,    // Full access to all features
-  financeAdmin,  // Payment management, refunds, financial reports
-  supportAdmin,  // View payments, basic actions, user support
-  auditor,       // Read-only access for compliance
-  contentAdmin,  // Content management only (no payment access)
+  superAdmin, // Full access to all features
+  financeAdmin, // Payment management, refunds, financial reports
+  supportAdmin, // View payments, basic actions, user support
+  auditor, // Read-only access for compliance
+  contentAdmin, // Content management only (no payment access)
 }
 
 /// Admin permissions for payment system
@@ -19,25 +19,36 @@ class AdminPermissions {
   bool get canViewPayments => role != AdminRole.contentAdmin;
 
   /// Check if admin can process refunds
-  bool get canProcessRefunds => role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
+  bool get canProcessRefunds =>
+      role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
 
   /// Check if admin can export payment data
-  bool get canExportData => role == AdminRole.superAdmin || role == AdminRole.financeAdmin || role == AdminRole.auditor;
+  bool get canExportData =>
+      role == AdminRole.superAdmin ||
+      role == AdminRole.financeAdmin ||
+      role == AdminRole.auditor;
 
   /// Check if admin can modify payment records
-  bool get canModifyPayments => role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
+  bool get canModifyPayments =>
+      role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
 
   /// Check if admin can view sensitive payment details
-  bool get canViewSensitiveData => role == AdminRole.superAdmin || role == AdminRole.financeAdmin || role == AdminRole.auditor;
+  bool get canViewSensitiveData =>
+      role == AdminRole.superAdmin ||
+      role == AdminRole.financeAdmin ||
+      role == AdminRole.auditor;
 
   /// Check if admin can access audit logs
-  bool get canAccessAuditLogs => role == AdminRole.superAdmin || role == AdminRole.auditor;
+  bool get canAccessAuditLogs =>
+      role == AdminRole.superAdmin || role == AdminRole.auditor;
 
   /// Check if admin can perform bulk operations
-  bool get canPerformBulkOperations => role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
+  bool get canPerformBulkOperations =>
+      role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
 
   /// Check if admin can manage payment methods
-  bool get canManagePaymentMethods => role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
+  bool get canManagePaymentMethods =>
+      role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
 
   /// Check if admin can view analytics
   bool get canViewAnalytics => role != AdminRole.contentAdmin;
@@ -101,10 +112,12 @@ class AdminPermissions {
   }
 
   /// Check if role has elevated privileges
-  bool get isElevated => role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
+  bool get isElevated =>
+      role == AdminRole.superAdmin || role == AdminRole.financeAdmin;
 
   /// Check if role is read-only
-  bool get isReadOnly => role == AdminRole.auditor || role == AdminRole.contentAdmin;
+  bool get isReadOnly =>
+      role == AdminRole.auditor || role == AdminRole.contentAdmin;
 }
 
 /// Admin user model with role information
@@ -241,7 +254,9 @@ class AdminRoleService extends ChangeNotifier {
       AdminRole.financeAdmin: [AdminRole.superAdmin, AdminRole.supportAdmin],
       AdminRole.auditor: [AdminRole.supportAdmin],
       AdminRole.contentAdmin: [AdminRole.supportAdmin],
-      AdminRole.superAdmin: [AdminRole.financeAdmin], // Can demote but not promote others
+      AdminRole.superAdmin: [
+        AdminRole.financeAdmin
+      ], // Can demote but not promote others
     };
 
     return allowedTransitions[from]?.contains(to) ?? false;

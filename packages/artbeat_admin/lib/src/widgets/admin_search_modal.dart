@@ -79,8 +79,9 @@ class _AdminSearchModalState extends State<AdminSearchModal>
       _filteredTransactions = widget.transactions
           .where((transaction) =>
               transaction.id.toLowerCase().contains(lowerQuery) ||
-              transaction.description.toLowerCase().contains(lowerQuery) ||
-              transaction.userEmail.toLowerCase().contains(lowerQuery))
+              (transaction.description?.toLowerCase().contains(lowerQuery) ??
+                  false) ||
+              transaction.userName.toLowerCase().contains(lowerQuery))
           .toList();
     });
   }
@@ -239,9 +240,11 @@ class _AdminSearchModalState extends State<AdminSearchModal>
               children: [
                 Text(user.email),
                 Text(
-                  'Status: ${user.status}',
+                  'Status: ${user.isSuspended ? 'suspended' : user.isDeleted ? 'deleted' : 'active'}',
                   style: TextStyle(
-                    color: user.status == 'active' ? Colors.green : Colors.red,
+                    color: user.isSuspended || user.isDeleted
+                        ? Colors.red
+                        : Colors.green,
                     fontSize: 12,
                   ),
                 ),
@@ -366,7 +369,7 @@ class _AdminSearchModalState extends State<AdminSearchModal>
               ),
             ),
             title: Text(
-              transaction.description,
+              transaction.description ?? 'No description',
               style: const TextStyle(fontWeight: FontWeight.w500),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -376,7 +379,7 @@ class _AdminSearchModalState extends State<AdminSearchModal>
               children: [
                 Text('Amount: \$${transaction.amount.toStringAsFixed(2)}'),
                 Text(
-                  'User: ${transaction.userEmail}',
+                  'User: ${transaction.userName}',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],

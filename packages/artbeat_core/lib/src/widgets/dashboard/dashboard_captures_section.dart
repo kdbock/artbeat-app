@@ -311,238 +311,255 @@ class DashboardCapturesSection extends StatelessWidget {
     CaptureModel capture,
     int index,
   ) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(
-        milliseconds: 300 + (index * 100),
-      ), // Staggered animation
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: SizedBox(
-              width: 200, // Wider cards for better showcase
-              child: Hero(
-                tag: 'capture_${capture.id}',
-                child: Material(
-                  elevation: 8,
-                  borderRadius: BorderRadius.circular(20),
-                  shadowColor: ArtbeatColors.primaryPurple.withValues(
-                    alpha: 0.3,
-                  ),
-                  child: InkWell(
-                    onTap: () => _showCaptureDetails(context, capture),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.white, Colors.grey.shade50],
-                        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return TweenAnimationBuilder<double>(
+          duration: Duration(
+            milliseconds: 300 + (index * 100),
+          ), // Staggered animation
+          tween: Tween(begin: 0.0, end: 1.0),
+          builder: (context, value, child) {
+            return Transform.translate(
+              offset: Offset(0, 20 * (1 - value)),
+              child: Opacity(
+                opacity: value,
+                child: SizedBox(
+                  width: 200, // Wider cards for better showcase
+                  child: Hero(
+                    tag: 'capture_${capture.id}',
+                    child: Material(
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(20),
+                      shadowColor: ArtbeatColors.primaryPurple.withValues(
+                        alpha: 0.3,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Enhanced image section with overlay
-                          Expanded(
-                            flex: 7, // More space for the image
-                            child: Stack(
-                              children: [
-                                // Main image
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(20),
-                                  ),
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: ArtbeatColors.backgroundSecondary,
-                                      image:
-                                          ImageUrlValidator.isValidImageUrl(
-                                            capture.imageUrl,
-                                          )
-                                          ? DecorationImage(
-                                              image: NetworkImage(
-                                                capture.imageUrl,
-                                              ),
-                                              fit: BoxFit.cover,
-                                            )
-                                          : null,
-                                    ),
-                                    child:
-                                        !ImageUrlValidator.isValidImageUrl(
-                                          capture.imageUrl,
-                                        )
-                                        ? const Icon(
-                                            Icons.palette,
-                                            color: ArtbeatColors.primaryPurple,
-                                            size: 48,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-
-                                // Gradient overlay for better text readability
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
+                      child: InkWell(
+                        onTap: () => _showCaptureDetails(context, capture),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.white, Colors.grey.shade50],
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Enhanced image section with overlay
+                              Expanded(
+                                flex: 7, // More space for the image
+                                child: Stack(
+                                  children: [
+                                    // Main image
+                                    ClipRRect(
                                       borderRadius: const BorderRadius.vertical(
                                         top: Radius.circular(20),
                                       ),
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.transparent,
-                                          Colors.black.withValues(alpha: 0.7),
-                                        ],
-                                        stops: const [0.6, 1.0],
+                                      child: Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color:
+                                              ArtbeatColors.backgroundSecondary,
+                                          image:
+                                              ImageUrlValidator.isValidImageUrl(
+                                                capture.imageUrl,
+                                              )
+                                              ? DecorationImage(
+                                                  image: NetworkImage(
+                                                    capture.imageUrl,
+                                                  ),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : null,
+                                        ),
+                                        child:
+                                            !ImageUrlValidator.isValidImageUrl(
+                                              capture.imageUrl,
+                                            )
+                                            ? const Icon(
+                                                Icons.palette,
+                                                color:
+                                                    ArtbeatColors.primaryPurple,
+                                                size: 48,
+                                              )
+                                            : null,
                                       ),
                                     ),
-                                  ),
-                                ),
 
-                                // Floating engagement actions
-                                Positioned(
-                                  top: 12,
-                                  right: 12,
+                                    // Gradient overlay for better text readability
+                                    Positioned.fill(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                top: Radius.circular(20),
+                                              ),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                            ],
+                                            stops: const [0.6, 1.0],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Floating engagement actions
+                                    Positioned(
+                                      top: 12,
+                                      right: 12,
+                                      child: Column(
+                                        children: [
+                                          _buildLikeButton(context, capture),
+                                          const SizedBox(height: 8),
+                                          _buildFloatingActionButton(
+                                            icon: Icons.share_outlined,
+                                            color: ArtbeatColors.primaryGreen,
+                                            onTap: () =>
+                                                _handleShare(context, capture),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Location badge
+                                    if (capture.locationName?.isNotEmpty ==
+                                        true)
+                                      Positioned(
+                                        bottom: 12,
+                                        left: 12,
+                                        right: 12,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.location_on,
+                                                size: 14,
+                                                color: Colors.white,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Flexible(
+                                                child: Text(
+                                                  capture.locationName ??
+                                                      'Unknown Location',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+
+                              // Content section
+                              Expanded(
+                                flex: 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
                                   child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      _buildLikeButton(context, capture),
-                                      const SizedBox(height: 8),
-                                      _buildFloatingActionButton(
-                                        icon: Icons.share_outlined,
-                                        color: ArtbeatColors.primaryGreen,
-                                        onTap: () =>
-                                            _handleShare(context, capture),
+                                      // Title with better typography
+                                      Text(
+                                        capture.title?.isNotEmpty == true
+                                            ? capture.title!
+                                            : 'Untitled Artwork',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: ArtbeatColors.textPrimary,
+                                          height: 1.1,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+
+                                      const SizedBox(height: 4),
+
+                                      // Call to action
+                                      Container(
+                                        width: double.infinity,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              ArtbeatColors.primaryPurple,
+                                              ArtbeatColors.primaryGreen,
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.explore,
+                                              size: 12,
+                                              color: Colors.white,
+                                            ),
+                                            SizedBox(width: 3),
+                                            Text(
+                                              'Discover',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
-
-                                // Location badge
-                                if (capture.locationName?.isNotEmpty == true)
-                                  Positioned(
-                                    bottom: 12,
-                                    left: 12,
-                                    right: 12,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on,
-                                            size: 14,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              capture.locationName!,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-
-                          // Content section
-                          Expanded(
-                            flex: 3,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Title with better typography
-                                  Text(
-                                    capture.title?.isNotEmpty == true
-                                        ? capture.title!
-                                        : 'Untitled Artwork',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: ArtbeatColors.textPrimary,
-                                      height: 1.1,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-
-                                  const SizedBox(height: 4),
-
-                                  // Call to action
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          ArtbeatColors.primaryPurple,
-                                          ArtbeatColors.primaryGreen,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.explore,
-                                          size: 12,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 3),
-                                        Text(
-                                          'Discover',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -826,7 +843,7 @@ class DashboardCapturesSection extends StatelessWidget {
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
-                                capture.locationName!,
+                                capture.locationName ?? 'Unknown Location',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: ArtbeatColors.textSecondary,
@@ -841,7 +858,7 @@ class DashboardCapturesSection extends StatelessWidget {
                       // Description
                       if (capture.description?.isNotEmpty == true)
                         Text(
-                          capture.description!,
+                          capture.description ?? '',
                           style: const TextStyle(
                             fontSize: 16,
                             color: ArtbeatColors.textPrimary,

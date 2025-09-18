@@ -32,7 +32,16 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
           // Map background
           Positioned.fill(
             child: ClipRRect(
-              child: kIsWeb
+              child: widget.viewModel.isLoadingLocation
+                  ? Container(
+                      color: Colors.grey[300],
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                    )
+                  : kIsWeb
                   ? _buildWebMapFallback()
                   : GoogleMap(
                       key: const Key(_mapKey),
@@ -48,22 +57,22 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
                       zoomControlsEnabled: false,
                       mapToolbarEnabled: false,
                       style: '''[
-                        {
-                          "featureType": "poi",
-                          "elementType": "labels",
-                          "stylers": [{"visibility": "off"}]
-                        },
-                        {
-                          "featureType": "transit",
-                          "elementType": "labels",
-                          "stylers": [{"visibility": "off"}]
-                        },
-                        {
-                          "featureType": "road",
-                          "elementType": "labels",
-                          "stylers": [{"visibility": "off"}]
-                        }
-                      ]''',
+                            {
+                              "featureType": "poi",
+                              "elementType": "labels",
+                              "stylers": [{"visibility": "off"}]
+                            },
+                            {
+                              "featureType": "transit",
+                              "elementType": "labels",
+                              "stylers": [{"visibility": "off"}]
+                            },
+                            {
+                              "featureType": "road",
+                              "elementType": "labels",
+                              "stylers": [{"visibility": "off"}]
+                            }
+                          ]''',
                       onMapCreated: widget.viewModel.onMapCreated,
                       compassEnabled: false,
                       scrollGesturesEnabled: false,

@@ -90,7 +90,7 @@ class EngagementMigrationService {
   Future<void> _migrateArtWalks() async {
     AppLogger.info('🔄 Migrating art walk engagements...');
 
-    final artWalksQuery = _firestore.collection('art_walks');
+    final artWalksQuery = _firestore.collection('artWalks');
     final artWalksSnapshot = await artWalksQuery.get();
 
     for (final artWalkDoc in artWalksSnapshot.docs) {

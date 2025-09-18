@@ -619,14 +619,23 @@ class CreateArtWalkScreenState extends State<CreateArtWalkScreen> {
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 4.0),
           child: ListTile(
-            leading: artPiece.imageUrl.isNotEmpty
-                ? Image.network(
-                    artPiece.imageUrl, // Corrected: was imageUrls[0]
+            leading:
+                ImageUrlValidator.safeCorrectedNetworkImage(
+                      artPiece.imageUrl,
+                    ) !=
+                    null
+                ? Container(
                     width: 50,
                     height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.broken_image, size: 50),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: ImageUrlValidator.safeCorrectedNetworkImage(
+                          artPiece.imageUrl,
+                        )!,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   )
                 : const Icon(Icons.image_not_supported, size: 50),
             title: Text(artPiece.title),

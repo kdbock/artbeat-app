@@ -636,13 +636,19 @@ class _SearchResultsScreenState extends State<SearchResultsScreen>
                   ),
                   color: Colors.grey.shade200,
                 ),
-                child: publicArt.imageUrl.isNotEmpty
+                child:
+                    ImageUrlValidator.safeCorrectedNetworkImage(
+                          publicArt.imageUrl,
+                        ) !=
+                        null
                     ? ClipRRect(
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(12),
                         ),
-                        child: Image.network(
-                          publicArt.imageUrl,
+                        child: Image(
+                          image: ImageUrlValidator.safeCorrectedNetworkImage(
+                            publicArt.imageUrl,
+                          )!,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(

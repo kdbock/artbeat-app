@@ -436,8 +436,10 @@ class ArtWalkService {
 
           // Validate required fields before creating model
           if (!_isValidArtWalkData(data)) {
-            _logger.e('Invalid art walk data structure for ID: $id');
-            throw Exception('Art walk data is corrupted or incomplete');
+            _logger.e(
+              'Invalid art walk data structure for ID: $id - returning null',
+            );
+            return null; // Return null instead of throwing
           }
 
           final artWalk = ArtWalkModel.fromFirestore(doc);
@@ -544,8 +546,10 @@ class ArtWalkService {
           if (_isValidArtWalkData(data)) {
             walk = ArtWalkModel.fromFirestore(walkDoc);
           } else {
-            _logger.e('Invalid art walk data for ID: $walkId');
-            throw Exception('Art walk data is corrupted');
+            _logger.e(
+              'Invalid art walk data for ID: $walkId - skipping Firestore data',
+            );
+            // Don't throw exception, let it fall back to cache
           }
         }
       } catch (firestoreError) {

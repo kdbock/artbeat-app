@@ -96,7 +96,7 @@ class _AdvancedAnalyticsDashboardState extends State<AdvancedAnalyticsDashboard>
   ) async {
     try {
       final walksQuery = await _firestore
-          .collection('art_walks')
+          .collection('artWalks')
           .where('userId', isEqualTo: userId)
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
           .where('createdAt', isLessThanOrEqualTo: endDate)

@@ -11,6 +11,7 @@ import '../utils/env_loader.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../utils/logger.dart';
+import 'crash_prevention_service.dart';
 
 /// Service for handling payments and subscriptions with Stripe integration
 class PaymentService {
@@ -218,13 +219,27 @@ class PaymentService {
     required String setupIntentClientSecret,
   }) async {
     try {
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          customerId: customerId,
-          style: ThemeMode.system,
-          merchantDisplayName: 'ARTbeat',
-          setupIntentClientSecret: setupIntentClientSecret,
+      // Validate Stripe payment arguments before calling SDK
+      final paymentArgs = {
+        'customerId': customerId,
+        'setupIntentClientSecret': setupIntentClientSecret,
+      };
+
+      if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+        throw Exception('Invalid payment setup parameters provided');
+      }
+
+      // Use safeExecute to wrap the Stripe SDK call
+      await CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            customerId: customerId,
+            style: ThemeMode.system,
+            merchantDisplayName: 'ARTbeat',
+            setupIntentClientSecret: setupIntentClientSecret,
+          ),
         ),
+        operationName: 'setupPaymentSheet',
       );
     } catch (e) {
       AppLogger.error('Error setting up payment sheet: $e');
@@ -1813,15 +1828,30 @@ class PaymentService {
 
       // Step 2: Initialize and present payment sheet
       try {
-        await Stripe.instance.initPaymentSheet(
-          paymentSheetParameters: SetupPaymentSheetParameters(
-            paymentIntentClientSecret: clientSecret,
-            merchantDisplayName: 'ArtBeat',
-            style: ThemeMode.system,
+        // Validate Stripe payment arguments before calling SDK
+        final paymentArgs = {'paymentIntentClientSecret': clientSecret};
+
+        if (!CrashPreventionService.validateStripePaymentArgs(paymentArgs)) {
+          throw Exception('Invalid payment parameters for gift purchase');
+        }
+
+        // Use safeExecute to wrap Stripe SDK calls
+        await CrashPreventionService.safeExecute(
+          operation: () => Stripe.instance.initPaymentSheet(
+            paymentSheetParameters: SetupPaymentSheetParameters(
+              paymentIntentClientSecret: clientSecret,
+              merchantDisplayName: 'ArtBeat',
+              style: ThemeMode.system,
+            ),
           ),
+          operationName: 'initPaymentSheet_gift',
         );
 
-        await Stripe.instance.presentPaymentSheet();
+        await CrashPreventionService.safeExecute(
+          operation: () => Stripe.instance.presentPaymentSheet(),
+          operationName: 'presentPaymentSheet_gift',
+        );
+
         AppLogger.info('✅ Payment confirmed with Stripe');
       } on StripeException catch (e) {
         if (e.error.code == FailureCode.Canceled) {

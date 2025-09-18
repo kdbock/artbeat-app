@@ -38,7 +38,7 @@ class ExploreTab extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey[400]!),
+                border: Border.all(color: Colors.grey[400] ?? Colors.grey),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -51,7 +51,9 @@ class ExploreTab extends StatelessWidget {
                             GoogleMap(
                               key: const Key('explore_tab_map'),
                               initialCameraPosition: CameraPosition(
-                                target: userLocation!,
+                                target:
+                                    userLocation ??
+                                    const LatLng(35.7796, -78.6382),
                                 zoom: 14,
                               ),
                               markers: markers,

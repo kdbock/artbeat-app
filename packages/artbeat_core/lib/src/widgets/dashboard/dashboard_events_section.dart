@@ -287,7 +287,7 @@ class DashboardEventsSection extends StatelessWidget {
                       placeholder: const AssetImage(
                         'assets/default_profile.png',
                       ),
-                      image: NetworkImage(event.imageUrl!),
+                      image: NetworkImage(event.imageUrl ?? ''),
                       imageErrorBuilder: (context, error, stackTrace) {
                         AppLogger.error('Error loading event image: $error');
                         return Container(
@@ -423,9 +423,9 @@ class DashboardEventsSection extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (event.price != null && event.price! > 0)
+                    if (event.price != null && (event.price ?? 0) > 0)
                       Text(
-                        '\$${event.price!.toStringAsFixed(0)}',
+                        '\$${(event.price ?? 0).toStringAsFixed(0)}',
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,

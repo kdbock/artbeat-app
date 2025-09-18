@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'dart:collection';
-import 'dart:io' show Platform;
 import 'dart:async' show Zone;
 import '../widgets/secure_network_image.dart';
 import '../utils/logger.dart';
@@ -32,19 +31,27 @@ class ImageManagementService {
   CacheManager? _cacheManager;
   bool _isInitialized = false;
 
+  /// Get the cache manager (public accessor)
+  CacheManager? get cacheManager => _cacheManager;
+
   /// Check if we're in a test environment
   bool get _isTestEnvironment {
-    return (Zone.current[#test] != null) ||
-        (Platform.environment.containsKey('FLUTTER_TEST')) ||
-        const bool.fromEnvironment('dart.vm.product') == false;
+    // Only skip in actual test environments, not debug mode
+    return const bool.fromEnvironment('FLUTTER_TEST') ||
+        (Zone.current[#test] != null);
   }
 
   /// Initialize the image management service
   Future<void> initialize() async {
     if (_isInitialized) {
-      AppLogger.info('🖼️ ImageManagementService already initialized, skipping');
+      AppLogger.info(
+        '🖼️ ImageManagementService already initialized, skipping',
+      );
       return;
     }
+
+    AppLogger.info('🖼️ ImageManagementService initializing...');
+    AppLogger.info('🖼️ Is test environment: $_isTestEnvironment');
 
     // Skip cache manager initialization in test environments
     if (_isTestEnvironment) {
@@ -55,6 +62,7 @@ class ImageManagementService {
       return;
     }
 
+    AppLogger.info('🖼️ ImageManagementService initializing cache manager...');
     _cacheManager = CacheManager(
       Config(
         'artbeat_optimized_cache',
@@ -66,7 +74,9 @@ class ImageManagementService {
     );
 
     _isInitialized = true;
-    AppLogger.info('🖼️ ImageManagementService initialized');
+    AppLogger.info(
+      '🖼️ ImageManagementService initialized with cache manager: ${_cacheManager != null}',
+    );
     AppLogger.analytics('📊 Max concurrent loads: $maxConcurrentLoads');
     AppLogger.info('💾 Cache duration: ${cacheDuration.inDays} days');
   }
@@ -151,6 +161,8 @@ class ImageManagementService {
         fit: fit,
         placeholder: placeholder ?? _buildPlaceholder(width, height),
         errorWidget: errorWidget ?? _buildErrorWidget(width, height),
+        enableThumbnailFallback:
+            true, // Enable fallback to thumbnails and path corrections
       );
     }
 

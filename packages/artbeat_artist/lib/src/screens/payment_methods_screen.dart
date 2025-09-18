@@ -125,8 +125,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             await _paymentService.createSetupIntent(stripeCustomerId),
       );
 
-      // Present payment sheet
-      await Stripe.instance.presentPaymentSheet();
+      // Present payment sheet with crash prevention
+      await core.CrashPreventionService.safeExecute(
+        operation: () => Stripe.instance.presentPaymentSheet(),
+        operationName: 'presentPaymentSheet_setup',
+      );
 
       // Reload payment methods and return success
       await _loadPaymentMethods();

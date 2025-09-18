@@ -84,11 +84,11 @@ class SettingsScreen extends StatelessWidget {
         leading: _getIconForCategory(category.iconData),
         title: Text(
           category.title,
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+          style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
         ),
         subtitle: Text(
           category.description,
-          style: TextStyle(color: Colors.black54),
+          style: const TextStyle(color: Colors.black54),
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () => _navigateToCategory(context, category),

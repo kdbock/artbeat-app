@@ -59,22 +59,42 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Captures'),
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.topRight,
-              colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
-            ),
+    return core.MainLayout(
+      currentIndex: 2, // Capture tab - same as other capture screens
+      drawer: const CaptureDrawer(),
+      appBar: core.EnhancedUniversalHeader(
+        title: 'My Captures',
+        showLogo: false,
+        showBackButton: false,
+        showSearch: true,
+        onSearchPressed: (query) {
+          // TODO: Implement search functionality for user's captures
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Search coming soon!')));
+        },
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadMyCaptures,
+            tooltip: 'Refresh captures',
           ),
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () {
+              Navigator.pushNamed(context, '/capture/camera');
+            },
+            tooltip: 'Take new capture',
+          ),
+        ],
+        backgroundGradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.topRight,
+          colors: [core.ArtbeatColors.primaryPurple, Colors.pink],
         ),
         foregroundColor: Colors.white,
-        elevation: 0,
       ),
-      body: _isLoading
+      child: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(

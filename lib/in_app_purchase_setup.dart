@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/material.dart';
 
 /// Setup and initialize in-app purchases for the app
 class InAppPurchaseSetup {

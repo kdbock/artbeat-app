@@ -93,7 +93,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
     try {
       // Load transactions
-      final transactions = await _financialService.getRecentTransactions(limit: 100);
+      final transactions =
+          await _financialService.getRecentTransactions(limit: 100);
       final revenueBreakdown = await _financialService.getRevenueBreakdown();
 
       // Calculate analytics
@@ -102,7 +103,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           .where((t) => t.type.toLowerCase().contains('refund'))
           .fold(0.0, (sum, t) => sum + t.amount);
       _totalTransactions = transactions.length;
-      _averageTransactionValue = _totalTransactions > 0 ? _totalRevenue / _totalTransactions : 0;
+      _averageTransactionValue =
+          _totalTransactions > 0 ? _totalRevenue / _totalTransactions : 0;
 
       setState(() {
         _transactions = transactions;
@@ -125,23 +127,31 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         final matchesSearch = searchTerm.isEmpty ||
             transaction.userName.toLowerCase().contains(searchTerm) ||
             transaction.id.toLowerCase().contains(searchTerm) ||
-            (transaction.itemTitle?.toLowerCase().contains(searchTerm) ?? false);
+            (transaction.itemTitle?.toLowerCase().contains(searchTerm) ??
+                false);
 
         // Status filter
-        final matchesStatus = _selectedStatus == 'All' || transaction.status == _selectedStatus;
+        final matchesStatus =
+            _selectedStatus == 'All' || transaction.status == _selectedStatus;
 
         // Type filter
-        final matchesType = _selectedType == 'All' || transaction.type == _selectedType;
+        final matchesType =
+            _selectedType == 'All' || transaction.type == _selectedType;
 
         // Date range filter
         final matchesDateRange = _dateRange == null ||
             (transaction.transactionDate.isAfter(_dateRange!.start) &&
-             transaction.transactionDate.isBefore(_dateRange!.end));
+                transaction.transactionDate.isBefore(_dateRange!.end));
 
         // Amount range filter
-        final matchesAmount = transaction.amount >= _minAmount && transaction.amount <= _maxAmount;
+        final matchesAmount = transaction.amount >= _minAmount &&
+            transaction.amount <= _maxAmount;
 
-        return matchesSearch && matchesStatus && matchesType && matchesDateRange && matchesAmount;
+        return matchesSearch &&
+            matchesStatus &&
+            matchesType &&
+            matchesDateRange &&
+            matchesAmount;
       }).toList();
     });
   }
@@ -195,7 +205,10 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         });
 
         // Update transaction status
-        await _firestore.collection('payment_history').doc(transaction.id).update({
+        await _firestore
+            .collection('payment_history')
+            .doc(transaction.id)
+            .update({
           'status': 'refunded',
           'refundedAt': FieldValue.serverTimestamp(),
         });
@@ -234,9 +247,11 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('${selectedTransactions.length} transactions selected'),
-            Text('Total amount: \$${selectedTransactions.fold(0.0, (sum, t) => sum + t.amount).toStringAsFixed(2)}'),
+            Text(
+                'Total amount: \$${selectedTransactions.fold(0.0, (sum, t) => sum + t.amount).toStringAsFixed(2)}'),
             const SizedBox(height: 16),
-            const Text('Are you sure you want to process refunds for all selected transactions?'),
+            const Text(
+                'Are you sure you want to process refunds for all selected transactions?'),
           ],
         ),
         actions: [
@@ -281,7 +296,10 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
             });
 
             // Update transaction status
-            await _firestore.collection('payment_history').doc(transaction.id).update({
+            await _firestore
+                .collection('payment_history')
+                .doc(transaction.id)
+                .update({
               'status': 'refunded',
               'refundedAt': FieldValue.serverTimestamp(),
             });
@@ -331,10 +349,12 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           .toList();
 
       // Generate CSV content
-      final csvHeader = 'Transaction ID,User Name,Amount,Currency,Type,Status,Date,Payment Method\n';
-      final csvRows = selectedTransactions.map((t) =>
-        '${t.id},${t.userName},${t.amount},${t.currency},${t.type},${t.status},${intl.DateFormat('yyyy-MM-dd HH:mm').format(t.transactionDate)},${t.paymentMethod}'
-      ).join('\n');
+      const csvHeader =
+          'Transaction ID,User Name,Amount,Currency,Type,Status,Date,Payment Method\n';
+      final csvRows = selectedTransactions
+          .map((t) =>
+              '${t.id},${t.userName},${t.amount},${t.currency},${t.type},${t.status},${intl.DateFormat('yyyy-MM-dd HH:mm').format(t.transactionDate)},${t.paymentMethod}')
+          .join('\n');
 
       final csvContent = csvHeader + csvRows;
 
@@ -349,10 +369,12 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           'selectedIds': _selectedTransactionIds.toList(),
           'exportFormat': 'csv',
         },
-        fileName: 'selected_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
+        fileName:
+            'selected_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
       );
 
-      _showSuccessSnackBar('Export completed successfully (${selectedTransactions.length} records)');
+      _showSuccessSnackBar(
+          'Export completed successfully (${selectedTransactions.length} records)');
       _clearSelection();
     } catch (e) {
       debugPrint('Error exporting transactions: $e');
@@ -369,10 +391,12 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
       }
 
       // Generate CSV content for all transactions
-      final csvHeader = 'Transaction ID,User Name,Amount,Currency,Type,Status,Date,Payment Method\n';
-      final csvRows = _filteredTransactions.map((t) =>
-        '${t.id},${t.userName},${t.amount},${t.currency},${t.type},${t.status},${intl.DateFormat('yyyy-MM-dd HH:mm').format(t.transactionDate)},${t.paymentMethod}'
-      ).join('\n');
+      const csvHeader =
+          'Transaction ID,User Name,Amount,Currency,Type,Status,Date,Payment Method\n';
+      final csvRows = _filteredTransactions
+          .map((t) =>
+              '${t.id},${t.userName},${t.amount},${t.currency},${t.type},${t.status},${intl.DateFormat('yyyy-MM-dd HH:mm').format(t.transactionDate)},${t.paymentMethod}')
+          .join('\n');
 
       final csvContent = csvHeader + csvRows;
 
@@ -387,20 +411,24 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           'searchTerm': _searchController.text,
           'statusFilter': _selectedStatus,
           'typeFilter': _selectedType,
-          'dateRange': _dateRange != null ? {
-              'start': _dateRange!.start.toIso8601String(),
-              'end': _dateRange!.end.toIso8601String(),
-            } : null,
+          'dateRange': _dateRange != null
+              ? {
+                  'start': _dateRange!.start.toIso8601String(),
+                  'end': _dateRange!.end.toIso8601String(),
+                }
+              : null,
           'amountRange': {
             'min': _minAmount,
             'max': _maxAmount,
           },
           'exportFormat': 'csv',
         },
-        fileName: 'all_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
+        fileName:
+            'all_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
       );
 
-      _showSuccessSnackBar('Export completed successfully (${_filteredTransactions.length} records)');
+      _showSuccessSnackBar(
+          'Export completed successfully (${_filteredTransactions.length} records)');
     } catch (e) {
       debugPrint('Error exporting transactions: $e');
       _showErrorSnackBar('Failed to export transactions');
@@ -428,7 +456,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
       };
 
       for (final transactionId in _selectedTransactionIds) {
-        final docRef = _firestore.collection('payment_history').doc(transactionId);
+        final docRef =
+            _firestore.collection('payment_history').doc(transactionId);
         batch.update(docRef, updateData);
 
         // Log audit for each update
@@ -439,14 +468,16 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           transactionId: transactionId,
           details: {
             'newStatus': newStatus,
-            'previousStatus': _transactions.firstWhere((t) => t.id == transactionId).status,
+            'previousStatus':
+                _transactions.firstWhere((t) => t.id == transactionId).status,
             'bulkOperation': true,
           },
         );
       }
 
       await batch.commit();
-      _showSuccessSnackBar('Successfully updated ${_selectedTransactionIds.length} transactions');
+      _showSuccessSnackBar(
+          'Successfully updated ${_selectedTransactionIds.length} transactions');
       _clearSelection();
       _loadData(); // Refresh data
     } catch (e) {
@@ -484,8 +515,9 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
       }
 
       // Update select all state
-      _selectAll = _selectedTransactionIds.length == _filteredTransactions.length &&
-                   _filteredTransactions.isNotEmpty;
+      _selectAll =
+          _selectedTransactionIds.length == _filteredTransactions.length &&
+              _filteredTransactions.isNotEmpty;
     });
   }
 
@@ -524,9 +556,13 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         title: 'Payment Management',
         actions: [
           IconButton(
-            icon: Icon(_isSelectionMode ? Icons.check_box : Icons.check_box_outline_blank),
+            icon: Icon(_isSelectionMode
+                ? Icons.check_box
+                : Icons.check_box_outline_blank),
             onPressed: _toggleSelectionMode,
-            tooltip: _isSelectionMode ? 'Exit Selection Mode' : 'Enter Selection Mode',
+            tooltip: _isSelectionMode
+                ? 'Exit Selection Mode'
+                : 'Enter Selection Mode',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -535,8 +571,12 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           ),
           IconButton(
             icon: const Icon(Icons.file_download),
-            onPressed: _selectedTransactionIds.isNotEmpty ? _exportSelectedTransactions : _exportTransactions,
-            tooltip: _selectedTransactionIds.isNotEmpty ? 'Export Selected' : 'Export All',
+            onPressed: _selectedTransactionIds.isNotEmpty
+                ? _exportSelectedTransactions
+                : _exportTransactions,
+            tooltip: _selectedTransactionIds.isNotEmpty
+                ? 'Export Selected'
+                : 'Export All',
           ),
         ],
       ),
@@ -748,7 +788,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         leading: _isSelectionMode
             ? Checkbox(
                 value: _selectedTransactionIds.contains(transaction.id),
-                onChanged: (value) => _toggleTransactionSelection(transaction.id),
+                onChanged: (value) =>
+                    _toggleTransactionSelection(transaction.id),
               )
             : CircleAvatar(
                 backgroundColor: _getTransactionStatusColor(transaction.status),
@@ -764,7 +805,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         subtitle: Text('${transaction.userName} • ${transaction.displayType}'),
         trailing: Chip(
           label: Text(transaction.status.toUpperCase()),
-          backgroundColor: _getTransactionStatusColor(transaction.status).withValues(alpha: 0.2),
+          backgroundColor: _getTransactionStatusColor(transaction.status)
+              .withValues(alpha: 0.2),
         ),
         children: [
           Padding(
@@ -773,7 +815,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Transaction ID: ${transaction.id}'),
-                Text('Date: ${intl.DateFormat('MMM dd, yyyy HH:mm').format(transaction.transactionDate)}'),
+                Text(
+                    'Date: ${intl.DateFormat('MMM dd, yyyy HH:mm').format(transaction.transactionDate)}'),
                 Text('Payment Method: ${transaction.paymentMethod}'),
                 if (transaction.itemTitle != null) ...[
                   Text('Item: ${transaction.itemTitle}'),
@@ -789,7 +832,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
                       TextButton.icon(
                         onPressed: () => _processRefund(transaction),
                         icon: const Icon(Icons.undo, color: Colors.red),
-                        label: const Text('Process Refund', style: TextStyle(color: Colors.red)),
+                        label: const Text('Process Refund',
+                            style: TextStyle(color: Colors.red)),
                       ),
                     ],
                     TextButton.icon(
@@ -837,7 +881,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
   }
 
   Widget _buildRefundsTab() {
-    final refundTransactions = _transactions.where((t) => t.status == 'refunded').toList();
+    final refundTransactions =
+        _transactions.where((t) => t.status == 'refunded').toList();
 
     return Column(
       children: [
@@ -849,7 +894,8 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
               const SizedBox(width: 8),
               Text(
                 '${refundTransactions.length} Refunds',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               Text(
@@ -906,13 +952,15 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
           // Amount Range
           const SizedBox(height: 16),
-          const Text('Amount Range', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('Amount Range',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           RangeSlider(
             values: RangeValues(_minAmount, _maxAmount),
             min: 0,
             max: 10000,
             divisions: 100,
-            labels: RangeLabels('\$${_minAmount.toInt()}', '\$${_maxAmount.toInt()}'),
+            labels: RangeLabels(
+                '\$${_minAmount.toInt()}', '\$${_maxAmount.toInt()}'),
             onChanged: (values) {
               setState(() {
                 _minAmount = values.start;
@@ -927,7 +975,13 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           DropdownButtonFormField<String>(
             initialValue: _selectedType,
             decoration: const InputDecoration(labelText: 'Transaction Type'),
-            items: ['All', 'subscription', 'artwork_purchase', 'ad_payment', 'commission']
+            items: [
+              'All',
+              'subscription',
+              'artwork_purchase',
+              'ad_payment',
+              'commission'
+            ]
                 .map((type) => DropdownMenuItem(
                       value: type,
                       child: Text(type.replaceAll('_', ' ').toUpperCase()),
@@ -980,7 +1034,10 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
               _buildDetailRow('Type', transaction.displayType),
               _buildDetailRow('Status', transaction.status.toUpperCase()),
               _buildDetailRow('Payment Method', transaction.paymentMethod),
-              _buildDetailRow('Date', intl.DateFormat('MMM dd, yyyy HH:mm').format(transaction.transactionDate)),
+              _buildDetailRow(
+                  'Date',
+                  intl.DateFormat('MMM dd, yyyy HH:mm')
+                      .format(transaction.transactionDate)),
               if (transaction.itemTitle != null)
                 _buildDetailRow('Item', transaction.itemTitle!),
               if (transaction.description != null)

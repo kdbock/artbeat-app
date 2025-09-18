@@ -51,10 +51,10 @@ class _CaptureConfirmationScreenState extends State<CaptureConfirmationScreen> {
           ),
         );
 
-        // Navigate to fluid dashboard screen after successful upload
+        // Navigate to My Captures screen to show the pending capture
         Navigator.of(
           context,
-        ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
+        ).pushNamedAndRemoveUntil('/capture/my-captures', (route) => false);
       }
     } catch (e) {
       if (mounted) {

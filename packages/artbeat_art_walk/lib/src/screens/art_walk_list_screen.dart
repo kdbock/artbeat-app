@@ -240,104 +240,98 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
                 children: [
                   // Cover image
                   () {
-                    // Debug logging
-                    debugPrint(
-                      'ArtWalk ${walk.title}: coverImageUrl=${walk.coverImageUrl}, imageUrls=${walk.imageUrls.length}',
-                    );
-
-                    if (walk.coverImageUrl != null &&
-                        walk.coverImageUrl!.isNotEmpty) {
-                      AppLogger.info(
-                        'Using coverImageUrl: ${walk.coverImageUrl}',
-                      );
-                      return SecureNetworkImage(
-                        imageUrl: walk.coverImageUrl!,
+                    if (ImageUrlValidator.safeCorrectedNetworkImage(
+                          walk.coverImageUrl,
+                        ) !=
+                        null) {
+                      return Image(
+                        image: ImageUrlValidator.safeCorrectedNetworkImage(
+                          walk.coverImageUrl,
+                        )!,
                         fit: BoxFit.cover,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
-                        placeholder: Container(
-                          decoration: BoxDecoration(
-                            color: ArtWalkColors.primaryTeal.withValues(
-                              alpha: 0.1,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: ArtWalkColors.primaryTeal.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
                             ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
+                            child: const Center(
+                              child: CircularProgressIndicator(),
                             ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.image,
-                              color: ArtWalkColors.primaryTeal,
-                              size: 48,
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: ArtWalkColors.primaryTeal.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
                             ),
-                          ),
-                        ),
-                        errorWidget: Container(
-                          decoration: BoxDecoration(
-                            color: ArtWalkColors.primaryTeal.withValues(
-                              alpha: 0.1,
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: ArtWalkColors.textSecondary,
+                                size: 48,
+                              ),
                             ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              color: ArtWalkColors.textSecondary,
-                              size: 48,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       );
-                    } else if (walk.imageUrls.isNotEmpty) {
-                      AppLogger.info(
-                        'Using imageUrls[0]: ${walk.imageUrls.first}',
-                      );
-                      return SecureNetworkImage(
-                        imageUrl: walk.imageUrls.first,
+                    } else if (walk.imageUrls.isNotEmpty &&
+                        ImageUrlValidator.safeCorrectedNetworkImage(
+                              walk.imageUrls.first,
+                            ) !=
+                            null) {
+                      return Image(
+                        image: ImageUrlValidator.safeCorrectedNetworkImage(
+                          walk.imageUrls.first,
+                        )!,
                         fit: BoxFit.cover,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
-                        placeholder: Container(
-                          decoration: BoxDecoration(
-                            color: ArtWalkColors.primaryTeal.withValues(
-                              alpha: 0.1,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: ArtWalkColors.primaryTeal.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
                             ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
+                            child: const Center(
+                              child: CircularProgressIndicator(),
                             ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.image,
-                              color: ArtWalkColors.primaryTeal,
-                              size: 48,
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: ArtWalkColors.primaryTeal.withValues(
+                                alpha: 0.1,
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
                             ),
-                          ),
-                        ),
-                        errorWidget: Container(
-                          decoration: BoxDecoration(
-                            color: ArtWalkColors.primaryTeal.withValues(
-                              alpha: 0.1,
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: ArtWalkColors.textSecondary,
+                                size: 48,
+                              ),
                             ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.broken_image,
-                              color: ArtWalkColors.textSecondary,
-                              size: 48,
-                            ),
-                          ),
-                        ),
+                          );
+                        },
                       );
                     } else {
-                      AppLogger.info('No image available for ${walk.title}');
                       return Container(
                         decoration: BoxDecoration(
                           color: ArtWalkColors.primaryTeal.withValues(

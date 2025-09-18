@@ -169,8 +169,10 @@ class UserService extends ChangeNotifier {
       final doc = await _usersCollection.doc(userId).get();
       _logDebug('Document exists: ${doc.exists}');
       if (doc.exists) {
+        final userData = doc.data() as Map<String, dynamic>?;
         _logDebug('Document data: ${doc.data()}');
-        return UserModel.fromDocumentSnapshot(doc);
+        final userModel = UserModel.fromDocumentSnapshot(doc);
+        return userModel;
       }
       _logDebug('No document found for user ID: $userId');
       return null;
