@@ -8,3 +8,4 @@ export 'env_loader.dart';
 export 'location_utils.dart';
 export 'connectivity_utils.dart';
 export 'permission_utils.dart';
+export 'distance_utils.dart';

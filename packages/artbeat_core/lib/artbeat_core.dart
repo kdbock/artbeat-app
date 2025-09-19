@@ -162,6 +162,7 @@ export 'src/utils/performance_monitor.dart' show PerformanceMonitor;
 export 'src/utils/env_loader.dart' show EnvLoader;
 export 'src/utils/logger.dart' show AppLogger, LoggerExtension, LoggingMixin;
 export 'src/utils/image_url_validator.dart' show ImageUrlValidator;
+export 'src/utils/distance_utils.dart' show DistanceUtils;
 
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;

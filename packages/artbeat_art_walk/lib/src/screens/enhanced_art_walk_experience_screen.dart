@@ -155,25 +155,8 @@ class _EnhancedArtWalkExperienceScreenState
       _showTutorial();
     });
 
-    // Auto-start navigation if user location is available and there are art pieces
-    if (_currentPosition != null && _artPieces.isNotEmpty) {
-      // Show a brief message that navigation is starting
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Starting turn-by-turn navigation...'),
-            backgroundColor: Colors.blue,
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-
-      // Small delay to ensure UI is ready
-      await Future<void>.delayed(const Duration(milliseconds: 1000));
-      if (mounted) {
-        _startNavigation();
-      }
-    } else if (_currentPosition == null) {
+    // Don't auto-start navigation - let user manually start it
+    if (_currentPosition == null) {
       // Show message if location is not available
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -401,21 +384,42 @@ class _EnhancedArtWalkExperienceScreenState
         _isLoading = true;
       });
 
-      // Generate route
+      // Optimize the route for efficiency before generating navigation
+      final currentLocation = LatLng(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+      );
+
+      final optimizedArtPieces =
+          RouteOptimizationUtils.optimizeRouteFromLocation(
+            _artPieces,
+            currentLocation,
+          );
+
+      // Generate route with optimized art pieces
+      debugPrint('🧭 Experience Screen: Generating route...');
       final route = await _navigationService.generateRoute(
         widget.artWalkId,
-        _artPieces,
+        optimizedArtPieces,
         _currentPosition!,
       );
 
+      debugPrint(
+        '🧭 Experience Screen: Route generated, entering navigation mode',
+      );
       setState(() {
         _currentRoute = route;
+        _artPieces =
+            optimizedArtPieces; // Update art pieces to reflect optimized order
         _isNavigationMode = true;
         _isLoading = false;
       });
+      debugPrint('🧭 Experience Screen: _isNavigationMode set to true');
 
       // Start navigation
+      debugPrint('🧭 Experience Screen: Starting navigation service...');
       await _navigationService.startNavigation(route);
+      debugPrint('🧭 Experience Screen: Navigation service started');
 
       // Update map with detailed route
       _updateMapWithRoute(route);
@@ -841,57 +845,98 @@ class _EnhancedArtWalkExperienceScreenState
               ),
 
             // Turn-by-turn navigation widget
-            if (_isNavigationMode)
+            if (_isNavigationMode) ...[
               Positioned(
                 bottom: 100,
                 left: 0,
                 right: 0,
-                child: TurnByTurnNavigationWidget(
-                  navigationService: _navigationService,
-                  isCompact: _showCompactNavigation,
-                  onNextStep: () => _navigationService.nextStep(),
-                  onPreviousStep: () {
-                    // Implement previous step logic if needed
+                child: Builder(
+                  builder: (context) {
+                    debugPrint(
+                      '🧭 Experience Screen: Building TurnByTurnNavigationWidget',
+                    );
+                    return TurnByTurnNavigationWidget(
+                      navigationService: _navigationService,
+                      isCompact: _showCompactNavigation,
+                      onNextStep: () => _navigationService.nextStep(),
+                      onPreviousStep: () {
+                        // Implement previous step logic if needed
+                      },
+                      onStopNavigation: _stopNavigation,
+                    );
                   },
-                  onStopNavigation: _stopNavigation,
                 ),
               ),
+            ],
 
             // Navigation control button
             Positioned(
-              bottom: 16,
+              bottom: 80,
               left: 16,
               right: 16,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  if (!_isNavigationMode)
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _startNavigation,
-                        icon: const Icon(Icons.navigation),
-                        label: const Text('Start Navigation'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _stopNavigation,
-                        icon: const Icon(Icons.stop),
-                        label: const Text('Stop Navigation'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                      ),
+              child: Builder(
+                builder: (context) {
+                  debugPrint(
+                    '🧭 UI State: _isNavigationMode = $_isNavigationMode',
+                  );
+                  debugPrint(
+                    '🧭 UI State: _currentPosition = $_currentPosition',
+                  );
+                  debugPrint(
+                    '🧭 UI State: _artPieces.length = ${_artPieces.length}',
+                  );
+                  debugPrint('🧭 UI State: Building navigation button area');
+
+                  return Container(
+                    color: Colors.red.withOpacity(
+                      0.3,
+                    ), // Temporary debug background
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        if (!_isNavigationMode) ...[
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                debugPrint(
+                                  '🧭 Start Navigation button pressed',
+                                );
+                                _startNavigation();
+                              },
+                              icon: const Icon(Icons.navigation),
+                              label: const Text('Start Navigation'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                debugPrint('🧭 Stop Navigation button pressed');
+                                _stopNavigation();
+                              },
+                              icon: const Icon(Icons.stop),
+                              label: const Text('Stop Navigation'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                ],
+                  );
+                },
               ),
             ),
 

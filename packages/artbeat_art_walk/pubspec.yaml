@@ -41,6 +41,8 @@ dependencies:
     path: ../artbeat_capture
   artbeat_ads:
     path: ../artbeat_ads
+  artbeat_settings:
+    path: ../artbeat_settings
 
 flutter:
   uses-material-design: true

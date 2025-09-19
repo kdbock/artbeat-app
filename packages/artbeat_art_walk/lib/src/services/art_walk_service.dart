@@ -478,21 +478,39 @@ class ArtWalkService {
   /// Validates art walk data structure to prevent crashes
   bool _isValidArtWalkData(Map<String, dynamic> data) {
     try {
-      // Check for required fields
-      if (!data.containsKey('title') || data['title'] == null) return false;
-      if (!data.containsKey('description') || data['description'] == null)
-        return false;
-      if (!data.containsKey('createdAt') || data['createdAt'] == null)
-        return false;
-      if (!data.containsKey('createdBy') || data['createdBy'] == null)
-        return false;
+      _logger.d('Validating art walk data with keys: ${data.keys.toList()}');
 
-      // Validate artPieceIds if present
-      if (data.containsKey('artPieceIds') && data['artPieceIds'] != null) {
-        final artPieceIds = data['artPieceIds'];
-        if (artPieceIds is! List) return false;
+      // Check for required fields
+      if (!data.containsKey('title') || data['title'] == null) {
+        _logger.w('Validation failed: missing or null title');
+        return false;
+      }
+      if (!data.containsKey('description') || data['description'] == null) {
+        _logger.w('Validation failed: missing or null description');
+        return false;
+      }
+      if (!data.containsKey('createdAt') || data['createdAt'] == null) {
+        _logger.w('Validation failed: missing or null createdAt');
+        return false;
+      }
+      // Check for userId (the field actually used in createArtWalk)
+      if (!data.containsKey('userId') || data['userId'] == null) {
+        _logger.w('Validation failed: missing or null userId');
+        return false;
       }
 
+      // Validate artworkIds if present (the field actually used in createArtWalk)
+      if (data.containsKey('artworkIds') && data['artworkIds'] != null) {
+        final artworkIds = data['artworkIds'];
+        if (artworkIds is! List) {
+          _logger.w(
+            'Validation failed: artworkIds is not a List, type: ${artworkIds.runtimeType}',
+          );
+          return false;
+        }
+      }
+
+      _logger.d('Art walk data validation passed');
       return true;
     } catch (e) {
       _logger.e('Error validating art walk data: $e');
@@ -538,18 +556,42 @@ class ArtWalkService {
     try {
       ArtWalkModel? walk;
 
-      // First try to get from Firestore
+      // First try to get from Firestore with retry for potential consistency issues
       try {
-        final walkDoc = await _artWalksCollection.doc(walkId).get();
-        if (walkDoc.exists && walkDoc.data() != null) {
-          final data = walkDoc.data() as Map<String, dynamic>;
-          if (_isValidArtWalkData(data)) {
-            walk = ArtWalkModel.fromFirestore(walkDoc);
+        DocumentSnapshot? walkDoc;
+        int retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount < maxRetries) {
+          walkDoc = await _artWalksCollection.doc(walkId).get();
+
+          if (walkDoc.exists && walkDoc.data() != null) {
+            final data = walkDoc.data() as Map<String, dynamic>;
+            if (_isValidArtWalkData(data)) {
+              walk = ArtWalkModel.fromFirestore(walkDoc);
+              break;
+            } else {
+              _logger.w(
+                'Invalid art walk data for ID: $walkId (attempt ${retryCount + 1}/$maxRetries)',
+              );
+
+              // If this is not the last retry, wait a bit for Firestore consistency
+              if (retryCount < maxRetries - 1) {
+                await Future.delayed(
+                  Duration(milliseconds: 500 * (retryCount + 1)),
+                );
+                retryCount++;
+                continue;
+              } else {
+                _logger.e(
+                  'Invalid art walk data for ID: $walkId - skipping Firestore data after $maxRetries attempts',
+                );
+                // Don't throw exception, let it fall back to cache
+              }
+            }
           } else {
-            _logger.e(
-              'Invalid art walk data for ID: $walkId - skipping Firestore data',
-            );
-            // Don't throw exception, let it fall back to cache
+            // Document doesn't exist, no point in retrying
+            break;
           }
         }
       } catch (firestoreError) {

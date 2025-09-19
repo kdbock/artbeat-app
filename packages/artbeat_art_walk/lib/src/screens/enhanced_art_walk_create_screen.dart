@@ -5,10 +5,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_settings/artbeat_settings.dart';
 import 'package:flutter/foundation.dart';
 
 // Enhanced Create Art Walk specific colors (matching Dashboard theme)
@@ -83,7 +84,12 @@ class _EnhancedArtWalkCreateScreenState
   // Services
   final ArtWalkService _artWalkService = ArtWalkService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  final IntegratedSettingsService _userSettingsService =
+      IntegratedSettingsService();
+
+  // User preferences
+  UserSettingsModel? _userSettings;
 
   @override
   void initState() {
@@ -109,6 +115,7 @@ class _EnhancedArtWalkCreateScreenState
 
     _initializeLocation();
     _loadAvailableArtPieces();
+    _loadUserSettings();
   }
 
   @override
@@ -130,6 +137,26 @@ class _EnhancedArtWalkCreateScreenState
         artWalk.estimatedDuration?.toString() ?? '';
     _zipCodeController.text = artWalk.zipCode ?? '';
     _estimatedDistance = artWalk.estimatedDistance ?? 0.0;
+  }
+
+  Future<void> _loadUserSettings() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final settings = await _userSettingsService.getUserSettings();
+        setState(() {
+          _userSettings = settings;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading user settings: $e');
+      // Use default settings with miles for American users
+      setState(() {
+        _userSettings = UserSettingsModel.defaultSettings(
+          _auth.currentUser?.uid ?? '',
+        );
+      });
+    }
   }
 
   Future<void> _initializeLocation() async {
@@ -192,12 +219,60 @@ class _EnhancedArtWalkCreateScreenState
       final latitude = _currentPosition?.latitude ?? 35.7796;
       final longitude = _currentPosition?.longitude ?? -78.6382;
 
-      // Fetch all captures
+      // Fetch public art near location
+      final publicArt = await _artWalkService.getPublicArtNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: 50.0,
+      );
+
+      // Fetch captures near location (not all captures)
       final captureService = CaptureService();
       final captures = await captureService.getAllCaptures(limit: 100);
 
-      // Convert captures to PublicArtModel
+      // Filter captures to only include those within reasonable distance based on user preference
+      final String distanceUnit = _userSettings?.distanceUnit ?? 'miles';
+      final double defaultRadius = DistanceUtils.getDefaultSearchRadius(
+        distanceUnit,
+      );
+      final double radiusInMeters = DistanceUtils.getFilterRadiusInMeters(
+        defaultRadius,
+        distanceUnit,
+      );
+
       final List<PublicArtModel> captureArt = captures
+          .where((capture) {
+            // Skip captures without location
+            if (capture.location == null) {
+              debugPrint('Found capture without location: ${capture.title}');
+              return false;
+            }
+
+            try {
+              final distance = Geolocator.distanceBetween(
+                latitude,
+                longitude,
+                capture.location!.latitude,
+                capture.location!.longitude,
+              );
+
+              // Format distance in user's preferred unit
+              final formattedDistance = DistanceUtils.formatDistance(
+                distance,
+                unit: distanceUnit,
+              );
+              debugPrint(
+                'Capture "${capture.title}" distance: $formattedDistance',
+              );
+
+              return distance <= radiusInMeters;
+            } catch (e) {
+              debugPrint(
+                'Error calculating distance for capture ${capture.title}: $e',
+              );
+              return false;
+            }
+          })
           .map(
             (CaptureModel capture) => PublicArtModel(
               id: capture.id,
@@ -214,15 +289,38 @@ class _EnhancedArtWalkCreateScreenState
           )
           .toList();
 
-      // Fetch public art near location
-      final publicArt = await _artWalkService.getPublicArtNearLocation(
-        latitude: latitude,
-        longitude: longitude,
-        radiusKm: 50.0,
-      );
+      debugPrint('Total captures fetched: ${captures.length}');
+      debugPrint('Filtered captures within range: ${captureArt.length}');
+      debugPrint('Current location: $latitude, $longitude');
+
+      // Temporary fallback: if no captures found within range, include all captures with location
+      List<PublicArtModel> finalCaptureArt = captureArt;
+      if (captureArt.isEmpty && captures.isNotEmpty) {
+        debugPrint(
+          'No captures found within range, including all captures with location as fallback',
+        );
+        finalCaptureArt = captures
+            .where((capture) => capture.location != null)
+            .map(
+              (CaptureModel capture) => PublicArtModel(
+                id: capture.id,
+                title: capture.title ?? 'Captured Art',
+                artistName: capture.artistName ?? 'Unknown Artist',
+                imageUrl: capture.imageUrl,
+                location: capture.location ?? const GeoPoint(0, 0),
+                description: capture.description ?? '',
+                tags: capture.tags ?? [],
+                userId: capture.userId,
+                usersFavorited: const [],
+                createdAt: Timestamp.fromDate(capture.createdAt),
+              ),
+            )
+            .toList();
+        debugPrint('Fallback captures included: ${finalCaptureArt.length}');
+      }
 
       setState(() {
-        _availableArtPieces = [...publicArt, ...captureArt];
+        _availableArtPieces = [...publicArt, ...finalCaptureArt];
         _updateMapMarkers();
       });
     } catch (e) {
@@ -284,7 +382,7 @@ class _EnhancedArtWalkCreateScreenState
   }
 
   void _updateRoute() {
-    if (_selectedArtPieces.length < 2) {
+    if (_selectedArtPieces.isEmpty) {
       setState(() {
         _polylines.clear();
         _routePoints.clear();
@@ -293,15 +391,27 @@ class _EnhancedArtWalkCreateScreenState
       return;
     }
 
+    // Get current location or default
+    final currentLocation = _currentPosition != null
+        ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+        : _mapCenter ?? const LatLng(35.7796, -78.6382);
+
     // Sort selected art pieces by distance to create an optimal route
-    final sortedPieces = _optimizeRoute(_selectedArtPieces);
+    final sortedPieces = RouteOptimizationUtils.optimizeRouteFromLocation(
+      _selectedArtPieces,
+      currentLocation,
+    );
 
-    // Create route points
-    final routePoints = sortedPieces
-        .map((art) => LatLng(art.location.latitude, art.location.longitude))
-        .toList();
+    // Create route points starting from current location
+    final routePoints = <LatLng>[
+      currentLocation, // Start at current location
+      ...sortedPieces.map(
+        (art) => LatLng(art.location.latitude, art.location.longitude),
+      ),
+      currentLocation, // Return to start
+    ];
 
-    // Calculate total distance
+    // Calculate total distance including start and return
     double totalDistance = 0.0;
     for (int i = 0; i < routePoints.length - 1; i++) {
       totalDistance += Geolocator.distanceBetween(
@@ -312,12 +422,15 @@ class _EnhancedArtWalkCreateScreenState
       );
     }
 
-    // Convert to miles
-    final distanceInMiles = totalDistance / 1609.344;
+    // Convert to user's preferred unit
+    final String distanceUnit = _userSettings?.distanceUnit ?? 'miles';
+    final double convertedDistance = distanceUnit == 'miles'
+        ? DistanceUtils.metersToMiles(totalDistance)
+        : DistanceUtils.metersToKilometers(totalDistance);
 
     setState(() {
       _routePoints = routePoints;
-      _estimatedDistance = distanceInMiles;
+      _estimatedDistance = convertedDistance;
       _polylines = {
         Polyline(
           polylineId: const PolylineId('route'),
@@ -327,42 +440,6 @@ class _EnhancedArtWalkCreateScreenState
         ),
       };
     });
-  }
-
-  List<PublicArtModel> _optimizeRoute(List<PublicArtModel> artPieces) {
-    if (artPieces.length <= 2) return artPieces;
-
-    // Simple nearest neighbor approach for route optimization
-    final List<PublicArtModel> optimized = [];
-    final List<PublicArtModel> remaining = List.from(artPieces);
-
-    // Start with the first piece
-    optimized.add(remaining.removeAt(0));
-
-    while (remaining.isNotEmpty) {
-      final current = optimized.last;
-      PublicArtModel nearest = remaining.first;
-      double minDistance = double.infinity;
-
-      for (final art in remaining) {
-        final distance = Geolocator.distanceBetween(
-          current.location.latitude,
-          current.location.longitude,
-          art.location.latitude,
-          art.location.longitude,
-        );
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearest = art;
-        }
-      }
-
-      optimized.add(nearest);
-      remaining.remove(nearest);
-    }
-
-    return optimized;
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -394,8 +471,15 @@ class _EnhancedArtWalkCreateScreenState
       final artworkIds = _selectedArtPieces.map((art) => art.id).toList();
 
       // Calculate estimated duration based on distance and number of pieces
-      final estimatedMinutes =
-          (_estimatedDistance * 20) + (_selectedArtPieces.length * 5);
+      // Assume 3 mph walking speed + 10 minutes per art piece for viewing
+      final String distanceUnit = _userSettings?.distanceUnit ?? 'miles';
+      final double minutesPerUnit = distanceUnit == 'miles'
+          ? 20.0
+          : 12.4; // 20 min/mile or 12.4 min/km
+      final walkingMinutes = _estimatedDistance * minutesPerUnit;
+      final viewingMinutes =
+          _selectedArtPieces.length * 10; // 10 minutes per art piece
+      final estimatedMinutes = walkingMinutes + viewingMinutes;
 
       if (isEditing) {
         // Update existing art walk
@@ -415,7 +499,7 @@ class _EnhancedArtWalkCreateScreenState
           Navigator.of(context).pop();
         }
       } else {
-        // Create new art walk
+        // Create new art walk using the service method
         final userId = _auth.currentUser?.uid;
         if (userId == null) {
           throw Exception('User not authenticated');
@@ -426,40 +510,38 @@ class _EnhancedArtWalkCreateScreenState
             .map((point) => '${point.latitude},${point.longitude}')
             .join(';');
 
-        // Create the art walk
-        final artWalkData = {
-          'title': _titleController.text,
-          'description': _descriptionController.text,
-          'userId': userId,
-          'artworkIds': artworkIds,
-          'isPublic': _isPublic,
-          'zipCode': _zipCodeController.text,
-          'estimatedDuration': estimatedMinutes,
-          'estimatedDistance': _estimatedDistance,
-          'routeData': routeData,
-          'createdAt': FieldValue.serverTimestamp(),
-          'viewCount': 0,
-          'imageUrls': <String>[],
-        };
-
-        // Add cover image URL if available
-        if (_coverImageFile != null) {
-          // Upload cover image
-          final coverImageUrl = await _uploadCoverImage(_coverImageFile!);
-          if (coverImageUrl != null) {
-            artWalkData['coverImageUrl'] = coverImageUrl;
-            artWalkData['imageUrls'] = [coverImageUrl];
-          }
+        // Determine start location - use first selected art piece or current position
+        GeoPoint startLocation;
+        if (_selectedArtPieces.isNotEmpty) {
+          final firstArt = _selectedArtPieces.first;
+          startLocation = GeoPoint(
+            firstArt.location.latitude,
+            firstArt.location.longitude,
+          );
+        } else if (_currentPosition != null) {
+          startLocation = GeoPoint(
+            _currentPosition!.latitude,
+            _currentPosition!.longitude,
+          );
+        } else {
+          throw Exception('Unable to determine start location');
         }
 
-        final docRef = await _firestore
-            .collection('art_walks')
-            .add(artWalkData);
+        // Create the art walk using the service method
+        final artWalkId = await _artWalkService.createArtWalk(
+          title: _titleController.text,
+          description: _descriptionController.text,
+          artworkIds: artworkIds,
+          startLocation: startLocation,
+          routeData: routeData,
+          coverImageFile: _coverImageFile,
+          isPublic: _isPublic,
+        );
 
-        if (mounted) {
+        if (artWalkId != null && mounted) {
           // Create ArtWalkModel from the created data
           final createdArtWalk = ArtWalkModel(
-            id: docRef.id,
+            id: artWalkId,
             title: _titleController.text,
             description: _descriptionController.text,
             userId: userId,
@@ -471,11 +553,10 @@ class _EnhancedArtWalkCreateScreenState
             routeData: routeData,
             createdAt: DateTime.now(),
             viewCount: 0,
-            imageUrls:
-                _coverImageFile != null && artWalkData['coverImageUrl'] != null
-                ? [artWalkData['coverImageUrl'] as String]
-                : [],
-            coverImageUrl: artWalkData['coverImageUrl'] as String?,
+            imageUrls: _coverImageFile != null
+                ? []
+                : [], // Will be populated by service
+            coverImageUrl: null, // Will be populated by service
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -485,8 +566,10 @@ class _EnhancedArtWalkCreateScreenState
           // Navigate to review screen instead of just popping back
           Navigator.of(context).pushReplacementNamed(
             ArtWalkRoutes.review,
-            arguments: {'artWalkId': docRef.id, 'artWalk': createdArtWalk},
+            arguments: {'artWalkId': artWalkId, 'artWalk': createdArtWalk},
           );
+        } else {
+          throw Exception('Failed to create art walk');
         }
       }
     } catch (e) {
@@ -508,49 +591,6 @@ class _EnhancedArtWalkCreateScreenState
     }
   }
 
-  Future<String?> _uploadCoverImage(File imageFile) async {
-    try {
-      if (!mounted) return null;
-
-      setState(() {
-        _isLoading = true;
-      });
-
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) throw Exception('User not authenticated');
-
-      final walkId =
-          widget.artWalkId ?? DateTime.now().millisecondsSinceEpoch.toString();
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}_cover.jpg';
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('art_walk_covers')
-          .child(userId)
-          .child(walkId)
-          .child(fileName);
-
-      final uploadTask = await ref.putFile(imageFile);
-      final imageUrl = await uploadTask.ref.getDownloadURL();
-
-      // debugPrint('✅ EnhancedArtWalkCreate: Cover image uploaded: $imageUrl');
-      return imageUrl;
-    } catch (e) {
-      // debugPrint('❌ EnhancedArtWalkCreate: Error uploading cover image: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error uploading cover image: $e')),
-        );
-      }
-      return null;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   void _showIntroDialog() {
     if (_hasShownIntro) return;
     _hasShownIntro = true;
@@ -559,7 +599,10 @@ class _EnhancedArtWalkCreateScreenState
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Create Your Art Walk Journey'),
+        title: const Text(
+          'Create Your Art Walk Journey',
+          style: TextStyle(color: Colors.black87),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -567,12 +610,15 @@ class _EnhancedArtWalkCreateScreenState
             const SizedBox(height: 16),
             Text(
               'Ready to curate your own artistic adventure?',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.black87),
             ),
             const SizedBox(height: 8),
             const Text(
               'Create a unique path through local art pieces, share your favorite spots, and inspire others to explore the artistic side of your city.',
               textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black87),
             ),
           ],
         ),
@@ -581,7 +627,10 @@ class _EnhancedArtWalkCreateScreenState
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: const Text('Let\'s Begin'),
+            child: const Text(
+              'Let\'s Begin',
+              style: TextStyle(color: Color.fromARGB(255, 247, 248, 249)),
+            ),
           ),
         ],
       ),
@@ -732,7 +781,7 @@ class _EnhancedArtWalkCreateScreenState
       ),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: Colors.white, size: 20),
+          const Icon(Icons.check_circle, color: Colors.white, size: 20),
           const SizedBox(width: 8),
           Text(
             '${_selectedArtPieces.length} art piece${_selectedArtPieces.length == 1 ? '' : 's'} selected',
@@ -901,9 +950,9 @@ class _EnhancedArtWalkCreateScreenState
 
         // Map or List View Toggle
         Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(8),
+          decoration: const BoxDecoration(
+            color: Colors.grey,
+            borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
           child: Row(
             children: [
@@ -1122,7 +1171,7 @@ class _EnhancedArtWalkCreateScreenState
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '~${_calculateDistance(art)}mi',
+                        '~${_calculateDistance(art)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -1176,7 +1225,13 @@ class _EnhancedArtWalkCreateScreenState
       art.location.latitude,
       art.location.longitude,
     );
-    return (distance / 1609.34).toStringAsFixed(1); // Convert to miles
+
+    final String distanceUnit = _userSettings?.distanceUnit ?? 'miles';
+    return DistanceUtils.formatDistance(
+      distance,
+      unit: distanceUnit,
+      includeUnit: false,
+    );
   }
 
   Widget _buildMapView() {

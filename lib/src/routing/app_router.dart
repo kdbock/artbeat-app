@@ -578,6 +578,27 @@ class AppRouter {
       case AppRoutes.artWalkDashboard:
         return RouteUtils.createMainNavRoute(
           currentIndex: 1,
+          appBar: core.EnhancedUniversalHeader(
+            title: 'Art Walk',
+            showLogo: false,
+            showBackButton: false,
+            backgroundGradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.topRight,
+              colors: [
+                Color(0xFF4FB3BE), // Light Teal
+                Color(0xFFFF9E80), // Light Orange/Peach
+              ],
+            ),
+            titleGradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.topRight,
+              colors: [
+                Color(0xFF4FB3BE), // Light Teal
+                Color(0xFFFF9E80), // Light Orange/Peach
+              ],
+            ),
+          ),
           child: const art_walk.ArtWalkDashboardScreen(),
         );
 
@@ -695,6 +716,69 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 1,
           child: const Center(child: Text('Art Walk Settings - Coming Soon')),
+        );
+
+      case '/art-walk/review':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artWalkId = args?['artWalkId'] as String?;
+        final artWalk = args?['artWalk'] as art_walk.ArtWalkModel?;
+
+        if (artWalkId == null) {
+          return RouteUtils.createErrorRoute('Art walk ID is required');
+        }
+
+        if (artWalk == null) {
+          return RouteUtils.createErrorRoute('Art walk data is required');
+        }
+
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: art_walk.ArtWalkReviewScreen(
+            artWalkId: artWalkId,
+            artWalk: artWalk,
+          ),
+        );
+
+      case '/art-walk/experience':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artWalkId = args?['artWalkId'] as String?;
+        final artWalk = args?['artWalk'] as art_walk.ArtWalkModel?;
+
+        if (artWalkId == null) {
+          return RouteUtils.createErrorRoute('Art walk ID is required');
+        }
+
+        if (artWalk == null) {
+          return RouteUtils.createErrorRoute('Art walk data is required');
+        }
+
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: art_walk.EnhancedArtWalkExperienceScreen(
+            artWalkId: artWalkId,
+            artWalk: artWalk,
+          ),
+        );
+
+      case '/enhanced-art-walk-experience':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final artWalkId = args?['artWalkId'] as String?;
+        final artWalk = args?['artWalk'] as art_walk.ArtWalkModel?;
+
+        if (artWalkId == null) {
+          return RouteUtils.createErrorRoute('Art walk ID is required');
+        }
+
+        if (artWalk == null) {
+          return RouteUtils.createErrorRoute('Art walk data is required');
+        }
+
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: art_walk.EnhancedArtWalkExperienceScreen(
+            artWalkId: artWalkId,
+            artWalk: artWalk,
+          ),
         );
 
       default:

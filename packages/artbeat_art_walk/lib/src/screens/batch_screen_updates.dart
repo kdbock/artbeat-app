@@ -51,11 +51,6 @@ class StandardScreenWrapper {
 /// Screen-specific configurations
 class ScreenConfigs {
   static const Map<String, Map<String, dynamic>> configs = {
-    'ArtWalkExperienceScreen': {
-      'title': 'Art Walk Experience',
-      'hasFloatingActionButton': false,
-      'showBackButton': true,
-    },
     'CreateArtWalkScreen': {
       'title': 'Create Art Walk',
       'hasFloatingActionButton': true,

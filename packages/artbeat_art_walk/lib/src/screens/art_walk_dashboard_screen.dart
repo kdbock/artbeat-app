@@ -47,7 +47,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   List<AchievementModel> _artWalkAchievements = [];
   UserModel? _currentUser;
   bool _isDisposed = false;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // Engagement boost state variables
   int _currentStreak = 0;
@@ -922,100 +921,74 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: EnhancedUniversalHeader(
-        title: 'Art Walk',
-        showLogo: false,
-        showBackButton: false,
-        scaffoldKey: _scaffoldKey,
-        backgroundGradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [
-            Color(0xFF4FB3BE), // Light Teal
-            Color(0xFFFF9E80), // Light Orange/Peach
-          ],
-        ),
-        titleGradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
-          colors: [
-            Color(0xFF4FB3BE), // Light Teal
-            Color(0xFFFF9E80), // Light Orange/Peach
-          ],
-        ),
-      ),
-      drawer: const ArtWalkDrawer(),
-      body: Stack(
-        children: [
-          Container(
-            decoration: _buildBackgroundDecoration(),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
+    return Stack(
+      children: [
+        Container(
+          decoration: _buildBackgroundDecoration(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
 
-                  // Hero Welcome Section
-                  _buildHeroWelcomeSection(),
-                  const SizedBox(height: 24),
+                // Hero Welcome Section
+                _buildHeroWelcomeSection(),
+                const SizedBox(height: 24),
 
-                  // Quick Actions Dashboard
-                  _buildQuickActionsDashboard(),
-                  const SizedBox(height: 24),
+                // Quick Actions Dashboard
+                _buildQuickActionsDashboard(),
+                const SizedBox(height: 24),
 
-                  // Local Art Captures (Prominent position)
-                  _buildEnhancedCapturesWidget(),
-                  const SizedBox(height: 24),
+                // Local Art Captures (Prominent position)
+                _buildEnhancedCapturesWidget(),
+                const SizedBox(height: 24),
 
-                  // Ad Space - Below Captures
-                  const AdSpaceWidget(
-                    location: AdLocation.artWalkDashboard,
-                    customLabel: 'Discover Art Tools',
-                    height: 80,
-                    trackAnalytics: true,
-                  ),
-                  const SizedBox(height: 24),
+                // Ad Space - Below Captures
+                const AdSpaceWidget(
+                  location: AdLocation.artWalkDashboard,
+                  customLabel: 'Discover Art Tools',
+                  height: 80,
+                  trackAnalytics: true,
+                ),
+                const SizedBox(height: 24),
 
-                  // Interactive Map & Location
-                  _buildInteractiveMapSection(),
-                  const SizedBox(height: 24),
+                // Interactive Map & Location
+                _buildInteractiveMapSection(),
+                const SizedBox(height: 24),
 
-                  // Art Discovery Overview
-                  _buildArtDiscoveryOverview(),
-                  const SizedBox(height: 24),
+                // Art Discovery Overview
+                _buildArtDiscoveryOverview(),
+                const SizedBox(height: 24),
 
-                  // Sponsored Experiences Carousel
-                  _buildSponsoredExperiencesCarousel(),
-                  const SizedBox(height: 24),
+                // Sponsored Experiences Carousel
+                _buildSponsoredExperiencesCarousel(),
+                const SizedBox(height: 24),
 
-                  // Ad Space - Below Local Art Captures
-                  const AdSpaceWidget(
-                    location: AdLocation.artWalkDashboard,
-                    customLabel: 'Art Supplies & Events',
-                    height: 100,
-                    trackAnalytics: true,
-                  ),
-                  const SizedBox(height: 24),
+                // Ad Space - Below Local Art Captures
+                const AdSpaceWidget(
+                  location: AdLocation.artWalkDashboard,
+                  customLabel: 'Art Supplies & Events',
+                  height: 100,
+                  trackAnalytics: true,
+                ),
+                const SizedBox(height: 24),
 
-                  // Art Walks & Achievements Row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildModernArtWalksWidget()),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildModernAchievementsWidget()),
-                    ],
-                  ),
-                  const SizedBox(height: 100),
-                ],
-              ),
+                // Art Walks & Achievements Row
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _buildModernArtWalksWidget()),
+                    const SizedBox(width: 16),
+                    Expanded(child: _buildModernAchievementsWidget()),
+                  ],
+                ),
+                const SizedBox(height: 120),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1172,123 +1145,257 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
           const SizedBox(height: 20),
 
           // Streak Counter and Featured Walk Row
-          Row(
-            children: [
-              // Streak Counter
-              if (_currentStreak > 0) ...[
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: DashboardColors.accentOrange.withValues(
-                              alpha: 0.3,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.local_fire_department,
-                            color: Colors.white,
-                            size: 20,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Use Column layout on smaller screens to prevent overflow
+              final useColumnLayout = constraints.maxWidth < 400;
+
+              if (useColumnLayout) {
+                return Column(
+                  children: [
+                    // Streak Counter
+                    if (_currentStreak > 0) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
                           children: [
-                            Text(
-                              '$_currentStreak Day Streak',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: DashboardColors.accentOrange.withValues(
+                                  alpha: 0.3,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.local_fire_department,
                                 color: Colors.white,
+                                size: 20,
                               ),
                             ),
-                            Text(
-                              'Keep it up!',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.white.withValues(alpha: 0.8),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '$_currentStreak Day Streak',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Keep it up!',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-              ],
-
-              // Featured Walk
-              if (_featuredWalkTitle != null) ...[
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: DashboardColors.primaryTeal.withValues(
-                              alpha: 0.3,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.star,
-                            color: Colors.white,
-                            size: 20,
+                      const SizedBox(height: 12),
+                    ],
+
+                    // Featured Walk
+                    if (_featuredWalkTitle != null) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: DashboardColors.primaryTeal.withValues(
+                                  alpha: 0.3,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                Icons.star,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Featured Walk',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  Text(
+                                    _featuredWalkTitle!,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              } else {
+                // Use Row layout on larger screens
+                return Row(
+                  children: [
+                    // Streak Counter
+                    if (_currentStreak > 0) ...[
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
                             children: [
-                              const Text(
-                                'Featured Walk',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white70,
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: DashboardColors.accentOrange
+                                      .withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.local_fire_department,
+                                  color: Colors.white,
+                                  size: 20,
                                 ),
                               ),
-                              Text(
-                                _featuredWalkTitle!,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                              const SizedBox(width: 12),
+                              Flexible(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '$_currentStreak Day Streak',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Keep it up!',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+
+                    // Featured Walk
+                    if (_featuredWalkTitle != null) ...[
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: DashboardColors.primaryTeal.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.star,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Featured Walk',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                    Text(
+                                      _featuredWalkTitle!,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              }
+            },
           ),
         ],
       ),
@@ -2741,7 +2848,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
           ),
           const SizedBox(height: 20),
           SizedBox(
-            height: 160,
+            height: 180,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: sponsoredExperiences.length,

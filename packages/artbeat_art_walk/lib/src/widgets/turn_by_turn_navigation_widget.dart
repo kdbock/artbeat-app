@@ -53,12 +53,53 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
     return StreamBuilder<NavigationUpdate>(
       stream: widget.navigationService.navigationUpdates,
       builder: (context, snapshot) {
+        debugPrint(
+          '🧭 TurnByTurnWidget - Stream state: ${snapshot.connectionState}',
+        );
+        debugPrint('🧭 TurnByTurnWidget - Has data: ${snapshot.hasData}');
+        debugPrint('🧭 TurnByTurnWidget - Has error: ${snapshot.hasError}');
+
+        if (snapshot.hasError) {
+          debugPrint('🧭 TurnByTurnWidget - Error: ${snapshot.error}');
+          return Container(
+            margin: const EdgeInsets.all(16),
+            child: Card(
+              elevation: 8,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Text('Navigation Error: ${snapshot.error}'),
+              ),
+            ),
+          );
+        }
+
         if (!snapshot.hasData) {
-          return const SizedBox.shrink();
+          debugPrint('🧭 TurnByTurnWidget - No data, showing loading...');
+          return Container(
+            margin: const EdgeInsets.all(16),
+            child: Card(
+              elevation: 8,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: const Row(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(width: 16),
+                    Text('Loading navigation...'),
+                  ],
+                ),
+              ),
+            ),
+          );
         }
 
         _lastUpdate = snapshot.data!;
         final update = _lastUpdate!;
+
+        debugPrint('🧭 TurnByTurnWidget - Update type: ${update.type}');
+        debugPrint(
+          '🧭 TurnByTurnWidget - Current step: ${update.currentStep?.instruction}',
+        );
 
         if (widget.isCompact) {
           return _buildCompactView(update);

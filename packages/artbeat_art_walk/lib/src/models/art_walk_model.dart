@@ -19,6 +19,9 @@ class ArtWalkModel {
   final List<String>? tags; // Tags for categorization
   final String? difficulty; // Difficulty level (Easy, Medium, Hard)
   final bool? isAccessible; // Accessibility information
+  final GeoPoint? startLocation; // Starting location for the art walk
+  final int?
+  completionCount; // Number of times this art walk has been completed
 
   ArtWalkModel({
     required this.id,
@@ -38,6 +41,8 @@ class ArtWalkModel {
     this.tags,
     this.difficulty,
     this.isAccessible,
+    this.startLocation,
+    this.completionCount,
   });
 
   factory ArtWalkModel.fromFirestore(DocumentSnapshot doc) {
@@ -56,6 +61,9 @@ class ArtWalkModel {
       estimatedDuration: data['estimatedDuration'] as double?,
       estimatedDistance: data['estimatedDistance'] as double?,
       coverImageUrl: data['coverImageUrl'] as String?,
+      routeData: data['routeData'] as String?,
+      startLocation: data['startLocation'] as GeoPoint?,
+      completionCount: data['completionCount'] as int?,
     );
   }
 
@@ -73,6 +81,9 @@ class ArtWalkModel {
       'estimatedDuration': estimatedDuration,
       'estimatedDistance': estimatedDistance,
       'coverImageUrl': coverImageUrl,
+      'routeData': routeData,
+      'startLocation': startLocation,
+      'completionCount': completionCount,
     };
   }
 
@@ -90,6 +101,9 @@ class ArtWalkModel {
     double? estimatedDuration,
     double? estimatedDistance,
     String? coverImageUrl,
+    String? routeData,
+    GeoPoint? startLocation,
+    int? completionCount,
   }) {
     return ArtWalkModel(
       id: id ?? this.id,
@@ -105,6 +119,9 @@ class ArtWalkModel {
       estimatedDuration: estimatedDuration ?? this.estimatedDuration,
       estimatedDistance: estimatedDistance ?? this.estimatedDistance,
       coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      routeData: routeData ?? this.routeData,
+      startLocation: startLocation ?? this.startLocation,
+      completionCount: completionCount ?? this.completionCount,
     );
   }
 

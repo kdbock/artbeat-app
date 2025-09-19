@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
@@ -29,8 +30,10 @@ class ArtWalkNavigationService {
     : _directionsService = directionsService ?? DirectionsService();
 
   /// Stream of navigation updates
-  Stream<NavigationUpdate> get navigationUpdates =>
-      _navigationUpdateController.stream;
+  Stream<NavigationUpdate> get navigationUpdates {
+    core.AppLogger.info('🧭 Navigation stream accessed');
+    return _navigationUpdateController.stream;
+  }
 
   /// Stream of location updates
   Stream<Position> get locationUpdates => _locationUpdateController.stream;
@@ -57,58 +60,212 @@ class ArtWalkNavigationService {
       : (_currentSegmentIndex + segmentProgress) /
             _currentRoute!.segments.length;
 
-  /// Generate a complete route for an art walk
+  /// Generate a complete route for an art walk with optimized waypoints
   Future<ArtWalkRouteModel> generateRoute(
     String artWalkId,
     List<PublicArtModel> artPieces,
     Position startPosition,
   ) async {
+    core.AppLogger.info(
+      '🧭 Generating route for ${artPieces.length} art pieces',
+    );
+
     if (artPieces.isEmpty) {
       throw Exception('No art pieces provided for route generation');
     }
 
-    // Create waypoints list starting from user location
-    final waypoints = <String>[];
-    waypoints.add('${startPosition.latitude},${startPosition.longitude}');
+    // Create origin and destination
+    final origin = '${startPosition.latitude},${startPosition.longitude}';
+    final destination = origin; // Return to start for circular route
 
-    // Add all art piece locations
-    for (final artPiece in artPieces) {
+    // Create waypoints for intermediate art pieces (all except the last one)
+    final waypoints = <String>[];
+
+    // Add all art pieces as waypoints for a complete route
+    for (int i = 0; i < artPieces.length; i++) {
+      final artPiece = artPieces[i];
       waypoints.add(
         '${artPiece.location.latitude},${artPiece.location.longitude}',
       );
     }
 
-    // Use the existing DirectionsService to get route data
-    final directionsData = await _directionsService.getDirections(
-      waypoints.first,
-      waypoints.last,
-      // Pass waypoints as intermediate stops - this might need API modification
-    );
+    try {
+      // Use the DirectionsService to get route data with waypoints
+      final directionsData = await _directionsService.getDirections(
+        origin,
+        destination,
+        waypoints: waypoints,
+      );
 
-    // Create route model from directions data
+      // Validate the response
+      if (directionsData['routes'] == null ||
+          (directionsData['routes'] as List).isEmpty) {
+        throw Exception('No routes found in directions response');
+      }
+
+      // Create route model from directions data
+      final routeId =
+          'route_${artWalkId}_${DateTime.now().millisecondsSinceEpoch}';
+      final route = ArtWalkRouteModel.fromGoogleMapsRoute(
+        routeId,
+        artWalkId,
+        directionsData['routes'][0] as Map<String, dynamic>,
+        artPieces.map((art) => art.id).toList(),
+      );
+
+      core.AppLogger.info(
+        '🧭 Generated Google route with ${route.segments.length} segments',
+      );
+      return route;
+    } catch (e) {
+      // If Google Directions fails, create a simple route
+      core.AppLogger.info(
+        '🧭 Google Directions failed: $e. Creating simple route.',
+      );
+      final simpleRoute = _createSimpleRoute(
+        artWalkId,
+        artPieces,
+        startPosition,
+      );
+      core.AppLogger.info(
+        '🧭 Generated simple route with ${simpleRoute.segments.length} segments',
+      );
+      return simpleRoute;
+    }
+  }
+
+  /// Create a simple route without Google Directions API
+  /// This is a fallback when the API is unavailable or fails
+  ArtWalkRouteModel _createSimpleRoute(
+    String artWalkId,
+    List<PublicArtModel> artPieces,
+    Position startPosition,
+  ) {
     final routeId =
-        'route_${artWalkId}_${DateTime.now().millisecondsSinceEpoch}';
-    final route = ArtWalkRouteModel.fromGoogleMapsRoute(
-      routeId,
-      artWalkId,
-      directionsData['routes'][0] as Map<String, dynamic>,
-      artPieces.map((art) => art.id).toList(),
-    );
+        'simple_route_${artWalkId}_${DateTime.now().millisecondsSinceEpoch}';
+    final segments = <RouteSegment>[];
 
-    return route;
+    // Create segments between consecutive points
+    final allPoints = [
+      LatLng(startPosition.latitude, startPosition.longitude),
+      ...artPieces.map(
+        (art) => LatLng(art.location.latitude, art.location.longitude),
+      ),
+      LatLng(
+        startPosition.latitude,
+        startPosition.longitude,
+      ), // Return to start
+    ];
+
+    for (int i = 0; i < allPoints.length - 1; i++) {
+      final from = allPoints[i];
+      final to = allPoints[i + 1];
+
+      // Calculate distance and bearing
+      final distance = Geolocator.distanceBetween(
+        from.latitude,
+        from.longitude,
+        to.latitude,
+        to.longitude,
+      );
+
+      final bearing = Geolocator.bearingBetween(
+        from.latitude,
+        from.longitude,
+        to.latitude,
+        to.longitude,
+      );
+
+      // Create simple navigation step
+      final step = NavigationStepModel(
+        instruction: _generateSimpleInstruction(bearing, distance),
+        maneuver: 'straight',
+        distanceMeters: distance.round(),
+        durationSeconds: (distance / 1.4)
+            .round(), // Assume 1.4 m/s walking speed
+        startLocation: from,
+        endLocation: to,
+        polylinePoints: [from, to], // Simple straight line
+      );
+
+      // Create segment
+      final segment = RouteSegment(
+        fromArtPieceId: i > 0 ? artPieces[i - 1].id : null,
+        toArtPieceId: i < artPieces.length ? artPieces[i].id : 'start',
+        steps: [step],
+        distanceMeters: distance.round(),
+        durationSeconds: step.durationSeconds,
+      );
+
+      segments.add(segment);
+    }
+
+    return ArtWalkRouteModel(
+      id: routeId,
+      artWalkId: artWalkId,
+      segments: segments,
+      totalDistanceMeters: segments.fold(
+        0,
+        (sum, segment) => sum + segment.distanceMeters,
+      ),
+      totalDurationSeconds: segments.fold(
+        0,
+        (sum, segment) => sum + segment.durationSeconds,
+      ),
+      overviewPolyline: allPoints,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  /// Generate simple navigation instruction based on bearing
+  String _generateSimpleInstruction(double bearing, double distance) {
+    final distanceText = distance > 1000
+        ? '${(distance / 1000).toStringAsFixed(1)} km'
+        : '${distance.round()} m';
+
+    String direction;
+    if (bearing >= -22.5 && bearing < 22.5) {
+      direction = 'north';
+    } else if (bearing >= 22.5 && bearing < 67.5) {
+      direction = 'northeast';
+    } else if (bearing >= 67.5 && bearing < 112.5) {
+      direction = 'east';
+    } else if (bearing >= 112.5 && bearing < 157.5) {
+      direction = 'southeast';
+    } else if (bearing >= 157.5 || bearing < -157.5) {
+      direction = 'south';
+    } else if (bearing >= -157.5 && bearing < -112.5) {
+      direction = 'southwest';
+    } else if (bearing >= -112.5 && bearing < -67.5) {
+      direction = 'west';
+    } else {
+      direction = 'northwest';
+    }
+
+    return 'Head $direction for $distanceText';
   }
 
   /// Start navigation for a given route
   Future<void> startNavigation(ArtWalkRouteModel route) async {
+    core.AppLogger.info('🧭 Starting navigation for route: ${route.id}');
+    core.AppLogger.info('🧭 Route has ${route.segments.length} segments');
+
     _currentRoute = route;
     _currentSegmentIndex = 0;
     _currentStepIndex = 0;
+
+    // Debug current state
+    core.AppLogger.info(
+      '🧭 Current segment: ${currentSegment?.fromArtPieceId} -> ${currentSegment?.toArtPieceId}',
+    );
+    core.AppLogger.info('🧭 Current step: ${currentStep?.instruction}');
 
     // Start location monitoring
     await _startLocationMonitoring();
 
     // Send initial navigation update
     _sendNavigationUpdate(NavigationUpdateType.routeStarted);
+    core.AppLogger.info('🧭 Initial navigation update sent');
   }
 
   /// Stop navigation and clean up resources
@@ -188,6 +345,7 @@ class ArtWalkNavigationService {
 
   /// Start monitoring location updates
   Future<void> _startLocationMonitoring() async {
+    core.AppLogger.info('🧭 Starting location monitoring...');
     const LocationSettings locationSettings = LocationSettings(
       accuracy: LocationAccuracy.medium, // Reduced from high to medium
       distanceFilter: 10, // Increased from 5 to 10 meters to reduce updates
@@ -202,6 +360,9 @@ class ArtWalkNavigationService {
 
     _locationSubscription = locationStream.listen(
       (Position position) {
+        core.AppLogger.info(
+          '🧭 Location update received: ${position.latitude}, ${position.longitude}',
+        );
         if (!_locationUpdateController.isClosed) {
           _lastKnownPosition = position;
           _locationUpdateController.add(position);
@@ -264,8 +425,18 @@ class ArtWalkNavigationService {
       currentPosition: _lastKnownPosition,
     );
 
+    core.AppLogger.info('🧭 Sending navigation update: $type');
+    core.AppLogger.info(
+      '🧭 Current step instruction: ${update.currentStep?.instruction}',
+    );
+    core.AppLogger.info(
+      '🧭 Route progress: ${(update.routeProgress * 100).toInt()}%',
+    );
+
     if (!_navigationUpdateController.isClosed) {
       _navigationUpdateController.add(update);
+    } else {
+      core.AppLogger.warning('🧭 Navigation update controller is closed!');
     }
   }
 

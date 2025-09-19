@@ -8,6 +8,7 @@ class UserSettingsModel {
   final bool notificationsEnabled;
   final String language;
   final String timezone;
+  final String distanceUnit; // 'miles' or 'kilometers'
   final Map<String, dynamic> notificationPreferences;
   final Map<String, dynamic> privacySettings;
   final Map<String, dynamic> securitySettings;
@@ -21,6 +22,7 @@ class UserSettingsModel {
     this.notificationsEnabled = true,
     this.language = 'en',
     this.timezone = 'UTC',
+    this.distanceUnit = 'miles', // Default to miles for US users
     this.notificationPreferences = const {},
     this.privacySettings = const {},
     this.securitySettings = const {},
@@ -37,6 +39,7 @@ class UserSettingsModel {
       notificationsEnabled: map['notificationsEnabled'] as bool? ?? true,
       language: map['language'] as String? ?? 'en',
       timezone: map['timezone'] as String? ?? 'UTC',
+      distanceUnit: map['distanceUnit'] as String? ?? 'miles',
       notificationPreferences: Map<String, dynamic>.from(
         map['notificationPreferences'] as Map<String, dynamic>? ?? {},
       ),
@@ -66,6 +69,7 @@ class UserSettingsModel {
       'notificationsEnabled': notificationsEnabled,
       'language': language,
       'timezone': timezone,
+      'distanceUnit': distanceUnit,
       'notificationPreferences': notificationPreferences,
       'privacySettings': privacySettings,
       'securitySettings': securitySettings,
@@ -84,6 +88,7 @@ class UserSettingsModel {
       notificationsEnabled: true,
       language: 'en',
       timezone: 'UTC',
+      distanceUnit: 'miles', // Default to miles for US users
       notificationPreferences: _getDefaultNotificationPreferences(),
       privacySettings: _getDefaultPrivacySettings(),
       securitySettings: _getDefaultSecuritySettings(),
@@ -195,6 +200,7 @@ class UserSettingsModel {
     bool? notificationsEnabled,
     String? language,
     String? timezone,
+    String? distanceUnit,
     Map<String, dynamic>? notificationPreferences,
     Map<String, dynamic>? privacySettings,
     Map<String, dynamic>? securitySettings,
@@ -208,6 +214,7 @@ class UserSettingsModel {
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       language: language ?? this.language,
       timezone: timezone ?? this.timezone,
+      distanceUnit: distanceUnit ?? this.distanceUnit,
       notificationPreferences:
           notificationPreferences ?? this.notificationPreferences,
       privacySettings: privacySettings ?? this.privacySettings,
@@ -220,7 +227,10 @@ class UserSettingsModel {
 
   /// Validation method
   bool isValid() {
-    return userId.isNotEmpty && language.isNotEmpty && timezone.isNotEmpty;
+    return userId.isNotEmpty &&
+        language.isNotEmpty &&
+        timezone.isNotEmpty &&
+        (distanceUnit == 'miles' || distanceUnit == 'kilometers');
   }
 
   @override
@@ -232,6 +242,7 @@ class UserSettingsModel {
         other.notificationsEnabled == notificationsEnabled &&
         other.language == language &&
         other.timezone == timezone &&
+        other.distanceUnit == distanceUnit &&
         mapEquals(other.notificationPreferences, notificationPreferences) &&
         mapEquals(other.privacySettings, privacySettings) &&
         mapEquals(other.securitySettings, securitySettings) &&
@@ -245,6 +256,7 @@ class UserSettingsModel {
         notificationsEnabled.hashCode ^
         language.hashCode ^
         timezone.hashCode ^
+        distanceUnit.hashCode ^
         notificationPreferences.hashCode ^
         privacySettings.hashCode ^
         securitySettings.hashCode ^
@@ -255,6 +267,6 @@ class UserSettingsModel {
   String toString() {
     return 'UserSettingsModel(userId: $userId, darkMode: $darkMode, '
         'notificationsEnabled: $notificationsEnabled, language: $language, '
-        'timezone: $timezone, updatedAt: $updatedAt)';
+        'timezone: $timezone, distanceUnit: $distanceUnit, updatedAt: $updatedAt)';
   }
 }
