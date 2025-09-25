@@ -7,25 +7,25 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Capture Integration Tests', () {
-    testWidgets('should complete capture flow and route correctly', (
+    testWidgets('should complete simplified capture flow and route correctly', (
       tester,
     ) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
-      // Simulate tap to start capture
+      // Simulate tap to start capture (now goes directly to camera)
       await tester.tap(find.text('Start Capture'));
       await tester.pumpAndSettle();
 
-      // Accept terms
-      await tester.tap(find.text('Accept & Continue'));
-      await tester.pumpAndSettle();
+      // Camera opens immediately (no terms modal)
+      // Simulate camera capture and proceed to details
+      // ...mock image capture...
 
-      // Simulate camera, details, and submit
-      // ...mock image, fill details, tap submit...
+      // Verify capture details screen (simplified flow)
+      expect(find.byType(CaptureDetailScreen), findsOneWidget);
 
-      // Verify confirmation screen
-      expect(find.byType(CaptureConfirmationScreen), findsOneWidget);
+      // Fill details and accept terms via checkbox
+      // ...fill form fields, check terms checkbox, tap submit...
     });
   });
 }

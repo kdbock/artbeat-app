@@ -88,7 +88,7 @@ class _TempXPFixState extends State<TempXPFix> {
             'Final XP: $finalXP';
         _isFixing = false;
       });
-    } catch (e) {
+    } on Exception catch (e) {
       setState(() {
         _status = '❌ Error: $e';
         _isFixing = false;
@@ -98,21 +98,21 @@ class _TempXPFixState extends State<TempXPFix> {
 
   @override
   Widget build(BuildContext context) => FloatingActionButton.extended(
-      onPressed: _isFixing ? null : _fixCurrentUserXP,
-      backgroundColor: _isFixing ? Colors.grey : Colors.orange,
-      icon: _isFixing
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Icon(Icons.auto_fix_high),
-      label: Text(_isFixing ? 'Fixing XP...' : 'Fix My XP'),
-      tooltip: _status.isEmpty
-          ? 'Fix missing XP from approved captures'
-          : _status,
-    );
+    onPressed: _isFixing ? null : _fixCurrentUserXP,
+    backgroundColor: _isFixing ? Colors.grey : Colors.orange,
+    icon: _isFixing
+        ? const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          )
+        : const Icon(Icons.auto_fix_high),
+    label: Text(_isFixing ? 'Fixing XP...' : 'Fix My XP'),
+    tooltip: _status.isEmpty
+        ? 'Fix missing XP from approved captures'
+        : _status,
+  );
 }

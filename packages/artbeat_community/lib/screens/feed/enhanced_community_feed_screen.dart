@@ -742,7 +742,7 @@ class _EnhancedCommunityFeedScreenState
   }
 
   void _showDeveloperMenu(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Container(
         padding: const EdgeInsets.all(16),
@@ -801,7 +801,7 @@ class _EnhancedCommunityFeedScreenState
     if (confirmed != true) return;
 
     // Show loading indicator
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => const AlertDialog(

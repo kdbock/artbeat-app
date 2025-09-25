@@ -3,14 +3,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import '../models/chat_model.dart';
 import '../models/message_model.dart';
+import '../models/message_thread_model.dart';
 import '../models/user_model.dart' as messaging;
 import '../models/search_result_model.dart';
 import 'notification_service.dart' as messaging_notifications;
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class ChatService extends ChangeNotifier {
+  static final Logger _logger = Logger('ChatService');
+
   FirebaseFirestore? _firestoreInstance;
   FirebaseAuth? _authInstance;
   FirebaseStorage? _storageInstance;
@@ -139,6 +143,47 @@ class ChatService extends ChangeNotifier {
       timestamp: DateTime.now(),
       type: MessageType.image,
     );
+    return _sendMessage(chatId, message);
+  }
+
+  Future<void> sendVoiceMessage(
+    String chatId,
+    String voiceFilePath,
+    Duration duration,
+  ) async {
+    final file = File(voiceFilePath);
+    final ref = _storage
+        .ref()
+        .child('voice_messages')
+        .child(chatId)
+        .child('${DateTime.now().millisecondsSinceEpoch}.aac');
+
+    await ref.putFile(file);
+    final voiceUrl = await ref.getDownloadURL();
+
+    // Get file size for metadata
+    final fileSize = await file.length();
+
+    final message = MessageModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      senderId: currentUserId,
+      content: voiceUrl,
+      timestamp: DateTime.now(),
+      type: MessageType.voice,
+      metadata: {
+        'voiceUrl': voiceUrl,
+        'duration': duration.inMilliseconds,
+        'fileSize': fileSize,
+      },
+    );
+
+    // Clean up temporary file
+    try {
+      await file.delete();
+    } catch (e) {
+      _logger.warning('Failed to delete temporary voice file: $e');
+    }
+
     return _sendMessage(chatId, message);
   }
 
@@ -1668,6 +1713,224 @@ class ChatService extends ChangeNotifier {
       return results.take(limit).toList();
     } catch (e) {
       core.AppLogger.error('Error in advanced search: $e');
+      rethrow;
+    }
+  }
+
+  // ===== THREADING METHODS =====
+
+  /// Send a reply message to a specific message
+  Future<void> sendReplyMessage(
+    String chatId,
+    String replyText,
+    String replyToMessageId,
+  ) async {
+    try {
+      final messageId = _firestore.collection('chats').doc().id;
+      final messageData = {
+        'id': messageId,
+        'senderId': currentUserId,
+        'content': replyText,
+        'timestamp': FieldValue.serverTimestamp(),
+        'type': MessageType.text.toString(),
+        'isRead': false,
+        'replyToId': replyToMessageId,
+        'isStarred': false,
+        'isEdited': false,
+        'isForwarded': false,
+      };
+
+      // Add message to chat
+      await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .set(messageData);
+
+      // Update chat's last message
+      await _firestore.collection('chats').doc(chatId).update({
+        'lastMessage': {
+          'id': messageId,
+          'senderId': currentUserId,
+          'content': replyText,
+          'timestamp': FieldValue.serverTimestamp(),
+          'type': MessageType.text.toString(),
+        },
+        'lastMessageAt': FieldValue.serverTimestamp(),
+      });
+
+      // Update or create message thread
+      await _updateMessageThread(chatId, replyToMessageId, messageId);
+
+      // Send notification
+      final chat = await getChatById(chatId);
+      if (chat != null) {
+        for (final participantId in chat.participantIds) {
+          if (participantId != currentUserId) {
+            await _notificationService.sendNotificationToUser(
+              userId: participantId,
+              title: 'New reply',
+              body: replyText,
+              data: {
+                'type': 'message_reply',
+                'chatId': chatId,
+                'messageId': messageId,
+                'replyToId': replyToMessageId,
+              },
+            );
+          }
+        }
+      }
+
+      core.AppLogger.info('Reply message sent successfully: $messageId');
+    } catch (e) {
+      core.AppLogger.error('Error sending reply message: $e');
+      rethrow;
+    }
+  }
+
+  /// Get message thread for a specific message
+  Future<MessageThreadModel?> getMessageThread(
+    String chatId,
+    String messageId,
+  ) async {
+    try {
+      final threadDoc = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('threads')
+          .doc(messageId)
+          .get();
+
+      if (threadDoc.exists) {
+        return MessageThreadModel.fromFirestore(threadDoc);
+      }
+
+      return null;
+    } catch (e) {
+      core.AppLogger.error('Error getting message thread: $e');
+      rethrow;
+    }
+  }
+
+  /// Get all messages in a thread
+  Future<List<MessageModel>> getThreadMessages(
+    String chatId,
+    String threadId,
+  ) async {
+    try {
+      final thread = await getMessageThread(chatId, threadId);
+      if (thread == null) return [];
+
+      final messages = <MessageModel>[];
+
+      // Add parent message
+      final parentMessageDoc = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .doc(thread.parentMessageId)
+          .get();
+
+      if (parentMessageDoc.exists) {
+        messages.add(MessageModel.fromFirestore(parentMessageDoc));
+      }
+
+      // Add reply messages
+      for (final replyId in thread.replyMessageIds) {
+        final replyDoc = await _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .doc(replyId)
+            .get();
+
+        if (replyDoc.exists) {
+          messages.add(MessageModel.fromFirestore(replyDoc));
+        }
+      }
+
+      // Sort by timestamp
+      messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
+      return messages;
+    } catch (e) {
+      core.AppLogger.error('Error getting thread messages: $e');
+      rethrow;
+    }
+  }
+
+  /// Get stream of thread updates
+  Stream<MessageThreadModel?> getMessageThreadStream(
+    String chatId,
+    String messageId,
+  ) {
+    return _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('threads')
+        .doc(messageId)
+        .snapshots()
+        .map((doc) {
+          if (doc.exists) {
+            return MessageThreadModel.fromFirestore(doc);
+          }
+          return null;
+        });
+  }
+
+  /// Update or create message thread when a reply is added
+  Future<void> _updateMessageThread(
+    String chatId,
+    String parentMessageId,
+    String replyMessageId,
+  ) async {
+    try {
+      final threadRef = _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('threads')
+          .doc(parentMessageId);
+
+      final threadDoc = await threadRef.get();
+
+      if (threadDoc.exists) {
+        // Update existing thread
+        final thread = MessageThreadModel.fromFirestore(threadDoc);
+        final updatedThread = thread.addReply(replyMessageId);
+
+        await threadRef.update(updatedThread.toMap());
+      } else {
+        // Create new thread
+        final parentMessageDoc = await _firestore
+            .collection('chats')
+            .doc(chatId)
+            .collection('messages')
+            .doc(parentMessageId)
+            .get();
+
+        if (parentMessageDoc.exists) {
+          final parentMessage = MessageModel.fromFirestore(parentMessageDoc);
+          final newThread = MessageThreadModel(
+            id: parentMessageId,
+            chatId: chatId,
+            parentMessageId: parentMessageId,
+            replyMessageIds: [replyMessageId],
+            threadStarterId: parentMessage.senderId,
+            createdAt: parentMessage.timestamp,
+            updatedAt: DateTime.now(),
+            replyCount: 1,
+            lastReplyId: replyMessageId,
+            lastReplyAt: DateTime.now(),
+            isActive: true,
+          );
+
+          await threadRef.set(newThread.toMap());
+        }
+      }
+    } catch (e) {
+      core.AppLogger.error('Error updating message thread: $e');
       rethrow;
     }
   }

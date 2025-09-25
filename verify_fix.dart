@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ignore_for_file: avoid_print
+
 void main() {
   print('🔍 Verifying Art Walk Creation Fix...\n');
 
@@ -9,9 +11,9 @@ void main() {
     'title': 'Test Art Walk',
     'description': 'A test art walk description',
     'artworkIds': ['artwork1', 'artwork2'],
-    'startLocation': GeoPoint(35.7796, -78.6382),
+    'startLocation': const GeoPoint(35.7796, -78.6382),
     'routeData': 'encoded-route-data',
-    'imageUrls': [],
+    'imageUrls': <String>[],
     'coverImageUrl': null,
     'zipCode': '27601',
     'isPublic': true,

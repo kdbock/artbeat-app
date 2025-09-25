@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 
 /// Container widget that loads an artist profile by ID (or current user if no ID provided)
 /// and displays their community feed
-class ArtistFeedContainerWithParams extends StatefulWidget { // If null, shows current user's feed
+class ArtistFeedContainerWithParams extends StatefulWidget {
+  // If null, shows current user's feed
 
   const ArtistFeedContainerWithParams({super.key, this.artistUserId});
   final String? artistUserId;
@@ -67,7 +68,7 @@ class _ArtistFeedContainerWithParamsState
         _artistProfile = profile as ArtistProfileModel?;
         _isLoading = false;
       });
-    } catch (error) {
+    } on Exception catch (error) {
       setState(() {
         _errorMessage = 'Error loading artist profile: $error';
         _isLoading = false;

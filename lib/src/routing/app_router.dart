@@ -415,6 +415,18 @@ class AppRouter {
           '${feature[0].toUpperCase()}${feature.substring(1)} Artwork',
         );
 
+      case '/artwork/local':
+        // Navigate to browse screen filtered by location
+        return RouteUtils.createSimpleRoute(
+          child: const artwork.ArtworkBrowseScreen(),
+        );
+
+      case '/artwork/discovery':
+        // Navigate to browse screen for discovery
+        return RouteUtils.createSimpleRoute(
+          child: const artwork.ArtworkBrowseScreen(),
+        );
+
       default:
         return RouteUtils.createNotFoundRoute('Artwork feature');
     }
@@ -578,11 +590,10 @@ class AppRouter {
       case AppRoutes.artWalkDashboard:
         return RouteUtils.createMainNavRoute(
           currentIndex: 1,
-          appBar: core.EnhancedUniversalHeader(
+          appBar: const core.EnhancedUniversalHeader(
             title: 'Art Walk',
             showLogo: false,
-            showBackButton: false,
-            backgroundGradient: const LinearGradient(
+            backgroundGradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.topRight,
               colors: [
@@ -590,7 +601,7 @@ class AppRouter {
                 Color(0xFFFF9E80), // Light Orange/Peach
               ],
             ),
-            titleGradient: const LinearGradient(
+            titleGradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.topRight,
               colors: [
@@ -760,27 +771,6 @@ class AppRouter {
           ),
         );
 
-      case '/enhanced-art-walk-experience':
-        final args = settings.arguments as Map<String, dynamic>?;
-        final artWalkId = args?['artWalkId'] as String?;
-        final artWalk = args?['artWalk'] as art_walk.ArtWalkModel?;
-
-        if (artWalkId == null) {
-          return RouteUtils.createErrorRoute('Art walk ID is required');
-        }
-
-        if (artWalk == null) {
-          return RouteUtils.createErrorRoute('Art walk data is required');
-        }
-
-        return RouteUtils.createMainLayoutRoute(
-          currentIndex: 1,
-          child: art_walk.EnhancedArtWalkExperienceScreen(
-            artWalkId: artWalkId,
-            artWalk: artWalk,
-          ),
-        );
-
       default:
         return RouteUtils.createNotFoundRoute('Art Walk feature');
     }
@@ -819,6 +809,20 @@ class AppRouter {
           );
         }
         return RouteUtils.createNotFoundRoute('User chat not found');
+
+      case AppRoutes.messagingThread:
+        final args = settings.arguments as Map<String, dynamic>?;
+        final chat = args?['chat'] as messaging.ChatModel?;
+        final threadId = args?['threadId'] as String?;
+        if (chat != null && threadId != null) {
+          return RouteUtils.createMainLayoutRoute(
+            child: messaging.MessageThreadViewScreen(
+              chat: chat,
+              threadId: threadId,
+            ),
+          );
+        }
+        return RouteUtils.createNotFoundRoute('Thread not found');
 
       default:
         return RouteUtils.createNotFoundRoute('Messaging feature');
@@ -1193,13 +1197,18 @@ class AppRouter {
 
       case AppRoutes.captureCamera:
         return RouteUtils.createMainLayoutRoute(
-          child: const capture.BasicCaptureScreen(),
+          child: const capture.CaptureScreen(),
+        );
+
+      case AppRoutes.captureCameraSimple:
+        return RouteUtils.createMainLayoutRoute(
+          child: const capture.CaptureScreen(),
         );
 
       case '/capture/smart':
         return RouteUtils.createMainNavRoute(
           currentIndex: 2,
-          child: const capture.SmartCaptureScreen(),
+          child: const capture.CaptureScreen(),
         );
 
       case AppRoutes.captureDashboard:
@@ -1270,7 +1279,7 @@ class AppRouter {
 
       case AppRoutes.captureCreate:
         return RouteUtils.createMainLayoutRoute(
-          child: const capture.CameraCaptureScreen(),
+          child: const capture.CaptureScreen(),
         );
 
       case AppRoutes.capturePublic:
@@ -1279,13 +1288,12 @@ class AppRouter {
         );
 
       case AppRoutes.captureDetail:
-        final args = settings.arguments as Map<String, dynamic>?;
-        final captureId = args?['captureId'] as String?;
-        if (captureId == null) {
-          return RouteUtils.createNotFoundRoute('Capture ID required');
-        }
-        return RouteUtils.createMainLayoutRoute(
-          child: capture.CaptureDetailWrapperScreen(captureId: captureId),
+        // Note: This route may need to be updated based on the new capture flow
+        // The CaptureDetailScreen now expects an imageFile parameter for new captures
+        // For viewing existing captures, consider using CapturesListScreen or implement
+        // a separate view-only screen if needed
+        return RouteUtils.createNotFoundRoute(
+          'Capture detail viewing not implemented',
         );
 
       default:

@@ -8,7 +8,6 @@ export 'art_walk_edit_screen.dart';
 export 'art_walk_list_screen.dart';
 export 'art_walk_map_screen.dart';
 export 'art_walk_review_screen.dart';
-export 'create_art_walk_screen.dart';
 export 'enhanced_art_walk_create_screen.dart';
 export 'enhanced_art_walk_experience_screen.dart';
 export 'my_captures_screen.dart';

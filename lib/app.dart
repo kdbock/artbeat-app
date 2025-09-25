@@ -116,6 +116,11 @@ class MyApp extends StatelessWidget {
               create: (_) => messaging.ChatService(),
               lazy: true, // Changed to lazy to prevent early Firebase access
             ),
+            // Message Reaction Service for emoji reactions
+            ChangeNotifierProvider<messaging.MessageReactionService>(
+              create: (_) => messaging.MessageReactionService(),
+              lazy: true,
+            ),
             ChangeNotifierProvider<core.MessagingProvider>(
               create: (context) =>
                   core.MessagingProvider(context.read<messaging.ChatService>()),

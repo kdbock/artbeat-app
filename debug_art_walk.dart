@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 void main() async {
   print('Debug script to check art walk data structure');
   print('Art walk ID from logs: cFEgEKAMYr4SznSF9LbM');

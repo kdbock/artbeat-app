@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/enhanced_payment_service_working.dart';
 import '../models/subscription_tier.dart';
 
+// ignore_for_file: avoid_print
+
 /// Example usage of the Enhanced Payment Service
 /// This demonstrates how to integrate the new payment features
 class PaymentServiceExample {

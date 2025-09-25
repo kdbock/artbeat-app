@@ -53,7 +53,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
         _selectedEventIds.clear(); // Clear selections when reloading
         _isLoading = false;
       });
-    } catch (e) {
+    } on Exception catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -633,7 +633,7 @@ class _EventBulkManagementScreenState extends State<EventBulkManagementScreen> {
       if (shouldReload) {
         await _loadEvents();
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

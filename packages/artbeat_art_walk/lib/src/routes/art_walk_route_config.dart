@@ -41,8 +41,9 @@ class ArtWalkRouteConfig {
 
       case ArtWalkRoutes.create:
         final args = settings.arguments as Map<String, dynamic>?;
+        // Redirect to enhanced create screen for better UX
         return MaterialPageRoute(
-          builder: (_) => CreateArtWalkScreen(
+          builder: (_) => EnhancedArtWalkCreateScreen(
             artWalkId: args?['artWalkId'] as String?,
             artWalkToEdit: args?['artWalk'] as ArtWalkModel?,
           ),

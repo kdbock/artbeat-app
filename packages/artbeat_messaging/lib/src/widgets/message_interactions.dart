@@ -9,6 +9,7 @@ class MessageActionsSheet extends StatelessWidget {
   final ChatModel chat;
   final String currentUserId;
   final VoidCallback? onEdit;
+  final VoidCallback? onReply;
   final VoidCallback? onForward;
   final VoidCallback? onStar;
   final VoidCallback? onDelete;
@@ -19,6 +20,7 @@ class MessageActionsSheet extends StatelessWidget {
     required this.chat,
     required this.currentUserId,
     this.onEdit,
+    this.onReply,
     this.onForward,
     this.onStar,
     this.onDelete,
@@ -64,6 +66,15 @@ class MessageActionsSheet extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Actions
+          _ActionTile(
+            icon: Icons.reply,
+            title: 'Reply',
+            onTap: () {
+              Navigator.pop(context);
+              onReply?.call();
+            },
+          ),
+
           if (canEdit)
             _ActionTile(
               icon: Icons.edit,
@@ -481,6 +492,7 @@ class InteractiveMessageBubble extends StatelessWidget {
   final ChatModel chat;
   final String currentUserId;
   final ChatService chatService;
+  final VoidCallback? onReply;
 
   const InteractiveMessageBubble({
     super.key,
@@ -488,6 +500,7 @@ class InteractiveMessageBubble extends StatelessWidget {
     required this.chat,
     required this.currentUserId,
     required this.chatService,
+    this.onReply,
   });
 
   @override
@@ -531,6 +544,33 @@ class InteractiveMessageBubble extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           'Forwarded',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSentByMe
+                                ? Colors.white70
+                                : Colors.grey[600],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // Reply indicator
+                if (message.replyToId != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.reply,
+                          size: 12,
+                          color: isSentByMe ? Colors.white70 : Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Replying to message',
                           style: TextStyle(
                             fontSize: 10,
                             color: isSentByMe
@@ -596,6 +636,7 @@ class InteractiveMessageBubble extends StatelessWidget {
         chat: chat,
         currentUserId: currentUserId,
         onEdit: () => _showEditDialog(context),
+        onReply: onReply,
         onForward: () => _showForwardDialog(context),
         onStar: () => _toggleStar(context),
         onDelete: () => _deleteMessage(context),

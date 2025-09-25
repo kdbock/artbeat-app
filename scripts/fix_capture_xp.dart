@@ -86,7 +86,7 @@ void main() async {
 
           AppLogger.info('  ✅ Awarded $expectedXP XP');
         }
-      } catch (userError) {
+      } on Exception catch (userError) {
         AppLogger.error('  ❌ Error processing user $userId: $userError');
       }
     }
@@ -99,7 +99,7 @@ void main() async {
     AppLogger.info(
       '  - Average XP per user: ${totalUsersFixed > 0 ? (totalXPAwarded / totalUsersFixed).round() : 0}',
     );
-  } catch (e) {
+  } on Exception catch (e) {
     AppLogger.error('❌ Error: $e');
   }
 

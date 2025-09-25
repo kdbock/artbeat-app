@@ -30,11 +30,8 @@ export 'src/services/enhanced_payment_service_working.dart'
         SubscriptionResult,
         RiskAssessment;
 export 'src/services/in_app_purchase_manager.dart'
-    show
-        InAppPurchaseManager,
-        PurchaseEvent,
-        PurchaseEventType,
-        CompletedPurchase;
+    show InAppPurchaseManager, PurchaseEvent, PurchaseEventType;
+export 'src/models/in_app_purchase_models.dart' show CompletedPurchase;
 export 'src/services/sponsorship_service.dart' show SponsorshipService;
 export 'src/services/notification_service.dart'
     show NotificationService, NotificationType;

@@ -67,7 +67,7 @@ class NetworkManager {
       } else {
         _updateConnectionStatus(false, 'No internet connection');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       _updateConnectionStatus(false, 'Internet connection failed: $e');
     }
   }
@@ -83,7 +83,7 @@ class NetworkManager {
           .timeout(const Duration(seconds: 10));
 
       _updateConnectionStatus(true, 'Connected');
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Firebase connection failed: $e');
       }
@@ -92,8 +92,11 @@ class NetworkManager {
       try {
         await FirebaseFirestore.instance.enableNetwork();
         _updateConnectionStatus(true, 'Reconnected');
-      } catch (enableError) {
-        _updateConnectionStatus(false, 'Firebase connection failed: $e');
+      } on Exception catch (enableError) {
+        _updateConnectionStatus(
+          false,
+          'Firebase connection failed: $enableError',
+        );
       }
     }
   }
@@ -133,7 +136,7 @@ class NetworkManager {
       }
 
       return _isConnected;
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Firebase reconnection failed: $e');
       }
@@ -144,7 +147,6 @@ class NetworkManager {
 
 /// Widget to show network status
 class NetworkStatusWidget extends StatefulWidget {
-
   const NetworkStatusWidget({
     super.key,
     required this.child,
@@ -182,43 +184,43 @@ class _NetworkStatusWidgetState extends State<NetworkStatusWidget> {
 
   @override
   Widget build(BuildContext context) => Stack(
-      children: [
-        widget.child,
-        if (!_isConnected && widget.showOfflineMessage)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              color: Colors.red,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.wifi_off, color: Colors.white, size: 16),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'No internet connection',
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      NetworkManager().checkConnectionNow();
-                    },
-                    child: const Text(
-                      'Retry',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        decoration: TextDecoration.underline,
-                      ),
+    children: [
+      widget.child,
+      if (!_isConnected && widget.showOfflineMessage)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            color: Colors.red,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                const Text(
+                  'No internet connection',
+                  style: TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    NetworkManager().checkConnectionNow();
+                  },
+                  child: const Text(
+                    'Retry',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-      ],
-    );
+        ),
+    ],
+  );
 }

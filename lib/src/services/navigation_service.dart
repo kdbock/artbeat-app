@@ -32,17 +32,17 @@ class NavigationService {
 
       // Perform navigation
       if (clearStack) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
+        await Navigator.of(context).pushNamedAndRemoveUntil(
           routeName,
           (route) => false,
           arguments: arguments,
         );
       } else if (replace) {
-        Navigator.of(
+        await Navigator.of(
           context,
         ).pushReplacementNamed(routeName, arguments: arguments);
       } else {
-        Navigator.of(context).pushNamed(routeName, arguments: arguments);
+        await Navigator.of(context).pushNamed(routeName, arguments: arguments);
       }
 
       // Log successful navigation
@@ -52,7 +52,7 @@ class NavigationService {
       );
 
       return true;
-    } catch (error, stackTrace) {
+    } on Exception catch (error, stackTrace) {
       // Log navigation error
       await _analytics.logEvent(
         name: 'navigation_error',
@@ -185,10 +185,10 @@ extension SafeNavigation on BuildContext {
     bool replace = false,
     bool clearStack = false,
   }) => NavigationService().safeNavigateTo(
-      this,
-      routeName,
-      arguments: arguments,
-      replace: replace,
-      clearStack: clearStack,
-    );
+    this,
+    routeName,
+    arguments: arguments,
+    replace: replace,
+    clearStack: clearStack,
+  );
 }

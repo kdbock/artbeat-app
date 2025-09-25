@@ -36,7 +36,7 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
         _popularRoutes = popularRoutes;
         _isLoading = false;
       });
-    } catch (error) {
+    } on Exception catch (error) {
       setState(() {
         _isLoading = false;
       });
@@ -58,29 +58,29 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: const core.EnhancedUniversalHeader(
-        title: 'Route Analytics',
-        showLogo: false,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                _buildSummaryCards(),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(child: _buildRoutesList()),
-                      if (_selectedRoute != null) ...[
-                        const VerticalDivider(width: 1),
-                        Expanded(child: _buildRouteDetails()),
-                      ],
+    appBar: const core.EnhancedUniversalHeader(
+      title: 'Route Analytics',
+      showLogo: false,
+    ),
+    body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Column(
+            children: [
+              _buildSummaryCards(),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(child: _buildRoutesList()),
+                    if (_selectedRoute != null) ...[
+                      const VerticalDivider(width: 1),
+                      Expanded(child: _buildRouteDetails()),
                     ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
-    );
+              ),
+            ],
+          ),
+  );
 
   Widget _buildSummaryCards() {
     final totalVisits = _popularRoutes.fold<int>(
@@ -134,87 +134,87 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
     required IconData icon,
     required Color color,
   }) => Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-        ],
-      ),
-    );
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        Icon(icon, color: color, size: 32),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 4),
+        Text(title, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+      ],
+    ),
+  );
 
   Widget _buildRoutesList() => Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Popular Routes',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _popularRoutes.length,
-              itemBuilder: (context, index) {
-                final route = _popularRoutes[index];
-                final routeName = route['route_name'] as String;
-                final visitCount = route['visit_count'] as int;
-                final isSelected = _selectedRoute == routeName;
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Popular Routes',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _popularRoutes.length,
+            itemBuilder: (context, index) {
+              final route = _popularRoutes[index];
+              final routeName = route['route_name'] as String;
+              final visitCount = route['visit_count'] as int;
+              final isSelected = _selectedRoute == routeName;
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  color: isSelected
-                      ? core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1)
-                      : null,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: core.ArtbeatColors.primaryPurple,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                color: isSelected
+                    ? core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1)
+                    : null,
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: core.ArtbeatColors.primaryPurple,
+                    child: Text(
+                      '${index + 1}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    title: Text(
-                      routeName,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    subtitle: Text('$visitCount visits'),
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: isSelected
-                          ? core.ArtbeatColors.primaryPurple
-                          : Colors.grey,
-                    ),
-                    onTap: () => _loadRouteStats(routeName),
                   ),
-                );
-              },
-            ),
+                  title: Text(
+                    routeName,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: Text('$visitCount visits'),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: isSelected
+                        ? core.ArtbeatColors.primaryPurple
+                        : Colors.grey,
+                  ),
+                  onTap: () => _loadRouteStats(routeName),
+                ),
+              );
+            },
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
 
   Widget _buildRouteDetails() {
     if (_selectedRoute == null) return const SizedBox();
@@ -287,38 +287,39 @@ class _RouteAnalyticsDashboardState extends State<RouteAnalyticsDashboard> {
     required String value,
     required IconData icon,
   }) => Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: core.ArtbeatColors.primaryPurple),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.grey[50],
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.grey[200]!),
+    ),
+    child: Row(
+      children: [
+        Icon(icon, color: core.ArtbeatColors.primaryPurple),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
 
-  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  String _formatDate(DateTime date) =>
+      '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
 }

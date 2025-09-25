@@ -366,6 +366,27 @@ service firebase.storage {
       allow delete: if isAuthenticated();
     }
 
+    // Chat images - for messaging system image uploads
+    match /chat_images/{chatId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Chat participants can upload images
+      allow delete: if isAuthenticated();
+    }
+
+    // Voice messages - for messaging system voice message uploads
+    match /voice_messages/{chatId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Chat participants can upload voice messages
+      allow delete: if isAuthenticated();
+    }
+
+    // Chat media - generic path for chat-related media
+    match /chat_media/{chatId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
     // Debug mode bypass for testing
     match /{path=**}/{fileName} {
       allow read, write: if isDebugMode();

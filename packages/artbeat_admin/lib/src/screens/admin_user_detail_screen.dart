@@ -650,6 +650,11 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                   const SizedBox(height: 12),
                   DropdownButton<UserType>(
                     value: _getUserTypeFromString(_currentUser.userType),
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                    dropdownColor: Colors.white,
                     onChanged: (UserType? newType) {
                       if (newType != null) {
                         _updateUserType(newType);
@@ -658,7 +663,13 @@ class _AdminUserDetailScreenState extends State<AdminUserDetailScreen>
                     items: UserType.values.map((UserType type) {
                       return DropdownMenuItem<UserType>(
                         value: type,
-                        child: Text(type.name.toUpperCase()),
+                        child: Text(
+                          type.name.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
                       );
                     }).toList(),
                   ),

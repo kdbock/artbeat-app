@@ -1,7 +1,6 @@
 import 'dart:io';
 
-import 'package:artbeat_capture/src/screens/capture_confirmation_screen.dart';
-import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/src/screens/capture_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -18,7 +17,9 @@ void main() {
 
   group('Capture Navigation Tests', () {
     // Simplified tests focusing on UI rendering without Firebase dependencies
-    testWidgets('Should display confirmation screen correctly', (tester) async {
+    testWidgets('Should display capture details screen correctly', (
+      tester,
+    ) async {
       // Test simplified UI behavior without Firebase dependencies
       await tester.pumpWidget(
         MaterialApp(
@@ -26,26 +27,15 @@ void main() {
             '/dashboard': (context) =>
                 const Scaffold(body: Center(child: Text('Dashboard'))),
           },
-          home: CaptureConfirmationScreen(
-            imageFile: File('test_image.jpg'),
-            captureData: CaptureModel(
-              id: '',
-              userId: 'test-user-id',
-              title: 'Test Artwork',
-              imageUrl: '',
-              createdAt: DateTime.now(),
-              isPublic: true,
-              tags: [],
-            ),
-          ),
+          home: CaptureDetailScreen(imageFile: File('test_image.jpg')),
         ),
       );
 
       await tester.pumpAndSettle();
 
-      // Verify confirmation screen is displayed
-      expect(find.text('Review Capture'), findsOneWidget);
-      expect(find.text('Submit'), findsOneWidget);
+      // Verify capture details screen is displayed
+      expect(find.text('Capture Details'), findsOneWidget);
+      expect(find.text('Submit Capture'), findsOneWidget);
 
       // Note: Firebase-dependent functionality is tested separately
       // This test verifies the UI renders correctly
@@ -54,26 +44,15 @@ void main() {
     testWidgets('Should handle UI interactions', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: CaptureConfirmationScreen(
-            imageFile: File('test_image.jpg'),
-            captureData: CaptureModel(
-              id: '',
-              userId: 'test-user-id',
-              title: 'Test Artwork',
-              imageUrl: '',
-              createdAt: DateTime.now(),
-              isPublic: true,
-              tags: [],
-            ),
-          ),
+          home: CaptureDetailScreen(imageFile: File('test_image.jpg')),
         ),
       );
 
       await tester.pumpAndSettle();
 
       // Verify initial state
-      expect(find.text('Review Capture'), findsOneWidget);
-      expect(find.text('Submit'), findsOneWidget);
+      expect(find.text('Capture Details'), findsOneWidget);
+      expect(find.text('Submit Capture'), findsOneWidget);
 
       // Note: Full submission testing requires Firebase setup
       // This test verifies basic UI functionality
@@ -92,26 +71,15 @@ void main() {
             '/dashboard': (context) =>
                 const Scaffold(body: Center(child: Text('Dashboard'))),
           },
-          home: CaptureConfirmationScreen(
-            imageFile: File('test_image.jpg'),
-            captureData: CaptureModel(
-              id: '',
-              userId: 'test-user-id',
-              title: 'Test Artwork',
-              imageUrl: '',
-              createdAt: DateTime.now(),
-              isPublic: true,
-              tags: [],
-            ),
-          ),
+          home: CaptureDetailScreen(imageFile: File('test_image.jpg')),
         ),
       );
 
       await tester.pumpAndSettle();
 
-      // Verify confirmation screen is displayed
-      expect(find.text('Review Capture'), findsOneWidget);
-      expect(find.text('Submit'), findsOneWidget);
+      // Verify capture details screen is displayed
+      expect(find.text('Capture Details'), findsOneWidget);
+      expect(find.text('Submit Capture'), findsOneWidget);
 
       // Note: Firebase-dependent functionality is tested separately
       // This test verifies the UI renders correctly

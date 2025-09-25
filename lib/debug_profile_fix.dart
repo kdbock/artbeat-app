@@ -31,7 +31,7 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
         _currentProfileUrl = user?.profileImageUrl;
         _urlController.text = _currentProfileUrl ?? '';
       });
-    } catch (e) {
+    } on Exception catch (e) {
       AppLogger.error('Error loading user: $e');
     } finally {
       setState(() => _isLoading = false);
@@ -61,7 +61,7 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
 
       // Reload user data
       await _loadCurrentUser();
-    } catch (e) {
+    } on Exception catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
@@ -72,89 +72,88 @@ class _DebugProfileFixState extends State<DebugProfileFix> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: const Text('Debug Profile Fix'),
-        backgroundColor: ArtbeatColors.primaryPurple,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Current User Info:',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            if (_currentUser != null) ...[
-              Text('Name: ${_currentUser!.fullName}'),
-              Text('Email: ${_currentUser!.email}'),
-              Text('Current Profile URL: ${_currentProfileUrl ?? "None"}'),
-            ],
-            const SizedBox(height: 24),
-
-            Text(
-              'Your Firebase Storage URL:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            const SelectableText(
-              'https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586',
-              style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
-            ),
-            const SizedBox(height: 16),
-
-            Text(
-              'Update Profile Image URL:',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: 'Profile Image URL',
-                hintText: 'Enter the full Firebase Storage URL',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _updateProfileImageUrl,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ArtbeatColors.primaryPurple,
-                  foregroundColor: Colors.white,
-                ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Update Profile Image URL'),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            if (_currentProfileUrl != null &&
-                _currentProfileUrl!.isNotEmpty) ...[
-              Text(
-                'Current Avatar Preview:',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: OptimizedAvatar(
-                  imageUrl: _currentProfileUrl,
-                  displayName: _currentUser?.fullName ?? 'User',
-                  radius: 50,
-                ),
-              ),
-            ],
+    appBar: AppBar(
+      title: const Text('Debug Profile Fix'),
+      backgroundColor: ArtbeatColors.primaryPurple,
+      foregroundColor: Colors.white,
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Current User Info:',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          if (_currentUser != null) ...[
+            Text('Name: ${_currentUser!.fullName}'),
+            Text('Email: ${_currentUser!.email}'),
+            Text('Current Profile URL: ${_currentProfileUrl ?? "None"}'),
           ],
-        ),
+          const SizedBox(height: 24),
+
+          Text(
+            'Your Firebase Storage URL:',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          const SelectableText(
+            'https://firebasestorage.googleapis.com/v0/b/wordnerd-artbeat.firebasestorage.app/o/profile_images%2FARFuyX0C44PbYlHSUSlQx55b9vt2%2Fprofile.jpg?alt=media&token=2b5eafc4-0b82-441c-8bf5-d60a38b51586',
+            style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+          ),
+          const SizedBox(height: 16),
+
+          Text(
+            'Update Profile Image URL:',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _urlController,
+            decoration: const InputDecoration(
+              labelText: 'Profile Image URL',
+              hintText: 'Enter the full Firebase Storage URL',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+          ),
+          const SizedBox(height: 16),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _updateProfileImageUrl,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ArtbeatColors.primaryPurple,
+                foregroundColor: Colors.white,
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Update Profile Image URL'),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          if (_currentProfileUrl != null && _currentProfileUrl!.isNotEmpty) ...[
+            Text(
+              'Current Avatar Preview:',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: OptimizedAvatar(
+                imageUrl: _currentProfileUrl,
+                displayName: _currentUser?.fullName ?? 'User',
+                radius: 50,
+              ),
+            ),
+          ],
+        ],
       ),
-    );
+    ),
+  );
 
   @override
   void dispose() {

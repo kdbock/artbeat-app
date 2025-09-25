@@ -146,30 +146,16 @@ class ArtworkGridWidget extends StatelessWidget {
   }
 
   Widget _buildArtworkImage(ArtworkModel artwork) {
-    if (artwork.imageUrl.isNotEmpty &&
-        Uri.tryParse(artwork.imageUrl)?.hasScheme == true) {
-      return Image.network(
-        artwork.imageUrl,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return _buildImagePlaceholder();
-        },
-      );
-    } else {
-      return _buildImagePlaceholder();
-    }
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Container(
+    return _MultiUrlImageLoader(
+      urls: [
+        if (artwork.imageUrl.isNotEmpty &&
+            Uri.tryParse(artwork.imageUrl)?.hasScheme == true)
+          artwork.imageUrl,
+        ...artwork.additionalImageUrls.where(
+            (url) => url.isNotEmpty && Uri.tryParse(url)?.hasScheme == true),
+      ],
       width: double.infinity,
-      color: Colors.grey[200],
-      child: const Icon(
-        Icons.image_not_supported,
-        size: 48,
-        color: Colors.grey,
-      ),
+      fit: BoxFit.cover,
     );
   }
 
@@ -290,5 +276,81 @@ class ArtworkGridWidget extends StatelessWidget {
     if (confirmed == true && onArtworkDelete != null) {
       onArtworkDelete!(artwork);
     }
+  }
+}
+
+/// A custom image loader that tries multiple URLs in sequence
+class _MultiUrlImageLoader extends StatefulWidget {
+  final List<String> urls;
+  final double? width;
+  final BoxFit? fit;
+
+  const _MultiUrlImageLoader({
+    required this.urls,
+    this.width,
+    this.fit = BoxFit.cover,
+  });
+
+  @override
+  State<_MultiUrlImageLoader> createState() => _MultiUrlImageLoaderState();
+}
+
+class _MultiUrlImageLoaderState extends State<_MultiUrlImageLoader> {
+  int _currentUrlIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.urls.isEmpty || _currentUrlIndex >= widget.urls.length) {
+      return _buildImagePlaceholder();
+    }
+
+    final currentUrl = widget.urls[_currentUrlIndex];
+
+    return core.SecureNetworkImage(
+      imageUrl: currentUrl,
+      width: widget.width,
+      fit: widget.fit,
+      errorWidget: _buildErrorWidget(),
+      enableThumbnailFallback: true,
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    // Try next URL if available
+    if (_currentUrlIndex < widget.urls.length - 1) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _currentUrlIndex++;
+          });
+        }
+      });
+      // Return loading indicator while switching URLs
+      return Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+
+    // No more URLs to try, show placeholder
+    return _buildImagePlaceholder();
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      width: widget.width,
+      color: Colors.grey[200],
+      child: const Icon(
+        Icons.image_not_supported,
+        size: 48,
+        color: Colors.grey,
+      ),
+    );
   }
 }

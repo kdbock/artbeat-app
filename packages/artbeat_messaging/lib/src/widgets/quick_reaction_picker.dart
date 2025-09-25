@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import '../models/message_reaction_model.dart';
+import 'full_reaction_picker.dart';
 
 /// Quick reaction picker that appears when long-pressing a message
 class QuickReactionPicker extends StatelessWidget {
   final VoidCallback onCancel;
   final void Function(String) onReactionSelected;
   final Offset? position;
+  final BuildContext? overlayContext;
 
   const QuickReactionPicker({
     super.key,
     required this.onCancel,
     required this.onReactionSelected,
     this.position,
+    this.overlayContext,
   });
 
   @override
@@ -30,10 +33,10 @@ class QuickReactionPicker extends StatelessWidget {
                 Positioned(
                   left: _getPositionX(context),
                   top: _getPositionY(context),
-                  child: _buildReactionContainer(),
+                  child: _buildReactionContainer(context),
                 )
               else
-                Center(child: _buildReactionContainer()),
+                Center(child: _buildReactionContainer(context)),
             ],
           ),
         ),
@@ -80,7 +83,7 @@ class QuickReactionPicker extends StatelessWidget {
     return y;
   }
 
-  Widget _buildReactionContainer() {
+  Widget _buildReactionContainer(BuildContext context) {
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
       duration: const Duration(milliseconds: 200),
@@ -113,7 +116,7 @@ class QuickReactionPicker extends StatelessWidget {
                 const SizedBox(width: 8),
 
                 // More reactions button
-                _buildMoreReactionsButton(),
+                _buildMoreReactionsButton(context),
               ],
             ),
           ),
@@ -138,11 +141,12 @@ class QuickReactionPicker extends StatelessWidget {
     );
   }
 
-  Widget _buildMoreReactionsButton() {
+  Widget _buildMoreReactionsButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
         onCancel();
-        // TODO: Show full reaction picker
+        // Show full reaction picker
+        _showFullReactionPicker(context);
       },
       child: Container(
         width: 44,
@@ -151,7 +155,23 @@ class QuickReactionPicker extends StatelessWidget {
           color: Colors.grey.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(22),
         ),
-        child: const Icon(Icons.add, size: 20, color: Colors.grey),
+        child: const Icon(Icons.more_horiz, size: 20, color: Colors.grey),
+      ),
+    );
+  }
+
+  void _showFullReactionPicker(BuildContext context) {
+    final contextToUse = overlayContext ?? context;
+    showModalBottomSheet<void>(
+      context: contextToUse,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FullReactionPicker(
+        onReactionSelected: (emoji) {
+          Navigator.pop(context);
+          onReactionSelected(emoji);
+        },
+        onClose: () => Navigator.pop(context),
       ),
     );
   }

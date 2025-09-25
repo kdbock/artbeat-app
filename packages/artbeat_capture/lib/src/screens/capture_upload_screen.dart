@@ -327,11 +327,15 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
   }
 
   Future<void> _submitCapture() async {
+    core.AppLogger.info('CaptureUpload: Submit button tapped');
+
     if (!_formKey.currentState!.validate()) {
+      core.AppLogger.warning('CaptureUpload: Form validation failed');
       return;
     }
 
     if (!_disclaimerAccepted) {
+      core.AppLogger.warning('CaptureUpload: Disclaimer not accepted');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please accept the public art disclaimer'),
@@ -459,24 +463,40 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
-          TextButton(
-            onPressed: _uploading ? null : _submitCapture,
-            child: _uploading
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _uploadStatus.isEmpty ? 'Uploading...' : _uploadStatus,
-                      ),
-                    ],
-                  )
-                : const Text('Submit'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: ElevatedButton(
+              onPressed: _uploading ? null : _submitCapture,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: core.ArtbeatColors.primaryPurple,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: _uploading
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _uploadStatus.isEmpty
+                              ? 'Uploading...'
+                              : _uploadStatus,
+                        ),
+                      ],
+                    )
+                  : const Text('Submit'),
+            ),
           ),
         ],
       ),
@@ -499,6 +519,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Image preview
@@ -595,14 +616,18 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       dropdownColor: core
                           .ArtbeatColors
                           .backgroundPrimary, // match login_screen
-                      style: const TextStyle(color: Colors.black),
+                      style: const TextStyle(
+                        color: core.ArtbeatColors.textPrimary,
+                      ),
                       isExpanded: true,
                       items: _artTypes.map((String type) {
                         return DropdownMenuItem<String>(
                           value: type,
                           child: Text(
                             type,
-                            style: const TextStyle(color: Colors.black),
+                            style: const TextStyle(
+                              color: core.ArtbeatColors.textPrimary,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -613,7 +638,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       },
                       hint: const Text(
                         'Select art type',
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: core.ArtbeatColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -632,14 +657,18 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       dropdownColor: core
                           .ArtbeatColors
                           .backgroundPrimary, // match login_screen
-                      style: const TextStyle(color: Colors.black),
+                      style: const TextStyle(
+                        color: core.ArtbeatColors.textPrimary,
+                      ),
                       isExpanded: true,
                       items: _artMediums.map((String medium) {
                         return DropdownMenuItem<String>(
                           value: medium,
                           child: Text(
                             medium,
-                            style: const TextStyle(color: Colors.black),
+                            style: const TextStyle(
+                              color: core.ArtbeatColors.textPrimary,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -650,7 +679,7 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       },
                       hint: const Text(
                         'Select art medium',
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: core.ArtbeatColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -680,6 +709,77 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
                       ),
                       controlAffinity: ListTileControlAffinity.leading,
                     ),
+                    const SizedBox(height: 24),
+
+                    // Submit button
+                    GestureDetector(
+                      onTap: _uploading
+                          ? null
+                          : () {
+                              core.AppLogger.debug(
+                                'DEBUG: GestureDetector tapped!',
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('GestureDetector was tapped!'),
+                                ),
+                              );
+                              _submitCapture();
+                            },
+                      child: Container(
+                        width: double.infinity,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: _uploading
+                              ? Colors.grey
+                              : core.ArtbeatColors.primaryPurple,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red,
+                            width: 2,
+                          ), // Debug visual
+                        ),
+                        child: Center(
+                          child: _uploading
+                              ? Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      _uploadStatus.isEmpty
+                                          ? 'Uploading...'
+                                          : _uploadStatus,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : const Text(
+                                  'Submit Capture',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),

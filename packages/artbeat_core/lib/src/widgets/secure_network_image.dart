@@ -226,11 +226,15 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       }
 
       // Try loading with corrected path
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _authenticatedUrl = correctedUrl;
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _authenticatedUrl = correctedUrl;
+            });
+          }
         });
-      });
+      }
 
       // Return loading indicator while trying corrected URL
       return Container(
@@ -261,12 +265,16 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       }
 
       // Try loading thumbnail
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          _usingThumbnailFallback = true;
-          _authenticatedUrl = thumbnailUrl;
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _usingThumbnailFallback = true;
+              _authenticatedUrl = thumbnailUrl;
+            });
+          }
         });
-      });
+      }
 
       // Return loading indicator while switching to thumbnail
       return Container(
@@ -380,9 +388,7 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
         urlToCheck.contains('firebasestorage');
 
     AppLogger.network('🖼️ SecureNetworkImage validating URL: $urlToCheck');
-    debugPrint(
-      '🖼️ URI: $uri, Valid: $isValidUrl, Likely valid: $isLikelyValidUrl',
-    );
+    // Removed excessive debugPrint to prevent terminal scrolling
 
     final cacheManager = ImageManagementService().cacheManager;
     AppLogger.network(
@@ -419,16 +425,19 @@ class _SecureNetworkImageState extends State<SecureNetworkImage> {
       // Add headers for Firebase Storage
       httpHeaders: const {'Cache-Control': 'no-cache'},
       errorListener: (error) {
-        if (kDebugMode) {
-          AppLogger.error('🔇 CachedNetworkImage error suppressed: $error');
-          print('🔇 CachedNetworkImage error for $urlToCheck: $error');
-        }
-
-        // Handle thumbnail fallback for 404 errors via errorListener as well
+        // Only log significant errors in debug mode, suppress 404s to reduce noise
         final is404Error =
             error.toString().contains('404') ||
             error.toString().contains('HTTP request failed, statusCode: 404');
 
+        if (kDebugMode && !is404Error) {
+          AppLogger.error('🔇 CachedNetworkImage error suppressed: $error');
+          AppLogger.error(
+            '🔇 CachedNetworkImage error for $urlToCheck: $error',
+          );
+        }
+
+        // Handle thumbnail fallback for 404 errors via errorListener as well
         if (is404Error &&
             widget.enableThumbnailFallback &&
             !_usingThumbnailFallback &&

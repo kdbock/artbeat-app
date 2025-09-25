@@ -51,7 +51,7 @@ class EventModerationService {
     } on FirebaseException catch (e) {
       _logger.e('Firebase error flagging event: ${e.message}', error: e);
       rethrow;
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error flagging event: $e', error: e);
       rethrow;
     }
@@ -109,7 +109,7 @@ class EventModerationService {
     } on FirebaseException catch (e) {
       _logger.e('Firebase error reviewing event: ${e.message}', error: e);
       rethrow;
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error reviewing event: $e', error: e);
       rethrow;
     }
@@ -147,7 +147,7 @@ class EventModerationService {
         error: e,
       );
       return [];
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error getting pending events: $e', error: e);
       return [];
     }
@@ -201,7 +201,7 @@ class EventModerationService {
         error: e,
       );
       return [];
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error getting flagged events: $e', error: e);
       return [];
     }
@@ -232,7 +232,7 @@ class EventModerationService {
     } on FirebaseException catch (e) {
       _logger.e('Firebase error dismissing flag: ${e.message}', error: e);
       rethrow;
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error dismissing flag: $e', error: e);
       rethrow;
     }
@@ -349,7 +349,7 @@ class EventModerationService {
         error: e,
       );
       return {'error': e.toString()};
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error getting moderation analytics: $e', error: e);
       return {'error': e.toString()};
     }

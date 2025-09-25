@@ -20,137 +20,136 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: const Text('🧪 Artist Features Test'),
-        backgroundColor: ArtbeatColors.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Test Controls
-            Card(
+    appBar: AppBar(
+      title: const Text('🧪 Artist Features Test'),
+      backgroundColor: ArtbeatColors.primary,
+      foregroundColor: Colors.white,
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Test Controls
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '🎯 Test Controls',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Tier Selection
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedTier,
+                    decoration: const InputDecoration(
+                      labelText: 'Select Subscription Tier',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: SubscriptionTier.values
+                        .map(
+                          (tier) => DropdownMenuItem(
+                            value: tier.name,
+                            child: Text(
+                              '${tier.displayName} - \$${tier.monthlyPrice}/month',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedTier = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Test Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _selectedTier == null || _isRunningTests
+                              ? null
+                              : _runAllTests,
+                          icon: _isRunningTests
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.play_arrow),
+                          label: Text(
+                            _isRunningTests ? 'Testing...' : 'Run All Tests',
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ArtbeatColors.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: _testResults.isEmpty ? null : _clearResults,
+                        icon: const Icon(Icons.clear),
+                        label: const Text('Clear'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[600],
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Test Results
+          Expanded(
+            child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '🎯 Test Controls',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Tier Selection
-                    DropdownButtonFormField<String>(
-                      initialValue: _selectedTier,
-                      decoration: const InputDecoration(
-                        labelText: 'Select Subscription Tier',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: SubscriptionTier.values.map((tier) => DropdownMenuItem(
-                          value: tier.name,
-                          child: Text(
-                            '${tier.displayName} - \$${tier.monthlyPrice}/month',
-                          ),
-                        )).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedTier = value;
-                        });
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Test Buttons
                     Row(
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _selectedTier == null || _isRunningTests
-                                ? null
-                                : _runAllTests,
-                            icon: _isRunningTests
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.play_arrow),
-                            label: Text(
-                              _isRunningTests ? 'Testing...' : 'Run All Tests',
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: ArtbeatColors.primary,
-                              foregroundColor: Colors.white,
-                            ),
+                        const Text(
+                          '📊 Test Results',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: _testResults.isEmpty
-                              ? null
-                              : _clearResults,
-                          icon: const Icon(Icons.clear),
-                          label: const Text('Clear'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[600],
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
+                        const Spacer(),
+                        if (_testResults.isNotEmpty) _buildSummaryChip(),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: _testResults.isEmpty
+                          ? _buildEmptyState()
+                          : _buildTestResults(),
                     ),
                   ],
                 ),
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            // Test Results
-            Expanded(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Text(
-                            '📊 Test Results',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          if (_testResults.isNotEmpty) _buildSummaryChip(),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Expanded(
-                        child: _testResults.isEmpty
-                            ? _buildEmptyState()
-                            : _buildTestResults(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
 
   Widget _buildSummaryChip() {
     final passed = _testResults.values.where((r) => r.passed).length;
@@ -171,60 +170,60 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
   }
 
   Widget _buildEmptyState() => Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.science_outlined, size: 64, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'No tests run yet',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Select a subscription tier and run tests to verify artist features',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.science_outlined, size: 64, color: Colors.grey[400]),
+        const SizedBox(height: 16),
+        Text(
+          'No tests run yet',
+          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Select a subscription tier and run tests to verify artist features',
+          style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    ),
+  );
 
   Widget _buildTestResults() => ListView.builder(
-      itemCount: _testResults.length,
-      itemBuilder: (context, index) {
-        final entry = _testResults.entries.elementAt(index);
-        final feature = entry.key;
-        final result = entry.value;
+    itemCount: _testResults.length,
+    itemBuilder: (context, index) {
+      final entry = _testResults.entries.elementAt(index);
+      final feature = entry.key;
+      final result = entry.value;
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          child: ListTile(
-            leading: Icon(
-              result.passed ? Icons.check_circle : Icons.error,
+      return Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: ListTile(
+          leading: Icon(
+            result.passed ? Icons.check_circle : Icons.error,
+            color: result.passed ? Colors.green : Colors.red,
+          ),
+          title: Text(
+            _formatFeatureName(feature),
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+          subtitle: Text(result.message),
+          trailing: Text(
+            result.passed ? 'PASS' : 'FAIL',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
               color: result.passed ? Colors.green : Colors.red,
             ),
-            title: Text(
-              _formatFeatureName(feature),
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            subtitle: Text(result.message),
-            trailing: Text(
-              result.passed ? 'PASS' : 'FAIL',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: result.passed ? Colors.green : Colors.red,
-              ),
-            ),
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
 
   String _formatFeatureName(String feature) => feature
-        .split('_')
-        .map((word) => word[0].toUpperCase() + word.substring(1))
-        .join(' ');
+      .split('_')
+      .map((word) => word[0].toUpperCase() + word.substring(1))
+      .join(' ');
 
   Future<void> _runAllTests() async {
     if (_selectedTier == null) return;
@@ -255,7 +254,7 @@ class _ArtistFeatureTestAppState extends State<ArtistFeatureTestApp> {
 
       // Show summary dialog
       _showTestSummary();
-    } catch (e) {
+    } on Exception catch (e) {
       _showError('Test execution failed: $e');
     } finally {
       setState(() {
@@ -370,8 +369,9 @@ Future<void> runQuickFeatureTest({String? userId}) async {
       userId: userId,
     );
 
-    logger.info('\n🧪 QUICK ARTIST FEATURES TEST');
-    logger.info('=' * 40);
+    logger
+      ..info('\n🧪 QUICK ARTIST FEATURES TEST')
+      ..info('=' * 40);
 
     results.forEach((feature, result) {
       final status = result.passed ? '✅' : '❌';
@@ -380,9 +380,10 @@ Future<void> runQuickFeatureTest({String? userId}) async {
 
     final passed = results.values.where((r) => r.passed).length;
     final total = results.length;
-    logger.info('=' * 40);
-    logger.info('RESULT: $passed/$total tests passed');
-  } catch (e) {
+    logger
+      ..info('=' * 40)
+      ..info('RESULT: $passed/$total tests passed');
+  } on Exception catch (e) {
     logger.severe('❌ Quick test failed', e);
   }
 }

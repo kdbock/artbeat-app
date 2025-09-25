@@ -16,7 +16,9 @@ void main() async {
         .limit(20)
         .get();
 
-    AppLogger.analytics('📊 Total engagements found: ${engagements.docs.length}');
+    AppLogger.analytics(
+      '📊 Total engagements found: ${engagements.docs.length}',
+    );
 
     for (final doc in engagements.docs) {
       final data = doc.data();
@@ -47,7 +49,7 @@ void main() async {
         .get();
 
     AppLogger.analytics('📊 Total reviews found: ${reviews.docs.length}');
-  } catch (e) {
+  } on Exception catch (e) {
     AppLogger.error('❌ Error checking engagements: $e');
   }
 }

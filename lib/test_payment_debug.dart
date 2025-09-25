@@ -69,11 +69,11 @@ class _PaymentDebugScreenState extends State<PaymentDebugScreen> {
           // Test default payment method
           final defaultPM = await _paymentService.getDefaultPaymentMethodId();
           _addDebugLine('Default payment method: ${defaultPM ?? 'NONE'}');
-        } catch (e) {
+        } on Exception catch (e) {
           _addDebugLine('ERROR in payment service: $e');
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       _addDebugLine('ERROR: $e');
     }
 
@@ -123,7 +123,7 @@ class _PaymentDebugScreenState extends State<PaymentDebugScreen> {
         customerId,
       );
       _addDebugLine('Payment methods after adding: ${paymentMethods.length}');
-    } catch (e) {
+    } on Exception catch (e) {
       _addDebugLine('ERROR adding payment method: $e');
     }
 

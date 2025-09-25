@@ -35,7 +35,7 @@ class InAppPurchaseSetup {
         AppLogger.error('❌ Failed to initialize in-app purchases');
         return false;
       }
-    } catch (e) {
+    } on Exception catch (e) {
       AppLogger.error('❌ Error initializing in-app purchases: $e');
       return false;
     }

@@ -404,17 +404,12 @@ class ArtWalkDesignSystem {
     GlobalKey<ScaffoldState>? scaffoldKey,
   }) {
     return AppBar(
-      title: ShaderMask(
-        shaderCallback: (bounds) => titleGradient.createShader(
-          Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-        ),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: textLight,
-          ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
         ),
       ),
       backgroundColor: Colors.transparent,

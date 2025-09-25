@@ -439,7 +439,7 @@ class SocialIntegrationService {
         'timestamp': FieldValue.serverTimestamp(),
         'metadata': metadata ?? {},
       });
-    } catch (e) {
+    } on Exception catch (e) {
       // Silently fail for analytics
       AppLogger.info('Failed to track social engagement: $e');
     }
@@ -472,7 +472,7 @@ class SocialIntegrationService {
         'comments': futures[2].docs.length,
         'shares': futures[3].docs.length,
       };
-    } catch (e) {
+    } on Exception catch (_) {
       return {'likes': 0, 'saves': 0, 'comments': 0, 'shares': 0};
     }
   }
@@ -499,7 +499,7 @@ class SocialIntegrationService {
           .get();
 
       return doc.exists;
-    } catch (e) {
+    } on Exception catch (_) {
       return false;
     }
   }
@@ -516,7 +516,7 @@ class SocialIntegrationService {
           .get();
 
       return doc.exists;
-    } catch (e) {
+    } on Exception catch (_) {
       return false;
     }
   }
@@ -533,7 +533,7 @@ class SocialIntegrationService {
           .get();
 
       return doc.exists;
-    } catch (e) {
+    } on Exception catch (_) {
       return false;
     }
   }

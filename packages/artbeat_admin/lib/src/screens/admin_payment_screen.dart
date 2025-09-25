@@ -348,16 +348,6 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           .where((t) => _selectedTransactionIds.contains(t.id))
           .toList();
 
-      // Generate CSV content
-      const csvHeader =
-          'Transaction ID,User Name,Amount,Currency,Type,Status,Date,Payment Method\n';
-      final csvRows = selectedTransactions
-          .map((t) =>
-              '${t.id},${t.userName},${t.amount},${t.currency},${t.type},${t.status},${intl.DateFormat('yyyy-MM-dd HH:mm').format(t.transactionDate)},${t.paymentMethod}')
-          .join('\n');
-
-      final csvContent = csvHeader + csvRows;
-
       // TODO: Implement actual file download/save with csvContent
       // For now, just log the audit and show success
       await _auditService.logDataExport(
@@ -389,16 +379,6 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         _showErrorSnackBar('Admin authentication required');
         return;
       }
-
-      // Generate CSV content for all transactions
-      const csvHeader =
-          'Transaction ID,User Name,Amount,Currency,Type,Status,Date,Payment Method\n';
-      final csvRows = _filteredTransactions
-          .map((t) =>
-              '${t.id},${t.userName},${t.amount},${t.currency},${t.type},${t.status},${intl.DateFormat('yyyy-MM-dd HH:mm').format(t.transactionDate)},${t.paymentMethod}')
-          .join('\n');
-
-      final csvContent = csvHeader + csvRows;
 
       // TODO: Implement actual file download/save with csvContent
       // For now, just log the audit and show success

@@ -98,6 +98,17 @@ class AdminDrawer extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   shrinkWrap: true,
                   children: [
+                    // Artbeat Home button - navigate to main app dashboard
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.home,
+                      title: 'Artbeat Home',
+                      route: '/dashboard',
+                      subtitle: 'Return to main app',
+                    ),
+
+                    const Divider(height: 16),
+
                     // Main Admin Dashboard - All-in-One Interface
                     _buildSectionHeader('Admin Dashboard'),
                     _buildDrawerItem(

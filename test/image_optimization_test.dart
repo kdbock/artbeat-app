@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,9 +43,11 @@ void main() {
       var completedLoads = 0;
 
       for (int i = 0; i < 10; i++) {
-        imageService.loadImageWithQueue(
-          'https://example.com/image$i.jpg',
-          () => completedLoads++,
+        unawaited(
+          imageService.loadImageWithQueue(
+            'https://example.com/image$i.jpg',
+            () => completedLoads++,
+          ),
         );
       }
 
@@ -299,9 +303,11 @@ void main() {
 
       // This should not throw an exception
       expect(
-        () => imageService.loadImageWithQueue(
-          'https://non-existent-domain.com/image.jpg',
-          () {},
+        () => unawaited(
+          imageService.loadImageWithQueue(
+            'https://non-existent-domain.com/image.jpg',
+            () {},
+          ),
         ),
         returnsNormally,
       );
@@ -316,9 +322,14 @@ void main() {
 
       // Simulate multiple concurrent loads
       for (int i = 0; i < 20; i++) {
-        imageService.loadImageWithQueue('https://example.com/image$i.jpg', () {
-          activeLoads--;
-        });
+        unawaited(
+          imageService.loadImageWithQueue(
+            'https://example.com/image$i.jpg',
+            () {
+              activeLoads--;
+            },
+          ),
+        );
         activeLoads++;
         if (activeLoads > maxConcurrent) {
           maxConcurrent = activeLoads;
@@ -340,9 +351,11 @@ void main() {
       // by verifying that not all loads complete immediately
       var completedLoads = 0;
       for (int i = 0; i < 10; i++) {
-        imageService.loadImageWithQueue('https://example.com/test$i.jpg', () {
-          completedLoads++;
-        });
+        unawaited(
+          imageService.loadImageWithQueue('https://example.com/test$i.jpg', () {
+            completedLoads++;
+          }),
+        );
       }
 
       await Future<void>.delayed(const Duration(milliseconds: 100));

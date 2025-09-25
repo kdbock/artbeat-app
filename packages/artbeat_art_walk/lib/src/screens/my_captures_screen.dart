@@ -299,7 +299,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen>
     return MainLayout(
       currentIndex: -1, // Hide bottom navigation for this screen
       drawer: const ArtWalkDrawer(),
-      appBar: EnhancedUniversalHeader(
+      appBar: const EnhancedUniversalHeader(
         title: 'My Captures',
         showBackButton: true,
         backgroundGradient: ArtWalkDesignSystem.headerGradient,
@@ -876,7 +876,7 @@ class _EditCaptureDialogState extends State<EditCaptureDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Edit Capture', style: ArtWalkDesignSystem.cardTitleStyle),
+            const Text('Edit Capture', style: ArtWalkDesignSystem.cardTitleStyle),
             const SizedBox(height: ArtWalkDesignSystem.paddingL),
             TextField(
               controller: _titleController,
@@ -969,7 +969,7 @@ class _EditCaptureDialogState extends State<EditCaptureDialog> {
                   activeColor: ArtWalkDesignSystem.primaryTeal,
                 ),
                 const SizedBox(width: ArtWalkDesignSystem.paddingS),
-                Text(
+                const Text(
                   'Make this capture public',
                   style: TextStyle(
                     color: ArtWalkDesignSystem.textSecondary,

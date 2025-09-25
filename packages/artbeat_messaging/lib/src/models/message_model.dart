@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum MessageType { text, image, video, file, location }
+enum MessageType { text, image, video, file, location, voice }
 
 class MessageModel {
   final String id;
@@ -70,11 +70,10 @@ class MessageModel {
       timestamp: data['timestamp'] != null
           ? (data['timestamp'] as Timestamp).toDate()
           : DateTime.now(),
-      type: data['imageUrl'] != null
-          ? MessageType.image
-          : data['fileUrl'] != null
-          ? MessageType.file
-          : MessageType.text,
+      type: MessageType.values.firstWhere(
+        (e) => e.toString() == (data['type'] as String?),
+        orElse: () => MessageType.text,
+      ),
       isRead:
           (data['read'] as Map<String, dynamic>?)?.values.contains(true) ??
           false,

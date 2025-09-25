@@ -736,30 +736,36 @@ class _EnhancedArtWalkCreateScreenState
             if (_selectedArtPieces.isNotEmpty) _buildPersistentSelectedBar(),
             // Scrollable content
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildProgressIndicator(),
-                      const SizedBox(height: 16),
-                      _buildTitleField(),
-                      const SizedBox(height: 16),
-                      _buildDescriptionField(),
-                      const SizedBox(height: 24),
-                      _buildMapSection(),
-                      const SizedBox(height: 24),
-                      _buildArtPiecesSection(),
-                      const SizedBox(height: 32),
-                      _buildSubmitButton(),
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  // Dismiss keyboard when tapping outside text fields
+                  FocusScope.of(context).unfocus();
+                },
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildProgressIndicator(),
+                        const SizedBox(height: 16),
+                        _buildTitleField(),
+                        const SizedBox(height: 16),
+                        _buildDescriptionField(),
+                        const SizedBox(height: 24),
+                        _buildMapSection(),
+                        const SizedBox(height: 24),
+                        _buildArtPiecesSection(),
+                        const SizedBox(height: 32),
+                        _buildSubmitButton(),
                     ],
                   ),
                 ),
               ),
             ),
-          ],
+        )],
         ),
         if (_isUploading) // Add loading overlay
           Container(
@@ -890,14 +896,14 @@ class _EnhancedArtWalkCreateScreenState
       decoration: _buildGlassDecoration(),
       child: TextFormField(
         controller: _titleController,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Title',
           hintText: 'Give your art walk a creative name',
-          prefixIcon: const Icon(Icons.title, color: Colors.white70),
+          prefixIcon: Icon(Icons.title, color: Colors.white70),
           border: InputBorder.none,
           filled: false,
-          labelStyle: const TextStyle(color: Colors.white70),
-          hintStyle: const TextStyle(color: Colors.white54),
+          labelStyle: TextStyle(color: Colors.white70),
+          hintStyle: TextStyle(color: Colors.white54),
         ),
         style: const TextStyle(color: Colors.white),
         validator: (value) {
@@ -916,14 +922,14 @@ class _EnhancedArtWalkCreateScreenState
       decoration: _buildGlassDecoration(),
       child: TextFormField(
         controller: _descriptionController,
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Description',
           hintText: 'Describe your art walk experience',
-          prefixIcon: const Icon(Icons.description, color: Colors.white70),
+          prefixIcon: Icon(Icons.description, color: Colors.white70),
           border: InputBorder.none,
           filled: false,
-          labelStyle: const TextStyle(color: Colors.white70),
-          hintStyle: const TextStyle(color: Colors.white54),
+          labelStyle: TextStyle(color: Colors.white70),
+          hintStyle: TextStyle(color: Colors.white54),
         ),
         style: const TextStyle(color: Colors.white),
         maxLines: 3,
@@ -1073,7 +1079,7 @@ class _EnhancedArtWalkCreateScreenState
       child: InkWell(
         onTap: () => _toggleArtPieceSelection(art),
         borderRadius: BorderRadius.circular(12),
-        child: Container(
+        child: SizedBox(
           height: 140, // Increased height for larger image
           child: Stack(
             children: [

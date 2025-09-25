@@ -53,7 +53,7 @@ class EventAnalyticsServiceAdvanced {
         'totalEngagements': 0,
         'totalRevenue': 0.0,
       };
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error fetching analytics data: $e', error: e);
       return {
         'error': e.toString(),
@@ -102,7 +102,7 @@ class EventAnalyticsServiceAdvanced {
         error: e,
       );
       return {'error': e.message};
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error fetching today metrics: $e', error: e);
       return {'error': e.toString()};
     }
@@ -135,7 +135,7 @@ class EventAnalyticsServiceAdvanced {
         error: e,
       );
       return [];
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error fetching popular events: $e', error: e);
       return [];
     }
@@ -282,7 +282,7 @@ class EventAnalyticsServiceAdvanced {
         error: e,
       );
       return {'error': 'Failed to export analytics data: ${e.message}'};
-    } catch (e) {
+    } on Exception catch (e) {
       _logger.e('Error exporting analytics data: $e', error: e);
       return {'error': 'Failed to export analytics data: $e'};
     }

@@ -449,15 +449,9 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       // Share with images if available
       if (post.imageUrls.isNotEmpty) {
         // For now, share text only. In the future, we could download and share images
-        await Share.share(
-          shareText,
-          subject: 'Check out this amazing art from ARTbeat!',
-        );
+        await SharePlus.instance.share(ShareParams(text: shareText));
       } else {
-        await Share.share(
-          shareText,
-          subject: 'Check out this post from ARTbeat!',
-        );
+        await SharePlus.instance.share(ShareParams(text: shareText));
       }
 
       // Update share count optimistically

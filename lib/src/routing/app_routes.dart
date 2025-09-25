@@ -90,6 +90,7 @@ class AppRoutes {
   // Capture routes
   static const String captures = '/captures';
   static const String captureCamera = '/capture/camera';
+  static const String captureCameraSimple = '/capture/camera/simple';
   static const String captureDetail = '/capture/detail';
   static const String captureDashboard = '/capture/dashboard';
   static const String captureSearch = '/capture/search';
@@ -181,6 +182,7 @@ class AppRoutes {
   static const String messagingUser = '/messaging/user';
   static const String messagingChatDeep = '/messaging/chat-deep';
   static const String messagingUserChat = '/messaging/user-chat';
+  static const String messagingThread = '/messaging/thread';
 
   // Admin routes
   static const String adminDashboard = '/admin/dashboard';
@@ -278,6 +280,7 @@ class AppRoutes {
     adPayment,
     captures,
     captureCamera,
+    captureCameraSimple,
     captureDetail,
     captureDashboard,
     captureSearch,

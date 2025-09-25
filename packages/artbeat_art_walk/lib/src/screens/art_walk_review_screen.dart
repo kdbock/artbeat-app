@@ -68,11 +68,11 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        appBar: EnhancedUniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Review Your Art Walk',
           showLogo: false,
           showBackButton: true,
-          backgroundGradient: const LinearGradient(
+          backgroundGradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.topRight,
             colors: [
@@ -80,7 +80,7 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
               ArtWalkDesignSystem.accentOrange,
             ],
           ),
-          titleGradient: const LinearGradient(
+          titleGradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.topRight,
             colors: [
@@ -292,7 +292,7 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
           ),
           child: Row(
             children: [
-              Icon(Icons.home, color: Colors.white, size: 24),
+              const Icon(Icons.home, color: Colors.white, size: 24),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -503,7 +503,7 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       '📸 Capture the Moment',
                       style: TextStyle(
                         fontSize: 22,
@@ -588,7 +588,7 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
                         color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Text(
+                      child: const Text(
                         '✨ Looking great!',
                         style: TextStyle(
                           color: Colors.white,
@@ -687,9 +687,9 @@ class _ArtWalkReviewScreenState extends State<ArtWalkReviewScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    const Text(
                       'Start My Art Walk',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,

@@ -77,7 +77,7 @@ void main() async {
     AppLogger.info('   XP updated: $currentXP → $expectedXP');
     AppLogger.info('   Level updated: $currentLevel → $newLevel');
     AppLogger.info('   XP awarded: ${expectedXP - currentXP}');
-  } catch (e) {
+  } on Exception catch (e) {
     AppLogger.error('❌ Error: $e');
   }
 

@@ -104,7 +104,7 @@ class ArtWalkModuleHome extends StatelessWidget {
               onPressed: () => Navigator.push<void>(
                 context,
                 MaterialPageRoute<void>(
-                  builder: (_) => const CreateArtWalkScreen(),
+                  builder: (_) => const EnhancedArtWalkCreateScreen(),
                 ),
               ),
               child: const Text('Create Art Walk'),

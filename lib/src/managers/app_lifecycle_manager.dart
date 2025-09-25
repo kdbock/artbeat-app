@@ -108,7 +108,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       if (kDebugMode) {
         AppLogger.info('✅ Firestore connection healthy');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Firestore connection issue: $e');
       }
@@ -125,7 +125,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       if (kDebugMode) {
         AppLogger.network('🔄 Firestore network re-enabled');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Failed to re-enable Firestore network: $e');
       }
@@ -141,7 +141,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       if (kDebugMode) {
         AppLogger.info('💾 Firestore terminated cleanly for background');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Error terminating Firestore: $e');
       }
@@ -156,7 +156,7 @@ class AppLifecycleManager extends WidgetsBindingObserver {
       if (kDebugMode) {
         AppLogger.info('🧹 Resources cleaned up');
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (kDebugMode) {
         AppLogger.error('❌ Error cleaning up resources: $e');
       }

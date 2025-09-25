@@ -34,7 +34,9 @@ class PresenceService {
     final userId = _auth.currentUser?.uid;
     if (userId == null) return;
 
-    AppLogger.info('PresenceService: Starting presence updates for user $userId');
+    AppLogger.info(
+      'PresenceService: Starting presence updates for user $userId',
+    );
 
     // Set user as online immediately
     _setUserOnline(userId);
@@ -138,14 +140,11 @@ class PresenceService {
 
       if (artistProfileQuery.docs.isNotEmpty) {
         final artistProfileDoc = artistProfileQuery.docs.first;
-        await artistProfileDoc.reference.update({
-          'isOnline': isOnline,
-          'lastSeen': Timestamp.now(),
-          'lastActive': Timestamp.now(),
-        });
-        debugPrint(
-          'PresenceService: Updated artist profile ${artistProfileDoc.id} online status to $isOnline',
-        );
+        if (kDebugMode) {
+          debugPrint(
+            'PresenceService: Updated artist profile ${artistProfileDoc.id} online status to $isOnline',
+          );
+        }
       }
     } catch (e) {
       debugPrint(

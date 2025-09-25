@@ -219,7 +219,7 @@ class _ArtistOnboardingScreenState extends State<ArtistOnboardingScreen> {
             );
             portfolioImageUrls.add(url);
           } catch (e) {
-            print('Failed to upload portfolio image: $e');
+            AppLogger.error('Failed to upload portfolio image: $e');
           }
         }
 

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:flutter/material.dart';
+
 import '../in_app_purchase_setup.dart';
 
 /// Demo screen to test in-app purchase functionality
@@ -143,19 +144,23 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  ...PurchaseHelper.getAvailableGifts().take(3).map((gift) => ListTile(
-                      leading: const Icon(Icons.card_giftcard),
-                      title: Text(gift['title'] as String),
-                      subtitle: Text(
-                        '\$${gift['amount'].toStringAsFixed(2)} - ${gift['credits']} credits',
+                  ...PurchaseHelper.getAvailableGifts()
+                      .take(3)
+                      .map(
+                        (gift) => ListTile(
+                          leading: const Icon(Icons.card_giftcard),
+                          title: Text(gift['title'] as String),
+                          subtitle: Text(
+                            '\$${(gift['amount'] as num).toStringAsFixed(2)} - ${gift['credits']} credits',
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: _isInitialized
+                                ? () => _showGiftPurchase(gift)
+                                : null,
+                            child: const Text('Send'),
+                          ),
+                        ),
                       ),
-                      trailing: ElevatedButton(
-                        onPressed: _isInitialized
-                            ? () => _showGiftPurchase(gift)
-                            : null,
-                        child: const Text('Send'),
-                      ),
-                    )),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -187,21 +192,23 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  ...PurchaseHelper.getAvailableAdPackages().take(3).map((
-                    package,
-                  ) => ListTile(
-                      leading: const Icon(Icons.campaign),
-                      title: Text(package['title'] as String),
-                      subtitle: Text(
-                        '\$${package['amount'].toStringAsFixed(2)} - ${package['impressions']} impressions',
+                  ...PurchaseHelper.getAvailableAdPackages()
+                      .take(3)
+                      .map(
+                        (package) => ListTile(
+                          leading: const Icon(Icons.campaign),
+                          title: Text(package['title'] as String),
+                          subtitle: Text(
+                            '\$${(package['amount'] as num).toStringAsFixed(2)} - ${package['impressions']} impressions',
+                          ),
+                          trailing: ElevatedButton(
+                            onPressed: _isInitialized
+                                ? () => _showAdPurchase(package)
+                                : null,
+                            child: const Text('Promote'),
+                          ),
+                        ),
                       ),
-                      trailing: ElevatedButton(
-                        onPressed: _isInitialized
-                            ? () => _showAdPurchase(package)
-                            : null,
-                        child: const Text('Promote'),
-                      ),
-                    )),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -255,7 +262,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
   );
 
   void _showSubscriptionPurchase(SubscriptionTier tier) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Subscribe to ${tier.displayName}'),
@@ -292,7 +299,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
   }
 
   void _showGiftPurchase(Map<String, dynamic> gift) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Send ${gift['title']}'),
@@ -322,7 +329,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
   }
 
   void _showAdPurchase(Map<String, dynamic> package) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Purchase ${package['title']}'),
@@ -353,7 +360,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
 
   void _showFullSubscriptionWidget() {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (context) => Scaffold(
           appBar: AppBar(
             title: const Text('Subscription Plans'),
@@ -371,7 +378,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
 
   void _showFullGiftWidget() {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (context) =>
             const GiftPurchaseWidget(recipientName: 'Demo User'),
       ),
@@ -380,7 +387,7 @@ class _InAppPurchaseDemoScreenState extends State<InAppPurchaseDemoScreen> {
 
   void _showFullAdWidget() {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (context) =>
             const AdPurchaseWidget(artworkTitle: 'Demo Artwork'),
       ),

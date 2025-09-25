@@ -52,7 +52,7 @@ class RouteAnalyticsService {
 
       // Update route popularity counter
       await _updateRoutePopularity(routeName);
-    } catch (error) {
+    } on Exception catch (error) {
       // Don't let analytics errors break the app
       if (kDebugMode) {
         AppLogger.error('Route analytics error: $error');
@@ -77,7 +77,7 @@ class RouteAnalyticsService {
           'error_message': errorMessage ?? '',
         },
       );
-    } catch (error) {
+    } on Exception catch (error) {
       if (kDebugMode) {
         AppLogger.error('Route performance tracking error: $error');
       }
@@ -124,7 +124,7 @@ class RouteAnalyticsService {
             );
 
       return sortedRoutes.take(limit).toList();
-    } catch (error) {
+    } on Exception catch (error) {
       if (kDebugMode) {
         AppLogger.error('Error getting popular routes: $error');
       }
@@ -160,7 +160,7 @@ class RouteAnalyticsService {
                   .toDate()
             : null,
       };
-    } catch (error) {
+    } on Exception catch (error) {
       if (kDebugMode) {
         AppLogger.error('Error getting route statistics: $error');
       }
@@ -175,7 +175,7 @@ class RouteAnalyticsService {
         name: 'navigation_source',
         parameters: {'route_name': routeName, 'source': source},
       );
-    } catch (error) {
+    } on Exception catch (error) {
       if (kDebugMode) {
         AppLogger.error('Navigation source tracking error: $error');
       }
@@ -191,7 +191,7 @@ class RouteAnalyticsService {
         'visit_count': FieldValue.increment(1),
         'last_visit': DateTime.now(),
       }, SetOptions(merge: true));
-    } catch (error) {
+    } on Exception catch (error) {
       if (kDebugMode) {
         AppLogger.error('Error updating route popularity: $error');
       }
@@ -199,7 +199,8 @@ class RouteAnalyticsService {
   }
 
   /// Generate session ID
-  String _generateSessionId() => DateTime.now().millisecondsSinceEpoch.toString();
+  String _generateSessionId() =>
+      DateTime.now().millisecondsSinceEpoch.toString();
 }
 
 /// Mixin for widgets to easily track route analytics

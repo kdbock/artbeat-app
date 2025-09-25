@@ -70,7 +70,8 @@ class InAppPurchaseService {
       _subscription = purchaseUpdated.listen(
         _onPurchaseUpdate,
         onDone: () => _subscription?.cancel(),
-        onError: (error) => AppLogger.error('Purchase stream error: $error'),
+        onError: (Object error) =>
+            AppLogger.error('Purchase stream error: $error'),
       );
 
       // Load products

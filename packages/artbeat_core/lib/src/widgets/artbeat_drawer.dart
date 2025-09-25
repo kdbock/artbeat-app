@@ -5,10 +5,11 @@ import 'package:provider/provider.dart';
 import '../theme/artbeat_colors.dart';
 import '../theme/artbeat_typography.dart';
 import '../services/user_service.dart';
-import '../models/user_model.dart';
+import '../models/user_model.dart' as core;
 import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
 import '../utils/logger.dart';
+import 'package:artbeat_messaging/artbeat_messaging.dart';
 
 // Define main navigation routes that should use pushReplacement
 // Only include true top-level destinations that should replace the current screen
@@ -30,7 +31,7 @@ class ArtbeatDrawer extends StatefulWidget {
 }
 
 class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
-  UserModel? _cachedUserModel;
+  core.UserModel? _cachedUserModel;
   StreamSubscription<User?>? _authSubscription;
   String? _roleOverride; // For admin role switching
 
@@ -650,12 +651,14 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
 
     return Builder(
       builder: (snackBarContext) => ListTile(
-        leading: Icon(
-          item.icon,
-          color: isCurrentRoute
-              ? ArtbeatColors.primaryGreen
-              : (item.color ?? ArtbeatColors.primaryPurple),
-        ),
+        leading: item.supportsBadge
+            ? _buildIconWithBadge(item, isCurrentRoute)
+            : Icon(
+                item.icon,
+                color: isCurrentRoute
+                    ? ArtbeatColors.primaryGreen
+                    : (item.color ?? ArtbeatColors.primaryPurple),
+              ),
         title: Text(
           item.title,
           style: ArtbeatTypography.textTheme.bodyMedium?.copyWith(
@@ -698,6 +701,63 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildIconWithBadge(ArtbeatDrawerItem item, bool isCurrentRoute) {
+    // For messaging item, show unread count badge
+    if (item.route == '/messaging') {
+      return StreamBuilder<int>(
+        stream: ChatService().getTotalUnreadCount(),
+        builder: (context, snapshot) {
+          final unreadCount = snapshot.data ?? 0;
+
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(
+                item.icon,
+                color: isCurrentRoute
+                    ? ArtbeatColors.primaryGreen
+                    : (item.color ?? ArtbeatColors.primaryPurple),
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  right: -6,
+                  top: -6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      unreadCount > 99 ? '99+' : unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      );
+    }
+
+    // For other items that support badges, return regular icon for now
+    return Icon(
+      item.icon,
+      color: isCurrentRoute
+          ? ArtbeatColors.primaryGreen
+          : (item.color ?? ArtbeatColors.primaryPurple),
     );
   }
 }

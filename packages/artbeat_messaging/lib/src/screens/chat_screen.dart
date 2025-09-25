@@ -5,12 +5,13 @@ import 'package:artbeat_core/artbeat_core.dart'
     show EnhancedUniversalHeader, ArtbeatColors, ArtbeatGradientBackground;
 import 'package:geolocator/geolocator.dart';
 import '../models/chat_model.dart';
-import '../models/message.dart';
 import '../models/message_model.dart';
 import '../services/chat_service.dart';
-import '../widgets/message_bubble.dart';
-import '../utils/message_converter.dart';
-import 'media_viewer_screen.dart';
+import '../services/voice_recording_service.dart';
+import '../widgets/voice_recorder_widget.dart';
+import '../widgets/voice_message_bubble.dart';
+import '../widgets/smart_replies_widget.dart';
+import '../widgets/message_interactions.dart';
 
 class ChatScreen extends StatefulWidget {
   final ChatModel chat;
@@ -27,6 +28,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   final ImagePicker _imagePicker = ImagePicker();
   bool _isTyping = false;
   bool _isAttachmentMenuOpen = false;
+  bool _showSmartReplies = false;
+  MessageModel? _replyingToMessage;
   late AnimationController _animationController;
 
   // For typing indicator animation
@@ -149,8 +152,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
 
     final chatService = Provider.of<ChatService>(context, listen: false);
     try {
-      await chatService.sendMessage(widget.chat.id, text);
+      if (_replyingToMessage != null) {
+        await chatService.sendReplyMessage(
+          widget.chat.id,
+          text,
+          _replyingToMessage!.id,
+        );
+        setState(() {
+          _replyingToMessage = null;
+        });
+      } else {
+        await chatService.sendMessage(widget.chat.id, text);
+      }
       _messageController.clear();
+      setState(() {
+        _showSmartReplies = false;
+      });
 
       // Scroll to bottom after sending
       _scrollToBottom();
@@ -164,6 +181,21 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         );
       }
     }
+  }
+
+  void _onSmartReplySelected(String reply) {
+    final chatService = Provider.of<ChatService>(context, listen: false);
+    chatService.sendMessage(widget.chat.id, reply);
+    setState(() {
+      _showSmartReplies = false;
+    });
+    _scrollToBottom();
+  }
+
+  void _onReplyToMessage(MessageModel message) {
+    setState(() {
+      _replyingToMessage = message;
+    });
   }
 
   void _scrollToBottom() {
@@ -247,60 +279,120 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _startAudioRecording() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FutureBuilder<VoiceRecordingService>(
+        future: _initializeVoiceService(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+              padding: const EdgeInsets.all(32),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Initializing voice recorder...'),
+                ],
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Container(
+              padding: const EdgeInsets.all(32),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to initialize voice recorder: ${snapshot.error}',
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ChangeNotifierProvider.value(
+            value: snapshot.data!,
+            child: Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: VoiceRecorderWidget(
+                onVoiceRecorded: (voiceFilePath, duration) {
+                  Navigator.pop(context);
+                  _handleVoiceMessage(voiceFilePath, duration);
+                },
+                onCancel: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<VoiceRecordingService> _initializeVoiceService() async {
+    final service = VoiceRecordingService();
+    await service.initialize();
+    return service;
+  }
+
+  Future<void> _handleVoiceMessage(
+    String voiceFilePath,
+    Duration duration,
+  ) async {
+    final chatService = Provider.of<ChatService>(context, listen: false);
     try {
-      // Show recording dialog
-      showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('Audio Recording'),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.mic, size: 48, color: ArtbeatColors.secondaryTeal),
-              SizedBox(height: 16),
-              Text('Recording audio...'),
-              SizedBox(height: 16),
-              LinearProgressIndicator(),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Stop & Send'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
-          ],
-        ),
+      // Show sending indicator
+      _showSendingMediaIndicator();
+
+      await chatService.sendVoiceMessage(
+        widget.chat.id,
+        voiceFilePath,
+        duration,
       );
 
-      // Simulate recording duration
-      await Future<void>.delayed(const Duration(seconds: 2));
-
-      if (mounted) {
-        Navigator.pop(context);
-
-        // Show feature coming soon message
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Audio recording feature coming soon!'),
-            backgroundColor: ArtbeatColors.primaryPurple,
-          ),
-        );
+      // Hide attachment menu if open
+      if (_isAttachmentMenuOpen) {
+        setState(() {
+          _isAttachmentMenuOpen = false;
+        });
+        _animationController.reverse();
       }
+
+      // Scroll to bottom after sending
+      _scrollToBottom();
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to record audio: ${e.toString()}'),
+            content: Text('Failed to send voice message: ${e.toString()}'),
             backgroundColor: ArtbeatColors.error,
           ),
         );
@@ -455,15 +547,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
         ),
         duration: Duration(seconds: 2),
         backgroundColor: Colors.black87,
-      ),
-    );
-  }
-
-  void _handleImageTap(List<String> mediaUrls, int initialIndex) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) =>
-            MediaViewerScreen(mediaUrls: mediaUrls, initialIndex: initialIndex),
       ),
     );
   }
@@ -640,6 +723,22 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                     }
 
                     final messages = snapshot.data!;
+
+                    // Show smart replies when there are messages from others
+                    final currentUserId = chatService.currentUserId;
+                    final hasMessagesFromOthers = messages.any(
+                      (msg) => msg.senderId != currentUserId,
+                    );
+                    if (hasMessagesFromOthers && !_showSmartReplies) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          setState(() {
+                            _showSmartReplies = true;
+                          });
+                        }
+                      });
+                    }
+
                     if (messages.isEmpty) {
                       return Center(
                         child: Column(
@@ -685,11 +784,6 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                       );
                     }
 
-                    final allImageUrls = messages
-                        .where((msg) => msg.type == MessageType.image)
-                        .map((msg) => msg.content)
-                        .toList();
-
                     return ListView.builder(
                       controller: _scrollController,
                       reverse: true,
@@ -715,48 +809,21 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                           children: [
                             if (showDateHeader)
                               _buildDateHeader(messageModel.timestamp),
-                            FutureBuilder<Message>(
-                              future: messageModel.toMessageAsync(
-                                widget.chat.id,
-                                chat: widget.chat,
-                                chatService: chatService,
-                              ),
-                              builder: (context, messageSnapshot) {
-                                if (!messageSnapshot.hasData) {
-                                  // Show a placeholder while loading user data
-                                  return const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 8.0,
-                                    ),
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
 
-                                final message = messageSnapshot.data!;
-                                return MessageBubble(
-                                  message: message,
-                                  isCurrentUser: isCurrentUser,
-                                  onImageTap: message.imageUrl != null
-                                      ? () {
-                                          final imageIndex = allImageUrls
-                                              .indexOf(message.imageUrl!);
-                                          _handleImageTap(
-                                            allImageUrls,
-                                            imageIndex,
-                                          );
-                                        }
-                                      : null,
-                                );
-                              },
-                            ),
+                            // Show voice message bubble for voice messages
+                            if (messageModel.type == MessageType.voice)
+                              VoiceMessageBubble(
+                                message: messageModel,
+                                isCurrentUser: isCurrentUser,
+                              )
+                            else
+                              InteractiveMessageBubble(
+                                message: messageModel,
+                                chat: widget.chat,
+                                currentUserId: chatService.currentUserId,
+                                chatService: chatService,
+                                onReply: () => _onReplyToMessage(messageModel),
+                              ),
                           ],
                         );
                       },
@@ -862,9 +929,15 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                                 icon: Icons.mic,
                                 label: 'Audio',
                                 color: ArtbeatColors.secondaryTeal,
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _startAudioRecording();
+                                onTap: () async {
+                                  // Close attachment menu first
+                                  setState(() {
+                                    _isAttachmentMenuOpen = false;
+                                  });
+                                  _animationController.reverse();
+
+                                  // Then start audio recording
+                                  await _startAudioRecording();
                                 },
                               ),
                               _buildAttachmentOption(
@@ -923,6 +996,68 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+
+                    // Smart replies
+                    SmartRepliesWidget(
+                      chatId: widget.chat.id,
+                      onReplySelected: _onSmartReplySelected,
+                      enabled: _showSmartReplies,
+                    ),
+
+                    // Reply preview
+                    if (_replyingToMessage != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: ArtbeatColors.primaryPurple.withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: const Border(
+                            left: BorderSide(
+                              color: ArtbeatColors.primaryPurple,
+                              width: 3,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Replying to',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: ArtbeatColors.primaryPurple,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _replyingToMessage!.content,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 20),
+                              onPressed: () {
+                                setState(() {
+                                  _replyingToMessage = null;
+                                });
+                              },
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      ),
 
                     // Input field and buttons
                     Row(

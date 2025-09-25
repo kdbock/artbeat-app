@@ -9,7 +9,8 @@ class PaymentTestApp extends StatelessWidget {
   const PaymentTestApp({super.key});
 
   @override
-  Widget build(BuildContext context) => const MaterialApp(title: 'Payment Sheet Test', home: PaymentTestScreen());
+  Widget build(BuildContext context) =>
+      const MaterialApp(title: 'Payment Sheet Test', home: PaymentTestScreen());
 }
 
 class PaymentTestScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _PaymentTestScreenState extends State<PaymentTestScreen> {
       setState(() {
         _result = 'Success: ${result['message']}';
       });
-    } catch (e) {
+    } on Exception catch (e) {
       setState(() {
         _result = 'Error: $e';
       });
@@ -54,47 +55,45 @@ class _PaymentTestScreenState extends State<PaymentTestScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(title: const Text('Payment Sheet Test')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Test Direct Gift Payment',
-              style: Theme.of(context).textTheme.headlineSmall,
+    appBar: AppBar(title: const Text('Payment Sheet Test')),
+    body: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Test Direct Gift Payment',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _isLoading ? null : _testGiftPayment,
+            child: _isLoading
+                ? const CircularProgressIndicator()
+                : const Text(r'Send $5 Gift'),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _testGiftPayment,
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text(r'Send $5 Gift'),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _result.isEmpty ? 'No result yet' : _result,
-                style: TextStyle(
-                  color: _result.startsWith('Error')
-                      ? Colors.red
-                      : Colors.green,
-                ),
+            child: Text(
+              _result.isEmpty ? 'No result yet' : _result,
+              style: TextStyle(
+                color: _result.startsWith('Error') ? Colors.red : Colors.green,
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              'This will open Stripe\'s payment sheet where you can enter card details.',
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'This will open Stripe\'s payment sheet where you can enter card details.',
+            style: Theme.of(context).textTheme.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
-    );
+    ),
+  );
 }

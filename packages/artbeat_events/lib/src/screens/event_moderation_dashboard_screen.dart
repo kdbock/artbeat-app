@@ -58,7 +58,7 @@ class _EventModerationDashboardScreenState
         _analytics = futures[2] as Map<String, dynamic>;
         _isLoading = false;
       });
-    } catch (e) {
+    } on Exception catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -477,7 +477,7 @@ class _EventModerationDashboardScreenState
           ? timestamp
           : (timestamp as Timestamp).toDate();
       return DateFormat('MMM dd, yyyy HH:mm').format(date);
-    } catch (e) {
+    } on Exception {
       return 'Unknown';
     }
   }
@@ -498,7 +498,7 @@ class _EventModerationDashboardScreenState
       }
 
       await _loadData();
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -527,7 +527,7 @@ class _EventModerationDashboardScreenState
       }
 
       await _loadData();
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

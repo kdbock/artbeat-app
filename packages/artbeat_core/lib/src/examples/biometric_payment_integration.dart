@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/biometric_auth_service.dart';
 import '../services/enhanced_payment_service_working.dart';
+import '../utils/logger.dart';
 
 /// Example integration of biometric authentication with payment flows
 class BiometricPaymentIntegration {
@@ -58,7 +59,7 @@ class BiometricPaymentIntegration {
     try {
       return await _biometricService.enableBiometricPayments();
     } catch (e) {
-      print('❌ Failed to setup biometric payments: $e');
+      AppLogger.error('❌ Failed to setup biometric payments: $e');
       return false;
     }
   }

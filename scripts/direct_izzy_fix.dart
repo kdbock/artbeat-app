@@ -82,7 +82,7 @@ void main() async {
     AppLogger.info('   Final XP: ${updatedData['experiencePoints']}');
     AppLogger.info('   Final Level: ${updatedData['level']}');
     AppLogger.info('   Final Captures: ${updatedData['capturesCount']}');
-  } catch (e, stackTrace) {
+  } on Exception catch (e, stackTrace) {
     AppLogger.error('❌ Error: $e');
     AppLogger.info('Stack trace: $stackTrace');
   }

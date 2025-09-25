@@ -21,6 +21,7 @@ class ArtbeatDrawerItem {
   final Color? color;
   final bool requiresAuth;
   final List<String>? requiredRoles; // null means available to all users
+  final bool supportsBadge; // Whether this item can show a badge count
 
   const ArtbeatDrawerItem({
     required this.title,
@@ -29,6 +30,7 @@ class ArtbeatDrawerItem {
     this.color,
     this.requiresAuth = true,
     this.requiredRoles,
+    this.supportsBadge = false,
   });
 }
 
@@ -69,6 +71,7 @@ class ArtbeatDrawerItems {
     icon: Icons.message_outlined,
     route: '/messaging',
     requiresAuth: true,
+    supportsBadge: true,
   );
 
   static const advertise = ArtbeatDrawerItem(

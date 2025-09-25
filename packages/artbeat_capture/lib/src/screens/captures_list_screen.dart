@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:artbeat_core/src/theme/artbeat_colors.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
-import 'capture_detail_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -100,10 +99,10 @@ class _CapturesListScreenState extends State<CapturesListScreen> {
   }
 
   void _showCaptureDetails(core.CaptureModel capture) {
-    Navigator.push<core.CaptureModel>(
+    Navigator.push<void>(
       context,
-      MaterialPageRoute<core.CaptureModel>(
-        builder: (context) => CaptureDetailScreen(capture: capture),
+      MaterialPageRoute<void>(
+        builder: (context) => CaptureViewScreen(capture: capture),
       ),
     );
   }

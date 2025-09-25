@@ -42,7 +42,7 @@ void main() async {
     AppLogger.info('   📍 User rank: ${userRank ?? 'Not found'}');
 
     AppLogger.info('\n✅ All leaderboard service tests completed successfully!');
-  } catch (e, stackTrace) {
+  } on Exception catch (e, stackTrace) {
     AppLogger.error('❌ Error testing leaderboard service: $e');
     AppLogger.info('Stack trace: $stackTrace');
   }

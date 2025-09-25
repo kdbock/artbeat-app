@@ -2,17 +2,13 @@ name: artbeat
 description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
 publish_to: "none"
 
-version: 2.0.0+40
+version: 2.0.0+42
 
 environment:
   sdk: "^3.8.0"
   flutter: ">=3.35.0"
 
 dependencies:
-  flutter:
-    sdk: flutter
-
-  # Local modules
   artbeat_admin:
     path: packages/artbeat_admin
   artbeat_ads:
@@ -25,68 +21,60 @@ dependencies:
     path: packages/artbeat_artwork
   artbeat_auth:
     path: packages/artbeat_auth
+  artbeat_capture:
+    path: packages/artbeat_capture
   artbeat_community:
     path: packages/artbeat_community
   artbeat_core:
     path: packages/artbeat_core
+  artbeat_events:
+    path: packages/artbeat_events
   artbeat_messaging:
     path: packages/artbeat_messaging
   artbeat_profile:
     path: packages/artbeat_profile
   artbeat_settings:
     path: packages/artbeat_settings
-  artbeat_capture:
-    path: packages/artbeat_capture
-  artbeat_events:
-    path: packages/artbeat_events
-
-  # Firebase
-  firebase_core: ^4.0.0
-  firebase_auth: ^6.0.1
+  audioplayers: ^6.0.0
+  cached_network_image: ^3.4.1
+  camera: ^0.11.1
   cloud_firestore: ^6.0.0
-  firebase_storage: ^13.0.0
+  cupertino_icons: ^1.0.8
+  device_info_plus: ^11.5.0
+  file_picker: ^8.0.0+1
   firebase_analytics: ^12.0.0
   firebase_app_check: ^0.4.0
-  firebase_messaging: ^16.0.0
+  firebase_auth: ^6.0.1
+  firebase_core: ^4.0.0
   firebase_data_connect: ^0.2.0+1
-
-  # Permissions
-  permission_handler: ^12.0.1
-
-  # UI packages
-  cupertino_icons: ^1.0.8
-  flutter_svg: ^2.1.0
-  # Optimized image caching with buffer management
-  cached_network_image: ^3.4.1
+  firebase_messaging: ^16.0.0
+  firebase_storage: ^13.0.0
+  flutter:
+    sdk: flutter
   flutter_cache_manager: ^3.4.1
-  google_maps_flutter: ^2.5.3
-
-  # Utils
-  provider: ^6.1.5
-  shared_preferences: ^2.5.3
-  intl: ^0.20.2
-  path_provider: ^2.1.5
-  http: ^1.4.0
-  geocoding: ^4.0.0
-  camera: ^0.11.1
-  device_info_plus: ^11.5.0
-  package_info_plus: ^8.2.0
-  local_auth: ^2.3.0
-  image_picker: ^1.0.0
-  image_cropper: ^9.1.0
-  geolocator: ^14.0.1
-  flutter_local_notifications: ^18.0.1
-  logging: ^1.2.0
   flutter_image_compress: ^2.3.0
-  video_player: ^2.8.2
-  audioplayers: ^6.0.0
+  flutter_local_notifications: ^18.0.1
+  flutter_sound: ^9.2.13
+  flutter_svg: ^2.1.0
+  geocoding: ^4.0.0
+  geolocator: ^14.0.1
+  google_maps_flutter: ^2.5.3
+  http: ^1.4.0
+  image_cropper: ^9.1.0
   image_editor_plus: ^1.0.4
-  file_picker: ^8.0.0+1
-
-  # In-App Purchases
+  image_picker: ^1.0.0
   in_app_purchase: ^3.2.0
   in_app_purchase_android: ^0.3.0+4
   in_app_purchase_storekit: ^0.3.2
+  intl: ^0.20.2
+  local_auth: ^2.3.0
+  logging: ^1.2.0
+  package_info_plus: ^8.2.0
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.1
+  provider: ^6.1.5
+  shared_preferences: ^2.5.3
+  video_player: ^2.8.2
 
 flutter:
   uses-material-design: true
@@ -121,15 +109,15 @@ flutter:
         - asset: assets/fonts/Limelight/Limelight-Regular.ttf
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^6.0.0
-  mockito: ^5.4.4
   build_runner: ^2.4.10
   build_test: any
+  firebase_auth_platform_interface: any
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
   integration_test:
     sdk: flutter
-  firebase_auth_platform_interface: any
+  mockito: ^5.4.4
 
 dependency_overrides:
   screenshot: ^3.0.0

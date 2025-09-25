@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:developer';
+
 import 'package:artbeat_core/artbeat_core.dart' as core;
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 import '../services/navigation_service.dart';
 import '../services/route_analytics_service.dart';
@@ -60,16 +62,17 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
   @override
   Widget build(BuildContext context) => core.MainLayout(
     currentIndex: 1, // Search tab index
-    appBar: core.EnhancedUniversalHeader(
+    appBar: const core.EnhancedUniversalHeader(
       title: 'Search',
       showLogo: false,
       showSearch: false, // Don't show search button in search screen
-      showBackButton: false,
+      showBackButton: true, // Enable back button for navigation
       backgroundColor: Colors.white,
       foregroundColor: core.ArtbeatColors.textPrimary,
       elevation: 1,
     ),
     child: Column(
+      mainAxisSize: MainAxisSize.min, // Prevent unbounded height issues
       children: [
         _buildSearchHeader(),
         _buildSearchCategories(),
@@ -388,21 +391,19 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
     );
   }
 
-  Widget _buildSearchResultItem(SearchResult result) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: _buildResultIcon(result),
-        title: Text(
-          result.title,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
-        subtitle: result.subtitle.isNotEmpty ? Text(result.subtitle) : null,
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => _handleResultTap(result),
+  Widget _buildSearchResultItem(SearchResult result) => Card(
+    margin: const EdgeInsets.only(bottom: 8),
+    child: ListTile(
+      leading: _buildResultIcon(result),
+      title: Text(
+        result.title,
+        style: const TextStyle(fontWeight: FontWeight.w500),
       ),
-    );
-  }
+      subtitle: result.subtitle.isNotEmpty ? Text(result.subtitle) : null,
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => _handleResultTap(result),
+    ),
+  );
 
   Widget _buildResultIcon(SearchResult result) {
     if (result.imageUrl != null && result.imageUrl!.isNotEmpty) {
@@ -433,6 +434,10 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
       case SearchResultType.artwork:
         iconData = Icons.palette;
         color = Colors.purple;
+        break;
+      case SearchResultType.capture:
+        iconData = Icons.camera_alt;
+        color = Colors.teal;
         break;
       case SearchResultType.event:
         iconData = Icons.event;
@@ -475,6 +480,14 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
           context,
           '/artwork/detail',
           arguments: {'artworkId': result.id},
+        );
+        break;
+      case SearchResultType.capture:
+        // Navigate to capture detail
+        Navigator.pushNamed(
+          context,
+          '/capture/detail',
+          arguments: {'captureId': result.id},
         );
         break;
       case SearchResultType.event:
@@ -527,7 +540,7 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -606,25 +619,68 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
       // Search artwork/captures
       if (_selectedCategory == SearchCategory.all ||
           _selectedCategory == SearchCategory.artwork) {
-        final capturesQuery = await FirebaseFirestore.instance
-            .collection('captures')
-            .where('title', isGreaterThanOrEqualTo: query)
-            .where('title', isLessThanOrEqualTo: '$query\uf8ff')
-            .limit(10)
-            .get();
+        // Search artwork collection first
+        try {
+          final artworkQuery = await FirebaseFirestore.instance
+              .collection('artwork')
+              .where('title', isGreaterThanOrEqualTo: query)
+              .where('title', isLessThanOrEqualTo: '$query\uf8ff')
+              .limit(10)
+              .get();
 
-        for (final doc in capturesQuery.docs) {
-          final data = doc.data();
-          results.add(
-            SearchResult(
-              id: doc.id,
-              title: data['title'] as String? ?? 'Untitled',
-              subtitle: data['artistName'] as String? ?? 'Unknown Artist',
-              imageUrl: data['imageUrl'] as String?,
-              type: SearchResultType.artwork,
-              data: data,
-            ),
-          );
+          for (final doc in artworkQuery.docs) {
+            final data = doc.data();
+            results.add(
+              SearchResult(
+                id: doc.id,
+                title: data['title'] as String? ?? 'Untitled',
+                subtitle: data['artistName'] as String? ?? 'Unknown Artist',
+                imageUrl: data['imageUrl'] as String?,
+                type: SearchResultType.artwork,
+                data: data,
+              ),
+            );
+          }
+        } on Exception catch (e) {
+          log('Error searching artwork collection: $e');
+        }
+
+        // Also search captures collection for additional artwork
+        try {
+          final capturesQuery = await FirebaseFirestore.instance
+              .collection('captures')
+              .limit(50) // Get more to search through
+              .get();
+
+          for (final doc in capturesQuery.docs) {
+            final data = doc.data();
+            final title = data['title'] as String? ?? '';
+            final artistName = data['artistName'] as String? ?? '';
+
+            // Check if query matches title or artist name
+            final titleLower = title.toLowerCase();
+            final artistNameLower = artistName.toLowerCase();
+
+            if (titleLower.contains(lowerQuery) ||
+                artistNameLower.contains(lowerQuery) ||
+                titleLower.startsWith(lowerQuery) ||
+                artistNameLower.startsWith(lowerQuery)) {
+              results.add(
+                SearchResult(
+                  id: doc.id,
+                  title: title.isNotEmpty ? title : 'Untitled',
+                  subtitle: artistName.isNotEmpty
+                      ? artistName
+                      : 'Unknown Artist',
+                  imageUrl: data['imageUrl'] as String?,
+                  type: SearchResultType.capture, // Use a new type for captures
+                  data: data,
+                ),
+              );
+            }
+          }
+        } on Exception catch (e) {
+          log('Error searching captures collection: $e');
         }
       }
 
@@ -652,8 +708,8 @@ class _EnhancedSearchScreenState extends State<EnhancedSearchScreen>
           );
         }
       }
-    } catch (e) {
-      print('Search error: $e');
+    } on Exception catch (e) {
+      log('Search error: $e');
     }
 
     return results;
@@ -688,13 +744,6 @@ enum SearchCategory {
 
 /// Search result model
 class SearchResult {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String? imageUrl;
-  final SearchResultType type;
-  final Map<String, dynamic> data;
-
   SearchResult({
     required this.id,
     required this.title,
@@ -703,10 +752,16 @@ class SearchResult {
     required this.type,
     required this.data,
   });
+  final String id;
+  final String title;
+  final String subtitle;
+  final String? imageUrl;
+  final SearchResultType type;
+  final Map<String, dynamic> data;
 }
 
 /// Search result types
-enum SearchResultType { artist, artwork, event, artWalk, location }
+enum SearchResultType { artist, artwork, capture, event, artWalk, location }
 
 class QuickAction {
   QuickAction({

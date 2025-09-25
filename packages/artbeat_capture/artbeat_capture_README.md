@@ -252,17 +252,17 @@ artbeat_art_walk: ^local # Art walk integration
 
 ### **Core Capture Screens**
 
-#### 4. **CaptureDetailsScreen** ✅ (430 lines)
+#### 4. **CaptureScreen** ✅ (Simplified)
 
-- **Purpose**: Detailed view and editing of individual captures
-- **Features**: Full metadata display, editing capabilities, sharing options
-- **Status**: ✅ **FULLY IMPLEMENTED** - Complete detail management
+- **Purpose**: Streamlined camera interface for immediate capture
+- **Features**: Direct camera access, automatic progression to details, no terms modal
+- **Status**: ✅ **FULLY IMPLEMENTED** - Simplified capture experience
 
-#### 5. **CameraCaptureScreen** ✅ (422 lines)
+#### 5. **CaptureDetailScreen** ✅ (Simplified)
 
-- **Purpose**: Camera interface with terms acceptance
-- **Features**: Camera controls, terms modal, image preview, capture confirmation
-- **Status**: ✅ **FULLY IMPLEMENTED** - Complete camera experience
+- **Purpose**: Streamlined capture details and submission
+- **Features**: Essential form fields, terms checkbox, direct submission
+- **Status**: ✅ **FULLY IMPLEMENTED** - Simplified details flow
 
 #### 6. **TermsAndConditionsScreen** ✅ (339 lines)
 
@@ -284,19 +284,11 @@ artbeat_art_walk: ^local # Art walk integration
 - **Features**: Personal gallery, organization tools, privacy management
 - **Status**: ✅ **FULLY IMPLEMENTED** - Complete personal gallery
 
-#### 9. **CameraOnlyScreen** ✅ (202 lines)
+#### 9. **Legacy Screens** ⚠️ (Removed for Simplification)
 
-- **Purpose**: Streamlined camera-only interface
-- **Features**: Quick capture, minimal UI, immediate processing
-- **Status**: ✅ **FULLY IMPLEMENTED** - Efficient capture flow
-
-### **Supporting Screens**
-
-#### 10. **CaptureConfirmationScreen** ✅ (191 lines)
-
-- **Purpose**: Capture review and confirmation
-- **Features**: Image preview, accept/retake options, metadata preview
-- **Status**: ✅ **FULLY IMPLEMENTED** - Complete confirmation flow
+- **Removed**: CameraOnlyScreen, CaptureConfirmationScreen, BasicCaptureScreen, CameraCaptureScreen, CaptureDetailsScreen
+- **Reason**: Replaced with simplified two-screen flow for better user experience
+- **Migration**: All functionality consolidated into CaptureScreen and CaptureDetailScreen
 
 #### 11. **CaptureDetailScreen** ✅ (147 lines)
 
@@ -956,11 +948,11 @@ Navigator.push(
   ),
 );
 
-// Direct camera access
+// Direct camera access (simplified flow)
 Navigator.push(
   context,
   MaterialPageRoute(
-    builder: (context) => const BasicCaptureScreen(),
+    builder: (context) => const CaptureScreen(),
   ),
 );
 ```
@@ -1013,7 +1005,7 @@ CapturesGrid(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CaptureDetailScreen(capture: capture),
+        builder: (context) => CaptureViewScreen(capture: capture),
       ),
     );
   },

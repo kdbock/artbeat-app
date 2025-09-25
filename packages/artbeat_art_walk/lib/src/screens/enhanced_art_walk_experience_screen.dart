@@ -35,6 +35,7 @@ class _EnhancedArtWalkExperienceScreenState
   bool _isLoading = true;
   bool _isNavigationMode = false;
   bool _showCompactNavigation = false;
+  bool _isStartingNavigation = false;
 
   // Progress tracking
   ArtWalkProgress? _currentProgress;
@@ -364,6 +365,12 @@ class _EnhancedArtWalkExperienceScreenState
   }
 
   Future<void> _startNavigation() async {
+    // Prevent multiple simultaneous navigation starts
+    if (_isStartingNavigation || _isNavigationMode) {
+      debugPrint('🧭 Navigation already starting or active, ignoring tap');
+      return;
+    }
+
     // Haptic feedback for button press
     await _hapticService?.buttonPressed();
 
@@ -382,6 +389,7 @@ class _EnhancedArtWalkExperienceScreenState
     try {
       setState(() {
         _isLoading = true;
+        _isStartingNavigation = true;
       });
 
       // Optimize the route for efficiency before generating navigation
@@ -413,6 +421,7 @@ class _EnhancedArtWalkExperienceScreenState
             optimizedArtPieces; // Update art pieces to reflect optimized order
         _isNavigationMode = true;
         _isLoading = false;
+        _isStartingNavigation = false;
       });
       debugPrint('🧭 Experience Screen: _isNavigationMode set to true');
 
@@ -435,6 +444,7 @@ class _EnhancedArtWalkExperienceScreenState
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _isStartingNavigation = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -454,6 +464,7 @@ class _EnhancedArtWalkExperienceScreenState
       _isNavigationMode = false;
       _currentRoute = null;
       _showCompactNavigation = false;
+      _isStartingNavigation = false;
     });
     _createMarkersAndRoute();
 
@@ -888,8 +899,8 @@ class _EnhancedArtWalkExperienceScreenState
                   debugPrint('🧭 UI State: Building navigation button area');
 
                   return Container(
-                    color: Colors.red.withOpacity(
-                      0.3,
+                    color: Colors.red.withValues(
+                      alpha: 0.3,
                     ), // Temporary debug background
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -897,14 +908,32 @@ class _EnhancedArtWalkExperienceScreenState
                         if (!_isNavigationMode) ...[
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                debugPrint(
-                                  '🧭 Start Navigation button pressed',
-                                );
-                                _startNavigation();
-                              },
-                              icon: const Icon(Icons.navigation),
-                              label: const Text('Start Navigation'),
+                              onPressed: _isStartingNavigation
+                                  ? null
+                                  : () {
+                                      debugPrint(
+                                        '🧭 Start Navigation button pressed',
+                                      );
+                                      _startNavigation();
+                                    },
+                              icon: _isStartingNavigation
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Colors.white,
+                                            ),
+                                      ),
+                                    )
+                                  : const Icon(Icons.navigation),
+                              label: Text(
+                                _isStartingNavigation
+                                    ? 'Starting...'
+                                    : 'Start Navigation',
+                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
                                 foregroundColor: Colors.white,

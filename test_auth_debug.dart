@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+// ignore_for_file: avoid_print, avoid_catches_without_on_clauses
+
 void main() async {
   // Initialize Firebase
   await Firebase.initializeApp();

@@ -260,7 +260,7 @@ class FirebaseStorageService {
   Future<String> uploadVideo(
     File videoFile, {
     String? customPath,
-    Function(double)? onProgress,
+    void Function(double)? onProgress,
   }) async {
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -316,7 +316,7 @@ class FirebaseStorageService {
     File videoFile,
     String path,
     String userId, [
-    Function(double)? onProgress,
+    void Function(double)? onProgress,
   ]) async {
     final strategies = [
       (File file, String p, String uid) =>
@@ -364,7 +364,7 @@ class FirebaseStorageService {
     File videoFile,
     String path,
     String userId, [
-    Function(double)? onProgress,
+    void Function(double)? onProgress,
   ]) async {
     final ref = _effectiveStorage.ref().child(path);
 
@@ -401,7 +401,7 @@ class FirebaseStorageService {
     File videoFile,
     String path,
     String userId, [
-    Function(double)? onProgress,
+    void Function(double)? onProgress,
   ]) async {
     final ref = _storage.ref().child(path);
 
@@ -438,7 +438,7 @@ class FirebaseStorageService {
     File videoFile,
     String path,
     String userId, [
-    Function(double)? onProgress,
+    void Function(double)? onProgress,
   ]) async {
     core.AppLogger.debug(
       'Attempting video upload with App Check disabled...',

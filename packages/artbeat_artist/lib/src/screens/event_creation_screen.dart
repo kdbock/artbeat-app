@@ -210,10 +210,16 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   /// Save event changes
   Future<void> _saveEvent() async {
     if (!_formKey.currentState!.validate()) {
+      // Show validation error message
+      setState(() {
+        _errorMessage = 'Please fill in all required fields correctly.';
+      });
       return;
     }
 
+    // Clear any previous error messages
     setState(() {
+      _errorMessage = null;
       _isLoading = true;
     });
 
@@ -275,6 +281,13 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         _errorMessage = 'Error saving event: ${e.toString()}';
         _isLoading = false;
       });
+    } finally {
+      // Ensure loading state is reset even if navigation fails
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -348,8 +361,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
         showDeveloperTools: false,
         actions: [
           TextButton(
-            onPressed: _saveEvent,
-            child: const Text('SAVE'),
+            onPressed: _isLoading ? null : _saveEvent,
+            child: Text(_isLoading ? 'SAVING...' : 'SAVE'),
           ),
         ],
       ),
@@ -653,13 +666,25 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _saveEvent,
+                  onPressed: _isLoading ? null : _saveEvent,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: Text(
-                    widget.eventId == null ? 'Create Event' : 'Update Event',
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          widget.eventId == null
+                              ? 'Create Event'
+                              : 'Update Event',
+                        ),
                 ),
               ),
             ],

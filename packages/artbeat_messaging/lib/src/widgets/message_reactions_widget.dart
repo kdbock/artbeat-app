@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/message_reaction_model.dart';
 import '../services/message_reaction_service.dart';
+import 'custom_emoji_picker.dart';
 
 /// Widget for displaying message reactions and handling user interactions
 class MessageReactionsWidget extends StatefulWidget {
@@ -285,12 +286,8 @@ class _ReactionPickerBottomSheet extends StatelessWidget {
           // Custom emoji button
           GestureDetector(
             onTap: () {
-              // TODO: Implement custom emoji picker
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Custom emoji picker coming soon!'),
-                ),
-              );
+              Navigator.pop(context); // Close current bottom sheet
+              _showCustomEmojiPicker(context);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
@@ -311,6 +308,21 @@ class _ReactionPickerBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+
+  void _showCustomEmojiPicker(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CustomEmojiPicker(
+        onEmojiSelected: (emoji) {
+          Navigator.pop(context);
+          onReactionSelected(emoji);
+        },
+        onClose: () => Navigator.pop(context),
       ),
     );
   }

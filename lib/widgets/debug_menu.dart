@@ -7,130 +7,120 @@ class DebugMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-        title: const Text('🛠️ Debug Menu'),
-        backgroundColor: Colors.grey[800],
-        foregroundColor: Colors.white,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '🔧 Development Tools',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tools for testing and debugging app features',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
+    appBar: AppBar(
+      title: const Text('🛠️ Debug Menu'),
+      backgroundColor: Colors.grey[800],
+      foregroundColor: Colors.white,
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '🔧 Development Tools',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Tools for testing and debugging app features',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
 
-            // Artist Features Test
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.science,
-                  color: Colors.blue,
-                  size: 32,
-                ),
-                title: const Text(
-                  'Artist Features Test',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: const Text(
-                  'Verify all subscription tier features work properly\n2025 optimization validation',
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (context) => const ArtistFeatureTestApp(),
-                    ),
-                  );
-                },
+          // Artist Features Test
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.science, color: Colors.blue, size: 32),
+              title: const Text(
+                'Artist Features Test',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Firebase Debug
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.cloud,
-                  color: Colors.orange,
-                  size: 32,
-                ),
-                title: const Text(
-                  'Firebase Debug',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: const Text(
-                  'Check Firebase connection and data access',
-                ),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  _showFirebaseDebug(context);
-                },
+              subtitle: const Text(
+                'Verify all subscription tier features work properly\n2025 optimization validation',
               ),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const ArtistFeatureTestApp(),
+                  ),
+                );
+              },
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // Clear Cache
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.cleaning_services,
-                  color: Colors.red,
-                  size: 32,
-                ),
-                title: const Text(
-                  'Clear Cache',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: const Text('Reset app cache and preferences'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  _clearCache(context);
-                },
+          // Firebase Debug
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.cloud, color: Colors.orange, size: 32),
+              title: const Text(
+                'Firebase Debug',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
+              subtitle: const Text('Check Firebase connection and data access'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                _showFirebaseDebug(context);
+              },
             ),
+          ),
 
-            const Spacer(),
+          const SizedBox(height: 16),
 
-            // Warning
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.orange[50],
-                border: Border.all(color: Colors.orange),
-                borderRadius: BorderRadius.circular(8),
+          // Clear Cache
+          Card(
+            child: ListTile(
+              leading: const Icon(
+                Icons.cleaning_services,
+                color: Colors.red,
+                size: 32,
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning, color: Colors.orange),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Debug tools are for development only',
-                      style: TextStyle(
-                        color: Colors.orange[800],
-                        fontWeight: FontWeight.w500,
-                      ),
+              title: const Text(
+                'Clear Cache',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text('Reset app cache and preferences'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                _clearCache(context);
+              },
+            ),
+          ),
+
+          const Spacer(),
+
+          // Warning
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              border: Border.all(color: Colors.orange),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning, color: Colors.orange),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Debug tools are for development only',
+                    style: TextStyle(
+                      color: Colors.orange[800],
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
+    ),
+  );
 
   void _showFirebaseDebug(BuildContext context) {
     showDialog<void>(
@@ -143,7 +133,7 @@ class DebugMenu extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Firebase status will be checked here...'),
-              // TODO: Add Firebase debug info
+              // TODO(debug): Add Firebase debug info
             ],
           ),
         ),
@@ -177,7 +167,7 @@ class DebugMenu extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Implement cache clearing
+              // TODO(debug): Implement cache clearing
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Cache cleared successfully'),

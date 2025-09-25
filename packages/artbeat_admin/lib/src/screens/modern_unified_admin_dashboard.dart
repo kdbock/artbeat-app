@@ -1215,26 +1215,35 @@ class _ModernUnifiedAdminDashboardState
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 6),
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 2),
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1386,11 +1395,14 @@ class _ModernUnifiedAdminDashboardState
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      'Joined ${_formatDate(user.createdAt)}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 12,
+                    Expanded(
+                      child: Text(
+                        'Joined ${_formatDate(user.createdAt)}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -1703,26 +1715,35 @@ class _ModernUnifiedAdminDashboardState
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 6),
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: 2),
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -1902,14 +1923,17 @@ class _ModernUnifiedAdminDashboardState
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Text(
-                      'By ${content.authorName}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 12,
+                    Expanded(
+                      child: Text(
+                        'By ${content.authorName}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 6, vertical: 2),
@@ -1977,18 +2001,110 @@ class _ModernUnifiedAdminDashboardState
     }
   }
 
-  void _approveContent(ContentReviewModel review) {
-    // TODO: Implement content approval
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Approved: ${review.title}')),
-    );
+  Future<void> _approveContent(ContentReviewModel review) async {
+    try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Approving content...')),
+      );
+
+      // Approve the content using the unified admin service
+      await _unifiedAdminService.approveContent(review.contentId);
+
+      // Trigger rewards if it's a capture
+      if (review.contentType == 'capture') {
+        await _triggerCaptureApprovalRewards(review);
+      }
+
+      // Refresh the content data
+      await _loadContentData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✅ Approved: ${review.title}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Failed to approve content: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
-  void _rejectContent(ContentReviewModel review) {
-    // TODO: Implement content rejection
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Rejected: ${review.title}')),
-    );
+  /// Trigger rewards when a capture is approved
+  Future<void> _triggerCaptureApprovalRewards(ContentReviewModel review) async {
+    try {
+      // Get the capture document to find the author
+      final captureDoc = await FirebaseFirestore.instance
+          .collection('captures')
+          .doc(review.contentId)
+          .get();
+
+      if (captureDoc.exists) {
+        final captureData = captureDoc.data()!;
+        final authorId = captureData['userId'] as String?;
+
+        if (authorId != null) {
+          // Award XP and update stats for capture approval
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(authorId)
+              .update({
+            'experiencePoints': FieldValue.increment(
+                25), // Additional 25 XP for approval (total 50)
+            'stats.capturesApproved': FieldValue.increment(1),
+          });
+
+          AppLogger.info(
+              '🎉 Awarded capture approval rewards to user: $authorId');
+        }
+      }
+    } catch (e) {
+      AppLogger.error('Failed to trigger capture approval rewards: $e');
+      // Don't throw - approval should still succeed even if rewards fail
+    }
+  }
+
+  Future<void> _rejectContent(ContentReviewModel review) async {
+    try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Rejecting content...')),
+      );
+
+      // Reject the content using the unified admin service
+      await _unifiedAdminService.rejectContent(review.contentId,
+          reason: 'Rejected by admin');
+
+      // Refresh the content data
+      await _loadContentData();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Rejected: ${review.title}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Failed to reject content: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _handleContentAction(ContentModel content, String action) {
@@ -2788,7 +2904,7 @@ class _ModernUnifiedAdminDashboardState
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 1.2,
+                        childAspectRatio: 1.4, // Increased to prevent overflow
                         children: [
                           _buildFinancialKPICard(
                             'Total Revenue',
@@ -3011,23 +3127,28 @@ class _ModernUnifiedAdminDashboardState
         children: [
           Icon(icon, color: color, size: 32),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Row(
@@ -3043,14 +3164,17 @@ class _ModernUnifiedAdminDashboardState
                 size: 14,
               ),
               const SizedBox(width: 2),
-              Text(
-                trend,
-                style: TextStyle(
-                  color: isPositive
-                      ? const Color(0xFF81C784)
-                      : const Color(0xFFEF5350),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  trend,
+                  style: TextStyle(
+                    color: isPositive
+                        ? const Color(0xFF81C784)
+                        : const Color(0xFFEF5350),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

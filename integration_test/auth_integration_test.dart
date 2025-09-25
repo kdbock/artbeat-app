@@ -11,7 +11,7 @@ void main() {
       tester,
     ) async {
       // Launch the real app
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Test real login flow
@@ -31,7 +31,7 @@ void main() {
     });
 
     testWidgets('should register new user with real Firebase', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Test real registration flow with actual Firebase calls

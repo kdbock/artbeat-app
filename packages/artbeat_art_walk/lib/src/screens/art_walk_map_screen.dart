@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
-import 'package:artbeat_capture/src/screens/capture_detail_screen.dart';
 import '../widgets/art_walk_drawer.dart';
 
 import '../widgets/map_floating_menu.dart';
@@ -967,28 +966,13 @@ class CaptureDetailBottomSheet extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Close'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        // Navigate to capture detail screen
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (context) =>
-                                CaptureDetailScreen(capture: capture),
-                          ),
-                        );
-                      },
-                      child: const Text('View Details'),
-                    ),
-                  ],
+                // Close button centered since we removed the redundant "View Details" button
+                // The bottom sheet already shows all capture details
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
                 ),
               ],
             ),

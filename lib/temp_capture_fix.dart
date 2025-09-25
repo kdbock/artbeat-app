@@ -16,21 +16,21 @@ class _TempCaptureCountFixState extends State<TempCaptureCountFix> {
 
   @override
   Widget build(BuildContext context) => FloatingActionButton.extended(
-      onPressed: _isFixing ? null : _fixCaptureCount,
-      backgroundColor: Colors.red,
-      foregroundColor: Colors.white,
-      label: _isFixing ? const Text('Fixing...') : const Text('Fix Izzy Count'),
-      icon: _isFixing
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Icon(Icons.build),
-    );
+    onPressed: _isFixing ? null : _fixCaptureCount,
+    backgroundColor: Colors.red,
+    foregroundColor: Colors.white,
+    label: _isFixing ? const Text('Fixing...') : const Text('Fix Izzy Count'),
+    icon: _isFixing
+        ? const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          )
+        : const Icon(Icons.build),
+  );
 
   Future<void> _fixCaptureCount() async {
     setState(() {
@@ -62,7 +62,7 @@ class _TempCaptureCountFixState extends State<TempCaptureCountFix> {
           ),
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
       final errorMsg = 'ERROR: $e';
       setState(() {
         _result = errorMsg;

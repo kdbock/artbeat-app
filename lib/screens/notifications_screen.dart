@@ -327,11 +327,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   /// Check if user is admin - moved to database-based check for security
-  bool _isAdminUser(String userId) {
-    // TODO: Replace with proper database-based admin role check
-    // For now, returning false for security - enable admin features via database
-    return false;
-  }
+  bool _isAdminUser(String userId) =>
+      // TODO(security): Replace with proper database-based admin role check
+      // For now, returning false for security - enable admin features via database
+      false;
 
   /// Run image cleanup service
   Future<void> _runImageCleanup() async {

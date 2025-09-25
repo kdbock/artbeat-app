@@ -33,7 +33,7 @@ class EventAnalyticsServicePhase3 {
       events.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       return events.take(limit).toList();
-    } catch (e) {
+    } on Exception catch (e) {
       throw Exception('Failed to get popular events: $e');
     }
   }
@@ -59,7 +59,7 @@ class EventAnalyticsServicePhase3 {
         'viewCount': FieldValue.increment(1),
         'lastViewed': FieldValue.serverTimestamp(),
       });
-    } catch (e) {
+    } on Exception catch (e) {
       // Silently fail for analytics - don't break user experience
       AppLogger.info('Failed to track event view: $e');
     }
@@ -87,7 +87,7 @@ class EventAnalyticsServicePhase3 {
         '${interactionType}Count': FieldValue.increment(1),
         'lastInteraction': FieldValue.serverTimestamp(),
       });
-    } catch (e) {
+    } on Exception catch (e) {
       AppLogger.info('Failed to track event interaction: $e');
     }
   }
@@ -146,7 +146,7 @@ class EventAnalyticsServicePhase3 {
             ? (totalEngagements / totalViews) * 100
             : 0.0,
       };
-    } catch (e) {
+    } on Exception catch (e) {
       throw Exception('Failed to get basic metrics: $e');
     }
   }
@@ -180,7 +180,7 @@ class EventAnalyticsServicePhase3 {
       }
 
       return categoryCount;
-    } catch (e) {
+    } on Exception catch (e) {
       throw Exception('Failed to get category distribution: $e');
     }
   }
@@ -234,7 +234,7 @@ class EventAnalyticsServicePhase3 {
             : 0,
         'dailyRevenue': dailyRevenue,
       };
-    } catch (e) {
+    } on Exception catch (e) {
       throw Exception('Failed to get revenue analytics: $e');
     }
   }

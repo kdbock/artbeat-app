@@ -577,7 +577,7 @@ class ArtWalkService {
 
               // If this is not the last retry, wait a bit for Firestore consistency
               if (retryCount < maxRetries - 1) {
-                await Future.delayed(
+                await Future<void>.delayed(
                   Duration(milliseconds: 500 * (retryCount + 1)),
                 );
                 retryCount++;
@@ -622,10 +622,8 @@ class ArtWalkService {
         return [];
       }
 
-      // Fetch all art pieces in the walk from Firestore
-      final List<PublicArtModel> artPieces = [];
-      int successCount = 0;
-      int errorCount = 0;
+      // Fetch all art pieces in the walk from Firestore in parallel
+      final List<Future<PublicArtModel?>> artFutures = [];
 
       for (final artId in walk.artworkIds) {
         if (artId.isEmpty) {
@@ -633,53 +631,21 @@ class ArtWalkService {
           continue;
         }
 
-        try {
-          // First try to get from publicArt collection
-          var artDoc = await _publicArtCollection.doc(artId).get();
-          if (artDoc.exists && artDoc.data() != null) {
-            try {
-              final publicArt = PublicArtModel.fromFirestore(artDoc);
-              // Validate the art piece has valid coordinates
-              if (_isValidPublicArt(publicArt)) {
-                artPieces.add(publicArt);
-                successCount++;
-                continue;
-              } else {
-                _logger.w('Invalid public art data for ID: $artId');
-              }
-            } catch (parseError) {
-              _logger.w('Error parsing public art $artId: $parseError');
-            }
-          }
+        artFutures.add(_getArtPieceById(artId));
+      }
 
-          // If not found in publicArt, try captures collection
-          artDoc = await _capturesCollection.doc(artId).get();
-          if (artDoc.exists && artDoc.data() != null) {
-            try {
-              final capture = CaptureModel.fromFirestore(
-                artDoc as DocumentSnapshot<Map<String, dynamic>>,
-                null,
-              );
-              // Convert CaptureModel to PublicArtModel for consistency
-              final publicArt = _convertCaptureToPublicArt(capture);
-              if (_isValidPublicArt(publicArt)) {
-                artPieces.add(publicArt);
-                successCount++;
-                continue;
-              } else {
-                _logger.w('Invalid converted art data for capture ID: $artId');
-              }
-            } catch (parseError) {
-              _logger.w('Error parsing capture $artId: $parseError');
-            }
-          }
+      final artResults = await Future.wait(artFutures);
 
-          // If not found in either collection, log but continue
-          _logger.i('Art piece not found: $artId (may have been deleted)');
-        } catch (artError) {
-          _logger.w('Error getting art piece $artId: $artError');
+      final List<PublicArtModel> artPieces = [];
+      int successCount = 0;
+      int errorCount = 0;
+
+      for (final art in artResults) {
+        if (art != null) {
+          artPieces.add(art);
+          successCount++;
+        } else {
           errorCount++;
-          // Continue with other art pieces
         }
       }
 
@@ -690,6 +656,53 @@ class ArtWalkService {
     } catch (e) {
       _logger.e('Error getting art in walk: $e');
       return [];
+    }
+  }
+
+  Future<PublicArtModel?> _getArtPieceById(String artId) async {
+    try {
+      // First try to get from publicArt collection
+      var artDoc = await _publicArtCollection.doc(artId).get();
+      if (artDoc.exists && artDoc.data() != null) {
+        try {
+          final publicArt = PublicArtModel.fromFirestore(artDoc);
+          // Validate the art piece has valid coordinates
+          if (_isValidPublicArt(publicArt)) {
+            return publicArt;
+          } else {
+            _logger.w('Invalid public art data for ID: $artId');
+          }
+        } catch (parseError) {
+          _logger.w('Error parsing public art $artId: $parseError');
+        }
+      }
+
+      // If not found in publicArt, try captures collection
+      artDoc = await _capturesCollection.doc(artId).get();
+      if (artDoc.exists && artDoc.data() != null) {
+        try {
+          final capture = CaptureModel.fromFirestore(
+            artDoc as DocumentSnapshot<Map<String, dynamic>>,
+            null,
+          );
+          // Convert CaptureModel to PublicArtModel for consistency
+          final publicArt = _convertCaptureToPublicArt(capture);
+          if (_isValidPublicArt(publicArt)) {
+            return publicArt;
+          } else {
+            _logger.w('Invalid converted art data for capture ID: $artId');
+          }
+        } catch (parseError) {
+          _logger.w('Error parsing capture $artId: $parseError');
+        }
+      }
+
+      // If not found in either collection, log but continue
+      _logger.i('Art piece not found: $artId (may have been deleted)');
+      return null;
+    } catch (artError) {
+      _logger.w('Error getting art piece $artId: $artError');
+      return null;
     }
   }
 

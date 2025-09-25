@@ -46,8 +46,8 @@ void main() async {
     }
 
     AppLogger.info('📈 Status breakdown:');
-    statusCounts.forEach((status, count) {
-      AppLogger.info('  $status: $count');
+    statusCounts.forEach((status, countValue) {
+      AppLogger.info('  $status: $countValue');
     });
 
     AppLogger.info('💰 Expected XP from approved captures: $totalExpectedXP');
@@ -69,7 +69,7 @@ void main() async {
         '  ${doc.id}: ${data['status'] ?? 'pending'} - ${data['title'] ?? 'Untitled'}',
       );
     }
-  } catch (e) {
+  } on Exception catch (e) {
     AppLogger.error('❌ Error: $e');
   }
 

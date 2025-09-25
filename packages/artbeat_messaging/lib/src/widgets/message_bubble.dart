@@ -3,6 +3,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/message.dart';
 import 'message_reactions_widget.dart';
+import 'quick_reaction_picker.dart';
 
 class MessageBubble extends StatelessWidget {
   final Message message;
@@ -38,46 +39,53 @@ class MessageBubble extends StatelessWidget {
               if (!isCurrentUser) _buildAvatar(),
               const SizedBox(width: 8),
               Flexible(
-                child: Container(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.75,
-                  ),
-                  margin: EdgeInsets.only(
-                    left: isCurrentUser ? 48 : 0,
-                    right: isCurrentUser ? 0 : 48,
-                  ),
-                  padding: message.imageUrl != null && message.text == null
-                      ? const EdgeInsets.all(4)
-                      : const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                  decoration: BoxDecoration(
-                    color: isCurrentUser
-                        ? ArtbeatColors.primaryPurple
-                        : Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(20),
-                      topRight: const Radius.circular(20),
-                      bottomLeft: Radius.circular(isCurrentUser ? 20 : 4),
-                      bottomRight: Radius.circular(isCurrentUser ? 4 : 20),
+                child: GestureDetector(
+                  onLongPressStart: chatId != null
+                      ? (details) => _handleLongPressStart(context, details)
+                      : null,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isCurrentUser
-                            ? ArtbeatColors.primaryPurple.withValues(alpha: 0.3)
-                            : Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                    margin: EdgeInsets.only(
+                      left: isCurrentUser ? 48 : 0,
+                      right: isCurrentUser ? 0 : 48,
+                    ),
+                    padding: message.imageUrl != null && message.text == null
+                        ? const EdgeInsets.all(4)
+                        : const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                    decoration: BoxDecoration(
+                      color: isCurrentUser
+                          ? ArtbeatColors.primaryPurple
+                          : Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(20),
+                        topRight: const Radius.circular(20),
+                        bottomLeft: Radius.circular(isCurrentUser ? 20 : 4),
+                        bottomRight: Radius.circular(isCurrentUser ? 4 : 20),
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (message.imageUrl != null) _buildImageContent(),
-                      if (message.text != null) _buildTextContent(),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: isCurrentUser
+                              ? ArtbeatColors.primaryPurple.withValues(
+                                  alpha: 0.3,
+                                )
+                              : Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (message.imageUrl != null) _buildImageContent(),
+                        if (message.text != null) _buildTextContent(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -224,5 +232,40 @@ class MessageBubble extends StatelessWidget {
 
   String _formatTime(DateTime timestamp) {
     return intl.DateFormat.jm().format(timestamp);
+  }
+
+  void _handleLongPressStart(
+    BuildContext context,
+    LongPressStartDetails details,
+  ) {
+    // Add haptic feedback
+    // Note: Haptic feedback requires vibration permission and may not work on all devices
+    // For now, we'll skip it to avoid permission issues
+
+    // Show quick reaction picker
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => QuickReactionPicker(
+        position: details.globalPosition,
+        overlayContext: context,
+        onCancel: () {
+          overlayEntry.remove();
+        },
+        onReactionSelected: (reactionType) {
+          overlayEntry.remove();
+          _handleReactionSelected(reactionType);
+        },
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+  }
+
+  void _handleReactionSelected(String reactionType) {
+    // This will be handled by the MessageReactionsWidget
+    // The reaction will be added through the service
+    onReactionAdded?.call();
   }
 }

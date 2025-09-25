@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+// ignore_for_file: avoid_print
 
 /// Script to fix existing posts that show "Anonymous" as the author name
 /// This updates the userName field with the correct display name from user profiles
@@ -10,7 +11,6 @@ Future<void> main() async {
     await Firebase.initializeApp();
 
     final firestore = FirebaseFirestore.instance;
-    final auth = FirebaseAuth.instance;
 
     print('🔄 Starting anonymous posts fix...');
 
@@ -68,7 +68,7 @@ Future<void> main() async {
 
         updatedCount++;
         print('✅ Updated post ${doc.id}: "$correctUserName"');
-      } catch (e) {
+      } on Exception catch (e) {
         errorCount++;
         print('❌ Error updating post ${doc.id}: $e');
       }

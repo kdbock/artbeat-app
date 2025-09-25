@@ -4,8 +4,6 @@ import 'package:artbeat_core/artbeat_core.dart' show MainLayout;
 import '../models/artwork_model.dart';
 import '../widgets/artwork_header.dart';
 import '../widgets/artwork_grid_widget.dart';
-import '../widgets/local_artwork_row_widget.dart';
-import '../widgets/artwork_discovery_widget.dart';
 
 /// Screen for browsing all artwork, with filtering options
 class ArtworkBrowseScreen extends StatefulWidget {
@@ -127,25 +125,6 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
             ),
           ),
 
-          // Local Artwork Section
-          LocalArtworkRowWidget(
-            zipCode:
-                '10001', // Default NYC zip code - should be user's location
-            onSeeAllPressed: () =>
-                Navigator.pushNamed(context, '/artwork/local'),
-          ),
-          const SizedBox(height: 16),
-
-          // Discovery Section
-          ArtworkDiscoveryWidget(
-            userId: 'current_user_id', // Should be replaced with actual user ID
-            limit: 5,
-            title: 'Discover New Artworks',
-            onSeeAllPressed: () =>
-                Navigator.pushNamed(context, '/artwork/discovery'),
-          ),
-          const SizedBox(height: 16),
-
           // Results
           Expanded(
             child: _buildArtworkGrid(),
@@ -191,6 +170,9 @@ class _ArtworkBrowseScreenState extends State<ArtworkBrowseScreen> {
 
   Stream<QuerySnapshot> _getArtworkStream() {
     Query query = FirebaseFirestore.instance.collection('artwork');
+
+    // Only show public artworks
+    query = query.where('isPublic', isEqualTo: true);
 
     // Apply location filter if selected
     if (_selectedLocation != 'All') {

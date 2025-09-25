@@ -54,7 +54,7 @@ class _ArtistFeedContainerState extends State<ArtistFeedContainer> {
         _artistProfile = profile as ArtistProfileModel?;
         _isLoading = false;
       });
-    } catch (error) {
+    } on Exception catch (error) {
       setState(() {
         _errorMessage = 'Error loading artist profile: $error';
         _isLoading = false;

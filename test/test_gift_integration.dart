@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:artbeat_community/screens/gifts/gift_modal.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
@@ -120,9 +122,12 @@ class GiftIntegrationTestScreen extends StatelessWidget {
 
   Future<void> _testGiftModal(BuildContext context) async {
     // Test the updated gift modal
-    showDialog<void>(
-      context: context,
-      builder: (context) => const GiftModal(recipientId: 'test_recipient_123'),
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (context) =>
+            const GiftModal(recipientId: 'test_recipient_123'),
+      ),
     );
   }
 

@@ -485,7 +485,10 @@ class DashboardCapturesSection extends StatelessWidget {
                               Expanded(
                                 flex: 3,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -569,6 +572,7 @@ class DashboardCapturesSection extends StatelessWidget {
   Widget _buildEnhancedSkeletonCard() {
     return Container(
       width: 200,
+      height: 280,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -584,7 +588,7 @@ class DashboardCapturesSection extends StatelessWidget {
         children: [
           // Image skeleton
           Expanded(
-            flex: 7,
+            flex: 6,
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -606,46 +610,53 @@ class DashboardCapturesSection extends StatelessWidget {
 
           // Content skeleton
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Title skeleton
-                  Container(
-                    height: 16,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: ArtbeatColors.backgroundSecondary.withValues(
-                        alpha: 0.3,
+                  Flexible(
+                    child: Container(
+                      height: 12,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.backgroundSecondary.withValues(
+                          alpha: 0.3,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 16,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      color: ArtbeatColors.backgroundSecondary.withValues(
-                        alpha: 0.3,
+                  const SizedBox(height: 6),
+                  Flexible(
+                    child: Container(
+                      height: 12,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.backgroundSecondary.withValues(
+                          alpha: 0.3,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
 
                   const Spacer(),
 
                   // Button skeleton
-                  Container(
-                    width: double.infinity,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: ArtbeatColors.backgroundSecondary.withValues(
-                        alpha: 0.3,
+                  Flexible(
+                    child: Container(
+                      width: double.infinity,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: ArtbeatColors.backgroundSecondary.withValues(
+                          alpha: 0.3,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ],

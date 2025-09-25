@@ -114,7 +114,7 @@ class RouteOptimizationUtils {
     }
 
     // Start with nearest neighbor solution
-    List<PublicArtModel> route = optimizeRouteFromLocation(
+    final List<PublicArtModel> route = optimizeRouteFromLocation(
       artPieces,
       startLocation,
     );
@@ -128,7 +128,7 @@ class RouteOptimizationUtils {
           if (j - i == 1) continue; // Skip adjacent edges
 
           // Calculate current distance
-          double currentDistance =
+          final double currentDistance =
               _getSegmentDistance(route, i - 1, i, startLocation) +
               _getSegmentDistance(
                 route,
@@ -138,7 +138,7 @@ class RouteOptimizationUtils {
               );
 
           // Calculate distance after 2-opt swap
-          double newDistance =
+          final double newDistance =
               _getSegmentDistance(route, i - 1, j, startLocation) +
               _getSegmentDistance(
                 route,
