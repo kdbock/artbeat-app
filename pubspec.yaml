@@ -1,5 +1,5 @@
 name: artbeat
-description: "ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
+description: "Local ARTbeat - A modular Flutter application for artists, galleries, and art lovers."
 publish_to: "none"
 
 version: 2.0.2+44
