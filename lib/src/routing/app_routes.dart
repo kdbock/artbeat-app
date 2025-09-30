@@ -124,8 +124,13 @@ class AppRoutes {
   static const String artWalkAchievements = '/art-walk/achievements';
   static const String artWalkSettings = '/art-walk/settings';
   static const String enhancedCreateArtWalk = '/enhanced-create-art-walk';
-  static const String enhancedArtWalkExperience =
-      '/enhanced-art-walk-experience';
+
+  // Deprecated: Use artWalkExperience instead
+  @Deprecated(
+    'Use artWalkExperience instead - both routes point to the same screen',
+  )
+  static const String enhancedArtWalkExperience = '/art-walk/experience';
+
   static const String artWalkExplore = '/art-walk/explore';
   static const String artWalkStart = '/art-walk/start';
   static const String artWalkNearby = '/art-walk/nearby';
@@ -206,6 +211,7 @@ class AppRoutes {
   // Other routes
   static const String achievements = '/achievements';
   static const String achievementsInfo = '/achievements/info';
+  static const String rewards = '/rewards';
   static const String leaderboard = '/leaderboard';
   static const String notifications = '/notifications';
   static const String dev = '/dev';
@@ -377,6 +383,7 @@ class AppRoutes {
     paymentSettings,
     achievements,
     achievementsInfo,
+    rewards,
     leaderboard,
     notifications,
     dev,

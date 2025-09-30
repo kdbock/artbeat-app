@@ -43,41 +43,12 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _currentUserId == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Profile Activity')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile Activity'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Recent Activity', icon: Icon(Icons.timeline)),
-            Tab(text: 'Unread', icon: Icon(Icons.notifications)),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                // Trigger rebuild to refresh streams
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.mark_as_unread),
-            onPressed: _markAllAsRead,
-          ),
-        ],
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [_buildRecentActivityTab(), _buildUnreadTab()],
-      ),
+    return TabBarView(
+      controller: _tabController,
+      children: [_buildRecentActivityTab(), _buildUnreadTab()],
     );
   }
 
@@ -146,35 +117,13 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen>
           );
         }
 
-        return Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text(
-                    '${unreadActivities.length} unread activities',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: _markAllAsRead,
-                    child: const Text('Mark all as read'),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: unreadActivities.length,
-                itemBuilder: (context, index) {
-                  final activity = unreadActivities[index];
-                  return _buildActivityCard(activity, isUnread: true);
-                },
-              ),
-            ),
-          ],
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: unreadActivities.length,
+          itemBuilder: (context, index) {
+            final activity = unreadActivities[index];
+            return _buildActivityCard(activity, isUnread: true);
+          },
         );
       },
     );
@@ -389,29 +338,6 @@ class _ProfileActivityScreenState extends State<ProfileActivityScreen>
         ],
       ),
     );
-  }
-
-  void _markAllAsRead() async {
-    try {
-      await _activityService.markAllActivitiesAsRead(_currentUserId!);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('All activities marked as read'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error marking as read: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
   }
 
   void _markAsRead(List<String> activityIds) async {

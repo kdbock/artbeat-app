@@ -3,6 +3,10 @@ import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
 
 /// Capture Search Screen
+///
+/// **DEPRECATED**: This screen is being replaced by the new unified search flow.
+/// Use core.SearchResultsPage instead.
+@Deprecated('Use core.SearchResultsPage instead for unified search experience')
 class CaptureSearchScreen extends StatefulWidget {
   const CaptureSearchScreen({Key? key}) : super(key: key);
 

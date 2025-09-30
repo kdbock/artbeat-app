@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
@@ -32,13 +31,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
   String? _fallbackArtistName;
   String? _fallbackArtistImageUrl;
   bool _isOwner = false;
-  List<Map<String, dynamic>> _ratings = [];
-  List<Map<String, dynamic>> _reviews = [];
-  double _averageRating = 0.0;
-  bool _ratingsLoading = false;
-  List<CommentModel> _comments = [];
-  bool _commentsLoading = false;
-  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
@@ -120,10 +112,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
           _isOwner = isOwner;
           _isLoading = false;
         });
-
-        // Load ratings and reviews after main data is loaded
-        _loadRatingsAndReviews();
-        _loadComments();
       }
     } catch (e) {
       if (mounted) {
@@ -132,57 +120,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
         );
         setState(() {
           _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadRatingsAndReviews() async {
-    if (_artwork == null) return;
-
-    AppLogger.info('Loading ratings and reviews for artwork: ${_artwork!.id}');
-    setState(() {
-      _ratingsLoading = true;
-    });
-
-    try {
-      final engagementService = ContentEngagementService();
-
-      final ratings = await engagementService.getRatings(
-        contentId: _artwork!.id,
-        contentType: 'artwork',
-      );
-
-      AppLogger.info('Fetched ${ratings.length} ratings');
-
-      final reviews = await engagementService.getReviews(
-        contentId: _artwork!.id,
-        contentType: 'artwork',
-      );
-
-      AppLogger.info('Fetched ${reviews.length} reviews');
-
-      final averageRating = await engagementService.getAverageRating(
-        contentId: _artwork!.id,
-        contentType: 'artwork',
-      );
-
-      AppLogger.info('Average rating: $averageRating');
-
-      if (mounted) {
-        setState(() {
-          _ratings = ratings;
-          _reviews = reviews;
-          _averageRating = averageRating;
-          _ratingsLoading = false;
-        });
-        AppLogger.info('UI updated with ratings and reviews');
-      }
-    } catch (e) {
-      AppLogger.error('Error loading ratings and reviews: $e');
-      if (mounted) {
-        setState(() {
-          _ratingsLoading = false;
         });
       }
     }
@@ -493,83 +430,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
     }
   }
 
-  Future<void> _loadComments() async {
-    if (_artwork == null) return;
-
-    setState(() => _commentsLoading = true);
-    try {
-      final commentsSnapshot = await FirebaseFirestore.instance
-          .collection('artwork')
-          .doc(_artwork!.id)
-          .collection('comments')
-          .orderBy('createdAt', descending: false)
-          .get();
-
-      final comments = commentsSnapshot.docs.map((doc) {
-        final data = doc.data();
-        return CommentModel(
-          id: doc.id,
-          postId: _artwork!.id,
-          userId: data['userId'] as String? ?? '',
-          userName: data['userName'] as String? ?? '',
-          userAvatarUrl: data['userAvatarUrl'] as String? ?? '',
-          content: data['content'] as String? ?? '',
-          createdAt: (data['createdAt'] as Timestamp?) ?? Timestamp.now(),
-          parentCommentId: data['parentCommentId'] as String? ?? '',
-          type: data['type'] as String? ?? 'Appreciation',
-        );
-      }).toList();
-
-      setState(() => _comments = comments);
-    } catch (e) {
-      AppLogger.error('Error loading comments: $e');
-    } finally {
-      setState(() => _commentsLoading = false);
-    }
-  }
-
-  Future<void> _postComment() async {
-    if (_commentController.text.trim().isEmpty || _artwork == null) return;
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    try {
-      // Get user profile for name and photo
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      final userData = userDoc.data();
-      final userName =
-          userData?['fullName'] ?? userData?['displayName'] ?? 'Anonymous';
-      final userPhotoUrl = userData?['profileImageUrl'] ?? '';
-
-      await FirebaseFirestore.instance
-          .collection('artwork')
-          .doc(_artwork!.id)
-          .collection('comments')
-          .add({
-        'userId': user.uid,
-        'userName': userName,
-        'userAvatarUrl': userPhotoUrl,
-        'content': _commentController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'parentCommentId': '',
-        'type': 'Appreciation',
-      });
-
-      _commentController.clear();
-      await _loadComments(); // Refresh comments
-    } catch (e) {
-      AppLogger.error('Error posting comment: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to post comment: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -856,37 +716,24 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       ),
                     ],
 
-                    // Content engagement bar
+                    // Content engagement bar (rate/comment handled by ArtworkSocialWidget below)
                     const SizedBox(height: 24),
                     ContentEngagementBar(
                       contentId: artwork.id,
                       contentType: 'artwork',
                       initialStats: artwork.engagementStats,
                       showSecondaryActions: true,
-                      onEngagementChanged: () {
-                        // Refresh ratings and reviews when user submits new ones
-                        _loadRatingsAndReviews();
-                      },
+                      artistId: artwork.userId,
+                      artistName: _artist?.displayName ??
+                          _fallbackArtistName ??
+                          'Unknown Artist',
                     ),
 
-                    // View count and rating count
+                    // View count
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Rating count
-                        const Icon(Icons.star,
-                            size: 16, color: ArtbeatColors.darkGray),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_ratings.length} ratings',
-                          style: const TextStyle(
-                            color: ArtbeatColors.darkGray,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // View count
                         const Icon(Icons.visibility,
                             size: 16, color: ArtbeatColors.darkGray),
                         const SizedBox(width: 4),
@@ -900,193 +747,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       ],
                     ),
 
-                    // Ratings and Reviews Section - always show after ratings/reviews are loaded
-                    const SizedBox(height: 32),
-                    const Divider(height: 32),
-
-                    // Ratings Section
-                    Row(
-                      children: [
-                        const Text(
-                          'Ratings & Reviews',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (_ratingsLoading) ...[
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ] else if (_averageRating > 0) ...[
-                          Row(
-                            children: [
-                              ...List.generate(5, (index) {
-                                return Icon(
-                                  index < _averageRating.floor()
-                                      ? Icons.star
-                                      : (index < _averageRating
-                                          ? Icons.star_half
-                                          : Icons.star_border),
-                                  color: Colors.amber,
-                                  size: 20,
-                                );
-                              }),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${_averageRating.toStringAsFixed(1)} (${_ratings.length})',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Individual Ratings
-                    if (_ratings.isNotEmpty) ...[
-                      const Text(
-                        'Recent Ratings:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...(_ratings
-                          .take(3)
-                          .map((rating) => _buildRatingItem(rating))
-                          .toList()),
-                      if (_ratings.length > 3) ...[
-                        TextButton(
-                          onPressed: () => _showAllRatings(),
-                          child: Text('View all ${_ratings.length} ratings'),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                    ] else if (!_ratingsLoading) ...[
-                      const Text(
-                        'No ratings yet. Be the first to rate this artwork!',
-                        style: TextStyle(
-                          color: ArtbeatColors.darkGray,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // Reviews Section
-                    if (_reviews.isNotEmpty) ...[
-                      const Text(
-                        'Recent Reviews:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Individual Reviews
-                      ...(_reviews
-                          .take(2)
-                          .map((review) => _buildReviewItem(review))
-                          .toList()),
-
-                      if (_reviews.length > 2) ...[
-                        TextButton(
-                          onPressed: () => _showAllReviews(),
-                          child: Text('View all ${_reviews.length} reviews'),
-                        ),
-                      ],
-                    ] else if (!_ratingsLoading) ...[
-                      const Text(
-                        'No reviews yet. Be the first to review this artwork!',
-                        style: TextStyle(
-                          color: ArtbeatColors.darkGray,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-
-                    // Comments Section
-                    const SizedBox(height: 32),
-                    const Divider(height: 32),
-                    Row(
-                      children: [
-                        const Text(
-                          'Comments',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (_commentsLoading) ...[
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ] else ...[
-                          Text(
-                            '${_comments.length} comments',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Comment Input
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _commentController,
-                            decoration: const InputDecoration(
-                              hintText: 'Write a comment...',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                            ),
-                            maxLines: 3,
-                            minLines: 1,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _postComment,
-                          child: const Text('Post'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Comments List
-                    if (_comments.isNotEmpty) ...[
-                      ..._comments.map((comment) => _buildCommentItem(comment)),
-                    ] else if (!_commentsLoading) ...[
-                      const Text(
-                        'No comments yet. Be the first to comment!',
-                        style: TextStyle(
-                          color: ArtbeatColors.darkGray,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-
                     // Social Engagement Widget
                     const SizedBox(height: 32),
                     const Divider(height: 32),
@@ -1095,11 +755,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
                       artworkTitle: artwork.title,
                       showComments: true,
                       showRatings: true,
-                      onEngagementChanged: () {
-                        // Refresh data when engagement changes
-                        _loadRatingsAndReviews();
-                        _loadComments();
-                      },
                     ),
 
                     // Action buttons
@@ -1129,256 +784,6 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRatingItem(Map<String, dynamic> rating) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          UserAvatar(
-            imageUrl: rating['userProfileImage'] as String?,
-            displayName: rating['userName'] as String,
-            radius: 16,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      rating['userName'] as String,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Row(
-                      children: List.generate(5, (index) {
-                        return Icon(
-                          index < (rating['rating'] as int)
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: Colors.amber,
-                          size: 16,
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatTimestamp(rating['createdAt'] as DateTime),
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReviewItem(Map<String, dynamic> review) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          UserAvatar(
-            imageUrl: review['userProfileImage'] as String?,
-            displayName: review['userName'] as String,
-            radius: 16,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  review['userName'] as String,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  review['review'] as String,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _formatTimestamp(review['createdAt'] as DateTime),
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
-  }
-
-  void _showAllRatings() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          maxChildSize: 0.9,
-          minChildSize: 0.5,
-          builder: (context, scrollController) {
-            return Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'All Ratings (${_ratings.length})',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: scrollController,
-                      itemCount: _ratings.length,
-                      itemBuilder: (context, index) {
-                        return _buildRatingItem(_ratings[index]);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showAllReviews() {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          maxChildSize: 0.9,
-          minChildSize: 0.5,
-          builder: (context, scrollController) {
-            return Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'All Reviews (${_reviews.length})',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: scrollController,
-                      itemCount: _reviews.length,
-                      itemBuilder: (context, index) {
-                        return _buildReviewItem(_reviews[index]);
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildCommentItem(CommentModel comment) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          UserAvatar(
-            imageUrl: comment.userAvatarUrl,
-            displayName: comment.userName,
-            radius: 16,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      comment.userName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formatTimestamp(comment.createdAt.toDate()),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  comment.content,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

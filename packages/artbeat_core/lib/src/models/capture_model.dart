@@ -81,7 +81,7 @@ class CaptureModel {
     this.isPublic = false,
     this.artType,
     this.artMedium,
-    this.status = CaptureStatus.pending,
+    this.status = CaptureStatus.approved,
     this.moderationNotes,
     EngagementStats? engagementStats,
   }) : engagementStats =
@@ -138,7 +138,7 @@ class CaptureModel {
       artType: json['artType'] as String?,
       artMedium: json['artMedium'] as String?,
       status: CaptureStatusExtension.fromString(
-        json['status'] as String? ?? 'pending',
+        json['status'] as String? ?? 'approved',
       ),
       moderationNotes: json['moderationNotes'] as String?,
       engagementStats: EngagementStats.fromFirestore(

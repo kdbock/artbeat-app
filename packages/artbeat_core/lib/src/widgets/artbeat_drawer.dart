@@ -137,7 +137,7 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
       '/art-walk/list',
       '/art-walk/detail',
       '/art-walk/create',
-      '/enhanced-art-walk-experience',
+      '/art-walk/experience', // Consolidated route (was /enhanced-art-walk-experience)
       '/art-walk/search',
       '/art-walk/explore',
       '/art-walk/start',

@@ -4,6 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/community_colors.dart';
 
 /// Screen for searching posts in the community
+///
+/// **DEPRECATED**: This screen is being replaced by the new unified search flow.
+/// Use core.SearchResultsPage instead.
+@Deprecated('Use core.SearchResultsPage instead for unified search experience')
 class PostSearchScreen extends StatefulWidget {
   const PostSearchScreen({super.key});
 

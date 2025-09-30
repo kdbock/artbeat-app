@@ -13,107 +13,112 @@ class UserProfileScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final chatService = Provider.of<ChatService>(context);
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 200.0,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(user.displayName),
-              background: user.photoUrl != null
-                  ? Image.network(user.photoUrl!, fit: BoxFit.cover)
-                  : Container(
-                      color: theme.primaryColor,
-                      child: Center(
-                        child: Text(
-                          user.displayName[0].toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 72,
-                            color: Colors.white,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User Profile Header Card
+          Card(
+            child: Container(
+              width: double.infinity,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: theme.primaryColor,
+              ),
+              child: user.photoUrl != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(user.photoUrl!, fit: BoxFit.cover),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            user.displayName[0].toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 72,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          Text(
+                            user.displayName,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
             ),
           ),
-          SliverToBoxAdapter(
+          const SizedBox(height: 16),
+          // User Actions Card
+          Card(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                user.isOnline
-                                    ? Icons.circle
-                                    : Icons.circle_outlined,
-                                size: 12,
-                                color: user.isOnline
-                                    ? Colors.green
-                                    : Colors.grey,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                user.isOnline
-                                    ? 'Online'
-                                    : 'Last seen: ${_formatLastSeen(user.lastSeen)}',
-                                style: theme.textTheme.bodyMedium,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  icon: const Icon(Icons.chat),
-                                  label: const Text('Message'),
-                                  onPressed: () async {
-                                    try {
-                                      final chat = await chatService
-                                          .createOrGetChat(user.id);
-                                      if (!context.mounted) return;
-
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/messaging/chat',
-                                        arguments: {'chat': chat},
-                                      );
-                                    } catch (e) {
-                                      if (!context.mounted) return;
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Error creating chat: ${e.toString()}',
-                                          ),
-                                          backgroundColor:
-                                              theme.colorScheme.error,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.more_vert),
-                                onPressed: () => _showUserOptions(context),
-                              ),
-                            ],
-                          ),
-                        ],
+                  Row(
+                    children: [
+                      Icon(
+                        user.isOnline ? Icons.circle : Icons.circle_outlined,
+                        size: 12,
+                        color: user.isOnline ? Colors.green : Colors.grey,
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Text(
+                        user.isOnline
+                            ? 'Online'
+                            : 'Last seen: ${_formatLastSeen(user.lastSeen)}',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.chat),
+                          label: const Text('Message'),
+                          onPressed: () async {
+                            try {
+                              final chat = await chatService.createOrGetChat(
+                                user.id,
+                              );
+                              if (!context.mounted) return;
+
+                              Navigator.pushNamed(
+                                context,
+                                '/messaging/chat',
+                                arguments: {'chat': chat},
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Error creating chat: ${e.toString()}',
+                                  ),
+                                  backgroundColor: theme.colorScheme.error,
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.more_vert),
+                        onPressed: () => _showUserOptions(context),
+                      ),
+                    ],
                   ),
                 ],
               ),

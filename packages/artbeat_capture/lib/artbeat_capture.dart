@@ -21,7 +21,8 @@ export 'src/services/ai_ml_integration_service.dart';
 export 'src/services/capture_analytics_service.dart';
 export 'src/services/capture_terms_service.dart';
 
-export 'src/screens/capture_search_screen.dart';
+// Deprecated: Use core.SearchResultsPage instead
+// export 'src/screens/capture_search_screen.dart';
 
 // Widgets
 export 'src/widgets/captures_grid.dart';

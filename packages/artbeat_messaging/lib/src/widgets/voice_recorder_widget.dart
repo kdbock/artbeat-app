@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../services/voice_recording_service.dart';
 import '../theme/chat_theme.dart';
@@ -64,10 +65,10 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
       listen: false,
     );
 
-    // Use iOS 18+ compatible permission check
-    final permissionResult = await voiceService.forceIOS18PermissionRequest();
+    // Check current permission status (streamlined)
+    final permissionResult = await voiceService.checkMicrophonePermission();
 
-    log('🔍 Initial iOS 18+ permission check result: $permissionResult');
+    log('🔍 Initial permission check result: $permissionResult');
 
     // Only show dialog if permission is permanently denied
     // For other cases, we'll handle it when user tries to record
@@ -229,9 +230,9 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           } else {
             log('▶️ Starting recording...');
 
-            // Check permissions first with iOS 18+ compatibility
+            // Check permissions first (streamlined)
             final permissionResult = await voiceService
-                .forceIOS18PermissionRequest();
+                .checkMicrophonePermission();
             log('🔍 Permission check result: $permissionResult');
 
             if (permissionResult == PermissionResult.permanentlyDenied) {
@@ -378,7 +379,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await voiceService.openDeviceSettings();
+                await openAppSettings();
               },
               child: const Text('Open Settings'),
             ),
@@ -458,8 +459,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                     listen: false,
                   );
                   log('🚀 User tapped Force Request Permission button');
-                  final result = await voiceService
-                      .forceRequestMicrophonePermission();
+                  final result = await voiceService.checkMicrophonePermission();
                   log(
                     '🚀 Force permission request from dialog result: $result',
                   );
@@ -483,7 +483,7 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
                     context,
                     listen: false,
                   );
-                  await voiceService.openDeviceSettings();
+                  await openAppSettings();
                 },
                 child: const Text('Open Settings'),
               ),

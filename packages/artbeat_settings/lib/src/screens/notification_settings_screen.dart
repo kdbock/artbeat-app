@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
@@ -60,15 +59,9 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Notification Settings',
-        showLogo: false,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _buildNotificationSettings(),
-    );
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _buildNotificationSettings();
   }
 
   Widget _buildNotificationSettings() {

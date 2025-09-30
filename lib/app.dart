@@ -147,6 +147,11 @@ class MyApp extends StatelessWidget {
               create: (_) => core.CommunityProvider(),
               lazy: true,
             ),
+            // Search controller
+            ChangeNotifierProvider<core.SearchController>(
+              create: (_) => core.SearchController(),
+              lazy: true,
+            ),
             // Additional service providers for DashboardViewModel
             Provider<events.EventService>(
               create: (_) => events.EventService(),

@@ -16,6 +16,8 @@ class ContentEngagementBar extends StatefulWidget {
   final bool showSecondaryActions;
   final EdgeInsets? padding;
   final VoidCallback? onEngagementChanged;
+  final String? artistId;
+  final String? artistName;
 
   const ContentEngagementBar({
     super.key,
@@ -27,6 +29,8 @@ class ContentEngagementBar extends StatefulWidget {
     this.showSecondaryActions = false,
     this.padding,
     this.onEngagementChanged,
+    this.artistId,
+    this.artistName,
   });
 
   @override
@@ -972,10 +976,21 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   }
 
   Future<void> _showCommissionDialog() async {
-    // TODO: Implement commission dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Commission feature coming soon!')),
-    );
+    // Navigate to commission request screen if artist info is available
+    if (widget.artistId != null && widget.artistName != null) {
+      Navigator.of(context).pushNamed(
+        '/commission/request',
+        arguments: {
+          'artistId': widget.artistId,
+          'artistName': widget.artistName,
+        },
+      );
+    } else {
+      // Fallback if artist info is not provided
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Artist information not available')),
+      );
+    }
   }
 
   Future<void> _showMessageDialog() async {

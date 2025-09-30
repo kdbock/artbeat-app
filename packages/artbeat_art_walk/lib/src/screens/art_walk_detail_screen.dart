@@ -288,7 +288,7 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
     // Navigate to the enhanced art walk experience
     Navigator.pushNamed(
       context,
-      ArtWalkRoutes.enhancedExperience,
+      ArtWalkRoutes.experience,
       arguments: {'artWalkId': _walk!.id, 'artWalk': _walk!},
     );
   }

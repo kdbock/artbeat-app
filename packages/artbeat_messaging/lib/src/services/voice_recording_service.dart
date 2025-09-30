@@ -5,6 +5,8 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'messaging_permission_service.dart';
 
 enum RecordingState { idle, recording, paused, stopped }
 
@@ -40,7 +42,12 @@ class VoiceRecordingService extends ChangeNotifier {
       _recorder = FlutterSoundRecorder();
       _player = FlutterSoundPlayer();
 
+      // Configure audio session for recording
       await _recorder!.openRecorder();
+      await _recorder!.setSubscriptionDuration(
+        const Duration(milliseconds: 100),
+      );
+
       await _player!.openPlayer();
 
       _logger.info('Voice recording service initialized successfully');
@@ -50,93 +57,27 @@ class VoiceRecordingService extends ChangeNotifier {
     }
   }
 
-  // Check and request microphone permission
+  // Check microphone permission (streamlined)
   Future<bool> _checkPermissions() async {
-    final result = await checkMicrophonePermission();
-    return result == PermissionResult.granted;
+    return await MessagingPermissionService().hasMicrophonePermission();
   }
 
-  // Public method to check microphone permission status
+  // Simplified permission check - no requests since app handles it at startup
   Future<PermissionResult> checkMicrophonePermission() async {
     try {
-      // iOS 18+ requires a delay before permission checks to avoid system caching
-      if (Platform.isIOS) {
-        await Future<void>.delayed(const Duration(milliseconds: 500));
-      }
-
       final status = await Permission.microphone.status;
       _logger.info('Current microphone permission status: $status');
-      _logger.info(
-        'Status details: isDenied=${status.isDenied}, isGranted=${status.isGranted}, isPermanentlyDenied=${status.isPermanentlyDenied}, isRestricted=${status.isRestricted}, isLimited=${status.isLimited}',
-      );
 
-      if (status.isDenied || status.isPermanentlyDenied) {
-        // For iOS 18+, try to reset permission state by re-requesting
-        if (Platform.isIOS && status.isPermanentlyDenied) {
-          _logger.info(
-            'iOS 18+ detected with permanently denied status - attempting reset',
-          );
-
-          // Force open settings first time to reset the permission state
-          _showPermissionDeniedMessage();
-          return PermissionResult.permanentlyDenied;
-        }
-
-        _logger.info('Requesting microphone permission...');
-
-        // Add a longer delay for iOS 18+ to ensure proper system state
-        if (Platform.isIOS) {
-          await Future<void>.delayed(const Duration(milliseconds: 1000));
-        } else {
-          await Future<void>.delayed(const Duration(milliseconds: 100));
-        }
-
-        final result = await Permission.microphone.request();
-        _logger.info('Permission request result: $result');
-        _logger.info(
-          'Result details: isDenied=${result.isDenied}, isGranted=${result.isGranted}, isPermanentlyDenied=${result.isPermanentlyDenied}, isRestricted=${result.isRestricted}, isLimited=${result.isLimited}',
-        );
-
-        if (result.isPermanentlyDenied) {
-          _logger.warning('Permission permanently denied after request');
-          _showPermissionDeniedMessage();
-          return PermissionResult.permanentlyDenied;
-        } else if (result.isGranted) {
-          _logger.info('Permission granted after request');
-          return PermissionResult.granted;
-        } else if (result.isLimited) {
-          _logger.info(
-            'Permission limited after request - treating as granted',
-          );
-          return PermissionResult.granted;
-        } else {
-          _logger.warning('Permission denied after request');
-          return PermissionResult.denied;
-        }
+      if (status.isGranted || status.isLimited) {
+        return PermissionResult.granted;
+      } else if (status.isPermanentlyDenied) {
+        _logger.warning('Microphone permission permanently denied');
+        return PermissionResult.permanentlyDenied;
       } else if (status.isRestricted) {
         _logger.warning('Microphone permission restricted');
         return PermissionResult.restricted;
-      } else if (status.isGranted) {
-        _logger.info('Microphone permission already granted');
-        return PermissionResult.granted;
-      } else if (status.isLimited) {
-        _logger.info('Microphone permission limited - treating as granted');
-        // On iOS, limited permission might still allow recording
-        return PermissionResult.granted;
-      }
-
-      // Fallback - if we get here, something unexpected happened
-      _logger.warning(
-        'Unknown permission status: $status - requesting permission',
-      );
-      final result = await Permission.microphone.request();
-      _logger.info('Fallback permission request result: $result');
-
-      if (result.isGranted || result.isLimited) {
-        return PermissionResult.granted;
-      } else if (result.isPermanentlyDenied) {
-        return PermissionResult.permanentlyDenied;
       } else {
+        _logger.warning('Microphone permission denied');
         return PermissionResult.denied;
       }
     } catch (e) {
@@ -185,127 +126,6 @@ class VoiceRecordingService extends ChangeNotifier {
     } catch (e) {
       _logger.severe('Error requesting microphone permission: $e');
       return PermissionResult.denied;
-    }
-  }
-
-  // iOS 18+ Compatible permission request that forces the system dialog
-  Future<PermissionResult> forceIOS18PermissionRequest() async {
-    if (!Platform.isIOS) {
-      return checkMicrophonePermission();
-    }
-
-    try {
-      _logger.info('iOS 18+ Force Permission Request Started');
-
-      // Step 1: Clear any cached permission state
-      _logger.info('Clearing potential cached permission state...');
-      await Future<void>.delayed(const Duration(milliseconds: 1500));
-
-      // Step 2: Attempt direct flutter_sound initialization to trigger system permission
-      _logger.info(
-        'Attempting flutter_sound initialization to trigger permission...',
-      );
-      try {
-        if (_recorder != null) {
-          await _recorder!.closeRecorder();
-          _recorder = null;
-        }
-
-        _recorder = FlutterSoundRecorder();
-        await _recorder!.openRecorder();
-
-        // This should trigger iOS microphone permission if not already granted
-        _logger.info(
-          'flutter_sound recorder opened - system should show permission',
-        );
-
-        // Give iOS time to show permission dialog
-        await Future<void>.delayed(const Duration(milliseconds: 2000));
-      } catch (e) {
-        _logger.warning(
-          'flutter_sound initialization error (may be expected): $e',
-        );
-      }
-
-      // Step 3: Check permission after flutter_sound attempt
-      final status = await Permission.microphone.status;
-      _logger.info('Post-flutter_sound permission status: $status');
-
-      if (status.isGranted || status.isLimited) {
-        return PermissionResult.granted;
-      }
-
-      // Step 4: Direct permission request as fallback
-      _logger.info('Direct permission request as fallback...');
-      final result = await Permission.microphone.request();
-      _logger.info('Direct request result: $result');
-
-      if (result.isGranted || result.isLimited) {
-        return PermissionResult.granted;
-      } else if (result.isPermanentlyDenied) {
-        _showPermissionDeniedMessage();
-        return PermissionResult.permanentlyDenied;
-      } else {
-        return PermissionResult.denied;
-      }
-    } catch (e) {
-      _logger.severe('iOS 18+ force permission error: $e');
-      return PermissionResult.denied;
-    }
-  }
-
-  // Alternative method to force permission request using different approach
-  Future<PermissionResult> forceRequestMicrophonePermission() async {
-    try {
-      _logger.info(
-        'Force requesting microphone permission (alternative method)...',
-      );
-
-      // First, check if we can open settings
-      final canOpenSettings =
-          await Permission.microphone.shouldShowRequestRationale;
-      _logger.info('Should show rationale: $canOpenSettings');
-
-      // Try to request permission multiple times with delays
-      for (int attempt = 1; attempt <= 3; attempt++) {
-        _logger.info('Permission request attempt $attempt/3');
-
-        await Future<void>.delayed(Duration(milliseconds: 200 * attempt));
-        final result = await Permission.microphone.request();
-
-        _logger.info('Attempt $attempt result: $result');
-
-        if (result.isGranted || result.isLimited) {
-          _logger.info('Permission granted on attempt $attempt');
-          return PermissionResult.granted;
-        } else if (result.isDenied && attempt < 3) {
-          _logger.warning(
-            'Permission denied on attempt $attempt, trying again...',
-          );
-          continue;
-        } else if (result.isPermanentlyDenied) {
-          _logger.warning('Permission permanently denied on attempt $attempt');
-          break;
-        }
-      }
-
-      _logger.warning('All permission request attempts failed');
-      return PermissionResult.permanentlyDenied;
-    } catch (e) {
-      _logger.severe('Error in force request microphone permission: $e');
-      return PermissionResult.denied;
-    }
-  }
-
-  // Method to open device settings (can be called from UI)
-  Future<void> openDeviceSettings() async {
-    try {
-      final opened = await openAppSettings();
-      if (!opened) {
-        _logger.warning('Could not open app settings');
-      }
-    } catch (e) {
-      _logger.severe('Error opening app settings: $e');
     }
   }
 

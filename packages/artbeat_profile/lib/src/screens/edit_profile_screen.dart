@@ -20,8 +20,6 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  // Add scaffold key for drawer
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late TextEditingController _nameController;
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
@@ -110,7 +108,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // Handle form submission
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+    AppLogger.debug('_handleSubmit called');
+    if (!_formKey.currentState!.validate()) {
+      AppLogger.debug('Form validation failed');
+      return;
+    }
+    AppLogger.debug('Form validation passed, proceeding with save');
 
     setState(() {
       _isSaving = true;
@@ -245,7 +248,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (networkImage != null) {
         return networkImage;
       } else {
-        AppLogger.warning('⚠️ Invalid profile image URL format: $profileImageUrl');
+        AppLogger.warning(
+          '⚠️ Invalid profile image URL format: $profileImageUrl',
+        );
       }
     }
 
@@ -274,159 +279,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return MainLayout(
       currentIndex: -1,
       child: Scaffold(
-        key: _scaffoldKey,
-        appBar: EnhancedUniversalHeader(
+        appBar: const EnhancedUniversalHeader(
           title: 'Edit Profile',
           showLogo: false,
-          showDeveloperTools: true,
-          onMenuPressed: () {
-            _scaffoldKey.currentState?.openDrawer();
-          },
-          actions: [
-            TextButton(
-              onPressed: _isSaving ? null : _handleSubmit,
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(
-                          ArtbeatColors.primaryPurple,
-                        ),
-                      ),
-                    )
-                  : const Text(
-                      'Save',
-                      style: TextStyle(
-                        color: ArtbeatColors.primaryPurple,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-            ),
-          ],
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ArtbeatColors.primaryPurple,
-                      ArtbeatColors.primaryGreen,
-                    ],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile header content can be added here
-                  ],
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.home_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Home'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/');
-                },
-              ),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  leading: const Icon(
-                    Icons.camera_alt_outlined,
-                    color: ArtbeatColors.primaryPurple,
-                  ),
-                  title: const Text('Captures'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/captures');
-                  },
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.map_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Art Walks'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/art-walks');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.people_outline,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Artist Community'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/community');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_add_outlined,
-                  color: ArtbeatColors.accentYellow,
-                ),
-                title: const Text('Following'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/profile/following');
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.emoji_events_outlined,
-                  color: ArtbeatColors.accentYellow,
-                ),
-                title: const Text('Achievements'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/profile/achievements');
-                },
-              ),
-              const Divider(color: ArtbeatColors.border),
-              ListTile(
-                leading: const Icon(
-                  Icons.settings_outlined,
-                  color: ArtbeatColors.primaryPurple,
-                ),
-                title: const Text('Settings'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/settings');
-                },
-              ),
-              if (currentUser != null) ...[
-                ListTile(
-                  leading: const Icon(
-                    Icons.dashboard_outlined,
-                    color: ArtbeatColors.primaryPurple,
-                  ),
-                  title: const Text('Artist Dashboard'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/artist/dashboard');
-                  },
-                ),
-              ],
-            ],
-          ),
+          showBackButton: true,
         ),
         body: Container(
           constraints: const BoxConstraints.expand(),
@@ -548,6 +404,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     color: ArtbeatColors.primaryPurple,
                                   ),
                                 ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Save Button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ArtbeatButton(
+                                onPressed: _isSaving
+                                    ? null
+                                    : () {
+                                        AppLogger.debug('Save button pressed');
+                                        _handleSubmit();
+                                      },
+                                variant: ButtonVariant.primary,
+                                child: _isSaving
+                                    ? const Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation(
+                                                    Colors.white,
+                                                  ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'Saving...',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : const Text(
+                                        'Save Profile',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                               ),
                             ),
                             const SizedBox(height: 24),

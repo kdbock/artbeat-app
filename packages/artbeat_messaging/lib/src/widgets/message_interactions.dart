@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/message_model.dart';
 import '../models/chat_model.dart';
 import '../services/chat_service.dart';
@@ -519,7 +520,9 @@ class InteractiveMessageBubble extends StatelessWidget {
         child: Align(
           alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: message.type == MessageType.image
+                ? const EdgeInsets.all(4)
+                : const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: isSentByMe
                   ? Theme.of(context).primaryColor
@@ -584,12 +587,7 @@ class InteractiveMessageBubble extends StatelessWidget {
                   ),
 
                 // Message content
-                Text(
-                  message.content,
-                  style: TextStyle(
-                    color: isSentByMe ? Colors.white : Colors.black,
-                  ),
-                ),
+                _buildMessageContent(context, isSentByMe),
 
                 // Message metadata
                 Row(
@@ -765,6 +763,141 @@ class InteractiveMessageBubble extends StatelessWidget {
         }
       }
     }
+  }
+
+  Widget _buildMessageContent(BuildContext context, bool isSentByMe) {
+    // Handle different message types
+    switch (message.type) {
+      case MessageType.image:
+        return _buildImageContent(context, isSentByMe);
+      case MessageType.text:
+      default:
+        return Text(
+          message.content,
+          style: TextStyle(color: isSentByMe ? Colors.white : Colors.black),
+        );
+    }
+  }
+
+  Widget _buildImageContent(BuildContext context, bool isSentByMe) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () {
+            // Show full-screen image view
+            _showFullscreenImage(context);
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 250, maxHeight: 200),
+              child: _buildOptimizedImage(context, isSentByMe),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptimizedImage(BuildContext context, bool isSentByMe) {
+    // Validate URL first
+    final imageUrl = message.content;
+    if (imageUrl.isEmpty || !_isValidImageUrl(imageUrl)) {
+      return _buildImageError('Invalid image URL');
+    }
+
+    // Use CachedNetworkImage for better performance and caching
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      placeholder: (BuildContext context, String url) => Container(
+        width: 250,
+        height: 200,
+        color: Colors.grey.shade200,
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              isSentByMe ? Colors.white : Theme.of(context).primaryColor,
+            ),
+          ),
+        ),
+      ),
+      errorWidget: (BuildContext context, String url, dynamic error) {
+        return _buildImageError('Failed to load image');
+      },
+    );
+  }
+
+  Widget _buildImageError(String message) {
+    return Container(
+      width: 250,
+      height: 200,
+      color: Colors.grey.shade200,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.broken_image, size: 48, color: Colors.grey.shade400),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Tap to retry',
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isValidImageUrl(String url) {
+    if (url.trim().isEmpty) return false;
+    return url.startsWith('http://') ||
+        url.startsWith('https://') ||
+        url.contains('firebasestorage.googleapis.com');
+  }
+
+  void _showFullscreenImage(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              Center(
+                child: CachedNetworkImage(
+                  imageUrl: message.content,
+                  fit: BoxFit.contain,
+                  placeholder: (BuildContext context, String url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget:
+                      (BuildContext context, String url, dynamic error) =>
+                          const Icon(
+                            Icons.broken_image,
+                            size: 64,
+                            color: Colors.white,
+                          ),
+                ),
+              ),
+              Positioned(
+                top: 40,
+                right: 20,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   String _formatTime(DateTime timestamp) {

@@ -3,6 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 
+/// Legacy search results screen
+///
+/// **DEPRECATED**: This screen is being replaced by the new unified search flow.
+/// Use SearchResultsPage instead.
+@Deprecated('Use SearchResultsPage instead for unified search experience')
 class SearchResultsScreen extends StatefulWidget {
   final String query;
   const SearchResultsScreen({Key? key, required this.query}) : super(key: key);

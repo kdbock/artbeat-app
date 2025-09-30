@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 
 class FavoritesScreen extends StatefulWidget {
@@ -33,11 +34,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     });
 
     try {
-      final favorites = await _userService.getUserFavorites();
+      final likedContent = await _userService.getUserLikedContent();
       if (!mounted) return;
 
       setState(() {
-        _favorites = favorites
+        _favorites = likedContent
             .map((f) => core.FavoriteModel.fromMap(f, f['id'] as String))
             .toList();
         _isLoading = false;
@@ -45,7 +46,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading favorites: ${e.toString()}')),
+          SnackBar(
+            content: Text('Error loading liked content: ${e.toString()}'),
+          ),
         );
         setState(() {
           _isLoading = false;
@@ -93,15 +96,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(
-            Icons.person_add_outlined,
+            Icons.favorite_border,
             size: 80,
             color: core.ArtbeatColors.accentYellow,
           ),
           const SizedBox(height: 16),
           Text(
             _isCurrentUser
-                ? 'You haven\'t followed anyone yet'
-                : 'This user isn\'t following anyone yet',
+                ? 'You haven\'t liked any content yet'
+                : 'This user hasn\'t liked any content yet',
             style: const TextStyle(
               fontSize: 16,
               color: core.ArtbeatColors.textSecondary,
@@ -112,11 +115,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                // Navigate to discover screen or another place to add favorites
-                Navigator.pushNamed(context, '/discover');
+                // Navigate to discover content
+                Navigator.pushNamed(context, '/community');
               },
-              icon: const Icon(Icons.search),
-              label: const Text('Discover Artists'),
+              icon: const Icon(Icons.explore),
+              label: const Text('Discover Content'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: core.ArtbeatColors.primaryPurple,
                 foregroundColor: Colors.white,
@@ -182,14 +185,60 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     )
                   : null,
               onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/profile/favorite-detail',
-                  arguments: {
-                    'favoriteId': favorite.id,
-                    'userId': widget.userId,
-                  },
-                );
+                // Navigate to the appropriate content based on type
+                final contentType =
+                    favorite.metadata?['contentType'] as String?;
+                final contentId =
+                    favorite.metadata?['originalContentId'] as String?;
+
+                if (contentId != null && contentType != null) {
+                  switch (contentType.toLowerCase()) {
+                    case 'artwork':
+                      Navigator.pushNamed(
+                        context,
+                        '/artwork/detail',
+                        arguments: contentId,
+                      );
+                      break;
+                    case 'capture':
+                      Navigator.pushNamed(
+                        context,
+                        '/capture/detail',
+                        arguments: contentId,
+                      );
+                      break;
+                    case 'art_walk':
+                    case 'artwalk':
+                    case 'walk':
+                      Navigator.pushNamed(
+                        context,
+                        '/art-walk/detail',
+                        arguments: contentId,
+                      );
+                      break;
+                    case 'profile':
+                      Navigator.pushNamed(
+                        context,
+                        '/profile/view',
+                        arguments: {'userId': contentId},
+                      );
+                      break;
+                    case 'event':
+                      Navigator.pushNamed(
+                        context,
+                        '/event/detail',
+                        arguments: contentId,
+                      );
+                      break;
+                    default:
+                      // Fallback: try to open as generic content
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Cannot open ${contentType} content'),
+                        ),
+                      );
+                  }
+                }
               },
             ),
           );
@@ -202,16 +251,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     switch (type.toLowerCase()) {
       case 'artwork':
         return Icons.palette_outlined;
-      case 'artist':
-        return Icons.person_outlined;
-      case 'business':
-        return Icons.museum_outlined;
-      case 'event':
-        return Icons.event_outlined;
+      case 'capture':
+        return Icons.camera_alt_outlined;
+      case 'art_walk':
+      case 'artwalk':
       case 'walk':
         return Icons.directions_walk_outlined;
+      case 'profile':
+        return Icons.person_outlined;
+      case 'event':
+        return Icons.event_outlined;
       default:
-        return Icons.person_add_outlined; // Follow icon
+        return Icons.favorite_outlined;
     }
   }
 
@@ -219,10 +270,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Remove Favorite'),
-        content: const Text(
-          'Are you sure you want to remove this from your favorites?',
-        ),
+        title: const Text('Remove Like'),
+        content: const Text('Are you sure you want to unlike this content?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -230,7 +279,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('REMOVE'),
+            child: const Text('UNLIKE'),
           ),
         ],
       ),
@@ -238,17 +287,22 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     if (result == true) {
       try {
-        await _userService.removeFromFavorites(favoriteId);
+        // Remove the engagement (like) from Firestore
+        await FirebaseFirestore.instance
+            .collection('engagements')
+            .doc(favoriteId)
+            .delete();
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Removed from favorites')),
+            const SnackBar(content: Text('Removed from liked content')),
           );
           _loadFavorites(); // Refresh the list
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error removing favorite: ${e.toString()}')),
+            SnackBar(content: Text('Error unliking content: ${e.toString()}')),
           );
         }
       }

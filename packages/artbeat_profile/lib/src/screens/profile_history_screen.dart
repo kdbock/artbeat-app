@@ -248,6 +248,16 @@ class _ProfileHistoryScreenState extends State<ProfileHistoryScreen>
                 ),
               ),
               const PopupMenuItem(
+                value: 'clear_search',
+                child: Row(
+                  children: [
+                    Icon(Icons.search_off, size: 20),
+                    SizedBox(width: 8),
+                    Text('Clear Search History'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
                 value: 'export',
                 child: Row(
                   children: [
@@ -353,36 +363,13 @@ class _ProfileHistoryScreenState extends State<ProfileHistoryScreen>
 
     return RefreshIndicator(
       onRefresh: _loadHistory,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Recent Searches',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => _clearSearchHistory(),
-                  child: const Text('Clear'),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _searchHistory.length,
-              itemBuilder: (context, index) {
-                final item = _searchHistory[index];
-                return _buildSearchHistoryCard(item);
-              },
-            ),
-          ),
-        ],
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _searchHistory.length,
+        itemBuilder: (context, index) {
+          final item = _searchHistory[index];
+          return _buildSearchHistoryCard(item);
+        },
       ),
     );
   }
@@ -783,6 +770,9 @@ class _ProfileHistoryScreenState extends State<ProfileHistoryScreen>
     switch (action) {
       case 'clear_all':
         _showClearAllDialog();
+        break;
+      case 'clear_search':
+        _clearSearchHistory();
         break;
       case 'export':
         _exportHistory();

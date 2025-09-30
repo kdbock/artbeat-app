@@ -10,6 +10,9 @@ import '../widgets/art_walk_card.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 /// Comprehensive search results screen for both art walks and public art
+///
+/// **NOTE**: This screen provides specialized art walk and public art search functionality.
+/// For general search across all content types, use core.SearchResultsPage instead.
 class SearchResultsScreen extends StatefulWidget {
   final String? initialQuery;
   final String? searchType; // 'art_walks' or 'public_art'

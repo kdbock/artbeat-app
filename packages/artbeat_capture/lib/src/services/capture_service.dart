@@ -124,6 +124,7 @@ class CaptureService {
         'isPublic': capture.isPublic,
         'artType': capture.artType,
         'artMedium': capture.artMedium,
+        'status': capture.status.name,
       });
 
       // Update user's capture count
@@ -315,9 +316,8 @@ class CaptureService {
         '🚀 CaptureService.getAllCaptures() fetching from Firestore with limit: $limit',
       );
 
-      // Try with orderBy first - only get approved captures for public display
+      // Try with orderBy first - get all captures for public display
       final querySnapshot = await _capturesRef
-          .where('status', isEqualTo: 'approved')
           .orderBy('createdAt', descending: true)
           .limit(limit)
           .get();

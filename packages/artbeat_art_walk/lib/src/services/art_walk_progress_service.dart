@@ -330,8 +330,17 @@ class ArtWalkProgressService {
           .map((doc) => ArtWalkProgress.fromFirestore(doc))
           .toList();
     } catch (e) {
-      _logger.e('Error getting incomplete walks: $e');
-      return [];
+      // Check if it's a Firestore index error
+      if (e.toString().contains('requires an index')) {
+        _logger.w(
+          'Firestore index not created yet for incomplete walks query. Returning empty list.',
+        );
+        // Return empty list silently - this is expected during development
+        return [];
+      } else {
+        _logger.e('Error getting incomplete walks: $e');
+        return [];
+      }
     }
   }
 
@@ -348,8 +357,17 @@ class ArtWalkProgressService {
           .map((doc) => ArtWalkProgress.fromFirestore(doc))
           .toList();
     } catch (e) {
-      _logger.e('Error getting completed walks: $e');
-      return [];
+      // Check if it's a Firestore index error
+      if (e.toString().contains('requires an index')) {
+        _logger.w(
+          'Firestore index not created yet for completed walks query. Returning empty list.',
+        );
+        // Return empty list silently - this is expected during development
+        return [];
+      } else {
+        _logger.e('Error getting completed walks: $e');
+        return [];
+      }
     }
   }
 

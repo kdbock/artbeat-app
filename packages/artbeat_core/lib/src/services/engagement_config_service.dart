@@ -18,9 +18,8 @@ class EngagementConfigService {
         return [
           EngagementType.like,
           EngagementType.share,
-          EngagementType.rate,
-          EngagementType.review,
           EngagementType.gift,
+          EngagementType.commission,
         ];
       case 'artist':
       case 'profile':
@@ -83,9 +82,8 @@ class EngagementConfigService {
         return [
           EngagementType.like,
           EngagementType.share,
-          EngagementType.rate,
-          EngagementType.review,
           EngagementType.gift,
+          EngagementType.commission,
         ];
       case 'artist':
       case 'profile':

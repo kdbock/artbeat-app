@@ -41,6 +41,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               onCancel: () => Navigator.pop(context),
               useEnhancedUniversalHeader:
                   true, // Tell the form builder to use universal header
+              isLoading: _isLoading,
             ),
             if (_isLoading) _buildLoadingOverlay(),
           ],

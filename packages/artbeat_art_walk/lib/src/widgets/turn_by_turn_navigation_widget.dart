@@ -24,10 +24,13 @@ class TurnByTurnNavigationWidget extends StatefulWidget {
 }
 
 class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   NavigationUpdate? _lastUpdate;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -50,7 +53,10 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     return StreamBuilder<NavigationUpdate>(
+      key: const ValueKey('turn_by_turn_navigation_stream'),
       stream: widget.navigationService.navigationUpdates,
       builder: (context, snapshot) {
         debugPrint(
@@ -182,6 +188,11 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
   }
 
   Widget _buildFullView(NavigationUpdate update) {
+    debugPrint('🧭 TurnByTurnWidget - Building full view');
+    debugPrint(
+      '🧭 TurnByTurnWidget - Callbacks available - onNextStep: ${widget.onNextStep != null}, onPreviousStep: ${widget.onPreviousStep != null}, onStopNavigation: ${widget.onStopNavigation != null}',
+    );
+
     return Container(
       margin: const EdgeInsets.all(16),
       child: Card(
@@ -205,8 +216,14 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
                     ),
                   ),
                   IconButton(
+                    key: const ValueKey('stop_navigation_button'),
                     icon: const Icon(Icons.close),
-                    onPressed: widget.onStopNavigation,
+                    onPressed: widget.onStopNavigation != null
+                        ? () {
+                            debugPrint('🧭 Stop Navigation (X) button pressed');
+                            widget.onStopNavigation!();
+                          }
+                        : null,
                   ),
                 ],
               ),
@@ -409,22 +426,54 @@ class _TurnByTurnNavigationWidgetState extends State<TurnByTurnNavigationWidget>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton.icon(
-                    onPressed: widget.onPreviousStep,
-                    icon: const Icon(Icons.skip_previous),
-                    label: const Text('Previous'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey[200],
-                      foregroundColor: Colors.grey[700],
+                  // Previous button with GestureDetector as fallback
+                  GestureDetector(
+                    key: const ValueKey('previous_step_gesture'),
+                    onTap: widget.onPreviousStep != null
+                        ? () {
+                            debugPrint('🧭 Previous Step gesture tapped');
+                            widget.onPreviousStep!();
+                          }
+                        : null,
+                    child: ElevatedButton.icon(
+                      key: const ValueKey('previous_step_button'),
+                      onPressed: widget.onPreviousStep != null
+                          ? () {
+                              debugPrint('🧭 Previous Step button pressed');
+                              widget.onPreviousStep!();
+                            }
+                          : null,
+                      icon: const Icon(Icons.skip_previous),
+                      label: const Text('Previous'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[200],
+                        foregroundColor: Colors.grey[700],
+                      ),
                     ),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: widget.onNextStep,
-                    icon: const Icon(Icons.skip_next),
-                    label: const Text('Next'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
+                  // Next button with GestureDetector as fallback
+                  GestureDetector(
+                    key: const ValueKey('next_step_gesture'),
+                    onTap: widget.onNextStep != null
+                        ? () {
+                            debugPrint('🧭 Next Step gesture tapped');
+                            widget.onNextStep!();
+                          }
+                        : null,
+                    child: ElevatedButton.icon(
+                      key: const ValueKey('next_step_button'),
+                      onPressed: widget.onNextStep != null
+                          ? () {
+                              debugPrint('🧭 Next Step button pressed');
+                              widget.onNextStep!();
+                            }
+                          : null,
+                      icon: const Icon(Icons.skip_next),
+                      label: const Text('Next'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
                     ),
                   ),
                 ],

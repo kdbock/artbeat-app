@@ -88,6 +88,19 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
                 controller: scrollController,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
+                  // Notifications Section
+                  _buildSectionHeader('Notifications'),
+                  _buildMenuTile(
+                    context: context,
+                    icon: Icons.notifications,
+                    title: 'Notifications',
+                    subtitle: 'View your recent notifications',
+                    color: ArtbeatColors.primaryPurple,
+                    onTap: () => _navigateToRoute('/notifications'),
+                  ),
+
+                  const SizedBox(height: 16),
+
                   // Profile Management Section
                   _buildSectionHeader('Profile Management'),
                   _buildMenuTile(
@@ -108,11 +121,19 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
                   ),
                   _buildMenuTile(
                     context: context,
-                    icon: Icons.photo_camera,
-                    title: 'Profile Picture',
-                    subtitle: 'Change your profile photo',
+                    icon: Icons.camera_alt,
+                    title: 'My Captures',
+                    subtitle: 'View your captured artwork',
                     color: ArtbeatColors.info,
-                    onTap: () => _navigateToRoute('/profile/picture'),
+                    onTap: () => _navigateToRoute('/capture/my-captures'),
+                  ),
+                  _buildMenuTile(
+                    context: context,
+                    icon: Icons.map,
+                    title: 'My Art Walks',
+                    subtitle: 'Your art walk adventures',
+                    color: ArtbeatColors.primaryGreen,
+                    onTap: () => _navigateToRoute('/art-walk/my-walks'),
                   ),
 
                   const SizedBox(height: 16),
@@ -122,18 +143,18 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
                   _buildMenuTile(
                     context: context,
                     icon: Icons.favorite,
-                    title: 'Favorites',
-                    subtitle: 'Your liked artwork and artists',
+                    title: 'Liked Items',
+                    subtitle: 'Artwork, captures, and walks you liked',
                     color: ArtbeatColors.error,
-                    onTap: () => _navigateToRoute('/profile/favorites'),
+                    onTap: () => _navigateToRoute('/profile/liked'),
                   ),
                   _buildMenuTile(
                     context: context,
                     icon: Icons.people,
-                    title: 'Connections',
-                    subtitle: 'Followers and following',
+                    title: 'Following',
+                    subtitle: 'People you follow',
                     color: ArtbeatColors.primaryPurple,
-                    onTap: () => _navigateToRoute('/profile/connections'),
+                    onTap: () => _navigateToRoute('/profile/following'),
                   ),
                   _buildMenuTile(
                     context: context,
@@ -209,10 +230,10 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
                   _buildMenuTile(
                     context: context,
                     icon: Icons.star,
-                    title: 'Subscription Plans',
-                    subtitle: 'Upgrade or manage your plan',
+                    title: 'Become an Artist',
+                    subtitle: 'Start your artist journey',
                     color: ArtbeatColors.warning,
-                    onTap: () => _navigateToRoute('/subscription/plans'),
+                    onTap: () => _navigateToRoute('/artist/signup'),
                   ),
                   _buildMenuTile(
                     context: context,
@@ -509,16 +530,7 @@ class _EnhancedProfileMenuState extends State<EnhancedProfileMenu> {
     // Use a slight delay to ensure smooth navigation
     Future.delayed(const Duration(milliseconds: 100), () {
       if (context.mounted) {
-        Navigator.pushNamed(context, route).catchError((error) {
-          // Handle navigation errors gracefully
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Feature coming soon: ${route.split('/').last}'),
-              backgroundColor: ArtbeatColors.info,
-            ),
-          );
-          return null; // Return a value to satisfy the catchError handler
-        });
+        Navigator.pushNamed(context, route);
       }
     });
   }

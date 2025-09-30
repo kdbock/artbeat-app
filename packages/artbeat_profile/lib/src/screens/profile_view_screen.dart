@@ -24,9 +24,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   final CaptureService _captureService = CaptureService();
   late TabController _tabController;
 
-  // Add a key to open the drawer
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   bool _isLoading = true;
   UserModel? _userModel;
   List<CaptureModel> _userCaptures = [];
@@ -176,38 +173,9 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
     return MainLayout(
       currentIndex: -1,
-      child: Scaffold(
-        key: _scaffoldKey,
-        backgroundColor: Colors.transparent,
-        extendBodyBehindAppBar: true,
-        drawer: const ArtbeatDrawer(),
-        appBar: AppBar(
-          title: const Text('Profile'),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          foregroundColor: ArtbeatColors.textPrimary,
-          leading: !widget.isCurrentUser
-              ? IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.of(context).pop(),
-                )
-              : IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () => Navigator.pushNamed(context, '/search'),
-            ),
-          ],
-        ),
-        body: Container(
-          decoration: _buildArtisticBackground(),
-          child: SafeArea(child: _buildProfileContent()),
-        ),
+      child: Container(
+        decoration: _buildArtisticBackground(),
+        child: SafeArea(child: _buildProfileContent()),
       ),
     );
   }

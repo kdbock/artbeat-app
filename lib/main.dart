@@ -11,6 +11,7 @@ import 'app.dart';
 import 'config/maps_config.dart';
 import 'in_app_purchase_setup.dart';
 import 'src/managers/app_lifecycle_manager.dart';
+import 'src/services/app_permission_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +76,9 @@ Future<void> main() async {
 
     // Initialize non-critical services in background after app starts
     _initializeNonCriticalServices();
+
+    // Initialize app permissions
+    _initializeAppPermissions();
 
     // End startup timing
     PerformanceMonitor.endTimer('app_startup');
@@ -204,6 +208,23 @@ void _initializeNonCriticalServices() {
         AppLogger.error('❌ In-app purchase service initialization failed: $e');
       }
       // Don't fail the entire app for purchase service
+    }
+  });
+}
+
+/// Initialize app permissions in background to request essential permissions
+void _initializeAppPermissions() {
+  Future.delayed(const Duration(milliseconds: 500), () async {
+    try {
+      await AppPermissionService().initializePermissions();
+      if (kDebugMode) {
+        AppLogger.info('✅ App permissions service initialized');
+      }
+    } on Object catch (e) {
+      if (kDebugMode) {
+        AppLogger.error('❌ App permissions service initialization failed: $e');
+      }
+      // Don't fail the entire app for permission service
     }
   });
 }

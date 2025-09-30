@@ -16,6 +16,7 @@ class EventFormBuilder extends StatefulWidget {
   final Function(ArtbeatEvent) onEventCreated;
   final VoidCallback? onCancel;
   final bool useEnhancedUniversalHeader;
+  final bool isLoading;
 
   const EventFormBuilder({
     super.key,
@@ -23,6 +24,7 @@ class EventFormBuilder extends StatefulWidget {
     required this.onEventCreated,
     this.onCancel,
     this.useEnhancedUniversalHeader = false,
+    this.isLoading = false,
   });
 
   @override
@@ -148,7 +150,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   // Removed foregroundColor to use deep purple default
                   actions: [
                     TextButton(
-                      onPressed: _submitForm,
+                      onPressed: widget.isLoading ? null : _submitForm,
                       child: const Text(
                         'Save',
                         style: TextStyle(
@@ -166,7 +168,10 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                 widget.initialEvent == null ? 'Create Event' : 'Edit Event',
               ),
               actions: [
-                TextButton(onPressed: _submitForm, child: const Text('Save')),
+                TextButton(
+                  onPressed: widget.isLoading ? null : _submitForm,
+                  child: const Text('Save'),
+                ),
               ],
             ),
       body: Container(
@@ -832,6 +837,9 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields')),
+      );
       return;
     }
 

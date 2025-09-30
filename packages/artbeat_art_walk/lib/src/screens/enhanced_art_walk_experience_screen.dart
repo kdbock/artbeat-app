@@ -68,7 +68,16 @@ class _EnhancedArtWalkExperienceScreenState
 
   @override
   void dispose() {
+    debugPrint('🧭 Experience Screen: dispose() called');
     WidgetsBinding.instance.removeObserver(this);
+
+    // Properly stop navigation before disposing
+    if (_isNavigationMode) {
+      debugPrint('🧭 Experience Screen: Stopping navigation before dispose');
+      _navigationService.stopNavigation();
+    }
+
+    debugPrint('🧭 Experience Screen: Disposing navigation service');
     _navigationService.dispose();
     super.dispose();
   }
@@ -476,6 +485,26 @@ class _EnhancedArtWalkExperienceScreenState
     );
   }
 
+  void _handlePreviousStep() {
+    debugPrint('🧭 Experience Screen: Handling previous step request');
+
+    // Add haptic feedback
+    _hapticService?.buttonPressed();
+
+    // For now, just show a message indicating this feature is not implemented
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Previous step navigation not implemented yet.'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    // TODO: Implement actual previous step logic when needed
+    // This could involve going back to previous navigation step
+    // or previous art piece in the route
+  }
+
   void _updateMapWithRoute(ArtWalkRouteModel route) {
     // Update polylines with detailed route
     final polylines = <Polyline>{};
@@ -581,23 +610,56 @@ class _EnhancedArtWalkExperienceScreenState
     // Haptic feedback for walk completion
     _hapticService?.walkCompleted();
 
+    // Calculate actual rewards
+    final completionBonus = _calculateCompletionBonus();
+    final photosCount =
+        _currentProgress?.visitedArt
+            .where((v) => v.photoTaken != null)
+            .length ??
+        0;
+    final timeSpent = _currentProgress?.timeSpent ?? Duration.zero;
+    final isPerfect = _currentProgress?.progressPercentage == 1.0;
+
     showDialog<void>(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (context) => AlertDialog(
         title: const Text('🎉 Walk Completed!'),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Congratulations! You\'ve completed this art walk.'),
-            SizedBox(height: 16),
-            Text('Rewards earned:'),
-            Text('• +50 XP for completion'),
-            Text('• Achievement progress updated'),
+            const Text(
+              'Congratulations! You\'ve completed this art walk.',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Rewards earned:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            const SizedBox(height: 8),
+            Text('• +$completionBonus XP total'),
+            if (isPerfect) const Text('  ✓ Perfect completion bonus (+50 XP)'),
+            if (timeSpent.inHours < 2) const Text('  ✓ Speed bonus (+25 XP)'),
+            if (photosCount >= (_currentProgress?.visitedArt.length ?? 0) * 0.5)
+              const Text('  ✓ Photo documentation bonus (+30 XP)'),
+            const SizedBox(height: 8),
+            Text(
+              '• ${_currentProgress?.visitedArt.length ?? 0} art pieces visited',
+            ),
+            Text('• $photosCount photos taken'),
+            Text('• ${_formatDuration(timeSpent)} duration'),
+            const SizedBox(height: 8),
+            const Text('• Achievement progress updated'),
           ],
         ),
         actions: [
           TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Review Walk'),
+          ),
+          ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _completeWalk();
@@ -722,271 +784,409 @@ class _EnhancedArtWalkExperienceScreenState
       );
     }
 
-    return MainLayout(
-      currentIndex: -1,
-      child: Scaffold(
-        appBar: EnhancedUniversalHeader(
-          title: widget.artWalk.title,
-          showLogo: false,
-          showBackButton: true,
-          backgroundGradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.topRight,
-            colors: [
-              Color(0xFF4FB3BE), // Light Teal
-              Color(0xFFFF9E80), // Light Orange/Peach
-            ],
-          ),
-          titleGradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.topRight,
-            colors: [
-              Color(0xFF4FB3BE), // Light Teal
-              Color(0xFFFF9E80), // Light Orange/Peach
-            ],
-          ),
-          actions: [
-            if (_isNavigationMode)
-              IconButton(
-                icon: Icon(
-                  _showCompactNavigation
-                      ? Icons.expand_more
-                      : Icons.expand_less,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _showCompactNavigation = !_showCompactNavigation;
-                  });
-                },
-              ),
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              onPressed: () {
-                showDialog<void>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('How to Use'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '• Tap "Start Navigation" for turn-by-turn directions',
-                        ),
-                        const Text('• Follow the blue route line'),
-                        const Text('• Tap markers to view art details'),
-                        const Text('• Mark art as visited when you reach it'),
-                        const Text('• Green markers = visited'),
-                        const Text('• Orange marker = next destination'),
-                        const Text('• Red markers = not yet visited'),
-                        if (_isNavigationMode) ...[
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Navigation Mode:',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const Text('• Follow turn-by-turn instructions'),
-                          const Text(
-                            '• Tap expand/collapse button to adjust navigation view',
-                          ),
-                        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: MainLayout(
+        currentIndex: -1,
+        child: Scaffold(
+          appBar:
+              EnhancedUniversalHeader(
+                    title: _buildTitleWithProgress(),
+                    showLogo: false,
+                    showBackButton: true,
+                    backgroundGradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.topRight,
+                      colors: [
+                        Color(0xFF4FB3BE), // Light Teal
+                        Color(0xFFFF9E80), // Light Orange/Peach
+                      ],
+                    ),
+                    titleGradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.topRight,
+                      colors: [
+                        Color(0xFF4FB3BE), // Light Teal
+                        Color(0xFFFF9E80), // Light Orange/Peach
                       ],
                     ),
                     actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Got it'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            // Map
-            if (kIsWeb)
-              _buildWebMapFallback()
-            else
-              GoogleMap(
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                  _centerOnUserLocation();
-                },
-                initialCameraPosition: CameraPosition(
-                  target: _currentPosition != null
-                      ? LatLng(
-                          _currentPosition!.latitude,
-                          _currentPosition!.longitude,
-                        )
-                      : _artPieces.isNotEmpty
-                      ? LatLng(
-                          _artPieces[0].location.latitude,
-                          _artPieces[0].location.longitude,
-                        )
-                      : const LatLng(35.5951, -82.5515),
-                  zoom: 16.0,
-                ),
-                markers: _markers,
-                polylines: _polylines,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
-              ),
-
-            // Enhanced Progress Visualization
-            if (!_isNavigationMode || _showCompactNavigation)
-              Positioned(
-                top: 16,
-                left: 16,
-                right: 16,
-                child: EnhancedProgressVisualization(
-                  visitedCount: _currentProgress?.visitedArt.length ?? 0,
-                  totalCount: _artPieces.length,
-                  progressPercentage:
-                      _currentProgress?.progressPercentage ?? 0.0,
-                  isNavigationMode: _isNavigationMode,
-                  onTap: () {
-                    // Could expand to show detailed progress or achievements
-                    _hapticService?.buttonPressed();
-                  },
-                ),
-              ),
-
-            // Turn-by-turn navigation widget
-            if (_isNavigationMode) ...[
-              Positioned(
-                bottom: 100,
-                left: 0,
-                right: 0,
-                child: Builder(
-                  builder: (context) {
-                    debugPrint(
-                      '🧭 Experience Screen: Building TurnByTurnNavigationWidget',
-                    );
-                    return TurnByTurnNavigationWidget(
-                      navigationService: _navigationService,
-                      isCompact: _showCompactNavigation,
-                      onNextStep: () => _navigationService.nextStep(),
-                      onPreviousStep: () {
-                        // Implement previous step logic if needed
-                      },
-                      onStopNavigation: _stopNavigation,
-                    );
-                  },
-                ),
-              ),
-            ],
-
-            // Navigation control button
-            Positioned(
-              bottom: 80,
-              left: 16,
-              right: 16,
-              child: Builder(
-                builder: (context) {
-                  debugPrint(
-                    '🧭 UI State: _isNavigationMode = $_isNavigationMode',
-                  );
-                  debugPrint(
-                    '🧭 UI State: _currentPosition = $_currentPosition',
-                  );
-                  debugPrint(
-                    '🧭 UI State: _artPieces.length = ${_artPieces.length}',
-                  );
-                  debugPrint('🧭 UI State: Building navigation button area');
-
-                  return Container(
-                    color: Colors.red.withValues(
-                      alpha: 0.3,
-                    ), // Temporary debug background
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        if (!_isNavigationMode) ...[
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: _isStartingNavigation
-                                  ? null
-                                  : () {
-                                      debugPrint(
-                                        '🧭 Start Navigation button pressed',
-                                      );
-                                      _startNavigation();
-                                    },
-                              icon: _isStartingNavigation
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
+                      if (_isNavigationMode)
+                        IconButton(
+                          icon: Icon(
+                            _showCompactNavigation
+                                ? Icons.expand_more
+                                : Icons.expand_less,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _showCompactNavigation = !_showCompactNavigation;
+                            });
+                          },
+                        ),
+                      IconButton(
+                        icon: const Icon(Icons.info_outline),
+                        onPressed: () {
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('How to Use'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    '• Tap "Start Navigation" for turn-by-turn directions',
+                                  ),
+                                  const Text('• Follow the blue route line'),
+                                  const Text(
+                                    '• Tap markers to view art details',
+                                  ),
+                                  const Text(
+                                    '• Mark art as visited when you reach it',
+                                  ),
+                                  const Text('• Green markers = visited'),
+                                  const Text(
+                                    '• Orange marker = next destination',
+                                  ),
+                                  const Text('• Red markers = not yet visited'),
+                                  if (_isNavigationMode) ...[
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Navigation Mode:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                    )
-                                  : const Icon(Icons.navigation),
-                              label: Text(
-                                _isStartingNavigation
-                                    ? 'Starting...'
-                                    : 'Start Navigation',
+                                    ),
+                                    const Text(
+                                      '• Follow turn-by-turn instructions',
+                                    ),
+                                    const Text(
+                                      '• Tap expand/collapse button to adjust navigation view',
+                                    ),
+                                  ],
+                                ],
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Got it'),
                                 ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: _handleMenuAction,
+                        itemBuilder: (context) => [
+                          if (_currentProgress?.status == WalkStatus.inProgress)
+                            const PopupMenuItem(
+                              value: 'pause',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.pause),
+                                  SizedBox(width: 8),
+                                  Text('Pause Walk'),
+                                ],
                               ),
                             ),
-                          ),
-                        ] else ...[
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                debugPrint('🧭 Stop Navigation button pressed');
-                                _stopNavigation();
-                              },
-                              icon: const Icon(Icons.stop),
-                              label: const Text('Stop Navigation'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                          if (_currentProgress?.status == WalkStatus.paused)
+                            const PopupMenuItem(
+                              value: 'resume',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.play_arrow),
+                                  SizedBox(width: 8),
+                                  Text('Resume Walk'),
+                                ],
                               ),
+                            ),
+                          if (_currentProgress?.canComplete == true)
+                            const PopupMenuItem(
+                              value: 'complete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.green),
+                                  SizedBox(width: 8),
+                                  Text('Complete Walk'),
+                                ],
+                              ),
+                            ),
+                          const PopupMenuItem(
+                            value: 'progress',
+                            child: Row(
+                              children: [
+                                Icon(Icons.analytics),
+                                SizedBox(width: 8),
+                                Text('View Progress'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'abandon',
+                            child: Row(
+                              children: [
+                                Icon(Icons.exit_to_app, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('Abandon Walk'),
+                              ],
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
+                      ),
+                    ],
+                  )
+                  as PreferredSizeWidget,
+          body: Stack(
+            children: [
+              // Map
+              if (kIsWeb)
+                _buildWebMapFallback()
+              else
+                GoogleMap(
+                  onMapCreated: (controller) {
+                    _mapController = controller;
+                    _centerOnUserLocation();
+                  },
+                  initialCameraPosition: CameraPosition(
+                    target: _currentPosition != null
+                        ? LatLng(
+                            _currentPosition!.latitude,
+                            _currentPosition!.longitude,
+                          )
+                        : _artPieces.isNotEmpty
+                        ? LatLng(
+                            _artPieces[0].location.latitude,
+                            _artPieces[0].location.longitude,
+                          )
+                        : const LatLng(35.5951, -82.5515),
+                    zoom: 16.0,
+                  ),
+                  markers: _markers,
+                  polylines: _polylines,
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                ),
 
-            // Tutorial overlay
-            if (_showTutorialOverlay && _currentTutorialStep != null)
-              TutorialOverlay(
-                step: _currentTutorialStep!,
-                onDismiss: _dismissTutorial,
-                onComplete: _completeTutorial,
+              // Enhanced Progress Visualization
+              if (!_isNavigationMode || _showCompactNavigation)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  right: 16,
+                  child: EnhancedProgressVisualization(
+                    visitedCount: _currentProgress?.visitedArt.length ?? 0,
+                    totalCount: _artPieces.length,
+                    progressPercentage:
+                        _currentProgress?.progressPercentage ?? 0.0,
+                    isNavigationMode: _isNavigationMode,
+                    onTap: () {
+                      // Could expand to show detailed progress or achievements
+                      _hapticService?.buttonPressed();
+                    },
+                  ),
+                ),
+
+              // Turn-by-turn navigation widget
+              if (_isNavigationMode) ...[
+                Positioned(
+                  bottom: 100,
+                  left: 0,
+                  right: 0,
+                  child: Builder(
+                    builder: (context) {
+                      debugPrint(
+                        '🧭 Experience Screen: Building TurnByTurnNavigationWidget',
+                      );
+                      return TurnByTurnNavigationWidget(
+                        navigationService: _navigationService,
+                        isCompact: _showCompactNavigation,
+                        onNextStep: () {
+                          debugPrint(
+                            '🧭 Experience Screen: Next step requested',
+                          );
+                          try {
+                            _navigationService.nextStep();
+                            debugPrint(
+                              '🧭 Experience Screen: Next step called successfully',
+                            );
+                          } catch (e) {
+                            debugPrint(
+                              '🧭 Experience Screen: Error calling next step: $e',
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error advancing navigation: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        onPreviousStep: () {
+                          debugPrint(
+                            '🧭 Experience Screen: Previous step requested',
+                          );
+                          try {
+                            _handlePreviousStep();
+                          } catch (e) {
+                            debugPrint(
+                              '🧭 Experience Screen: Error handling previous step: $e',
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error with previous step: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        onStopNavigation: () {
+                          debugPrint(
+                            '🧭 Experience Screen: Stop navigation requested',
+                          );
+                          try {
+                            _stopNavigation();
+                            debugPrint(
+                              '🧭 Experience Screen: Stop navigation completed',
+                            );
+                          } catch (e) {
+                            debugPrint(
+                              '🧭 Experience Screen: Error stopping navigation: $e',
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Error stopping navigation: $e'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+
+              // Navigation control button
+              Positioned(
+                bottom: 80,
+                left: 16,
+                right: 16,
+                child: Builder(
+                  builder: (context) {
+                    debugPrint(
+                      '🧭 UI State: _isNavigationMode = $_isNavigationMode',
+                    );
+                    debugPrint(
+                      '🧭 UI State: _currentPosition = $_currentPosition',
+                    );
+                    debugPrint(
+                      '🧭 UI State: _artPieces.length = ${_artPieces.length}',
+                    );
+                    debugPrint('🧭 UI State: Building navigation button area');
+
+                    return Container(
+                      color: Colors.red.withValues(
+                        alpha: 0.3,
+                      ), // Temporary debug background
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          if (!_isNavigationMode) ...[
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: _isStartingNavigation
+                                    ? null
+                                    : () {
+                                        debugPrint(
+                                          '🧭 Start Navigation button pressed',
+                                        );
+                                        _startNavigation();
+                                      },
+                                icon: _isStartingNavigation
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                      )
+                                    : const Icon(Icons.navigation),
+                                label: Text(
+                                  _isStartingNavigation
+                                      ? 'Starting...'
+                                      : 'Start Navigation',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  debugPrint(
+                                    '🧭 Stop Navigation button pressed',
+                                  );
+                                  _stopNavigation();
+                                },
+                                icon: const Icon(Icons.stop),
+                                label: const Text('Stop Navigation'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-          ],
+
+              // Tutorial overlay
+              if (_showTutorialOverlay && _currentTutorialStep != null)
+                TutorialOverlay(
+                  step: _currentTutorialStep!,
+                  onDismiss: _dismissTutorial,
+                  onComplete: _completeTutorial,
+                ),
+            ],
+          ),
+          floatingActionButton: _currentPosition != null
+              ? FloatingActionButton(
+                  onPressed: _centerOnUserLocation,
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  tooltip: 'Center on my location',
+                  child: const Icon(Icons.my_location),
+                )
+              : null,
         ),
-        floatingActionButton: _currentPosition != null
-            ? FloatingActionButton(
-                onPressed: _centerOnUserLocation,
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                tooltip: 'Center on my location',
-                child: const Icon(Icons.my_location),
-              )
-            : null,
       ),
     );
   }
@@ -1068,5 +1268,348 @@ class _EnhancedArtWalkExperienceScreenState
         ),
       ),
     );
+  }
+
+  // ========== NEW UX IMPROVEMENT METHODS ==========
+
+  /// Build title with progress for app bar
+  String _buildTitleWithProgress() {
+    if (_currentProgress == null) return widget.artWalk.title;
+    final visited = _currentProgress!.visitedArt.length;
+    final total = _currentProgress!.totalArtCount;
+    return '${widget.artWalk.title} ($visited/$total)';
+  }
+
+  /// Handle back button press with confirmation
+  Future<bool> _onWillPop() async {
+    if (_currentProgress?.status == WalkStatus.inProgress ||
+        _currentProgress?.status == WalkStatus.paused) {
+      final shouldExit = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Leave Walk?'),
+          content: const Text(
+            'Your progress will be saved and you can resume this walk later.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Stay'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Leave'),
+            ),
+          ],
+        ),
+      );
+      return shouldExit ?? false;
+    }
+    return true;
+  }
+
+  /// Handle menu actions
+  Future<void> _handleMenuAction(String action) async {
+    await _hapticService?.buttonPressed();
+
+    switch (action) {
+      case 'pause':
+        await _pauseWalkAction();
+        break;
+      case 'resume':
+        await _resumeWalkAction();
+        break;
+      case 'complete':
+        await _manualCompleteWalk();
+        break;
+      case 'progress':
+        _showProgressDialog();
+        break;
+      case 'abandon':
+        await _abandonWalkAction();
+        break;
+    }
+  }
+
+  /// Pause walk action
+  Future<void> _pauseWalkAction() async {
+    try {
+      final pausedProgress = await _progressService.pauseWalk();
+      setState(() {
+        _currentProgress = pausedProgress;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Walk paused. You can resume anytime!'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error pausing walk: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Resume walk action
+  Future<void> _resumeWalkAction() async {
+    try {
+      if (_currentProgress == null) return;
+
+      final resumedProgress = await _progressService.resumeWalk(
+        _currentProgress!.id,
+      );
+      setState(() {
+        _currentProgress = resumedProgress;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Walk resumed. Let\'s continue!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error resuming walk: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Manual complete walk (for early completion at 80%+)
+  Future<void> _manualCompleteWalk() async {
+    if (_currentProgress == null || !_currentProgress!.canComplete) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'You need to visit at least 80% of art pieces to complete early.',
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final shouldComplete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Complete Walk Early?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'You\'ve visited ${_currentProgress!.visitedArt.length}/${_currentProgress!.totalArtCount} art pieces.',
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Completing early means:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const Text('• You won\'t get the perfect completion bonus'),
+            const Text('• You can still claim other rewards'),
+            const SizedBox(height: 8),
+            const Text('Would you like to finish now or continue exploring?'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Keep Exploring'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Complete Now'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldComplete == true) {
+      _showWalkCompletionDialog();
+    }
+  }
+
+  /// Show progress dialog
+  void _showProgressDialog() {
+    if (_currentProgress == null) return;
+
+    final visited = _currentProgress!.visitedArt.length;
+    final total = _currentProgress!.totalArtCount;
+    final percentage = (_currentProgress!.progressPercentage * 100)
+        .toStringAsFixed(0);
+    final timeSpent = _currentProgress!.timeSpent;
+    final photosCount = _currentProgress!.visitedArt
+        .where((v) => v.photoTaken != null)
+        .length;
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Walk Progress'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$percentage% Complete',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildProgressRow(
+              Icons.location_on,
+              'Art Pieces',
+              '$visited / $total visited',
+            ),
+            _buildProgressRow(Icons.camera_alt, 'Photos', '$photosCount taken'),
+            _buildProgressRow(
+              Icons.timer,
+              'Duration',
+              _formatDuration(timeSpent),
+            ),
+            _buildProgressRow(
+              Icons.stars,
+              'Points',
+              '${_currentProgress!.totalPointsEarned} XP earned',
+            ),
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: _currentProgress!.progressPercentage,
+              backgroundColor: Colors.grey[300],
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+              minHeight: 8,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.grey[600]),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(label, style: TextStyle(color: Colors.grey[600])),
+          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  /// Abandon walk action
+  Future<void> _abandonWalkAction() async {
+    final shouldAbandon = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Abandon Walk?'),
+        content: const Text(
+          'Are you sure you want to abandon this walk? All progress will be lost and cannot be recovered.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Abandon'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldAbandon == true) {
+      try {
+        await _progressService.abandonWalk();
+
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error abandoning walk: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  /// Calculate completion bonus (mirrors service logic)
+  int _calculateCompletionBonus() {
+    if (_currentProgress == null) return 0;
+
+    int bonus = 100; // Base completion bonus
+
+    // Perfect completion bonus
+    if (_currentProgress!.progressPercentage >= 1.0) {
+      bonus += 50;
+    }
+
+    // Speed bonus (completed in under 2 hours)
+    if (_currentProgress!.timeSpent.inHours < 2) {
+      bonus += 25;
+    }
+
+    // Photo documentation bonus
+    final photosCount = _currentProgress!.visitedArt
+        .where((v) => v.photoTaken != null)
+        .length;
+    if (photosCount >= _currentProgress!.visitedArt.length * 0.5) {
+      bonus += 30; // Documented at least 50% with photos
+    }
+
+    return bonus;
+  }
+
+  /// Format duration for display
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+
+    if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    } else {
+      return '${minutes}m';
+    }
   }
 }

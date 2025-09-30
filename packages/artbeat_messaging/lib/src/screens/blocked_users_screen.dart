@@ -48,17 +48,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const EnhancedUniversalHeader(
-        title: 'Blocked Users',
-        showLogo: false,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _blockedUsers.isEmpty
-          ? _buildEmptyState()
-          : _buildBlockedUsersList(),
-    );
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _blockedUsers.isEmpty
+        ? _buildEmptyState()
+        : _buildBlockedUsersList();
   }
 
   Widget _buildEmptyState() {

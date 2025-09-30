@@ -63,30 +63,27 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Privacy Settings'), elevation: 0),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _privacySettings == null
-          ? const Center(child: Text('Failed to load privacy settings'))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildProfileVisibilityCard(),
-                  const SizedBox(height: 16),
-                  _buildContentPrivacyCard(),
-                  const SizedBox(height: 16),
-                  _buildDataPrivacyCard(),
-                  const SizedBox(height: 16),
-                  _buildLocationPrivacyCard(),
-                  const SizedBox(height: 24),
-                  _buildDataControlsSection(),
-                ],
-              ),
+    return _isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : _privacySettings == null
+        ? const Center(child: Text('Failed to load privacy settings'))
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProfileVisibilityCard(),
+                const SizedBox(height: 16),
+                _buildContentPrivacyCard(),
+                const SizedBox(height: 16),
+                _buildDataPrivacyCard(),
+                const SizedBox(height: 16),
+                _buildLocationPrivacyCard(),
+                const SizedBox(height: 24),
+                _buildDataControlsSection(),
+              ],
             ),
-    );
+          );
   }
 
   Widget _buildProfileVisibilityCard() {

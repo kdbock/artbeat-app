@@ -4,6 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/community_colors.dart';
 
 /// Screen for searching users in the community
+///
+/// **DEPRECATED**: This screen is being replaced by the new unified search flow.
+/// Use core.SearchResultsPage instead.
+@Deprecated('Use core.SearchResultsPage instead for unified search experience')
 class UserSearchScreen extends StatefulWidget {
   const UserSearchScreen({super.key});
 

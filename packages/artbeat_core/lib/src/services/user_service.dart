@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/user_model.dart';
 import '../models/user_type.dart';
+import '../models/artist_profile_model.dart';
 import 'package:artbeat_art_walk/src/models/achievement_model.dart';
 import '../storage/enhanced_storage_service.dart';
 import '../utils/logger.dart';
@@ -517,24 +518,302 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Get user favorites
+  // Get artists that the user is following
+  Future<List<ArtistProfileModel>> getFollowedArtists() async {
+    final userId = currentUserId;
+    if (userId == null) return [];
+
+    try {
+      _logDebug('Getting followed artists for user: $userId');
+
+      // Query artistFollows collection for this user's follows
+      final followsSnapshot = await firestore
+          .collection('artistFollows')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final List<ArtistProfileModel> followedArtists = [];
+
+      _logDebug('Found ${followsSnapshot.docs.length} artist follows');
+
+      // For each follow, get the artist profile data
+      for (final followDoc in followsSnapshot.docs) {
+        final followData = followDoc.data();
+        final artistProfileId = followData['artistProfileId'] as String?;
+
+        if (artistProfileId != null) {
+          try {
+            final artistDoc = await firestore
+                .collection('artistProfiles')
+                .doc(artistProfileId)
+                .get();
+
+            if (artistDoc.exists) {
+              final artistProfile = ArtistProfileModel.fromFirestore(artistDoc);
+              followedArtists.add(artistProfile);
+            }
+          } catch (e) {
+            _logError('Error fetching artist profile $artistProfileId', e);
+            // Continue with next follow even if one fails
+          }
+        }
+      }
+
+      _logDebug(
+        'Successfully processed ${followedArtists.length} followed artists',
+      );
+      return followedArtists;
+    } catch (e, s) {
+      _logError('Error getting followed artists', e, s);
+      return [];
+    }
+  }
+
+  // Get user favorites (artist follows)
   Future<List<Map<String, dynamic>>> getUserFavorites() async {
     final userId = currentUserId;
     if (userId == null) return [];
     try {
-      final snapshot = await _usersCollection
-          .doc(userId)
-          .collection('favorites')
-          .orderBy('timestamp', descending: true)
+      // Query artistFollows collection for this user's follows
+      final followsSnapshot = await firestore
+          .collection('artistFollows')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
           .get();
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return data;
-      }).toList();
+
+      final List<Map<String, dynamic>> favorites = [];
+
+      // For each follow, get the artist profile data
+      for (final followDoc in followsSnapshot.docs) {
+        final followData = followDoc.data();
+        final artistProfileId = followData['artistProfileId'] as String?;
+
+        if (artistProfileId != null) {
+          try {
+            final artistDoc = await firestore
+                .collection('artistProfiles')
+                .doc(artistProfileId)
+                .get();
+
+            if (artistDoc.exists) {
+              final artistData = artistDoc.data()!;
+
+              // Convert to favorite format
+              favorites.add({
+                'id': followDoc.id,
+                'title': artistData['displayName'] ?? 'Unknown Artist',
+                'description': artistData['bio'] ?? 'Artist profile',
+                'type': 'artist',
+                'imageUrl': artistData['profileImageUrl'] ?? '',
+                'artistProfileId': artistProfileId,
+                'followedAt': followData['createdAt'],
+                'metadata': {
+                  'artistProfileId': artistProfileId,
+                  'location': artistData['location'],
+                  'followersCount': artistData['followersCount'] ?? 0,
+                  'artworksCount': artistData['artworksCount'] ?? 0,
+                },
+              });
+            }
+          } catch (e) {
+            _logError('Error fetching artist profile $artistProfileId', e);
+            // Continue with next follow even if one fails
+          }
+        }
+      }
+
+      return favorites;
     } catch (e, s) {
       _logError('Error getting user favorites', e, s);
       return [];
+    }
+  }
+
+  // Get user's liked content (artwork, captures, art walks)
+  Future<List<Map<String, dynamic>>> getUserLikedContent() async {
+    final userId = currentUserId;
+    if (userId == null) return [];
+
+    try {
+      _logDebug('Getting liked content for user: $userId');
+
+      // Query engagements collection for user's likes
+      final likesSnapshot = await firestore
+          .collection('engagements')
+          .where('userId', isEqualTo: userId)
+          .where('type', isEqualTo: 'like')
+          .orderBy('createdAt', descending: true)
+          .limit(100)
+          .get();
+
+      final List<Map<String, dynamic>> likedContent = [];
+
+      _logDebug('Found ${likesSnapshot.docs.length} liked items');
+
+      // For each liked item, get the content details
+      for (final likeDoc in likesSnapshot.docs) {
+        final likeData = likeDoc.data();
+        final contentId = likeData['contentId'] as String?;
+        final contentType = likeData['contentType'] as String?;
+
+        if (contentId != null && contentType != null) {
+          try {
+            String collectionName;
+            switch (contentType.toLowerCase()) {
+              case 'artwork':
+                collectionName = 'artworks';
+                break;
+              case 'capture':
+                collectionName = 'captures';
+                break;
+              case 'art_walk':
+              case 'artwalk':
+              case 'walk':
+                collectionName = 'artWalks';
+                break;
+              case 'profile':
+                collectionName = 'users';
+                break;
+              case 'event':
+                collectionName = 'events';
+                break;
+              default:
+                _logDebug('Unknown content type: $contentType, skipping');
+                continue;
+            }
+
+            final contentDoc = await firestore
+                .collection(collectionName)
+                .doc(contentId)
+                .get();
+
+            if (contentDoc.exists) {
+              final contentData = contentDoc.data()!;
+
+              // Convert to liked content format
+              likedContent.add({
+                'id': likeDoc.id,
+                'contentId': contentId,
+                'contentType': contentType,
+                'title': _getContentTitle(contentData, contentType),
+                'description': _getContentDescription(contentData, contentType),
+                'imageUrl': _getContentImageUrl(contentData, contentType),
+                'likedAt': likeData['createdAt'],
+                'metadata': {
+                  'originalContentId': contentId,
+                  'contentType': contentType,
+                  'authorId': contentData['userId'] ?? contentData['createdBy'],
+                  'createdAt': contentData['createdAt'],
+                  'likesCount': contentData['likesCount'] ?? 0,
+                  'location': contentData['location'],
+                },
+              });
+            }
+          } catch (e) {
+            _logError(
+              'Error fetching content $contentId of type $contentType',
+              e,
+            );
+            // Continue with next item even if one fails
+          }
+        }
+      }
+
+      _logDebug(
+        'Successfully processed ${likedContent.length} liked content items',
+      );
+      return likedContent;
+    } catch (e, s) {
+      _logError('Error getting user liked content', e, s);
+      return [];
+    }
+  }
+
+  // Helper method to get content title based on type
+  String _getContentTitle(
+    Map<String, dynamic> contentData,
+    String contentType,
+  ) {
+    switch (contentType.toLowerCase()) {
+      case 'artwork':
+        return (contentData['title'] as String?) ??
+            (contentData['name'] as String?) ??
+            'Untitled Artwork';
+      case 'capture':
+        return (contentData['title'] as String?) ??
+            (contentData['description'] as String?) ??
+            'Art Capture';
+      case 'art_walk':
+      case 'artwalk':
+      case 'walk':
+        return (contentData['name'] as String?) ??
+            (contentData['title'] as String?) ??
+            'Art Walk';
+      case 'profile':
+        return (contentData['displayName'] as String?) ??
+            (contentData['fullName'] as String?) ??
+            'User Profile';
+      case 'event':
+        return (contentData['name'] as String?) ??
+            (contentData['title'] as String?) ??
+            'Event';
+      default:
+        return 'Liked Content';
+    }
+  }
+
+  // Helper method to get content description based on type
+  String _getContentDescription(
+    Map<String, dynamic> contentData,
+    String contentType,
+  ) {
+    switch (contentType.toLowerCase()) {
+      case 'artwork':
+        return (contentData['description'] as String?) ?? 'Artwork';
+      case 'capture':
+        return (contentData['description'] as String?) ?? 'Captured artwork';
+      case 'art_walk':
+      case 'artwalk':
+      case 'walk':
+        return (contentData['description'] as String?) ?? 'Art walk experience';
+      case 'profile':
+        return (contentData['bio'] as String?) ?? 'User profile';
+      case 'event':
+        return (contentData['description'] as String?) ?? 'Event';
+      default:
+        return 'Liked content';
+    }
+  }
+
+  // Helper method to get content image URL based on type
+  String _getContentImageUrl(
+    Map<String, dynamic> contentData,
+    String contentType,
+  ) {
+    switch (contentType.toLowerCase()) {
+      case 'artwork':
+        return (contentData['imageUrl'] as String?) ??
+            (contentData['primaryImageUrl'] as String?) ??
+            '';
+      case 'capture':
+        return (contentData['imageUrl'] as String?) ??
+            (contentData['captureImageUrl'] as String?) ??
+            '';
+      case 'art_walk':
+      case 'artwalk':
+      case 'walk':
+        return (contentData['coverImageUrl'] as String?) ??
+            (contentData['imageUrl'] as String?) ??
+            '';
+      case 'profile':
+        return (contentData['profileImageUrl'] as String?) ?? '';
+      case 'event':
+        return (contentData['imageUrl'] as String?) ??
+            (contentData['bannerImageUrl'] as String?) ??
+            '';
+      default:
+        return '';
     }
   }
 
@@ -559,16 +838,27 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  // Remove from favorites
+  // Remove from favorites (unfollow artist)
   Future<void> removeFromFavorites(String favoriteId) async {
     final userId = currentUserId;
     if (userId == null) return;
     try {
-      await _usersCollection
-          .doc(userId)
-          .collection('favorites')
-          .doc(favoriteId)
-          .delete();
+      // The favoriteId is the artistFollows document ID (userId_artistProfileId)
+      await firestore.collection('artistFollows').doc(favoriteId).delete();
+
+      // Extract artist profile ID from the document ID to update follower count
+      if (favoriteId.contains('_')) {
+        final parts = favoriteId.split('_');
+        if (parts.length == 2) {
+          final artistProfileId = parts[1];
+          // Decrement follower count
+          await firestore
+              .collection('artistProfiles')
+              .doc(artistProfileId)
+              .update({'followerCount': FieldValue.increment(-1)});
+        }
+      }
+
       notifyListeners();
     } catch (e, s) {
       _logError('Error removing from favorites', e, s);

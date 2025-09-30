@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'voice_recorder_widget.dart';
 import '../services/voice_recording_service.dart';
@@ -148,7 +149,7 @@ class AttachmentButton extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                await service.openDeviceSettings();
+                await openAppSettings();
               },
               child: const Text('Open Settings'),
             ),

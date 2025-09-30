@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../widgets/widgets.dart';
 import '../constants/routes.dart';
+
+/// Helper class for empty state configuration
+class _EmptyStateConfig {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String actionText;
+  final VoidCallback onAction;
+
+  _EmptyStateConfig({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.actionText,
+    required this.onAction,
+  });
+}
 
 /// Enhanced screen for managing user's art walks with progress tracking
 class EnhancedMyArtWalksScreen extends StatefulWidget {
@@ -14,10 +30,7 @@ class EnhancedMyArtWalksScreen extends StatefulWidget {
       _EnhancedMyArtWalksScreenState();
 }
 
-class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
-
+class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   final ArtWalkService _artWalkService = ArtWalkService();
   final ArtWalkProgressService _progressService = ArtWalkProgressService();
 
@@ -33,15 +46,8 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
     _userId = _artWalkService.getCurrentUserId();
     _loadAllData();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadAllData() async {
@@ -83,292 +89,287 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen>
       return _buildNotLoggedInView();
     }
 
-    return MainLayout(
-      currentIndex: 1, // Assuming this is the second tab in main navigation
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('My Art Walks'),
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          elevation: 0,
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: [
-              Tab(
-                icon: const Icon(Icons.play_circle_outline),
-                text: 'In Progress',
-                child: _buildTabWithBadge(
-                  icon: Icons.play_circle_outline,
-                  text: 'In Progress',
-                  count: _inProgressWalks.length,
-                ),
-              ),
-              Tab(
-                icon: const Icon(Icons.check_circle_outline),
-                text: 'Completed',
-                child: _buildTabWithBadge(
-                  icon: Icons.check_circle_outline,
-                  text: 'Completed',
-                  count: _completedWalks.length,
-                ),
-              ),
-              Tab(
-                icon: const Icon(Icons.create_outlined),
-                text: 'Created',
-                child: _buildTabWithBadge(
-                  icon: Icons.create_outlined,
-                  text: 'Created',
-                  count: _createdWalks.length,
-                ),
-              ),
-              Tab(
-                icon: const Icon(Icons.bookmark_outline),
-                text: 'Saved',
-                child: _buildTabWithBadge(
-                  icon: Icons.bookmark_outline,
-                  text: 'Saved',
-                  count: _savedWalks.length,
-                ),
-              ),
-            ],
-            labelColor: Theme.of(context).colorScheme.primary,
-            unselectedLabelColor: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.6),
-            indicatorColor: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildInProgressTab(),
-                  _buildCompletedTab(),
-                  _buildCreatedTab(),
-                  _buildSavedTab(),
-                ],
-              ),
-        floatingActionButton:
-            _tabController.index ==
-                2 // Created tab
-            ? FloatingActionButton.extended(
-                onPressed: () =>
-                    Navigator.pushNamed(context, '/create-art-walk'),
-                icon: const Icon(Icons.add),
-                label: const Text('Create Walk'),
-              )
-            : null,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Art Walks'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _buildSingleScrollView(),
     );
   }
 
-  Widget _buildTabWithBadge({
-    required IconData icon,
-    required String text,
-    required int count,
-  }) {
+  Widget _buildSingleScrollView() {
     return Stack(
       children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon),
-            const SizedBox(height: 4),
-            Text(text, style: const TextStyle(fontSize: 12)),
-          ],
-        ),
-        if (count > 0)
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-              child: Text(
-                count.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+        RefreshIndicator(
+          onRefresh: _loadAllData,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // In Progress Section
+                _buildSection(
+                  title: 'In Progress',
+                  icon: Icons.play_circle_outline,
+                  count: _inProgressWalks.length,
+                  isEmpty: _inProgressWalks.isEmpty,
+                  emptyStateConfig: _EmptyStateConfig(
+                    icon: Icons.explore,
+                    title: 'No walks in progress',
+                    subtitle:
+                        'Start exploring art walks to see your progress here',
+                    actionText: 'Explore Walks',
+                    onAction: () =>
+                        Navigator.pushNamed(context, ArtWalkRoutes.dashboard),
+                  ),
+                  builder: () => Column(
+                    children: _inProgressWalks
+                        .map(
+                          (progress) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: InProgressWalkCard(
+                              progress: progress,
+                              onResume: () => _resumeWalk(progress),
+                              onPause: () => _pauseWalk(progress),
+                              onAbandon: () => _abandonWalk(progress),
+                              onTap: () => _viewWalkDetails(progress.artWalkId),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
+                const SizedBox(height: 24),
+
+                // Completed Section
+                _buildSection(
+                  title: 'Completed',
+                  icon: Icons.check_circle_outline,
+                  count: _completedWalks.length,
+                  isEmpty: _completedWalks.isEmpty,
+                  emptyStateConfig: _EmptyStateConfig(
+                    icon: Icons.check_circle,
+                    title: 'No completed walks yet',
+                    subtitle: 'Complete your first art walk to see it here',
+                    actionText: 'Start Walking',
+                    onAction: () =>
+                        Navigator.pushNamed(context, ArtWalkRoutes.dashboard),
+                  ),
+                  builder: () => Column(
+                    children: _completedWalks
+                        .map(
+                          (progress) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: CompletedWalkCard(
+                              progress: progress,
+                              onTap: () => _viewWalkDetails(progress.artWalkId),
+                              onShare: () => _shareWalkCompletion(progress),
+                              onReview: () => _reviewWalk(progress),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Created Section
+                _buildSection(
+                  title: 'Created',
+                  icon: Icons.create_outlined,
+                  count: _createdWalks.length,
+                  isEmpty: _createdWalks.isEmpty,
+                  emptyStateConfig: _EmptyStateConfig(
+                    icon: Icons.create,
+                    title: 'No walks created yet',
+                    subtitle:
+                        'Share your favorite art spots by creating a walk',
+                    actionText: 'Create Walk',
+                    onAction: () => Navigator.pushNamed(
+                      context,
+                      ArtWalkRoutes.enhancedCreate,
+                    ),
+                  ),
+                  builder: () => Column(
+                    children: _createdWalks
+                        .map(
+                          (walk) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: CreatedWalkCard(
+                              walk: walk,
+                              onTap: () => _viewWalkDetails(walk.id),
+                              onEdit: () => _editWalk(walk),
+                              onDelete: () => _deleteWalk(walk),
+                              onShare: () => _shareWalk(walk),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Saved Section
+                _buildSection(
+                  title: 'Saved',
+                  icon: Icons.bookmark_outline,
+                  count: _savedWalks.length,
+                  isEmpty: _savedWalks.isEmpty,
+                  emptyStateConfig: _EmptyStateConfig(
+                    icon: Icons.bookmark,
+                    title: 'No saved walks yet',
+                    subtitle:
+                        'Save interesting walks to find them easily later',
+                    actionText: 'Browse Walks',
+                    onAction: () =>
+                        Navigator.pushNamed(context, ArtWalkRoutes.dashboard),
+                  ),
+                  builder: () => Column(
+                    children: _savedWalks
+                        .map(
+                          (walk) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: SavedWalkCard(
+                              walk: walk,
+                              onTap: () => _viewWalkDetails(walk.id),
+                              onUnsave: () => _unsaveWalk(walk),
+                              onStart: () => _startWalk(walk),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ),
+                const SizedBox(height: 80), // Space for FAB
+              ],
             ),
           ),
+        ),
+        // Floating Action Button
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: FloatingActionButton.extended(
+            onPressed: () =>
+                Navigator.pushNamed(context, ArtWalkRoutes.enhancedCreate),
+            icon: const Icon(Icons.add),
+            label: const Text('Create Walk'),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildNotLoggedInView() {
-    return MainLayout(
-      currentIndex: 1,
-      child: Scaffold(
-        appBar: AppBar(title: const Text('My Art Walks')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.account_circle,
-                size: 80,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Please log in to view your art walks',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/login'),
-                child: const Text('Log In'),
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required int count,
+    required bool isEmpty,
+    required _EmptyStateConfig emptyStateConfig,
+    required Widget Function() builder,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section Header
+        Row(
+          children: [
+            Icon(icon, size: 24, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            if (count > 0) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  count.toString(),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
-          ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Content or Empty State
+        isEmpty ? _buildCompactEmptyState(emptyStateConfig) : builder(),
+      ],
+    );
+  }
+
+  Widget _buildCompactEmptyState(_EmptyStateConfig config) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
-    );
-  }
-
-  Widget _buildInProgressTab() {
-    if (_inProgressWalks.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.explore,
-        title: 'No walks in progress',
-        subtitle: 'Start exploring art walks to see your progress here',
-        actionText: 'Explore Walks',
-        onAction: () => Navigator.pushNamed(context, '/art-walks'),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadAllData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _inProgressWalks.length,
-        itemBuilder: (context, index) {
-          final progress = _inProgressWalks[index];
-          return InProgressWalkCard(
-            progress: progress,
-            onResume: () => _resumeWalk(progress),
-            onPause: () => _pauseWalk(progress),
-            onAbandon: () => _abandonWalk(progress),
-            onTap: () => _viewWalkDetails(progress.artWalkId),
-          );
-        },
+      child: Row(
+        children: [
+          Icon(
+            config.icon,
+            size: 32,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  config.title,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Text(
+                  config.subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: config.onAction,
+            child: Text(config.actionText),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildCompletedTab() {
-    if (_completedWalks.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.check_circle,
-        title: 'No completed walks yet',
-        subtitle: 'Complete your first art walk to see it here',
-        actionText: 'Start Walking',
-        onAction: () => Navigator.pushNamed(context, '/art-walks'),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadAllData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _completedWalks.length,
-        itemBuilder: (context, index) {
-          final progress = _completedWalks[index];
-          return CompletedWalkCard(
-            progress: progress,
-            onTap: () => _viewWalkDetails(progress.artWalkId),
-            onShare: () => _shareWalkCompletion(progress),
-            onReview: () => _reviewWalk(progress),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildCreatedTab() {
-    if (_createdWalks.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.create,
-        title: 'No walks created yet',
-        subtitle: 'Share your favorite art spots by creating a walk',
-        actionText: 'Create Walk',
-        onAction: () => Navigator.pushNamed(context, '/create-art-walk'),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadAllData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _createdWalks.length,
-        itemBuilder: (context, index) {
-          final walk = _createdWalks[index];
-          return CreatedWalkCard(
-            walk: walk,
-            onTap: () => _viewWalkDetails(walk.id),
-            onEdit: () => _editWalk(walk),
-            onDelete: () => _deleteWalk(walk),
-            onShare: () => _shareWalk(walk),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSavedTab() {
-    if (_savedWalks.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.bookmark,
-        title: 'No saved walks yet',
-        subtitle: 'Save interesting walks to find them easily later',
-        actionText: 'Browse Walks',
-        onAction: () => Navigator.pushNamed(context, '/art-walks'),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadAllData,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _savedWalks.length,
-        itemBuilder: (context, index) {
-          final walk = _savedWalks[index];
-          return SavedWalkCard(
-            walk: walk,
-            onTap: () => _viewWalkDetails(walk.id),
-            onUnsave: () => _unsaveWalk(walk),
-            onStart: () => _startWalk(walk),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String actionText,
-    required VoidCallback onAction,
-  }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+  Widget _buildNotLoggedInView() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('My Art Walks')),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              icon,
+              Icons.account_circle,
               size: 80,
               color: Theme.of(
                 context,
@@ -376,22 +377,14 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-              textAlign: TextAlign.center,
+              'Please log in to view your art walks',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: onAction, child: Text(actionText)),
+            ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/login'),
+              child: const Text('Log In'),
+            ),
           ],
         ),
       ),
@@ -533,7 +526,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen>
   void _startWalk(ArtWalkModel walk) {
     Navigator.pushNamed(
       context,
-      ArtWalkRoutes.enhancedExperience,
+      ArtWalkRoutes.experience,
       arguments: {'artWalkId': walk.id, 'artWalk': walk},
     );
   }

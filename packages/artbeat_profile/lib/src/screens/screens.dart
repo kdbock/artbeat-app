@@ -5,6 +5,7 @@ export 'favorites_screen.dart';
 export 'followers_list_screen.dart';
 export 'favorite_detail_screen.dart';
 export 'following_list_screen.dart';
+export 'followed_artists_screen.dart';
 export 'edit_profile_screen.dart';
 export 'profile_view_screen.dart';
 export 'achievements_screen.dart';

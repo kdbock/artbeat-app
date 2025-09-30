@@ -77,6 +77,12 @@ export 'src/services/internationalization_service.dart'
         DateFormat,
         NumberFormat;
 
+// Export Search Components
+export 'src/controllers/search_controller.dart'
+    show SearchController, SearchStatus;
+export 'src/repositories/known_entity_repository.dart'
+    show KnownEntityRepository;
+
 // Export Enhanced Gift Screens
 export 'src/screens/enhanced_gift_purchase_screen.dart'
     show EnhancedGiftPurchaseScreen;
@@ -88,6 +94,8 @@ export 'src/screens/help_support_screen.dart' show HelpSupportScreen;
 // Export Core Models
 export 'src/models/index.dart'; // This will export all models through the barrel file
 export 'src/models/types/index.dart'; // Export all type definitions
+export 'src/models/known_entity_model.dart'
+    show KnownEntity, KnownEntityType, KnownEntityTypeExtension;
 export 'src/models/event_model.dart' show EventModel;
 export 'src/models/capture_model.dart'
     show CaptureModel, CaptureStatus, CaptureStatusExtension;
@@ -164,7 +172,9 @@ export 'src/utils/distance_utils.dart' show DistanceUtils;
 // Export Screens
 export 'src/screens/splash_screen.dart' show SplashScreen;
 export 'src/screens/artbeat_dashboard_screen.dart' show ArtbeatDashboardScreen;
-export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
+// Deprecated: Use SearchResultsPage instead
+// export 'src/screens/search_results_screen.dart' show SearchResultsScreen;
+export 'src/screens/search_results_page.dart' show SearchResultsPage;
 export 'src/screens/auth_required_screen.dart' show AuthRequiredScreen;
 export 'src/screens/system_settings_screen.dart' show SystemSettingsScreen;
 export 'src/screens/gift_purchase_screen.dart' show GiftPurchaseScreen;

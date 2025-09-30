@@ -5,6 +5,10 @@ import '../models/message_model.dart';
 import 'chat_screen.dart';
 
 /// Enhanced global search screen with advanced filtering and media search
+///
+/// **DEPRECATED**: This screen is being replaced by the new unified search flow.
+/// Use core.SearchResultsPage instead.
+@Deprecated('Use core.SearchResultsPage instead for unified search experience')
 class GlobalSearchScreen extends StatefulWidget {
   const GlobalSearchScreen({super.key});
 

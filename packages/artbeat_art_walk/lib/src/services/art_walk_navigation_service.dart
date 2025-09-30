@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
@@ -49,15 +50,36 @@ class ArtWalkNavigationService {
       currentSegment?.steps[_currentStepIndex];
 
   /// Progress through the current segment (0.0 to 1.0)
-  double get segmentProgress => currentSegment?.steps.isEmpty == true
-      ? 0.0
-      : _currentStepIndex / currentSegment!.steps.length;
+  double get segmentProgress {
+    if (currentSegment?.steps.isEmpty == true || _currentStepIndex < 0) {
+      return 0.0;
+    }
+    if (currentSegment == null) {
+      return 0.0;
+    }
+    final progress = (_currentStepIndex + 1) / currentSegment!.steps.length;
+    debugPrint(
+      '🧭 Navigation Service: Segment progress: $progress (step ${_currentStepIndex + 1}/${currentSegment!.steps.length})',
+    );
+    return progress.clamp(0.0, 1.0);
+  }
 
   /// Progress through the entire route (0.0 to 1.0)
-  double get routeProgress => _currentRoute?.segments.isEmpty == true
-      ? 0.0
-      : (_currentSegmentIndex + segmentProgress) /
-            _currentRoute!.segments.length;
+  double get routeProgress {
+    if (_currentRoute?.segments.isEmpty == true || _currentSegmentIndex < 0) {
+      return 0.0;
+    }
+    if (_currentRoute == null) {
+      return 0.0;
+    }
+    final progress =
+        (_currentSegmentIndex + segmentProgress) /
+        _currentRoute!.segments.length;
+    debugPrint(
+      '🧭 Navigation Service: Route progress: $progress (segment ${_currentSegmentIndex + 1}/${_currentRoute!.segments.length})',
+    );
+    return progress.clamp(0.0, 1.0);
+  }
 
   /// Generate a complete route for an art walk with optimized waypoints
   Future<ArtWalkRouteModel> generateRoute(
@@ -75,13 +97,16 @@ class ArtWalkNavigationService {
 
     // Create origin and destination
     final origin = '${startPosition.latitude},${startPosition.longitude}';
-    final destination = origin; // Return to start for circular route
+    // Destination is the last art piece (not returning to start)
+    final lastArtPiece = artPieces.last;
+    final destination =
+        '${lastArtPiece.location.latitude},${lastArtPiece.location.longitude}';
 
     // Create waypoints for intermediate art pieces (all except the last one)
     final waypoints = <String>[];
 
-    // Add all art pieces as waypoints for a complete route
-    for (int i = 0; i < artPieces.length; i++) {
+    // Add all art pieces except the last as waypoints
+    for (int i = 0; i < artPieces.length - 1; i++) {
       final artPiece = artPieces[i];
       waypoints.add(
         '${artPiece.location.latitude},${artPiece.location.longitude}',
@@ -144,19 +169,17 @@ class ArtWalkNavigationService {
         'simple_route_${artWalkId}_${DateTime.now().millisecondsSinceEpoch}';
     final segments = <RouteSegment>[];
 
-    // Create segments between consecutive points
+    // Create segments only to art pieces (not back to start)
+    // This ensures progress tracking matches the number of art pieces
     final allPoints = [
       LatLng(startPosition.latitude, startPosition.longitude),
       ...artPieces.map(
         (art) => LatLng(art.location.latitude, art.location.longitude),
       ),
-      LatLng(
-        startPosition.latitude,
-        startPosition.longitude,
-      ), // Return to start
     ];
 
-    for (int i = 0; i < allPoints.length - 1; i++) {
+    // Create segments only to art pieces (excluding return to start)
+    for (int i = 0; i < artPieces.length; i++) {
       final from = allPoints[i];
       final to = allPoints[i + 1];
 
@@ -187,10 +210,13 @@ class ArtWalkNavigationService {
         polylinePoints: [from, to], // Simple straight line
       );
 
-      // Create segment
+      // Create segment with correct art piece mapping
+      // Segment i goes from previous point to art piece i
       final segment = RouteSegment(
-        fromArtPieceId: i > 0 ? artPieces[i - 1].id : null,
-        toArtPieceId: i < artPieces.length ? artPieces[i].id : 'start',
+        fromArtPieceId: i > 0
+            ? artPieces[i - 1].id
+            : null, // null for start location
+        toArtPieceId: artPieces[i].id, // Current art piece
         steps: [step],
         distanceMeters: distance.round(),
         durationSeconds: step.durationSeconds,
@@ -285,27 +311,54 @@ class ArtWalkNavigationService {
 
   /// Move to the next step in navigation
   void nextStep() {
-    if (_currentRoute == null || currentSegment == null) return;
+    debugPrint('🧭 Navigation Service: nextStep() called');
+    if (_currentRoute == null) {
+      debugPrint('🧭 Navigation Service: No route available');
+      return;
+    }
+
+    if (currentSegment == null) {
+      debugPrint('🧭 Navigation Service: No current segment available');
+      return;
+    }
+
+    debugPrint(
+      '🧭 Navigation Service: Current step index: $_currentStepIndex, Total steps: ${currentSegment!.steps.length}',
+    );
 
     if (_currentStepIndex < currentSegment!.steps.length - 1) {
       _currentStepIndex++;
+      debugPrint('🧭 Navigation Service: Advanced to step $_currentStepIndex');
       _sendNavigationUpdate(NavigationUpdateType.stepChanged);
     } else {
       // Move to next segment
+      debugPrint('🧭 Navigation Service: Moving to next segment');
       nextSegment();
     }
   }
 
   /// Move to the next segment (art piece)
   void nextSegment() {
-    if (_currentRoute == null) return;
+    debugPrint('🧭 Navigation Service: nextSegment() called');
+    if (_currentRoute == null) {
+      debugPrint('🧭 Navigation Service: No route available for next segment');
+      return;
+    }
+
+    debugPrint(
+      '🧭 Navigation Service: Current segment index: $_currentSegmentIndex, Total segments: ${_currentRoute!.segments.length}',
+    );
 
     if (_currentSegmentIndex < _currentRoute!.segments.length - 1) {
       _currentSegmentIndex++;
       _currentStepIndex = 0;
+      debugPrint(
+        '🧭 Navigation Service: Advanced to segment $_currentSegmentIndex',
+      );
       _sendNavigationUpdate(NavigationUpdateType.segmentChanged);
     } else {
       // Route completed
+      debugPrint('🧭 Navigation Service: Route completed');
       _sendNavigationUpdate(NavigationUpdateType.routeCompleted);
     }
   }
@@ -413,6 +466,10 @@ class ArtWalkNavigationService {
 
   /// Send navigation update to listeners
   void _sendNavigationUpdate(NavigationUpdateType type) {
+    debugPrint(
+      '🧭 Navigation Service: _sendNavigationUpdate called with type: $type',
+    );
+
     final update = NavigationUpdate(
       type: type,
       currentSegment: currentSegment,
@@ -424,6 +481,13 @@ class ArtWalkNavigationService {
       currentPosition: _lastKnownPosition,
     );
 
+    debugPrint(
+      '🧭 Navigation Service: Update created - Step: ${update.currentStep?.instruction}',
+    );
+    debugPrint(
+      '🧭 Navigation Service: Update created - Progress: ${(update.routeProgress * 100).toInt()}%',
+    );
+
     core.AppLogger.info('🧭 Sending navigation update: $type');
     core.AppLogger.info(
       '🧭 Current step instruction: ${update.currentStep?.instruction}',
@@ -433,8 +497,11 @@ class ArtWalkNavigationService {
     );
 
     if (!_navigationUpdateController.isClosed) {
+      debugPrint('🧭 Navigation Service: Adding update to stream');
       _navigationUpdateController.add(update);
+      debugPrint('🧭 Navigation Service: Update added to stream successfully');
     } else {
+      debugPrint('🧭 Navigation Service: ERROR - Stream controller is closed!');
       core.AppLogger.warning('🧭 Navigation update controller is closed!');
     }
   }
@@ -491,6 +558,8 @@ class ArtWalkNavigationService {
 
   /// Dispose of resources
   void dispose() {
+    debugPrint('🧭 Navigation Service: dispose() called');
+
     _locationUpdateTimer?.cancel();
     _locationUpdateTimer = null;
 
@@ -501,11 +570,15 @@ class ArtWalkNavigationService {
     _lastKnownPosition = null;
 
     if (!_navigationUpdateController.isClosed) {
+      debugPrint('🧭 Navigation Service: Closing navigation update controller');
       _navigationUpdateController.close();
     }
     if (!_locationUpdateController.isClosed) {
+      debugPrint('🧭 Navigation Service: Closing location update controller');
       _locationUpdateController.close();
     }
+
+    debugPrint('🧭 Navigation Service: dispose() completed');
   }
 }
 
