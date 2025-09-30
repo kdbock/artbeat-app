@@ -41,12 +41,12 @@ jobs:
       - name: Verify Dart SDK version
         run: dart --version
 
-      - name: Check formatting
-        run: dart format --set-exit-if-changed .
-        working-directory: packages/${{ matrix.module }}
-
       - name: Install dependencies
         run: flutter pub get
+        working-directory: packages/${{ matrix.module }}
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
         working-directory: packages/${{ matrix.module }}
         continue-on-error: true
 
