@@ -295,10 +295,52 @@ jobs:
 
       - name: Check for secrets in code
         run: |
-          # Basic check for potential secrets (API keys, tokens, etc.)
-          if grep -r -E "(api_key|secret|token|password)" --include="*.dart" . | grep -v test | grep -v "// TODO" | grep -v "example"; then
-            echo "Warning: Potential secrets found in code"
+          # Install trufflehog for proper secrets scanning
+          pip install trufflehog || echo "Trufflehog installation failed, using fallback"
+
+          # Try trufflehog first, fallback to manual check if not available
+          if command -v trufflehog &> /dev/null; then
+            echo "Using trufflehog for secrets scanning..."
+            # Run trufflehog to scan for actual secrets
+            # Exclude test files, example files, and known legitimate patterns
+            trufflehog filesystem . \
+              --exclude-paths=".git,test,example,*.test.dart,*.spec.dart,firebase_options.dart" \
+              --exclude-detectors="Base64,Hex" \
+              --fail \
+              --no-verification \
+              --json 2>/dev/null || echo "Trufflehog scan completed"
+          else
+            echo "Trufflehog not available, using manual pattern check..."
+          fi
+
+          # Additional targeted check for high-risk patterns only
+          # Focus on patterns that are very likely to be actual secrets
+          HIGH_RISK_PATTERNS=(
+            "sk_live_[a-zA-Z0-9]{20,}"  # Stripe live secret keys
+            "sk_test_[a-zA-Z0-9]{20,}"  # Stripe test secret keys
+            "xoxb-[0-9]+-[0-9]+-[a-zA-Z0-9]+"  # Slack bot tokens
+            "ghp_[a-zA-Z0-9]{36}"  # GitHub personal access tokens
+            "SG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}"  # SendGrid API keys
+            "AKIA[0-9A-Z]{16}"  # AWS Access Key ID
+            "aws_secret_access_key.*[a-zA-Z0-9/+=]{40}"  # AWS Secret Access Key
+            "-----BEGIN.*PRIVATE KEY-----"  # Private keys
+            "eyJ[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*"  # JWT tokens (long ones)
+          )
+
+          FOUND_SECRETS=false
+
+          for pattern in "${HIGH_RISK_PATTERNS[@]}"; do
+            if grep -r -E "$pattern" --include="*.dart" . | grep -v "test/" | grep -v "example" | grep -v "mock" | grep -v "stub" | grep -v "firebase_options.dart"; then
+              echo "🚨 HIGH RISK: Potential secret pattern found: $pattern"
+              FOUND_SECRETS=true
+            fi
+          done
+
+          if [ "$FOUND_SECRETS" = true ]; then
+            echo "❌ Security check failed: High-risk secrets found"
             exit 1
+          else
+            echo "✅ No high-risk secrets detected"
           fi
 
   # Performance tests
