@@ -111,10 +111,13 @@ class PlaceholderImages {
     required double width,
     required double height,
     int count = 4,
-  }) => List.generate(count, (index) => generatePlaceholder(
-        width: width,
-        height: height,
-        index: index,
-        text: 'Image ${index + 1}',
-      ));
+  }) => List.generate(
+    count,
+    (index) => generatePlaceholder(
+      width: width,
+      height: height,
+      index: index,
+      text: 'Image ${index + 1}',
+    ),
+  );
 }

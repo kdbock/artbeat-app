@@ -7,9 +7,7 @@ class EventsLogger {
   static final Logger _logger = Logger(
     filter: kDebugMode ? DevelopmentFilter() : ProductionFilter(),
     printer: kDebugMode
-        ? PrettyPrinter(
-            dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
-          )
+        ? PrettyPrinter(dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart)
         : SimplePrinter(),
     output: ConsoleOutput(),
   );

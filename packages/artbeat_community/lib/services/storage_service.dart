@@ -30,7 +30,9 @@ class StorageService {
       // Monitor upload progress
       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
         final progress = snapshot.bytesTransferred / snapshot.totalBytes;
-        AppLogger.info('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
+        AppLogger.info(
+          'Upload progress: ${(progress * 100).toStringAsFixed(2)}%',
+        );
       });
 
       final snapshot = await uploadTask;

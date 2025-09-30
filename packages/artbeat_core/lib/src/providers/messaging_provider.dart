@@ -78,14 +78,18 @@ class MessagingProvider extends ChangeNotifier {
           notifyListeners();
         },
         onError: (Object error) {
-          AppLogger.error('MessagingProvider: Error in unread count stream: $error');
+          AppLogger.error(
+            'MessagingProvider: Error in unread count stream: $error',
+          );
           _hasError = true;
           _isInitialized = true;
           notifyListeners();
         },
       );
     } catch (e) {
-      AppLogger.error('MessagingProvider: Error setting up unread count stream: $e');
+      AppLogger.error(
+        'MessagingProvider: Error setting up unread count stream: $e',
+      );
       _hasError = true;
       _isInitialized = true;
       notifyListeners();
@@ -101,7 +105,9 @@ class MessagingProvider extends ChangeNotifier {
       _hasUnreadMessages = count > 0;
       _hasError = false;
       notifyListeners();
-      AppLogger.info('MessagingProvider: Manual refresh completed, count = $count');
+      AppLogger.info(
+        'MessagingProvider: Manual refresh completed, count = $count',
+      );
     } catch (e) {
       AppLogger.error('MessagingProvider: Error during manual refresh: $e');
       _hasError = true;

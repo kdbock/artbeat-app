@@ -760,12 +760,13 @@ class _EnhancedArtWalkCreateScreenState
                         _buildArtPiecesSection(),
                         const SizedBox(height: 32),
                         _buildSubmitButton(),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-        )],
+          ],
         ),
         if (_isUploading) // Add loading overlay
           Container(

@@ -55,7 +55,9 @@ class UserSyncHelper {
         return true;
       }
 
-      AppLogger.warning('⚠️ UserSyncHelper: User document missing, creating...');
+      AppLogger.warning(
+        '⚠️ UserSyncHelper: User document missing, creating...',
+      );
 
       // Create user document
       try {
@@ -64,12 +66,16 @@ class UserSyncHelper {
           email: authUser.email ?? '',
           displayName: authUser.displayName ?? 'ARTbeat User',
         );
-        AppLogger.error('✅ UserSyncHelper: createNewUser completed without error');
+        AppLogger.error(
+          '✅ UserSyncHelper: createNewUser completed without error',
+        );
       } catch (createError) {
         debugPrint(
           '❌ UserSyncHelper: createNewUser failed with error: $createError',
         );
-        AppLogger.error('❌ UserSyncHelper: Error type: ${createError.runtimeType}');
+        AppLogger.error(
+          '❌ UserSyncHelper: Error type: ${createError.runtimeType}',
+        );
         rethrow;
       }
 

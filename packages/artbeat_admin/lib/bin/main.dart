@@ -29,7 +29,8 @@ void main() async {
         options: mockFirebaseOptions,
       );
     } else {
-      AppLogger.firebase('Firebase already initialized, using existing app instance');
+      AppLogger.firebase(
+          'Firebase already initialized, using existing app instance');
     }
     AppLogger.firebase('Firebase initialized successfully');
 

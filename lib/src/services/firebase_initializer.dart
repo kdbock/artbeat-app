@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 class FirebaseInitializer {
-
   factory FirebaseInitializer() => _instance;
 
   FirebaseInitializer._internal();
@@ -12,7 +11,9 @@ class FirebaseInitializer {
 
   Future<void> ensureInitialized() async {
     if (_initialized) {
-      AppLogger.firebase('🔥 Firebase already initialized, skipping initialization');
+      AppLogger.firebase(
+        '🔥 Firebase already initialized, skipping initialization',
+      );
       return;
     }
 

@@ -67,7 +67,9 @@ class AdCleanupService {
 
       if (deleteCount > 0) {
         await batch.commit();
-        AppLogger.info('🗑️ Deleted $deleteCount test ads from $collectionName');
+        AppLogger.info(
+          '🗑️ Deleted $deleteCount test ads from $collectionName',
+        );
       } else {
         AppLogger.info('📭 No test ads found to delete in $collectionName');
       }

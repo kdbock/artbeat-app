@@ -723,7 +723,11 @@ class _AdEducationDashboardState extends State<AdEducationDashboard>
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, color: ArtbeatColors.primaryGreen, size: 16),
+          const Icon(
+            Icons.check_circle,
+            color: ArtbeatColors.primaryGreen,
+            size: 16,
+          ),
           const SizedBox(width: 8),
           Expanded(child: Text(tip, style: const TextStyle(fontSize: 14))),
         ],

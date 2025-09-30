@@ -173,7 +173,9 @@ class GoogleMapsService {
           if (_initRetryCount == 2 &&
               defaultTargetPlatform == TargetPlatform.android &&
               !_isEmulator) {
-            AppLogger.warning('⚠️ Falling back to surface renderer for stability');
+            AppLogger.warning(
+              '⚠️ Falling back to surface renderer for stability',
+            );
             try {
               final fallbackImplementation = GoogleMapsFlutterAndroid();
               await fallbackImplementation.initializeWithRenderer(

@@ -28,7 +28,9 @@ void main() async {
         ),
       );
     } else {
-      AppLogger.firebase('Firebase already initialized, using existing app instance');
+      AppLogger.firebase(
+        'Firebase already initialized, using existing app instance',
+      );
     }
     AppLogger.firebase('Firebase initialized successfully');
   } catch (e) {

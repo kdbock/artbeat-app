@@ -389,7 +389,9 @@ class _TrendingContentScreenState extends State<TrendingContentScreen> {
                         // legacy applause removed - engagement handled by UniversalEngagementBar
                         onComment: (postId) {
                           // Navigate to comments screen
-                          AppLogger.info('Navigate to comments for post: $postId');
+                          AppLogger.info(
+                            'Navigate to comments for post: $postId',
+                          );
                         },
                         // legacy share removed - engagement handled by UniversalEngagementBar
                         onToggleExpand: () {

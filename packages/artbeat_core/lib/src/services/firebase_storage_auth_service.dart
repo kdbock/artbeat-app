@@ -85,7 +85,9 @@ class FirebaseStorageAuthService {
       // Check authentication
       if (!isAuthenticated) {
         if (kDebugMode) {
-          AppLogger.warning('⚠️ User not authenticated for Firebase Storage access');
+          AppLogger.warning(
+            '⚠️ User not authenticated for Firebase Storage access',
+          );
         }
         return false;
       }

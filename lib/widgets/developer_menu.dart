@@ -6,185 +6,183 @@ class DeveloperMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            // Header section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Developer Menu',
-                    style: TextStyle(color: Colors.white, fontSize: 24),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Screen Navigation & Tools',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
-                  ),
-                ],
-              ),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: ListView(
+        children: [
+          // Header section
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 16),
-            _buildDatabaseSection(context),
-            const SizedBox(height: 8),
-            _buildDebugSection(context),
-            const SizedBox(height: 8),
-            _buildFeedbackSection(context),
-            const SizedBox(height: 8),
-            _buildBackupSection(context),
-          ],
-        ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Developer Menu',
+                  style: TextStyle(color: Colors.white, fontSize: 24),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Screen Navigation & Tools',
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildDatabaseSection(context),
+          const SizedBox(height: 8),
+          _buildDebugSection(context),
+          const SizedBox(height: 8),
+          _buildFeedbackSection(context),
+          const SizedBox(height: 8),
+          _buildBackupSection(context),
+        ],
       ),
-    );
+    ),
+  );
 
   Widget _buildDatabaseSection(BuildContext context) => ExpansionTile(
-      title: const Text('Database Management'),
-      children: [
-        ListTile(
-          title: const Text('View Records'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Database viewer coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('User Management'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('User management coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Analytics'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Analytics dashboard coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('System Settings'),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/admin/settings');
-          },
-        ),
-        ListTile(
-          title: const Text('View Logs'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Log viewer coming soon')),
-            );
-          },
-        ),
-      ],
-    );
+    title: const Text('Database Management'),
+    children: [
+      ListTile(
+        title: const Text('View Records'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Database viewer coming soon')),
+          );
+        },
+      ),
+      ListTile(
+        title: const Text('User Management'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User management coming soon')),
+          );
+        },
+      ),
+      ListTile(
+        title: const Text('Analytics'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Analytics dashboard coming soon')),
+          );
+        },
+      ),
+      ListTile(
+        title: const Text('System Settings'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.pushNamed(context, '/admin/settings');
+        },
+      ),
+      ListTile(
+        title: const Text('View Logs'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Log viewer coming soon')),
+          );
+        },
+      ),
+    ],
+  );
 
   Widget _buildFeedbackSection(BuildContext context) => ExpansionTile(
-      title: const Text('Feedback System'),
-      children: [
-        ListTile(
-          leading: const Icon(Icons.feedback),
-          title: const Text('Submit Feedback'),
-          subtitle: const Text('Test the feedback form'),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (context) => const FeedbackForm(),
-              ),
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.admin_panel_settings),
-          title: const Text('Admin Panel'),
-          subtitle: const Text('View and manage feedback'),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (context) => const DeveloperFeedbackAdminScreen(),
-              ),
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.info),
-          title: const Text('System Info'),
-          subtitle: const Text('Learn about the feedback system'),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (context) => const FeedbackSystemInfoScreen(),
-              ),
-            );
-          },
-        ),
-      ],
-    );
+    title: const Text('Feedback System'),
+    children: [
+      ListTile(
+        leading: const Icon(Icons.feedback),
+        title: const Text('Submit Feedback'),
+        subtitle: const Text('Test the feedback form'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(builder: (context) => const FeedbackForm()),
+          );
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.admin_panel_settings),
+        title: const Text('Admin Panel'),
+        subtitle: const Text('View and manage feedback'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (context) => const DeveloperFeedbackAdminScreen(),
+            ),
+          );
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.info),
+        title: const Text('System Info'),
+        subtitle: const Text('Learn about the feedback system'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+              builder: (context) => const FeedbackSystemInfoScreen(),
+            ),
+          );
+        },
+      ),
+    ],
+  );
 
   Widget _buildBackupSection(BuildContext context) => ExpansionTile(
-      title: const Text('Backup Management'),
-      children: [
-        ListTile(
-          title: const Text('View Backups'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Backup viewer coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Create Backup'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Backup creation coming soon')),
-            );
-          },
-        ),
-        ListTile(
-          title: const Text('Restore Backup'),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Backup restoration coming soon')),
-            );
-          },
-        ),
-      ],
-    );
+    title: const Text('Backup Management'),
+    children: [
+      ListTile(
+        title: const Text('View Backups'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Backup viewer coming soon')),
+          );
+        },
+      ),
+      ListTile(
+        title: const Text('Create Backup'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Backup creation coming soon')),
+          );
+        },
+      ),
+      ListTile(
+        title: const Text('Restore Backup'),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Backup restoration coming soon')),
+          );
+        },
+      ),
+    ],
+  );
 
   Widget _buildDebugSection(BuildContext context) => ExpansionTile(
-      title: const Text('Debug Tools'),
-      children: [
-        ListTile(
-          title: const Text('Fix Profile Image'),
-          subtitle: const Text('Update profile image URL'),
-          onTap: () {
-            Navigator.pushNamed(context, '/debug/profile-fix');
-          },
-        ),
-        ListTile(
-          title: const Text('Ad System Test'),
-          subtitle: const Text('Test and fix ad display issues'),
-          onTap: () {
-            Navigator.pushNamed(context, '/admin/ad-test');
-          },
-        ),
-      ],
-    );
+    title: const Text('Debug Tools'),
+    children: [
+      ListTile(
+        title: const Text('Fix Profile Image'),
+        subtitle: const Text('Update profile image URL'),
+        onTap: () {
+          Navigator.pushNamed(context, '/debug/profile-fix');
+        },
+      ),
+      ListTile(
+        title: const Text('Ad System Test'),
+        subtitle: const Text('Test and fix ad display issues'),
+        onTap: () {
+          Navigator.pushNamed(context, '/admin/ad-test');
+        },
+      ),
+    ],
+  );
 }

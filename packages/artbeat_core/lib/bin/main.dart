@@ -28,9 +28,13 @@ void main() async {
       );
 
       await Firebase.initializeApp(options: options);
-      AppLogger.firebase('Firebase initialized successfully with secure configuration');
+      AppLogger.firebase(
+        'Firebase initialized successfully with secure configuration',
+      );
     } else {
-      AppLogger.firebase('Firebase already initialized, using existing app instance');
+      AppLogger.firebase(
+        'Firebase already initialized, using existing app instance',
+      );
     }
 
     if (kDebugMode &&

@@ -212,7 +212,9 @@ class AdvancedCameraService extends ChangeNotifier {
       await _controller!.setExposurePoint(point);
       notifyListeners();
     } catch (e) {
-      AppLogger.error('AdvancedCameraService: Error setting exposure point: $e');
+      AppLogger.error(
+        'AdvancedCameraService: Error setting exposure point: $e',
+      );
     }
   }
 
@@ -251,7 +253,9 @@ class AdvancedCameraService extends ChangeNotifier {
       notifyListeners();
       return processedImagePath;
     } catch (e) {
-      AppLogger.error('AdvancedCameraService: Error capturing advanced image: $e');
+      AppLogger.error(
+        'AdvancedCameraService: Error capturing advanced image: $e',
+      );
       return null;
     }
   }
@@ -338,7 +342,9 @@ class AdvancedCameraService extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      AppLogger.error('AdvancedCameraService: Error starting video recording: $e');
+      AppLogger.error(
+        'AdvancedCameraService: Error starting video recording: $e',
+      );
       return false;
     }
   }
@@ -354,7 +360,9 @@ class AdvancedCameraService extends ChangeNotifier {
 
       return video.path;
     } catch (e) {
-      AppLogger.error('AdvancedCameraService: Error stopping video recording: $e');
+      AppLogger.error(
+        'AdvancedCameraService: Error stopping video recording: $e',
+      );
       _isRecording = false;
       notifyListeners();
       return null;

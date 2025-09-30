@@ -62,6 +62,8 @@ class EnvValidator {
     debugPrint(
       'Has Google Maps API Key: ${_envLoader.has('GOOGLE_MAPS_API_KEY')}',
     );
-    AppLogger.info('Has Stripe Key: ${_envLoader.has('STRIPE_PUBLISHABLE_KEY')}');
+    AppLogger.info(
+      'Has Stripe Key: ${_envLoader.has('STRIPE_PUBLISHABLE_KEY')}',
+    );
   }
 }

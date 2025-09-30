@@ -68,7 +68,10 @@ class ArtLocationClusteringService {
 
       for (final doc in query.docs) {
         final cluster = ArtLocationCluster.fromFirestore(doc);
-        final distance = ClusteringHelper.calculateDistance(center, cluster.location);
+        final distance = ClusteringHelper.calculateDistance(
+          center,
+          cluster.location,
+        );
 
         if (distance <= radiusKm * 1000) {
           clusters.add(cluster);
@@ -120,7 +123,10 @@ class ArtLocationClusteringService {
       final updatedVotes = Map<String, int>.from(cluster.artPieceVotes);
       updatedVotes[artId] = (updatedVotes[artId] ?? 0) + 1;
 
-      final newPrimaryArtId = _selectPrimaryArt(cluster.artPieceIds, updatedVotes);
+      final newPrimaryArtId = _selectPrimaryArt(
+        cluster.artPieceIds,
+        updatedVotes,
+      );
 
       await clusterRef.update({
         'artPieceVotes': updatedVotes,
@@ -136,7 +142,10 @@ class ArtLocationClusteringService {
   }
 
   /// Merge two clusters
-  Future<bool> mergeClusters(String sourceClusterId, String targetClusterId) async {
+  Future<bool> mergeClusters(
+    String sourceClusterId,
+    String targetClusterId,
+  ) async {
     try {
       return await _firestore.runTransaction((transaction) async {
         final sourceRef = _clustersCollection.doc(sourceClusterId);
@@ -272,7 +281,10 @@ class ArtLocationClusteringService {
 
     for (final doc in query.docs) {
       final cluster = ArtLocationCluster.fromFirestore(doc);
-      final distance = ClusteringHelper.calculateDistance(location, cluster.location);
+      final distance = ClusteringHelper.calculateDistance(
+        location,
+        cluster.location,
+      );
 
       if (distance <= thresholdMeters) {
         nearbyClusters.add(cluster);
@@ -317,14 +329,14 @@ class ClusteringHelper {
       totalLng += point.longitude;
     }
 
-    return GeoPoint(
-      totalLat / points.length,
-      totalLng / points.length,
-    );
+    return GeoPoint(totalLat / points.length, totalLng / points.length);
   }
 
   /// Calculate the optimal radius for a cluster based on its points
-  static double calculateOptimalRadius(List<GeoPoint> points, GeoPoint centroid) {
+  static double calculateOptimalRadius(
+    List<GeoPoint> points,
+    GeoPoint centroid,
+  ) {
     if (points.isEmpty) return 0.0;
 
     double maxDistance = 0;
@@ -335,7 +347,10 @@ class ClusteringHelper {
       }
     }
 
-    return math.min(maxDistance * 1.2, ArtLocationClusteringService.maxClusterRadius);
+    return math.min(
+      maxDistance * 1.2,
+      ArtLocationClusteringService.maxClusterRadius,
+    );
   }
 
   /// Check if two points are within clustering threshold
@@ -415,8 +430,9 @@ class ClusteringHelper {
 
   /// Validate cluster integrity
   static bool isValidCluster(ArtLocationCluster cluster) {
-    return cluster.artPieceIds.length >= ArtLocationClusteringService.minArtPiecesForCluster &&
-           cluster.radius > 0 &&
-           cluster.radius <= ArtLocationClusteringService.maxClusterRadius;
+    return cluster.artPieceIds.length >=
+            ArtLocationClusteringService.minArtPiecesForCluster &&
+        cluster.radius > 0 &&
+        cluster.radius <= ArtLocationClusteringService.maxClusterRadius;
   }
 }

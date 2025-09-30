@@ -688,7 +688,9 @@ class SubscriptionService extends ChangeNotifier {
       // Update the user's tier in Firestore
       await _updateUserSubscriptionTier(tier);
 
-      AppLogger.info('Successfully upgraded subscription to ${tier.displayName}');
+      AppLogger.info(
+        'Successfully upgraded subscription to ${tier.displayName}',
+      );
     } catch (e) {
       AppLogger.error('Error upgrading subscription: $e');
       rethrow;

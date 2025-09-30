@@ -229,7 +229,10 @@ class _LeaderboardPreviewWidgetState extends State<LeaderboardPreviewWidget> {
               children: [
                 Text(
                   user.displayName,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   'Level ${user.level}',

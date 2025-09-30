@@ -20,7 +20,9 @@ class EnhancedStorageService {
     int thumbnailSize = 200,
   }) async {
     try {
-      AppLogger.info('📸 Starting optimized image upload for category: $category');
+      AppLogger.info(
+        '📸 Starting optimized image upload for category: $category',
+      );
 
       // Read the image file
       final bytes = await imageFile.readAsBytes();

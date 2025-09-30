@@ -159,7 +159,9 @@ class AdminMessagingService extends ChangeNotifier {
                 'color': _getColorForSeverity(severity),
               };
             } catch (e) {
-              AppLogger.error('Error processing activity document ${doc.id}: $e');
+              AppLogger.error(
+                'Error processing activity document ${doc.id}: $e',
+              );
               // Return a safe fallback activity
               return {
                 'id': doc.id,

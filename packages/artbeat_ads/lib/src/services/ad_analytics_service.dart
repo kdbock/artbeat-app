@@ -107,7 +107,9 @@ class AdAnalyticsService extends ChangeNotifier {
         location: location,
       );
 
-      AppLogger.info('Ad click tracked: $adId at ${location.name} ($clickType)');
+      AppLogger.info(
+        'Ad click tracked: $adId at ${location.name} ($clickType)',
+      );
     } catch (e) {
       AppLogger.error('Error tracking ad click: $e');
       // Don't throw - analytics should not break app functionality

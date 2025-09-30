@@ -110,7 +110,9 @@ class MapsDiagnosticService {
     }
 
     final network = diagnostics['networkCheck'] as Map<String, dynamic>?;
-    AppLogger.network('$_tag: Can reach Maps API: ${network?['canReachMapsAPI']}');
+    AppLogger.network(
+      '$_tag: Can reach Maps API: ${network?['canReachMapsAPI']}',
+    );
     AppLogger.network('$_tag: Network status: ${network?['statusCode']}');
 
     if (diagnostics.containsKey('error')) {

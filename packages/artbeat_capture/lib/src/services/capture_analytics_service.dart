@@ -316,7 +316,9 @@ class CaptureAnalyticsService extends ChangeNotifier {
         'lastCaptureTime': todayAnalytics['lastCaptureTime'],
       };
     } catch (e) {
-      AppLogger.error('CaptureAnalyticsService: Error getting real-time stats: $e');
+      AppLogger.error(
+        'CaptureAnalyticsService: Error getting real-time stats: $e',
+      );
       return {'error': e.toString()};
     }
   }

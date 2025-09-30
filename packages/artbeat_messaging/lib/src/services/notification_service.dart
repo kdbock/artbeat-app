@@ -482,7 +482,9 @@ class NotificationService {
           AppLogger.info('Reply action triggered with payload: $payload');
           break;
         case 'mark_read':
-          AppLogger.info('Mark as read action triggered with payload: $payload');
+          AppLogger.info(
+            'Mark as read action triggered with payload: $payload',
+          );
           break;
         default:
           AppLogger.info('Notification tapped with payload: $payload');

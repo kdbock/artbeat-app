@@ -34,7 +34,9 @@ class AuthProfileService {
 
       // Check email verification if required
       if (requireEmailVerification && !user.emailVerified) {
-        AppLogger.info('👤 User email not verified - redirecting to verification');
+        AppLogger.info(
+          '👤 User email not verified - redirecting to verification',
+        );
         return AuthRoutes.emailVerification;
       }
 

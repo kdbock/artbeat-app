@@ -19,16 +19,22 @@ class FirebaseConfigService {
         sslEnabled: true,
       );
 
-      AppLogger.firebase('✅ Firebase configured successfully with persistence enabled');
+      AppLogger.firebase(
+        '✅ Firebase configured successfully with persistence enabled',
+      );
     } catch (e) {
       AppLogger.error('❌ Error configuring Firebase: $e');
       if (e is FirebaseException) {
         if (e.code == 'failed-precondition') {
           // Multiple tabs open, persistence can only be enabled in one tab at a time
-          AppLogger.info('Multiple tabs are open, offline persistence disabled');
+          AppLogger.info(
+            'Multiple tabs are open, offline persistence disabled',
+          );
         } else if (e.code == 'unimplemented') {
           // The current browser does not support persistence
-          AppLogger.info('Current platform does not support offline persistence');
+          AppLogger.info(
+            'Current platform does not support offline persistence',
+          );
         }
       }
       // Continue even if configuration fails - app should still work online

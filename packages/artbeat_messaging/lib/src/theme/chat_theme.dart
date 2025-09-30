@@ -6,7 +6,7 @@ class ChatTheme {
   static const Color primaryColor = ArtbeatColors.primaryPurple;
   static const Color secondaryColor = ArtbeatColors.primaryGreen;
   static const Color accentColor = ArtbeatColors.secondaryTeal;
-  
+
   // Gradients
   static const LinearGradient primaryGradient = ArtbeatColors.primaryGradient;
 

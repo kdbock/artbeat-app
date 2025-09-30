@@ -96,7 +96,9 @@ class DirectionsService {
         }
       } on TimeoutException {
         lastError = Exception('Request timed out');
-        AppLogger.info('⌛ Directions request timed out (attempt ${attempt + 1})');
+        AppLogger.info(
+          '⌛ Directions request timed out (attempt ${attempt + 1})',
+        );
       } on SocketException {
         lastError = Exception('Network error');
         debugPrint(
@@ -104,7 +106,9 @@ class DirectionsService {
         );
       } on Exception catch (e) {
         lastError = e;
-        AppLogger.error('❌ Error fetching directions: $e (attempt ${attempt + 1})');
+        AppLogger.error(
+          '❌ Error fetching directions: $e (attempt ${attempt + 1})',
+        );
       }
 
       attempt++;
@@ -118,7 +122,9 @@ class DirectionsService {
     if (!useCachedData) {
       final fallbackCachedData = await _getCachedDirections(cacheEntryKey);
       if (fallbackCachedData != null) {
-        AppLogger.info('🔄 Falling back to cached directions after API failures');
+        AppLogger.info(
+          '🔄 Falling back to cached directions after API failures',
+        );
         return fallbackCachedData;
       }
     }

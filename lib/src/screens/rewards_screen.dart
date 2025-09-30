@@ -336,153 +336,151 @@ class _RewardsScreenState extends State<RewardsScreen>
     IconData icon,
     Color color,
   ) => Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withValues(alpha: 0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: color,
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        ],
-      ),
-    );
+        ),
+        Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      ],
+    ),
+  );
 
   Widget _buildBadgesTab() => SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Your Badge Collection',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: ArtbeatColors.primaryPurple,
-            ),
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Your Badge Collection',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: ArtbeatColors.primaryPurple,
           ),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.8,
-            ),
-            itemCount: RewardsService.badges.length,
-            itemBuilder: (context, index) {
-              final badgeEntry = RewardsService.badges.entries.elementAt(index);
-              final badgeId = badgeEntry.key;
-              final badge = badgeEntry.value;
-              final isUnlocked = userBadges.containsKey(badgeId);
-              final isNew = unviewedBadges.contains(badgeId);
+        ),
+        const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.8,
+          ),
+          itemCount: RewardsService.badges.length,
+          itemBuilder: (context, index) {
+            final badgeEntry = RewardsService.badges.entries.elementAt(index);
+            final badgeId = badgeEntry.key;
+            final badge = badgeEntry.value;
+            final isUnlocked = userBadges.containsKey(badgeId);
+            final isNew = unviewedBadges.contains(badgeId);
 
-              return DecoratedBox(
-                decoration: BoxDecoration(
-                  color: isUnlocked ? Colors.white : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: isNew
-                      ? Border.all(color: ArtbeatColors.primaryGreen, width: 2)
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color: isUnlocked ? Colors.white : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: isNew
+                    ? Border.all(color: ArtbeatColors.primaryGreen, width: 2)
+                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          badge['icon'] as String,
+                          style: TextStyle(
+                            fontSize: 32,
+                            color: isUnlocked ? null : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          badge['name'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isUnlocked ? Colors.black : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          badge['description'] as String,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isUnlocked ? Colors.grey[600] : Colors.grey,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            badge['icon'] as String,
-                            style: TextStyle(
-                              fontSize: 32,
-                              color: isUnlocked ? null : Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            badge['name'] as String,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: isUnlocked ? Colors.black : Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            badge['description'] as String,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: isUnlocked
-                                  ? Colors.grey[600]
-                                  : Colors.grey,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isNew)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: ArtbeatColors.primaryGreen,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'NEW',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  ),
+                  if (isNew)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ArtbeatColors.primaryGreen,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'NEW',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
 
   Widget _buildPerksTab() {
     final currentLevel = currentUser?.level ?? 1;
@@ -555,51 +553,51 @@ class _RewardsScreenState extends State<RewardsScreen>
   }
 
   Widget _buildPerkCard(String perk, bool isUnlocked) => Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isUnlocked ? Colors.white : Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isUnlocked ? ArtbeatColors.primaryGreen : Colors.grey[300]!,
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: isUnlocked ? Colors.white : Colors.grey[50],
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isUnlocked ? ArtbeatColors.primaryGreen : Colors.grey[300]!,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withValues(alpha: 0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      ],
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: isUnlocked
+                ? ArtbeatColors.primaryGreen.withValues(alpha: 0.1)
+                : Colors.grey[200],
+            borderRadius: BorderRadius.circular(24),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isUnlocked
-                  ? ArtbeatColors.primaryGreen.withValues(alpha: 0.1)
-                  : Colors.grey[200],
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Icon(
-              isUnlocked ? Icons.check_circle : Icons.lock,
-              color: isUnlocked ? ArtbeatColors.primaryGreen : Colors.grey,
-              size: 24,
-            ),
+          child: Icon(
+            isUnlocked ? Icons.check_circle : Icons.lock,
+            color: isUnlocked ? ArtbeatColors.primaryGreen : Colors.grey,
+            size: 24,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              perk,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isUnlocked ? Colors.black : Colors.grey,
-              ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            perk,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isUnlocked ? Colors.black : Colors.grey,
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
 }

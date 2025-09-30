@@ -104,7 +104,9 @@ class AIMLIntegrationService extends ChangeNotifier {
         'saturation': colorAnalysis['saturation'],
       };
     } catch (e) {
-      AppLogger.error('AIMLIntegrationService: Error analyzing color palette: $e');
+      AppLogger.error(
+        'AIMLIntegrationService: Error analyzing color palette: $e',
+      );
       return {'success': false, 'error': e.toString()};
     }
   }
@@ -447,7 +449,9 @@ class AIMLIntegrationService extends ChangeNotifier {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      AppLogger.error('AIMLIntegrationService: Error storing analysis result: $e');
+      AppLogger.error(
+        'AIMLIntegrationService: Error storing analysis result: $e',
+      );
     }
   }
 

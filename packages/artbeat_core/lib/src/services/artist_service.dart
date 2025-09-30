@@ -49,7 +49,9 @@ class ArtistService {
     bool onlyFeatured = false,
   }) async {
     try {
-      AppLogger.debug('🔍 ArtistService: Searching artists with query: "$query"');
+      AppLogger.debug(
+        '🔍 ArtistService: Searching artists with query: "$query"',
+      );
 
       Query artistsQuery = _firestore.collection('artistProfiles');
 
@@ -96,7 +98,9 @@ class ArtistService {
             .toList();
       }
 
-      AppLogger.debug('🔍 ArtistService: Found ${results.length} matching artists');
+      AppLogger.debug(
+        '🔍 ArtistService: Found ${results.length} matching artists',
+      );
       return results;
     } catch (e) {
       AppLogger.error('❌ ArtistService: Error searching artists: $e');

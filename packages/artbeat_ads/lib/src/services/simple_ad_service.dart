@@ -155,7 +155,9 @@ class SimpleAdService extends ChangeNotifier {
               );
             },
           );
-          AppLogger.info('Upload completed for image $i, getting download URL...');
+          AppLogger.info(
+            'Upload completed for image $i, getting download URL...',
+          );
 
           downloadUrl = await snapshot.ref.getDownloadURL();
           AppLogger.info('Download URL obtained for image $i: $downloadUrl');

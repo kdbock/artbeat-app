@@ -429,7 +429,9 @@ class ProfileConnectionService extends ChangeNotifier {
         final theirFollowing = await _getFollowingIds(followingId);
         friendsOfFriends.addAll(theirFollowing);
       } catch (e) {
-        AppLogger.error('Error getting friends of friends for $followingId: $e');
+        AppLogger.error(
+          'Error getting friends of friends for $followingId: $e',
+        );
       }
     }
 

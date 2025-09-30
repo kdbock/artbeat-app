@@ -84,7 +84,10 @@ class SettingsScreen extends StatelessWidget {
         leading: _getIconForCategory(category.iconData),
         title: Text(
           category.title,
-          style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         subtitle: Text(
           category.description,

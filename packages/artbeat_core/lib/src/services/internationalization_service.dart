@@ -57,7 +57,9 @@ class InternationalizationService {
         );
       } catch (e) {
         // If translation file doesn't exist, use default English translations
-        AppLogger.info('Translation file not found for $localeKey, using defaults');
+        AppLogger.info(
+          'Translation file not found for $localeKey, using defaults',
+        );
         _allTranslations[localeKey] = _getDefaultTranslations(locale);
       }
     }

@@ -237,7 +237,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
               children: [
                 Text(
                   category.displayName,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   _getCategoryDescription(category),

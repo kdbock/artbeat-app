@@ -59,7 +59,7 @@ class VoiceRecordingService extends ChangeNotifier {
 
   // Check microphone permission (streamlined)
   Future<bool> _checkPermissions() async {
-    return await MessagingPermissionService().hasMicrophonePermission();
+    return MessagingPermissionService().hasMicrophonePermission();
   }
 
   // Simplified permission check - no requests since app handles it at startup

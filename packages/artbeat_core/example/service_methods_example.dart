@@ -35,7 +35,9 @@ class ServiceMethodsExample {
       AppLogger.info('  • Storage: ${limits.storageGB} GB');
       AppLogger.info('  • AI Credits: ${limits.aiCredits}');
       AppLogger.info('  • Team Members: ${limits.teamMembers}');
-      AppLogger.analytics('  • Advanced Analytics: ${limits.hasAdvancedAnalytics}');
+      AppLogger.analytics(
+        '  • Advanced Analytics: ${limits.hasAdvancedAnalytics}',
+      );
       AppLogger.info('  • Featured Placement: ${limits.hasFeaturedPlacement}');
       AppLogger.info('  • Custom Branding: ${limits.hasCustomBranding}');
     } catch (e) {
@@ -126,10 +128,14 @@ class ServiceMethodsExample {
 
     // 4. Upgrade subscription (commented out to avoid charges)
     AppLogger.info('4️⃣ Subscription upgrade (demo - not executed)');
-    AppLogger.info('   Call upgradeUserSubscription() to upgrade to a paid tier');
+    AppLogger.info(
+      '   Call upgradeUserSubscription() to upgrade to a paid tier',
+    );
     AppLogger.info('');
 
-    AppLogger.info('✅ Workflow completed! All 4 new service methods demonstrated.');
+    AppLogger.info(
+      '✅ Workflow completed! All 4 new service methods demonstrated.',
+    );
   }
 }
 

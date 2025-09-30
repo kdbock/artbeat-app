@@ -25,7 +25,9 @@ class ServiceHandler {
 
       // Test Firebase Auth
       final auth = FirebaseAuth.instance;
-      AppLogger.auth('👤 Auth initialized: ${auth.currentUser?.uid ?? 'no user'}');
+      AppLogger.auth(
+        '👤 Auth initialized: ${auth.currentUser?.uid ?? 'no user'}',
+      );
 
       AppLogger.info('✅ All services initialized successfully');
     } catch (e) {
