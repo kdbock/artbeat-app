@@ -248,7 +248,7 @@ class InAppPurchaseService {
   /// Verify purchase with server (implement server-side verification)
   Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) async {
     try {
-      // TODO: Implement server-side verification
+      // TODO(payments): Implement server-side verification
       // For now, return true, but in production you should verify with Apple/Google servers
       return true;
     } catch (e) {

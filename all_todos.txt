@@ -1,0 +1,98 @@
+./test/widget_test.dart:8:      // TODO(developer): Add proper widget tests as the app develops
+./packages/artbeat_admin/lib/src/models/admin_permissions.dart:205:    // TODO: Implement with actual authentication
+./packages/artbeat_admin/lib/src/models/admin_permissions.dart:236:    // TODO: Implement with Firestore
+./packages/artbeat_admin/lib/src/screens/admin_payment_screen.dart:194:        // TODO: Implement actual refund processing with Stripe
+./packages/artbeat_admin/lib/src/screens/admin_payment_screen.dart:202:          'processedBy': 'admin', // TODO: Get actual admin user
+./packages/artbeat_admin/lib/src/screens/admin_payment_screen.dart:351:      // TODO: Implement actual file download/save with csvContent
+./packages/artbeat_admin/lib/src/screens/admin_payment_screen.dart:383:      // TODO: Implement actual file download/save with csvContent
+./packages/artbeat_admin/lib/src/screens/admin_payment_screen.dart:856:          // TODO: Add payment method analytics
+./packages/artbeat_admin/lib/src/services/financial_service.dart:186:        eventRevenue: 0.0, // TODO: Implement event revenue
+./packages/artbeat_admin/lib/src/services/financial_service.dart:190:        churnRate: 0.05, // TODO: Calculate actual churn rate
+./packages/artbeat_admin/lib/src/services/financial_service.dart:194:        subscriptionGrowth: 0.0, // TODO: Calculate subscription growth
+./packages/artbeat_admin/lib/src/services/financial_service.dart:195:        commissionGrowth: 0.0, // TODO: Calculate commission growth
+./packages/artbeat_core/lib/src/viewmodels/dashboard_view_model.dart:88:        // _loadPosts(), // TODO: Implement posts loading
+./packages/artbeat_core/lib/src/viewmodels/dashboard_view_model.dart:462:        // TODO: Implement artist following with ArtistService
+./packages/artbeat_core/lib/src/viewmodels/dashboard_view_model.dart:489:        // TODO: Implement artist unfollowing with ArtistService
+./packages/artbeat_core/lib/src/providers/community_provider.dart:84:            // TODO: Implement proper unread count once the required index is created
+./packages/artbeat_core/lib/src/screens/enhanced_gift_purchase_screen.dart:190:                // TODO: Implement search functionality
+./packages/artbeat_core/lib/src/screens/enhanced_gift_purchase_screen.dart:196:                // TODO: Implement messaging functionality
+./packages/artbeat_core/lib/src/screens/enhanced_gift_purchase_screen.dart:202:                // TODO: Implement profile functionality
+./packages/artbeat_core/lib/src/firebase/secure_firebase_config.dart:162:          // TODO: Add proper reCAPTCHA v3 site key for web support
+./packages/artbeat_core/lib/src/services/in_app_purchase_service.dart:251:      // TODO: Implement server-side verification
+./packages/artbeat_core/lib/src/services/payment_analytics_service.dart:96:      // TODO: Implement actual geographic distribution based on user location data
+./packages/artbeat_core/lib/src/services/payment_analytics_service.dart:179:            trend: 0.0, // TODO: Calculate actual trend
+./packages/artbeat_core/lib/src/widgets/artist_cta_widget.dart:101:                              // TODO: Implement dismiss functionality
+./packages/artbeat_core/lib/src/widgets/payment_analytics_dashboard.dart:309:        // TODO: Implement report history list
+./packages/artbeat_core/lib/src/widgets/payment_analytics_dashboard.dart:316:    // TODO: Implement report generation
+./packages/artbeat_core/lib/src/widgets/dashboard/dashboard_captures_section.dart:758:    // TODO: Implement actual share functionality
+./packages/artbeat_core/lib/src/widgets/content_engagement_bar.dart:972:    // TODO: Implement sponsor dialog
+./packages/artbeat_core/lib/src/widgets/content_engagement_bar.dart:997:    // TODO: Implement message dialog
+./packages/artbeat_ads/lib/src/screens/user_ad_dashboard_screen.dart:822:        // TODO: Navigate to edit screen
+./packages/artbeat_ads/lib/src/screens/user_ad_dashboard_screen.dart:826:        // TODO: Implement duplication
+./packages/artbeat_ads/lib/src/screens/payment_history_screen.dart:808:                          // TODO: Implement support/contact functionality
+./packages/artbeat_ads/lib/src/screens/payment_history_screen.dart:872:        // TODO: Implement actual receipt download/viewing
+./packages/artbeat_ads/lib/src/services/refund_service.dart:479:      // TODO: Integrate with actual Stripe refund API
+./packages/artbeat_ads/lib/src/services/payment_history_service.dart:405:      // TODO: Integrate with actual receipt generation service
+./packages/artbeat_settings/lib/src/screens/security_settings_screen.dart:24:      // TODO: Implement actual service call
+./packages/artbeat_settings/lib/src/screens/security_settings_screen.dart:43:      // TODO: Implement actual service call
+./packages/artbeat_settings/lib/src/screens/security_settings_screen.dart:464:              // TODO: Navigate to password change screen
+./packages/artbeat_settings/lib/src/screens/account_settings_screen.dart:45:      // TODO: Load actual account settings from service
+./packages/artbeat_settings/lib/src/screens/account_settings_screen.dart:96:      // TODO: Save to service
+./packages/artbeat_settings/lib/src/screens/account_settings_screen.dart:315:    // TODO: Implement profile picture change
+./packages/artbeat_settings/lib/src/screens/account_settings_screen.dart:336:    // TODO: Implement email verification
+./packages/artbeat_settings/lib/src/screens/account_settings_screen.dart:341:    // TODO: Implement phone verification
+./packages/artbeat_settings/lib/src/screens/settings_screen.dart:179:              // TODO: Implement logout functionality
+./packages/artbeat_settings/lib/src/screens/settings_screen.dart:209:              // TODO: Implement account deletion functionality
+./packages/artbeat_settings/lib/src/screens/notification_settings_screen.dart:27:      // TODO: Load from service
+./packages/artbeat_settings/lib/src/screens/notification_settings_screen.dart:52:      // TODO: Save to service
+./packages/artbeat_settings/lib/src/screens/privacy_settings_screen.dart:24:      // TODO: Implement actual service call
+./packages/artbeat_settings/lib/src/screens/privacy_settings_screen.dart:43:      // TODO: Implement actual service call
+./packages/artbeat_settings/lib/src/screens/privacy_settings_screen.dart:513:      // TODO: Implement actual service call
+./packages/artbeat_settings/lib/src/screens/privacy_settings_screen.dart:535:      // TODO: Implement actual service call
+./packages/artbeat_capture/lib/src/screens/my_captures_screen.dart:72:            // TODO: Implement search functionality for user's captures
+./packages/artbeat_community/lib/screens/commissions/commission_detail_screen.dart:702:    // TODO: Implement quote provision dialog
+./packages/artbeat_community/lib/screens/commissions/commission_detail_screen.dart:778:    // TODO: Implement cancellation dialog with reason
+./packages/artbeat_community/lib/screens/commissions/commission_detail_screen.dart:813:    // TODO: Implement file download
+./packages/artbeat_community/lib/screens/commissions/direct_commissions_screen.dart:634:    // TODO: Implement artist selection screen
+./packages/artbeat_community/lib/screens/commissions/direct_commissions_screen.dart:641:    // TODO: Implement quote provision screen
+./packages/artbeat_community/lib/screens/commissions/artist_commission_settings_screen.dart:758:    // TODO: Implement image picker and upload
+./packages/artbeat_community/lib/screens/commissions/commission_hub_screen.dart:555:        // TODO: Navigate to commission detail
+./packages/artbeat_community/lib/screens/commissions/commission_hub_screen.dart:677:    // TODO: Implement artist browsing screen
+./packages/artbeat_community/lib/screens/commissions/commission_hub_screen.dart:684:    // TODO: Implement commission analytics screen
+./packages/artbeat_community/lib/screens/unified_community_hub.dart:405:    // TODO: Navigate to user profile
+./packages/artbeat_community/lib/screens/unified_community_hub.dart:951:          // TODO: Navigate to artwork detail
+./packages/artbeat_community/lib/screens/art_community_hub.dart:154:                    // TODO: Implement search
+./packages/artbeat_community/lib/screens/art_community_hub.dart:295:    // TODO: Navigate to post detail
+./packages/artbeat_community/lib/screens/art_community_hub.dart:615:    // TODO: Navigate to artist profile
+./packages/artbeat_community/lib/screens/art_community_hub.dart:622:    // TODO: Implement follow functionality
+./packages/artbeat_community/lib/screens/art_community_hub.dart:849:    // TODO: Navigate to topic-specific feed
+./packages/artbeat_community/lib/screens/feed/artist_community_feed_screen.dart:593:              // TODO: Implement commission request submission with form data
+./packages/artbeat_community/lib/screens/feed/artist_community_feed_screen.dart:1227:                        // TODO: Implement search
+./packages/artbeat_community/lib/screens/sponsorships/my_sponsorships_screen.dart:482:    // TODO: Implement tier change dialog
+./packages/artbeat_community/lib/services/moderation_service.dart:151:      // TODO: Add AI-based image content analysis here
+./packages/artbeat_community/lib/services/moderation_service.dart:198:      // TODO: Add AI-based video content analysis here
+./packages/artbeat_community/lib/services/moderation_service.dart:245:      // TODO: Add AI-based audio content analysis here
+./packages/artbeat_community/lib/widgets/art_gallery_widgets.dart:379:                                // TODO: Implement share
+./packages/artbeat_community/lib/widgets/art_gallery_widgets.dart:1307:                        // TODO: Implement share functionality
+./packages/artbeat_community/lib/widgets/art_gallery_widgets.dart:1471:                    // TODO: Show all comments in a modal or separate screen
+./packages/artbeat_artist/lib/src/screens/earnings/payout_accounts_screen.dart:379:      // TODO: Implement delete account functionality
+./packages/artbeat_art_walk/lib/src/screens/art_walk_map_screen.dart:590:                          const [], // TODO: Convert CaptureModel to PublicArtModel if needed
+./packages/artbeat_art_walk/lib/src/screens/art_walk_dashboard_screen.dart:2619:    // TODO: Implement like functionality
+./packages/artbeat_art_walk/lib/src/screens/art_walk_dashboard_screen.dart:2629:    // TODO: Implement share functionality
+./packages/artbeat_art_walk/lib/src/screens/art_walk_list_screen.dart:630:              // TODO: Implement search functionality
+./packages/artbeat_art_walk/lib/src/screens/art_walk_list_screen.dart:637:              // TODO: Navigate to messaging
+./packages/artbeat_art_walk/lib/src/screens/enhanced_art_walk_experience_screen.dart:503:    // TODO: Implement actual previous step logic when needed
+./packages/artbeat_art_walk/lib/src/screens/enhanced_art_walk_experience_screen.dart:683:        distanceWalked: 0.0, // TODO: Calculate actual distance
+./packages/artbeat_art_walk/lib/src/screens/enhanced_art_walk_experience_screen.dart:686:        newAchievements: const [], // TODO: Get new achievements
+./packages/artbeat_art_walk/lib/src/screens/enhanced_art_walk_experience_screen.dart:691:        personalBests: const {}, // TODO: Calculate personal bests
+./packages/artbeat_art_walk/lib/src/screens/enhanced_art_walk_experience_screen.dart:692:        milestones: const [], // TODO: Get milestones
+./packages/artbeat_art_walk/lib/src/screens/art_walk_detail_screen.dart:722:                              // TODO: Initialize ArtWalkNavigationService and integrate TurnByTurnNavigationWidget
+./packages/artbeat_art_walk/lib/src/screens/art_walk_celebration_screen.dart:583:    // TODO: Replace with SharePlus.instance.share()
+./packages/artbeat_art_walk/lib/src/widgets/progress_cards.dart:85:                'Art Walk', // TODO: Fetch actual walk title
+./packages/artbeat_art_walk/lib/src/widgets/progress_cards.dart:357:                'Art Walk', // TODO: Fetch actual walk title
+./packages/artbeat_art_walk/lib/src/widgets/progress_cards.dart:646:                    label: '4.5', // TODO: Add rating system
+./packages/artbeat_art_walk/lib/src/widgets/progress_cards.dart:785:                    label: '4.5', // TODO: Add rating system
+./lib/screens/notifications_screen.dart:331:      // TODO(security): Replace with proper database-based admin role check
+./lib/widgets/debug_menu.dart:136:              // TODO(debug): Add Firebase debug info
+./lib/widgets/debug_menu.dart:170:              // TODO(debug): Implement cache clearing
+./lib/src/screens/about_screen.dart:354:                // TODO(dev): Create terms of service screen

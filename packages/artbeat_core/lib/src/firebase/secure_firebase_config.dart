@@ -159,7 +159,7 @@ class SecureFirebaseConfig {
         await FirebaseAppCheck.instance.activate(
           androidProvider: AndroidProvider.playIntegrity,
           appleProvider: AppleProvider.deviceCheck,
-          // TODO: Add proper reCAPTCHA v3 site key for web support
+          // TODO(security): Add proper reCAPTCHA v3 site key for web support
           // webProvider: ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
         );
       }

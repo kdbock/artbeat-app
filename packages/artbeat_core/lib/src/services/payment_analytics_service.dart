@@ -93,7 +93,7 @@ class PaymentAnalyticsService {
 
       // Geographic distribution (mock data for now)
       final geographicDistribution = <String, double>{};
-      // TODO: Implement actual geographic distribution based on user location data
+      // TODO(analytics): Implement actual geographic distribution based on user location data
 
       return PaymentMetrics(
         totalTransactions: totalTransactions,
@@ -176,7 +176,7 @@ class PaymentAnalyticsService {
                 : riskScore > 0.4
                 ? 'medium'
                 : 'low',
-            trend: 0.0, // TODO: Calculate actual trend
+            trend: 0.0, // TODO(analytics): Calculate actual trend
             eventCount: events.length,
             period: entry.key,
             factors: riskFactors,

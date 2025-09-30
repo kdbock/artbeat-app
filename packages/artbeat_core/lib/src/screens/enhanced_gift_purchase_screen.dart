@@ -187,19 +187,19 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
             IconButton(
               icon: const Icon(Icons.search, color: Colors.white),
               onPressed: () {
-                // TODO: Implement search functionality
+                // TODO(gift): Implement search functionality
               },
             ),
             IconButton(
               icon: const Icon(Icons.message, color: Colors.white),
               onPressed: () {
-                // TODO: Implement messaging functionality
+                // TODO(gift): Implement messaging functionality
               },
             ),
             IconButton(
               icon: const Icon(Icons.person, color: Colors.white),
               onPressed: () {
-                // TODO: Implement profile functionality
+                // TODO(gift): Implement profile functionality
               },
             ),
           ],

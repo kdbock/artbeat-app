@@ -202,7 +202,7 @@ class AdminRoleService extends ChangeNotifier {
 
   /// Get current admin user (would be implemented with auth service)
   AdminUser? getCurrentAdmin() {
-    // TODO: Implement with actual authentication
+    // TODO(admin): Implement with actual authentication
     // For now, return a mock admin for development
     return AdminUser(
       id: 'admin_123',
@@ -233,7 +233,7 @@ class AdminRoleService extends ChangeNotifier {
       throw Exception('Only super admins can modify roles');
     }
 
-    // TODO: Implement with Firestore
+    // TODO(admin): Implement with Firestore
     debugPrint('Updated admin $adminId to role $newRole');
   }
 

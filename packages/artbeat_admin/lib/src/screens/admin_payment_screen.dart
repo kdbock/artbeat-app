@@ -191,7 +191,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
     if (result == true) {
       try {
-        // TODO: Implement actual refund processing with Stripe
+        // TODO(payments): Implement actual refund processing with Stripe
         await _firestore.collection('refunds').add({
           'originalTransactionId': transaction.id,
           'amount': transaction.amount,
@@ -199,7 +199,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           'userId': transaction.userId,
           'userName': transaction.userName,
           'reason': 'Admin processed refund',
-          'processedBy': 'admin', // TODO: Get actual admin user
+          'processedBy': 'admin', // TODO(admin): Get actual admin user
           'processedAt': FieldValue.serverTimestamp(),
           'status': 'completed',
         });
@@ -348,7 +348,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           .where((t) => _selectedTransactionIds.contains(t.id))
           .toList();
 
-      // TODO: Implement actual file download/save with csvContent
+      // TODO(admin): Implement actual file download/save with csvContent
       // For now, just log the audit and show success
       await _auditService.logDataExport(
         adminId: currentAdmin.id,
@@ -380,7 +380,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         return;
       }
 
-      // TODO: Implement actual file download/save with csvContent
+      // TODO(admin): Implement actual file download/save with csvContent
       // For now, just log the audit and show success
       await _auditService.logDataExport(
         adminId: currentAdmin.id,
@@ -853,7 +853,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          // TODO: Add payment method analytics
+          // TODO(analytics): Add payment method analytics
           const Center(child: Text('Payment method analytics coming soon')),
         ],
       ),

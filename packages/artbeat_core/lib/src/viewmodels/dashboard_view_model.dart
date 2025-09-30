@@ -85,7 +85,7 @@ class DashboardViewModel extends ChangeNotifier {
         _loadLocation(),
         _loadAchievements(),
         _loadLocalCaptures(),
-        // _loadPosts(), // TODO: Implement posts loading
+        // _loadPosts(), // TODO(dashboard): Implement posts loading
       ]);
     } catch (e, stack) {
       AppLogger.error('❌ Error initializing dashboard: $e');
@@ -459,7 +459,7 @@ class DashboardViewModel extends ChangeNotifier {
 
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
-        // TODO: Implement artist following with ArtistService
+        // TODO(artist): Implement artist following with ArtistService
         AppLogger.info('Artist follow requested: $artistId');
       }
     } catch (e) {
@@ -486,7 +486,7 @@ class DashboardViewModel extends ChangeNotifier {
 
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
-        // TODO: Implement artist unfollowing with ArtistService
+        // TODO(artist): Implement artist unfollowing with ArtistService
         AppLogger.info('Artist unfollow requested: $artistId');
       }
     } catch (e) {

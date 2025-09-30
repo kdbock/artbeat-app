@@ -183,16 +183,16 @@ class FinancialService extends ChangeNotifier {
       return FinancialMetrics(
         totalRevenue: totalRevenue,
         subscriptionRevenue: subscriptionRevenue,
-        eventRevenue: 0.0, // TODO: Implement event revenue
+        eventRevenue: 0.0, // TODO(finance): Implement event revenue
         commissionRevenue: artworkRevenue * 0.1, // 10% commission
         averageRevenuePerUser: averageRevenuePerUser,
         monthlyRecurringRevenue: monthlyRecurringRevenue,
-        churnRate: 0.05, // TODO: Calculate actual churn rate
+        churnRate: 0.05, // TODO(finance): Calculate actual churn rate
         lifetimeValue: averageRevenuePerUser * 12, // Rough estimate
         totalTransactions: totalTransactions,
         revenueGrowth: revenueGrowth,
-        subscriptionGrowth: 0.0, // TODO: Calculate subscription growth
-        commissionGrowth: 0.0, // TODO: Calculate commission growth
+        subscriptionGrowth: 0.0, // TODO(finance): Calculate subscription growth
+        commissionGrowth: 0.0, // TODO(finance): Calculate commission growth
         revenueByCategory: revenueByCategory,
         revenueTimeSeries: revenueTimeSeries,
       );

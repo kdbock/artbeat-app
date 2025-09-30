@@ -81,7 +81,7 @@ class CommunityProvider extends ChangeNotifier {
             }
 
             // For now, return 0 to avoid the index requirement
-            // TODO: Implement proper unread count once the required index is created
+            // TODO(community): Implement proper unread count once the required index is created
             // The required index is: posts collection with fields [isPublic, createdAt]
             return 0;
           });
