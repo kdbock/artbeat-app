@@ -5,7 +5,7 @@ void main() {
   group('Basic App Tests', () {
     test('placeholder test - app structure exists', () {
       // This is a minimal placeholder test to satisfy CI/CD requirements
-      // TODO: Add proper widget tests as the app develops
+      // TODO(developer): Add proper widget tests as the app develops
       expect(true, isTrue);
     });
   });
