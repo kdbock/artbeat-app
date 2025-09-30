@@ -5,7 +5,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logging/logging.dart';
-import 'package:artbeat_core/artbeat_core.dart';
 import 'messaging_permission_service.dart';
 
 enum RecordingState { idle, recording, paused, stopped }
@@ -84,24 +83,6 @@ class VoiceRecordingService extends ChangeNotifier {
       _logger.severe('Error checking microphone permissions: $e');
       return PermissionResult.denied;
     }
-  }
-
-  // Show message to user about opening Settings for permission
-  void _showPermissionDeniedMessage() {
-    // This method can be called by the UI to show an appropriate dialog
-    // For now, we'll just log the message
-    _logger.warning(
-      'Microphone permission is required for voice recording. '
-      'Please go to Settings > ARTbeat > Microphone and enable access.',
-    );
-    _logger.info(
-      'To enable microphone access:\n'
-      '1. Open Settings app\n'
-      '2. Find and tap "ARTbeat"\n'
-      '3. Tap "Microphone"\n'
-      '4. Enable microphone access\n'
-      '5. Return to ARTbeat and try recording again',
-    );
   }
 
   // Method to explicitly request microphone permission

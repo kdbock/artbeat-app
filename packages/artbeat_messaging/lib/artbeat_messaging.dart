@@ -21,7 +21,8 @@ export 'src/screens/media_viewer_screen.dart';
 export 'src/screens/chat_settings_screen.dart';
 export 'src/screens/chat_info_screen.dart';
 export 'src/screens/blocked_users_screen.dart';
-export 'src/screens/global_search_screen.dart';
+// Deprecated: Use core.SearchResultsPage instead
+// export 'src/screens/global_search_screen.dart';
 export 'src/screens/starred_messages_screen.dart';
 export 'src/screens/message_thread_view_screen.dart';
 export 'src/navigation/messaging_navigation.dart';

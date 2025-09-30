@@ -314,7 +314,7 @@ class AppRoutes {
     artWalkSettings,
     artWalkSearch,
     enhancedCreateArtWalk,
-    enhancedArtWalkExperience,
+    artWalkExperience,
     artWalkExplore,
     artWalkStart,
     artWalkNearby,

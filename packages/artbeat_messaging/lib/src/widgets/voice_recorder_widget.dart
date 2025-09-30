@@ -479,10 +479,6 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
               TextButton(
                 onPressed: () async {
                   Navigator.of(context).pop();
-                  final voiceService = Provider.of<VoiceRecordingService>(
-                    context,
-                    listen: false,
-                  );
                   await openAppSettings();
                 },
                 child: const Text('Open Settings'),

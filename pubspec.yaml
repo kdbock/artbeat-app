@@ -93,7 +93,6 @@ flutter:
     - assets/triangle.png
     - assets/images/subtle_pattern.png
     - assets/artist_onboarding_hero.png
-    - .env
 
   # Fonts
   fonts:
