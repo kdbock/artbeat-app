@@ -30,6 +30,8 @@ dependencies:
     path: ../artbeat_artwork
   artbeat_events:
     path: ../artbeat_events
+  artbeat_messaging:
+    path: ../artbeat_messaging
   share_plus: ^11.0.0
   google_maps_flutter: ^2.5.3
   flutter_svg: ^2.0.10+1
@@ -39,6 +41,7 @@ dependencies:
   uuid: ^4.2.1
   geolocator: ^14.0.1
   http: ^1.2.0
+  path_provider: ^2.1.5
   flutter_image_compress: ^2.3.0
   video_player: ^2.8.2
   audioplayers: ^6.0.0

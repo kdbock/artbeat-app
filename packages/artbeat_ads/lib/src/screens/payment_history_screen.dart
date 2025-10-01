@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:url_launcher/url_launcher.dart';
 import '../models/payment_history_model.dart';
 import '../services/payment_history_service.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -805,7 +806,8 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          // TODO: Implement support/contact functionality
+                          // Navigate to support screen
+                          Navigator.pushNamed(context, '/support');
                         },
                         icon: const Icon(Icons.support_agent),
                         label: const Text('Contact Support'),
@@ -869,13 +871,26 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen>
       Navigator.pop(context); // Close loading dialog
 
       if (receiptUrl != null) {
-        // TODO: Implement actual receipt download/viewing
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Receipt downloaded successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        // Open receipt in browser/webview
+        final uri = Uri.parse(receiptUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Receipt opened in browser'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Unable to open receipt. Please check your internet connection.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
       } else {
         throw Exception('Failed to generate receipt');
       }

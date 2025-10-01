@@ -479,10 +479,53 @@ class _MySponsorshipsScreenState extends State<MySponsorshipsScreen> {
   }
 
   void _changeTier(core.SponsorshipModel sponsorship) {
-    // TODO: Implement tier change dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Change tier functionality coming soon')),
-    );
+    showDialog<core.SponsorshipTier>(
+      context: context,
+      builder: (context) => TierChangeDialog(
+        currentTier: sponsorship.tier,
+        artistName: sponsorship.artistName,
+      ),
+    ).then((newTier) {
+      if (newTier != null && newTier != sponsorship.tier) {
+        _submitTierChange(sponsorship, newTier);
+      }
+    });
+  }
+
+  Future<void> _submitTierChange(
+    core.SponsorshipModel sponsorship,
+    core.SponsorshipTier newTier,
+  ) async {
+    try {
+      // Update the sponsorship tier
+      await _sponsorshipService.updateSponsorshipTier(
+        sponsorshipId: sponsorship.id,
+        newTier: newTier,
+      );
+
+      // Refresh the sponsorships list
+      await _loadSponsorships();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Successfully changed sponsorship to ${newTier.displayName} tier',
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to change tier: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _confirmCancelSponsorship(core.SponsorshipModel sponsorship) {
@@ -536,5 +579,126 @@ class _MySponsorshipsScreenState extends State<MySponsorshipsScreen> {
         );
       }
     }
+  }
+}
+
+/// Dialog for changing sponsorship tier
+class TierChangeDialog extends StatefulWidget {
+  final core.SponsorshipTier currentTier;
+  final String artistName;
+
+  const TierChangeDialog({
+    super.key,
+    required this.currentTier,
+    required this.artistName,
+  });
+
+  @override
+  State<TierChangeDialog> createState() => _TierChangeDialogState();
+}
+
+class _TierChangeDialogState extends State<TierChangeDialog> {
+  core.SponsorshipTier? _selectedTier;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTier = widget.currentTier;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Change Sponsorship Tier for ${widget.artistName}'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Current tier: ${widget.currentTier.displayName}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Select new tier:',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 8),
+          ...core.SponsorshipTier.values.map((tier) {
+            final isSelected = _selectedTier == tier;
+            final isCurrent = tier == widget.currentTier;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: OutlinedButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedTier = tier;
+                  });
+                },
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: isSelected
+                      ? Theme.of(context).colorScheme.primaryContainer
+                      : null,
+                  side: BorderSide(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            tier.displayName,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          Text(
+                            '\$${tier.monthlyPrice}/month',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          if (isCurrent)
+                            Text(
+                              '(Current)',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (isSelected)
+                      Icon(
+                        Icons.check,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed:
+              _selectedTier != null && _selectedTier != widget.currentTier
+              ? () => Navigator.of(context).pop(_selectedTier)
+              : null,
+          child: const Text('Change Tier'),
+        ),
+      ],
+    );
   }
 }

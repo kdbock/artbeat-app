@@ -14,8 +14,10 @@ class MyCapturesScreen extends StatefulWidget {
 class _MyCapturesScreenState extends State<MyCapturesScreen> {
   final CaptureService _captureService = CaptureService();
   List<CaptureModel> _myCaptures = [];
+  List<CaptureModel> _filteredCaptures = [];
   bool _isLoading = true;
   String? _error;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
         if (mounted) {
           setState(() {
             _myCaptures = captures;
+            _filteredCaptures = captures;
             _isLoading = false;
           });
         }
@@ -57,6 +60,25 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
     }
   }
 
+  void _filterCaptures(String query) {
+    setState(() {
+      _searchQuery = query.toLowerCase();
+      if (_searchQuery.isEmpty) {
+        _filteredCaptures = _myCaptures;
+      } else {
+        _filteredCaptures = _myCaptures.where((capture) {
+          final title = (capture.title ?? 'Untitled').toLowerCase();
+          final location = (capture.locationName ?? '').toLowerCase();
+          final status = capture.status.value.toLowerCase();
+
+          return title.contains(_searchQuery) ||
+              location.contains(_searchQuery) ||
+              status.contains(_searchQuery);
+        }).toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return core.MainLayout(
@@ -69,10 +91,7 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
           showBackButton: true,
           showSearch: true,
           onSearchPressed: (query) {
-            // TODO: Implement search functionality for user's captures
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Search coming soon!')),
-            );
+            _filterCaptures(query);
           },
           actions: [
             IconButton(
@@ -146,11 +165,11 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
+                      icon: const Icon(Icons.camera),
+                      label: const Text('Take Photo'),
                       onPressed: () {
                         Navigator.pushNamed(context, '/capture/camera');
                       },
-                      icon: const Icon(Icons.camera),
-                      label: const Text('Take Photo'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: core.ArtbeatColors.primaryGreen,
                         foregroundColor: Colors.white,
@@ -159,13 +178,51 @@ class _MyCapturesScreenState extends State<MyCapturesScreen> {
                   ],
                 ),
               )
+            : _filteredCaptures.isEmpty && _searchQuery.isNotEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.search_off, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No captures found for "$_searchQuery"',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Try a different search term',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: core.ArtbeatColors.primaryPurple,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _searchQuery = '';
+                          _filteredCaptures = _myCaptures;
+                        });
+                      },
+                      child: const Text('Clear Search'),
+                    ),
+                  ],
+                ),
+              )
             : RefreshIndicator(
                 onRefresh: _loadMyCaptures,
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
-                  itemCount: _myCaptures.length,
+                  itemCount: _filteredCaptures.length,
                   itemBuilder: (context, index) {
-                    final capture = _myCaptures[index];
+                    final capture = _filteredCaptures[index];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 16),
                       child: ListTile(

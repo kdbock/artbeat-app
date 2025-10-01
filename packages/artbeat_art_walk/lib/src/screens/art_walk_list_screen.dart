@@ -612,6 +612,73 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
     );
   }
 
+  void _showSearchDialog() {
+    final TextEditingController searchController = TextEditingController(
+      text: _searchQuery,
+    );
+
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Search Art Walks'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Search by title, description, tags...',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (value) {
+                      setState(
+                        () {},
+                      ); // Trigger rebuild for real-time filtering preview
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Search in: Title, Description, Tags, Difficulty, Location',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = '';
+                      _applyFilters();
+                    });
+                    searchController.dispose();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Clear'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = searchController.text;
+                      _applyFilters();
+                    });
+                    searchController.dispose();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Search'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) {
+      searchController.dispose();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     debugPrint(
@@ -626,15 +693,13 @@ class _ArtWalkListScreenState extends State<ArtWalkListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // TODO: Implement search functionality
-            },
+            onPressed: _showSearchDialog,
             tooltip: 'Search',
           ),
           IconButton(
             icon: const Icon(Icons.message, color: Colors.white),
             onPressed: () {
-              // TODO: Navigate to messaging
+              Navigator.of(context).pushNamed('/messaging');
             },
             tooltip: 'Messages',
           ),

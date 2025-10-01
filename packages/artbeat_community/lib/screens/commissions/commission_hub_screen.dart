@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:artbeat_artist/artbeat_artist.dart';
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
 import 'direct_commissions_screen.dart';
 import 'artist_commission_settings_screen.dart';
+import 'commission_detail_screen.dart';
+import 'commission_analytics_screen.dart';
 
 class CommissionHubScreen extends StatefulWidget {
   const CommissionHubScreen({super.key});
@@ -552,9 +555,12 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
             )
           : null,
       onTap: () {
-        // TODO: Navigate to commission detail
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Commission details coming soon!')),
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (context) =>
+                CommissionDetailScreen(commission: commission),
+          ),
         );
       },
     );
@@ -674,16 +680,20 @@ class _CommissionHubScreenState extends State<CommissionHubScreen> {
   }
 
   void _browseArtists() {
-    // TODO: Implement artist browsing screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Artist browsing coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const ArtistBrowseScreen(mode: 'commissions'),
+      ),
     );
   }
 
   void _viewAnalytics() {
-    // TODO: Implement commission analytics screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Commission analytics coming soon!')),
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => const CommissionAnalyticsScreen(),
+      ),
     );
   }
 }

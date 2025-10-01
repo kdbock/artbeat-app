@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/art_models.dart';
 import '../services/art_community_service.dart';
 import 'package:artbeat_core/artbeat_core.dart';
@@ -375,8 +376,40 @@ class _ArtPostCardState extends State<ArtPostCard>
 
                             // Share button
                             IconButton(
-                              onPressed: () {
-                                // TODO: Implement share
+                              onPressed: () async {
+                                try {
+                                  final shareText =
+                                      '${widget.post.content}\n\n'
+                                      'Shared by ${widget.post.userName} on ArtBeat\n'
+                                      '${widget.post.tags.isNotEmpty ? 'Tags: ${widget.post.tags.join(', ')}\n' : ''}'
+                                      '#ArtBeat #DigitalArt';
+
+                                  await SharePlus.instance.share(
+                                    ShareParams(text: shareText),
+                                  );
+
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Post shared successfully!',
+                                        ),
+                                        backgroundColor: Colors.green,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to share: $e'),
+                                        backgroundColor: Colors.red,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                               icon: const Icon(
                                 Icons.share_outlined,
@@ -1303,16 +1336,38 @@ class _ResponsiveArtPostCardState extends State<ResponsiveArtPostCard>
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: IconButton(
-                      onPressed: () {
-                        // TODO: Implement share functionality
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Share functionality coming soon! 🔗',
-                            ),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
+                      onPressed: () async {
+                        try {
+                          final shareText =
+                              '${widget.post.content}\n\n'
+                              'Shared by ${widget.post.userName} on ArtBeat\n'
+                              '${widget.post.tags.isNotEmpty ? 'Tags: ${widget.post.tags.join(', ')}\n' : ''}'
+                              '#ArtBeat #DigitalArt';
+
+                          await SharePlus.instance.share(
+                            ShareParams(text: shareText),
+                          );
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Post shared successfully!'),
+                                backgroundColor: Colors.green,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Failed to share: $e'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        }
                       },
                       icon: const Icon(
                         Icons.share_outlined,
@@ -1467,15 +1522,7 @@ class _ResponsiveArtPostCardState extends State<ResponsiveArtPostCard>
             if (_comments.length > 3)
               Center(
                 child: TextButton(
-                  onPressed: () {
-                    // TODO: Show all comments in a modal or separate screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('View all ${_comments.length} comments'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  },
+                  onPressed: () => _showAllCommentsModal(),
                   child: Text(
                     'View all ${_comments.length} comments',
                     style: const TextStyle(
@@ -1578,6 +1625,53 @@ class _ResponsiveArtPostCardState extends State<ResponsiveArtPostCard>
           ),
         ),
       ],
+    );
+  }
+
+  void _showAllCommentsModal() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'All Comments (${_comments.length})',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: ArtbeatColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const Divider(),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _comments.length,
+                  itemBuilder: (context, index) {
+                    final comment = _comments[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _buildCommentItem(comment),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
+import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
+import 'package:artbeat_artwork/artbeat_artwork.dart' as artwork;
 
 import '../../theme/community_colors.dart';
 import '../../models/post_model.dart';
@@ -401,12 +403,30 @@ class _LegacyCommunityFeedTabState extends State<LegacyCommunityFeedTab> {
 
   String get _currentUserId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
-  void _handleUserTap(String userId) {
-    // TODO: Navigate to user profile
-    AppLogger.info('User tapped: $userId');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('User profile for $userId (coming soon)')),
-    );
+  void _handleUserTap(String userId) async {
+    try {
+      final userService = Provider.of<UserService>(context, listen: false);
+      final coreUserModel = await userService.getUserModel(userId);
+      final messagingUserModel = messaging.UserModel.fromMap(
+        coreUserModel.toMap(),
+      );
+
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (context) =>
+              messaging.UserProfileScreen(user: messagingUserModel),
+        ),
+      );
+    } catch (e) {
+      AppLogger.error('Error navigating to user profile: $e');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to load user profile')),
+      );
+    }
   }
 
   void _navigateToComments(String postId) {
@@ -942,16 +962,18 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
     );
   }
 
-  Widget _buildArtworkCard(community_artwork.ArtworkModel artwork) {
+  Widget _buildArtworkCard(community_artwork.ArtworkModel artworkModel) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to artwork detail
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Artwork: ${artwork.title}')));
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) =>
+                  artwork.ArtworkDetailScreen(artworkId: artworkModel.id),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Column(
@@ -960,9 +982,9 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
             Expanded(
               flex: 3,
               child: Container(
-                child: artwork.imageUrl.isNotEmpty
+                child: artworkModel.imageUrl.isNotEmpty
                     ? SecureNetworkImage(
-                        imageUrl: artwork.imageUrl,
+                        imageUrl: artworkModel.imageUrl,
                         fit: BoxFit.cover,
                         enableThumbnailFallback: true,
                         borderRadius: const BorderRadius.vertical(
@@ -996,7 +1018,7 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      artwork.title,
+                      artworkModel.title,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1007,7 +1029,7 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'by ${artwork.artist?.displayName ?? 'Unknown Artist'}',
+                      'by ${artworkModel.artist?.displayName ?? 'Unknown Artist'}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: ArtbeatColors.textSecondary,
@@ -1026,7 +1048,7 @@ class _CommunityArtworksTabState extends State<CommunityArtworksTab> {
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            artwork.medium,
+                            artworkModel.medium,
                             style: const TextStyle(
                               fontSize: 12,
                               color: ArtbeatColors.textSecondary,

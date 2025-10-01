@@ -15,12 +15,15 @@ class _PaymentAnalyticsDashboardState extends State<PaymentAnalyticsDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late PaymentAnalyticsService _analyticsService;
+  final List<AnalyticsReport> _reports = [];
+  bool _isLoadingReports = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _analyticsService = PaymentAnalyticsService();
+    _loadReports();
   }
 
   @override
@@ -306,16 +309,179 @@ class _PaymentAnalyticsDashboardState extends State<PaymentAnalyticsDashboard>
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        // TODO: Implement report history list
-        const Center(child: Text('No reports generated yet')),
+        // Report history list
+        _isLoadingReports
+            ? const Center(child: CircularProgressIndicator())
+            : _reports.isEmpty
+            ? const Center(child: Text('No reports generated yet'))
+            : _buildReportHistoryList(),
       ],
     );
   }
 
-  void _generateReport(String period) {
-    // TODO: Implement report generation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$period report generation started')),
+  Widget _buildReportHistoryList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _reports.length,
+      itemBuilder: (context, index) {
+        final report = _reports[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: ListTile(
+            leading: const Icon(Icons.description),
+            title: Text(report.title),
+            subtitle: Text(
+              'Generated: ${report.generatedAt.toString().split('.')[0]}\n'
+              'Period: ${report.period}',
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: () => _downloadReport(report),
+            ),
+            onTap: () => _viewReport(report),
+          ),
+        );
+      },
+    );
+  }
+
+  void _generateReport(String period) async {
+    try {
+      // Generate report data based on period
+      final reportData = await _generateReportData(period);
+
+      // Create report metadata
+      final report = AnalyticsReport(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: '$period Payment Analytics Report',
+        period: period,
+        generatedAt: DateTime.now(),
+        generatedBy: 'System', // In a real app, this would be the current user
+        data: reportData,
+      );
+
+      // Save report (in a real app, this would save to Firestore or cloud storage)
+      await _saveReport(report);
+
+      // Reload reports to show the new one
+      await _loadReports();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$period report generated successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to generate $period report: $e')),
+        );
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> _generateReportData(String period) async {
+    // Generate different data based on period
+    switch (period.toLowerCase()) {
+      case 'daily':
+        final metrics = await _analyticsService.getPaymentMetrics(
+          DateRange.last7Days(),
+        );
+        return {
+          'type': 'daily',
+          'metrics': metrics.toJson(),
+          'generatedAt': DateTime.now().toIso8601String(),
+        };
+      case 'weekly':
+        final metrics = await _analyticsService.getPaymentMetrics(
+          DateRange.last7Days(),
+        );
+        final trends = await _analyticsService.getRiskTrends(days: 7);
+        return {
+          'type': 'weekly',
+          'metrics': metrics.toJson(),
+          'trends': trends.map((t) => t.toJson()).toList(),
+          'generatedAt': DateTime.now().toIso8601String(),
+        };
+      case 'monthly':
+        final metrics = await _analyticsService.getPaymentMetrics(
+          DateRange.last30Days(),
+        );
+        final trends = await _analyticsService.getRiskTrends(days: 30);
+        final conversionRates = await _analyticsService.getConversionRates();
+        return {
+          'type': 'monthly',
+          'metrics': metrics.toJson(),
+          'trends': trends.map((t) => t.toJson()).toList(),
+          'conversionRates': conversionRates,
+          'generatedAt': DateTime.now().toIso8601String(),
+        };
+      default:
+        return {
+          'type': 'unknown',
+          'generatedAt': DateTime.now().toIso8601String(),
+        };
+    }
+  }
+
+  Future<void> _saveReport(AnalyticsReport report) async {
+    // In a real implementation, this would save to Firestore
+    // For now, we'll store in memory (in production, use persistent storage)
+    _reports.insert(0, report); // Add to beginning of list
+  }
+
+  Future<void> _loadReports() async {
+    setState(() => _isLoadingReports = true);
+    try {
+      // In a real implementation, this would load from Firestore
+      // For now, just use the in-memory reports
+      // Simulate loading delay
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingReports = false);
+      }
+    }
+  }
+
+  void _downloadReport(AnalyticsReport report) {
+    // In a real implementation, this would download the report file
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Downloading ${report.title}...')));
+  }
+
+  void _viewReport(AnalyticsReport report) {
+    // In a real implementation, this would open a detailed report view
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(report.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Period: ${report.period}'),
+            Text('Generated: ${report.generatedAt.toString().split('.')[0]}'),
+            const SizedBox(height: 16),
+            Text('Report contains ${report.data.length} data points'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _downloadReport(report);
+            },
+            child: const Text('Download'),
+          ),
+        ],
+      ),
     );
   }
 

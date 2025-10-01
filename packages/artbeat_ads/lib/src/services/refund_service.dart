@@ -469,19 +469,26 @@ class RefundService extends ChangeNotifier {
     }
   }
 
-  /// Process Stripe refund (placeholder for actual Stripe integration)
+  /// Process Stripe refund using PaymentService
   Future<String?> processStripeRefund({
     required String paymentIntentId,
     required double amount,
     String? reason,
   }) async {
     try {
-      // TODO: Integrate with actual Stripe refund API
-      // For now, simulate processing
-      await Future<void>.delayed(const Duration(seconds: 2));
+      // Use PaymentService to process actual Stripe refund
+      await PaymentService.refundPayment(
+        paymentId: paymentIntentId,
+        amount: amount,
+        reason: reason ?? 'Refund requested by user',
+      );
 
-      // Return mock refund ID
-      return 'rf_mock_${DateTime.now().millisecondsSinceEpoch}';
+      // Return the payment intent ID as confirmation
+      // The actual refund ID is handled by Stripe and stored in Firestore
+      AppLogger.info(
+        'Stripe refund processed successfully for $paymentIntentId',
+      );
+      return paymentIntentId;
     } catch (e) {
       AppLogger.error('Error processing Stripe refund: $e');
       return null;

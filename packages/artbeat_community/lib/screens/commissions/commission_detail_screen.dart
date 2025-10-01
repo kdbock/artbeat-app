@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import '../../services/stripe_service.dart';
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
@@ -699,10 +702,55 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
   }
 
   void _provideQuote() {
-    // TODO: Implement quote provision dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Quote provision coming soon!')),
-    );
+    showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const QuoteProvisionDialog(),
+    ).then((result) {
+      if (result != null) {
+        _submitQuote(
+          result['price'] as double,
+          result['description'] as String,
+          result['timeline'] as String,
+        );
+      }
+    });
+  }
+
+  Future<void> _submitQuote(
+    double price,
+    String description,
+    String timeline,
+  ) async {
+    try {
+      await _commissionService.provideQuote(
+        commissionId: _commission!.id,
+        totalPrice: price,
+        depositPercentage: 0.5, // Default 50% deposit
+        milestones: [], // TODO: Add milestone support
+        estimatedCompletion: DateTime.now().add(
+          const Duration(days: 30),
+        ), // TODO: Parse timeline
+        quoteMessage: description,
+      );
+      await _loadCommissionDetails();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Quote submitted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error submitting quote: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _acceptQuote() async {
@@ -775,10 +823,38 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
   }
 
   void _cancelCommission() {
-    // TODO: Implement cancellation dialog with reason
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Commission cancellation coming soon!')),
-    );
+    showDialog<String>(
+      context: context,
+      builder: (context) => const CancellationDialog(),
+    ).then((reason) {
+      if (reason != null && reason.isNotEmpty) {
+        _submitCancellation(reason);
+      }
+    });
+  }
+
+  Future<void> _submitCancellation(String reason) async {
+    try {
+      await _commissionService.cancelCommission(_commission!.id, reason);
+      await _loadCommissionDetails();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Commission cancelled successfully'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error cancelling commission: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _payMilestone(CommissionMilestone milestone) async {
@@ -809,11 +885,78 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     }
   }
 
-  void _downloadFile(CommissionFile file) {
-    // TODO: Implement file download
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Downloading ${file.name}...')));
+  Future<void> _downloadFile(CommissionFile file) async {
+    try {
+      // Show initial progress
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Downloading ${file.name}...')));
+
+      // Download the file
+      final response = await http.get(Uri.parse(file.url));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download file: ${response.statusCode}');
+      }
+
+      // Get the downloads directory
+      final directory = await getApplicationDocumentsDirectory();
+      final downloadsDir = Directory('${directory.path}/Downloads');
+
+      // Create downloads directory if it doesn't exist
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+
+      // Create file with appropriate extension based on content type or filename
+      final fileExtension = _getFileExtension(file.name);
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = '${file.name}_$timestamp$fileExtension';
+      final localFile = File('${downloadsDir.path}/$fileName');
+
+      // Write file to disk
+      await localFile.writeAsBytes(response.bodyBytes);
+
+      // Show success message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('File downloaded successfully: ${localFile.path}'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Open',
+            onPressed: () {
+              // Note: Opening files would require additional platform-specific code
+              // For now, just show the path
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('File saved at: ${localFile.path}')),
+              );
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      // Show error message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to download file: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  String _getFileExtension(String fileName) {
+    // Extract extension from filename if present
+    final lastDot = fileName.lastIndexOf('.');
+    if (lastDot != -1 && lastDot < fileName.length - 1) {
+      return fileName.substring(lastDot);
+    }
+
+    // Default extension if none found
+    return '.file';
   }
 
   String _formatDateTime(DateTime dateTime) {
@@ -824,5 +967,240 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+}
+
+class QuoteProvisionDialog extends StatefulWidget {
+  const QuoteProvisionDialog({super.key});
+
+  @override
+  State<QuoteProvisionDialog> createState() => _QuoteProvisionDialogState();
+}
+
+class _QuoteProvisionDialogState extends State<QuoteProvisionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _priceController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _timelineController = TextEditingController();
+
+  @override
+  void dispose() {
+    _priceController.dispose();
+    _descriptionController.dispose();
+    _timelineController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Provide Quote'),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _priceController,
+                decoration: const InputDecoration(
+                  labelText: 'Price (USD)',
+                  prefixText: '\$',
+                  hintText: 'Enter your quote amount',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a price';
+                  }
+                  final price = double.tryParse(value);
+                  if (price == null || price <= 0) {
+                    return 'Please enter a valid price';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Quote Description',
+                  hintText: 'Describe your work and approach',
+                ),
+                maxLines: 3,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please provide a description';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _timelineController,
+                decoration: const InputDecoration(
+                  labelText: 'Timeline',
+                  hintText: 'e.g., 2-3 weeks, 1 month',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please specify a timeline';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Submit Quote')),
+      ],
+    );
+  }
+
+  void _submit() {
+    if (_formKey.currentState?.validate() ?? false) {
+      final price = double.parse(_priceController.text);
+      final description = _descriptionController.text;
+      final timeline = _timelineController.text;
+
+      Navigator.of(
+        context,
+      ).pop({'price': price, 'description': description, 'timeline': timeline});
+    }
+  }
+}
+
+class CancellationDialog extends StatefulWidget {
+  const CancellationDialog({super.key});
+
+  @override
+  State<CancellationDialog> createState() => _CancellationDialogState();
+}
+
+class _CancellationDialogState extends State<CancellationDialog> {
+  final _reasonController = TextEditingController();
+  String _selectedReason = '';
+
+  final List<String> _predefinedReasons = [
+    'Changed my mind',
+    'Found another artist',
+    'Budget constraints',
+    'Timeline issues',
+    'Communication problems',
+    'Other',
+  ];
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Cancel Commission'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Are you sure you want to cancel this commission? This action cannot be undone.',
+              style: TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            const Text('Reason for cancellation:'),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _predefinedReasons
+                  .map(
+                    (reason) => SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedReason = reason;
+                            if (reason != 'Other') {
+                              _reasonController.clear();
+                            }
+                          });
+                        },
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: _selectedReason == reason
+                              ? Colors.red.withValues(alpha: 0.1)
+                              : null,
+                          side: BorderSide(
+                            color: _selectedReason == reason
+                                ? Colors.red
+                                : Colors.grey,
+                          ),
+                        ),
+                        child: Text(reason),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+            if (_selectedReason == 'Other')
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: TextField(
+                  controller: _reasonController,
+                  decoration: const InputDecoration(
+                    hintText: 'Please specify...',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Keep Commission'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Cancel Commission'),
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    String reason;
+    if (_selectedReason == 'Other') {
+      reason = _reasonController.text.trim();
+      if (reason.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please provide a reason')),
+        );
+        return;
+      }
+    } else if (_selectedReason.isNotEmpty) {
+      reason = _selectedReason;
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a reason')));
+      return;
+    }
+
+    Navigator.of(context).pop(reason);
   }
 }

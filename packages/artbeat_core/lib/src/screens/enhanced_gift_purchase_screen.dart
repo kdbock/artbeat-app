@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/enhanced_gift_service.dart';
 import '../models/gift_campaign_model.dart';
 import '../models/gift_subscription_model.dart';
@@ -51,6 +52,10 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
 
   // Subscription Settings
   SubscriptionFrequency _subscriptionFrequency = SubscriptionFrequency.monthly;
+
+  // Search Functionality
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   // Animation
   late AnimationController _fadeController;
@@ -151,6 +156,126 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
     }
   }
 
+  void _showSearchDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: ArtbeatColors.backgroundDark,
+              title: const Text(
+                'Search Preset Gifts',
+                style: TextStyle(color: Colors.white),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search gifts...',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                      prefixIcon: const Icon(Icons.search, color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value.toLowerCase();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 300,
+                    width: 300,
+                    child: _buildFilteredGiftList(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _searchController.clear();
+                    _searchQuery = '';
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: ArtbeatColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    'Done',
+                    style: TextStyle(color: ArtbeatColors.primary),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) {
+      // Clear search when dialog closes
+      _searchController.clear();
+      _searchQuery = '';
+    });
+  }
+
+  Widget _buildFilteredGiftList() {
+    final allGifts = _giftService.getPresetGiftTypes();
+    final filteredEntries = _searchQuery.isEmpty
+        ? allGifts.entries.toList()
+        : allGifts.entries
+              .where((entry) => entry.key.toLowerCase().contains(_searchQuery))
+              .toList();
+
+    if (filteredEntries.isEmpty) {
+      return const Center(
+        child: Text('No gifts found', style: TextStyle(color: Colors.white70)),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: filteredEntries.length,
+      itemBuilder: (context, index) {
+        final entry = filteredEntries[index];
+        final giftName = entry.key;
+        final giftPrice = entry.value;
+
+        return ListTile(
+          leading: Icon(_getGiftIcon(giftName), color: ArtbeatColors.primary),
+          title: Text(giftName, style: const TextStyle(color: Colors.white)),
+          subtitle: Text(
+            '\$${giftPrice.toStringAsFixed(2)}',
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+          ),
+          onTap: () {
+            setState(() {
+              _selectedPresetGift = giftName;
+              _selectedAmount = giftPrice;
+            });
+            Navigator.of(context).pop();
+          },
+          selected: _selectedPresetGift == giftName,
+          selectedTileColor: ArtbeatColors.primary.withValues(alpha: 0.2),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MainLayout(
@@ -186,20 +311,23 @@ class _EnhancedGiftPurchaseScreenState extends State<EnhancedGiftPurchaseScreen>
           actions: [
             IconButton(
               icon: const Icon(Icons.search, color: Colors.white),
-              onPressed: () {
-                // TODO(gift): Implement search functionality
-              },
+              onPressed: () => _showSearchDialog(),
             ),
             IconButton(
               icon: const Icon(Icons.message, color: Colors.white),
               onPressed: () {
-                // TODO(gift): Implement messaging functionality
+                Navigator.of(context).pushNamed('/messaging');
               },
             ),
             IconButton(
               icon: const Icon(Icons.person, color: Colors.white),
               onPressed: () {
-                // TODO(gift): Implement profile functionality
+                final currentUser = FirebaseAuth.instance.currentUser;
+                if (currentUser != null) {
+                  Navigator.of(
+                    context,
+                  ).pushNamed('/profile/${currentUser.uid}');
+                }
               },
             ),
           ],

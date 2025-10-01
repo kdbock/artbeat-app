@@ -1,34 +1,9 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/payment_models.dart';
+import '../models/user_model.dart';
+import '../services/user_service.dart';
 import '../utils/logger.dart';
-
-/// Date range for analytics queries
-class DateRange {
-  final DateTime start;
-  final DateTime end;
-
-  DateRange({required this.start, required this.end});
-
-  factory DateRange.last7Days() {
-    final now = DateTime.now();
-    return DateRange(start: now.subtract(const Duration(days: 7)), end: now);
-  }
-
-  factory DateRange.last30Days() {
-    final now = DateTime.now();
-    return DateRange(start: now.subtract(const Duration(days: 30)), end: now);
-  }
-
-  factory DateRange.last90Days() {
-    final now = DateTime.now();
-    return DateRange(start: now.subtract(const Duration(days: 90)), end: now);
-  }
-
-  factory DateRange.custom(DateTime start, DateTime end) {
-    return DateRange(start: start, end: end);
-  }
-}
 
 /// Payment metrics data structure
 /// Enhanced payment analytics service with Firebase integration
@@ -91,9 +66,10 @@ class PaymentAnalyticsService {
             (paymentMethodBreakdown[method] ?? 0) + 1;
       }
 
-      // Geographic distribution (mock data for now)
-      final geographicDistribution = <String, double>{};
-      // TODO(analytics): Implement actual geographic distribution based on user location data
+      // Geographic distribution based on user location data
+      final geographicDistribution = await _calculateGeographicDistribution(
+        paymentEvents,
+      );
 
       return PaymentMetrics(
         totalTransactions: totalTransactions,
@@ -176,12 +152,46 @@ class PaymentAnalyticsService {
                 : riskScore > 0.4
                 ? 'medium'
                 : 'low',
-            trend: 0.0, // TODO(analytics): Calculate actual trend
+            trend: 0.0, // Will be calculated below
             eventCount: events.length,
             period: entry.key,
             factors: riskFactors,
           ),
         );
+      }
+
+      // Sort by period and calculate trends
+      riskTrends.sort((a, b) => a.period.compareTo(b.period));
+      for (var i = 0; i < riskTrends.length; i++) {
+        if (i == 0) {
+          // First period has no previous trend
+          riskTrends[i] = RiskTrend(
+            category: riskTrends[i].category,
+            riskScore: riskTrends[i].riskScore,
+            riskLevel: riskTrends[i].riskLevel,
+            trend: 0.0,
+            eventCount: riskTrends[i].eventCount,
+            period: riskTrends[i].period,
+            factors: riskTrends[i].factors,
+          );
+        } else {
+          // Calculate trend as percentage change from previous period
+          final previousScore = riskTrends[i - 1].riskScore;
+          final currentScore = riskTrends[i].riskScore;
+          final trend = previousScore != 0
+              ? ((currentScore - previousScore) / previousScore) * 100
+              : 0.0;
+
+          riskTrends[i] = RiskTrend(
+            category: riskTrends[i].category,
+            riskScore: riskTrends[i].riskScore,
+            riskLevel: riskTrends[i].riskLevel,
+            trend: trend,
+            eventCount: riskTrends[i].eventCount,
+            period: riskTrends[i].period,
+            factors: riskTrends[i].factors,
+          );
+        }
       }
 
       return riskTrends;
@@ -486,5 +496,84 @@ class PaymentAnalyticsService {
         'failedEvents': 0,
       };
     }
+  }
+
+  /// Calculate geographic distribution based on user locations
+  Future<Map<String, double>> _calculateGeographicDistribution(
+    List<PaymentEvent> paymentEvents,
+  ) async {
+    try {
+      // Get unique user IDs from payment events
+      final userIds = paymentEvents
+          .map((event) => event.userId)
+          .where((id) => id.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (userIds.isEmpty) {
+        return {};
+      }
+
+      // Fetch user models in batches to avoid Firestore limits
+      final userService = UserService();
+      final userModels = <String, UserModel>{};
+
+      // Process in batches of 10 to avoid overwhelming Firestore
+      const batchSize = 10;
+      for (var i = 0; i < userIds.length; i += batchSize) {
+        final batch = userIds.sublist(
+          i,
+          i + batchSize > userIds.length ? userIds.length : i + batchSize,
+        );
+
+        for (final userId in batch) {
+          try {
+            final userModel = await userService.getUserModel(userId);
+            userModels[userId] = userModel;
+          } catch (e) {
+            AppLogger.warning('⚠️ Could not fetch user model for $userId: $e');
+            // Continue with other users
+          }
+        }
+      }
+
+      // Aggregate revenue by location
+      final locationRevenue = <String, double>{};
+      for (final event in paymentEvents) {
+        if (event.status != 'completed' && event.status != 'success') continue;
+
+        final userModel = userModels[event.userId];
+        if (userModel == null) continue;
+
+        // Use location field, fallback to zipCode if location is empty
+        var location = userModel.location.trim();
+        if (location.isEmpty) {
+          final zipCode = userModel.zipCode?.trim() ?? '';
+          if (zipCode.isNotEmpty) {
+            // Extract state/country from zip code if possible
+            location = _extractLocationFromZipCode(zipCode);
+          }
+        }
+
+        if (location.isEmpty) {
+          location = 'Unknown';
+        }
+
+        locationRevenue[location] =
+            (locationRevenue[location] ?? 0.0) + event.amount;
+      }
+
+      return locationRevenue;
+    } catch (e) {
+      AppLogger.error('❌ Error calculating geographic distribution: $e');
+      return {};
+    }
+  }
+
+  /// Extract location information from zip code
+  String _extractLocationFromZipCode(String zipCode) {
+    // Simple extraction - in a real app, you'd use a geocoding service
+    // For now, just return the zip code as location identifier
+    return 'ZIP: $zipCode';
   }
 }

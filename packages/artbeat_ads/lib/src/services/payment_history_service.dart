@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:intl/intl.dart' as intl;
 import '../models/payment_history_model.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
@@ -399,15 +400,217 @@ class PaymentHistoryService extends ChangeNotifier {
     }
   }
 
-  /// Generate receipt URL (placeholder - integrate with actual receipt generation)
+  /// Generate receipt URL (creates HTML receipt with payment details)
   Future<String?> generateReceipt(String paymentId) async {
     try {
-      // TODO: Integrate with actual receipt generation service
-      // For now, return a placeholder URL
-      return 'https://receipts.artbeat.com/receipt/$paymentId.pdf';
+      // Get payment details from Firestore
+      final paymentDoc = await _firestore
+          .collection('payment_history')
+          .doc(paymentId)
+          .get();
+
+      if (!paymentDoc.exists) {
+        AppLogger.error('Payment not found: $paymentId');
+        return null;
+      }
+
+      final payment = PaymentHistoryModel.fromFirestore(paymentDoc);
+
+      // Get user details
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(payment.userId)
+          .get();
+
+      final userName = userDoc.exists
+          ? (userDoc.data()?['displayName'] as String?) ?? 'Unknown User'
+          : 'Unknown User';
+
+      // Generate HTML receipt
+      final htmlReceipt = _generateHtmlReceipt(payment, userName);
+
+      // For now, return a data URL with the HTML content
+      // In production, this could be uploaded to cloud storage or converted to PDF
+      final encodedHtml = Uri.encodeComponent(htmlReceipt);
+      final dataUrl = 'data:text/html;charset=utf-8,$encodedHtml';
+
+      return dataUrl;
     } catch (e) {
       AppLogger.error('Error generating receipt: $e');
       return null;
     }
+  }
+
+  /// Generate HTML receipt content
+  String _generateHtmlReceipt(PaymentHistoryModel payment, String userName) {
+    final formattedDate = intl.DateFormat(
+      'MMMM dd, yyyy',
+    ).format(payment.transactionDate);
+    final formattedTime = intl.DateFormat(
+      'HH:mm:ss',
+    ).format(payment.transactionDate);
+
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ARTbeat Receipt - ${payment.id}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .receipt-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .receipt-title {
+            font-size: 18px;
+            color: #666;
+        }
+        .details {
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+        .detail-value {
+            color: #666;
+        }
+        .amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-refunded {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <div class="logo">ARTbeat</div>
+            <div class="receipt-title">Payment Receipt</div>
+        </div>
+
+        <div class="details">
+            <div class="detail-row">
+                <span class="detail-label">Receipt Number:</span>
+                <span class="detail-value">${payment.id}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Customer:</span>
+                <span class="detail-value">$userName</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">$formattedDate</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Time:</span>
+                <span class="detail-value">$formattedTime</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Payment Method:</span>
+                <span class="detail-value">${payment.paymentMethod.displayName}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">
+                    <span class="status status-${payment.status.value.toLowerCase()}">
+                        ${payment.status.displayName}
+                    </span>
+                </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Description:</span>
+                <span class="detail-value">${payment.adTitle}</span>
+            </div>
+        </div>
+
+        <div class="amount">
+            Total: \$${payment.amount.toStringAsFixed(2)} ${payment.currency}
+        </div>
+
+        ${payment.refundedAt != null ? '''
+        <div class="details">
+            <div class="detail-row">
+                <span class="detail-label" style="color: #dc3545;">Refund Date:</span>
+                <span class="detail-value">${intl.DateFormat('MMMM dd, yyyy').format(payment.refundedAt!)}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label" style="color: #dc3545;">Refund Amount:</span>
+                <span class="detail-value">\$${payment.refundAmount?.toStringAsFixed(2) ?? '0.00'}</span>
+            </div>
+            ${payment.refundReason != null ? '''
+            <div class="detail-row">
+                <span class="detail-label" style="color: #dc3545;">Refund Reason:</span>
+                <span class="detail-value">${payment.refundReason}</span>
+            </div>
+            ''' : ''}
+        </div>
+        ''' : ''}
+
+        <div class="footer">
+            <p>Thank you for using ARTbeat!</p>
+            <p>This receipt was generated on ${intl.DateFormat('MMMM dd, yyyy \'at\' HH:mm').format(DateTime.now())}</p>
+            <p>For support, please contact support@artbeat.com</p>
+        </div>
+    </div>
+</body>
+</html>
+''';
   }
 }

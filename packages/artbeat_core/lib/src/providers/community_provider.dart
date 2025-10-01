@@ -80,10 +80,15 @@ class CommunityProvider extends ChangeNotifier {
               return 3;
             }
 
-            // For now, return 0 to avoid the index requirement
-            // TODO(community): Implement proper unread count once the required index is created
-            // The required index is: posts collection with fields [isPublic, createdAt]
-            return 0;
+            // Count posts created after last visit
+            final postsQuery = await FirebaseFirestore.instance
+                .collection('posts')
+                .where('isPublic', isEqualTo: true)
+                .where('createdAt', isGreaterThan: lastSeenTimestamp)
+                .count()
+                .get();
+
+            return postsQuery.count ?? 0;
           });
     } catch (e) {
       AppLogger.error('Error getting unread posts count: $e');

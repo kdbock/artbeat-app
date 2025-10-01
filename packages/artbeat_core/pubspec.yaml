@@ -41,6 +41,9 @@ dependencies:
   flutter_stripe: ^11.2.0
   http: ^1.1.0
 
+  # JWT for service account authentication
+  jwt_decoder: ^2.0.1
+
   # Storage and preferences
   shared_preferences: ^2.2.1
 

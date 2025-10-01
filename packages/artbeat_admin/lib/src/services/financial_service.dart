@@ -2,13 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/transaction_model.dart';
 import '../models/analytics_model.dart';
+import 'financial_analytics_service.dart';
 
 /// Service for managing financial data and analytics in admin dashboard
 class FinancialService extends ChangeNotifier {
   final FirebaseFirestore _firestore;
+  final FinancialAnalyticsService _analyticsService;
 
   FinancialService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+      : _firestore = firestore ?? FirebaseFirestore.instance,
+        _analyticsService = FinancialAnalyticsService();
 
   /// Get recent transactions for admin dashboard
   Future<List<TransactionModel>> getRecentTransactions({int limit = 10}) async {
@@ -92,109 +95,10 @@ class FinancialService extends ChangeNotifier {
           startDate ?? DateTime.now().subtract(const Duration(days: 30));
       final end = endDate ?? DateTime.now();
 
-      // Get ad payments
-      final adPaymentsQuery = await _firestore
-          .collection('payment_history')
-          .where('transactionDate',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-          .where('transactionDate',
-              isLessThanOrEqualTo: Timestamp.fromDate(end))
-          .where('status', isEqualTo: 'completed')
-          .get();
-
-      double totalRevenue = 0;
-      double adRevenue = 0;
-      int totalTransactions = 0;
-      final revenueByCategory = <String, double>{};
-      final revenueTimeSeries = <RevenueDataPoint>[];
-
-      // Process ad payments
-      for (final doc in adPaymentsQuery.docs) {
-        final data = doc.data();
-        final amount = ((data['amount'] as num?) ?? 0).toDouble();
-        final date =
-            (data['transactionDate'] as Timestamp?)?.toDate() ?? DateTime.now();
-
-        totalRevenue += amount;
-        adRevenue += amount;
-        totalTransactions++;
-
-        revenueTimeSeries.add(RevenueDataPoint(
-          date: date,
-          amount: amount,
-          category: 'advertisements',
-        ));
-      }
-
-      // Get subscription revenue (if exists)
-      double subscriptionRevenue = 0;
-      try {
-        final subscriptionsQuery = await _firestore
-            .collection('subscriptions')
-            .where('status', isEqualTo: 'active')
-            .get();
-
-        subscriptionRevenue =
-            subscriptionsQuery.docs.length * 29.99; // Assuming $29.99/month
-        totalRevenue += subscriptionRevenue;
-      } catch (e) {
-        debugPrint('No subscriptions found: $e');
-      }
-
-      // Get artwork sales (if exists)
-      double artworkRevenue = 0;
-      try {
-        final artworkSalesQuery = await _firestore
-            .collection('artwork_sales')
-            .where('saleDate',
-                isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-            .where('saleDate', isLessThanOrEqualTo: Timestamp.fromDate(end))
-            .where('status', isEqualTo: 'completed')
-            .get();
-
-        for (final doc in artworkSalesQuery.docs) {
-          final data = doc.data();
-          final amount = ((data['amount'] as num?) ?? 0).toDouble();
-          artworkRevenue += amount;
-          totalRevenue += amount;
-          totalTransactions++;
-        }
-      } catch (e) {
-        debugPrint('No artwork sales found: $e');
-      }
-
-      // Calculate metrics
-      revenueByCategory['advertisements'] = adRevenue;
-      revenueByCategory['subscriptions'] = subscriptionRevenue;
-      revenueByCategory['artwork'] = artworkRevenue;
-
-      final averageRevenuePerUser =
-          totalTransactions > 0 ? totalRevenue / totalTransactions : 0.0;
-      final monthlyRecurringRevenue = subscriptionRevenue;
-
-      // Calculate growth (comparing to previous period)
-      final previousPeriodStart = start.subtract(end.difference(start));
-      final previousMetrics =
-          await _getPreviousPeriodRevenue(previousPeriodStart, start);
-      final revenueGrowth = previousMetrics > 0
-          ? ((totalRevenue - previousMetrics) / previousMetrics) * 100
-          : 0.0;
-
-      return FinancialMetrics(
-        totalRevenue: totalRevenue,
-        subscriptionRevenue: subscriptionRevenue,
-        eventRevenue: 0.0, // TODO(finance): Implement event revenue
-        commissionRevenue: artworkRevenue * 0.1, // 10% commission
-        averageRevenuePerUser: averageRevenuePerUser,
-        monthlyRecurringRevenue: monthlyRecurringRevenue,
-        churnRate: 0.05, // TODO(finance): Calculate actual churn rate
-        lifetimeValue: averageRevenuePerUser * 12, // Rough estimate
-        totalTransactions: totalTransactions,
-        revenueGrowth: revenueGrowth,
-        subscriptionGrowth: 0.0, // TODO(finance): Calculate subscription growth
-        commissionGrowth: 0.0, // TODO(finance): Calculate commission growth
-        revenueByCategory: revenueByCategory,
-        revenueTimeSeries: revenueTimeSeries,
+      // Use the FinancialAnalyticsService for accurate calculations
+      return await _analyticsService.getFinancialMetrics(
+        startDate: start,
+        endDate: end,
       );
     } catch (e) {
       debugPrint('Error calculating financial metrics: $e');
@@ -262,32 +166,6 @@ class FinancialService extends ChangeNotifier {
     }
 
     return 'Unknown User';
-  }
-
-  /// Get previous period revenue for growth calculation
-  Future<double> _getPreviousPeriodRevenue(DateTime start, DateTime end) async {
-    try {
-      final adPaymentsQuery = await _firestore
-          .collection('payment_history')
-          .where('transactionDate',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-          .where('transactionDate',
-              isLessThanOrEqualTo: Timestamp.fromDate(end))
-          .where('status', isEqualTo: 'completed')
-          .get();
-
-      double totalRevenue = 0;
-      for (final doc in adPaymentsQuery.docs) {
-        final data = doc.data();
-        final amount = ((data['amount'] as num?) ?? 0).toDouble();
-        totalRevenue += amount;
-      }
-
-      return totalRevenue;
-    } catch (e) {
-      debugPrint('Error calculating previous period revenue: $e');
-      return 0.0;
-    }
   }
 
   /// Get top spending users

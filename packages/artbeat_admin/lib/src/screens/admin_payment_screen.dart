@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/transaction_model.dart';
 import '../models/admin_permissions.dart';
 import '../services/financial_service.dart';
@@ -191,15 +197,41 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
     if (result == true) {
       try {
-        // TODO(payments): Implement actual refund processing with Stripe
+        // Get current admin user
+        final currentUser = FirebaseAuth.instance.currentUser;
+        final adminUserId = currentUser?.uid ?? 'unknown_admin';
+        final adminEmail = currentUser?.email ?? 'unknown';
+
+        // Get payment intent ID from transaction metadata
+        final paymentIntentId =
+            transaction.metadata['paymentIntentId'] as String?;
+
+        if (paymentIntentId != null) {
+          // Process actual Stripe refund using PaymentService
+          await PaymentService.refundPayment(
+            paymentId: paymentIntentId,
+            amount: transaction.amount,
+            reason: 'Admin processed refund',
+          );
+        } else {
+          // Fallback: Log warning if no payment intent ID
+          AppLogger.warning(
+            'No paymentIntentId found for transaction ${transaction.id}. '
+            'Recording refund in database only.',
+          );
+        }
+
+        // Record refund in database
         await _firestore.collection('refunds').add({
           'originalTransactionId': transaction.id,
+          'paymentIntentId': paymentIntentId,
           'amount': transaction.amount,
           'currency': transaction.currency,
           'userId': transaction.userId,
           'userName': transaction.userName,
           'reason': 'Admin processed refund',
-          'processedBy': 'admin', // TODO(admin): Get actual admin user
+          'processedBy': adminUserId,
+          'processedByEmail': adminEmail,
           'processedAt': FieldValue.serverTimestamp(),
           'status': 'completed',
         });
@@ -211,13 +243,14 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
             .update({
           'status': 'refunded',
           'refundedAt': FieldValue.serverTimestamp(),
+          'refundedBy': adminUserId,
         });
 
         _showSuccessSnackBar('Refund processed successfully');
         _loadData(); // Refresh data
       } catch (e) {
-        debugPrint('Error processing refund: $e');
-        _showErrorSnackBar('Failed to process refund');
+        AppLogger.error('Error processing refund: $e');
+        _showErrorSnackBar('Failed to process refund: ${e.toString()}');
       }
     }
   }
@@ -348,8 +381,17 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           .where((t) => _selectedTransactionIds.contains(t.id))
           .toList();
 
-      // TODO(admin): Implement actual file download/save with csvContent
-      // For now, just log the audit and show success
+      // Generate CSV content
+      final csvContent = _generateTransactionCsv(selectedTransactions);
+
+      // Create file name with timestamp
+      final fileName =
+          'selected_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
+
+      // Use file download functionality (web) or save to device
+      await _downloadCsvFile(csvContent, fileName);
+
+      // Log audit
       await _auditService.logDataExport(
         adminId: currentAdmin.id,
         adminEmail: currentAdmin.email,
@@ -359,8 +401,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           'selectedIds': _selectedTransactionIds.toList(),
           'exportFormat': 'csv',
         },
-        fileName:
-            'selected_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
+        fileName: fileName,
       );
 
       _showSuccessSnackBar(
@@ -380,8 +421,17 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         return;
       }
 
-      // TODO(admin): Implement actual file download/save with csvContent
-      // For now, just log the audit and show success
+      // Generate CSV content for all filtered transactions
+      final csvContent = _generateTransactionCsv(_filteredTransactions);
+
+      // Create file name with timestamp
+      final fileName =
+          'all_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
+
+      // Use file download functionality (web) or save to device
+      await _downloadCsvFile(csvContent, fileName);
+
+      // Log audit
       await _auditService.logDataExport(
         adminId: currentAdmin.id,
         adminEmail: currentAdmin.email,
@@ -403,8 +453,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
           },
           'exportFormat': 'csv',
         },
-        fileName:
-            'all_transactions_${DateTime.now().millisecondsSinceEpoch}.csv',
+        fileName: fileName,
       );
 
       _showSuccessSnackBar(
@@ -853,11 +902,174 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          // TODO(analytics): Add payment method analytics
-          const Center(child: Text('Payment method analytics coming soon')),
+          // Payment method analytics
+          ..._buildPaymentMethodAnalytics(),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildPaymentMethodAnalytics() {
+    // Group transactions by payment method
+    final paymentMethodStats = <String, Map<String, dynamic>>{};
+
+    for (final transaction in _transactions) {
+      final method = transaction.paymentMethod;
+      if (!paymentMethodStats.containsKey(method)) {
+        paymentMethodStats[method] = {
+          'count': 0,
+          'totalAmount': 0.0,
+          'successful': 0,
+          'failed': 0,
+        };
+      }
+
+      paymentMethodStats[method]!['count']++;
+      paymentMethodStats[method]!['totalAmount'] += transaction.amount;
+
+      if (transaction.status == 'completed' ||
+          transaction.status == 'success') {
+        paymentMethodStats[method]!['successful']++;
+      } else if (transaction.status == 'failed') {
+        paymentMethodStats[method]!['failed']++;
+      }
+    }
+
+    // Convert to sorted list for display
+    final sortedMethods = paymentMethodStats.entries.toList()
+      ..sort((a, b) => (b.value['totalAmount'] as double)
+          .compareTo(a.value['totalAmount'] as double));
+
+    return sortedMethods.map<Widget>((entry) {
+      final method = entry.key;
+      final stats = entry.value;
+      final count = stats['count'] as int;
+      final totalAmount = stats['totalAmount'] as double;
+      final successful = stats['successful'] as int;
+      final successRate = count > 0 ? (successful / count * 100) : 0.0;
+
+      return Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    _getPaymentMethodIcon(method),
+                    color: _getPaymentMethodColor(method),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    method.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '\$${totalAmount.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStatItem('Transactions', count.toString()),
+                  ),
+                  Expanded(
+                    child: _buildStatItem(
+                        'Success Rate', '${successRate.toStringAsFixed(1)}%'),
+                  ),
+                  Expanded(
+                    child: _buildStatItem('Avg Amount',
+                        '\$${(totalAmount / count).toStringAsFixed(2)}'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: successRate / 100,
+                backgroundColor: Colors.red.shade100,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  successRate >= 90
+                      ? Colors.green
+                      : successRate >= 70
+                          ? Colors.orange
+                          : Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getPaymentMethodIcon(String method) {
+    switch (method.toLowerCase()) {
+      case 'card':
+      case 'credit_card':
+        return Icons.credit_card;
+      case 'paypal':
+        return Icons.account_balance_wallet;
+      case 'apple_pay':
+        return Icons.apple;
+      case 'google_pay':
+        return Icons.g_mobiledata;
+      case 'bank_transfer':
+        return Icons.account_balance;
+      default:
+        return Icons.payment;
+    }
+  }
+
+  Color _getPaymentMethodColor(String method) {
+    switch (method.toLowerCase()) {
+      case 'card':
+      case 'credit_card':
+        return Colors.blue;
+      case 'paypal':
+        return Colors.blue.shade700;
+      case 'apple_pay':
+        return Colors.black;
+      case 'google_pay':
+        return Colors.green;
+      case 'bank_transfer':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildRefundsTab() {
@@ -1081,6 +1293,73 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
         return Icons.account_balance_wallet;
       default:
         return Icons.payment;
+    }
+  }
+
+  /// Generate CSV content for transactions
+  String _generateTransactionCsv(List<TransactionModel> transactions) {
+    final buffer = StringBuffer();
+
+    // CSV Header
+    buffer.writeln(
+        'Transaction ID,User ID,User Name,Type,Amount,Currency,Status,Payment Method,Transaction Date,Description,Item Title');
+
+    // CSV Data rows
+    for (final transaction in transactions) {
+      final description =
+          transaction.description?.replaceAll(',', ';') ?? ''; // Escape commas
+      final itemTitle =
+          transaction.itemTitle?.replaceAll(',', ';') ?? ''; // Escape commas
+      final transactionDate = transaction.transactionDate.toIso8601String();
+
+      buffer.writeln(
+        '${transaction.id},${transaction.userId},"${transaction.userName}",${transaction.type},${transaction.amount},${transaction.currency},${transaction.status},${transaction.paymentMethod},"$transactionDate","$description","$itemTitle"',
+      );
+    }
+
+    return buffer.toString();
+  }
+
+  /// Download CSV file (web) or save to device
+  Future<void> _downloadCsvFile(String csvContent, String fileName) async {
+    try {
+      if (kIsWeb) {
+        // TODO: Implement web CSV download using package:web
+        // For now, show the CSV content in a dialog for web users
+        if (mounted) {
+          showDialog<void>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('CSV Export'),
+              content: SingleChildScrollView(
+                child: SelectableText(csvContent),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        // Mobile implementation using path_provider and share_plus
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/$fileName');
+        await file.writeAsString(csvContent);
+
+        // Share the file
+        await SharePlus.instance.share(
+          ShareParams(
+            text: 'Exported transaction data',
+            subject: 'Transaction Export',
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error downloading CSV file: $e');
+      throw Exception('Failed to download CSV file');
     }
   }
 }

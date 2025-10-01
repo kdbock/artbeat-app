@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart'
     show CapturesListScreen, CaptureModel;
@@ -754,16 +755,43 @@ class DashboardCapturesSection extends StatelessWidget {
   }
 
   /// Handle share action
-  void _handleShare(BuildContext context, CaptureModel capture) {
-    // TODO: Implement actual share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Sharing "${capture.title ?? 'artwork'}"...'),
-        backgroundColor: ArtbeatColors.primaryGreen,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+  void _handleShare(BuildContext context, CaptureModel capture) async {
+    try {
+      final shareText =
+          'Check out my artwork "${capture.title ?? 'Untitled'}" on ArtBeat! '
+          '${capture.description?.isNotEmpty == true ? '\n\n${capture.description}' : ''}'
+          '\n\n#ArtBeat #DigitalArt';
+
+      await SharePlus.instance.share(ShareParams(text: shareText));
+
+      // Show success feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Artwork shared successfully!'),
+            backgroundColor: ArtbeatColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error feedback
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share artwork: $e'),
+            backgroundColor: ArtbeatColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   void _showCaptureDetails(BuildContext context, CaptureModel capture) {

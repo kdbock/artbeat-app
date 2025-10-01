@@ -10,6 +10,7 @@ import 'package:artbeat_artist/artbeat_artist.dart' as artist_profile;
 import 'package:artbeat_events/artbeat_events.dart' as eventLib;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artworkLib;
 import 'package:artbeat_capture/artbeat_capture.dart';
+import 'package:artbeat_community/artbeat_community.dart' as community;
 
 class DashboardViewModel extends ChangeNotifier {
   final eventLib.EventService _eventService;
@@ -19,6 +20,8 @@ class DashboardViewModel extends ChangeNotifier {
   final UserService _userService;
   final CaptureService _captureService;
   final ContentEngagementService _engagementService;
+  final community.ArtCommunityService _communityService;
+  final artist_profile.CommunityService _artistCommunityService;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   UserModel? _currentUser;
@@ -32,6 +35,7 @@ class DashboardViewModel extends ChangeNotifier {
   final bool _isLoadingMap = false;
   bool _isLoadingAchievements = true;
   bool _isLoadingLocalCaptures = true;
+  bool _isLoadingPosts = true;
 
   String? _eventsError;
   String? _upcomingEventsError;
@@ -40,6 +44,7 @@ class DashboardViewModel extends ChangeNotifier {
   String? _artistsError;
   String? _locationError;
   String? _localCapturesError;
+  String? _postsError;
 
   List<EventModel> _events = [];
   final List<EventModel> _upcomingEvents = [];
@@ -50,6 +55,7 @@ class DashboardViewModel extends ChangeNotifier {
   LatLng? _mapLocation;
   List<AchievementModel> _achievements = [];
   List<CaptureModel> _localCaptures = [];
+  List<community.PostModel> _posts = [];
 
   DashboardViewModel({
     required eventLib.EventService eventService,
@@ -59,13 +65,18 @@ class DashboardViewModel extends ChangeNotifier {
     required UserService userService,
     CaptureService? captureService,
     ContentEngagementService? engagementService,
+    community.ArtCommunityService? communityService,
+    artist_profile.CommunityService? artistCommunityService,
   }) : _eventService = eventService,
        _artworkService = artworkService,
        _artWalkService = artWalkService,
        _subscriptionService = subscriptionService,
        _userService = userService,
        _captureService = captureService ?? CaptureService(),
-       _engagementService = engagementService ?? ContentEngagementService();
+       _engagementService = engagementService ?? ContentEngagementService(),
+       _communityService = communityService ?? community.ArtCommunityService(),
+       _artistCommunityService =
+           artistCommunityService ?? artist_profile.CommunityService();
 
   /// Initializes dashboard data and state
   Future<void> initialize() async {
@@ -85,7 +96,7 @@ class DashboardViewModel extends ChangeNotifier {
         _loadLocation(),
         _loadAchievements(),
         _loadLocalCaptures(),
-        // _loadPosts(), // TODO(dashboard): Implement posts loading
+        _loadPosts(),
       ]);
     } catch (e, stack) {
       AppLogger.error('❌ Error initializing dashboard: $e');
@@ -104,6 +115,7 @@ class DashboardViewModel extends ChangeNotifier {
     _isLoadingLocation = true;
     _isLoadingAchievements = true;
     _isLoadingLocalCaptures = true;
+    _isLoadingPosts = true;
     _safeNotifyListeners();
   }
 
@@ -144,6 +156,7 @@ class DashboardViewModel extends ChangeNotifier {
   bool get isLoadingMap => _isLoadingMap;
   bool get isLoadingLocalCaptures => _isLoadingLocalCaptures;
   bool get isLoadingAchievements => _isLoadingAchievements;
+  bool get isLoadingPosts => _isLoadingPosts;
   bool get isAuthenticated => _auth.currentUser != null;
   String? get eventsError => _eventsError;
   String? get upcomingEventsError => _upcomingEventsError;
@@ -152,6 +165,7 @@ class DashboardViewModel extends ChangeNotifier {
   String? get artistsError => _artistsError;
   String? get locationError => _locationError;
   String? get localCapturesError => _localCapturesError;
+  String? get postsError => _postsError;
 
   List<EventModel> get events => List.unmodifiable(_events);
   List<EventModel> get upcomingEvents => List.unmodifiable(_upcomingEvents);
@@ -161,6 +175,7 @@ class DashboardViewModel extends ChangeNotifier {
   Position? get currentLocation => _currentLocation;
   List<AchievementModel> get achievements => List.unmodifiable(_achievements);
   List<CaptureModel> get localCaptures => List.unmodifiable(_localCaptures);
+  List<community.PostModel> get posts => List.unmodifiable(_posts);
   LatLng? get mapLocation => _mapLocation;
   UserModel? get currentUser => _currentUser;
 
@@ -342,6 +357,27 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> _loadPosts() async {
+    try {
+      _isLoadingPosts = true;
+      _safeNotifyListeners();
+
+      // Load recent posts from community service
+      final posts = await _communityService.getFeed(limit: 10);
+
+      _posts = posts;
+      _postsError = null;
+      AppLogger.info('✅ Loaded ${_posts.length} posts successfully');
+    } catch (e) {
+      AppLogger.error('Error loading posts: $e');
+      _postsError = e.toString();
+      _posts = [];
+    } finally {
+      _isLoadingPosts = false;
+      _safeNotifyListeners();
+    }
+  }
+
   Future<void> _loadLocation() async {
     try {
       _isLoadingLocation = true;
@@ -459,7 +495,10 @@ class DashboardViewModel extends ChangeNotifier {
 
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
-        // TODO(artist): Implement artist following with ArtistService
+        final success = await _artistCommunityService.followArtist(artistId);
+        if (!success) {
+          throw Exception('Failed to follow artist');
+        }
         AppLogger.info('Artist follow requested: $artistId');
       }
     } catch (e) {
@@ -486,7 +525,10 @@ class DashboardViewModel extends ChangeNotifier {
 
       final subscription = await _subscriptionService.getUserSubscription();
       if (subscription != null) {
-        // TODO(artist): Implement artist unfollowing with ArtistService
+        final success = await _artistCommunityService.unfollowArtist(artistId);
+        if (!success) {
+          throw Exception('Failed to unfollow artist');
+        }
         AppLogger.info('Artist unfollow requested: $artistId');
       }
     } catch (e) {

@@ -17,6 +17,30 @@ class NotificationsScreen extends StatefulWidget {
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final NotificationService _notificationService = NotificationService();
+  final UserService _userService = UserService();
+  UserModel? _currentUserModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final userModel = await _userService.getUserModel(user.uid);
+        if (mounted) {
+          setState(() {
+            _currentUserModel = userModel;
+          });
+        }
+      } on Exception catch (e) {
+        AppLogger.error('Error loading user model: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +226,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         },
       ),
       // Debug functionality for admin users
-      floatingActionButton: _isAdminUser(user.uid) && kDebugMode
+      floatingActionButton: _isAdminUser() && kDebugMode
           ? FloatingActionButton.extended(
               onPressed: _runImageCleanup,
               label: const Text('Fix Images'),
@@ -326,11 +350,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  /// Check if user is admin - moved to database-based check for security
-  bool _isAdminUser(String userId) =>
-      // TODO(security): Replace with proper database-based admin role check
-      // For now, returning false for security - enable admin features via database
-      false;
+  /// Check if user is admin - database-based check for security
+  bool _isAdminUser() => _currentUserModel?.isAdmin ?? false;
 
   /// Run image cleanup service
   Future<void> _runImageCleanup() async {

@@ -1,6 +1,7 @@
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'terms_of_service_screen.dart';
 
 /// About ARTbeat screen displaying app information, version, and credits
 class AboutScreen extends StatefulWidget {
@@ -350,8 +351,12 @@ class _AboutScreenState extends State<AboutScreen> {
             const Text(' • '),
             TextButton(
               onPressed: () {
-                // Navigate to terms of service
-                // TODO(dev): Create terms of service screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (context) => const TermsOfServiceScreen(),
+                  ),
+                );
               },
               child: const Text('Terms of Service'),
             ),

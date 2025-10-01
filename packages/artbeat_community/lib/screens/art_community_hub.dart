@@ -10,6 +10,10 @@ import '../widgets/comments_modal.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'artist_onboarding_screen.dart';
 import 'feed/create_post_screen.dart';
+import 'feed/enhanced_community_feed_screen.dart';
+import 'package:artbeat_artist/src/screens/artist_public_profile_screen.dart';
+import 'package:artbeat_artist/src/services/community_service.dart'
+    as artist_community;
 
 /// New simplified community hub with gallery-style design
 class ArtCommunityHub extends StatefulWidget {
@@ -23,6 +27,10 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late ArtCommunityService _communityService;
+
+  // Search functionality
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -46,6 +54,93 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
     } else {
       AppLogger.error('🔐 User is NOT authenticated');
     }
+  }
+
+  void _showSearchDialog() {
+    final currentTab = _tabController.index;
+    final tabName = currentTab == 0
+        ? 'Feed'
+        : currentTab == 1
+        ? 'Artists'
+        : 'Topics';
+
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: ArtbeatColors.backgroundDark,
+              title: Text(
+                'Search $tabName',
+                style: const TextStyle(color: Colors.white),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                      prefixIcon: const Icon(Icons.search, color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value.toLowerCase();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Searching in: $tabName',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _searchController.clear();
+                    _searchQuery = '';
+                    Navigator.of(context).pop();
+                    // Trigger search update in current tab
+                    setState(() {});
+                  },
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(color: ArtbeatColors.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // Trigger search update in current tab
+                    setState(() {});
+                  },
+                  child: const Text(
+                    'Search',
+                    style: TextStyle(color: ArtbeatColors.primary),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -150,15 +245,7 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: IconButton(
-                  onPressed: () {
-                    // TODO: Implement search
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Search coming soon! 🔍'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
+                  onPressed: _showSearchDialog,
                   icon: const Icon(Icons.search, color: Colors.white),
                 ),
               ),
@@ -200,9 +287,18 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
         child: TabBarView(
           controller: _tabController,
           children: [
-            CommunityFeedTab(communityService: _communityService),
-            ArtistsGalleryTab(communityService: _communityService),
-            TopicsTab(communityService: _communityService),
+            CommunityFeedTab(
+              communityService: _communityService,
+              searchQuery: _searchQuery,
+            ),
+            ArtistsGalleryTab(
+              communityService: _communityService,
+              searchQuery: _searchQuery,
+            ),
+            TopicsTab(
+              communityService: _communityService,
+              searchQuery: _searchQuery,
+            ),
           ],
         ),
       ),
@@ -242,8 +338,13 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
 /// Feed tab - Gallery of all posts
 class CommunityFeedTab extends StatefulWidget {
   final ArtCommunityService communityService;
+  final String searchQuery;
 
-  const CommunityFeedTab({super.key, required this.communityService});
+  const CommunityFeedTab({
+    super.key,
+    required this.communityService,
+    this.searchQuery = '',
+  });
 
   @override
   State<CommunityFeedTab> createState() => _CommunityFeedTabState();
@@ -251,12 +352,21 @@ class CommunityFeedTab extends StatefulWidget {
 
 class _CommunityFeedTabState extends State<CommunityFeedTab> {
   List<PostModel> _posts = [];
+  List<PostModel> _filteredPosts = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadPosts();
+  }
+
+  @override
+  void didUpdateWidget(CommunityFeedTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      _filterPosts();
+    }
   }
 
   Future<void> _loadPosts() async {
@@ -277,6 +387,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       if (mounted) {
         setState(() {
           _posts = posts;
+          _filteredPosts = posts;
           _isLoading = false;
         });
       }
@@ -289,6 +400,24 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
         ).showSnackBar(SnackBar(content: Text('Error loading posts: $e')));
       }
     }
+  }
+
+  void _filterPosts() {
+    setState(() {
+      if (widget.searchQuery.isEmpty) {
+        _filteredPosts = _posts;
+      } else {
+        _filteredPosts = _posts.where((post) {
+          final content = post.content.toLowerCase();
+          final authorName = post.userName.toLowerCase();
+          final location = post.location.toLowerCase();
+
+          return content.contains(widget.searchQuery) ||
+              authorName.contains(widget.searchQuery) ||
+              location.contains(widget.searchQuery);
+        }).toList();
+      }
+    });
   }
 
   void _handlePostTap(PostModel post) {
@@ -539,9 +668,9 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       color: ArtbeatColors.primaryPurple,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _posts.length,
+        itemCount: _filteredPosts.length,
         itemBuilder: (context, index) {
-          if (index >= _posts.length) {
+          if (index >= _filteredPosts.length) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -554,7 +683,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
             );
           }
 
-          final post = _posts[index];
+          final post = _filteredPosts[index];
           return EnhancedPostCard(
             post: post,
             onTap: () => _handlePostTap(post),
@@ -571,8 +700,13 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
 /// Artists tab - Gallery of artist profiles
 class ArtistsGalleryTab extends StatefulWidget {
   final ArtCommunityService communityService;
+  final String searchQuery;
 
-  const ArtistsGalleryTab({super.key, required this.communityService});
+  const ArtistsGalleryTab({
+    super.key,
+    required this.communityService,
+    this.searchQuery = '',
+  });
 
   @override
   State<ArtistsGalleryTab> createState() => _ArtistsGalleryTabState();
@@ -580,12 +714,23 @@ class ArtistsGalleryTab extends StatefulWidget {
 
 class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
   List<ArtistProfile> _artists = [];
+  List<ArtistProfile> _filteredArtists = [];
   bool _isLoading = true;
+  late artist_community.CommunityService _artistCommunityService;
 
   @override
   void initState() {
     super.initState();
+    _artistCommunityService = artist_community.CommunityService();
     _loadArtists();
+  }
+
+  @override
+  void didUpdateWidget(ArtistsGalleryTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      _filterArtists();
+    }
   }
 
   Future<void> _loadArtists() async {
@@ -598,6 +743,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
       if (mounted) {
         setState(() {
           _artists = artists;
+          _filteredArtists = artists;
           _isLoading = false;
         });
       }
@@ -611,18 +757,50 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
     }
   }
 
-  void _handleArtistTap(ArtistProfile artist) {
-    // TODO: Navigate to artist profile
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Artist: ${artist.displayName}')));
+  void _filterArtists() {
+    setState(() {
+      if (widget.searchQuery.isEmpty) {
+        _filteredArtists = _artists;
+      } else {
+        _filteredArtists = _artists.where((artist) {
+          final displayName = artist.displayName.toLowerCase();
+          final bio = artist.bio.toLowerCase();
+
+          return displayName.contains(widget.searchQuery) ||
+              bio.contains(widget.searchQuery);
+        }).toList();
+      }
+    });
   }
 
-  void _handleFollow(ArtistProfile artist) {
-    // TODO: Implement follow functionality
-    ScaffoldMessenger.of(
+  void _handleArtistTap(ArtistProfile artist) {
+    Navigator.push(
       context,
-    ).showSnackBar(SnackBar(content: Text('Follow ${artist.displayName}')));
+      MaterialPageRoute<void>(
+        builder: (context) => ArtistPublicProfileScreen(userId: artist.userId),
+      ),
+    );
+  }
+
+  void _handleFollow(ArtistProfile artist) async {
+    try {
+      final success = await _artistCommunityService.followArtist(artist.userId);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Following ${artist.displayName}')),
+        );
+        // Refresh artists to update follow status
+        _loadArtists();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to follow artist')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error following artist: $e')));
+    }
   }
 
   @override
@@ -772,9 +950,9 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
           crossAxisSpacing: 16,
           childAspectRatio: 1.0,
         ),
-        itemCount: _artists.length,
+        itemCount: _filteredArtists.length,
         itemBuilder: (context, index) {
-          final artist = _artists[index];
+          final artist = _filteredArtists[index];
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             child: ArtistCard(
@@ -792,8 +970,13 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
 /// Topics tab - Browse by categories
 class TopicsTab extends StatefulWidget {
   final ArtCommunityService communityService;
+  final String searchQuery;
 
-  const TopicsTab({super.key, required this.communityService});
+  const TopicsTab({
+    super.key,
+    required this.communityService,
+    this.searchQuery = '',
+  });
 
   @override
   State<TopicsTab> createState() => _TopicsTabState();
@@ -801,6 +984,7 @@ class TopicsTab extends StatefulWidget {
 
 class _TopicsTabState extends State<TopicsTab> {
   List<String> _topics = [];
+  List<String> _filteredTopics = [];
   bool _isLoading = true;
 
   final List<String> _defaultTopics = [
@@ -824,6 +1008,14 @@ class _TopicsTabState extends State<TopicsTab> {
     _loadTopics();
   }
 
+  @override
+  void didUpdateWidget(TopicsTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      _filterTopics();
+    }
+  }
+
   Future<void> _loadTopics() async {
     setState(() => _isLoading = true);
 
@@ -832,6 +1024,7 @@ class _TopicsTabState extends State<TopicsTab> {
       if (mounted) {
         setState(() {
           _topics = topics.isNotEmpty ? topics : _defaultTopics;
+          _filteredTopics = _topics;
           _isLoading = false;
         });
       }
@@ -839,17 +1032,31 @@ class _TopicsTabState extends State<TopicsTab> {
       if (mounted) {
         setState(() {
           _topics = _defaultTopics;
+          _filteredTopics = _topics;
           _isLoading = false;
         });
       }
     }
   }
 
+  void _filterTopics() {
+    setState(() {
+      if (widget.searchQuery.isEmpty) {
+        _filteredTopics = _topics;
+      } else {
+        _filteredTopics = _topics
+            .where((topic) => topic.toLowerCase().contains(widget.searchQuery))
+            .toList();
+      }
+    });
+  }
+
   void _handleTopicTap(String topic) {
-    // TODO: Navigate to topic-specific feed
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Topic: $topic')));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedCommunityFeedScreen(topicFilter: topic),
+      ),
+    );
   }
 
   @override
@@ -875,9 +1082,9 @@ class _TopicsTabState extends State<TopicsTab> {
           crossAxisSpacing: 16,
           childAspectRatio: 1.2,
         ),
-        itemCount: _topics.length,
+        itemCount: _filteredTopics.length,
         itemBuilder: (context, index) {
-          final topic = _topics[index];
+          final topic = _filteredTopics[index];
           return _buildTopicCard(topic);
         },
       ),

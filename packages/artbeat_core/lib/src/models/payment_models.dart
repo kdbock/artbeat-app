@@ -171,7 +171,24 @@ class DateRange {
 
   DateRange({required this.start, required this.end});
 
-  Duration get duration => end.difference(start);
+  factory DateRange.last7Days() {
+    final now = DateTime.now();
+    return DateRange(start: now.subtract(const Duration(days: 7)), end: now);
+  }
+
+  factory DateRange.last30Days() {
+    final now = DateTime.now();
+    return DateRange(start: now.subtract(const Duration(days: 30)), end: now);
+  }
+
+  factory DateRange.last90Days() {
+    final now = DateTime.now();
+    return DateRange(start: now.subtract(const Duration(days: 90)), end: now);
+  }
+
+  factory DateRange.custom(DateTime start, DateTime end) {
+    return DateRange(start: start, end: end);
+  }
 
   bool contains(DateTime date) {
     return date.isAfter(start) && date.isBefore(end);
@@ -186,5 +203,52 @@ class DateRange {
       start: DateTime.parse(json['start'] as String),
       end: DateTime.parse(json['end'] as String),
     );
+  }
+}
+
+/// Analytics report metadata
+class AnalyticsReport {
+  final String id;
+  final String title;
+  final String period;
+  final DateTime generatedAt;
+  final String generatedBy;
+  final Map<String, dynamic> data;
+  final String? downloadUrl;
+
+  AnalyticsReport({
+    required this.id,
+    required this.title,
+    required this.period,
+    required this.generatedAt,
+    required this.generatedBy,
+    required this.data,
+    this.downloadUrl,
+  });
+
+  factory AnalyticsReport.fromJson(Map<String, dynamic> json) {
+    return AnalyticsReport(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      period: json['period'] as String? ?? '',
+      generatedAt: DateTime.parse(
+        json['generatedAt'] as String? ?? DateTime.now().toIso8601String(),
+      ),
+      generatedBy: json['generatedBy'] as String? ?? '',
+      data: Map<String, dynamic>.from(json['data'] as Map? ?? {}),
+      downloadUrl: json['downloadUrl'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'period': period,
+      'generatedAt': generatedAt.toIso8601String(),
+      'generatedBy': generatedBy,
+      'data': data,
+      'downloadUrl': downloadUrl,
+    };
   }
 }

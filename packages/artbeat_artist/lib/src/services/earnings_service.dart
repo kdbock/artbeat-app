@@ -254,6 +254,31 @@ class EarningsService {
     }
   }
 
+  /// Delete a payout account
+  Future<void> deletePayoutAccount(String accountId) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('User not authenticated');
+
+    try {
+      // Check if account has any pending payouts
+      final pendingPayouts = await _firestore
+          .collection('payouts')
+          .where('artistId', isEqualTo: user.uid)
+          .where('accountId', isEqualTo: accountId)
+          .where('status', whereIn: ['pending', 'processing']).get();
+
+      if (pendingPayouts.docs.isNotEmpty) {
+        throw Exception(
+            'Cannot delete account with pending payouts. Please wait for payouts to complete.');
+      }
+
+      // Delete the account
+      await _firestore.collection('payout_accounts').doc(accountId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete payout account: $e');
+    }
+  }
+
   /// Add a new payout account
   Future<PayoutAccountModel> addPayoutAccount({
     required String accountType,

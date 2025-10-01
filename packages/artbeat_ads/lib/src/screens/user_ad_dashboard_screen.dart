@@ -13,6 +13,7 @@ import '../services/simple_ad_service.dart';
 import '../services/ad_analytics_service.dart';
 import 'simple_ad_create_screen.dart';
 import 'ad_performance_screen.dart';
+import 'ad_edit_screen.dart';
 
 /// User-facing ad management dashboard
 class UserAdDashboardScreen extends StatefulWidget {
@@ -819,8 +820,7 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
         _navigateToPerformanceScreen(ad);
         break;
       case 'edit':
-        // TODO: Navigate to edit screen
-        _showNotImplementedDialog('Edit functionality');
+        _navigateToEditScreen(ad);
         break;
       case 'duplicate':
         // TODO: Implement duplication
@@ -846,6 +846,15 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
       context,
       MaterialPageRoute<void>(
         builder: (context) => AdPerformanceScreen(ad: ad),
+      ),
+    );
+  }
+
+  void _navigateToEditScreen(AdModel ad) {
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => AdEditScreen(ad: ad, onAdUpdated: _refreshData),
       ),
     );
   }

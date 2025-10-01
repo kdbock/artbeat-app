@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/in_app_purchase_models.dart';
 import '../models/subscription_tier.dart';
 import '../utils/logger.dart';
+import 'purchase_verification_service.dart';
 
 /// Service for handling in-app purchases across iOS and Android
 class InAppPurchaseService {
@@ -248,9 +249,35 @@ class InAppPurchaseService {
   /// Verify purchase with server (implement server-side verification)
   Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) async {
     try {
-      // TODO(payments): Implement server-side verification
-      // For now, return true, but in production you should verify with Apple/Google servers
-      return true;
+      // Determine platform and verify accordingly
+      if (Platform.isAndroid) {
+        // Android: Use Google Play Developer API
+        // Extract purchase token from verification data
+        final verificationData = purchaseDetails.verificationData;
+        final purchaseToken = _extractPurchaseTokenFromVerificationData(
+          verificationData.localVerificationData,
+        );
+
+        return await PurchaseVerificationService.verifyGooglePlayPurchase(
+          packageName: 'com.wordnerd.artbeat', // Your app package name
+          productId: purchaseDetails.productID,
+          purchaseToken: purchaseToken,
+        );
+      } else if (Platform.isIOS) {
+        // iOS: Use App Store verification
+        final isSandbox =
+            purchaseDetails.purchaseID?.contains('sandbox') ?? false;
+
+        return await PurchaseVerificationService.verifyAppStorePurchase(
+          receiptData: purchaseDetails.verificationData.localVerificationData,
+          isSandbox: isSandbox,
+        );
+      } else {
+        AppLogger.warning(
+          '⚠️ Purchase verification not supported on this platform',
+        );
+        return false;
+      }
     } catch (e) {
       AppLogger.error('Error verifying purchase: $e');
       return false;
@@ -603,9 +630,17 @@ class InAppPurchaseService {
     }
   }
 
-  /// Dispose resources
-  void dispose() {
-    _subscription?.cancel();
+  /// Extract purchase token from Android verification data
+  String _extractPurchaseTokenFromVerificationData(String verificationData) {
+    try {
+      // For Android, the verification data contains JSON with purchase token
+      final data =
+          verificationData; // This is typically the purchase token directly
+      return data;
+    } catch (e) {
+      AppLogger.error('Error extracting purchase token: $e');
+      return '';
+    }
   }
 
   /// Check if service is available
@@ -613,4 +648,10 @@ class InAppPurchaseService {
 
   /// Get all available products
   List<ProductDetails> get products => _products;
+
+  /// Dispose resources
+  void dispose() {
+    _subscription?.cancel();
+    _subscription = null;
+  }
 }

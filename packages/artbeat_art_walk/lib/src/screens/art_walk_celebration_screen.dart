@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 
@@ -579,12 +580,35 @@ class _ArtWalkCelebrationScreenState extends State<ArtWalkCelebrationScreen>
     );
   }
 
-  void _shareAchievement() {
-    // TODO: Replace with SharePlus.instance.share()
-    // Share.share(
-    //   widget.celebrationData.sharingText,
-    //   subject: 'ARTbeat Art Walk Completed!',
-    // );
+  void _shareAchievement() async {
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: widget.celebrationData.sharingText,
+          subject: 'ARTbeat Art Walk Completed!',
+        ),
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Achievement shared successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to share achievement: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   String _getAchievementIcon(AchievementType type) {

@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/engagement_model.dart';
 import '../services/engagement_config_service.dart';
 import '../services/content_engagement_service.dart';
+import '../screens/enhanced_gift_purchase_screen.dart';
 
 /// Content-specific engagement bar for ARTbeat content types
 /// Replaces the universal engagement bar with content-specific engagement options
@@ -522,110 +523,22 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   }
 
   Future<void> _showGiftDialog() async {
-    final gifts = [
-      {'name': 'Coffee ☕', 'price': 5, 'icon': '☕'},
-      {'name': 'Pizza 🍕', 'price': 15, 'icon': '🍕'},
-      {'name': 'Flowers 💐', 'price': 25, 'icon': '💐'},
-      {'name': 'Custom Amount', 'price': 0, 'icon': '💰'},
-    ];
-
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Send a gift'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Show your appreciation to the artist:'),
-              const SizedBox(height: 16),
-              ...gifts
-                  .map(
-                    (gift) => ListTile(
-                      leading: Text(
-                        gift['icon'] as String,
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      title: Text(gift['name'] as String),
-                      subtitle: gift['price'] as int > 0
-                          ? Text('\$${gift['price']}')
-                          : null,
-                      onTap: () => Navigator.of(context).pop(gift),
-                    ),
-                  )
-                  .toList(),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (result != null) {
-      if (result['name'] == 'Custom Amount') {
-        // Show custom amount dialog
-        await _showCustomGiftDialog();
-      } else {
-        // Submit gift
-        await _submitEngagement(EngagementType.gift, result);
-      }
+    if (widget.artistId == null || widget.artistName == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Artist information not available')),
+      );
+      return;
     }
-  }
 
-  Future<void> _showCustomGiftDialog() async {
-    final TextEditingController amountController = TextEditingController();
-
-    final result = await showDialog<double>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Custom gift amount'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Enter the amount you\'d like to gift:'),
-              const SizedBox(height: 16),
-              TextField(
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  prefixText: '\$',
-                  hintText: '0.00',
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(null),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final amount = double.tryParse(amountController.text);
-                Navigator.of(context).pop(amount);
-              },
-              child: const Text('Gift'),
-            ),
-          ],
-        );
-      },
+    // Navigate to gift purchase screen
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => EnhancedGiftPurchaseScreen(
+          recipientId: widget.artistId!,
+          recipientName: widget.artistName!,
+        ),
+      ),
     );
-
-    if (result != null && result > 0) {
-      // Submit custom gift
-      await _submitEngagement(EngagementType.gift, {
-        'name': 'Custom Gift 💰',
-        'price': result,
-        'icon': '💰',
-      });
-    }
   }
 
   Future<void> _handleShare() async {
@@ -969,10 +882,8 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   }
 
   Future<void> _showSponsorDialog() async {
-    // TODO: Implement sponsor dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sponsor feature coming soon!')),
-    );
+    // Navigate to sponsorship screen
+    Navigator.of(context).pushNamed('/community/sponsorships');
   }
 
   Future<void> _showCommissionDialog() async {
@@ -994,9 +905,7 @@ class _ContentEngagementBarState extends State<ContentEngagementBar> {
   }
 
   Future<void> _showMessageDialog() async {
-    // TODO: Implement message dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message feature coming soon!')),
-    );
+    // Navigate to messaging screen
+    Navigator.of(context).pushNamed('/messaging');
   }
 }

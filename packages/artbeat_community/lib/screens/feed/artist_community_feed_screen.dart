@@ -26,6 +26,7 @@ class ArtistCommunityFeedScreen extends StatefulWidget {
 class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   // State variables
   final List<ArtistGroupPost> _posts = [];
+  final List<ArtistGroupPost> _filteredPosts = [];
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isLoading = false;
   bool _hasError = false;
@@ -108,6 +109,8 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
         // Posts loaded successfully
         setState(() {
           _posts.addAll(loadedPosts);
+          _filteredPosts.clear();
+          _filteredPosts.addAll(loadedPosts);
           _isLoading = false;
         });
       } else {
@@ -160,6 +163,7 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
         if (mounted) {
           setState(() {
             _posts.addAll(morePosts);
+            _filteredPosts.addAll(morePosts);
           });
         }
       }
@@ -1187,6 +1191,91 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
     );
   }
 
+  void _showSearchDialog() {
+    final TextEditingController searchController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Search Posts'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: searchController,
+                    decoration: const InputDecoration(
+                      hintText:
+                          'Search by content, artist, location, artwork...',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (value) {
+                      setState(
+                        () {},
+                      ); // Trigger rebuild for real-time filtering
+                      _filterPosts(value);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Search in: Content, Artist Name, Location, Artwork Title, Description, Medium, Style, Tags',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    searchController.dispose();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Close'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) {
+      searchController.dispose();
+    });
+  }
+
+  void _filterPosts(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredPosts.clear();
+        _filteredPosts.addAll(_posts);
+      } else {
+        final searchQuery = query.toLowerCase();
+        _filteredPosts.clear();
+        _filteredPosts.addAll(
+          _posts.where((post) {
+            final content = post.content.toLowerCase();
+            final userName = post.userName.toLowerCase();
+            final location = post.location.toLowerCase();
+            final artworkTitle = post.artworkTitle.toLowerCase();
+            final artworkDescription = post.artworkDescription.toLowerCase();
+            final medium = post.medium.toLowerCase();
+            final style = post.style.toLowerCase();
+            final tags = post.tags.map((tag) => tag.toLowerCase()).join(' ');
+
+            return content.contains(searchQuery) ||
+                userName.contains(searchQuery) ||
+                location.contains(searchQuery) ||
+                artworkTitle.contains(searchQuery) ||
+                artworkDescription.contains(searchQuery) ||
+                medium.contains(searchQuery) ||
+                style.contains(searchQuery) ||
+                tags.contains(searchQuery);
+          }).toList(),
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1223,9 +1312,7 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.search, color: Colors.white),
-                      onPressed: () {
-                        // TODO: Implement search
-                      },
+                      onPressed: _showSearchDialog,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -1259,16 +1346,17 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                   ? _buildLoadingState()
                   : _hasError
                   ? _buildErrorState()
-                  : _posts.isEmpty
+                  : _filteredPosts.isEmpty && !_isLoading
                   ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadArtistPosts,
                       child: ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(16),
-                        itemCount: _posts.length + (_isLoadingMore ? 1 : 0),
+                        itemCount:
+                            _filteredPosts.length + (_isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          if (index == _posts.length) {
+                          if (index == _filteredPosts.length) {
                             return const Center(
                               child: Padding(
                                 padding: EdgeInsets.all(16),
@@ -1277,7 +1365,7 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
                             );
                           }
 
-                          final post = _posts[index];
+                          final post = _filteredPosts[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Column(

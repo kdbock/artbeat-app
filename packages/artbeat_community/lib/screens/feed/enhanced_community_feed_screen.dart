@@ -8,7 +8,9 @@ import 'create_post_screen.dart';
 
 /// Enhanced community feed screen showcasing the new social engagement system
 class EnhancedCommunityFeedScreen extends StatefulWidget {
-  const EnhancedCommunityFeedScreen({super.key});
+  final String? topicFilter;
+
+  const EnhancedCommunityFeedScreen({super.key, this.topicFilter});
 
   @override
   State<EnhancedCommunityFeedScreen> createState() =>
@@ -38,7 +40,11 @@ class _EnhancedCommunityFeedScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Community Feed'),
+        title: Text(
+          widget.topicFilter != null
+              ? '${widget.topicFilter} Feed'
+              : 'Community Feed',
+        ),
         backgroundColor: ArtbeatColors.primaryPurple,
         foregroundColor: Colors.white,
         elevation: 0,

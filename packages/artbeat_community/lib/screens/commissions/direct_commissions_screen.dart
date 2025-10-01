@@ -5,6 +5,7 @@ import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
 import 'commission_detail_screen.dart';
+import 'artist_selection_screen.dart';
 
 class DirectCommissionsScreen extends StatefulWidget {
   const DirectCommissionsScreen({super.key});
@@ -630,11 +631,21 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
     ).then((_) => _loadCommissions());
   }
 
-  void _showArtistSelection() {
-    // TODO: Implement artist selection screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Artist selection coming soon!')),
+  void _showArtistSelection() async {
+    final selectedArtist = await Navigator.push<core.ArtistProfileModel>(
+      context,
+      MaterialPageRoute(builder: (context) => const ArtistSelectionScreen()),
     );
+
+    if (selectedArtist != null && mounted) {
+      // TODO: Use selected artist to create commission request
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Selected artist: ${selectedArtist.displayName}'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   Future<void> _provideQuote(DirectCommissionModel commission) async {
