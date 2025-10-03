@@ -18,10 +18,18 @@ class ConfigService {
     try {
       await dotenv.load(fileName: '.env');
       _isInitialized = true;
-      AppLogger.info('ConfigService initialized successfully');
+      if (kDebugMode) {
+        AppLogger.info('✅ ConfigService initialized successfully');
+      }
     } catch (e) {
-      AppLogger.info('Failed to initialize ConfigService: $e');
-      if (!kDebugMode) rethrow;
+      // Log the error but don't fail the app initialization
+      if (kDebugMode) {
+        AppLogger.warning('⚠️ Failed to load .env file: $e');
+        AppLogger.info('💡 App will continue with default configuration');
+      }
+      // Mark as initialized even if .env loading failed to prevent retries
+      _isInitialized = true;
+      // Don't rethrow - allow app to continue without .env file
     }
   }
 

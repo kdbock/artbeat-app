@@ -6,6 +6,7 @@ class UserProgressCard extends StatelessWidget {
   final int totalDiscoveries;
   final int weeklyGoal;
   final int weeklyProgress;
+  final VoidCallback? onTap;
 
   const UserProgressCard({
     Key? key,
@@ -13,155 +14,167 @@ class UserProgressCard extends StatelessWidget {
     this.totalDiscoveries = 0,
     this.weeklyGoal = 7,
     this.weeklyProgress = 0,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final progressPercent = weeklyGoal > 0 ? weeklyProgress / weeklyGoal : 0.0;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.local_fire_department,
-                  color: Colors.orange,
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Your Progress',
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Streak and discoveries
-          Row(
-            children: [
-              // Current streak
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.local_fire_department,
-                  iconColor: Colors.orange,
-                  value: '$currentStreak',
-                  label: 'Day Streak',
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Total discoveries
-              Expanded(
-                child: _buildStatCard(
-                  icon: Icons.explore,
-                  iconColor: Colors.blue,
-                  value: '$totalDiscoveries',
-                  label: 'Discoveries',
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Weekly progress
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Weekly Goal',
-                    style: TextStyle(
-                      color: Colors.black87.withValues(alpha: 0.9),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  Text(
-                    '$weeklyProgress/$weeklyGoal',
-                    style: const TextStyle(
+                  child: const Icon(
+                    Icons.local_fire_department,
+                    color: Colors.orange,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Your Progress',
+                    style: TextStyle(
                       color: Colors.black87,
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // Progress bar
-              Container(
-                height: 6,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(3),
                 ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: progressPercent.clamp(0.0, 1.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.blue, Colors.purple],
+                if (onTap != null)
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey.withValues(alpha: 0.5),
+                    size: 16,
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Streak and discoveries
+            Row(
+              children: [
+                // Current streak
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.local_fire_department,
+                    iconColor: Colors.orange,
+                    value: '$currentStreak',
+                    label: 'Day Streak',
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Total discoveries
+                Expanded(
+                  child: _buildStatCard(
+                    icon: Icons.explore,
+                    iconColor: Colors.blue,
+                    value: '$totalDiscoveries',
+                    label: 'Discoveries',
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Weekly progress
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Weekly Goal',
+                      style: TextStyle(
+                        color: Colors.black87.withValues(alpha: 0.9),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
-                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    Text(
+                      '$weeklyProgress/$weeklyGoal',
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                // Progress bar
+                Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progressPercent.clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Colors.blue, Colors.purple],
+                        ),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 4),
+                const SizedBox(height: 4),
 
-              Text(
-                '${(progressPercent * 100).round()}% complete',
-                style: TextStyle(
-                  color: Colors.black87.withValues(alpha: 0.7),
-                  fontSize: 12,
+                Text(
+                  '${(progressPercent * 100).round()}% complete',
+                  style: TextStyle(
+                    color: Colors.black87.withValues(alpha: 0.7),
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
 
-          // Achievement badges (if any)
-          if (currentStreak >= 7 || totalDiscoveries >= 50) ...[
-            const SizedBox(height: 16),
-            _buildAchievementBadges(),
+            // Achievement badges (if any)
+            if (currentStreak >= 7 || totalDiscoveries >= 50) ...[
+              const SizedBox(height: 16),
+              _buildAchievementBadges(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

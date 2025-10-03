@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_community/artbeat_community.dart';
 import '../widgets/leaderboard_preview_widget.dart';
 
 import '../widgets/dashboard/dashboard_browse_section.dart';
 import '../widgets/dashboard/art_walk_hero_section.dart';
-import '../widgets/dashboard/live_activity_feed.dart';
 import '../widgets/dashboard/user_progress_card.dart';
 
 /// Artbeat Dashboard Screen - Refactored for better maintainability
@@ -102,10 +103,18 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
               ),
 
               // 1.2. Live Activity Feed (social proof)
-              const SliverToBoxAdapter(child: LiveActivityFeed()),
+              SliverToBoxAdapter(
+                child: LiveActivityFeed(
+                  onTap: () => _navigateToCommunityHub(context),
+                ),
+              ),
 
               // 1.3. User Progress Card (gamification)
-              const SliverToBoxAdapter(child: UserProgressCard()),
+              SliverToBoxAdapter(
+                child: UserProgressCard(
+                  onTap: () => _navigateToWeeklyGoals(context),
+                ),
+              ),
 
               // 1.5. Browse section (quick access to all content)
               SliverToBoxAdapter(
@@ -241,6 +250,22 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
   void _navigateToArtWalk(BuildContext context) {
     // Navigate to art walk dashboard
     Navigator.pushNamed(context, '/art-walk/dashboard');
+  }
+
+  void _navigateToWeeklyGoals(BuildContext context) {
+    // Navigate to weekly goals screen
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(builder: (context) => const WeeklyGoalsScreen()),
+    );
+  }
+
+  void _navigateToCommunityHub(BuildContext context) {
+    // Navigate to art community hub
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(builder: (context) => const ArtCommunityHub()),
+    );
   }
 
   void _openDrawer() {

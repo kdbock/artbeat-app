@@ -108,10 +108,15 @@ Future<void> main() async {
         stackTrace: stackTrace,
       );
       AppLogger.error('❌ Error type: ${e.runtimeType}');
+      AppLogger.error('❌ Error details: ${e.toString()}');
       if (e is FileSystemException) {
         AppLogger.error('❌ File system error - Path: ${e.path}');
         AppLogger.error('❌ File system error - Message: ${e.message}');
       }
+      // Print to console for immediate visibility
+      print('❌❌❌ INITIALIZATION ERROR ❌❌❌');
+      print('Error: $e');
+      print('Stack trace: $stackTrace');
     }
 
     // Handle duplicate app errors specifically

@@ -17,10 +17,17 @@ void main() {
     });
 
     testWidgets('MyApp has MaterialApp', (WidgetTester tester) async {
+      // Save the original FlutterError.onError handler
+      final originalOnError = FlutterError.onError;
+
+      // Create the app (which overrides FlutterError.onError)
       await tester.pumpWidget(MyApp());
 
       // Verify MaterialApp is present
       expect(find.byType(MaterialApp), findsOneWidget);
+
+      // Restore the original FlutterError.onError handler
+      FlutterError.onError = originalOnError;
     });
   });
 
@@ -32,9 +39,10 @@ void main() {
         const MaterialApp(home: Scaffold(body: UserProgressCard())),
       );
 
-      // Verify the card is displayed
+      // Verify the card is displayed (it uses Container, not Card)
       expect(find.byType(UserProgressCard), findsOneWidget);
-      expect(find.byType(Card), findsOneWidget);
+      // Check for the progress text
+      expect(find.text('Your Progress'), findsOneWidget);
     });
 
     testWidgets('UserProgressCard shows streak information', (
@@ -44,8 +52,8 @@ void main() {
         const MaterialApp(home: Scaffold(body: UserProgressCard())),
       );
 
-      // Check for streak-related text
-      expect(find.textContaining('streak'), findsWidgets);
+      // Check for streak-related text (case sensitive)
+      expect(find.textContaining('Streak'), findsWidgets);
     });
   });
 

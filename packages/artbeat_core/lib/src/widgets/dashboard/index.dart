@@ -11,3 +11,4 @@ export 'dashboard_events_section.dart';
 export 'dashboard_trending_posts_section.dart';
 export 'dashboard_featured_posts_section.dart';
 export 'dashboard_artist_cta_section.dart';
+export 'live_activity_feed.dart';

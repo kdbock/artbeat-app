@@ -877,32 +877,46 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     return RefreshIndicator(
       onRefresh: _loadPosts,
       color: ArtbeatColors.primaryPurple,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _filteredPosts.length,
-        itemBuilder: (context, index) {
-          if (index >= _filteredPosts.length) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    ArtbeatColors.primaryPurple,
-                  ),
-                ),
-              ),
-            );
-          }
+      child: CustomScrollView(
+        slivers: [
+          // Live Activity Feed at the top
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: LiveActivityFeed(),
+            ),
+          ),
 
-          final post = _filteredPosts[index];
-          return EnhancedPostCard(
-            post: post,
-            onTap: () => _handlePostTap(post),
-            onLike: () => _handleLike(post),
-            onComment: () => _handleComment(post),
-            onShare: () => _handleShare(post),
-          );
-        },
+          // Posts list
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                if (index >= _filteredPosts.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          ArtbeatColors.primaryPurple,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                final post = _filteredPosts[index];
+                return EnhancedPostCard(
+                  post: post,
+                  onTap: () => _handlePostTap(post),
+                  onLike: () => _handleLike(post),
+                  onComment: () => _handleComment(post),
+                  onShare: () => _handleShare(post),
+                );
+              }, childCount: _filteredPosts.length),
+            ),
+          ),
+        ],
       ),
     );
   }
