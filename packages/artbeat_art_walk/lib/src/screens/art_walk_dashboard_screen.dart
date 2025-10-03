@@ -1129,7 +1129,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       children: [
         Text(
           message,
-          style: TextStyle(
+          style: const TextStyle(
             color: DashboardColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -1138,7 +1138,10 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         const SizedBox(height: 4),
         Text(
           subMessage,
-          style: TextStyle(color: DashboardColors.textSecondary, fontSize: 14),
+          style: const TextStyle(
+            color: DashboardColors.textSecondary,
+            fontSize: 14,
+          ),
         ),
       ],
     );
@@ -1209,7 +1212,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'Activity & Progress',
                 style: TextStyle(
                   color: DashboardColors.textPrimary,
@@ -1275,7 +1278,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             children: [
               Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   color: DashboardColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -1283,7 +1286,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
               ),
               Text(
                 label,
-                style: TextStyle(
+                style: const TextStyle(
                   color: DashboardColors.textSecondary,
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
@@ -1318,7 +1321,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'Discover & Explore',
                 style: TextStyle(
                   color: DashboardColors.textPrimary,
@@ -1340,7 +1343,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
           // Recent Achievements (compact)
           if (_artWalkAchievements.isNotEmpty) ...[
-            Text(
+            const Text(
               'Recent Achievements',
               style: TextStyle(
                 color: DashboardColors.textPrimary,
@@ -1372,12 +1375,12 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             size: 48,
           ),
           const SizedBox(height: 12),
-          Text(
+          const Text(
             'No art clusters nearby',
             style: TextStyle(color: DashboardColors.textPrimary, fontSize: 16),
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'Move around to discover art in your area',
             style: TextStyle(
               color: DashboardColors.textSecondary,
@@ -1507,7 +1510,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
               Expanded(
                 child: Text(
                   achievement.title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: DashboardColors.textPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -1698,7 +1701,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 Flexible(
                   child: Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: DashboardColors.textPrimary,
@@ -2435,7 +2438,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             size: 48,
           ),
           const SizedBox(height: 12),
-          Text(
+          const Text(
             'Your achievement gallery awaits!',
             style: TextStyle(
               color: DashboardColors.textPrimary,
@@ -2445,7 +2448,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
-          Text(
+          const Text(
             'Start discovering art to unlock amazing achievements',
             style: TextStyle(
               color: DashboardColors.textSecondary,

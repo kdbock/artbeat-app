@@ -78,14 +78,20 @@ class SimpleAdExample extends StatelessWidget {
               // Ad spaces for different zones (NEW APPROACH)
               const Text('Ad Spaces by Zone:'),
               const SizedBox(height: 8),
-              ZoneAdPlacementWidget(zone: AdZone.artWalks, showIfEmpty: true),
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                showIfEmpty: true,
+              ),
               const SizedBox(height: 8),
-              ZoneAdPlacementWidget(
+              const ZoneAdPlacementWidget(
                 zone: AdZone.communitySocial,
                 showIfEmpty: true,
               ),
               const SizedBox(height: 8),
-              ZoneAdPlacementWidget(zone: AdZone.events, showIfEmpty: true),
+              const ZoneAdPlacementWidget(
+                zone: AdZone.events,
+                showIfEmpty: true,
+              ),
               const SizedBox(height: 24),
 
               // Instructions
