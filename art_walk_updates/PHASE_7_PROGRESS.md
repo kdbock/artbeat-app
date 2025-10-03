@@ -32,26 +32,31 @@
 #### **Categories of Fixes Applied:**
 
 1. **Import Path Corrections (15 fixes)**
+
    - Fixed relative import paths in instant discovery widgets
    - Corrected service import references
    - Updated model import statements
 
 2. **Method Implementation (12 fixes)**
+
    - Added missing `checkForNewAchievements()` method in AchievementService
    - Implemented proper `awardXP()` parameter handling
    - Fixed LocationService to Geolocator migration
 
 3. **Property Access Fixes (18 fixes)**
+
    - Fixed `address` property access in art walk dashboard
    - Corrected latitude/longitude access patterns
    - Resolved `PublicArtModel` property references
 
 4. **Type Casting & Conversion (15 fixes)**
+
    - Fixed Firestore data type casting
    - Corrected `List<dynamic>` to proper typed lists
    - Resolved `Map<String, dynamic>` conversions
 
 5. **Deprecated API Updates (8 fixes)**
+
    - Replaced `WillPopScope` with `PopScope`
    - Updated `withOpacity()` calls to `withValues(alpha:)`
    - Fixed `MaterialPageRoute` type inference

@@ -180,7 +180,6 @@ class SecureFirebaseConfig {
         await FirebaseAppCheck.instance.activate(
           androidProvider: AndroidProvider.playIntegrity,
           appleProvider: AppleProvider.deviceCheck,
-          webProvider: ReCaptchaV3Provider(recaptchaSiteKey),
         );
       }
 
