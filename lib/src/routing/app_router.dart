@@ -616,20 +616,20 @@ class AppRouter {
               begin: Alignment.topLeft,
               end: Alignment.topRight,
               colors: [
-                Color(0xFF4FB3BE), // Light Teal
-                Color(0xFFFF9E80), // Light Orange/Peach
+                Color(0xFF8C52FF), // Primary Purple
+                Color(0xFF00C853), // Primary Green
               ],
             ),
             titleGradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.topRight,
               colors: [
-                Color(0xFF4FB3BE), // Light Teal
-                Color(0xFFFF9E80), // Light Orange/Peach
+                Color(0xFF8C52FF), // Primary Purple
+                Color(0xFF00C853), // Primary Green
               ],
             ),
           ),
-          child: const art_walk.ArtWalkDashboardScreen(),
+          child: const art_walk.ArtbeatArtwalkDashboardScreen(),
         );
 
       case AppRoutes.artWalkMap:

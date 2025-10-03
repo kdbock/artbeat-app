@@ -87,6 +87,32 @@ class PublicArtModel {
     );
   }
 
+  /// Create PublicArtModel from CaptureModel
+  /// Useful for converting user captures to public art pieces
+  factory PublicArtModel.fromCapture(dynamic capture) {
+    // Handle both CaptureModel and dynamic types
+    return PublicArtModel(
+      id: capture.id as String,
+      userId: capture.userId as String,
+      title: capture.title as String? ?? 'Untitled Artwork',
+      description: capture.description as String? ?? '',
+      imageUrl: capture.imageUrl as String,
+      artistName: capture.artistName as String?,
+      location: capture.location as GeoPoint? ?? const GeoPoint(0, 0),
+      address: capture.locationName as String?,
+      tags: (capture.tags as List<dynamic>?)?.cast<String>() ?? [],
+      artType: capture.artType as String?,
+      isVerified: false, // Captures are not verified by default
+      viewCount: 0,
+      likeCount: 0,
+      usersFavorited: [],
+      createdAt: Timestamp.fromDate(capture.createdAt as DateTime),
+      updatedAt: capture.updatedAt != null
+          ? Timestamp.fromDate(capture.updatedAt as DateTime)
+          : null,
+    );
+  }
+
   /// Convert PublicArtModel to Firestore data
   Map<String, dynamic> toFirestore() {
     return {
@@ -145,5 +171,27 @@ class PublicArtModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+
+  /// Convert to map for serialization
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'userId': userId,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+      'artistName': artistName,
+      'location': location,
+      'address': address,
+      'tags': tags,
+      'artType': artType,
+      'isVerified': isVerified,
+      'viewCount': viewCount,
+      'likeCount': likeCount,
+      'usersFavorited': usersFavorited,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+    };
   }
 }

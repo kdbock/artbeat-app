@@ -711,6 +711,7 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
           result['price'] as double,
           result['description'] as String,
           result['timeline'] as String,
+          result['milestones'] as List<Map<String, dynamic>>,
         );
       }
     });
@@ -720,16 +721,31 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     double price,
     String description,
     String timeline,
+    List<Map<String, dynamic>> milestoneMaps,
   ) async {
+    // Convert milestone maps to CommissionMilestone objects
+    final milestones = milestoneMaps
+        .map(
+          (m) => CommissionMilestone(
+            id:
+                DateTime.now().millisecondsSinceEpoch.toString() +
+                m['title'].hashCode.toString(),
+            title: m['title'] as String,
+            description: m['description'] as String,
+            amount: m['amount'] as double,
+            dueDate: m['dueDate'] as DateTime,
+            status: MilestoneStatus.pending,
+          ),
+        )
+        .toList();
+
     try {
       await _commissionService.provideQuote(
         commissionId: _commission!.id,
         totalPrice: price,
-        depositPercentage: 0.5, // Default 50% deposit
-        milestones: [], // TODO: Add milestone support
-        estimatedCompletion: DateTime.now().add(
-          const Duration(days: 30),
-        ), // TODO: Parse timeline
+        depositPercentage: 50.0, // Default 50% deposit
+        milestones: milestones,
+        estimatedCompletion: _parseTimeline(timeline),
         quoteMessage: description,
       );
       await _loadCommissionDetails();
@@ -963,6 +979,44 @@ class _CommissionDetailScreenState extends State<CommissionDetailScreen>
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
+  DateTime _parseTimeline(String timeline) {
+    final now = DateTime.now();
+    final lowerTimeline = timeline.toLowerCase().trim();
+
+    // Handle various timeline formats
+    if (lowerTimeline.contains('week')) {
+      // Extract number from "2-3 weeks", "1 week", etc.
+      final weekMatch = RegExp(
+        r'(\d+)(?:\s*-\s*\d+)?\s*week',
+      ).firstMatch(lowerTimeline);
+      if (weekMatch != null) {
+        final weeks = int.tryParse(weekMatch.group(1) ?? '1') ?? 1;
+        return now.add(Duration(days: weeks * 7));
+      }
+    } else if (lowerTimeline.contains('month')) {
+      // Extract number from "2-3 months", "1 month", etc.
+      final monthMatch = RegExp(
+        r'(\d+)(?:\s*-\s*\d+)?\s*month',
+      ).firstMatch(lowerTimeline);
+      if (monthMatch != null) {
+        final months = int.tryParse(monthMatch.group(1) ?? '1') ?? 1;
+        return DateTime(now.year, now.month + months, now.day);
+      }
+    } else if (lowerTimeline.contains('day')) {
+      // Extract number from "5-7 days", "1 day", etc.
+      final dayMatch = RegExp(
+        r'(\d+)(?:\s*-\s*\d+)?\s*day',
+      ).firstMatch(lowerTimeline);
+      if (dayMatch != null) {
+        final days = int.tryParse(dayMatch.group(1) ?? '1') ?? 1;
+        return now.add(Duration(days: days));
+      }
+    }
+
+    // Default fallback: assume 30 days for unrecognized formats
+    return now.add(const Duration(days: 30));
+  }
+
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
@@ -982,6 +1036,51 @@ class _QuoteProvisionDialogState extends State<QuoteProvisionDialog> {
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _timelineController = TextEditingController();
+
+  // Milestones
+  final List<Map<String, dynamic>> _milestones = [];
+
+  void _addMilestone() {
+    setState(() {
+      _milestones.add({
+        'title': '',
+        'description': '',
+        'amount': 0.0,
+        'dueDate': DateTime.now().add(const Duration(days: 7)),
+      });
+    });
+  }
+
+  void _removeMilestone(int index) {
+    setState(() {
+      _milestones.removeAt(index);
+    });
+  }
+
+  void _updateMilestone(int index, String field, dynamic value) {
+    setState(() {
+      _milestones[index][field] = value;
+    });
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  DateTime? _parseDate(String dateStr) {
+    try {
+      final parts = dateStr.split('/');
+      if (parts.length == 3) {
+        final month = int.parse(parts[0]);
+        final day = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (e) {
+      // Invalid date format
+    }
+    return null;
+  }
 
   @override
   void dispose() {
@@ -1049,6 +1148,123 @@ class _QuoteProvisionDialogState extends State<QuoteProvisionDialog> {
                   return null;
                 },
               ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Milestones',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _addMilestone,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Milestone'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (_milestones.isEmpty)
+                const Text(
+                  'No milestones added. Add milestones to break down the work and payments.',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                )
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _milestones.length,
+                  itemBuilder: (context, index) {
+                    final milestone = _milestones[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    initialValue: milestone['title'] as String,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Milestone Title',
+                                      hintText: 'e.g., Initial sketch',
+                                    ),
+                                    onChanged: (value) =>
+                                        _updateMilestone(index, 'title', value),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () => _removeMilestone(index),
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              initialValue: milestone['description'] as String,
+                              decoration: const InputDecoration(
+                                labelText: 'Description',
+                                hintText: 'Describe this milestone',
+                              ),
+                              maxLines: 2,
+                              onChanged: (value) =>
+                                  _updateMilestone(index, 'description', value),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    initialValue: milestone['amount']
+                                        .toString(),
+                                    decoration: const InputDecoration(
+                                      labelText: 'Amount (USD)',
+                                      prefixText: '\$',
+                                    ),
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (value) {
+                                      final amount =
+                                          double.tryParse(value) ?? 0.0;
+                                      _updateMilestone(index, 'amount', amount);
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: TextFormField(
+                                    initialValue: _formatDate(
+                                      milestone['dueDate'] as DateTime,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      labelText: 'Due Date',
+                                      hintText: 'MM/DD/YYYY',
+                                    ),
+                                    onChanged: (value) {
+                                      final date = _parseDate(value);
+                                      if (date != null) {
+                                        _updateMilestone(
+                                          index,
+                                          'dueDate',
+                                          date,
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
             ],
           ),
         ),
@@ -1069,9 +1285,27 @@ class _QuoteProvisionDialogState extends State<QuoteProvisionDialog> {
       final description = _descriptionController.text;
       final timeline = _timelineController.text;
 
-      Navigator.of(
-        context,
-      ).pop({'price': price, 'description': description, 'timeline': timeline});
+      // Validate milestones
+      for (final milestone in _milestones) {
+        if ((milestone['title'] as String).isEmpty ||
+            (milestone['description'] as String).isEmpty ||
+            (milestone['amount'] as double) <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please complete all milestone details'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+
+      Navigator.of(context).pop({
+        'price': price,
+        'description': description,
+        'timeline': timeline,
+        'milestones': _milestones,
+      });
     }
   }
 }

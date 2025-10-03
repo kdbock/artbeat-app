@@ -638,21 +638,28 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
     );
 
     if (selectedArtist != null && mounted) {
-      // TODO: Use selected artist to create commission request
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Selected artist: ${selectedArtist.displayName}'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      _showCommissionRequestDialog(selectedArtist);
     }
   }
 
   Future<void> _provideQuote(DirectCommissionModel commission) async {
-    // TODO: Implement quote provision screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Quote provision coming soon!')),
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => _QuoteProvisionDialog(commission: commission),
     );
+
+    if (result == true) {
+      await _loadCommissions();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Quote provided successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _acceptCommission(DirectCommissionModel commission) async {
@@ -695,5 +702,835 @@ class _DirectCommissionsScreenState extends State<DirectCommissionsScreen>
         );
       }
     }
+  }
+
+  void _showCommissionRequestDialog(core.ArtistProfileModel selectedArtist) {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    final budgetController = TextEditingController();
+    final deadlineController = TextEditingController();
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Request Commission from ${selectedArtist.displayName}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Commission Title',
+                  hintText: 'e.g., Portrait of my dog',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Describe what you want...',
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: budgetController,
+                decoration: const InputDecoration(
+                  labelText: 'Budget (USD)',
+                  hintText: 'e.g., 150',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: deadlineController,
+                decoration: const InputDecoration(
+                  labelText: 'Deadline',
+                  hintText: 'e.g., 2 weeks',
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleController.text.isEmpty ||
+                  descriptionController.text.isEmpty ||
+                  budgetController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please fill in all required fields'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                // Parse budget
+                final budget = double.tryParse(budgetController.text) ?? 0.0;
+
+                // Parse deadline
+                final deadline = _parseDeadline(deadlineController.text);
+
+                // Create commission request in Firestore
+                await _commissionService.createCommissionRequest(
+                  artistId: selectedArtist.id,
+                  artistName: selectedArtist.displayName,
+                  type: CommissionType
+                      .digital, // Default to digital, can be enhanced later
+                  title: titleController.text,
+                  description: descriptionController.text,
+                  specs: CommissionSpecs(
+                    size:
+                        'Custom', // Default values, can be enhanced with more fields
+                    medium: 'Digital',
+                    style: 'Custom',
+                    colorScheme: 'Full Color',
+                    revisions: 2,
+                    commercialUse: false,
+                    deliveryFormat: 'Digital File',
+                    customRequirements: {
+                      'budget': budget,
+                      'notes': descriptionController.text,
+                    },
+                  ),
+                  deadline: deadline,
+                  metadata: {
+                    'requestedVia': 'direct_request',
+                    'budget': budget,
+                  },
+                );
+
+                Navigator.of(context).pop();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Commission request sent to ${selectedArtist.displayName}!',
+                      ),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  // Refresh the commissions list
+                  await _loadCommissions();
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error creating commission request: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Send Request'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  DateTime? _parseDeadline(String deadline) {
+    if (deadline.isEmpty) return null;
+
+    final now = DateTime.now();
+    final lowerDeadline = deadline.toLowerCase().trim();
+
+    // Handle various deadline formats
+    if (lowerDeadline.contains('week')) {
+      // Extract number from "2-3 weeks", "1 week", etc.
+      final weekMatch = RegExp(
+        r'(\d+)(?:\s*-\s*\d+)?\s*week',
+      ).firstMatch(lowerDeadline);
+      if (weekMatch != null) {
+        final weeks = int.tryParse(weekMatch.group(1) ?? '1') ?? 1;
+        return now.add(Duration(days: weeks * 7));
+      }
+    } else if (lowerDeadline.contains('month')) {
+      // Extract number from "2-3 months", "1 month", etc.
+      final monthMatch = RegExp(
+        r'(\d+)(?:\s*-\s*\d+)?\s*month',
+      ).firstMatch(lowerDeadline);
+      if (monthMatch != null) {
+        final months = int.tryParse(monthMatch.group(1) ?? '1') ?? 1;
+        return DateTime(now.year, now.month + months, now.day);
+      }
+    } else if (lowerDeadline.contains('day')) {
+      // Extract number from "5-7 days", "1 day", etc.
+      final dayMatch = RegExp(
+        r'(\d+)(?:\s*-\s*\d+)?\s*day',
+      ).firstMatch(lowerDeadline);
+      if (dayMatch != null) {
+        final days = int.tryParse(dayMatch.group(1) ?? '1') ?? 1;
+        return now.add(Duration(days: days));
+      }
+    }
+
+    // Try to parse as a direct date format (MM/dd/yyyy)
+    try {
+      final parts = deadline.split('/');
+      if (parts.length == 3) {
+        final month = int.parse(parts[0]);
+        final day = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        return DateTime(year, month, day);
+      }
+    } catch (e) {
+      // Invalid date format
+    }
+
+    // Default fallback: assume 30 days for unrecognized formats
+    return now.add(const Duration(days: 30));
+  }
+}
+
+/// Dialog for artists to provide quotes for commission requests
+class _QuoteProvisionDialog extends StatefulWidget {
+  final DirectCommissionModel commission;
+
+  const _QuoteProvisionDialog({required this.commission});
+
+  @override
+  State<_QuoteProvisionDialog> createState() => _QuoteProvisionDialogState();
+}
+
+class _QuoteProvisionDialogState extends State<_QuoteProvisionDialog> {
+  final DirectCommissionService _commissionService = DirectCommissionService();
+  final _formKey = GlobalKey<FormState>();
+
+  // Form controllers
+  final _totalPriceController = TextEditingController();
+  final _depositPercentageController = TextEditingController(text: '50');
+  final _quoteMessageController = TextEditingController();
+
+  // Milestones
+  final List<_MilestoneData> _milestones = [];
+
+  // Estimated completion
+  DateTime? _estimatedCompletion;
+
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with one default milestone
+    _addMilestone();
+  }
+
+  @override
+  void dispose() {
+    _totalPriceController.dispose();
+    _depositPercentageController.dispose();
+    _quoteMessageController.dispose();
+    for (final milestone in _milestones) {
+      milestone.dispose();
+    }
+    super.dispose();
+  }
+
+  void _addMilestone() {
+    setState(() {
+      _milestones.add(_MilestoneData());
+    });
+  }
+
+  void _removeMilestone(int index) {
+    setState(() {
+      _milestones[index].dispose();
+      _milestones.removeAt(index);
+    });
+  }
+
+  Future<void> _selectEstimatedCompletion() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _estimatedCompletion ?? now.add(const Duration(days: 30)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _estimatedCompletion = picked;
+      });
+    }
+  }
+
+  Future<void> _submitQuote() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_estimatedCompletion == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an estimated completion date'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_milestones.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add at least one milestone'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate all milestones
+    for (int i = 0; i < _milestones.length; i++) {
+      if (!_milestones[i].validate()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please complete milestone ${i + 1}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final totalPrice = double.parse(_totalPriceController.text);
+      final depositPercentage = double.parse(_depositPercentageController.text);
+
+      // Convert milestone data to CommissionMilestone objects
+      final milestones = _milestones.map((m) {
+        return CommissionMilestone(
+          id:
+              DateTime.now().millisecondsSinceEpoch.toString() +
+              m.hashCode.toString(),
+          title: m.titleController.text,
+          description: m.descriptionController.text,
+          amount: double.parse(m.amountController.text),
+          dueDate: m.dueDate!,
+          status: MilestoneStatus.pending,
+        );
+      }).toList();
+
+      await _commissionService.provideQuote(
+        commissionId: widget.commission.id,
+        totalPrice: totalPrice,
+        depositPercentage: depositPercentage,
+        milestones: milestones,
+        estimatedCompletion: _estimatedCompletion!,
+        quoteMessage: _quoteMessageController.text.isNotEmpty
+            ? _quoteMessageController.text
+            : null,
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error providing quote: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final depositAmount =
+        _totalPriceController.text.isNotEmpty &&
+            _depositPercentageController.text.isNotEmpty
+        ? (double.tryParse(_totalPriceController.text) ?? 0) *
+              (double.tryParse(_depositPercentageController.text) ?? 0) /
+              100
+        : 0.0;
+
+    return Dialog(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 600, maxHeight: 700),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: CommunityColors.primary,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(4),
+                  topRight: Radius.circular(4),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.request_quote, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Provide Quote',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'For: ${widget.commission.clientName}',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+
+            // Form content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Commission details
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.commission.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                widget.commission.description,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Pricing section
+                      const Text(
+                        'Pricing',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _totalPriceController,
+                              decoration: const InputDecoration(
+                                labelText: 'Total Price',
+                                prefixText: '\$',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Required';
+                                }
+                                if (double.tryParse(value) == null) {
+                                  return 'Invalid number';
+                                }
+                                if (double.parse(value) <= 0) {
+                                  return 'Must be > 0';
+                                }
+                                return null;
+                              },
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _depositPercentageController,
+                              decoration: const InputDecoration(
+                                labelText: 'Deposit %',
+                                suffixText: '%',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Required';
+                                }
+                                final num = double.tryParse(value);
+                                if (num == null) {
+                                  return 'Invalid';
+                                }
+                                if (num < 0 || num > 100) {
+                                  return '0-100';
+                                }
+                                return null;
+                              },
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (depositAmount > 0) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Deposit: \$${depositAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+
+                      // Estimated completion
+                      const Text(
+                        'Estimated Completion',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: _selectEstimatedCompletion,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.calendar_today, size: 20),
+                              const SizedBox(width: 12),
+                              Text(
+                                _estimatedCompletion != null
+                                    ? '${_estimatedCompletion!.month}/${_estimatedCompletion!.day}/${_estimatedCompletion!.year}'
+                                    : 'Select date',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: _estimatedCompletion != null
+                                      ? Colors.black
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Milestones section
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Milestones',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: _addMilestone,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Milestone'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ...List.generate(_milestones.length, (index) {
+                        return _MilestoneCard(
+                          milestone: _milestones[index],
+                          index: index,
+                          onRemove: _milestones.length > 1
+                              ? () => _removeMilestone(index)
+                              : null,
+                        );
+                      }),
+                      const SizedBox(height: 16),
+
+                      // Quote message (optional)
+                      const Text(
+                        'Message to Client (Optional)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _quoteMessageController,
+                        decoration: const InputDecoration(
+                          hintText: 'Add any additional details or notes...',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Footer with actions
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                border: Border(top: BorderSide(color: Colors.grey[300]!)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitQuote,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: CommunityColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : const Text('Submit Quote'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Helper class to manage milestone form data
+class _MilestoneData {
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController amountController = TextEditingController();
+  DateTime? dueDate;
+
+  bool validate() {
+    return titleController.text.isNotEmpty &&
+        descriptionController.text.isNotEmpty &&
+        amountController.text.isNotEmpty &&
+        double.tryParse(amountController.text) != null &&
+        dueDate != null;
+  }
+
+  void dispose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    amountController.dispose();
+  }
+}
+
+/// Widget for displaying and editing a milestone
+class _MilestoneCard extends StatefulWidget {
+  final _MilestoneData milestone;
+  final int index;
+  final VoidCallback? onRemove;
+
+  const _MilestoneCard({
+    required this.milestone,
+    required this.index,
+    this.onRemove,
+  });
+
+  @override
+  State<_MilestoneCard> createState() => _MilestoneCardState();
+}
+
+class _MilestoneCardState extends State<_MilestoneCard> {
+  Future<void> _selectDueDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: widget.milestone.dueDate ?? now.add(const Duration(days: 7)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+
+    if (picked != null) {
+      setState(() {
+        widget.milestone.dueDate = picked;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Milestone ${widget.index + 1}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const Spacer(),
+                if (widget.onRemove != null)
+                  IconButton(
+                    icon: const Icon(Icons.delete, size: 20),
+                    onPressed: widget.onRemove,
+                    color: Colors.red,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: widget.milestone.titleController,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: widget.milestone.descriptionController,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+              maxLines: 2,
+              validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: widget.milestone.amountController,
+                    decoration: const InputDecoration(
+                      labelText: 'Amount',
+                      prefixText: '\$',
+                      border: OutlineInputBorder(),
+                      isDense: true,
+                    ),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Invalid';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: InkWell(
+                    onTap: _selectDueDate,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.milestone.dueDate != null
+                                  ? '${widget.milestone.dueDate!.month}/${widget.milestone.dueDate!.day}/${widget.milestone.dueDate!.year}'
+                                  : 'Due date',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: widget.milestone.dueDate != null
+                                    ? Colors.black
+                                    : Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

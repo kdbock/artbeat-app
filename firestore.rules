@@ -797,6 +797,31 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && isAdmin(request.auth.uid);
     }
 
+    // Title Sponsorships - Premium $5,000/month app-wide sponsorship
+    match /title_sponsorships/{sponsorshipId} {
+      // Anyone can read active sponsorships (for display)
+      allow read: if isAuthenticated();
+      
+      // Anyone can create a sponsorship request
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.sponsorId;
+      
+      // Only sponsor owner or admin can update
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.sponsorId ||
+        isAdmin(request.auth.uid)
+      );
+      
+      // Only admin can delete
+      allow delete: if isAuthenticated() && isAdmin(request.auth.uid);
+      
+      // Allow listing for admins and sponsor owners
+      allow list: if isAuthenticated() && (
+        isAdmin(request.auth.uid) ||
+        request.auth.uid == resource.data.sponsorId
+      );
+    }
+
     // Universal engagement system
     match /engagements/{engagementId} {
       allow read: if isAuthenticated();

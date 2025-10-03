@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  final _userService = UserService();
+  final _auth = FirebaseAuth.instance;
+  bool _isDeleting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -174,14 +185,9 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              // TODO: Implement logout functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Logout functionality coming soon'),
-                ),
-              );
+              await _signOut();
             },
             child: const Text('Sign Out'),
           ),
@@ -204,20 +210,118 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // TODO: Implement account deletion functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Account deletion functionality coming soon'),
-                ),
-              );
-            },
+            onPressed: _isDeleting
+                ? null
+                : () {
+                    Navigator.of(context).pop();
+                    _deleteAccount();
+                  },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: _isDeleting
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Delete'),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _signOut() async {
+    try {
+      await _auth.signOut();
+
+      if (mounted) {
+        // Navigate to login screen and clear navigation stack
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorMessage('Failed to sign out: $e');
+      }
+    }
+  }
+
+  Future<void> _deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      _showErrorMessage('No user is currently signed in');
+      return;
+    }
+
+    setState(() => _isDeleting = true);
+
+    try {
+      // Delete account using UserService
+      await _userService.deleteAccount(user.uid);
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigate to login screen and clear navigation stack
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String errorMessage = 'Failed to delete account';
+
+        if (e.code == 'requires-recent-login') {
+          errorMessage =
+              'This operation requires recent authentication. Please log out, log in again, and try deleting your account.';
+
+          // Show re-authentication dialog
+          _showReauthenticationDialog();
+        } else {
+          errorMessage = 'Failed to delete account: ${e.message}';
+          _showErrorMessage(errorMessage);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorMessage('Failed to delete account: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+    }
+  }
+
+  void _showReauthenticationDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Re-authentication Required'),
+        content: const Text(
+          'For security reasons, you need to log in again before deleting your account. '
+          'Please log out and log back in, then try again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 }

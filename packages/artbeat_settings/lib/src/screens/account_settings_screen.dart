@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../models/models.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
@@ -11,6 +16,12 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // Services
+  final _userService = UserService();
+  final _storageService = EnhancedStorageService();
+  final _auth = FirebaseAuth.instance;
+  final _imagePicker = ImagePicker();
+
   // Form controllers
   final _displayNameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -20,6 +31,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   bool _isLoading = false;
   bool _hasChanges = false;
+  bool _isUploadingImage = false;
   AccountSettingsModel? _accountSettings;
 
   @override
@@ -39,29 +51,44 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Future<void> _loadAccountSettings() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Load actual account settings from service
-      // For now, create mock data
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Load user model from Firestore
+      final userModel = await _userService.getUserModel(user.uid);
+
+      // Create account settings from user model and Firebase Auth data
       _accountSettings = AccountSettingsModel(
-        userId: 'current-user-id',
-        email: 'user@example.com',
-        username: 'username',
-        displayName: 'Display Name',
-        phoneNumber: '',
-        bio: '',
-        emailVerified: true,
-        phoneVerified: false,
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
+        userId: user.uid,
+        email: user.email ?? userModel.email,
+        username: userModel.username,
+        displayName: userModel.fullName,
+        phoneNumber: user.phoneNumber ?? '',
+        bio: userModel.bio,
+        profileImageUrl: userModel.profileImageUrl,
+        emailVerified: user.emailVerified,
+        phoneVerified: user.phoneNumber != null && user.phoneNumber!.isNotEmpty,
+        createdAt: user.metadata.creationTime ?? DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      _populateFormFields();
+      if (mounted) {
+        _populateFormFields();
+      }
     } catch (e) {
-      _showErrorMessage('Failed to load account settings: $e');
+      if (mounted) {
+        _showErrorMessage('Failed to load account settings: $e');
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -81,11 +108,17 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!mounted) return;
 
     setState(() => _isLoading = true);
 
     try {
-      final updatedSettings = _accountSettings!.copyWith(
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      var updatedSettings = _accountSettings!.copyWith(
         displayName: _displayNameController.text.trim(),
         email: _emailController.text.trim(),
         username: _usernameController.text.trim(),
@@ -93,19 +126,61 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         bio: _bioController.text.trim(),
       );
 
-      // TODO: Save to service
-      // await _settingsService.updateAccountSettings(updatedSettings);
-
-      setState(() {
-        _accountSettings = updatedSettings;
-        _hasChanges = false;
+      // Update user document in Firestore
+      await _userService.firestore.collection('users').doc(user.uid).update({
+        'displayName': updatedSettings.displayName,
+        'username': updatedSettings.username,
+        'bio': updatedSettings.bio,
+        'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      _showSuccessMessage('Account settings updated successfully');
+      // Update email in Firebase Auth if changed
+      if (updatedSettings.email != _accountSettings!.email) {
+        await user.verifyBeforeUpdateEmail(updatedSettings.email);
+        // Email verification will be reset, so update the flag
+        updatedSettings = updatedSettings.copyWith(emailVerified: false);
+      }
+
+      // Update display name in Firebase Auth if changed
+      if (updatedSettings.displayName != _accountSettings!.displayName) {
+        await user.updateDisplayName(updatedSettings.displayName);
+      }
+
+      if (mounted) {
+        setState(() {
+          _accountSettings = updatedSettings;
+          _hasChanges = false;
+        });
+
+        _showSuccessMessage('Account settings updated successfully');
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String errorMessage = 'Failed to save changes';
+        switch (e.code) {
+          case 'requires-recent-login':
+            errorMessage =
+                'This operation requires recent authentication. Please log out and log in again.';
+            break;
+          case 'email-already-in-use':
+            errorMessage = 'This email is already in use by another account.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'The email address is invalid.';
+            break;
+          default:
+            errorMessage = 'Failed to save changes: ${e.message}';
+        }
+        _showErrorMessage(errorMessage);
+      }
     } catch (e) {
-      _showErrorMessage('Failed to save changes: $e');
+      if (mounted) {
+        _showErrorMessage('Failed to save changes: $e');
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -288,15 +363,37 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Widget _buildProfilePictureSection() {
     return Column(
       children: [
-        const CircleAvatar(
-          radius: 50,
-          backgroundImage: AssetImage('assets/default_profile.png'),
+        Stack(
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage:
+                  _accountSettings?.profileImageUrl.isNotEmpty == true
+                  ? NetworkImage(_accountSettings!.profileImageUrl)
+                  : null,
+              child: _accountSettings?.profileImageUrl.isEmpty != false
+                  ? const Icon(Icons.person, size: 50)
+                  : null,
+            ),
+            if (_isUploadingImage)
+              Positioned.fill(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 12),
         TextButton.icon(
-          onPressed: _changeProfilePicture,
+          onPressed: _isUploadingImage ? null : _changeProfilePicture,
           icon: const Icon(Icons.camera_alt),
-          label: const Text('Change Photo'),
+          label: Text(_isUploadingImage ? 'Uploading...' : 'Change Photo'),
         ),
       ],
     );
@@ -311,9 +408,87 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  void _changeProfilePicture() {
-    // TODO: Implement profile picture change
-    _showErrorMessage('Profile picture change coming soon');
+  Future<void> _changeProfilePicture() async {
+    if (!mounted) return;
+
+    // Show source selection dialog
+    final source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Choose Image Source'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Gallery'),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Camera'),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null || !mounted) return;
+
+    try {
+      setState(() => _isUploadingImage = true);
+
+      // Pick image
+      final pickedFile = await _imagePicker.pickImage(source: source);
+
+      if (pickedFile == null || !mounted) {
+        setState(() => _isUploadingImage = false);
+        return;
+      }
+
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Upload image to Firebase Storage
+      final imageFile = File(pickedFile.path);
+      final uploadResult = await _storageService.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'profile_pictures/${user.uid}',
+        generateThumbnail: true,
+        customWidth: 512,
+        customHeight: 512,
+      );
+
+      final imageUrl = uploadResult['imageUrl'] ?? '';
+
+      // Update user profile in Firestore
+      await _userService.firestore.collection('users').doc(user.uid).update({
+        'profileImageUrl': imageUrl,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Update Firebase Auth profile
+      await user.updatePhotoURL(imageUrl);
+
+      if (mounted) {
+        setState(() {
+          _accountSettings = _accountSettings!.copyWith(
+            profileImageUrl: imageUrl,
+          );
+          _isUploadingImage = false;
+        });
+
+        _showSuccessMessage('Profile picture updated successfully');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploadingImage = false);
+        _showErrorMessage('Failed to update profile picture: $e');
+      }
+    }
   }
 
   void _showChangePasswordDialog() {
@@ -332,13 +507,256 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  void _sendEmailVerification() {
-    // TODO: Implement email verification
-    _showSuccessMessage('Verification email sent');
+  Future<void> _sendEmailVerification() async {
+    if (!mounted) return;
+
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      if (user.emailVerified) {
+        _showSuccessMessage('Email is already verified');
+        return;
+      }
+
+      // Send verification email
+      await user.sendEmailVerification();
+
+      if (mounted) {
+        _showSuccessMessage(
+          'Verification email sent to ${user.email}. Please check your inbox.',
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        String errorMessage = 'Failed to send verification email';
+        switch (e.code) {
+          case 'too-many-requests':
+            errorMessage =
+                'Too many requests. Please wait a few minutes before trying again.';
+            break;
+          case 'user-disabled':
+            errorMessage = 'This account has been disabled.';
+            break;
+          default:
+            errorMessage = 'Failed to send verification email: ${e.message}';
+        }
+        _showErrorMessage(errorMessage);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorMessage('Failed to send verification email: $e');
+      }
+    }
   }
 
-  void _sendPhoneVerification() {
-    // TODO: Implement phone verification
-    _showSuccessMessage('Verification SMS sent');
+  Future<void> _sendPhoneVerification() async {
+    if (!mounted) return;
+
+    final phoneNumber = _phoneController.text.trim();
+    if (phoneNumber.isEmpty) {
+      _showErrorMessage('Please enter a phone number first');
+      return;
+    }
+
+    // Validate phone number format (basic validation)
+    if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(phoneNumber)) {
+      _showErrorMessage(
+        'Please enter a valid phone number with country code (e.g., +1234567890)',
+      );
+      return;
+    }
+
+    try {
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-verification (Android only)
+          try {
+            await user.updatePhoneNumber(credential);
+            if (mounted) {
+              setState(() {
+                _accountSettings = _accountSettings!.copyWith(
+                  phoneNumber: phoneNumber,
+                  phoneVerified: true,
+                );
+              });
+              _showSuccessMessage('Phone number verified successfully');
+            }
+          } catch (e) {
+            if (mounted) {
+              _showErrorMessage('Failed to verify phone number: $e');
+            }
+          }
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          if (mounted) {
+            String errorMessage = 'Phone verification failed';
+            switch (e.code) {
+              case 'invalid-phone-number':
+                errorMessage = 'The phone number is invalid.';
+                break;
+              case 'too-many-requests':
+                errorMessage = 'Too many requests. Please try again later.';
+                break;
+              case 'quota-exceeded':
+                errorMessage = 'SMS quota exceeded. Please try again later.';
+                break;
+              default:
+                errorMessage = 'Phone verification failed: ${e.message}';
+            }
+            _showErrorMessage(errorMessage);
+          }
+        },
+        codeSent: (String verId, int? token) {
+          if (mounted) {
+            _showVerificationCodeDialog(verId, phoneNumber);
+          }
+        },
+        codeAutoRetrievalTimeout: (String verId) {
+          // Timeout occurred, user can still enter code manually
+        },
+        timeout: const Duration(seconds: 60),
+      );
+    } catch (e) {
+      if (mounted) {
+        _showErrorMessage('Failed to send verification code: $e');
+      }
+    }
+  }
+
+  Future<void> _showVerificationCodeDialog(
+    String verificationId,
+    String phoneNumber,
+  ) async {
+    final codeController = TextEditingController();
+
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Verification Code'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('A verification code has been sent to $phoneNumber'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: codeController,
+              decoration: const InputDecoration(
+                labelText: 'Verification Code',
+                border: OutlineInputBorder(),
+                hintText: '123456',
+              ),
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final code = codeController.text.trim();
+              if (code.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter the verification code'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                final user = _auth.currentUser;
+                if (user == null) {
+                  throw Exception('User not authenticated');
+                }
+
+                // Create credential with verification code
+                final credential = PhoneAuthProvider.credential(
+                  verificationId: verificationId,
+                  smsCode: code,
+                );
+
+                // Update phone number
+                await user.updatePhoneNumber(credential);
+
+                // Update Firestore
+                await _userService.firestore
+                    .collection('users')
+                    .doc(user.uid)
+                    .update({
+                      'phoneNumber': phoneNumber,
+                      'phoneVerified': true,
+                      'updatedAt': FieldValue.serverTimestamp(),
+                    });
+
+                if (mounted) {
+                  Navigator.of(context).pop(true);
+                }
+              } on FirebaseAuthException catch (e) {
+                String errorMessage = 'Verification failed';
+                switch (e.code) {
+                  case 'invalid-verification-code':
+                    errorMessage =
+                        'Invalid verification code. Please try again.';
+                    break;
+                  case 'session-expired':
+                    errorMessage =
+                        'Verification code expired. Please request a new one.';
+                    break;
+                  default:
+                    errorMessage = 'Verification failed: ${e.message}';
+                }
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(errorMessage),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Verification failed: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Verify'),
+          ),
+        ],
+      ),
+    );
+
+    codeController.dispose();
+
+    if (result == true && mounted) {
+      setState(() {
+        _accountSettings = _accountSettings!.copyWith(
+          phoneNumber: phoneNumber,
+          phoneVerified: true,
+        );
+      });
+      _showSuccessMessage('Phone number verified successfully');
+    }
   }
 }

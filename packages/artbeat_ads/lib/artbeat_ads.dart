@@ -6,8 +6,12 @@ export 'src/models/ad_type.dart';
 export 'src/models/ad_size.dart';
 export 'src/models/ad_status.dart';
 export 'src/models/ad_location.dart';
+export 'src/models/ad_zone.dart'; // New simplified zone system
 export 'src/models/ad_duration.dart';
 export 'src/models/image_fit.dart';
+
+// Title Sponsorship Models
+export 'src/models/title_sponsorship_model.dart';
 
 // Analytics Models
 export 'src/models/ad_analytics_model.dart';
@@ -24,6 +28,9 @@ export 'src/models/ad_campaign_model.dart';
 export 'src/services/simple_ad_service.dart';
 export 'src/services/ad_cleanup_service.dart';
 
+// Title Sponsorship Services
+export 'src/services/title_sponsorship_service.dart';
+
 // Analytics Services
 export 'src/services/ad_analytics_service.dart';
 
@@ -36,7 +43,11 @@ export 'src/services/payment_analytics_service.dart';
 export 'src/widgets/simple_ad_display_widget.dart';
 export 'src/widgets/simple_ad_placement_widget.dart';
 export 'src/widgets/rotating_ad_placement_widget.dart';
+export 'src/widgets/zone_ad_placement_widget.dart'; // New zone-based ad placement
 export 'src/widgets/missing_ad_widgets.dart'; // BannerAdWidget, FeedAdWidget, etc.
+
+// Title Sponsorship Widgets
+export 'src/widgets/title_sponsor_badge.dart';
 
 // Simplified Screens
 export 'src/screens/simple_ad_create_screen.dart';

@@ -1,0 +1,546 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
+import 'package:artbeat_core/artbeat_core.dart';
+import '../models/public_art_model.dart';
+import 'rewards_service.dart';
+import 'challenge_service.dart';
+
+/// Service for managing instant art discovery (Pokemon Go style)
+class InstantDiscoveryService {
+  static final InstantDiscoveryService _instance =
+      InstantDiscoveryService._internal();
+
+  factory InstantDiscoveryService() => _instance;
+
+  InstantDiscoveryService._internal();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final RewardsService _rewardsService = RewardsService();
+  final ChallengeService _challengeService = ChallengeService();
+
+  // Cache for discovered art IDs
+  Set<String>? _discoveredArtIds;
+  DateTime? _discoveredArtCacheTime;
+  static const Duration _cacheTimeout = Duration(minutes: 5);
+
+  /// Get nearby public art within radius (in meters)
+  Future<List<PublicArtModel>> getNearbyArt(
+    Position userPosition, {
+    double radiusMeters = 500,
+  }) async {
+    try {
+      // Get user's discovered art to filter out
+      final discoveredIds = await _getDiscoveredArtIds();
+
+      // Create GeoFirePoint from user position
+      final center = GeoFirePoint(
+        GeoPoint(userPosition.latitude, userPosition.longitude),
+      );
+
+      // Query publicArt collection within radius
+      final publicArtRef = _firestore.collection('publicArt');
+
+      // Use geoflutterfire_plus for geospatial query
+      final geoQuery = GeoCollectionReference(publicArtRef)
+          .subscribeWithin(
+            center: center,
+            radiusInKm: radiusMeters / 1000, // Convert meters to km
+            field: 'geo',
+            geopointFrom: (data) =>
+                (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
+            strictMode: true,
+          )
+          .take(1); // Take first emission
+
+      final results = await geoQuery.first;
+
+      // Convert to PublicArtModel and filter out discovered art
+      final nearbyArt = results
+          .map((doc) {
+            try {
+              return PublicArtModel.fromFirestore(doc);
+            } catch (e) {
+              AppLogger.error('Error parsing public art: $e');
+              return null;
+            }
+          })
+          .where((art) => art != null && !discoveredIds.contains(art.id))
+          .cast<PublicArtModel>()
+          .toList();
+
+      // Sort by proximity
+      nearbyArt.sort((a, b) {
+        final distA = Geolocator.distanceBetween(
+          userPosition.latitude,
+          userPosition.longitude,
+          a.location.latitude,
+          a.location.longitude,
+        );
+        final distB = Geolocator.distanceBetween(
+          userPosition.latitude,
+          userPosition.longitude,
+          b.location.latitude,
+          b.location.longitude,
+        );
+        return distA.compareTo(distB);
+      });
+
+      return nearbyArt;
+    } catch (e) {
+      AppLogger.error('Error getting nearby art: $e');
+      return [];
+    }
+  }
+
+  /// Stream of nearby art (real-time updates)
+  Stream<List<PublicArtModel>> watchNearbyArt({
+    required Position userPosition,
+    double radiusMeters = 500,
+  }) async* {
+    try {
+      // Get user's discovered art to filter out
+      final discoveredIds = await _getDiscoveredArtIds();
+
+      // Create GeoFirePoint from user position
+      final center = GeoFirePoint(
+        GeoPoint(userPosition.latitude, userPosition.longitude),
+      );
+
+      // Query publicArt collection within radius
+      final publicArtRef = _firestore.collection('publicArt');
+
+      // Use geoflutterfire_plus for geospatial query
+      final geoStream = GeoCollectionReference(publicArtRef).subscribeWithin(
+        center: center,
+        radiusInKm: radiusMeters / 1000, // Convert meters to km
+        field: 'geo',
+        geopointFrom: (data) =>
+            (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
+        strictMode: true,
+      );
+
+      await for (final results in geoStream) {
+        // Convert to PublicArtModel and filter out discovered art
+        final nearbyArt = results
+            .map((doc) {
+              try {
+                return PublicArtModel.fromFirestore(doc);
+              } catch (e) {
+                AppLogger.error('Error parsing public art: $e');
+                return null;
+              }
+            })
+            .where((art) => art != null && !discoveredIds.contains(art.id))
+            .cast<PublicArtModel>()
+            .toList();
+
+        // Sort by proximity
+        nearbyArt.sort((a, b) {
+          final distA = Geolocator.distanceBetween(
+            userPosition.latitude,
+            userPosition.longitude,
+            a.location.latitude,
+            a.location.longitude,
+          );
+          final distB = Geolocator.distanceBetween(
+            userPosition.latitude,
+            userPosition.longitude,
+            b.location.latitude,
+            b.location.longitude,
+          );
+          return distA.compareTo(distB);
+        });
+
+        yield nearbyArt;
+      }
+    } catch (e) {
+      AppLogger.error('Error watching nearby art: $e');
+      yield [];
+    }
+  }
+
+  /// Calculate distance between user and art
+  double calculateDistance(Position userPosition, PublicArtModel art) {
+    return Geolocator.distanceBetween(
+      userPosition.latitude,
+      userPosition.longitude,
+      art.location.latitude,
+      art.location.longitude,
+    );
+  }
+
+  /// Get proximity message based on distance
+  String getProximityMessage(double distanceMeters) {
+    if (distanceMeters < 10) {
+      return "🔥 You're right on top of it!";
+    } else if (distanceMeters < 25) {
+      return "🔥 Almost there! Look around!";
+    } else if (distanceMeters < 50) {
+      return "🌟 Very close! Keep going!";
+    } else if (distanceMeters < 100) {
+      return "👀 Getting warmer...";
+    } else if (distanceMeters < 250) {
+      return "🚶 You're on the right track!";
+    } else {
+      return "🗺️ Head in this direction";
+    }
+  }
+
+  /// Save a discovery to user's discoveries collection
+  Future<String?> saveDiscovery(
+    PublicArtModel art,
+    Position capturePosition,
+  ) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Calculate distance from art
+      final distance = Geolocator.distanceBetween(
+        capturePosition.latitude,
+        capturePosition.longitude,
+        art.location.latitude,
+        art.location.longitude,
+      );
+
+      // Create discovery document
+      final discoveryData = {
+        'userId': userId,
+        'publicArtId': art.id,
+        'title': art.title,
+        'artistName': art.artistName,
+        'imageUrl': art.imageUrl,
+        'artType': art.artType,
+        'location': art.location,
+        'captureLocation': GeoPoint(
+          capturePosition.latitude,
+          capturePosition.longitude,
+        ),
+        'distance': distance,
+        'discoveredAt': FieldValue.serverTimestamp(),
+        'isInstantDiscovery': true,
+      };
+
+      // Save to user's discoveries subcollection
+      final docRef = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .add(discoveryData);
+
+      // Invalidate cache
+      _discoveredArtIds = null;
+      _discoveredArtCacheTime = null;
+
+      // Award XP
+      await _awardDiscoveryXP(userId);
+
+      // Update challenge progress
+      await _challengeService.recordArtDiscovery();
+
+      AppLogger.info('✅ Saved discovery: ${art.title}');
+      return docRef.id;
+    } catch (e) {
+      AppLogger.error('Error saving discovery: $e');
+      return null;
+    }
+  }
+
+  /// Award XP for discovery with bonuses
+  Future<void> _awardDiscoveryXP(String userId) async {
+    try {
+      // Check if this is first discovery today
+      final isFirstToday = await _isFirstDiscoveryToday(userId);
+
+      if (isFirstToday) {
+        // First discovery of the day: +50 XP
+        await _rewardsService.awardXP(
+          'first_discovery_today',
+          customAmount: 50,
+        );
+      } else {
+        // Regular discovery: +20 XP
+        await _rewardsService.awardXP('instant_discovery', customAmount: 20);
+      }
+
+      // Check for streak bonus
+      final streak = await _getDiscoveryStreak(userId);
+      if (streak >= 3) {
+        // Streak bonus: +10 XP per streak
+        await _rewardsService.awardXP(
+          'discovery_streak',
+          customAmount: 10 * streak,
+        );
+      }
+    } catch (e) {
+      AppLogger.error('Error awarding discovery XP: $e');
+    }
+  }
+
+  /// Check if this is the first discovery today
+  Future<bool> _isFirstDiscoveryToday(String userId) async {
+    try {
+      final today = DateTime.now();
+      final startOfDay = DateTime(today.year, today.month, today.day);
+
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .where('discoveredAt', isGreaterThanOrEqualTo: startOfDay)
+          .limit(1)
+          .get();
+
+      return snapshot.docs.isEmpty;
+    } catch (e) {
+      AppLogger.error('Error checking first discovery: $e');
+      return false;
+    }
+  }
+
+  /// Get current discovery streak
+  Future<int> _getDiscoveryStreak(String userId) async {
+    try {
+      // Get discoveries from last 7 days
+      final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
+
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .where('discoveredAt', isGreaterThanOrEqualTo: sevenDaysAgo)
+          .orderBy('discoveredAt', descending: true)
+          .get();
+
+      if (snapshot.docs.isEmpty) return 0;
+
+      // Count consecutive days with discoveries
+      int streak = 0;
+      DateTime? lastDate;
+
+      for (var doc in snapshot.docs) {
+        final discoveredAt = (doc.data()['discoveredAt'] as Timestamp).toDate();
+        final discoveryDate = DateTime(
+          discoveredAt.year,
+          discoveredAt.month,
+          discoveredAt.day,
+        );
+
+        if (lastDate == null) {
+          // First discovery
+          streak = 1;
+          lastDate = discoveryDate;
+        } else {
+          final daysDiff = lastDate.difference(discoveryDate).inDays;
+          if (daysDiff == 1) {
+            // Consecutive day
+            streak++;
+            lastDate = discoveryDate;
+          } else if (daysDiff > 1) {
+            // Streak broken
+            break;
+          }
+          // Same day, continue
+        }
+      }
+
+      return streak;
+    } catch (e) {
+      AppLogger.error('Error getting discovery streak: $e');
+      return 0;
+    }
+  }
+
+  /// Get list of art IDs user has already discovered
+  Future<Set<String>> _getDiscoveredArtIds() async {
+    try {
+      // Check cache
+      if (_discoveredArtIds != null &&
+          _discoveredArtCacheTime != null &&
+          DateTime.now().difference(_discoveredArtCacheTime!) < _cacheTimeout) {
+        return _discoveredArtIds!;
+      }
+
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return {};
+
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .get();
+
+      final ids = snapshot.docs
+          .map((doc) => doc.data()['publicArtId'] as String?)
+          .where((id) => id != null)
+          .cast<String>()
+          .toSet();
+
+      // Update cache
+      _discoveredArtIds = ids;
+      _discoveredArtCacheTime = DateTime.now();
+
+      return ids;
+    } catch (e) {
+      AppLogger.error('Error getting discovered art IDs: $e');
+      return {};
+    }
+  }
+
+  /// Check if user has discovered specific art
+  Future<bool> hasUserDiscovered(String artId) async {
+    final discoveredIds = await _getDiscoveredArtIds();
+    return discoveredIds.contains(artId);
+  }
+
+  /// Get user's discovery count
+  Future<int> getDiscoveryCount() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return 0;
+
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .count()
+          .get();
+
+      return snapshot.count ?? 0;
+    } catch (e) {
+      AppLogger.error('Error getting discovery count: $e');
+      return 0;
+    }
+  }
+
+  /// Get user's discoveries
+  Future<List<Map<String, dynamic>>> getUserDiscoveries({
+    int limit = 20,
+  }) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) return [];
+
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .orderBy('discoveredAt', descending: true)
+          .limit(limit)
+          .get();
+
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      AppLogger.error('Error getting user discoveries: $e');
+      return [];
+    }
+  }
+
+  /// Clear cache (useful for testing or manual refresh)
+  void clearCache() {
+    _discoveredArtIds = null;
+    _discoveredArtCacheTime = null;
+  }
+
+  /// Monitor location changes and send notifications for nearby art discoveries
+  /// Returns a stream that emits notifications when new art is discovered nearby
+  Stream<Map<String, dynamic>> monitorNearbyArtNotifications({
+    required Position userPosition,
+    double notificationRadiusMeters = 100, // Notify when art is within 100m
+    Duration checkInterval = const Duration(
+      seconds: 30,
+    ), // Check every 30 seconds
+  }) async* {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    // Keep track of art we've already notified about to avoid spam
+    final notifiedArtIds = <String>{};
+    final lastNotificationTime = <String, DateTime>{};
+
+    while (true) {
+      try {
+        // Get nearby art within notification radius
+        final nearbyArt = await getNearbyArt(
+          userPosition,
+          radiusMeters: notificationRadiusMeters,
+        );
+
+        // Filter to art we haven't notified about recently
+        final now = DateTime.now();
+        final newNearbyArt = nearbyArt.where((art) {
+          // Skip if we've already notified about this art recently (within last hour)
+          final lastNotified = lastNotificationTime[art.id];
+          if (lastNotified != null &&
+              now.difference(lastNotified).inMinutes < 60) {
+            return false;
+          }
+
+          // Skip if user has already discovered this art
+          if (notifiedArtIds.contains(art.id)) {
+            return false;
+          }
+
+          return true;
+        }).toList();
+
+        // Send notifications for new nearby art
+        for (final art in newNearbyArt) {
+          final distance = Geolocator.distanceBetween(
+            userPosition.latitude,
+            userPosition.longitude,
+            art.location.latitude,
+            art.location.longitude,
+          );
+
+          // Calculate distance in appropriate units
+          final distanceText = distance < 1000
+              ? '${distance.round()}m'
+              : '${(distance / 1000).toStringAsFixed(1)}km';
+
+          // Send notification
+          await NotificationService().sendNotification(
+            userId: user.uid,
+            title: '🎨 Art Nearby!',
+            message:
+                '${art.title} is just $distanceText away. Tap to discover!',
+            type:
+                NotificationType.achievement, // Using achievement type for now
+            data: {
+              'artId': art.id,
+              'latitude': art.location.latitude,
+              'longitude': art.location.longitude,
+              'distance': distance,
+              'notificationType': 'nearby_art',
+            },
+          );
+
+          // Mark as notified
+          notifiedArtIds.add(art.id);
+          lastNotificationTime[art.id] = now;
+
+          // Emit notification data for UI updates
+          yield {
+            'type': 'nearby_art_discovered',
+            'art': art.toMap(),
+            'distance': distance,
+            'distanceText': distanceText,
+            'timestamp': now,
+          };
+        }
+
+        // Wait before next check
+        await Future<void>.delayed(checkInterval);
+      } catch (e) {
+        AppLogger.error('Error monitoring nearby art notifications: $e');
+        // Wait a bit longer on error before retrying
+        await Future<void>.delayed(const Duration(seconds: 60));
+      }
+    }
+  }
+}

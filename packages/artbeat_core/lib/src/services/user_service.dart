@@ -1138,4 +1138,91 @@ class UserService extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Delete user account and all associated data
+  /// This will:
+  /// - Delete user document from Firestore
+  /// - Delete user's uploaded files from Storage
+  /// - Delete Firebase Auth account
+  /// - Clear local data
+  ///
+  /// Note: This operation requires recent authentication.
+  /// If the user hasn't logged in recently, Firebase will throw
+  /// a 'requires-recent-login' error and re-authentication will be needed.
+  Future<void> deleteAccount(String userId) async {
+    try {
+      _logDebug('Starting account deletion for user: $userId');
+
+      // 1. Delete user's storage files (profile pictures, uploads, etc.)
+      try {
+        final storageRef = storage.ref().child('users/$userId');
+        final listResult = await storageRef.listAll();
+
+        // Delete all files in user's storage folder
+        for (final item in listResult.items) {
+          await item.delete();
+          _logDebug('Deleted storage file: ${item.fullPath}');
+        }
+
+        // Delete all subdirectories
+        for (final prefix in listResult.prefixes) {
+          final subList = await prefix.listAll();
+          for (final item in subList.items) {
+            await item.delete();
+            _logDebug('Deleted storage file: ${item.fullPath}');
+          }
+        }
+      } catch (e, s) {
+        _logError('Error deleting user storage files (continuing)', e, s);
+        // Continue with deletion even if storage cleanup fails
+      }
+
+      // 2. Delete user document from Firestore
+      // Note: This will trigger Cloud Functions to clean up related data
+      // (posts, comments, likes, follows, etc.) if configured
+      await firestore.collection('users').doc(userId).delete();
+      _logDebug('Deleted user document from Firestore');
+
+      // 3. Delete following/followers subcollections
+      try {
+        // Delete following subcollection
+        final followingSnapshot = await _followingCollection
+            .doc(userId)
+            .collection('users')
+            .get();
+        for (final doc in followingSnapshot.docs) {
+          await doc.reference.delete();
+        }
+        await _followingCollection.doc(userId).delete();
+
+        // Delete followers subcollection
+        final followersSnapshot = await _followersCollection
+            .doc(userId)
+            .collection('users')
+            .get();
+        for (final doc in followersSnapshot.docs) {
+          await doc.reference.delete();
+        }
+        await _followersCollection.doc(userId).delete();
+
+        _logDebug('Deleted follow relationships');
+      } catch (e, s) {
+        _logError('Error deleting follow relationships (continuing)', e, s);
+      }
+
+      // 4. Delete Firebase Auth account
+      // This must be done last as it will sign out the user
+      final user = auth.currentUser;
+      if (user != null && user.uid == userId) {
+        await user.delete();
+        _logDebug('Deleted Firebase Auth account');
+      }
+
+      _logDebug('Account deletion completed successfully');
+      notifyListeners();
+    } catch (e, s) {
+      _logError('Error deleting account', e, s);
+      rethrow;
+    }
+  }
 }

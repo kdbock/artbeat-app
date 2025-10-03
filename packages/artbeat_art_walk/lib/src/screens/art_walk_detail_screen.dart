@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:share_plus/share_plus.dart' as share_plus;
+import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:logger/logger.dart';
@@ -21,25 +22,34 @@ class ArtWalkDetailScreen extends StatefulWidget {
 class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
   final ArtWalkService _artWalkService = ArtWalkService();
   final AchievementService _achievementService = AchievementService();
+  late ArtWalkNavigationService _navigationService;
   bool _isLoading = true;
   bool _isCompletingWalk = false;
   bool _hasCompletedWalk = false;
   bool _showNavigationPanel = false; // Track navigation panel visibility
+  bool _isNavigationActive = false; // Track if navigation is currently running
   ArtWalkModel? _walk;
   List<PublicArtModel> _artPieces = [];
   Set<Marker> _markers = <Marker>{};
   Set<Polyline> _polylines = <Polyline>{};
+  ArtWalkRouteModel? _currentRoute;
   bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
+    _navigationService = ArtWalkNavigationService();
     _loadArtWalk();
   }
 
   @override
   void dispose() {
     _disposed = true;
+    // Stop navigation if active
+    if (_isNavigationActive) {
+      _navigationService.stopNavigation();
+    }
+    _navigationService.dispose();
     super.dispose();
   }
 
@@ -364,6 +374,89 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
         SnackBar(content: Text('Error completing art walk: ${e.toString()}')),
       );
     }
+  }
+
+  /// Start turn-by-turn navigation in the detail screen
+  Future<void> _startDetailNavigation() async {
+    if (_walk == null || _artPieces.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to start navigation. No art pieces found.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      setState(() => _isLoading = true);
+
+      // Get current location
+      final currentPosition = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 10),
+        ),
+      );
+
+      // Generate route
+      final route = await _navigationService.generateRoute(
+        _walk!.id,
+        _artPieces,
+        currentPosition,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _currentRoute = route;
+        _isNavigationActive = true;
+        _showNavigationPanel = true;
+        _isLoading = false;
+      });
+
+      // Start navigation
+      await _navigationService.startNavigation(route);
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Navigation started! Follow the turn-by-turn instructions.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to start navigation: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Stop turn-by-turn navigation
+  Future<void> _stopDetailNavigation() async {
+    await _navigationService.stopNavigation();
+
+    if (!mounted) return;
+    setState(() {
+      _isNavigationActive = false;
+      _showNavigationPanel = false;
+      _currentRoute = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Navigation stopped'),
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -710,28 +803,45 @@ class _ArtWalkDetailScreenState extends State<ArtWalkDetailScreen> {
                                   const Spacer(),
                                   IconButton(
                                     icon: const Icon(Icons.close),
-                                    onPressed: () {
-                                      setState(() {
-                                        _showNavigationPanel = false;
-                                      });
-                                    },
+                                    onPressed: _stopDetailNavigation,
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 16),
-                              // TODO: Initialize ArtWalkNavigationService and integrate TurnByTurnNavigationWidget
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue.shade50,
-                                  borderRadius: BorderRadius.circular(8),
+                              // Turn-by-turn navigation widget
+                              if (_isNavigationActive && _currentRoute != null)
+                                TurnByTurnNavigationWidget(
+                                  navigationService: _navigationService,
+                                  isCompact: true,
+                                  onStopNavigation: _stopDetailNavigation,
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Text(
+                                        'Start navigation to see turn-by-turn directions to each art piece.',
+                                        style: TextStyle(fontSize: 14),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton.icon(
+                                        onPressed: _startDetailNavigation,
+                                        icon: const Icon(Icons.navigation),
+                                        label: const Text('Start Navigation'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                child: const Text(
-                                  'Navigation widget integration in progress...\n\n'
-                                  'This will provide turn-by-turn directions to each art piece in the walk.',
-                                  style: TextStyle(fontStyle: FontStyle.italic),
-                                ),
-                              ),
                             ],
                           ),
                         ),

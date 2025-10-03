@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/ad_location.dart';
+import '../models/ad_zone.dart';
 import '../services/simple_ad_service.dart';
-import '../widgets/simple_ad_placement_widget.dart';
+import '../widgets/zone_ad_placement_widget.dart';
 import '../widgets/missing_ad_widgets.dart';
 import '../screens/simple_ad_create_screen.dart';
 import '../screens/simple_ad_management_screen.dart';
@@ -53,9 +54,12 @@ class SimpleAdExample extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Banner Ad at top
-              const Text('Banner Ad (Dashboard):'),
-              const BannerAdWidget(location: AdLocation.fluidDashboard),
+              // Zone-based Ad at top (NEW APPROACH)
+              const Text('Zone-Based Ad (Home & Discovery):'),
+              const ZoneAdPlacementWidget(
+                zone: AdZone.homeDiscovery,
+                showIfEmpty: true,
+              ),
               const SizedBox(height: 24),
 
               // Content with feed ad
@@ -71,36 +75,38 @@ class SimpleAdExample extends StatelessWidget {
               _buildContentItem('Content Item 4'),
               const SizedBox(height: 24),
 
-              // Ad spaces for different locations
-              const Text('Ad Spaces by Location:'),
+              // Ad spaces for different zones (NEW APPROACH)
+              const Text('Ad Spaces by Zone:'),
               const SizedBox(height: 8),
-              const AdSpaceWidget(
-                location: AdLocation.artWalkDashboard,
-                customLabel: 'Art Walk Ad',
+              ZoneAdPlacementWidget(zone: AdZone.artWalks, showIfEmpty: true),
+              const SizedBox(height: 8),
+              ZoneAdPlacementWidget(
+                zone: AdZone.communitySocial,
+                showIfEmpty: true,
               ),
-              const AdSpaceWidget(
-                location: AdLocation.captureDashboard,
-                customLabel: 'Capture Ad',
-              ),
-              const AdSpaceWidget(
-                location: AdLocation.eventDashboard,
-                customLabel: 'Events Ad',
-              ),
+              const SizedBox(height: 8),
+              ZoneAdPlacementWidget(zone: AdZone.events, showIfEmpty: true),
               const SizedBox(height: 24),
 
               // Instructions
               const Text(
-                'How to Use:',
+                'How to Use (Zone-Based System):',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               const Text(
                 '1. Tap the + button to create a new ad\n'
-                '2. Select ad type, size, and location\n'
+                '2. Select ad zone (Home, Art Walks, Community, Events, or Artist Profiles)\n'
                 '3. Upload 1-4 images\n'
-                '4. Fill in ad details\n'
+                '4. Fill in ad details and set budget\n'
                 '5. Submit for approval\n'
-                '6. Use admin panel to approve/reject ads',
+                '6. Use admin panel to approve/reject ads\n\n'
+                'Zone Pricing:\n'
+                '• Home & Discovery: \$25/day\n'
+                '• Community & Social: \$20/day\n'
+                '• Art & Walks: \$15/day\n'
+                '• Events & Experiences: \$15/day\n'
+                '• Artist Profiles: \$10/day',
                 style: TextStyle(fontSize: 14),
               ),
             ],
@@ -131,13 +137,13 @@ class DashboardWithAdsExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard with Ads')),
+      appBar: AppBar(title: const Text('Dashboard with Ads (Zone-Based)')),
       body: Column(
         children: [
-          // Banner ad at top
-          const BannerAdWidget(
-            location: AdLocation.fluidDashboard,
-            showAtTop: true,
+          // Zone-based ad at top (NEW APPROACH)
+          const ZoneAdPlacementWidget(
+            zone: AdZone.homeDiscovery,
+            showIfEmpty: true,
           ),
 
           // Main content
@@ -159,19 +165,22 @@ class DashboardWithAdsExample extends StatelessWidget {
 
                 const SizedBox(height: 16),
 
-                // Another ad placement
-                const SimpleAdPlacementWidget(
-                  location: AdLocation.fluidDashboard,
+                // Another zone-based ad placement with different index
+                const ZoneAdPlacementWidget(
+                  zone: AdZone.homeDiscovery,
+                  adIndex: 1,
+                  showIfEmpty: true,
                   padding: EdgeInsets.symmetric(vertical: 8),
                 ),
               ],
             ),
           ),
 
-          // Banner ad at bottom
-          const BannerAdWidget(
-            location: AdLocation.fluidDashboard,
-            showAtTop: false,
+          // Zone-based ad at bottom with different index
+          const ZoneAdPlacementWidget(
+            zone: AdZone.homeDiscovery,
+            adIndex: 2,
+            showIfEmpty: true,
           ),
         ],
       ),

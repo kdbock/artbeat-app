@@ -4,7 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../models/group_models.dart';
+import '../../models/direct_commission_model.dart';
+import '../../services/direct_commission_service.dart';
 import '../../widgets/group_post_card.dart';
 import '../../widgets/post_detail_modal.dart';
 import '../../theme/community_colors.dart';
@@ -464,157 +468,10 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
   }
 
   void _handleCommissionRequest() {
-    // Show commission request dialog or navigate to commission form
+    // Show commission request dialog with form
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.palette, color: ArtbeatColors.accentGold),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Commission ${widget.artist.displayName}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.textPrimary,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: ArtbeatColors.accentGold.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: ArtbeatColors.accentGold.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: ArtbeatColors.success,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '${widget.artist.displayName} is available for commissions!',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: ArtbeatColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Project Details',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText:
-                      'Describe your commission project, style preferences, size, timeline, and budget...',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  filled: true,
-                  fillColor: ArtbeatColors.surface,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Reference Images (Optional)',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: ArtbeatColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: ArtbeatColors.textSecondary.withValues(alpha: 0.3),
-                  ),
-                  borderRadius: const BorderRadius.all(Radius.circular(8)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(
-                      Icons.image,
-                      color: ArtbeatColors.textSecondary,
-                      size: 24,
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Upload reference images',
-                        style: TextStyle(
-                          color: ArtbeatColors.textSecondary,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      Icons.add_photo_alternate,
-                      color: ArtbeatColors.primaryPurple,
-                      size: 24,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // TODO: Implement commission request submission with form data
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '🎨 Commission request sent to ${widget.artist.displayName}! '
-                    'They\'ll respond within 24-48 hours.',
-                  ),
-                  duration: const Duration(seconds: 4),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ArtbeatColors.primaryPurple,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: const Text('Send Request'),
-          ),
-        ],
-      ),
+      builder: (context) => _CommissionRequestDialog(artist: widget.artist),
     );
   }
 
@@ -1464,6 +1321,428 @@ class _ArtistCommunityFeedScreenState extends State<ArtistCommunityFeedScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Commission request dialog with form and image upload
+class _CommissionRequestDialog extends StatefulWidget {
+  final ArtistProfileModel artist;
+
+  const _CommissionRequestDialog({required this.artist});
+
+  @override
+  _CommissionRequestDialogState createState() =>
+      _CommissionRequestDialogState();
+}
+
+class _CommissionRequestDialogState extends State<_CommissionRequestDialog> {
+  final TextEditingController _descriptionController = TextEditingController();
+  final DirectCommissionService _commissionService = DirectCommissionService();
+  final EnhancedStorageService _storageService = EnhancedStorageService();
+  final ImagePicker _imagePicker = ImagePicker();
+
+  final List<String> _referenceImageUrls = [];
+  bool _isSubmitting = false;
+  bool _isUploadingImage = false;
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    try {
+      // Show image source selection dialog
+      final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Select Image Source'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      // Pick image
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _isUploadingImage = true;
+      });
+
+      // Upload to Firebase Storage
+      final File imageFile = File(pickedFile.path);
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        throw Exception('User must be authenticated');
+      }
+
+      final uploadResult = await _storageService.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'commission_references',
+        generateThumbnail: true,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _referenceImageUrls.add(uploadResult['imageUrl']!);
+        _isUploadingImage = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Reference image uploaded successfully'),
+          backgroundColor: ArtbeatColors.success,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isUploadingImage = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload image: $e'),
+          backgroundColor: ArtbeatColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  void _removeReferenceImage(int index) {
+    setState(() {
+      _referenceImageUrls.removeAt(index);
+    });
+  }
+
+  Future<void> _submitCommissionRequest() async {
+    // Validate description
+    if (_descriptionController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please describe your commission project'),
+          backgroundColor: ArtbeatColors.error,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // Create commission request
+      final commissionId = await _commissionService.createCommissionRequest(
+        artistId: widget.artist.userId,
+        artistName: widget.artist.displayName,
+        type: CommissionType.digital, // Default type, can be customized
+        title:
+            'Commission Request from ${FirebaseAuth.instance.currentUser?.displayName ?? "Client"}',
+        description: _descriptionController.text.trim(),
+        specs: CommissionSpecs(
+          size: 'To be determined',
+          medium: 'To be determined',
+          style: 'To be determined',
+          colorScheme: 'To be determined',
+          revisions: 1,
+          commercialUse: false,
+          deliveryFormat: 'To be determined',
+          customRequirements: {},
+        ),
+        deadline: null, // Will be set by artist in quote
+        metadata: {
+          'referenceImages': _referenceImageUrls,
+          'submittedFrom': 'artist_community_feed',
+        },
+      );
+
+      if (!mounted) return;
+
+      // Close dialog
+      Navigator.pop(context);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🎨 Commission request sent to ${widget.artist.displayName}! '
+            'They\'ll respond within 24-48 hours.',
+          ),
+          backgroundColor: ArtbeatColors.success,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      AppLogger.info('Commission request created: $commissionId');
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit commission request: $e'),
+          backgroundColor: ArtbeatColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+
+      AppLogger.error('Failed to create commission request: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          const Icon(Icons.palette, color: ArtbeatColors.accentGold),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Commission ${widget.artist.displayName}',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: ArtbeatColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Artist availability banner
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ArtbeatColors.accentGold.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: ArtbeatColors.accentGold.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: ArtbeatColors.success,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${widget.artist.displayName} is available for commissions!',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: ArtbeatColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Project details section
+            const Text(
+              'Project Details',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: ArtbeatColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _descriptionController,
+              maxLines: 4,
+              enabled: !_isSubmitting,
+              decoration: InputDecoration(
+                hintText:
+                    'Describe your commission project, style preferences, size, timeline, and budget...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: ArtbeatColors.surface,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Reference images section
+            const Text(
+              'Reference Images (Optional)',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: ArtbeatColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+
+            // Upload button
+            InkWell(
+              onTap: _isSubmitting || _isUploadingImage
+                  ? null
+                  : _pickAndUploadImage,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: ArtbeatColors.textSecondary.withValues(alpha: 0.3),
+                  ),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.image,
+                      color: _isUploadingImage
+                          ? ArtbeatColors.textSecondary.withValues(alpha: 0.5)
+                          : ArtbeatColors.textSecondary,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _isUploadingImage
+                            ? 'Uploading...'
+                            : 'Upload reference images',
+                        style: TextStyle(
+                          color: _isUploadingImage
+                              ? ArtbeatColors.textSecondary.withValues(
+                                  alpha: 0.5,
+                                )
+                              : ArtbeatColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    if (_isUploadingImage)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      const Icon(
+                        Icons.add_photo_alternate,
+                        color: ArtbeatColors.primaryPurple,
+                        size: 24,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Display uploaded images
+            if (_referenceImageUrls.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _referenceImageUrls.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final url = entry.value;
+                  return Stack(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          url,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => _removeReferenceImage(index),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isSubmitting ? null : _submitCommissionRequest,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ArtbeatColors.primaryPurple,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text('Send Request'),
+        ),
+      ],
     );
   }
 }

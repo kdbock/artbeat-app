@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'ad_type.dart';
 import 'ad_status.dart';
 import 'ad_location.dart';
+import 'ad_zone.dart';
 import 'ad_duration.dart';
 import 'ad_size.dart';
 import 'image_fit.dart';
@@ -17,7 +18,8 @@ class AdModel {
   artworkUrls; // Multiple images for rotating display (1-4 images)
   final String title;
   final String description;
-  final AdLocation location;
+  final AdLocation location; // Legacy - kept for backward compatibility
+  final AdZone? zone; // New zone system
   final AdDuration duration;
   final DateTime startDate;
   final DateTime endDate;
@@ -27,8 +29,12 @@ class AdModel {
   final String? ctaText; // Call-to-action text (e.g., "Shop Now", "Learn More")
   final ImageFit imageFit; // How the image should be fitted in the ad space
 
-  /// Price per day is determined by ad size
-  double get pricePerDay => size.pricePerDay;
+  /// Price per day is determined by ad zone (if available) or size
+  double get pricePerDay => zone?.pricePerDay ?? size.pricePerDay;
+
+  /// Get the effective zone (either from zone field or migrated from location)
+  AdZone get effectiveZone =>
+      zone ?? AdZoneMigration.migrateFromLocationIndex(location.index);
 
   AdModel({
     required this.id,
@@ -40,6 +46,7 @@ class AdModel {
     required this.title,
     required this.description,
     required this.location,
+    this.zone, // Optional - new zone system
     required this.duration,
     required this.startDate,
     required this.endDate,
@@ -146,6 +153,22 @@ class AdModel {
       safeImageFit = ImageFit.cover;
     }
 
+    // Parse zone with safe fallback
+    AdZone? safeZone;
+    try {
+      final rawZone = map['zone'];
+      if (rawZone != null) {
+        final intZone = rawZone is int
+            ? rawZone
+            : int.tryParse(rawZone.toString());
+        if (intZone != null && intZone >= 0 && intZone < AdZone.values.length) {
+          safeZone = AdZone.values[intZone];
+        }
+      }
+    } catch (e) {
+      safeZone = null;
+    }
+
     return AdModel(
       id: id,
       ownerId: map['ownerId']?.toString() ?? '',
@@ -156,6 +179,7 @@ class AdModel {
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
       location: safeLocation,
+      zone: safeZone,
       duration: AdDurationExtension.fromMap(durationMap),
       startDate: (map['startDate'] as Timestamp).toDate(),
       endDate: (map['endDate'] as Timestamp).toDate(),
@@ -176,6 +200,7 @@ class AdModel {
     'title': title,
     'description': description,
     'location': location.index,
+    'zone': zone?.index, // Store zone if available
     'duration': duration.toMap(),
     'startDate': Timestamp.fromDate(startDate),
     'endDate': Timestamp.fromDate(endDate),
@@ -197,6 +222,7 @@ class AdModel {
     String? title,
     String? description,
     AdLocation? location,
+    AdZone? zone,
     AdDuration? duration,
     DateTime? startDate,
     DateTime? endDate,
@@ -219,6 +245,7 @@ class AdModel {
       title: title ?? this.title,
       description: description ?? this.description,
       location: location ?? this.location,
+      zone: zone ?? this.zone,
       duration: duration ?? this.duration,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,

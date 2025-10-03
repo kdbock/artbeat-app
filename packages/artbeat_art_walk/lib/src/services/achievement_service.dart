@@ -249,4 +249,69 @@ class AchievementService {
       return 0;
     }
   }
+
+  /// Check for new achievements based on user actions
+  Future<List<AchievementModel>> checkForNewAchievements({
+    required String userId,
+    bool walkCompleted = false,
+    double distanceWalked = 0.0,
+    int artPiecesVisited = 0,
+  }) async {
+    final newAchievements = <AchievementModel>[];
+
+    try {
+      // Check for walk completion achievements
+      if (walkCompleted) {
+        final completedWalks = await getCompletedArtWalkCount(userId);
+
+        // First walk achievement
+        if (completedWalks == 1) {
+          final awarded = await awardAchievement(
+            userId,
+            AchievementType.firstWalk,
+            {'completedWalks': completedWalks},
+          );
+          if (awarded) {
+            final achievement = await getUserAchievementsByType(
+              AchievementType.firstWalk,
+              userId: userId,
+            );
+            newAchievements.addAll(achievement.where((a) => a.isNew));
+          }
+        }
+
+        // Multiple walks achievements
+        if (completedWalks == 5) {
+          final awarded = await awardAchievement(
+            userId,
+            AchievementType.walkExplorer,
+            {'completedWalks': completedWalks},
+          );
+          if (awarded) {
+            final achievement = await getUserAchievementsByType(
+              AchievementType.walkExplorer,
+              userId: userId,
+            );
+            newAchievements.addAll(achievement.where((a) => a.isNew));
+          }
+        }
+      }
+
+      // Check for distance-based achievements
+      if (distanceWalked > 0) {
+        // Implement distance-based achievement checks here if needed
+        // For now, this is a placeholder
+      }
+
+      // Check for art pieces visited achievements
+      if (artPiecesVisited > 0) {
+        // Implement art pieces visited achievement checks here if needed
+        // For now, this is a placeholder
+      }
+    } catch (e) {
+      _logger.e('Error checking for new achievements: $e');
+    }
+
+    return newAchievements;
+  }
 }

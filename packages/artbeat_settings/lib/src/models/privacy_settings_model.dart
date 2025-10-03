@@ -77,6 +77,15 @@ class PrivacySettingsModel {
     );
   }
 
+  // Firestore serialization methods
+  factory PrivacySettingsModel.fromFirestore(Map<String, dynamic> data) {
+    return PrivacySettingsModel.fromMap(data);
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return toMap();
+  }
+
   bool isValid() => userId.isNotEmpty;
 }
 

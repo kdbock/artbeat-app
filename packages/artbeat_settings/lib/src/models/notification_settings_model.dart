@@ -77,6 +77,15 @@ class NotificationSettingsModel {
     );
   }
 
+  // Firestore serialization methods
+  factory NotificationSettingsModel.fromFirestore(Map<String, dynamic> data) {
+    return NotificationSettingsModel.fromMap(data);
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return toMap();
+  }
+
   bool isValid() => userId.isNotEmpty;
 }
 

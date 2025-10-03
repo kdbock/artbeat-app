@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/settings_service.dart';
 
 class PrivacySettingsScreen extends StatefulWidget {
   const PrivacySettingsScreen({super.key});
@@ -9,6 +10,7 @@ class PrivacySettingsScreen extends StatefulWidget {
 }
 
 class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
+  final _settingsService = SettingsService();
   PrivacySettingsModel? _privacySettings;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -21,15 +23,16 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   Future<void> _loadPrivacySettings() async {
     try {
-      // TODO: Implement actual service call
-      final settings = PrivacySettingsModel.defaultSettings('user123');
-      setState(() {
-        _privacySettings = settings;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
+      final settings = await _settingsService.getPrivacySettings();
       if (mounted) {
+        setState(() {
+          _privacySettings = settings;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load privacy settings: $e')),
         );
@@ -40,20 +43,19 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   Future<void> _updatePrivacySettings(PrivacySettingsModel settings) async {
     setState(() => _isSaving = true);
     try {
-      // TODO: Implement actual service call
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      setState(() {
-        _privacySettings = settings;
-        _isSaving = false;
-      });
+      await _settingsService.savePrivacySettings(settings);
       if (mounted) {
+        setState(() {
+          _privacySettings = settings;
+          _isSaving = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Privacy settings updated')),
         );
       }
     } catch (e) {
-      setState(() => _isSaving = false);
       if (mounted) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update settings: $e')),
         );
@@ -510,21 +512,24 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   Future<void> _requestDataDownload() async {
     try {
-      // TODO: Implement actual service call
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await _settingsService.requestDataDownload();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
               'Data download requested. You\'ll receive an email when ready.',
             ),
+            backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to request data download: $e')),
+          SnackBar(
+            content: Text('Failed to request data download: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -532,21 +537,24 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
 
   Future<void> _requestDataDeletion() async {
     try {
-      // TODO: Implement actual service call
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await _settingsService.requestDataDeletion();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
               'Data deletion requested. This will take effect within 30 days.',
             ),
+            backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to request data deletion: $e')),
+          SnackBar(
+            content: Text('Failed to request data deletion: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

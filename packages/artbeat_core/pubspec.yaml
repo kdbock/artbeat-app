@@ -43,6 +43,8 @@ dependencies:
 
   # JWT for service account authentication
   jwt_decoder: ^2.0.1
+  cryptography: ^2.7.0
+  crypto: ^3.0.3
 
   # Storage and preferences
   shared_preferences: ^2.2.1

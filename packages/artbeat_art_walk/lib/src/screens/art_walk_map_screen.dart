@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import '../models/public_art_model.dart';
 import '../widgets/art_walk_drawer.dart';
 
 import '../widgets/map_floating_menu.dart';
@@ -586,8 +587,9 @@ class _ArtWalkMapScreenState extends State<ArtWalkMapScreen> {
                       onRetry: _initializeMapsAndLocation,
                       hasData: true,
                       errorMessage: _mapErrorMessage,
-                      nearbyArt:
-                          const [], // TODO: Convert CaptureModel to PublicArtModel if needed
+                      nearbyArt: _nearbyCaptures
+                          .map((capture) => PublicArtModel.fromCapture(capture))
+                          .toList(),
                     )
                   : OfflineArtWalkWidget(onRetry: _initializeMapsAndLocation),
 

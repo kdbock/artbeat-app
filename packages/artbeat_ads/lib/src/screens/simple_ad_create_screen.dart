@@ -8,6 +8,7 @@ import '../models/ad_model.dart';
 import '../models/ad_type.dart';
 import '../models/ad_size.dart';
 import '../models/ad_location.dart';
+import '../models/ad_zone.dart';
 import '../models/ad_status.dart';
 import '../models/ad_duration.dart';
 import '../models/image_fit.dart';
@@ -30,7 +31,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
 
   AdType _selectedType = AdType.banner_ad;
   AdSize _selectedSize = AdSize.small;
-  AdLocation _selectedLocation = AdLocation.fluidDashboard;
+  AdZone _selectedZone = AdZone.homeDiscovery;
   ImageFit _selectedImageFit = ImageFit.cover;
   int _selectedDays = 7;
 
@@ -121,7 +122,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
           break;
       }
 
-      // Create ad model
+      // Create ad model with zone (location is set to a default for backward compatibility)
       final ad = AdModel(
         id: '', // Will be set by service
         ownerId: user.uid,
@@ -131,7 +132,9 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
         artworkUrls: [], // Will be set after upload
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        location: _selectedLocation,
+        location: AdLocation
+            .fluidDashboard, // Default location for backward compatibility
+        zone: _selectedZone,
         duration: duration,
         startDate: startDate,
         endDate: endDate,
@@ -178,7 +181,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     }
   }
 
-  double get _totalCost => _selectedSize.pricePerDay * _selectedDays;
+  double get _totalCost => _selectedZone.pricePerDay * _selectedDays;
 
   @override
   Widget build(BuildContext context) {
@@ -207,9 +210,9 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
               _buildImageFitSelector(),
               const SizedBox(height: 24),
 
-              // Location Selection
-              _buildSectionTitle('Display Location'),
-              _buildLocationSelector(),
+              // Zone Selection
+              _buildSectionTitle('Display Zone'),
+              _buildZoneSelector(),
               const SizedBox(height: 24),
 
               // Duration Selection
@@ -373,52 +376,99 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     );
   }
 
-  Widget _buildLocationSelector() {
+  Widget _buildZoneSelector() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButtonFormField<AdLocation>(
-              value: _selectedLocation,
+            DropdownButtonFormField<AdZone>(
+              value: _selectedZone,
               decoration: const InputDecoration(
-                labelText: 'Select Display Location',
+                labelText: 'Select Display Zone',
                 border: OutlineInputBorder(),
                 filled: true,
                 fillColor: Colors.white,
               ),
               style: const TextStyle(color: Colors.black87, fontSize: 16),
               dropdownColor: Colors.white,
-              items: AdLocation.values.map((location) {
+              items: AdZone.values.map((zone) {
                 return DropdownMenuItem(
-                  value: location,
-                  child: Text(
-                    location.displayName,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  value: zone,
+                  child: Row(
+                    children: [
+                      Icon(zone.iconData, size: 20, color: Colors.black54),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          zone.displayName,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\$${zone.pricePerDay.toStringAsFixed(0)}/day',
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }).toList(),
-              onChanged: (AdLocation? value) {
+              onChanged: (AdZone? value) {
                 if (value != null) {
                   setState(() {
-                    _selectedLocation = value;
+                    _selectedZone = value;
                   });
                 }
               },
             ),
-            const SizedBox(height: 8),
-            Text(
-              _selectedLocation.description,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.black54,
-                fontStyle: FontStyle.italic,
-                height: 1.3,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _selectedZone.iconData,
+                        size: 18,
+                        color: Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _selectedZone.displayName,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _selectedZone.description,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -693,24 +743,44 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
 
   Widget _buildCostSummary() {
     return Card(
-      color: Colors.blue.shade50,
+      color: Colors.green.shade50,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Cost Summary',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Icon(Icons.attach_money, color: Colors.green.shade700),
+                const SizedBox(width: 8),
+                const Text(
+                  'Cost Summary',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Size: ${_selectedSize.displayName}'),
-                Text('\$${_selectedSize.pricePerDay.toStringAsFixed(0)}/day'),
+                Row(
+                  children: [
+                    Icon(
+                      _selectedZone.iconData,
+                      size: 16,
+                      color: Colors.black54,
+                    ),
+                    const SizedBox(width: 8),
+                    Text('Zone: ${_selectedZone.displayName}'),
+                  ],
+                ),
+                Text(
+                  '\$${_selectedZone.pricePerDay.toStringAsFixed(0)}/day',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
               ],
             ),
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -718,22 +788,50 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                 Text('× $_selectedDays'),
               ],
             ),
-            const Divider(),
+            const Divider(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   'Total Cost:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '\$${_totalCost.toStringAsFixed(0)}',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.green.shade700,
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Colors.blue.shade700,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Your ad will be reviewed before going live',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

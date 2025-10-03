@@ -15,3 +15,5 @@ export 'art_walk_progress_service.dart';
 export 'art_location_clustering_service.dart';
 export 'smart_onboarding_service.dart';
 export 'haptic_feedback_service.dart';
+export 'instant_discovery_service.dart';
+export 'weekly_goals_service.dart';

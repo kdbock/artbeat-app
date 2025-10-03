@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
 import '../services/services.dart';
 import '../widgets/widgets.dart';
@@ -43,6 +45,9 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   List<ArtWalkModel> _createdWalks = [];
   List<ArtWalkModel> _savedWalks = [];
 
+  // Cache for walk titles
+  final Map<String, String> _walkTitles = {};
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +77,9 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
           _savedWalks = results[3] as List<ArtWalkModel>;
           _isLoading = false;
         });
+
+        // Fetch walk titles for progress cards
+        _fetchWalkTitles();
       }
     } catch (e) {
       if (mounted) {
@@ -79,6 +87,31 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+      }
+    }
+  }
+
+  /// Fetch walk titles for all progress items
+  Future<void> _fetchWalkTitles() async {
+    // Collect all unique walk IDs
+    final walkIds = <String>{
+      ..._inProgressWalks.map((p) => p.artWalkId),
+      ..._completedWalks.map((p) => p.artWalkId),
+    };
+
+    // Fetch titles for walks we don't have yet
+    for (final walkId in walkIds) {
+      if (!_walkTitles.containsKey(walkId)) {
+        try {
+          final walk = await _artWalkService.getArtWalkById(walkId);
+          if (walk != null && mounted) {
+            setState(() {
+              _walkTitles[walkId] = walk.title;
+            });
+          }
+        } catch (e) {
+          // Silently fail - will use default title
+        }
       }
     }
   }
@@ -133,6 +166,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                             padding: const EdgeInsets.only(bottom: 8),
                             child: InProgressWalkCard(
                               progress: progress,
+                              walkTitle: _walkTitles[progress.artWalkId],
                               onResume: () => _resumeWalk(progress),
                               onPause: () => _pauseWalk(progress),
                               onAbandon: () => _abandonWalk(progress),
@@ -166,6 +200,7 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
                             padding: const EdgeInsets.only(bottom: 8),
                             child: CompletedWalkCard(
                               progress: progress,
+                              walkTitle: _walkTitles[progress.artWalkId],
                               onTap: () => _viewWalkDetails(progress.artWalkId),
                               onShare: () => _shareWalkCompletion(progress),
                               onReview: () => _reviewWalk(progress),
@@ -464,7 +499,46 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
   }
 
   void _reviewWalk(ArtWalkProgress progress) {
-    // Navigate to review screen
+    showDialog<void>(
+      context: context,
+      builder: (context) => WalkReviewDialog(
+        progress: progress,
+        walkTitle: _walkTitles[progress.artWalkId],
+        onSubmitReview: (double rating, String review) async {
+          try {
+            // Save rating and review to Firestore
+            await FirebaseFirestore.instance.collection('walk_reviews').add({
+              'userId': FirebaseAuth.instance.currentUser?.uid ?? '',
+              'artWalkId': progress.artWalkId,
+              'rating': rating,
+              'review': review,
+              'createdAt': FieldValue.serverTimestamp(),
+              'progressId': progress.id,
+            });
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Thank you for your ${rating.toInt()}-star review!',
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to save review: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+      ),
+    );
   }
 
   void _editWalk(ArtWalkModel walk) {
@@ -529,5 +603,171 @@ class _EnhancedMyArtWalksScreenState extends State<EnhancedMyArtWalksScreen> {
       ArtWalkRoutes.experience,
       arguments: {'artWalkId': walk.id, 'artWalk': walk},
     );
+  }
+}
+
+/// Dialog for reviewing completed art walks with star rating
+class WalkReviewDialog extends StatefulWidget {
+  final ArtWalkProgress progress;
+  final String? walkTitle;
+  final Future<void> Function(double rating, String review) onSubmitReview;
+
+  const WalkReviewDialog({
+    super.key,
+    required this.progress,
+    this.walkTitle,
+    required this.onSubmitReview,
+  });
+
+  @override
+  State<WalkReviewDialog> createState() => _WalkReviewDialogState();
+}
+
+class _WalkReviewDialogState extends State<WalkReviewDialog> {
+  double _rating = 0.0;
+  final TextEditingController _reviewController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _reviewController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Review ${widget.walkTitle ?? 'Art Walk'}'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Rating stars
+            const Text(
+              'How would you rate this art walk?',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(5, (index) {
+                return IconButton(
+                  onPressed: () => setState(() => _rating = index + 1.0),
+                  icon: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 32,
+                  ),
+                );
+              }),
+            ),
+            Text(
+              _rating > 0
+                  ? '${_rating.toInt()} star${_rating > 1 ? 's' : ''}'
+                  : 'Tap stars to rate',
+              style: TextStyle(
+                color: _rating > 0 ? Colors.amber.shade700 : Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Review text field
+            TextField(
+              controller: _reviewController,
+              decoration: const InputDecoration(
+                labelText: 'Share your thoughts (optional)',
+                hintText: 'What did you enjoy about this walk?',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 4,
+              maxLength: 500,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Walk stats summary
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Walk Summary',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• ${widget.progress.visitedArt.length} art pieces visited',
+                  ),
+                  Text('• ${widget.progress.totalPointsEarned} points earned'),
+                  Text(
+                    '• Completed in ${_formatDuration(widget.progress.timeSpent)}',
+                  ),
+                  if (widget.progress.progressPercentage >= 1.0)
+                    const Text('• Perfect walk - all art found!'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _isSubmitting || _rating == 0.0 ? null : _submitReview,
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Submit Review'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submitReview() async {
+    if (_rating == 0.0) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      await widget.onSubmitReview(_rating, _reviewController.text.trim());
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error submitting review: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    if (duration.inHours > 0) {
+      return '${duration.inHours}h ${duration.inMinutes % 60}m';
+    } else {
+      return '${duration.inMinutes}m';
+    }
   }
 }

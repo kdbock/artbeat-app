@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/settings_service.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -11,6 +12,7 @@ class NotificationSettingsScreen extends StatefulWidget {
 
 class _NotificationSettingsScreenState
     extends State<NotificationSettingsScreen> {
+  final _settingsService = SettingsService();
   NotificationSettingsModel? _notificationSettings;
   bool _isLoading = false;
 
@@ -24,14 +26,18 @@ class _NotificationSettingsScreenState
     setState(() => _isLoading = true);
 
     try {
-      // TODO: Load from service
-      _notificationSettings = NotificationSettingsModel.defaultSettings(
-        'current-user-id',
-      );
+      final settings = await _settingsService.getNotificationSettings();
+      if (mounted) {
+        setState(() => _notificationSettings = settings);
+      }
     } catch (e) {
-      _showErrorMessage('Failed to load notification settings');
+      if (mounted) {
+        _showErrorMessage('Failed to load notification settings: $e');
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -49,11 +55,15 @@ class _NotificationSettingsScreenState
 
   Future<void> _updateSettings(NotificationSettingsModel settings) async {
     try {
-      // TODO: Save to service
-      setState(() => _notificationSettings = settings);
-      _showSuccessMessage('Notification settings updated');
+      await _settingsService.saveNotificationSettings(settings);
+      if (mounted) {
+        setState(() => _notificationSettings = settings);
+        _showSuccessMessage('Notification settings updated');
+      }
     } catch (e) {
-      _showErrorMessage('Failed to update settings');
+      if (mounted) {
+        _showErrorMessage('Failed to update settings: $e');
+      }
     }
   }
 

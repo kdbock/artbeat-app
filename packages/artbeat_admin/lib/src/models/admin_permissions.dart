@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 
 /// Admin role definitions for payment management
 enum AdminRole {
@@ -201,23 +203,56 @@ class AdminRoleService extends ChangeNotifier {
   final List<AdminUser> _admins = [];
 
   /// Get current admin user (would be implemented with auth service)
-  AdminUser? getCurrentAdmin() {
-    // TODO(admin): Implement with actual authentication
-    // For now, return a mock admin for development
-    return AdminUser(
-      id: 'admin_123',
-      email: 'admin@artbeat.com',
-      name: 'Admin User',
-      role: AdminRole.superAdmin,
-      createdAt: DateTime.now().subtract(const Duration(days: 30)),
-      lastLogin: DateTime.now(),
-      isActive: true,
-    );
+  Future<AdminUser?> getCurrentAdmin() async {
+    try {
+      final userService = UserService();
+      final userModel = await userService.getCurrentUserModel();
+
+      if (userModel == null || !userModel.isAdmin) {
+        return null;
+      }
+
+      // Convert UserModel to AdminUser
+      final adminRole = _mapUserTypeToAdminRole(userModel.userType);
+
+      return AdminUser(
+        id: userModel.id,
+        email: userModel.email,
+        name: userModel.fullName,
+        role: adminRole,
+        createdAt: userModel.createdAt,
+        lastLogin: userModel.lastActive ?? DateTime.now(),
+        isActive: true, // Assume active if they can authenticate
+        metadata: {
+          'username': userModel.username,
+          'bio': userModel.bio,
+          'experiencePoints': userModel.experiencePoints,
+          'level': userModel.level,
+        },
+      );
+    } catch (e) {
+      debugPrint('Error getting current admin: $e');
+      return null;
+    }
+  }
+
+  /// Helper method to map user type to admin role
+  AdminRole _mapUserTypeToAdminRole(String? userType) {
+    if (userType == null) return AdminRole.supportAdmin;
+
+    switch (userType.toLowerCase()) {
+      case 'admin':
+        return AdminRole.superAdmin;
+      case 'moderator':
+        return AdminRole.supportAdmin;
+      default:
+        return AdminRole.supportAdmin;
+    }
   }
 
   /// Check if current admin has permission for action
-  bool hasPermission(String action) {
-    final admin = getCurrentAdmin();
+  Future<bool> hasPermission(String action) async {
+    final admin = await getCurrentAdmin();
     return admin?.permissions.hasPermission(action) ?? false;
   }
 
@@ -228,13 +263,50 @@ class AdminRoleService extends ChangeNotifier {
 
   /// Update admin role (super admin only)
   Future<void> updateAdminRole(String adminId, AdminRole newRole) async {
-    final currentAdmin = getCurrentAdmin();
+    final currentAdmin = await getCurrentAdmin();
     if (currentAdmin?.role != AdminRole.superAdmin) {
       throw Exception('Only super admins can modify roles');
     }
 
-    // TODO(admin): Implement with Firestore
-    debugPrint('Updated admin $adminId to role $newRole');
+    try {
+      // Update the admin role in Firestore
+      final firestore = FirebaseFirestore.instance;
+
+      // Update the user document with new admin role
+      final adminRoleValue = _mapAdminRoleToUserType(newRole);
+      await firestore.collection('users').doc(adminId).update({
+        'userType': adminRoleValue,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      // Update local cache if needed
+      final index = _admins.indexWhere((admin) => admin.id == adminId);
+      if (index != -1) {
+        _admins[index] = _admins[index].copyWith(role: newRole);
+        notifyListeners();
+      }
+
+      AppLogger.info(
+          'Admin role updated successfully for user $adminId to $newRole');
+    } catch (e) {
+      AppLogger.error('Failed to update admin role: $e');
+      throw Exception('Failed to update admin role: $e');
+    }
+  }
+
+  /// Helper method to map admin role to user type
+  String _mapAdminRoleToUserType(AdminRole role) {
+    switch (role) {
+      case AdminRole.superAdmin:
+        return UserType.admin.value;
+      case AdminRole.supportAdmin:
+        return UserType.moderator.value;
+      case AdminRole.financeAdmin:
+      case AdminRole.auditor:
+      case AdminRole.contentAdmin:
+        return UserType
+            .moderator.value; // All other admin roles map to moderator for now
+    }
   }
 
   /// Get role statistics

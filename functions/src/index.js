@@ -1,11 +1,11 @@
-const {onRequest} = require("firebase-functions/v2/https");
-const {setGlobalOptions} = require("firebase-functions/v2");
+const { onRequest } = require("firebase-functions/v2/https");
+const { setGlobalOptions } = require("firebase-functions/v2");
 const admin = require("firebase-admin");
-const {defineSecret} = require("firebase-functions/params");
-const cors = require("cors")({origin: true});
+const { defineSecret } = require("firebase-functions/params");
+const cors = require("cors")({ origin: true });
 
 // Set global options for all functions
-setGlobalOptions({maxInstances: 10});
+setGlobalOptions({ maxInstances: 10 });
 
 // Define secret for Stripe
 const stripeSecretKey = defineSecret("STRIPE_SECRET_KEY");
@@ -18,10 +18,10 @@ admin.initializeApp();
 exports.fixLeaderboardData = onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      console.log('🔧 Starting leaderboard data fix...');
+      console.log("🔧 Starting leaderboard data fix...");
 
       // Get all users
-      const usersSnapshot = await admin.firestore().collection('users').get();
+      const usersSnapshot = await admin.firestore().collection("users").get();
       console.log(`📊 Found ${usersSnapshot.docs.length} users to process`);
 
       let usersUpdated = 0;
@@ -31,8 +31,12 @@ exports.fixLeaderboardData = onRequest((request, response) => {
       for (const userDoc of usersSnapshot.docs) {
         const userId = userDoc.id;
         const userData = userDoc.data();
-        
-        console.log(`\n👤 Processing user: ${userData.fullName || userData.username || userId}`);
+
+        console.log(
+          `\n👤 Processing user: ${
+            userData.fullName || userData.username || userId
+          }`
+        );
 
         // Initialize stats if missing
         const stats = userData.stats || {};
@@ -43,26 +47,26 @@ exports.fixLeaderboardData = onRequest((request, response) => {
         const captures = userData.captures || [];
         if (captures.length > 0) {
           console.log(`   📸 Found ${captures.length} captures`);
-          
+
           // Count approved captures
           let approvedCount = 0;
-          let createdCount = captures.length;
-          
+          const createdCount = captures.length;
+
           for (const capture of captures) {
-            if (capture && capture.status === 'approved') {
+            if (capture && capture.status === "approved") {
               approvedCount++;
             }
           }
 
           // Update stats
           if (stats.capturesCreated !== createdCount) {
-            updates['stats.capturesCreated'] = createdCount;
+            updates["stats.capturesCreated"] = createdCount;
             needsUpdate = true;
             console.log(`   ✅ Setting capturesCreated: ${createdCount}`);
           }
 
           if (stats.capturesApproved !== approvedCount) {
-            updates['stats.capturesApproved'] = approvedCount;
+            updates["stats.capturesApproved"] = approvedCount;
             needsUpdate = true;
             console.log(`   ✅ Setting capturesApproved: ${approvedCount}`);
           }
@@ -71,72 +75,78 @@ exports.fixLeaderboardData = onRequest((request, response) => {
         } else {
           // Ensure zero values for users with no captures
           if (stats.capturesCreated == null) {
-            updates['stats.capturesCreated'] = 0;
+            updates["stats.capturesCreated"] = 0;
             needsUpdate = true;
           }
           if (stats.capturesApproved == null) {
-            updates['stats.capturesApproved'] = 0;
+            updates["stats.capturesApproved"] = 0;
             needsUpdate = true;
           }
         }
 
         // Fix art walks data
-        const artWalksSnapshot = await admin.firestore()
-            .collection('artWalks')
-            .where('userId', '==', userId)
-            .get();
-        
+        const artWalksSnapshot = await admin
+          .firestore()
+          .collection("artWalks")
+          .where("userId", "==", userId)
+          .get();
+
         if (!artWalksSnapshot.empty) {
           const walksCreated = artWalksSnapshot.docs.length;
           console.log(`   🎨 Found ${walksCreated} art walks created`);
-          
+
           if (stats.walksCreated !== walksCreated) {
-            updates['stats.walksCreated'] = walksCreated;
+            updates["stats.walksCreated"] = walksCreated;
             needsUpdate = true;
             console.log(`   ✅ Setting walksCreated: ${walksCreated}`);
           }
-          
+
           artWalksProcessed += walksCreated;
         } else {
           // Ensure zero value for users with no art walks
           if (stats.walksCreated == null) {
-            updates['stats.walksCreated'] = 0;
+            updates["stats.walksCreated"] = 0;
             needsUpdate = true;
           }
         }
 
         // Initialize other missing stats
         if (stats.walksCompleted == null) {
-          updates['stats.walksCompleted'] = 0;
+          updates["stats.walksCompleted"] = 0;
           needsUpdate = true;
         }
         if (stats.reviewsSubmitted == null) {
-          updates['stats.reviewsSubmitted'] = 0;
+          updates["stats.reviewsSubmitted"] = 0;
           needsUpdate = true;
         }
         if (stats.helpfulVotes == null) {
-          updates['stats.helpfulVotes'] = 0;
+          updates["stats.helpfulVotes"] = 0;
           needsUpdate = true;
         }
         if (stats.highestRatedCapture == null) {
-          updates['stats.highestRatedCapture'] = 0;
+          updates["stats.highestRatedCapture"] = 0;
           needsUpdate = true;
         }
         if (stats.highestRatedArtWalk == null) {
-          updates['stats.highestRatedArtWalk'] = 0;
+          updates["stats.highestRatedArtWalk"] = 0;
           needsUpdate = true;
         }
 
         // Calculate expected XP
         const currentXP = userData.experiencePoints || 0;
-        const capturesCreated = (stats.capturesCreated || 0) + (updates['stats.capturesCreated'] || 0);
-        const capturesApproved = (stats.capturesApproved || 0) + (updates['stats.capturesApproved'] || 0);
-        const walksCreated = (stats.walksCreated || 0) + (updates['stats.walksCreated'] || 0);
+        const capturesCreated =
+          (stats.capturesCreated || 0) +
+          (updates["stats.capturesCreated"] || 0);
+        const capturesApproved =
+          (stats.capturesApproved || 0) +
+          (updates["stats.capturesApproved"] || 0);
+        const walksCreated =
+          (stats.walksCreated || 0) + (updates["stats.walksCreated"] || 0);
         const walksCompleted = stats.walksCompleted || 0;
 
         let expectedXP = 0;
         expectedXP += capturesCreated * 25; // 25 XP per capture created
-        expectedXP += capturesApproved * 25; // Additional 25 XP when approved (total 50)
+        expectedXP += capturesApproved * 25; // Additional 25 XP when approved
         expectedXP += walksCreated * 75; // 75 XP per art walk created
         expectedXP += walksCompleted * 100; // 100 XP per art walk completed
 
@@ -144,7 +154,7 @@ exports.fixLeaderboardData = onRequest((request, response) => {
           updates.experiencePoints = expectedXP;
           needsUpdate = true;
           console.log(`   ⚡ Updating XP: ${currentXP} → ${expectedXP}`);
-          
+
           // Recalculate level
           const newLevel = calculateLevel(expectedXP);
           const currentLevel = userData.level || 1;
@@ -156,11 +166,15 @@ exports.fixLeaderboardData = onRequest((request, response) => {
 
         // Apply updates if needed
         if (needsUpdate) {
-          await admin.firestore().collection('users').doc(userId).update(updates);
+          await admin
+            .firestore()
+            .collection("users")
+            .doc(userId)
+            .update(updates);
           usersUpdated++;
-          console.log('   ✅ User updated successfully');
+          console.log("   ✅ User updated successfully");
         } else {
-          console.log('   ℹ️  No updates needed');
+          console.log("   ℹ️  No updates needed");
         }
       }
 
@@ -169,17 +183,16 @@ exports.fixLeaderboardData = onRequest((request, response) => {
         usersProcessed: usersSnapshot.docs.length,
         usersUpdated: usersUpdated,
         capturesProcessed: capturesProcessed,
-        artWalksProcessed: artWalksProcessed
+        artWalksProcessed: artWalksProcessed,
       };
 
-      console.log('\n🎉 Leaderboard data fix completed!');
-      console.log('📊 Summary:', summary);
+      console.log("\n🎉 Leaderboard data fix completed!");
+      console.log("📊 Summary:", summary);
 
       response.status(200).send(summary);
-
     } catch (error) {
-      console.error('❌ Error fixing leaderboard data:', error);
-      response.status(500).send({error: error.message});
+      console.error("❌ Error fixing leaderboard data:", error);
+      response.status(500).send({ error: error.message });
     }
   });
 });
@@ -190,52 +203,60 @@ exports.fixLeaderboardData = onRequest((request, response) => {
 exports.fixUserData = onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      const userName = request.body?.name || request.query?.name || 'Izzy Piel';
+      const userName = request.body?.name || request.query?.name || "Izzy Piel";
       console.log(`🔧 Starting data fix for: ${userName}`);
 
       // Find user by name
-      const usersSnapshot = await admin.firestore().collection('users')
-        .where('fullName', '==', userName)
+      const usersSnapshot = await admin
+        .firestore()
+        .collection("users")
+        .where("fullName", "==", userName)
         .get();
 
       if (usersSnapshot.empty) {
         console.log(`❌ ${userName} not found`);
-        return response.status(404).send({error: `${userName} not found`});
+        return response.status(404).send({ error: `${userName} not found` });
       }
 
       const userDoc = usersSnapshot.docs[0];
       const userId = userDoc.id;
       const userData = userDoc.data();
-      
+
       console.log(`👤 Found ${userName}: ${userId}`);
-      console.log(`📊 Current data:`, {
+      console.log("📊 Current data:", {
         experiencePoints: userData.experiencePoints || 0,
         level: userData.level || 1,
-        stats: userData.stats || {}
+        stats: userData.stats || {},
       });
 
       // Check captures in the captures collection
-      const capturesSnapshot = await admin.firestore()
-        .collection('captures')
-        .where('userId', '==', userId)
+      const capturesSnapshot = await admin
+        .firestore()
+        .collection("captures")
+        .where("userId", "==", userId)
         .get();
 
-      console.log(`📸 Found ${capturesSnapshot.docs.length} captures in captures collection`);
+      const captureCount = capturesSnapshot.docs.length;
+      console.log(`📸 Found ${captureCount} captures in captures collection`);
 
       // Count approved captures
       let approvedCount = 0;
-      let createdCount = capturesSnapshot.docs.length;
-      
+      const createdCount = capturesSnapshot.docs.length;
+
       for (const captureDoc of capturesSnapshot.docs) {
         const captureData = captureDoc.data();
-        if (captureData.status === 'approved') {
+        if (captureData.status === "approved") {
           approvedCount++;
           console.log(`   ✅ Approved capture: ${captureDoc.id}`);
         }
-        console.log(`   📸 Capture ${captureDoc.id}: status=${captureData.status}`);
+        console.log(
+          `   📸 Capture ${captureDoc.id}: status=${captureData.status}`
+        );
       }
 
-      console.log(`📊 Total captures: ${createdCount}, Approved: ${approvedCount}`);
+      console.log(
+        `📊 Total captures: ${createdCount}, Approved: ${approvedCount}`
+      );
 
       // Calculate expected stats and XP
       const expectedStats = {
@@ -246,13 +267,13 @@ exports.fixUserData = onRequest((request, response) => {
         reviewsSubmitted: 0,
         helpfulVotes: 0,
         highestRatedCapture: 0,
-        highestRatedArtWalk: 0
+        highestRatedArtWalk: 0,
       };
 
-      const expectedXP = (createdCount * 25) + (approvedCount * 25);
+      const expectedXP = createdCount * 25 + approvedCount * 25;
       const expectedLevel = calculateLevel(expectedXP);
 
-      console.log(`📊 Expected stats:`, expectedStats);
+      console.log("📊 Expected stats:", expectedStats);
       console.log(`⚡ Expected XP: ${expectedXP}`);
       console.log(`👑 Expected level: ${expectedLevel}`);
 
@@ -260,11 +281,11 @@ exports.fixUserData = onRequest((request, response) => {
       const updates = {
         stats: expectedStats,
         experiencePoints: expectedXP,
-        level: expectedLevel
+        level: expectedLevel,
       };
 
-      await admin.firestore().collection('users').doc(userId).update(updates);
-      
+      await admin.firestore().collection("users").doc(userId).update(updates);
+
       const summary = {
         success: true,
         userId: userId,
@@ -272,17 +293,16 @@ exports.fixUserData = onRequest((request, response) => {
         capturesCreated: expectedStats.capturesCreated,
         capturesApproved: expectedStats.capturesApproved,
         experiencePoints: expectedXP,
-        level: expectedLevel
+        level: expectedLevel,
       };
 
       console.log(`✅ ${userName} data updated successfully!`);
-      console.log('📊 Summary:', summary);
+      console.log("📊 Summary:", summary);
 
       response.status(200).send(summary);
-
     } catch (error) {
-      console.error('❌ Error fixing Julie data:', error);
-      response.status(500).send({error: error.message});
+      console.error("❌ Error fixing Julie data:", error);
+      response.status(500).send({ error: error.message });
     }
   });
 });
@@ -293,45 +313,48 @@ exports.fixUserData = onRequest((request, response) => {
 exports.testLeaderboardQuery = onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      console.log('🧪 Testing leaderboard queries...');
+      console.log("🧪 Testing leaderboard queries...");
 
       // Test Total XP query
-      console.log('Testing Total XP query...');
-      const xpQuery = await admin.firestore().collection('users')
-        .orderBy('experiencePoints', 'desc')
+      console.log("Testing Total XP query...");
+      const xpQuery = await admin
+        .firestore()
+        .collection("users")
+        .orderBy("experiencePoints", "desc")
         .limit(10)
         .get();
-      
-      const xpResults = xpQuery.docs.map(doc => ({
+
+      const xpResults = xpQuery.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().fullName || doc.data().username,
-        xp: doc.data().experiencePoints || 0
+        xp: doc.data().experiencePoints || 0,
       }));
-      console.log('XP Results:', xpResults);
+      console.log("XP Results:", xpResults);
 
       // Test Captures Created query
-      console.log('Testing Captures Created query...');
-      const capturesQuery = await admin.firestore().collection('users')
-        .orderBy('stats.capturesCreated', 'desc')
+      console.log("Testing Captures Created query...");
+      const capturesQuery = await admin
+        .firestore()
+        .collection("users")
+        .orderBy("stats.capturesCreated", "desc")
         .limit(10)
         .get();
-      
-      const capturesResults = capturesQuery.docs.map(doc => ({
+
+      const capturesResults = capturesQuery.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().fullName || doc.data().username,
-        captures: (doc.data().stats || {}).capturesCreated || 0
+        captures: (doc.data().stats || {}).capturesCreated || 0,
       }));
-      console.log('Captures Results:', capturesResults);
+      console.log("Captures Results:", capturesResults);
 
       response.status(200).send({
         success: true,
         xpResults,
-        capturesResults
+        capturesResults,
       });
-
     } catch (error) {
-      console.error('❌ Error testing queries:', error);
-      response.status(500).send({error: error.message, stack: error.stack});
+      console.error("❌ Error testing queries:", error);
+      response.status(500).send({ error: error.message, stack: error.stack });
     }
   });
 });
@@ -342,12 +365,14 @@ exports.testLeaderboardQuery = onRequest((request, response) => {
 exports.debugUsers = onRequest((request, response) => {
   cors(request, response, async () => {
     try {
-      console.log('🔍 Debugging user data...');
+      console.log("🔍 Debugging user data...");
 
       // Get all users with XP > 0
-      const usersSnapshot = await admin.firestore().collection('users')
-        .where('experiencePoints', '>', 0)
-        .orderBy('experiencePoints', 'desc')
+      const usersSnapshot = await admin
+        .firestore()
+        .collection("users")
+        .where("experiencePoints", ">", 0)
+        .orderBy("experiencePoints", "desc")
         .get();
 
       console.log(`👥 Found ${usersSnapshot.docs.length} users with XP`);
@@ -356,10 +381,10 @@ exports.debugUsers = onRequest((request, response) => {
       for (const doc of usersSnapshot.docs) {
         const userData = doc.data();
         const stats = userData.stats || {};
-        
+
         const userInfo = {
           id: doc.id,
-          name: userData.fullName || userData.username || 'Unknown',
+          name: userData.fullName || userData.username || "Unknown",
           xp: userData.experiencePoints || 0,
           level: userData.level || 1,
           stats: {
@@ -368,19 +393,24 @@ exports.debugUsers = onRequest((request, response) => {
             walksCreated: stats.walksCreated || 0,
             walksCompleted: stats.walksCompleted || 0,
             highestRatedCapture: stats.highestRatedCapture || 0,
-            highestRatedArtWalk: stats.highestRatedArtWalk || 0
-          }
+            highestRatedArtWalk: stats.highestRatedArtWalk || 0,
+          },
         };
-        
+
         userDebugInfo.push(userInfo);
-        console.log(`👤 ${userInfo.name}: XP=${userInfo.xp}, Level=${userInfo.level}`);
+        console.log(
+          `👤 ${userInfo.name}: XP=${userInfo.xp}, Level=${userInfo.level}`
+        );
       }
 
       // Check art walks collection
-      console.log('🚶 Checking art walks...');
-      const artWalksSnapshot = await admin.firestore().collection('artWalks').get();
+      console.log("🚶 Checking art walks...");
+      const artWalksSnapshot = await admin
+        .firestore()
+        .collection("artWalks")
+        .get();
       console.log(`Found ${artWalksSnapshot.docs.length} art walks total`);
-      
+
       const creatorCounts = {};
       const walkRatings = {};
       for (const doc of artWalksSnapshot.docs) {
@@ -388,33 +418,46 @@ exports.debugUsers = onRequest((request, response) => {
         const creatorId = walkData.createdBy || walkData.userId;
         if (creatorId) {
           creatorCounts[creatorId] = (creatorCounts[creatorId] || 0) + 1;
-          
+
           // Check for ratings
           if (walkData.averageRating && walkData.averageRating > 0) {
-            if (!walkRatings[creatorId] || walkData.averageRating > walkRatings[creatorId]) {
+            if (
+              !walkRatings[creatorId] ||
+              walkData.averageRating > walkRatings[creatorId]
+            ) {
               walkRatings[creatorId] = walkData.averageRating;
             }
           }
         }
       }
-      
-      console.log('Art walk creators:', creatorCounts);
-      console.log('Art walk ratings:', walkRatings);
+
+      console.log("Art walk creators:", creatorCounts);
+      console.log("Art walk ratings:", walkRatings);
 
       // Check captures for ratings
-      console.log('📸 Checking capture ratings...');
-      const allCapturesSnapshot = await admin.firestore().collection('captures').get();
+      console.log("📸 Checking capture ratings...");
+      const allCapturesSnapshot = await admin
+        .firestore()
+        .collection("captures")
+        .get();
       const captureRatings = {};
       for (const doc of allCapturesSnapshot.docs) {
         const captureData = doc.data();
         const userId = captureData.userId;
-        if (userId && captureData.averageRating && captureData.averageRating > 0) {
-          if (!captureRatings[userId] || captureData.averageRating > captureRatings[userId]) {
+        if (
+          userId &&
+          captureData.averageRating &&
+          captureData.averageRating > 0
+        ) {
+          if (
+            !captureRatings[userId] ||
+            captureData.averageRating > captureRatings[userId]
+          ) {
             captureRatings[userId] = captureData.averageRating;
           }
         }
       }
-      console.log('Capture ratings:', captureRatings);
+      console.log("Capture ratings:", captureRatings);
 
       response.status(200).send({
         success: true,
@@ -423,17 +466,21 @@ exports.debugUsers = onRequest((request, response) => {
         walkRatings: walkRatings,
         captureRatings: captureRatings,
         totalArtWalks: artWalksSnapshot.docs.length,
-        totalCaptures: allCapturesSnapshot.docs.length
+        totalCaptures: allCapturesSnapshot.docs.length,
       });
-
     } catch (error) {
-      console.error('❌ Error debugging users:', error);
-      response.status(500).send({error: error.message});
+      console.error("❌ Error debugging users:", error);
+      response.status(500).send({ error: error.message });
     }
   });
 });
 
 // Calculate user level based on XP (matches RewardsService logic)
+/**
+ * Calculate user level based on experience points
+ * @param {number} xp - The user's experience points
+ * @return {number} The calculated level
+ */
 function calculateLevel(xp) {
   const levelSystem = {
     1: { minXP: 0, maxXP: 199 },
@@ -461,7 +508,7 @@ function calculateLevel(xp) {
  * Create a new customer in Stripe
  */
 exports.createCustomer = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -473,12 +520,12 @@ exports.createCustomer = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
         console.log("🔐 Token received, length:", idToken.length);
-        
+
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const authUserId = decodedToken.uid;
         console.log("✅ Auth successful for user:", authUserId);
@@ -487,10 +534,10 @@ exports.createCustomer = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {email, userId} = request.body;
+        const { email, userId } = request.body;
 
         if (!email || !userId) {
           return response.status(400).send({
@@ -500,7 +547,7 @@ exports.createCustomer = onRequest(
 
         // Verify the userId matches the authenticated user
         if (userId !== authUserId) {
-          return response.status(403).send({error: "Forbidden"});
+          return response.status(403).send({ error: "Forbidden" });
         }
 
         // Create customer
@@ -519,7 +566,7 @@ exports.createCustomer = onRequest(
         });
       } catch (error) {
         console.error("Error creating customer:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -529,7 +576,7 @@ exports.createCustomer = onRequest(
  * Create a setup intent for adding payment methods
  */
 exports.createSetupIntent = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -541,12 +588,12 @@ exports.createSetupIntent = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
         console.log("🔐 Token received, length:", idToken.length);
-        
+
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const authUserId = decodedToken.uid;
         console.log("✅ Auth successful for user:", authUserId);
@@ -554,10 +601,10 @@ exports.createSetupIntent = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {customerId} = request.body;
+        const { customerId } = request.body;
 
         if (!customerId) {
           return response.status(400).send({
@@ -576,17 +623,18 @@ exports.createSetupIntent = onRequest(
         });
       } catch (error) {
         console.error("Error creating setup intent:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
 );
 
 /**
- * Create a payment intent for direct one-time payments (no stored payment methods)
+ * Create a payment intent for direct one-time payments
+ * (no stored payment methods)
  */
 exports.createPaymentIntent = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -598,12 +646,12 @@ exports.createPaymentIntent = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
         console.log("🔐 Token received, length:", idToken.length);
-        
+
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const authUserId = decodedToken.uid;
         console.log("✅ Auth successful for user:", authUserId);
@@ -611,10 +659,15 @@ exports.createPaymentIntent = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {amount, currency = "usd", description, metadata = {}} = request.body;
+        const {
+          amount,
+          currency = "usd",
+          description,
+          metadata = {},
+        } = request.body;
 
         if (!amount || amount <= 0) {
           return response.status(400).send({
@@ -625,7 +678,9 @@ exports.createPaymentIntent = onRequest(
         // Convert amount to cents for Stripe
         const amountInCents = Math.round(amount * 100);
 
-        console.log(`💰 Creating payment intent for $${amount} (${amountInCents} cents)`);
+        console.log(
+          `💰 Creating payment intent for $${amount} (${amountInCents} cents)`
+        );
 
         const paymentIntent = await stripe.paymentIntents.create({
           amount: amountInCents,
@@ -649,7 +704,7 @@ exports.createPaymentIntent = onRequest(
         });
       } catch (error) {
         console.error("❌ Error creating payment intent:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -659,7 +714,7 @@ exports.createPaymentIntent = onRequest(
  * Get payment methods for a customer
  */
 exports.getPaymentMethods = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -671,12 +726,12 @@ exports.getPaymentMethods = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
         console.log("🔐 Token received, length:", idToken.length);
-        
+
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const authUserId = decodedToken.uid;
         console.log("✅ Auth successful for user:", authUserId);
@@ -684,10 +739,10 @@ exports.getPaymentMethods = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {customerId} = request.body;
+        const { customerId } = request.body;
 
         if (!customerId) {
           return response.status(400).send({
@@ -708,7 +763,7 @@ exports.getPaymentMethods = onRequest(
         });
       } catch (error) {
         console.error("❌ Error getting payment methods:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -718,7 +773,7 @@ exports.getPaymentMethods = onRequest(
  * Update customer information
  */
 exports.updateCustomer = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -730,12 +785,12 @@ exports.updateCustomer = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
         console.log("🔐 Token received, length:", idToken.length);
-        
+
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const authUserId = decodedToken.uid;
         console.log("✅ Auth successful for user:", authUserId);
@@ -743,10 +798,10 @@ exports.updateCustomer = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {customerId, email, name, defaultPaymentMethod} = request.body;
+        const { customerId, email, name, defaultPaymentMethod } = request.body;
 
         if (!customerId) {
           return response.status(400).send({
@@ -757,7 +812,11 @@ exports.updateCustomer = onRequest(
         const updateData = {};
         if (email) updateData.email = email;
         if (name) updateData.name = name;
-        if (defaultPaymentMethod) updateData.invoice_settings = {default_payment_method: defaultPaymentMethod};
+        if (defaultPaymentMethod) {
+          updateData.invoice_settings = {
+            default_payment_method: defaultPaymentMethod,
+          };
+        }
 
         const customer = await stripe.customers.update(customerId, updateData);
 
@@ -767,7 +826,7 @@ exports.updateCustomer = onRequest(
         });
       } catch (error) {
         console.error("Error updating customer:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -777,7 +836,7 @@ exports.updateCustomer = onRequest(
  * Detach a payment method from a customer
  */
 exports.detachPaymentMethod = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -789,12 +848,12 @@ exports.detachPaymentMethod = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
         console.log("🔐 Token received, length:", idToken.length);
-        
+
         const decodedToken = await admin.auth().verifyIdToken(idToken);
         const authUserId = decodedToken.uid;
         console.log("✅ Auth successful for user:", authUserId);
@@ -802,10 +861,10 @@ exports.detachPaymentMethod = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {paymentMethodId} = request.body;
+        const { paymentMethodId } = request.body;
 
         if (!paymentMethodId) {
           return response.status(400).send({
@@ -823,7 +882,7 @@ exports.detachPaymentMethod = onRequest(
         });
       } catch (error) {
         console.error("Error detaching payment method:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -833,17 +892,17 @@ exports.detachPaymentMethod = onRequest(
  * Create a subscription
  */
 exports.createSubscription = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {customerId, priceId, paymentMethodId} = request.body;
+        const { customerId, priceId, paymentMethodId } = request.body;
 
         if (!customerId || !priceId) {
           return response.status(400).send({
@@ -853,13 +912,13 @@ exports.createSubscription = onRequest(
 
         const subscription = await stripe.subscriptions.create({
           customer: customerId,
-          items: [{price: priceId}],
+          items: [{ price: priceId }],
           default_payment_method: paymentMethodId,
           expand: ["latest_invoice.payment_intent"],
         });
 
-        const clientSecret = subscription.latest_invoice.payment_intent
-          ?.client_secret ?? "";
+        const clientSecret =
+          subscription.latest_invoice.payment_intent?.client_secret ?? "";
 
         response.status(200).send({
           subscriptionId: subscription.id,
@@ -868,7 +927,7 @@ exports.createSubscription = onRequest(
         });
       } catch (error) {
         console.error("Error creating subscription:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -878,17 +937,17 @@ exports.createSubscription = onRequest(
  * Cancel a subscription
  */
 exports.cancelSubscription = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {subscriptionId, cancelAtPeriodEnd} = request.body;
+        const { subscriptionId, cancelAtPeriodEnd } = request.body;
 
         if (!subscriptionId) {
           return response.status(400).send({
@@ -911,7 +970,7 @@ exports.cancelSubscription = onRequest(
         });
       } catch (error) {
         console.error("Error canceling subscription:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -921,17 +980,17 @@ exports.cancelSubscription = onRequest(
  * Change subscription tier
  */
 exports.changeSubscriptionTier = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {subscriptionId, newPriceId} = request.body;
+        const { subscriptionId, newPriceId } = request.body;
 
         if (!subscriptionId || !newPriceId) {
           return response.status(400).send({
@@ -964,7 +1023,7 @@ exports.changeSubscriptionTier = onRequest(
         });
       } catch (error) {
         console.error("Error changing subscription tier:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -974,7 +1033,7 @@ exports.changeSubscriptionTier = onRequest(
  * Process gift payment after payment intent is confirmed
  */
 exports.processGiftPayment = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -985,7 +1044,7 @@ exports.processGiftPayment = onRequest(
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
           console.log("❌ No valid auth header found");
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
@@ -996,7 +1055,7 @@ exports.processGiftPayment = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
         const {
@@ -1007,31 +1066,35 @@ exports.processGiftPayment = onRequest(
           message,
           campaignId,
           isFreeGift,
-          skipPaymentValidation
+          skipPaymentValidation,
         } = request.body;
 
         // Check for free gift with skip validation flag
         if (isFreeGift && skipPaymentValidation) {
           console.log("🎁 Processing free gift - skipping payment validation");
-          
+
           if (!recipientId || amount === undefined) {
             return response.status(400).send({
-              error: "Missing required fields for free gift: recipientId, amount",
+              error:
+                "Missing required fields for free gift: recipientId, amount",
             });
           }
-          
+
           // Skip payment intent validation for free gifts
         } else {
           // Regular paid gift validation
           if (!paymentIntentId || !recipientId || !amount) {
             return response.status(400).send({
-              error: "Missing required fields: paymentIntentId, recipientId, amount",
+              error:
+                "Missing required fields: paymentIntentId, recipientId, amount",
             });
           }
 
           // Verify the payment intent was successful
-          const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-          
+          const paymentIntent = await stripe.paymentIntents.retrieve(
+            paymentIntentId
+          );
+
           if (paymentIntent.status !== "succeeded") {
             return response.status(400).send({
               error: `Payment not completed. Status: ${paymentIntent.status}`,
@@ -1064,16 +1127,22 @@ exports.processGiftPayment = onRequest(
           giftData.paymentIntentId = paymentIntentId;
         }
 
-        const giftRef = await admin.firestore().collection("gifts").add(giftData);
+        const giftRef = await admin
+          .firestore()
+          .collection("gifts")
+          .add(giftData);
         console.log(`🎁 Gift record created: ${giftRef.id}`);
 
         // Update recipient's balance
-        const recipientRef = admin.firestore().collection("users").doc(recipientId);
+        const recipientRef = admin
+          .firestore()
+          .collection("users")
+          .doc(recipientId);
         await admin.firestore().runTransaction(async (transaction) => {
           const recipientDoc = await transaction.get(recipientRef);
           const currentBalance = recipientDoc.data()?.balance || 0;
           const newBalance = currentBalance + amount;
-          
+
           transaction.update(recipientRef, {
             balance: newBalance,
             lastGiftReceived: admin.firestore.FieldValue.serverTimestamp(),
@@ -1083,20 +1152,25 @@ exports.processGiftPayment = onRequest(
         console.log(`💰 Updated recipient balance: +$${amount}`);
 
         // Create notification for recipient
-        await admin.firestore().collection("notifications").add({
-          userId: recipientId,
-          type: "gift_received",
-          title: "You received a gift!",
-          message: `You received a ${giftType || "gift"} worth $${amount}${message ? ` with message: "${message}"` : ""}`,
-          data: {
-            giftId: giftRef.id,
-            senderId: authUserId,
-            amount: amount,
-            giftType: giftType,
-          },
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        await admin
+          .firestore()
+          .collection("notifications")
+          .add({
+            userId: recipientId,
+            type: "gift_received",
+            title: "You received a gift!",
+            message: `You received a ${giftType || "gift"} worth $${amount}${
+              message ? ` with message: "${message}"` : ""
+            }`,
+            data: {
+              giftId: giftRef.id,
+              senderId: authUserId,
+              amount: amount,
+              giftType: giftType,
+            },
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
 
         console.log("📱 Notification sent to recipient");
 
@@ -1105,10 +1179,9 @@ exports.processGiftPayment = onRequest(
           giftId: giftRef.id,
           message: "Gift sent successfully!",
         });
-
       } catch (error) {
         console.error("❌ Error processing gift payment:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -1118,7 +1191,7 @@ exports.processGiftPayment = onRequest(
  * Process subscription payment after payment intent is confirmed
  */
 exports.processSubscriptionPayment = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -1128,7 +1201,7 @@ exports.processSubscriptionPayment = onRequest(
         // Verify Firebase Auth token
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
@@ -1138,32 +1211,33 @@ exports.processSubscriptionPayment = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {
-          paymentIntentId,
-          tier,
-          priceAmount,
-          billingCycle
-        } = request.body;
+        const { paymentIntentId, tier, priceAmount, billingCycle } =
+          request.body;
 
         if (!paymentIntentId || !tier || !priceAmount) {
           return response.status(400).send({
-            error: "Missing required fields: paymentIntentId, tier, priceAmount",
+            error:
+              "Missing required fields: paymentIntentId, tier, priceAmount",
           });
         }
 
         // Verify the payment intent was successful
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          paymentIntentId
+        );
+
         if (paymentIntent.status !== "succeeded") {
           return response.status(400).send({
             error: `Payment not completed. Status: ${paymentIntent.status}`,
           });
         }
 
-        console.log(`✅ Payment verified: ${paymentIntentId} for $${priceAmount}`);
+        console.log(
+          `✅ Payment verified: ${paymentIntentId} for $${priceAmount}`
+        );
 
         // Create subscription record in Firestore
         const subscriptionData = {
@@ -1177,7 +1251,10 @@ exports.processSubscriptionPayment = onRequest(
           nextBillingDate: admin.firestore.FieldValue.serverTimestamp(),
         };
 
-        const subscriptionRef = await admin.firestore().collection("subscriptions").add(subscriptionData);
+        const subscriptionRef = await admin
+          .firestore()
+          .collection("subscriptions")
+          .add(subscriptionData);
         console.log(`💳 Subscription record created: ${subscriptionRef.id}`);
 
         // Update user's subscription status
@@ -1195,10 +1272,9 @@ exports.processSubscriptionPayment = onRequest(
           subscriptionId: subscriptionRef.id,
           message: "Subscription activated successfully!",
         });
-
       } catch (error) {
         console.error("❌ Error processing subscription payment:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -1208,7 +1284,7 @@ exports.processSubscriptionPayment = onRequest(
  * Process ad payment after payment intent is confirmed
  */
 exports.processAdPayment = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -1218,7 +1294,7 @@ exports.processAdPayment = onRequest(
         // Verify Firebase Auth token
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
@@ -1228,7 +1304,7 @@ exports.processAdPayment = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
         const {
@@ -1237,18 +1313,22 @@ exports.processAdPayment = onRequest(
           duration,
           amount,
           targetAudience,
-          adContent
+          adContent,
         } = request.body;
 
         if (!paymentIntentId || !adType || !duration || !amount) {
           return response.status(400).send({
-            error: "Missing required fields: paymentIntentId, adType, duration, amount",
+            error:
+              "Missing required fields: paymentIntentId, adType, " +
+              "duration, amount",
           });
         }
 
         // Verify the payment intent was successful
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          paymentIntentId
+        );
+
         if (paymentIntent.status !== "succeeded") {
           return response.status(400).send({
             error: `Payment not completed. Status: ${paymentIntent.status}`,
@@ -1269,10 +1349,14 @@ exports.processAdPayment = onRequest(
           status: "active",
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           startDate: admin.firestore.FieldValue.serverTimestamp(),
-          endDate: new Date(Date.now() + (duration * 24 * 60 * 60 * 1000)), // duration in days
+          endDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000),
+          // duration in days
         };
 
-        const adRef = await admin.firestore().collection("advertisements").add(adData);
+        const adRef = await admin
+          .firestore()
+          .collection("advertisements")
+          .add(adData);
         console.log(`📢 Ad record created: ${adRef.id}`);
 
         response.status(200).send({
@@ -1280,10 +1364,9 @@ exports.processAdPayment = onRequest(
           adId: adRef.id,
           message: "Advertisement activated successfully!",
         });
-
       } catch (error) {
         console.error("❌ Error processing ad payment:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -1293,7 +1376,7 @@ exports.processAdPayment = onRequest(
  * Process sponsorship payment after payment intent is confirmed
  */
 exports.processSponsorshipPayment = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -1303,7 +1386,7 @@ exports.processSponsorshipPayment = onRequest(
         // Verify Firebase Auth token
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
@@ -1313,7 +1396,7 @@ exports.processSponsorshipPayment = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
         const {
@@ -1322,18 +1405,22 @@ exports.processSponsorshipPayment = onRequest(
           amount,
           sponsorshipType,
           duration,
-          benefits
+          benefits,
         } = request.body;
 
         if (!paymentIntentId || !artistId || !amount || !sponsorshipType) {
           return response.status(400).send({
-            error: "Missing required fields: paymentIntentId, artistId, amount, sponsorshipType",
+            error:
+              "Missing required fields: paymentIntentId, artistId, " +
+              "amount, sponsorshipType",
           });
         }
 
         // Verify the payment intent was successful
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          paymentIntentId
+        );
+
         if (paymentIntent.status !== "succeeded") {
           return response.status(400).send({
             error: `Payment not completed. Status: ${paymentIntent.status}`,
@@ -1354,10 +1441,15 @@ exports.processSponsorshipPayment = onRequest(
           status: "active",
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           startDate: admin.firestore.FieldValue.serverTimestamp(),
-          endDate: new Date(Date.now() + ((duration || 30) * 24 * 60 * 60 * 1000)),
+          endDate: new Date(
+            Date.now() + (duration || 30) * 24 * 60 * 60 * 1000
+          ),
         };
 
-        const sponsorshipRef = await admin.firestore().collection("sponsorships").add(sponsorshipData);
+        const sponsorshipRef = await admin
+          .firestore()
+          .collection("sponsorships")
+          .add(sponsorshipData);
         console.log(`🤝 Sponsorship record created: ${sponsorshipRef.id}`);
 
         // Update artist's balance (they get 80% of sponsorship)
@@ -1367,40 +1459,45 @@ exports.processSponsorshipPayment = onRequest(
           const artistDoc = await transaction.get(artistRef);
           const currentBalance = artistDoc.data()?.balance || 0;
           const newBalance = currentBalance + artistShare;
-          
+
           transaction.update(artistRef, {
             balance: newBalance,
-            lastSponsorshipReceived: admin.firestore.FieldValue.serverTimestamp(),
+            lastSponsorshipReceived:
+              admin.firestore.FieldValue.serverTimestamp(),
           });
         });
 
         console.log(`💰 Updated artist balance: +$${artistShare}`);
 
         // Create notification for artist
-        await admin.firestore().collection("notifications").add({
-          userId: artistId,
-          type: "sponsorship_received",
-          title: "New Sponsorship!",
-          message: `You received a ${sponsorshipType} sponsorship worth $${amount}`,
-          data: {
-            sponsorshipId: sponsorshipRef.id,
-            sponsorId: authUserId,
-            amount: amount,
-            sponsorshipType: sponsorshipType,
-          },
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        await admin
+          .firestore()
+          .collection("notifications")
+          .add({
+            userId: artistId,
+            type: "sponsorship_received",
+            title: "New Sponsorship!",
+            message:
+              `You received a ${sponsorshipType} sponsorship ` +
+              `worth $${amount}`,
+            data: {
+              sponsorshipId: sponsorshipRef.id,
+              sponsorId: authUserId,
+              amount: amount,
+              sponsorshipType: sponsorshipType,
+            },
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
 
         response.status(200).send({
           success: true,
           sponsorshipId: sponsorshipRef.id,
           message: "Sponsorship activated successfully!",
         });
-
       } catch (error) {
         console.error("❌ Error processing sponsorship payment:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -1410,7 +1507,7 @@ exports.processSponsorshipPayment = onRequest(
  * Process commission payment after payment intent is confirmed
  */
 exports.processCommissionPayment = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
@@ -1420,7 +1517,7 @@ exports.processCommissionPayment = onRequest(
         // Verify Firebase Auth token
         const authHeader = request.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return response.status(401).send({error: "Unauthorized"});
+          return response.status(401).send({ error: "Unauthorized" });
         }
 
         const idToken = authHeader.split("Bearer ")[1];
@@ -1430,7 +1527,7 @@ exports.processCommissionPayment = onRequest(
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
         const {
@@ -1439,18 +1536,22 @@ exports.processCommissionPayment = onRequest(
           amount,
           commissionType,
           description,
-          deadline
+          deadline,
         } = request.body;
 
         if (!paymentIntentId || !artistId || !amount || !commissionType) {
           return response.status(400).send({
-            error: "Missing required fields: paymentIntentId, artistId, amount, commissionType",
+            error:
+              "Missing required fields: paymentIntentId, artistId, " +
+              "amount, commissionType",
           });
         }
 
         // Verify the payment intent was successful
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        
+        const paymentIntent = await stripe.paymentIntents.retrieve(
+          paymentIntentId
+        );
+
         if (paymentIntent.status !== "succeeded") {
           return response.status(400).send({
             error: `Payment not completed. Status: ${paymentIntent.status}`,
@@ -1473,34 +1574,41 @@ exports.processCommissionPayment = onRequest(
           paymentHeld: true, // Payment is held until completion
         };
 
-        const commissionRef = await admin.firestore().collection("commissions").add(commissionData);
+        const commissionRef = await admin
+          .firestore()
+          .collection("commissions")
+          .add(commissionData);
         console.log(`🎨 Commission record created: ${commissionRef.id}`);
 
         // Create notification for artist
-        await admin.firestore().collection("notifications").add({
-          userId: artistId,
-          type: "commission_request",
-          title: "New Commission Request!",
-          message: `You have a new ${commissionType} commission request worth $${amount}`,
-          data: {
-            commissionId: commissionRef.id,
-            clientId: authUserId,
-            amount: amount,
-            commissionType: commissionType,
-          },
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        await admin
+          .firestore()
+          .collection("notifications")
+          .add({
+            userId: artistId,
+            type: "commission_request",
+            title: "New Commission Request!",
+            message:
+              `You have a new ${commissionType} commission request ` +
+              `worth $${amount}`,
+            data: {
+              commissionId: commissionRef.id,
+              clientId: authUserId,
+              amount: amount,
+              commissionType: commissionType,
+            },
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
 
         response.status(200).send({
           success: true,
           commissionId: commissionRef.id,
           message: "Commission request sent successfully!",
         });
-
       } catch (error) {
         console.error("❌ Error processing commission payment:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }
@@ -1510,23 +1618,18 @@ exports.processCommissionPayment = onRequest(
  * Request a refund
  */
 exports.requestRefund = onRequest(
-  {secrets: [stripeSecretKey]},
+  { secrets: [stripeSecretKey] },
   (request, response) => {
     cors(request, response, async () => {
       try {
         const stripe = require("stripe")(stripeSecretKey.value());
 
         if (request.method !== "POST") {
-          return response.status(405).send({error: "Method Not Allowed"});
+          return response.status(405).send({ error: "Method Not Allowed" });
         }
 
-        const {
-          paymentId,
-          subscriptionId,
-          userId,
-          reason,
-          additionalDetails,
-        } = request.body;
+        const { paymentId, subscriptionId, userId, reason, additionalDetails } =
+          request.body;
 
         if (!paymentId || !userId || !reason) {
           return response.status(400).send({
@@ -1547,16 +1650,19 @@ exports.requestRefund = onRequest(
         });
 
         // Store refund request in Firestore
-        await admin.firestore().collection("refundRequests").add({
-          userId,
-          paymentId,
-          subscriptionId: subscriptionId || null,
-          reason,
-          additionalDetails: additionalDetails || "",
-          stripeRefundId: refund.id,
-          status: "pending",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
+        await admin
+          .firestore()
+          .collection("refundRequests")
+          .add({
+            userId,
+            paymentId,
+            subscriptionId: subscriptionId || null,
+            reason,
+            additionalDetails: additionalDetails || "",
+            stripeRefundId: refund.id,
+            status: "pending",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
 
         response.status(200).send({
           refundId: refund.id,
@@ -1564,7 +1670,7 @@ exports.requestRefund = onRequest(
         });
       } catch (error) {
         console.error("Error requesting refund:", error);
-        response.status(500).send({error: error.message});
+        response.status(500).send({ error: error.message });
       }
     });
   }

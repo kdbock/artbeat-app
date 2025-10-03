@@ -358,12 +358,13 @@ class _EnhancedCaptureDashboardScreenState
                   child: CustomScrollView(
                     controller: _scrollController,
                     slivers: [
-                      // General capture dashboard ad placement
+                      // Art & Walks Zone ad placement
                       const SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.all(16.0),
-                          child: BannerAdWidget(
-                            location: AdLocation.captureDashboard,
+                          child: ZoneAdPlacementWidget(
+                            zone: AdZone.artWalks,
+                            showIfEmpty: true,
                           ),
                         ),
                       ),
@@ -501,8 +502,10 @@ class _EnhancedCaptureDashboardScreenState
 
                               // Ad placement beneath stats section
                               if (_currentUser != null)
-                                const BannerAdWidget(
-                                  location: AdLocation.captureDashboard,
+                                const ZoneAdPlacementWidget(
+                                  zone: AdZone.artWalks,
+                                  adIndex: 1,
+                                  showIfEmpty: true,
                                 ),
                             ],
                           ),
@@ -557,8 +560,10 @@ class _EnhancedCaptureDashboardScreenState
                         const SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: BannerAdWidget(
-                              location: AdLocation.captureDashboard,
+                            child: ZoneAdPlacementWidget(
+                              zone: AdZone.artWalks,
+                              adIndex: 2,
+                              showIfEmpty: true,
                             ),
                           ),
                         ),
@@ -618,8 +623,10 @@ class _EnhancedCaptureDashboardScreenState
                         const SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.0),
-                            child: BannerAdWidget(
-                              location: AdLocation.captureDashboard,
+                            child: ZoneAdPlacementWidget(
+                              zone: AdZone.artWalks,
+                              adIndex: 3,
+                              showIfEmpty: true,
                             ),
                           ),
                         ),

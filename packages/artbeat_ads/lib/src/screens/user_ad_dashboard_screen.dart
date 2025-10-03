@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 import '../models/ad_model.dart';
@@ -823,8 +824,7 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
         _navigateToEditScreen(ad);
         break;
       case 'duplicate':
-        // TODO: Implement duplication
-        _showNotImplementedDialog('Duplicate functionality');
+        _duplicateAd(ad);
         break;
       case 'delete':
         _showDeleteConfirmation(ad);
@@ -855,22 +855,6 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
       context,
       MaterialPageRoute<void>(
         builder: (context) => AdEditScreen(ad: ad, onAdUpdated: _refreshData),
-      ),
-    );
-  }
-
-  void _showNotImplementedDialog(String feature) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature will be available in a future update.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
       ),
     );
   }
@@ -910,6 +894,44 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
         ],
       ),
     );
+  }
+
+  void _duplicateAd(AdModel ad) async {
+    try {
+      // Create a duplicate with new ID and draft status
+      final duplicatedAd = ad.copyWith(
+        id: '', // Will be set by Firestore
+        title: '${ad.title} (Copy)',
+        status: AdStatus.draft, // Start as draft
+        startDate: DateTime.now(), // Reset dates
+        endDate: DateTime.now().add(Duration(days: ad.duration.days)),
+      );
+
+      // Save the duplicated ad directly to Firestore
+      final firestore = FirebaseFirestore.instance;
+      final docRef = await firestore
+          .collection('ads')
+          .add(duplicatedAd.toMap());
+
+      // Update the ad with the new ID
+      await firestore.collection('ads').doc(docRef.id).update({
+        'id': docRef.id,
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ad duplicated successfully')),
+      );
+
+      // Refresh the data to show the new ad
+      _refreshData();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error duplicating ad: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   String _formatNumber(int number) {

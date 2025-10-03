@@ -10,6 +10,7 @@ import 'artbeat_drawer_items.dart';
 import 'user_avatar.dart';
 import '../utils/logger.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 
 // Define main navigation routes that should use pushReplacement
 // Only include true top-level destinations that should replace the current screen
@@ -542,6 +543,14 @@ class _ArtbeatDrawerState extends State<ArtbeatDrawer> {
                 ),
               );
             },
+          ),
+
+          // Title Sponsor Badge at bottom of header
+          Positioned(
+            bottom: 8,
+            left: 16,
+            right: 16,
+            child: Center(child: CompactSponsorBadge()),
           ),
         ],
       ),

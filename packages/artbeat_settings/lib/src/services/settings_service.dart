@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import '../models/notification_settings_model.dart';
+import '../models/privacy_settings_model.dart';
 
 /// Settings service for managing user settings and preferences
 class SettingsService extends ChangeNotifier {
@@ -212,6 +214,152 @@ class SettingsService extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       AppLogger.error('Error unblocking user: $e');
+      rethrow;
+    }
+  }
+
+  /// Get notification settings for the current user
+  Future<NotificationSettingsModel> getNotificationSettings() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final doc = await _firestore
+          .collection('userSettings')
+          .doc(userId)
+          .collection('notifications')
+          .doc('preferences')
+          .get();
+
+      if (!doc.exists) {
+        // Return default settings if they don't exist
+        return NotificationSettingsModel.defaultSettings(userId);
+      }
+
+      return NotificationSettingsModel.fromFirestore(doc.data()!);
+    } catch (e) {
+      AppLogger.error('Error getting notification settings: $e');
+      rethrow;
+    }
+  }
+
+  /// Save notification settings for the current user
+  Future<void> saveNotificationSettings(
+    NotificationSettingsModel settings,
+  ) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      await _firestore
+          .collection('userSettings')
+          .doc(userId)
+          .collection('notifications')
+          .doc('preferences')
+          .set(settings.toFirestore(), SetOptions(merge: true));
+
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('Error saving notification settings: $e');
+      rethrow;
+    }
+  }
+
+  /// Get privacy settings for the current user
+  Future<PrivacySettingsModel> getPrivacySettings() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final doc = await _firestore
+          .collection('userSettings')
+          .doc(userId)
+          .collection('privacy')
+          .doc('preferences')
+          .get();
+
+      if (!doc.exists) {
+        // Return default settings if they don't exist
+        return PrivacySettingsModel.defaultSettings(userId);
+      }
+
+      return PrivacySettingsModel.fromFirestore(doc.data()!);
+    } catch (e) {
+      AppLogger.error('Error getting privacy settings: $e');
+      rethrow;
+    }
+  }
+
+  /// Save privacy settings for the current user
+  Future<void> savePrivacySettings(PrivacySettingsModel settings) async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      await _firestore
+          .collection('userSettings')
+          .doc(userId)
+          .collection('privacy')
+          .doc('preferences')
+          .set(settings.toFirestore(), SetOptions(merge: true));
+
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('Error saving privacy settings: $e');
+      rethrow;
+    }
+  }
+
+  /// Request user data download (GDPR compliance)
+  Future<void> requestDataDownload() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Create a data export request
+      await _firestore.collection('dataExportRequests').add({
+        'userId': userId,
+        'requestedAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'type': 'download',
+      });
+
+      AppLogger.info('Data download request created for user: $userId');
+    } catch (e) {
+      AppLogger.error('Error requesting data download: $e');
+      rethrow;
+    }
+  }
+
+  /// Request user data deletion (GDPR compliance)
+  Future<void> requestDataDeletion() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Create a data deletion request
+      await _firestore.collection('dataDeletionRequests').add({
+        'userId': userId,
+        'requestedAt': FieldValue.serverTimestamp(),
+        'status': 'pending',
+        'type': 'deletion',
+      });
+
+      AppLogger.info('Data deletion request created for user: $userId');
+    } catch (e) {
+      AppLogger.error('Error requesting data deletion: $e');
       rethrow;
     }
   }

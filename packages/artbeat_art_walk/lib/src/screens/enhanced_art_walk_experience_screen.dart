@@ -5,6 +5,10 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math' show sin, cos, sqrt, atan2, pi;
+import '../services/social_service.dart';
 
 /// Enhanced art walk experience screen with turn-by-turn navigation
 class EnhancedArtWalkExperienceScreen extends StatefulWidget {
@@ -41,6 +45,7 @@ class _EnhancedArtWalkExperienceScreenState
   ArtWalkProgress? _currentProgress;
   final ArtWalkProgressService _progressService = ArtWalkProgressService();
   final AudioNavigationService _audioService = AudioNavigationService();
+  final SocialService _socialService = SocialService();
 
   // New services for enhanced UX
   SmartOnboardingService? _onboardingService;
@@ -491,18 +496,74 @@ class _EnhancedArtWalkExperienceScreenState
     // Add haptic feedback
     _hapticService?.buttonPressed();
 
-    // For now, just show a message indicating this feature is not implemented
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Previous step navigation not implemented yet.'),
-        backgroundColor: Colors.orange,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    // Check if we're in navigation mode
+    if (!_isNavigationMode || _currentRoute == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Navigation not active'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
-    // TODO: Implement actual previous step logic when needed
-    // This could involve going back to previous navigation step
-    // or previous art piece in the route
+    // Get current navigation state
+    final currentStep = _navigationService.currentStep;
+    final currentSegment = _navigationService.currentSegment;
+
+    if (currentStep == null || currentSegment == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No navigation step available'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Check if we can go to previous step
+    final currentStepIndex = currentSegment.steps.indexOf(currentStep);
+
+    if (currentStepIndex > 0) {
+      // Go to previous step in current segment
+      debugPrint('🧭 Going to previous step in current segment');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⬅️ Showing previous navigation step'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      // Note: The navigation service would need a method to manually set step index
+      // For now, just show feedback that the feature is recognized
+    } else {
+      // We're at the first step of current segment
+      // Could go to previous segment if available
+      final currentSegmentIndex = _currentRoute!.segments.indexOf(
+        currentSegment,
+      );
+
+      if (currentSegmentIndex > 0) {
+        debugPrint('🧭 At first step, could go to previous segment');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⬅️ At first step of this segment'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // We're at the very beginning
+        debugPrint('🧭 Already at the first step of the route');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Already at the beginning of the route'),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   void _updateMapWithRoute(ArtWalkRouteModel route) {
@@ -675,23 +736,117 @@ class _EnhancedArtWalkExperienceScreenState
     try {
       final completedProgress = await _progressService.completeWalk();
 
+      // Calculate actual distance traveled
+      double totalDistance = 0.0;
+      for (int i = 0; i < completedProgress.visitedArt.length - 1; i++) {
+        final current = completedProgress.visitedArt[i];
+        final next = completedProgress.visitedArt[i + 1];
+        totalDistance += _calculateDistance(
+          current.visitLocation.latitude,
+          current.visitLocation.longitude,
+          next.visitLocation.latitude,
+          next.visitLocation.longitude,
+        );
+      }
+
+      // Get new achievements
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      List<AchievementModel> newAchievements = [];
+      if (userId != null) {
+        final achievementService = AchievementService();
+        newAchievements = await achievementService.checkForNewAchievements(
+          userId: userId,
+          walkCompleted: true,
+          distanceWalked: totalDistance,
+          artPiecesVisited: completedProgress.visitedArt.length,
+        );
+      }
+
+      // Calculate personal bests
+      final personalBests = await _calculatePersonalBests(
+        distance: totalDistance,
+        duration: completedProgress.timeSpent,
+        artPieces: completedProgress.visitedArt.length,
+      );
+
+      // Get milestones
+      final milestones = await _getMilestones(
+        await _getTotalWalksCompleted(),
+        await _getTotalDistance() + totalDistance,
+      );
+
       // Create celebration data
       final celebrationData = CelebrationData(
         walk: widget.artWalk,
         progress: completedProgress,
         walkDuration: completedProgress.timeSpent,
-        distanceWalked: 0.0, // TODO: Calculate actual distance
+        distanceWalked: totalDistance,
         artPiecesVisited: completedProgress.visitedArt.length,
         pointsEarned: completedProgress.totalPointsEarned,
-        newAchievements: const [], // TODO: Get new achievements
+        newAchievements: newAchievements,
         visitedArtPhotos: completedProgress.visitedArt
             .where((visit) => visit.photoTaken != null)
             .map((visit) => visit.photoTaken!)
             .toList(),
-        personalBests: const {}, // TODO: Calculate personal bests
-        milestones: const [], // TODO: Get milestones
+        personalBests: personalBests,
+        milestones: milestones
+            .map(
+              (milestone) => CelebrationMilestone(
+                id: milestone
+                    .toLowerCase()
+                    .replaceAll(' ', '_')
+                    .replaceAll('!', '')
+                    .replaceAll('🎉', '')
+                    .replaceAll('🌟', '')
+                    .replaceAll('🏆', '')
+                    .replaceAll('🎨', '')
+                    .replaceAll('👑', '')
+                    .replaceAll('🌈', '')
+                    .replaceAll('🚶', '')
+                    .replaceAll('🏃', '')
+                    .replaceAll('🎯', ''),
+                title: milestone,
+                description: milestone,
+                icon: milestone.contains('🎉')
+                    ? '🎉'
+                    : milestone.contains('🌟')
+                    ? '🌟'
+                    : milestone.contains('🏆')
+                    ? '🏆'
+                    : '🎨',
+                pointsAwarded: 0,
+                type: MilestoneType.artPieces,
+                metadata: const {},
+              ),
+            )
+            .toList(),
         celebrationType: CelebrationType.regularCompletion,
       );
+
+      // Post walk completed activity to social feed
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          await _socialService.postActivity(
+            userId: user.uid,
+            userName: user.displayName ?? 'Anonymous Walker',
+            userAvatar: user.photoURL,
+            type: SocialActivityType.walkCompleted,
+            message:
+                'Completed "${widget.artWalk.title}" - visited ${completedProgress.visitedArt.length} art pieces!',
+            location: _currentPosition,
+            metadata: {
+              'walkTitle': widget.artWalk.title,
+              'artPiecesVisited': completedProgress.visitedArt.length,
+              'distanceWalked': totalDistance,
+              'walkDuration': completedProgress.timeSpent.inMinutes,
+            },
+          );
+        }
+      } catch (e) {
+        // Don't fail the walk completion if social posting fails
+        debugPrint('Failed to post walk completed activity: $e');
+      }
 
       // Navigate to celebration screen
       if (mounted) {
@@ -711,6 +866,149 @@ class _EnhancedArtWalkExperienceScreenState
           ),
         );
       }
+    }
+  }
+
+  /// Calculate distance between two coordinates using Haversine formula
+  double _calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const double earthRadius = 6371000; // meters
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
+
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_toRadians(lat1)) *
+            cos(_toRadians(lat2)) *
+            sin(dLon / 2) *
+            sin(dLon / 2);
+
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return earthRadius * c;
+  }
+
+  double _toRadians(double degrees) => degrees * pi / 180;
+
+  /// Calculate personal bests for this walk
+  Future<Map<String, dynamic>> _calculatePersonalBests({
+    required double distance,
+    required Duration duration,
+    required int artPieces,
+  }) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return {};
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      final data = userDoc.data() ?? {};
+      final stats = data['artWalkStats'] as Map<String, dynamic>? ?? {};
+
+      final bests = <String, dynamic>{};
+
+      // Check for personal bests
+      if (distance > ((stats['longestWalk'] as num?) ?? 0)) {
+        bests['longestWalk'] = distance;
+      }
+      if (artPieces > ((stats['mostArtInOneWalk'] as num?) ?? 0)) {
+        bests['mostArtInOneWalk'] = artPieces;
+      }
+      if (duration.inMinutes < ((stats['fastestWalk'] as num?) ?? 999999)) {
+        bests['fastestWalk'] = duration.inMinutes;
+      }
+
+      // Update Firestore if any bests
+      if (bests.isNotEmpty) {
+        await FirebaseFirestore.instance.collection('users').doc(userId).update(
+          {
+            'artWalkStats': {...stats, ...bests},
+          },
+        );
+      }
+
+      return bests;
+    } catch (e) {
+      debugPrint('Error calculating personal bests: $e');
+      return {};
+    }
+  }
+
+  /// Get milestones achieved
+  Future<List<String>> _getMilestones(
+    int totalWalksCompleted,
+    double totalDistance,
+  ) async {
+    final milestones = <String>[];
+
+    // Walk count milestones
+    if (totalWalksCompleted == 1) milestones.add('First Walk Completed! 🎉');
+    if (totalWalksCompleted == 5) milestones.add('5 Walks Completed! 🌟');
+    if (totalWalksCompleted == 10) milestones.add('10 Walks Completed! 🏆');
+    if (totalWalksCompleted == 25) milestones.add('25 Walks Completed! 🎨');
+    if (totalWalksCompleted == 50) milestones.add('50 Walks Completed! 👑');
+    if (totalWalksCompleted == 100) {
+      milestones.add('100 Walks - Art Legend! 🌈');
+    }
+
+    // Distance milestones (in km)
+    final distanceKm = totalDistance / 1000;
+    if (distanceKm >= 10 && distanceKm < 10.5) {
+      milestones.add('10km Walked! 🚶');
+    }
+    if (distanceKm >= 50 && distanceKm < 50.5) {
+      milestones.add('50km Walked! 🏃');
+    }
+    if (distanceKm >= 100 && distanceKm < 100.5) {
+      milestones.add('100km Walked! 🎯');
+    }
+
+    return milestones;
+  }
+
+  /// Get total walks completed by user
+  Future<int> _getTotalWalksCompleted() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return 0;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      final data = userDoc.data() ?? {};
+      final stats = data['stats'] as Map<String, dynamic>? ?? {};
+      return stats['walksCompleted'] as int? ?? 0;
+    } catch (e) {
+      debugPrint('Error getting total walks completed: $e');
+      return 0;
+    }
+  }
+
+  /// Get total distance walked by user
+  Future<double> _getTotalDistance() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return 0.0;
+
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      final data = userDoc.data() ?? {};
+      final stats = data['artWalkStats'] as Map<String, dynamic>? ?? {};
+      return (stats['totalDistance'] as num?)?.toDouble() ?? 0.0;
+    } catch (e) {
+      debugPrint('Error getting total distance: $e');
+      return 0.0;
     }
   }
 

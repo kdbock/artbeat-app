@@ -5,6 +5,9 @@ import 'package:artbeat_ads/artbeat_ads.dart';
 import '../widgets/leaderboard_preview_widget.dart';
 
 import '../widgets/dashboard/dashboard_browse_section.dart';
+import '../widgets/dashboard/art_walk_hero_section.dart';
+import '../widgets/dashboard/live_activity_feed.dart';
+import '../widgets/dashboard/user_progress_card.dart';
 
 /// Artbeat Dashboard Screen - Refactored for better maintainability
 ///
@@ -90,14 +93,19 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
               parent: AlwaysScrollableScrollPhysics(),
             ),
             slivers: [
-              // 1. Hero Map Section (ARTbeat map hero)
+              // 1. Art Walk Hero Section (ARTbeat's star feature)
               SliverToBoxAdapter(
-                child: DashboardHeroSection(
-                  viewModel: viewModel,
+                child: ArtWalkHeroSection(
+                  onInstantDiscoveryTap: () => _navigateToArtWalk(context),
                   onProfileMenuTap: () => _showConnectMenu(context),
-                  onFindArtTap: () => _navigateToArtWalk(context),
                 ),
               ),
+
+              // 1.2. Live Activity Feed (social proof)
+              const SliverToBoxAdapter(child: LiveActivityFeed()),
+
+              // 1.3. User Progress Card (gamification)
+              const SliverToBoxAdapter(child: UserProgressCard()),
 
               // 1.5. Browse section (quick access to all content)
               SliverToBoxAdapter(
@@ -118,11 +126,11 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
               if (!viewModel.isAuthenticated)
                 const SliverToBoxAdapter(child: DashboardAppExplanation()),
 
-              // 3. Ad1
+              // 3. Ad1 - Home & Discovery Zone
               if (viewModel.isAuthenticated)
                 const SliverToBoxAdapter(
-                  child: RotatingAdPlacementWidget(
-                    location: AdLocation.fluidDashboard,
+                  child: ZoneAdPlacementWidget(
+                    zone: AdZone.homeDiscovery,
                     adIndex: 0, // Show first ad from rotation
                     showIfEmpty: true,
                   ),
@@ -143,19 +151,19 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
                 child: DashboardArtworkSection(viewModel: viewModel),
               ),
 
-              // 7. Ad2
+              // 7. Ad2 - Home & Discovery Zone
               const SliverToBoxAdapter(
-                child: RotatingAdPlacementWidget(
-                  location: AdLocation.fluidDashboard,
+                child: ZoneAdPlacementWidget(
+                  zone: AdZone.homeDiscovery,
                   adIndex: 1, // Show second ad from rotation
                   showIfEmpty: true,
                 ),
               ),
 
-              // 8. Ad3
+              // 8. Ad3 - Home & Discovery Zone
               const SliverToBoxAdapter(
-                child: RotatingAdPlacementWidget(
-                  location: AdLocation.fluidDashboard,
+                child: ZoneAdPlacementWidget(
+                  zone: AdZone.homeDiscovery,
                   adIndex: 2, // Show third ad from rotation
                   showIfEmpty: true,
                 ),
@@ -171,10 +179,10 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
                 child: DashboardCommunitySection(viewModel: viewModel),
               ),
 
-              // 11. Ad4
+              // 11. Ad4 - Home & Discovery Zone
               const SliverToBoxAdapter(
-                child: RotatingAdPlacementWidget(
-                  location: AdLocation.fluidDashboard,
+                child: ZoneAdPlacementWidget(
+                  zone: AdZone.homeDiscovery,
                   adIndex: 3, // Show fourth ad from rotation
                   showIfEmpty: true,
                 ),
@@ -185,19 +193,19 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
                 child: DashboardArtistCtaSection(viewModel: viewModel),
               ),
 
-              // 13. Ad5
+              // 13. Ad5 - Home & Discovery Zone
               const SliverToBoxAdapter(
-                child: RotatingAdPlacementWidget(
-                  location: AdLocation.fluidDashboard,
+                child: ZoneAdPlacementWidget(
+                  zone: AdZone.homeDiscovery,
                   adIndex: 4, // Show fifth ad from rotation
                   showIfEmpty: true,
                 ),
               ),
 
-              // 14. Ad6
+              // 14. Ad6 - Home & Discovery Zone
               const SliverToBoxAdapter(
-                child: RotatingAdPlacementWidget(
-                  location: AdLocation.fluidDashboard,
+                child: ZoneAdPlacementWidget(
+                  zone: AdZone.homeDiscovery,
                   adIndex: 5, // Show sixth ad from rotation
                   showIfEmpty: true,
                 ),

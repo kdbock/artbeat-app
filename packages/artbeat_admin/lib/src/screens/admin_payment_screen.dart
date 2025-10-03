@@ -5,7 +5,10 @@ import 'package:intl/intl.dart' as intl;
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/transaction_model.dart';
 import '../models/admin_permissions.dart';
@@ -306,7 +309,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
     if (result == true) {
       try {
-        final currentAdmin = _roleService.getCurrentAdmin();
+        final currentAdmin = await _roleService.getCurrentAdmin();
         if (currentAdmin == null) {
           _showErrorSnackBar('Admin authentication required');
           return;
@@ -371,7 +374,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
     }
 
     try {
-      final currentAdmin = _roleService.getCurrentAdmin();
+      final currentAdmin = await _roleService.getCurrentAdmin();
       if (currentAdmin == null) {
         _showErrorSnackBar('Admin authentication required');
         return;
@@ -415,7 +418,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
 
   Future<void> _exportTransactions() async {
     try {
-      final currentAdmin = _roleService.getCurrentAdmin();
+      final currentAdmin = await _roleService.getCurrentAdmin();
       if (currentAdmin == null) {
         _showErrorSnackBar('Admin authentication required');
         return;
@@ -471,7 +474,7 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
     }
 
     try {
-      final currentAdmin = _roleService.getCurrentAdmin();
+      final currentAdmin = await _roleService.getCurrentAdmin();
       if (currentAdmin == null) {
         _showErrorSnackBar('Admin authentication required');
         return;
@@ -1324,24 +1327,52 @@ class _AdminPaymentScreenState extends State<AdminPaymentScreen>
   Future<void> _downloadCsvFile(String csvContent, String fileName) async {
     try {
       if (kIsWeb) {
-        // TODO: Implement web CSV download using package:web
-        // For now, show the CSV content in a dialog for web users
-        if (mounted) {
-          showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('CSV Export'),
-              content: SingleChildScrollView(
-                child: SelectableText(csvContent),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
+        // Web implementation using data URL for download
+        final bytes = utf8.encode(csvContent);
+        final base64Data = base64Encode(bytes);
+        final dataUrl = 'data:text/csv;charset=utf-8;base64,$base64Data';
+
+        // Use url_launcher to open the data URL (triggers download)
+        if (await canLaunchUrl(Uri.parse(dataUrl))) {
+          await launchUrl(Uri.parse(dataUrl));
+        } else {
+          // Fallback: show content in dialog with copy option
+          if (mounted) {
+            showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text('Download $fileName'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Click below to copy CSV content:'),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(
+                            ClipboardData(text: csvContent));
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('CSV content copied to clipboard')),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.copy),
+                      label: const Text('Copy to Clipboard'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close'),
+                  ),
+                ],
+              ),
+            );
+          }
         }
       } else {
         // Mobile implementation using path_provider and share_plus

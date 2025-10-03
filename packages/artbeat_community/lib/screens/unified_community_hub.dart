@@ -1373,8 +1373,11 @@ class _CommunityDiscoverTabState extends State<CommunityDiscoverTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Unified community hub ad placement
-            const BannerAdWidget(location: AdLocation.unifiedCommunityHub),
+            // Community & Social Zone ad placement
+            const ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              showIfEmpty: true,
+            ),
             const SizedBox(height: 16),
 
             // Online Artists Section

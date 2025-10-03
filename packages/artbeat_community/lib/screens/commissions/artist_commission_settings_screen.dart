@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../models/direct_commission_model.dart';
 import '../../services/direct_commission_service.dart';
 import '../../theme/community_colors.dart';
@@ -16,12 +18,16 @@ class ArtistCommissionSettingsScreen extends StatefulWidget {
 class _ArtistCommissionSettingsScreenState
     extends State<ArtistCommissionSettingsScreen> {
   final DirectCommissionService _commissionService = DirectCommissionService();
+  final core.EnhancedStorageService _storageService =
+      core.EnhancedStorageService();
+  final ImagePicker _imagePicker = ImagePicker();
   final _formKey = GlobalKey<FormState>();
   final _basePriceController = TextEditingController();
   final _termsController = TextEditingController();
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isUploadingImage = false;
 
   // Form fields
   bool _acceptingCommissions = false;
@@ -665,9 +671,15 @@ Please contact me with any questions before placing your commission request.
                   ),
                 ),
                 OutlinedButton.icon(
-                  onPressed: _addPortfolioImage,
-                  icon: const Icon(Icons.add_photo_alternate),
-                  label: const Text('Add Image'),
+                  onPressed: _isUploadingImage ? null : _addPortfolioImage,
+                  icon: _isUploadingImage
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.add_photo_alternate),
+                  label: Text(_isUploadingImage ? 'Uploading...' : 'Add Image'),
                 ),
               ],
             ),
@@ -754,11 +766,83 @@ Please contact me with any questions before placing your commission request.
     );
   }
 
-  void _addPortfolioImage() {
-    // TODO: Implement image picker and upload
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Image upload coming soon!')));
+  Future<void> _addPortfolioImage() async {
+    try {
+      // Show image source selection dialog
+      final ImageSource? source = await showDialog<ImageSource>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Select Image Source'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Gallery'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Camera'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (source == null) return;
+
+      // Pick image
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      // Show loading indicator
+      setState(() => _isUploadingImage = true);
+
+      // Upload image to Firebase Storage
+      final imageFile = File(pickedFile.path);
+      final uploadResult = await _storageService.uploadImageWithOptimization(
+        imageFile: imageFile,
+        category: 'commission_portfolio',
+        generateThumbnail: true,
+      );
+
+      // Add image URL to portfolio
+      if (uploadResult['imageUrl'] != null) {
+        setState(() {
+          _portfolioImages.add(uploadResult['imageUrl']!);
+          _isUploadingImage = false;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Portfolio image uploaded successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isUploadingImage = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error uploading image: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   void _removePortfolioImage(int index) {

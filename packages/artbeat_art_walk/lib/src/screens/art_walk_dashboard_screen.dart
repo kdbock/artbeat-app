@@ -6,6 +6,8 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
+import '../services/social_service.dart';
 
 // Dashboard specific colors (using design system colors)
 class DashboardColors {
@@ -50,29 +52,76 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
   // Engagement boost state variables
   int _currentStreak = 0;
-  String? _featuredWalkTitle;
   int _activeWalkersNearby = 0;
-  List<String> _friendsRecentWalks = [];
-  String? _dailyChallenge;
-  int _dailyChallengeProgress = 0;
-  final int _dailyChallengeTarget = 3;
 
   final ArtWalkService _artWalkService = ArtWalkService();
   final AchievementService _achievementService = AchievementService();
   final UserService _userService = UserService();
   final CaptureService _captureService = CaptureService();
+  final InstantDiscoveryService _discoveryService = InstantDiscoveryService();
+  final SocialService _socialService = SocialService();
+
+  // Notification monitoring
+  StreamSubscription<Map<String, dynamic>>? _notificationSubscription;
+
+  // Instant Discovery state
+  int _nearbyArtCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadAllData();
+    _startNotificationMonitoring();
   }
 
   @override
   void dispose() {
     _isDisposed = true;
+    _notificationSubscription?.cancel();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  void _startNotificationMonitoring() {
+    // Start monitoring for nearby art notifications when we have location
+    if (_currentPosition != null) {
+      _notificationSubscription = _discoveryService
+          .monitorNearbyArtNotifications(
+            userPosition: _currentPosition!,
+            notificationRadiusMeters: 100, // Notify when art is within 100m
+            checkInterval: const Duration(
+              seconds: 30,
+            ), // Check every 30 seconds
+          )
+          .listen((notification) {
+            if (_isDisposed || !mounted) return;
+
+            // Handle notification - could show in-app notification or update UI
+            if (notification['type'] == 'nearby_art_discovered') {
+              // Update nearby art count if needed
+              setState(() {
+                // Could update UI to show notification or refresh nearby art count
+              });
+
+              // Show a brief snackbar notification
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🎨 ${notification['art']['title'] ?? 'Art'} is nearby! (${notification['distanceText']})',
+                  ),
+                  duration: const Duration(seconds: 3),
+                  action: SnackBarAction(
+                    label: 'View',
+                    onPressed: () {
+                      // Navigate to instant discovery radar
+                      Navigator.of(context).pushNamed('/instant-discovery');
+                    },
+                  ),
+                ),
+              );
+            }
+          });
+    }
   }
 
   Future<void> _loadAllData() async {
@@ -82,7 +131,24 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       _loadLocalCaptures(),
       _loadArtWalkAchievements(),
       _loadEngagementData(),
+      _loadNearbyArtCount(),
     ]);
+  }
+
+  Future<void> _loadNearbyArtCount() async {
+    try {
+      if (_currentPosition != null) {
+        final nearbyArt = await _discoveryService.getNearbyArt(
+          _currentPosition!,
+          radiusMeters: 500,
+        );
+        if (!_isDisposed && mounted) {
+          setState(() => _nearbyArtCount = nearbyArt.length);
+        }
+      }
+    } catch (e) {
+      // Silently fail - not critical
+    }
   }
 
   Future<void> _loadCurrentUser() async {
@@ -163,7 +229,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         _loadFeaturedWalk(),
         _loadActiveWalkersNearby(),
         _loadFriendsRecentWalks(),
-        _loadDailyChallenge(),
         _loadTrendingCaptures(),
       ]);
     } catch (e) {
@@ -185,9 +250,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
   Future<void> _loadFeaturedWalk() async {
     try {
       // Mock data for now - in real implementation, this would come from content service
-      if (!_isDisposed && mounted) {
-        setState(() => _featuredWalkTitle = 'Downtown Mural Discovery');
-      }
+      // Featured walk data loaded
     } catch (e) {
       // debugPrint('Error loading featured walk: $e');
     }
@@ -195,42 +258,27 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
   Future<void> _loadActiveWalkersNearby() async {
     try {
-      // Mock data for now - in real implementation, this would come from location service
-      if (!_isDisposed && mounted) {
-        setState(() => _activeWalkersNearby = 12);
+      if (_currentPosition != null) {
+        final count = await _socialService.getActiveWalkersNearby(
+          userPosition: _currentPosition!,
+        );
+        if (!_isDisposed && mounted) {
+          setState(() => _activeWalkersNearby = count);
+        }
       }
     } catch (e) {
-      // debugPrint('Error loading active walkers: $e');
+      // print('Error loading active walkers: $e');
     }
   }
 
   Future<void> _loadFriendsRecentWalks() async {
     try {
-      // Mock data for now - in real implementation, this would come from social service
-      if (!_isDisposed && mounted) {
-        setState(
-          () => _friendsRecentWalks = [
-            'Sarah completed: Street Art Adventure',
-            'Mike completed: Gallery District Walk',
-          ],
-        );
-      }
+      // For now, use empty friend list - in future this would come from user relationships
+      final friendIds = <String>[];
+      await _socialService.getFriendsRecentWalks(friendIds: friendIds);
+      // Friends walks data loaded
     } catch (e) {
-      // debugPrint('Error loading friends recent walks: $e');
-    }
-  }
-
-  Future<void> _loadDailyChallenge() async {
-    try {
-      // Mock data for now - in real implementation, this would come from challenge service
-      if (!_isDisposed && mounted) {
-        setState(() {
-          _dailyChallenge = 'Discover 3 new captures today for bonus XP';
-          _dailyChallengeProgress = 1; // User has completed 1 out of 3
-        });
-      }
-    } catch (e) {
-      // debugPrint('Error loading daily challenge: $e');
+      // print('Error loading friends recent walks: $e');
     }
   }
 
@@ -267,6 +315,12 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
       _currentPosition = _createPosition(latitude, longitude);
     });
     _updateMapMarkers();
+
+    // Load nearby art count for instant discovery
+    _loadNearbyArtCount();
+
+    // Start notification monitoring for nearby art
+    _startNotificationMonitoring();
 
     // Animate camera to new position
     if (_mapController != null && mounted) {
@@ -932,56 +986,28 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
               children: [
                 const SizedBox(height: 8),
 
-                // Hero Welcome Section
-                _buildHeroWelcomeSection(),
-                const SizedBox(height: 24),
+                // 1. Instant Discovery Hero Section (ARTbeat's star feature)
+                _buildInstantDiscoveryHeroSection(),
+                const SizedBox(height: 16),
 
-                // Quick Actions Dashboard
+                // 2. Activity & Progress (combined social proof + gamification)
+                _buildActivityAndProgressSection(),
+                const SizedBox(height: 16),
+
+                // 3. Quick Actions Dashboard
                 _buildQuickActionsDashboard(),
                 const SizedBox(height: 24),
 
-                // Local Art Captures (Prominent position)
-                _buildEnhancedCapturesWidget(),
+                // 4. Discover & Explore
+                _buildDiscoverAndExploreSection(),
                 const SizedBox(height: 24),
 
-                // Ad Space - Below Captures
+                // 7. Ad Space
                 const AdSpaceWidget(
                   location: AdLocation.artWalkDashboard,
                   customLabel: 'Discover Art Tools',
                   height: 80,
                   trackAnalytics: true,
-                ),
-                const SizedBox(height: 24),
-
-                // Interactive Map & Location
-                _buildInteractiveMapSection(),
-                const SizedBox(height: 24),
-
-                // Art Discovery Overview
-                _buildArtDiscoveryOverview(),
-                const SizedBox(height: 24),
-
-                // Sponsored Experiences Carousel
-                _buildSponsoredExperiencesCarousel(),
-                const SizedBox(height: 24),
-
-                // Ad Space - Below Local Art Captures
-                const AdSpaceWidget(
-                  location: AdLocation.artWalkDashboard,
-                  customLabel: 'Art Supplies & Events',
-                  height: 100,
-                  trackAnalytics: true,
-                ),
-                const SizedBox(height: 24),
-
-                // Art Walks & Achievements Row
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: _buildModernArtWalksWidget()),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildModernAchievementsWidget()),
-                  ],
                 ),
                 const SizedBox(height: 120),
               ],
@@ -992,7 +1018,575 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
-  // ==================== MODERN DESIGN METHODS ====================
+  // ==================== INSTANT DISCOVERY DASHBOARD METHODS ====================
+
+  Widget _buildInstantDiscoveryHeroSection() {
+    return Container(
+      decoration: _buildGlassDecoration(),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with radar icon
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color.fromARGB(
+                        255,
+                        255,
+                        165,
+                        137,
+                      ).withValues(alpha: 0.3),
+                      const Color.fromARGB(
+                        255,
+                        73,
+                        138,
+                        144,
+                      ).withValues(alpha: 0.3),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.radar, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Instant Discovery',
+                style: TextStyle(
+                  color: DashboardColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Dynamic messaging based on nearby art
+          _buildDynamicDiscoveryMessage(),
+
+          const SizedBox(height: 20),
+
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.explore,
+                  label: 'Start Discovery',
+                  color: DashboardColors.accentOrange,
+                  onTap: () => _navigateToInstantDiscovery(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.map,
+                  label: 'View Map',
+                  color: DashboardColors.primaryTeal,
+                  onTap: () => _showNearbyArtMap(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDynamicDiscoveryMessage() {
+    final artCount = _nearbyArtCount;
+    final activeUsers = _activeWalkersNearby;
+
+    String message;
+    String subMessage;
+
+    if (artCount == 0) {
+      message = "No art nearby right now";
+      subMessage = "Try moving to a different location or check back later";
+    } else if (artCount == 1) {
+      message = "1 artwork nearby!";
+      subMessage = "Perfect for a quick discovery";
+    } else if (artCount < 5) {
+      message = "$artCount artworks nearby!";
+      subMessage = "Great opportunity for discovery";
+    } else {
+      message = "$artCount artworks nearby!";
+      subMessage = "Amazing art scene around you";
+    }
+
+    if (activeUsers > 0) {
+      subMessage += " • $activeUsers active explorers";
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          message,
+          style: TextStyle(
+            color: DashboardColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subMessage,
+          style: TextStyle(color: DashboardColors.textSecondary, fontSize: 14),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityAndProgressSection() {
+    return Container(
+      decoration: _buildGlassDecoration(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with activity indicator
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.trending_up,
+                  color: Colors.green,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Activity & Progress',
+                style: TextStyle(
+                  color: DashboardColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Live Activity Feed (compact)
+          const SocialActivityFeed(maxItems: 1),
+          const SizedBox(height: 16),
+
+          // Quick Progress Stats
+          Row(
+            children: [
+              // Current streak
+              Expanded(
+                child: _buildCompactStatCard(
+                  icon: Icons.local_fire_department,
+                  iconColor: Colors.orange,
+                  value: '$_currentStreak',
+                  label: 'Streak',
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Total discoveries
+              Expanded(
+                child: _buildCompactStatCard(
+                  icon: Icons.explore,
+                  iconColor: Colors.blue,
+                  value: '${_localCaptures.length}',
+                  label: 'Found',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompactStatCard({
+    required IconData icon,
+    required Color iconColor,
+    required String value,
+    required String label,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 16),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  color: DashboardColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                label,
+                style: TextStyle(
+                  color: DashboardColors.textSecondary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiscoverAndExploreSection() {
+    return Container(
+      decoration: _buildGlassDecoration(),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: DashboardColors.primaryTeal.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.explore,
+                  color: DashboardColors.primaryTeal,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Discover & Explore',
+                style: TextStyle(
+                  color: DashboardColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Nearby Art Clusters
+          if (_localCaptures.isEmpty)
+            _buildEmptyClustersState()
+          else
+            _buildClustersList(),
+
+          const SizedBox(height: 16),
+
+          // Recent Achievements (compact)
+          if (_artWalkAchievements.isNotEmpty) ...[
+            Text(
+              'Recent Achievements',
+              style: TextStyle(
+                color: DashboardColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _buildCompactAchievementsList(),
+          ] else
+            _buildEmptyAchievementsState(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyClustersState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.location_searching,
+            color: Colors.white.withValues(alpha: 0.5),
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No art clusters nearby',
+            style: TextStyle(color: DashboardColors.textPrimary, fontSize: 16),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Move around to discover art in your area',
+            style: TextStyle(
+              color: DashboardColors.textSecondary,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClustersList() {
+    // Group captures by location/area
+    final clusters = _groupCapturesByLocation();
+
+    return Column(
+      children: clusters.entries.map((entry) {
+        final locationName = entry.key;
+        final captures = entry.value;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: DashboardColors.accentOrange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '${captures.length}',
+                    style: const TextStyle(
+                      color: DashboardColors.accentOrange,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      locationName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      '${captures.length} artwork${captures.length == 1 ? '' : 's'}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () => _navigateToLocation(locationName, captures),
+                icon: const Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Map<String, List<CaptureModel>> _groupCapturesByLocation() {
+    final clusters = <String, List<CaptureModel>>{};
+
+    for (final capture in _localCaptures) {
+      final locationName = capture.locationName ?? 'Unknown Location';
+      if (!clusters.containsKey(locationName)) {
+        clusters[locationName] = [];
+      }
+      clusters[locationName]!.add(capture);
+    }
+
+    return clusters;
+  }
+
+  Widget _buildCompactAchievementsList() {
+    return Column(
+      children: _artWalkAchievements.take(2).map((achievement) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 6),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.grey.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.emoji_events,
+                  color: Colors.amber,
+                  size: 12,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  achievement.title,
+                  style: TextStyle(
+                    color: DashboardColors.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // ==================== NAVIGATION METHODS ====================
+
+  void _navigateToInstantDiscovery() {
+    Navigator.pushNamed(context, '/art-walk/instant-discovery');
+  }
+
+  void _showNearbyArtMap() {
+    // Show map modal or navigate to map view
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _buildMapModal(),
+    );
+  }
+
+  void _navigateToLocation(String locationName, List<CaptureModel> captures) {
+    // Navigate to location-specific view or show captures for that location
+    Navigator.pushNamed(
+      context,
+      '/art-walk/location',
+      arguments: {'locationName': locationName, 'captures': captures},
+    );
+  }
+
+  Widget _buildMapModal() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.8,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Title
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Nearby Art Map',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
+            ),
+
+            // Map content
+            Expanded(child: _buildInteractiveMapSection()),
+          ],
+        ),
+      ),
+    );
+  }
 
   BoxDecoration _buildBackgroundDecoration() {
     return const BoxDecoration(
@@ -1012,393 +1606,16 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
 
   BoxDecoration _buildGlassDecoration() {
     return BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.15),
+      color: Colors.white.withValues(alpha: 0.18),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
       boxShadow: [
         BoxShadow(
-          color: DashboardColors.primaryTeal.withValues(alpha: 0.1),
+          color: DashboardColors.primaryTeal.withValues(alpha: 0.15),
           blurRadius: 20,
           offset: const Offset(0, 10),
         ),
       ],
-    );
-  }
-
-  Widget _buildHeroWelcomeSection() {
-    final userName =
-        _currentUser?.fullName ??
-        _currentUser?.email.split('@').first ??
-        'Traveler';
-    final timeOfDay = DateTime.now().hour;
-    final String greeting = timeOfDay < 12
-        ? 'Good Morning'
-        : timeOfDay < 17
-        ? 'Good Afternoon'
-        : 'Good Evening';
-
-    return Container(
-      decoration: _buildGlassDecoration(),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      DashboardColors.accentOrange.withValues(alpha: 0.3),
-                      DashboardColors.primaryTeal.withValues(alpha: 0.3),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(Icons.palette, color: Colors.white, size: 28),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$greeting, $userName!',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: DashboardColors.headingDarkPurple,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Where will art take you today?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Location Search with modern design
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-            ),
-            child: ZipCodeSearchBox(
-              initialValue: _currentUser?.zipCode ?? '',
-              onZipCodeSubmitted: (zipCode) async {
-                try {
-                  final coordinates =
-                      await LocationUtils.getCoordinatesFromZipCode(zipCode);
-                  if (coordinates != null && mounted) {
-                    _updateMapPosition(
-                      coordinates.latitude,
-                      coordinates.longitude,
-                    );
-                    await _loadLocalCaptures();
-                    if (_currentUser != null) {
-                      setState(
-                        () => _currentUser = _currentUser!.copyWith(
-                          zipCode: zipCode,
-                        ),
-                      );
-                    }
-                  } else {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Could not find location for this ZIP code',
-                          ),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error searching ZIP code: $e'),
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
-                }
-              },
-              onNavigateToMap: () {
-                Navigator.pushNamed(context, '/art-walk/map');
-              },
-              isLoading: false,
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Streak Counter and Featured Walk Row
-          LayoutBuilder(
-            builder: (context, constraints) {
-              // Use Column layout on smaller screens to prevent overflow
-              final useColumnLayout = constraints.maxWidth < 400;
-
-              if (useColumnLayout) {
-                return Column(
-                  children: [
-                    // Streak Counter
-                    if (_currentStreak > 0) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: DashboardColors.accentOrange.withValues(
-                                  alpha: 0.3,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.local_fire_department,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '$_currentStreak Day Streak',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Keep it up!',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-
-                    // Featured Walk
-                    if (_featuredWalkTitle != null) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: DashboardColors.primaryTeal.withValues(
-                                  alpha: 0.3,
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.star,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Featured Walk',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                  Text(
-                                    _featuredWalkTitle!,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              } else {
-                // Use Row layout on larger screens
-                return Row(
-                  children: [
-                    // Streak Counter
-                    if (_currentStreak > 0) ...[
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: DashboardColors.accentOrange
-                                      .withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.local_fire_department,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Flexible(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '$_currentStreak Day Streak',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    Text(
-                                      'Keep it up!',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white.withValues(
-                                          alpha: 0.8,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-
-                    // Featured Walk
-                    if (_featuredWalkTitle != null) ...[
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: DashboardColors.primaryTeal.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.star,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Featured Walk',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                    Text(
-                                      _featuredWalkTitle!,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                );
-              }
-            },
-          ),
-        ],
-      ),
     );
   }
 
@@ -1420,12 +1637,7 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             DashboardColors.accentOrange,
             () => Navigator.pushNamed(context, '/art-walk/create'),
           ),
-          _buildQuickActionCard(
-            'Discover Art',
-            Icons.explore_rounded,
-            DashboardColors.primaryTeal,
-            () => Navigator.pushNamed(context, '/capture/public'),
-          ),
+          _buildInstantDiscoveryCard(),
           _buildSponsoredQuickActionCard(
             'Sponsored Walk',
             Icons.local_cafe_rounded,
@@ -1486,7 +1698,94 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
                 Flexible(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: DashboardColors.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstantDiscoveryCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: DashboardColors.primaryTeal.withValues(alpha: 0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _openInstantDiscovery,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: DashboardColors.primaryTeal.withValues(
+                          alpha: 0.2,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.radar,
+                        size: 16,
+                        color: DashboardColors.primaryTeal,
+                      ),
+                    ),
+                    if (_nearbyArtCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: DashboardColors.accentOrange,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 1),
+                          ),
+                          child: Text(
+                            '$_nearbyArtCount',
+                            style: const TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Flexible(
+                  child: Text(
+                    'Instant Discovery',
+                    style: TextStyle(
                       fontSize: 8,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -1596,6 +1895,63 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openInstantDiscovery() async {
+    if (_currentPosition == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Getting your location...'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Get nearby art
+      final nearbyArt = await _discoveryService.getNearbyArt(
+        _currentPosition!,
+        radiusMeters: 500,
+      );
+
+      if (!mounted) return;
+
+      if (nearbyArt.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No art nearby. Try moving to a different location!'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
+
+      // Navigate to radar screen
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute<dynamic>(
+          builder: (context) => InstantDiscoveryRadarScreen(
+            userPosition: _currentPosition!,
+            initialNearbyArt: nearbyArt,
+          ),
+        ),
+      );
+
+      // Refresh nearby art count if discoveries were made
+      if (result == true && mounted) {
+        _loadNearbyArtCount();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading nearby art: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showSponsoredWalkDialog() {
@@ -1714,297 +2070,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
-  Widget _buildArtDiscoveryOverview() {
-    return Container(
-      decoration: _buildGlassDecoration(),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.analytics_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Your Art Journey',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: DashboardColors.headingDarkPurple,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Local Art',
-                  _localCaptures.length.toString(),
-                  Icons.location_on_rounded,
-                  DashboardColors.primaryTeal,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCard(
-                  'Achievements',
-                  _artWalkAchievements.length.toString(),
-                  Icons.emoji_events_rounded,
-                  DashboardColors.accentOrange,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Social Proof Section
-          if (_activeWalkersNearby > 0) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: DashboardColors.primaryTeal.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.people,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '$_activeWalkersNearby people are exploring art nearby right now',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Daily Challenge Section
-          if (_dailyChallenge != null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: DashboardColors.accentOrange.withValues(
-                            alpha: 0.3,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.flag,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Daily Challenge',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        '$_dailyChallengeProgress/$_dailyChallengeTarget',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    _dailyChallenge!,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Progress bar
-                  Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor:
-                          _dailyChallengeProgress / _dailyChallengeTarget,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: DashboardColors.accentOrange,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Friends Recent Walks
-          if (_friendsRecentWalks.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: DashboardColors.primaryTealLight.withValues(
-                            alpha: 0.3,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.group,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Friends Activity',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ...(_friendsRecentWalks
-                      .take(2)
-                      .map(
-                        (walk) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            walk,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                          ),
-                        ),
-                      )),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 24, color: color),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildInteractiveMapSection() {
     return Container(
       decoration: _buildGlassDecoration(),
@@ -2094,643 +2159,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
-  Widget _buildEnhancedCapturesWidget() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            DashboardColors.primaryTeal.withValues(alpha: 0.1),
-            DashboardColors.accentOrange.withValues(alpha: 0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: DashboardColors.primaryTeal.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildEnhancedSectionHeader(),
-            const SizedBox(height: 20),
-            _buildEnhancedCapturesContent(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEnhancedSectionHeader() {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                DashboardColors.accentOrange.withValues(alpha: 0.3),
-                DashboardColors.primaryTeal.withValues(alpha: 0.3),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(Icons.camera_alt, color: Colors.white, size: 24),
-        ),
-        const SizedBox(width: 16),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Local Art Captures',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: DashboardColors.headingDarkPurple,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              Text(
-                'Discover amazing street art, murals, and sculptures found by our community',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                  height: 1.3,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (_localCaptures.isNotEmpty)
-          Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  DashboardColors.primaryTeal,
-                  DashboardColors.accentOrange,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => Navigator.pushNamed(context, '/capture/public'),
-                borderRadius: BorderRadius.circular(25),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.explore, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text(
-                        'Explore All',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildEnhancedCapturesContent() {
-    if (_localCaptures.isEmpty) {
-      return _buildEnhancedEmptyState();
-    }
-
-    return SizedBox(
-      height: 280, // Increased height for better showcase
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: _localCaptures.length,
-        itemBuilder: (context, index) {
-          final capture = _localCaptures[index];
-          return Padding(
-            padding: EdgeInsets.only(
-              left: index == 0 ? 0 : 16, // Increased spacing
-              right: index == _localCaptures.length - 1 ? 0 : 0,
-            ),
-            child: _buildEnhancedCaptureCard(capture, index),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEnhancedEmptyState() {
-    return Container(
-      height: 280,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.photo_camera_outlined,
-              color: Colors.white70,
-              size: 48,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'No captures yet',
-              style: TextStyle(
-                color: DashboardColors.headingDarkPurple,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.3,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Be the first to discover and share amazing local art!',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                height: 1.3,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    DashboardColors.primaryTeal,
-                    DashboardColors.accentOrange,
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(25),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => Navigator.pushNamed(context, '/capture/create'),
-                  borderRadius: BorderRadius.circular(25),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.add_a_photo, color: Colors.white, size: 18),
-                        SizedBox(width: 8),
-                        Text(
-                          'Add Capture',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Enhanced capture card with modern design and better engagement
-  Widget _buildEnhancedCaptureCard(CaptureModel capture, int index) {
-    return TweenAnimationBuilder<double>(
-      duration: Duration(
-        milliseconds: 300 + (index * 100),
-      ), // Staggered animation
-      tween: Tween(begin: 0.0, end: 1.0),
-      builder: (context, value, child) {
-        return Transform.translate(
-          offset: Offset(0, 20 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: SizedBox(
-              width: 200, // Wider cards for better showcase
-              child: Hero(
-                tag: 'capture_${capture.id}',
-                child: Material(
-                  elevation: 8,
-                  borderRadius: BorderRadius.circular(20),
-                  shadowColor: DashboardColors.primaryTeal.withValues(
-                    alpha: 0.3,
-                  ),
-                  child: InkWell(
-                    onTap: () => _showCaptureDetails(capture),
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.white, Colors.grey.shade50],
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Enhanced image section with overlay
-                          Expanded(
-                            flex: 7, // More space for the image
-                            child: Stack(
-                              children: [
-                                // Main image
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(20),
-                                  ),
-                                  child: Container(
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: DashboardColors
-                                          .backgroundGradientStart,
-                                      image:
-                                          ImageUrlValidator.isValidImageUrl(
-                                            capture.imageUrl,
-                                          )
-                                          ? DecorationImage(
-                                              image: NetworkImage(
-                                                capture.imageUrl,
-                                              ),
-                                              fit: BoxFit.cover,
-                                            )
-                                          : null,
-                                    ),
-                                    child:
-                                        !ImageUrlValidator.isValidImageUrl(
-                                          capture.imageUrl,
-                                        )
-                                        ? const Icon(
-                                            Icons.palette,
-                                            color: DashboardColors.primaryTeal,
-                                            size: 48,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-
-                                // Gradient overlay for better text readability
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(20),
-                                      ),
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.transparent,
-                                          Colors.black.withValues(alpha: 0.7),
-                                        ],
-                                        stops: const [0.6, 1.0],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                                // Floating engagement actions
-                                Positioned(
-                                  top: 12,
-                                  right: 12,
-                                  child: Column(
-                                    children: [
-                                      _buildFloatingActionButton(
-                                        icon: Icons.favorite_border,
-                                        color: DashboardColors.accentOrange,
-                                        onTap: () => _handleLike(capture),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      _buildFloatingActionButton(
-                                        icon: Icons.share_outlined,
-                                        color: DashboardColors.primaryTeal,
-                                        onTap: () => _handleShare(capture),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // Location badge
-                                if (capture.locationName?.isNotEmpty == true)
-                                  Positioned(
-                                    bottom: 12,
-                                    left: 12,
-                                    right: 12,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on,
-                                            size: 14,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              capture.locationName!,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-
-                          // Content section
-                          Expanded(
-                            flex: 3,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Title with better typography
-                                  Text(
-                                    capture.title?.isNotEmpty == true
-                                        ? capture.title!
-                                        : 'Untitled Artwork',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: DashboardColors.textPrimary,
-                                      height: 1.1,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-
-                                  const SizedBox(height: 4),
-
-                                  // Call to action
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          DashboardColors.primaryTeal,
-                                          DashboardColors.accentOrange,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.explore,
-                                          size: 12,
-                                          color: Colors.white,
-                                        ),
-                                        SizedBox(width: 3),
-                                        Text(
-                                          'Discover',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFloatingActionButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
-          child: Icon(icon, size: 18, color: color),
-        ),
-      ),
-    );
-  }
-
-  void _handleLike(CaptureModel capture) {
-    // TODO: Implement like functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Liked ${capture.title ?? 'artwork'}!'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _handleShare(CaptureModel capture) {
-    // TODO: Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Shared ${capture.title ?? 'artwork'}!'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  Widget _buildModernArtWalksWidget() {
-    return Container(
-      decoration: _buildGlassDecoration(),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.route_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Art Walks',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: DashboardColors.headingDarkPurple,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LocalArtWalkPreviewWidget(
-            zipCode: _currentUser?.zipCode ?? '10001',
-            onSeeAllPressed: () =>
-                Navigator.pushNamed(context, '/art-walk/list'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModernAchievementsWidget() {
-    return Container(
-      decoration: _buildGlassDecoration(),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.emoji_events_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'Achievements',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: DashboardColors.headingDarkPurple,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          AchievementsGrid(
-            achievements: _artWalkAchievements,
-            onAchievementTap: (achievement) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Achievement: ${achievement.title}'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildModernButton(
     String label,
     IconData icon,
@@ -2766,232 +2194,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildSponsoredExperiencesCarousel() {
-    final sponsoredExperiences = [
-      {
-        'title': 'Art & Wine Evening',
-        'sponsor': 'Vineyard Gallery',
-        'description': 'Combine art discovery with wine tasting',
-        'discount': '20% off wine flights',
-        'icon': Icons.wine_bar,
-        'color': const Color(0xFF7B1FA2),
-      },
-      {
-        'title': 'Photography Workshop',
-        'sponsor': 'Camera Corner',
-        'description': 'Learn to capture street art like a pro',
-        'discount': 'Free lens rental',
-        'icon': Icons.camera_alt,
-        'color': const Color(0xFF1976D2),
-      },
-      {
-        'title': 'Artisan Market Walk',
-        'sponsor': 'Local Makers Co.',
-        'description': 'Meet artists and see works in progress',
-        'discount': '15% off purchases',
-        'icon': Icons.palette,
-        'color': const Color(0xFF388E3C),
-      },
-    ];
-
-    return Container(
-      decoration: _buildGlassDecoration(),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.local_offer,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Sponsored Experiences',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: DashboardColors.headingDarkPurple,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'NEW',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 180,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: sponsoredExperiences.length,
-              itemBuilder: (context, index) {
-                final experience = sponsoredExperiences[index];
-                return Container(
-                  width: 280,
-                  margin: EdgeInsets.only(
-                    right: index < sponsoredExperiences.length - 1 ? 16 : 0,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: (experience['color'] as Color).withValues(
-                        alpha: 0.3,
-                      ),
-                      width: 2,
-                    ),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _showSponsoredExperienceDialog(experience),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: (experience['color'] as Color)
-                                        .withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    experience['icon'] as IconData,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        experience['title'] as String,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        'by ${experience['sponsor']}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.white.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Icon(
-                                    Icons.star,
-                                    size: 12,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              experience['description'] as String,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white.withValues(alpha: 0.9),
-                                height: 1.3,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: (experience['color'] as Color)
-                                    .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: (experience['color'] as Color)
-                                      .withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.local_offer,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    experience['discount'] as String,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -3179,159 +2381,6 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
     );
   }
 
-  void _showSponsoredExperienceDialog(Map<String, dynamic> experience) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: (experience['color'] as Color).withValues(
-                      alpha: 0.1,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    experience['icon'] as IconData,
-                    size: 32,
-                    color: experience['color'] as Color,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  experience['title'] as String,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Sponsored by ${experience['sponsor']}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  experience['description'] as String,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: (experience['color'] as Color).withValues(
-                      alpha: 0.1,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: (experience['color'] as Color).withValues(
-                        alpha: 0.2,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.local_offer,
-                        size: 20,
-                        color: experience['color'] as Color,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        experience['discount'] as String,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: experience['color'] as Color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          'Not Now',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(
-                            context,
-                            '/art-walk/create',
-                            arguments: {
-                              'sponsoredExperience': experience['title'],
-                            },
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: experience['color'] as Color,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Join Experience',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildWebMapFallback() {
     return Container(
       height: 200,
@@ -3367,6 +2416,44 @@ class _ArtWalkDashboardScreenState extends State<ArtWalkDashboardScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyAchievementsState() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: DashboardColors.cardBackground.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.emoji_events_outlined,
+            color: DashboardColors.accentOrange.withValues(alpha: 0.5),
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Your achievement gallery awaits!',
+            style: TextStyle(
+              color: DashboardColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Start discovering art to unlock amazing achievements',
+            style: TextStyle(
+              color: DashboardColors.textSecondary,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

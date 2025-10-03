@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/models.dart';
+import '../services/settings_service.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
@@ -12,24 +14,55 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   SecuritySettingsModel? _securitySettings;
   bool _isLoading = true;
   bool _isSaving = false;
+  late final SettingsService _settingsService;
+  late final FirebaseAuth _auth;
 
   @override
   void initState() {
     super.initState();
+    _settingsService = SettingsService();
+    _auth = FirebaseAuth.instance;
     _loadSecuritySettings();
   }
 
   Future<void> _loadSecuritySettings() async {
     try {
-      // TODO: Implement actual service call
-      final settings = SecuritySettingsModel.defaultSettings('user123');
-      setState(() {
-        _securitySettings = settings;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Load settings from Firestore
+      final settingsData = await _settingsService.getUserSettings();
+      final securityData =
+          settingsData['securitySettings'] as Map<String, dynamic>?;
+
+      SecuritySettingsModel settings;
+      if (securityData != null) {
+        // Parse existing security settings
+        settings = SecuritySettingsModel.fromMap({
+          'userId': userId,
+          'twoFactor': securityData['twoFactor'] ?? <String, dynamic>{},
+          'login': securityData['login'] ?? <String, dynamic>{},
+          'password': securityData['password'] ?? <String, dynamic>{},
+          'devices': securityData['devices'] ?? <String, dynamic>{},
+          'updatedAt':
+              securityData['updatedAt'] ?? DateTime.now().toIso8601String(),
+        });
+      } else {
+        // Create default settings
+        settings = SecuritySettingsModel.defaultSettings(userId);
+      }
+
       if (mounted) {
+        setState(() {
+          _securitySettings = settings;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load security settings: $e')),
         );
@@ -40,20 +73,24 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   Future<void> _updateSecuritySettings(SecuritySettingsModel settings) async {
     setState(() => _isSaving = true);
     try {
-      // TODO: Implement actual service call
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      setState(() {
-        _securitySettings = settings;
-        _isSaving = false;
-      });
+      // Save security settings to Firestore
+      await _settingsService.updateSetting(
+        'securitySettings',
+        settings.toMap(),
+      );
+
       if (mounted) {
+        setState(() {
+          _securitySettings = settings;
+          _isSaving = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Security settings updated')),
         );
       }
     } catch (e) {
-      setState(() => _isSaving = false);
       if (mounted) {
+        setState(() => _isSaving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update settings: $e')),
         );
@@ -446,28 +483,218 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   }
 
   void _showChangePasswordDialog() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    bool obscureCurrentPassword = true;
+    bool obscureNewPassword = true;
+    bool obscureConfirmPassword = true;
+
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change Password'),
-        content: const Text(
-          'You will be redirected to a secure password change form.',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Change Password'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: currentPasswordController,
+                  obscureText: obscureCurrentPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Current Password',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureCurrentPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscureCurrentPassword = !obscureCurrentPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: newPasswordController,
+                  obscureText: obscureNewPassword,
+                  decoration: InputDecoration(
+                    labelText: 'New Password',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureNewPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscureNewPassword = !obscureNewPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: obscureConfirmPassword,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm New Password',
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscureConfirmPassword = !obscureConfirmPassword;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                currentPasswordController.dispose();
+                newPasswordController.dispose();
+                confirmPasswordController.dispose();
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final currentPassword = currentPasswordController.text.trim();
+                final newPassword = newPasswordController.text.trim();
+                final confirmPassword = confirmPasswordController.text.trim();
+
+                // Validate inputs
+                if (currentPassword.isEmpty ||
+                    newPassword.isEmpty ||
+                    confirmPassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all fields')),
+                  );
+                  return;
+                }
+
+                if (newPassword != confirmPassword) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('New passwords do not match')),
+                  );
+                  return;
+                }
+
+                // Validate password requirements
+                if (_securitySettings != null &&
+                    !_securitySettings!.password.validatePassword(
+                      newPassword,
+                    )) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Password does not meet security requirements',
+                      ),
+                    ),
+                  );
+                  return;
+                }
+
+                // Close dialog and show loading
+                currentPasswordController.dispose();
+                newPasswordController.dispose();
+                confirmPasswordController.dispose();
+                Navigator.pop(context);
+
+                // Change password using Firebase Auth
+                await _changePassword(currentPassword, newPassword);
+              },
+              child: const Text('Change Password'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Navigate to password change screen
-            },
-            child: const Text('Continue'),
-          ),
-        ],
       ),
     );
+  }
+
+  Future<void> _changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Re-authenticate user with current password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+
+      // Update password change timestamp in security settings
+      if (_securitySettings != null) {
+        final updatedSettings = _securitySettings!.copyWith(
+          password: _securitySettings!.password.copyWith(
+            lastChanged: DateTime.now(),
+          ),
+        );
+        await _updateSecuritySettings(updatedSettings);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password changed successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Failed to change password';
+      if (e.code == 'wrong-password') {
+        errorMessage = 'Current password is incorrect';
+      } else if (e.code == 'weak-password') {
+        errorMessage = 'New password is too weak';
+      } else if (e.code == 'requires-recent-login') {
+        errorMessage =
+            'Please log out and log in again before changing password';
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
   }
 
   void _showDevicesDialog() {

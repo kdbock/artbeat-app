@@ -20,3 +20,8 @@ export 'public_art_search_filter.dart';
 export 'turn_by_turn_navigation_widget.dart';
 export 'zip_code_search_box.dart';
 export 'progress_cards.dart';
+export 'instant_discovery_radar.dart';
+export 'discovery_capture_modal.dart';
+export 'daily_quest_card.dart';
+export 'social_activity_feed.dart';
+export 'weekly_goals_card.dart';

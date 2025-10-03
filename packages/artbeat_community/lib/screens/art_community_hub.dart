@@ -9,6 +9,7 @@ import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'artist_onboarding_screen.dart';
+import 'feed/comments_screen.dart';
 import 'feed/create_post_screen.dart';
 import 'feed/enhanced_community_feed_screen.dart';
 import 'package:artbeat_artist/src/screens/artist_public_profile_screen.dart';
@@ -421,10 +422,220 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
   }
 
   void _handlePostTap(PostModel post) {
-    // TODO: Navigate to post detail
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Post: ${post.content}')));
+    _showPostDetailDialog(post);
+  }
+
+  void _showPostDetailDialog(PostModel post) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with user info and close button
+              Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: post.userPhotoUrl.isNotEmpty
+                        ? NetworkImage(post.userPhotoUrl)
+                        : null,
+                    child: post.userPhotoUrl.isEmpty
+                        ? Text(post.userName[0].toUpperCase())
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.userName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          _formatPostTime(post.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Post content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Post text
+                      Text(post.content, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 16),
+
+                      // Images
+                      if (post.imageUrls.isNotEmpty) ...[
+                        SizedBox(
+                          height: 200,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: post.imageUrls.length,
+                            itemBuilder: (context, index) => Container(
+                              width: 200,
+                              margin: const EdgeInsets.only(right: 8),
+                              child: Image.network(
+                                post.imageUrls[index],
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Location
+                      if (post.location.isNotEmpty) ...[
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              post.location,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+
+                      // Tags
+                      if (post.tags.isNotEmpty) ...[
+                        Wrap(
+                          spacing: 8,
+                          children: post.tags
+                              .map(
+                                (tag) => Chip(
+                                  label: Text('#$tag'),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor.withValues(alpha: 0.1),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Engagement stats
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.favorite,
+                            size: 16,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(width: 4),
+                          Text('${post.likesCount}'),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.comment, size: 16),
+                          const SizedBox(width: 4),
+                          Text('${post.commentsCount}'),
+                          const SizedBox(width: 16),
+                          const Icon(Icons.share, size: 16),
+                          const SizedBox(width: 4),
+                          Text('${post.sharesCount}'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Action buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _handleLike(post);
+                    },
+                    icon: Icon(
+                      post.isLikedByCurrentUser
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: post.isLikedByCurrentUser ? Colors.red : null,
+                    ),
+                    label: const Text('Like'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Navigate to comments screen
+                      Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) => CommentsScreen(post: post),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.comment),
+                    label: const Text('Comment'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Implement share functionality
+                      _handleShare(post);
+                    },
+                    icon: const Icon(Icons.share),
+                    label: const Text('Share'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatPostTime(DateTime postTime) {
+    final now = DateTime.now();
+    final difference = now.difference(postTime);
+
+    if (difference.inDays > 365) {
+      final years = (difference.inDays / 365).floor();
+      return '$years year${years > 1 ? 's' : ''} ago';
+    } else if (difference.inDays > 30) {
+      final months = (difference.inDays / 30).floor();
+      return '$months month${months > 1 ? 's' : ''} ago';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   void _handleLike(PostModel post) async {

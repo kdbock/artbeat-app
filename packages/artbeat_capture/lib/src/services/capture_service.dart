@@ -145,6 +145,16 @@ class CaptureService {
   /// Save capture to publicArt collection for art walks
   Future<void> _saveToPublicArt(CaptureModel capture) async {
     try {
+      // Create geo field for GeoFlutterFire geospatial queries
+      final Map<String, dynamic> geoData = {};
+      if (capture.location != null) {
+        final geoPoint = capture.location!;
+        geoData['geo'] = {
+          'geohash': _generateGeohash(geoPoint.latitude, geoPoint.longitude),
+          'geopoint': geoPoint,
+        };
+      }
+
       await _publicArtRef.doc(capture.id).set({
         'userId': capture.userId,
         'title': capture.title ?? 'Untitled',
@@ -164,11 +174,57 @@ class CaptureService {
         'createdAt': capture.createdAt,
         'updatedAt': capture.updatedAt,
         'captureId': capture.id, // Reference to original capture
+        ...geoData, // Add geo field for geospatial queries
       });
       AppLogger.info('✅ Saved capture ${capture.id} to publicArt collection');
     } catch (e) {
       AppLogger.error('❌ Error saving to publicArt collection: $e');
     }
+  }
+
+  /// Generate geohash for a location (simple implementation)
+  /// For production, consider using a proper geohash library
+  String _generateGeohash(double latitude, double longitude) {
+    // Simple geohash generation (9 characters precision ~4.8m x 4.8m)
+    const base32 = '0123456789bcdefghjkmnpqrstuvwxyz';
+    final latRange = [-90.0, 90.0];
+    final lonRange = [-180.0, 180.0];
+    var hash = '';
+    var isEven = true;
+    var bit = 0;
+    var ch = 0;
+
+    while (hash.length < 9) {
+      if (isEven) {
+        final mid = (lonRange[0] + lonRange[1]) / 2;
+        if (longitude > mid) {
+          ch |= (1 << (4 - bit));
+          lonRange[0] = mid;
+        } else {
+          lonRange[1] = mid;
+        }
+      } else {
+        final mid = (latRange[0] + latRange[1]) / 2;
+        if (latitude > mid) {
+          ch |= (1 << (4 - bit));
+          latRange[0] = mid;
+        } else {
+          latRange[1] = mid;
+        }
+      }
+
+      isEven = !isEven;
+
+      if (bit < 4) {
+        bit++;
+      } else {
+        hash += base32[ch];
+        bit = 0;
+        ch = 0;
+      }
+    }
+
+    return hash;
   }
 
   /// Create a new capture

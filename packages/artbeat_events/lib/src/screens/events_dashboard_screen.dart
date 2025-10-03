@@ -472,8 +472,11 @@ class _EventsDashboardScreenState extends State<EventsDashboardScreen> {
                 _buildHeroSection(context, currentUser),
                 const SizedBox(height: 16),
 
-                // Event dashboard ad placement
-                const BannerAdWidget(location: AdLocation.eventDashboard),
+                // Events & Experiences Zone ad placement
+                const ZoneAdPlacementWidget(
+                  zone: AdZone.events,
+                  showIfEmpty: true,
+                ),
                 const SizedBox(height: 24),
 
                 // Quick Actions

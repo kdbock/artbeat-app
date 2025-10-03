@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
 import '../theme/artbeat_colors.dart';
@@ -8,14 +9,60 @@ import '../theme/artbeat_colors.dart';
 /// This widget appears at the bottom of dashboard screens to encourage
 /// non-artist users to explore subscription options and become artists.
 /// It's the entry point to the subscription process.
-class ArtistCTAWidget extends StatelessWidget {
+class ArtistCTAWidget extends StatefulWidget {
   final VoidCallback? onTap;
   final bool showDismiss;
 
   const ArtistCTAWidget({super.key, this.onTap, this.showDismiss = true});
 
   @override
+  State<ArtistCTAWidget> createState() => _ArtistCTAWidgetState();
+}
+
+class _ArtistCTAWidgetState extends State<ArtistCTAWidget> {
+  static const String _dismissedKey = 'artist_cta_dismissed';
+  bool _isDismissed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDismissedState();
+  }
+
+  Future<void> _loadDismissedState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (mounted) {
+        setState(() {
+          _isDismissed = prefs.getBool(_dismissedKey) ?? false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading artist CTA dismissed state: $e');
+    }
+  }
+
+  Future<void> _dismissCTA() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_dismissedKey, true);
+      if (mounted) {
+        setState(() {
+          _isDismissed = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error dismissing artist CTA: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Don't show if dismissed
+    if (_isDismissed) {
+      return const SizedBox.shrink();
+    }
+
     return FutureBuilder<UserModel?>(
       future: UserService().getCurrentUserModel(),
       builder: (context, snapshot) {
@@ -48,7 +95,7 @@ class ArtistCTAWidget extends StatelessWidget {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: onTap ?? () => _navigateToSubscription(context),
+              onTap: widget.onTap ?? () => _navigateToSubscription(context),
               borderRadius: BorderRadius.circular(16),
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -95,11 +142,9 @@ class ArtistCTAWidget extends StatelessWidget {
                             ],
                           ),
                         ),
-                        if (showDismiss)
+                        if (widget.showDismiss)
                           IconButton(
-                            onPressed: () {
-                              // TODO: Implement dismiss functionality
-                            },
+                            onPressed: _dismissCTA,
                             icon: const Icon(
                               Icons.close,
                               color: ArtbeatColors.textSecondary,
@@ -141,7 +186,8 @@ class ArtistCTAWidget extends StatelessWidget {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed:
-                            onTap ?? () => _navigateToSubscription(context),
+                            widget.onTap ??
+                            () => _navigateToSubscription(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ArtbeatColors.primary,
                           foregroundColor: Colors.white,

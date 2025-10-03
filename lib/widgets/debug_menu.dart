@@ -141,70 +141,73 @@ class DebugMenu extends StatelessWidget {
     final storageConnected = await _checkStorageConnection();
     final appCheckToken = await _getAppCheckToken();
 
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('🔥 Firebase Debug'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildStatusRow('Firebase Initialized', firebaseInitialized),
-              const SizedBox(height: 8),
-              _buildStatusRow('Current User', currentUser != null),
-              if (currentUser != null) ...[
-                Text('User ID: ${currentUser.uid}'),
-                Text('Email: ${currentUser.email ?? "N/A"}'),
-                Text('Display Name: ${currentUser.displayName ?? "N/A"}'),
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('🔥 Firebase Debug'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildStatusRow('Firebase Initialized', firebaseInitialized),
+                const SizedBox(height: 8),
+                _buildStatusRow('Current User', currentUser != null),
+                if (currentUser != null) ...[
+                  Text('User ID: ${currentUser.uid}'),
+                  Text('Email: ${currentUser.email ?? "N/A"}'),
+                  Text('Display Name: ${currentUser.displayName ?? "N/A"}'),
+                ],
+                const SizedBox(height: 8),
+                _buildStatusRow('Firestore Connected', firestoreConnected),
+                const SizedBox(height: 8),
+                _buildStatusRow('Storage Connected', storageConnected),
+                const SizedBox(height: 8),
+                _buildStatusRow('App Check Active', appCheckToken != null),
+                if (appCheckToken != null) ...[
+                  const Text('App Check Token:'),
+                  Text(
+                    appCheckToken,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
               ],
-              const SizedBox(height: 8),
-              _buildStatusRow('Firestore Connected', firestoreConnected),
-              const SizedBox(height: 8),
-              _buildStatusRow('Storage Connected', storageConnected),
-              const SizedBox(height: 8),
-              _buildStatusRow('App Check Active', appCheckToken != null),
-              if (appCheckToken != null) ...[
-                const Text('App Check Token:'),
-                Text(
-                  appCheckToken,
-                  style: const TextStyle(fontSize: 10, fontFamily: 'monospace'),
-                ),
-              ],
-            ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildStatusRow(String label, bool status) {
-    return Row(
-      children: [
-        Icon(
-          status ? Icons.check_circle : Icons.error,
+  Widget _buildStatusRow(String label, bool status) => Row(
+    children: [
+      Icon(
+        status ? Icons.check_circle : Icons.error,
+        color: status ? Colors.green : Colors.red,
+        size: 16,
+      ),
+      const SizedBox(width: 8),
+      Text(label),
+      const Spacer(),
+      Text(
+        status ? '✅ OK' : '❌ FAIL',
+        style: TextStyle(
           color: status ? Colors.green : Colors.red,
-          size: 16,
+          fontWeight: FontWeight.bold,
         ),
-        const SizedBox(width: 8),
-        Text(label),
-        const Spacer(),
-        Text(
-          status ? '✅ OK' : '❌ FAIL',
-          style: TextStyle(
-            color: status ? Colors.green : Colors.red,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
 
   Future<bool> _checkFirestoreConnection() async {
     try {
@@ -294,34 +297,36 @@ class DebugMenu extends StatelessWidget {
   }
 
   void _clearCache(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('🗑️ Clear Cache'),
-        content: const Text(
-          'Are you sure you want to clear all cached data? This will:\n\n'
-          '• Clear image cache\n'
-          '• Reset user preferences\n'
-          '• Force re-authentication\n'
-          '• Clear temporary files',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+    unawaited(
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('🗑️ Clear Cache'),
+          content: const Text(
+            'Are you sure you want to clear all cached data? This will:\n\n'
+            '• Clear image cache\n'
+            '• Reset user preferences\n'
+            '• Force re-authentication\n'
+            '• Clear temporary files',
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.of(context).pop();
-              await _clearAllCache(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
             ),
-            child: const Text('Clear Cache'),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _clearAllCache(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Clear Cache'),
+            ),
+          ],
+        ),
       ),
     );
   }

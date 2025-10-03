@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import '../utils/user_sync_helper.dart';
 import '../utils/performance_monitor.dart';
 import '../theme/artbeat_colors.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 
 /// Splash screen that shows full-screen splash image and checks authentication status
 class SplashScreen extends StatefulWidget {
@@ -162,24 +163,38 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ],
         ),
-        child: Center(
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Image.asset(
-              'assets/images/splashTRANS_logo.png',
-              width: 300,
-              height: 300,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                // Fallback if image not found
-                return Icon(
-                  Icons.image_not_supported,
-                  size: 100,
-                  color: ArtbeatColors.primaryPurple.withAlpha(120),
-                );
-              },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Spacer(flex: 2),
+            // Main ArtBeat Logo
+            ScaleTransition(
+              scale: _scaleAnimation,
+              child: Image.asset(
+                'assets/images/splashTRANS_logo.png',
+                width: 300,
+                height: 300,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback if image not found
+                  return Icon(
+                    Icons.image_not_supported,
+                    size: 100,
+                    color: ArtbeatColors.primaryPurple.withAlpha(120),
+                  );
+                },
+              ),
             ),
-          ),
+            const Spacer(),
+            // Title Sponsor Badge
+            TitleSponsorBadge(
+              location: 'splash_screen',
+              size: 60,
+              showText: true,
+              isClickable: false, // Don't allow clicks on splash screen
+            ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import '../models/models.dart';
 
 /// Card widget for displaying in-progress art walks
@@ -9,6 +11,7 @@ class InProgressWalkCard extends StatelessWidget {
   final VoidCallback onPause;
   final VoidCallback onAbandon;
   final VoidCallback onTap;
+  final String? walkTitle;
 
   const InProgressWalkCard({
     super.key,
@@ -17,6 +20,7 @@ class InProgressWalkCard extends StatelessWidget {
     required this.onPause,
     required this.onAbandon,
     required this.onTap,
+    this.walkTitle,
   });
 
   @override
@@ -80,9 +84,9 @@ class InProgressWalkCard extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Walk title (placeholder - would need to fetch actual walk data)
+              // Walk title
               Text(
-                'Art Walk', // TODO: Fetch actual walk title
+                walkTitle ?? 'Art Walk',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -269,7 +273,7 @@ class InProgressWalkCard extends StatelessWidget {
     } else if (difference.inDays < 7) {
       return '${difference.inDays}d ago';
     } else {
-      return DateFormat('MMM d').format(lastActive);
+      return intl.DateFormat('MMM d').format(lastActive);
     }
   }
 
@@ -288,6 +292,7 @@ class CompletedWalkCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onShare;
   final VoidCallback onReview;
+  final String? walkTitle;
 
   const CompletedWalkCard({
     super.key,
@@ -295,6 +300,7 @@ class CompletedWalkCard extends StatelessWidget {
     required this.onTap,
     required this.onShare,
     required this.onReview,
+    this.walkTitle,
   });
 
   @override
@@ -340,7 +346,9 @@ class CompletedWalkCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    DateFormat('MMM d, yyyy').format(progress.completedAt!),
+                    intl.DateFormat(
+                      'MMM d, yyyy',
+                    ).format(progress.completedAt!),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(
                         context,
@@ -352,9 +360,9 @@ class CompletedWalkCard extends StatelessWidget {
 
               const SizedBox(height: 12),
 
-              // Walk title (placeholder)
+              // Walk title
               Text(
-                'Art Walk', // TODO: Fetch actual walk title
+                walkTitle ?? 'Art Walk',
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -641,10 +649,18 @@ class CreatedWalkCard extends StatelessWidget {
                     context: context,
                   ),
                   const SizedBox(width: 8),
-                  _buildStatChip(
-                    icon: Icons.star,
-                    label: '4.5', // TODO: Add rating system
-                    context: context,
+                  FutureBuilder<double>(
+                    future: getAverageRating(walk.id),
+                    builder: (context, snapshot) {
+                      return _buildStatChip(
+                        icon: Icons.star,
+                        label:
+                            snapshot.connectionState == ConnectionState.waiting
+                            ? 'Loading...'
+                            : '${snapshot.data?.toStringAsFixed(1) ?? '0.0'}',
+                        context: context,
+                      );
+                    },
                   ),
                 ],
               ),
@@ -653,7 +669,7 @@ class CreatedWalkCard extends StatelessWidget {
 
               // Creation date
               Text(
-                'Created ${DateFormat('MMM d, yyyy').format(walk.createdAt)}',
+                'Created ${intl.DateFormat('MMM d, yyyy').format(walk.createdAt)}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(
                     context,
@@ -780,10 +796,18 @@ class SavedWalkCard extends StatelessWidget {
                     context: context,
                   ),
                   const SizedBox(width: 8),
-                  _buildStatChip(
-                    icon: Icons.star,
-                    label: '4.5', // TODO: Add rating system
-                    context: context,
+                  FutureBuilder<double>(
+                    future: getAverageRating(walk.id),
+                    builder: (context, snapshot) {
+                      return _buildStatChip(
+                        icon: Icons.star,
+                        label:
+                            snapshot.connectionState == ConnectionState.waiting
+                            ? 'Loading...'
+                            : '${snapshot.data?.toStringAsFixed(1) ?? '0.0'}',
+                        context: context,
+                      );
+                    },
                   ),
                   const SizedBox(width: 8),
                   _buildStatChip(
@@ -839,5 +863,35 @@ class SavedWalkCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// Top-level function to get average rating for a walk
+Future<double> getAverageRating(String walkId) async {
+  try {
+    final QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('walk_reviews')
+        .where('walkId', isEqualTo: walkId)
+        .get();
+
+    if (snapshot.docs.isEmpty) {
+      return 0.0;
+    }
+
+    double totalRating = 0.0;
+    int count = 0;
+
+    for (var doc in snapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>;
+      if (data.containsKey('rating') && data['rating'] is num) {
+        totalRating += (data['rating'] as num).toDouble();
+        count++;
+      }
+    }
+
+    return count > 0 ? totalRating / count : 0.0;
+  } catch (e) {
+    AppLogger.error('Error getting average rating: $e');
+    return 0.0;
   }
 }

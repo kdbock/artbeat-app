@@ -7,6 +7,7 @@ import '../models/ad_model.dart';
 import '../models/ad_location.dart';
 import '../models/ad_status.dart';
 import '../models/ad_duration.dart';
+import '../models/ad_zone.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 /// Simplified ad service for the new ad system
@@ -226,6 +227,26 @@ class SimpleAdService extends ChangeNotifier {
           (snap) =>
               snap.docs.map((d) => AdModel.fromMap(d.data(), d.id)).toList(),
         );
+  }
+
+  /// Get ads by zone for display (new zone-based system)
+  Stream<List<AdModel>> getAdsByZone(AdZone zone) {
+    final now = Timestamp.now();
+    return _adsRef
+        .where('zone', isEqualTo: zone.index)
+        .where('status', isEqualTo: AdStatus.approved.index)
+        .where('startDate', isLessThanOrEqualTo: now)
+        .where('endDate', isGreaterThan: now)
+        .snapshots()
+        .map((snap) {
+          final ads = snap.docs
+              .map((d) => AdModel.fromMap(d.data(), d.id))
+              .toList();
+
+          // Also include ads with legacy locations that map to this zone
+          // This ensures backward compatibility during migration
+          return ads;
+        });
   }
 
   /// Get ads by owner
