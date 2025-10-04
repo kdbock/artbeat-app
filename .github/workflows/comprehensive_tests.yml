@@ -407,6 +407,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       [
+        pre_flight,
         main_app_tests,
         package_tests,
         integration_tests,
@@ -464,7 +465,7 @@ jobs:
   cleanup:
     name: Cleanup
     runs-on: ubuntu-latest
-    needs: [test_summary]
+    needs: [pre_flight, test_summary]
     if: always()
 
     steps:
