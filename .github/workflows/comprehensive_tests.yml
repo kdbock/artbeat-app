@@ -256,6 +256,15 @@ jobs:
         if: matrix.platform == 'android'
         uses: android-actions/setup-android@v3
 
+      - name: Create google-services.json for CI (Android builds)
+        if: matrix.platform == 'android'
+        run: |
+          # Use template file for CI builds
+          if [ ! -f "android/app/google-services.json" ]; then
+            echo "Creating google-services.json from template for CI build..."
+            cp android/app/google-services.json.template android/app/google-services.json
+          fi
+
       - name: Get dependencies
         run: flutter pub get
 
