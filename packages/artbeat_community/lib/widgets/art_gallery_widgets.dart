@@ -452,7 +452,7 @@ class _ArtPostCardState extends State<ArtPostCard>
   }
 }
 
-/// Artist profile card for gallery display
+/// Artist profile card for the gallery view
 class ArtistCard extends StatelessWidget {
   final ArtistProfile artist;
   final VoidCallback? onTap;
@@ -467,226 +467,284 @@ class ArtistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Debug logging
+    if (kDebugMode) {
+      print('🎨 ArtistCard for ${artist.displayName}:');
+      print('   Portfolio images count: ${artist.portfolioImages.length}');
+      if (artist.portfolioImages.isNotEmpty) {
+        print('   First portfolio image: ${artist.portfolioImages.first}');
+      }
+      print('   Avatar URL: ${artist.avatarUrl}');
+    }
+
     return Card(
-      elevation: 3,
-      margin: const EdgeInsets.all(8),
+      elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile image area
-            SizedBox(
-              height: 220,
-              child: Stack(
-                children: [
-                  // Background portfolio image
-                  if (artist.portfolioImages.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+                ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Background image if available
+              if (artist.portfolioImages.isNotEmpty)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SecureNetworkImage(
+                      imageUrl: artist.portfolioImages.first,
+                      fit: BoxFit.cover,
+                      enableThumbnailFallback: true,
+                      placeholder: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              ArtbeatColors.primaryPurple.withValues(
+                                alpha: 0.2,
+                              ),
+                              ArtbeatColors.primaryGreen.withValues(alpha: 0.2),
+                            ],
+                          ),
+                        ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              ArtbeatColors.primaryPurple,
+                            ),
+                          ),
+                        ),
                       ),
-                      child: SecureNetworkImage(
-                        imageUrl: artist.portfolioImages.first,
-                        fit: BoxFit.cover,
-                        enableThumbnailFallback: true,
-                        placeholder: Container(
-                          color: ArtbeatColors.surface,
-                          child: const Icon(
-                            Icons.palette,
-                            size: 32,
+                      errorWidget: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              ArtbeatColors.primaryPurple.withValues(
+                                alpha: 0.2,
+                              ),
+                              ArtbeatColors.primaryGreen.withValues(alpha: 0.2),
+                            ],
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.image_not_supported,
                             color: ArtbeatColors.primaryPurple,
+                            size: 48,
                           ),
                         ),
                       ),
                     ),
+                  ),
+                ),
 
-                  // Avatar overlay
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: CircleAvatar(
-                        radius: 24,
-                        backgroundImage: artist.avatarUrl.isNotEmpty
-                            ? NetworkImage(artist.avatarUrl)
-                            : null,
-                        child: artist.avatarUrl.isEmpty
-                            ? const Icon(Icons.person, size: 24)
-                            : null,
-                      ),
+              // Overlay gradient for better text readability
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.7),
+                      ],
                     ),
                   ),
-
-                  // Verified badge
-                  if (artist.isVerified)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.verified,
-                          size: 16,
-                          color: ArtbeatColors.primaryGreen,
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
-            ),
 
-            // Artist info
-            Expanded(
-              child: Padding(
+              // Content
+              Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name and followers
+                    // Avatar and follow button row
                     Row(
                       children: [
-                        Expanded(
-                          child: Text(
-                            artist.displayName,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: ArtbeatColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        // Avatar
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: ClipOval(
+                            child: artist.avatarUrl.isNotEmpty
+                                ? SecureNetworkImage(
+                                    imageUrl: artist.avatarUrl,
+                                    fit: BoxFit.cover,
+                                    enableThumbnailFallback: true,
+                                    placeholder: Container(
+                                      color: ArtbeatColors.primaryPurple
+                                          .withValues(alpha: 0.3),
+                                      child: const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    errorWidget: Container(
+                                      color: ArtbeatColors.primaryPurple
+                                          .withValues(alpha: 0.3),
+                                      child: const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    color: ArtbeatColors.primaryPurple
+                                        .withValues(alpha: 0.3),
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: Colors.white,
+                                      size: 24,
+                                    ),
+                                  ),
                           ),
                         ),
-                        if (artist.isVerified)
-                          const Padding(
-                            padding: EdgeInsets.only(left: 4),
-                            child: Icon(
-                              Icons.verified,
-                              size: 16,
-                              color: ArtbeatColors.primaryGreen,
+                        const Spacer(),
+                        // Follow button
+                        if (onFollow != null)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: IconButton(
+                              onPressed: onFollow,
+                              icon: const Icon(
+                                Icons.person_add,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              tooltip: 'Follow ${artist.displayName}',
                             ),
                           ),
                       ],
                     ),
 
-                    const SizedBox(height: 4),
+                    const Spacer(),
 
-                    // Followers count
-                    Text(
-                      '${_formatFollowerCount(artist.followersCount)} followers',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: ArtbeatColors.textSecondary,
-                      ),
-                    ),
-
-                    // Specialties
-                    if (artist.specialties.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: artist.specialties.take(2).map((specialty) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: ArtbeatColors.primaryPurple.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                specialty,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: ArtbeatColors.primaryPurple,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-
-                    // Bio preview
-                    if (artist.bio.isNotEmpty)
-                      Flexible(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: SingleChildScrollView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            child: Text(
-                              artist.bio,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: ArtbeatColors.textSecondary,
-                                height: 1.3,
-                              ),
-                            ),
+                    // Artist info
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Name
+                        Text(
+                          artist.displayName,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
 
-                    // Follow button (always visible at bottom)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: onFollow,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ArtbeatColors.primaryPurple,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Follow',
+                        const SizedBox(height: 4),
+
+                        // Bio
+                        if (artist.bio.isNotEmpty)
+                          Text(
+                            artist.bio,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
+
+                        const SizedBox(height: 8),
+
+                        // Specialties
+                        if (artist.specialties.isNotEmpty)
+                          Wrap(
+                            spacing: 4,
+                            runSpacing: 4,
+                            children: artist.specialties.take(3).map((
+                              specialty,
+                            ) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  specialty,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+
+                        const SizedBox(height: 8),
+
+                        // Stats
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.people,
+                              size: 16,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${artist.followersCount} followers',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                            if (artist.isVerified) ...[
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.verified,
+                                size: 16,
+                                color: ArtbeatColors.primaryGreen,
+                              ),
+                            ],
+                          ],
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  String _formatFollowerCount(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    } else if (count >= 1000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    } else {
-      return count.toString();
-    }
   }
 }
 

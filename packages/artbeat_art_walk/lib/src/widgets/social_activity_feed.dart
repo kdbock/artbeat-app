@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:geolocator/geolocator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import '../services/social_service.dart';
 import '../theme/art_walk_design_system.dart';
@@ -49,11 +50,41 @@ class _SocialActivityFeedState extends State<SocialActivityFeed> {
         limit: widget.maxItems,
       );
 
-      if (mounted) {
-        setState(() {
-          _activities = activities;
-          _isLoading = false;
-        });
+      // If we have activities, use them
+      if (activities.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _activities = activities;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      // If no nearby activities, try to get the current user's own activities
+      try {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final userActivities = await _socialService.getFriendsActivities(
+            friendIds: [user.uid],
+            limit: widget.maxItems,
+          );
+          if (mounted) {
+            setState(() {
+              _activities = userActivities;
+              _isLoading = false;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+        }
+      } catch (e) {
+        AppLogger.error('Error loading user activities', error: e);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     } catch (e) {
       AppLogger.error('Error loading social activities', error: e);

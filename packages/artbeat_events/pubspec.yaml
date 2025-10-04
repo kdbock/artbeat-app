@@ -42,6 +42,9 @@ dependencies:
   # State management
   provider: ^6.1.1
 
+  # Local storage
+  shared_preferences: ^2.5.3
+
   # Logging
   logger: ^2.4.0
 

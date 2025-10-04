@@ -9,6 +9,7 @@ import '../models/ad_model.dart';
 import '../models/ad_status.dart';
 import '../models/ad_size.dart';
 import '../models/ad_location.dart';
+import '../models/ad_zone.dart';
 import '../models/ad_duration.dart';
 import '../models/ad_type.dart';
 import '../models/image_fit.dart';
@@ -765,8 +766,13 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
     try {
       final typeName = ad.type.name;
       final sizeDisplay = ad.size.displayName;
-      final locationDisplay = ad.location.displayName;
-      return '$typeName • $sizeDisplay • $locationDisplay';
+
+      // Show zone if available, otherwise show legacy location
+      final placementDisplay = ad.zone != null
+          ? '${ad.zone!.icon} ${ad.zone!.displayName}'
+          : ad.location.displayName;
+
+      return '$typeName • $sizeDisplay • $placementDisplay';
     } catch (e) {
       // Fallback if any property access fails
       return 'Ad Details • ${ad.id.substring(0, 8)}...';
@@ -776,8 +782,12 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
   String _buildDurationText(AdModel ad) {
     try {
       final days = ad.duration.days;
-      final pricePerDay = ad.pricePerDay;
+
+      // Calculate price: zone + size if zone available, otherwise use ad's pricePerDay getter
+      final pricePerDay =
+          ad.pricePerDay; // Uses the getter which handles zone + size
       final totalPrice = pricePerDay * days;
+
       return 'Duration: $days days (\$${totalPrice.toStringAsFixed(2)})';
     } catch (e) {
       // Fallback if any calculation fails
@@ -904,6 +914,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
 
   late AdSize _selectedSize;
   late AdLocation _selectedLocation;
+  AdZone? _selectedZone;
   late int _selectedDays;
   late AdType _selectedType;
   late AdStatus _selectedStatus;
@@ -929,6 +940,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
     _ctaTextController.text = widget.ad.ctaText ?? '';
     _selectedSize = widget.ad.size;
     _selectedLocation = widget.ad.location;
+    _selectedZone = widget.ad.zone; // Initialize zone from ad
     _selectedDays = widget.ad.duration.days;
     _selectedType = widget.ad.type;
     _selectedStatus = widget.ad.status;
@@ -1152,6 +1164,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         location: _selectedLocation,
+        zone: _selectedZone, // Updated zone
         duration: duration,
         startDate: _selectedStartDate, // Updated start date
         endDate: _selectedStartDate.add(
@@ -1175,6 +1188,8 @@ class _AdEditDialogState extends State<AdEditDialog> {
         'type': updatedAd.type.index, // Store as integer index
         'size': updatedAd.size.index, // Store as integer index
         'location': updatedAd.location.index, // Store as integer index
+        if (updatedAd.zone != null)
+          'zone': updatedAd.zone!.index, // Store zone as integer index
         'duration': updatedAd.duration.toMap(),
         'startDate': Timestamp.fromDate(
           updatedAd.startDate,
@@ -1776,6 +1791,56 @@ class _AdEditDialogState extends State<AdEditDialog> {
                       ),
                       const SizedBox(height: 12),
 
+                      // Zone Selection
+                      const Text('Display Zone'),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<AdZone>(
+                        value: _selectedZone,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                        ),
+                        items: AdZone.values.map((zone) {
+                          return DropdownMenuItem(
+                            value: zone,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  zone.iconData,
+                                  size: 20,
+                                  color: Colors.black54,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    zone.displayName,
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '\$${zone.pricePerDay.toStringAsFixed(0)}/day',
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedZone = value;
+                            });
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
                       // Size Selection
                       const Text('Ad Size'),
                       const SizedBox(height: 8),
@@ -1788,7 +1853,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
                           return DropdownMenuItem(
                             value: size,
                             child: Text(
-                              '${size.displayName} (\$${size.pricePerDay.toStringAsFixed(0)}/day)',
+                              '${size.displayName} (+\$${size.pricePerDay.toStringAsFixed(0)}/day)',
                               style: const TextStyle(
                                 color: Colors.black87,
                                 fontWeight: FontWeight.w500,
@@ -1920,6 +1985,8 @@ class _AdEditDialogState extends State<AdEditDialog> {
                             ),
                             const SizedBox(height: 8),
                             Text('Type: ${_selectedType.name}'),
+                            if (_selectedZone != null)
+                              Text('Zone: ${_selectedZone!.displayName}'),
                             Text('Size: ${_selectedSize.displayName}'),
                             Text(
                               'Start Date: ${_selectedStartDate.month}/${_selectedStartDate.day}/${_selectedStartDate.year}',
@@ -1929,13 +1996,31 @@ class _AdEditDialogState extends State<AdEditDialog> {
                               'Status: ${_selectedStatus.name.toUpperCase()}',
                             ),
                             const Divider(),
-                            Text(
-                              'Total: \$${_selectedSize.pricePerDay * _selectedDays}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                            if (_selectedZone != null) ...[
+                              Text(
+                                'Zone: \$${_selectedZone!.pricePerDay.toStringAsFixed(0)}/day',
+                                style: const TextStyle(fontSize: 14),
                               ),
-                            ),
+                              Text(
+                                'Size: +\$${_selectedSize.pricePerDay.toStringAsFixed(0)}/day',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Total: \$${((_selectedZone!.pricePerDay + _selectedSize.pricePerDay) * _selectedDays).toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ] else
+                              Text(
+                                'Total: \$${(_selectedSize.pricePerDay * _selectedDays).toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                           ],
                         ),
                       ),

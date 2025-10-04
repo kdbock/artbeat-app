@@ -1,53 +1,53 @@
+// ignore_for_file: do_not_use_environment
+
 /// Application configuration loaded from build-time environment variables
 ///
 /// To set these values during build, use --dart-define flags:
 /// flutter build apk --dart-define=GOOGLE_MAPS_API_KEY=your_key_here
 /// flutter run --dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 class AppConfig {
+  // Singleton instance
+  static final AppConfig _instance = AppConfig._internal();
+
+  // Private constructor for singleton
   AppConfig._internal();
 
-  // Singleton pattern
-  static final AppConfig _instance = AppConfig._internal();
+  // Factory constructor
   factory AppConfig() => _instance;
+
+  // Build-time environment constants
+  static const _googleMapsKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+  static const _stripeKey = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
+  static const _firebaseRegion = String.fromEnvironment(
+    'FIREBASE_REGION',
+    defaultValue: 'us-central1',
+  );
+  static const _apiUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.artbeat.app',
+  );
+  static const _env = String.fromEnvironment(
+    'ENVIRONMENT',
+    defaultValue: 'development',
+  );
 
   /// Google Maps API Key
   /// Should be set via --dart-define during build
-  String get googleMapsApiKey {
-    const key = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
-    return key;
-  }
+  String get googleMapsApiKey => _googleMapsKey;
 
   /// Stripe Publishable Key
   /// Should be set via --dart-define during build
   /// Use pk_test_* for testing, pk_live_* for production
-  String get stripePublishableKey {
-    const key = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
-    return key;
-  }
+  String get stripePublishableKey => _stripeKey;
 
   /// Firebase Region
-  String get firebaseRegion {
-    const region = String.fromEnvironment(
-      'FIREBASE_REGION',
-      defaultValue: 'us-central1',
-    );
-    return region;
-  }
+  String get firebaseRegion => _firebaseRegion;
 
   /// API Base URL
-  String get apiBaseUrl {
-    const url = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: 'https://api.artbeat.app',
-    );
-    return url;
-  }
+  String get apiBaseUrl => _apiUrl;
 
   /// Environment (dev, staging, production)
-  String get environment {
-    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
-    return env;
-  }
+  String get environment => _env;
 
   /// Check if running in production
   bool get isProduction => environment == 'production';

@@ -101,7 +101,7 @@ class _InstantDiscoveryRadarState extends State<InstantDiscoveryRadar>
               children: [
                 IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.maybePop(context),
                 ),
                 const SizedBox(width: 8),
                 Expanded(

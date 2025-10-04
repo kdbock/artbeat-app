@@ -92,6 +92,9 @@ class _DiscoveryCaptureModalState extends State<DiscoveryCaptureModal> {
         try {
           final user = FirebaseAuth.instance.currentUser;
           if (user != null) {
+            debugPrint(
+              '🔍 DiscoveryCaptureModal: Posting social activity for discovery',
+            );
             await _socialService.postActivity(
               userId: user.uid,
               userName: user.displayName ?? 'Anonymous Explorer',
@@ -106,10 +109,19 @@ class _DiscoveryCaptureModalState extends State<DiscoveryCaptureModal> {
                 'discoveryId': discoveryId,
               },
             );
+            debugPrint(
+              '🔍 DiscoveryCaptureModal: ✅ Social activity posted successfully',
+            );
+          } else {
+            debugPrint(
+              '🔍 DiscoveryCaptureModal: ⚠️ No user logged in, skipping social activity',
+            );
           }
         } catch (e) {
           // Don't fail the discovery if social posting fails
-          debugPrint('Failed to post discovery activity: $e');
+          debugPrint(
+            '🔍 DiscoveryCaptureModal: ❌ Failed to post discovery activity: $e',
+          );
         }
 
         // Close modal after delay

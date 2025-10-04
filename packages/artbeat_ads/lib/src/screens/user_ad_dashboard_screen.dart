@@ -9,6 +9,7 @@ import '../models/ad_analytics_model.dart';
 import '../models/ad_type.dart';
 import '../models/ad_size.dart';
 import '../models/ad_location.dart';
+import '../models/ad_zone.dart';
 import '../models/ad_duration.dart';
 import '../services/simple_ad_service.dart';
 import '../services/ad_analytics_service.dart';
@@ -599,7 +600,9 @@ class _UserAdDashboardScreenState extends State<UserAdDashboardScreen>
                           _buildStatusChip(ad.status),
                           const SizedBox(width: 8),
                           Text(
-                            '${ad.size.name} • ${ad.location.name}',
+                            ad.zone != null
+                                ? '${ad.size.name} • ${ad.zone!.icon} ${ad.zone!.displayName}'
+                                : '${ad.size.name} • ${ad.location.name}',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.grey,

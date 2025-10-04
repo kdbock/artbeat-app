@@ -106,6 +106,35 @@ class _MigrationScreenState extends State<MigrationScreen> {
     }
   }
 
+  Future<void> _migrateGeoFields() async {
+    final confirmed = await _showConfirmationDialog(
+      'Migrate Geo Fields',
+      'This will add geo fields (geohash and geopoint) to all captures with locations. '
+          'This is required for instant discovery to show user captures. Continue?',
+    );
+
+    if (!confirmed) return;
+
+    setState(() {
+      _isMigrating = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      await _migrationService.migrateCapturesGeoField();
+      setState(() {
+        _successMessage = 'Geo field migration completed successfully!';
+        _isMigrating = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Geo field migration failed: $e';
+        _isMigrating = false;
+      });
+    }
+  }
+
   Future<bool> _showConfirmationDialog(String title, String message) async {
     return await showDialog<bool>(
           context: context,
@@ -267,6 +296,22 @@ class _MigrationScreenState extends State<MigrationScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            // Geo Field Migration Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed:
+                    _isMigrating || _isLoading ? null : _migrateGeoFields,
+                icon: const Icon(Icons.location_on),
+                label: const Text('Migrate Geo Fields for Captures'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
             ),
           ],
         ),

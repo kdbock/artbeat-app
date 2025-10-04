@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' as artWalkLib;
 
 /// Live Activity Feed - Shows social proof of art discoveries nearby
 class LiveActivityFeed extends StatefulWidget {
-  final List<ActivityItem> activities;
+  final List<artWalkLib.SocialActivity> activities;
   final int maxItems;
   final VoidCallback? onTap;
 
@@ -42,12 +44,21 @@ class _LiveActivityFeedState extends State<LiveActivityFeed>
 
   @override
   Widget build(BuildContext context) {
-    // Use demo data if no activities provided
-    final activities = widget.activities.isNotEmpty
-        ? widget.activities.take(widget.maxItems).toList()
-        : _getDemoActivities();
+    debugPrint(
+      '🔍 LiveActivityFeed: build() called with ${widget.activities.length} activities',
+    );
+    if (widget.activities.isNotEmpty) {
+      debugPrint(
+        '🔍 LiveActivityFeed: First activity: ${widget.activities.first.userName} - ${widget.activities.first.message}',
+      );
+    }
 
-    if (activities.isEmpty) return const SizedBox.shrink();
+    // Convert SocialActivity to ActivityItem
+    final activityItems = widget.activities
+        .map(_convertToActivityItem)
+        .toList();
+
+    final displayActivities = activityItems.take(widget.maxItems).toList();
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -107,13 +118,38 @@ class _LiveActivityFeedState extends State<LiveActivityFeed>
 
             const SizedBox(height: 12),
 
-            // Activity list
-            ...activities.map(
-              (activity) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: _buildActivityItem(activity),
+            // Activity list or empty state
+            if (displayActivities.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.explore,
+                      color: Colors.grey.withValues(alpha: 0.5),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'No recent discoveries nearby. Start exploring!',
+                        style: TextStyle(
+                          color: Colors.grey.withValues(alpha: 0.7),
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...displayActivities.map(
+                (activity) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _buildActivityItem(activity),
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -218,33 +254,37 @@ class _LiveActivityFeedState extends State<LiveActivityFeed>
     );
   }
 
-  List<ActivityItem> _getDemoActivities() {
-    return const [
-      ActivityItem(
-        userName: 'Sarah',
-        action: 'discovered',
-        artworkTitle: '"Urban Dreams"',
-        timeAgo: '2 min ago',
-        distance: 0.3,
-        avatarUrl: null,
-      ),
-      ActivityItem(
-        userName: 'Mike',
-        action: 'found',
-        artworkTitle: '"Street Poetry"',
-        timeAgo: '5 min ago',
-        distance: 0.8,
-        avatarUrl: null,
-      ),
-      ActivityItem(
-        userName: 'Emma',
-        action: 'captured',
-        artworkTitle: '"City Lights"',
-        timeAgo: '8 min ago',
-        distance: 1.2,
-        avatarUrl: null,
-      ),
-    ];
+  ActivityItem _convertToActivityItem(artWalkLib.SocialActivity activity) {
+    return ActivityItem(
+      userName: activity.userName,
+      action: _getActionText(activity.type),
+      artworkTitle: _getArtworkTitle(activity),
+      timeAgo: timeago.format(activity.timestamp),
+      distance: activity.location != null ? 0.5 : null, // Placeholder distance
+      avatarUrl: activity.userAvatar,
+    );
+  }
+
+  String _getActionText(artWalkLib.SocialActivityType type) {
+    switch (type) {
+      case artWalkLib.SocialActivityType.discovery:
+        return 'discovered';
+      case artWalkLib.SocialActivityType.walkCompleted:
+        return 'completed';
+      case artWalkLib.SocialActivityType.achievement:
+        return 'achieved';
+      case artWalkLib.SocialActivityType.friendJoined:
+        return 'joined';
+      case artWalkLib.SocialActivityType.milestone:
+        return 'reached';
+    }
+  }
+
+  String _getArtworkTitle(artWalkLib.SocialActivity activity) {
+    if (activity.metadata != null && activity.metadata!['artTitle'] != null) {
+      return '"${activity.metadata!['artTitle']}"';
+    }
+    return 'artwork';
   }
 }
 

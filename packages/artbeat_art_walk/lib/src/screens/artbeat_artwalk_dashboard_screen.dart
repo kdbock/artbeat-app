@@ -46,6 +46,7 @@ class _ArtbeatArtwalkDashboardScreenState
   List<AchievementModel> _artWalkAchievements = [];
   UserModel? _currentUser;
   bool _isDisposed = false;
+  bool _hasDiscoveriesMade = false; // Track if discoveries were made
 
   // Gamification state
   int _currentStreak = 0;
@@ -98,68 +99,77 @@ class _ArtbeatArtwalkDashboardScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ArtWalkDashboardColors.backgroundLight,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Hero Section - Clean gradient header
-            _buildHeroSection(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
+          // Return true if discoveries were made to refresh main dashboard
+          Navigator.pop(context, _hasDiscoveriesMade);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: ArtWalkDashboardColors.backgroundLight,
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Hero Section - Clean gradient header
+              _buildHeroSection(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 2. Stats Cards - XP, Level, Streaks
-            _buildStatsSection(),
+              // 2. Stats Cards - XP, Level, Streaks
+              _buildStatsSection(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 3. Instant Discovery Radar - Featured section
-            _buildInstantDiscoveryRadar(),
+              // 3. Instant Discovery Radar - Featured section
+              _buildInstantDiscoveryRadar(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 4. Daily Challenge
-            if (_todaysChallenge != null) _buildDailyChallenge(),
-            if (_todaysChallenge != null) const SizedBox(height: 16),
+              // 4. Daily Challenge
+              if (_todaysChallenge != null) _buildDailyChallenge(),
+              if (_todaysChallenge != null) const SizedBox(height: 16),
 
-            // 5. Weekly Goals
-            if (_weeklyGoals.isNotEmpty) _buildWeeklyGoals(),
-            if (_weeklyGoals.isNotEmpty) const SizedBox(height: 16),
+              // 5. Weekly Goals
+              if (_weeklyGoals.isNotEmpty) _buildWeeklyGoals(),
+              if (_weeklyGoals.isNotEmpty) const SizedBox(height: 16),
 
-            // 6. Social Activity Feed
-            _buildLiveSocialFeed(),
+              // 6. Social Activity Feed
+              _buildLiveSocialFeed(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 7. Quick Action Grid
-            _buildQuickActionGrid(),
+              // 7. Quick Action Grid
+              _buildQuickActionGrid(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 8. Achievement Showcase
-            _buildAchievementShowcase(),
+              // 8. Achievement Showcase
+              _buildAchievementShowcase(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 9. Nearby Art Clusters
-            _buildNearbyArtClusters(),
+              // 9. Nearby Art Clusters
+              _buildNearbyArtClusters(),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // 10. Ad Space
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: AdSpaceWidget(
-                location: AdLocation.artWalkDashboard,
-                customLabel: 'Support Amazing Artists',
-                height: 80,
-                trackAnalytics: true,
+              // 10. Ad Space
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: AdSpaceWidget(
+                  location: AdLocation.artWalkDashboard,
+                  customLabel: 'Support Amazing Artists',
+                  height: 80,
+                  trackAnalytics: true,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 100),
-          ],
+              const SizedBox(height: 100),
+            ],
+          ),
         ),
       ),
     );
@@ -616,7 +626,7 @@ class _ArtbeatArtwalkDashboardScreenState
             const SizedBox(height: 16),
 
             // Social activity feed
-            const SocialActivityFeed(maxItems: 2),
+            SocialActivityFeed(userPosition: _currentPosition, maxItems: 2),
           ],
         ),
       ),
@@ -1140,8 +1150,10 @@ class _ArtbeatArtwalkDashboardScreenState
       _loadLocalCaptures(),
       _loadArtWalkAchievements(),
       _loadEngagementData(),
-      _loadNearbyArtCount(),
     ]);
+
+    // Load nearby art count after position is available
+    await _loadNearbyArtCount();
   }
 
   Future<void> _loadNearbyArtCount() async {
@@ -1353,6 +1365,7 @@ class _ArtbeatArtwalkDashboardScreenState
 
       // Refresh nearby art count if discoveries were made
       if (result == true && mounted) {
+        _hasDiscoveriesMade = true; // Mark that discoveries were made
         _loadNearbyArtCount();
       }
     } catch (e) {

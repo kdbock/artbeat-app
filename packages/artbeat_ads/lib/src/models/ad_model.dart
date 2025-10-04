@@ -29,8 +29,14 @@ class AdModel {
   final String? ctaText; // Call-to-action text (e.g., "Shop Now", "Learn More")
   final ImageFit imageFit; // How the image should be fitted in the ad space
 
-  /// Price per day is determined by ad zone (if available) or size
-  double get pricePerDay => zone?.pricePerDay ?? size.pricePerDay;
+  /// Price per day is calculated as: Zone Price + Size Price
+  /// For legacy ads without zone, falls back to size price only
+  double get pricePerDay {
+    if (zone != null) {
+      return zone!.pricePerDay + size.pricePerDay;
+    }
+    return size.pricePerDay; // Legacy fallback
+  }
 
   /// Get the effective zone (either from zone field or migrated from location)
   AdZone get effectiveZone =>

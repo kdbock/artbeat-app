@@ -7,6 +7,7 @@ This guide explains how to properly manage API keys, secrets, and sensitive conf
 ## ⚠️ CRITICAL: What NOT to Do
 
 **NEVER** commit these to version control:
+
 - Private keys or certificates
 - API secret keys (Stripe secret keys, OAuth secrets)
 - Service account credentials
@@ -36,6 +37,7 @@ flutter build apk \
 ```
 
 Access these in code via `AppConfig`:
+
 ```dart
 import 'package:artbeat/config/app_config.dart';
 
@@ -47,6 +49,7 @@ final stripeKey = config.stripePublishableKey;
 ### 2. CI/CD Pipeline Configuration
 
 #### GitHub Actions
+
 Store secrets in GitHub repository settings (Settings > Secrets and variables > Actions):
 
 ```yaml
@@ -58,6 +61,7 @@ Store secrets in GitHub repository settings (Settings > Secrets and variables > 
 ```
 
 #### Environment Variables File (Local Development)
+
 Create a `.env.local` file (gitignored) for local development:
 
 ```bash
@@ -67,6 +71,7 @@ export STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
 Load it before building:
+
 ```bash
 source .env.local
 flutter run \
@@ -77,16 +82,19 @@ flutter run \
 ## 🔑 API Key Management
 
 ### Google Maps API Key
+
 1. **Restriction Required**: In Google Cloud Console, restrict the key to your app's package name
 2. **Separate Keys**: Use different keys for Android, iOS, and Web
 3. **Daily Limits**: Set daily quotas to prevent abuse
 
 ### Stripe Keys
+
 1. **Test vs Live**: Use `pk_test_*` for development, `pk_live_*` for production
 2. **Publishable Only**: NEVER put secret keys (`sk_*`) in client code
 3. **Secret Keys**: Only use secret keys in Firebase Cloud Functions or backend
 
 ### Firebase Configuration
+
 1. **google-services.json**: Download from Firebase Console, keep gitignored
 2. **GoogleService-Info.plist**: Download from Firebase Console, keep gitignored
 3. **API Keys**: Restrict in Firebase Console to your app's bundle ID/package name
@@ -94,12 +102,15 @@ flutter run \
 ## 🛡️ Security Best Practices
 
 ### Service Accounts
+
 - Service account credentials should ONLY exist on backend servers
 - Use Firebase Admin SDK in Cloud Functions, not in mobile app
 - If you need Google Play verification, use Cloud Functions as a proxy
 
 ### Key Rotation
+
 When rotating keys:
+
 1. Generate new key in service console
 2. Update in CI/CD secrets and local `.env.local`
 3. Deploy new version with updated keys
@@ -107,7 +118,9 @@ When rotating keys:
 5. Revoke old key
 
 ### Git History Cleanup
+
 If you accidentally committed secrets:
+
 ```bash
 # Install git-filter-repo
 brew install git-filter-repo
@@ -123,14 +136,14 @@ Then **immediately revoke and regenerate** the exposed credentials.
 
 ## 📋 Required Keys Inventory
 
-| Key Type | Where to Get | Where to Store | Client/Server |
-|----------|-------------|----------------|---------------|
-| Google Maps API | Google Cloud Console | --dart-define | Client |
-| Stripe Publishable | Stripe Dashboard | --dart-define | Client |
-| Stripe Secret | Stripe Dashboard | Cloud Functions Secret Manager | Server Only |
-| Firebase Config | Firebase Console | google-services.json (gitignored) | Client |
-| Service Account | Google Cloud Console | Cloud Functions/Backend only | Server Only |
-| App Store Secret | App Store Connect | Cloud Functions Secret Manager | Server Only |
+| Key Type           | Where to Get         | Where to Store                    | Client/Server |
+| ------------------ | -------------------- | --------------------------------- | ------------- |
+| Google Maps API    | Google Cloud Console | --dart-define                     | Client        |
+| Stripe Publishable | Stripe Dashboard     | --dart-define                     | Client        |
+| Stripe Secret      | Stripe Dashboard     | Cloud Functions Secret Manager    | Server Only   |
+| Firebase Config    | Firebase Console     | google-services.json (gitignored) | Client        |
+| Service Account    | Google Cloud Console | Cloud Functions/Backend only      | Server Only   |
+| App Store Secret   | App Store Connect    | Cloud Functions Secret Manager    | Server Only   |
 
 ## 🚀 Deployment Checklist
 

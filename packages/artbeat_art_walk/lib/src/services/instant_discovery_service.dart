@@ -44,7 +44,7 @@ class InstantDiscoveryService {
       final publicArtRef = _firestore.collection('publicArt');
 
       // Use geoflutterfire_plus for geospatial query
-      final geoQuery = GeoCollectionReference(publicArtRef)
+      final publicArtGeoQuery = GeoCollectionReference(publicArtRef)
           .subscribeWithin(
             center: center,
             radiusInKm: radiusMeters / 1000, // Convert meters to km
@@ -55,10 +55,25 @@ class InstantDiscoveryService {
           )
           .take(1); // Take first emission
 
-      final results = await geoQuery.first;
+      final publicArtResults = await publicArtGeoQuery.first;
 
-      // Convert to PublicArtModel and filter out discovered art
-      final nearbyArt = results
+      // Query captures collection within radius (only public captures)
+      final capturesRef = _firestore.collection('captures');
+      final capturesGeoQuery = GeoCollectionReference(capturesRef)
+          .subscribeWithin(
+            center: center,
+            radiusInKm: radiusMeters / 1000, // Convert meters to km
+            field: 'geo',
+            geopointFrom: (data) =>
+                (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
+            strictMode: true,
+          )
+          .take(1); // Take first emission
+
+      final capturesResults = await capturesGeoQuery.first;
+
+      // Convert publicArt to PublicArtModel and filter out discovered art
+      final nearbyPublicArt = publicArtResults
           .map((doc) {
             try {
               return PublicArtModel.fromFirestore(doc);
@@ -67,9 +82,32 @@ class InstantDiscoveryService {
               return null;
             }
           })
-          .where((art) => art != null && !discoveredIds.contains(art.id))
-          .cast<PublicArtModel>()
+          .whereType<PublicArtModel>()
+          .where((art) => !discoveredIds.contains(art.id))
           .toList();
+
+      // Convert captures to PublicArtModel and filter for public captures only
+      final nearbyCaptures = capturesResults
+          .map((doc) {
+            try {
+              final data = doc.data();
+              // Only include public captures
+              if (data != null && (data['isPublic'] as bool? ?? false)) {
+                final capture = CaptureModel.fromFirestore(doc, null);
+                return _convertCaptureToPublicArt(capture);
+              }
+              return null;
+            } catch (e) {
+              AppLogger.error('Error parsing capture: $e');
+              return null;
+            }
+          })
+          .whereType<PublicArtModel>()
+          .where((art) => !discoveredIds.contains(art.id))
+          .toList();
+
+      // Combine both lists
+      final nearbyArt = [...nearbyPublicArt, ...nearbyCaptures];
 
       // Sort by proximity
       nearbyArt.sort((a, b) {
@@ -113,18 +151,48 @@ class InstantDiscoveryService {
       final publicArtRef = _firestore.collection('publicArt');
 
       // Use geoflutterfire_plus for geospatial query
-      final geoStream = GeoCollectionReference(publicArtRef).subscribeWithin(
-        center: center,
-        radiusInKm: radiusMeters / 1000, // Convert meters to km
-        field: 'geo',
-        geopointFrom: (data) =>
-            (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
-        strictMode: true,
-      );
+      final publicArtGeoStream = GeoCollectionReference(publicArtRef)
+          .subscribeWithin(
+            center: center,
+            radiusInKm: radiusMeters / 1000, // Convert meters to km
+            field: 'geo',
+            geopointFrom: (data) =>
+                (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
+            strictMode: true,
+          );
 
-      await for (final results in geoStream) {
-        // Convert to PublicArtModel and filter out discovered art
-        final nearbyArt = results
+      // Query captures collection within radius
+      final capturesRef = _firestore.collection('captures');
+
+      // Combine both streams
+      await for (final _ in publicArtGeoStream) {
+        // Get latest results from both collections
+        final publicArtResults = await GeoCollectionReference(publicArtRef)
+            .subscribeWithin(
+              center: center,
+              radiusInKm: radiusMeters / 1000,
+              field: 'geo',
+              geopointFrom: (data) =>
+                  (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
+              strictMode: true,
+            )
+            .take(1)
+            .first;
+
+        final capturesResults = await GeoCollectionReference(capturesRef)
+            .subscribeWithin(
+              center: center,
+              radiusInKm: radiusMeters / 1000,
+              field: 'geo',
+              geopointFrom: (data) =>
+                  (data['location'] as GeoPoint?) ?? const GeoPoint(0, 0),
+              strictMode: true,
+            )
+            .take(1)
+            .first;
+
+        // Convert publicArt to PublicArtModel and filter out discovered art
+        final nearbyPublicArt = publicArtResults
             .map((doc) {
               try {
                 return PublicArtModel.fromFirestore(doc);
@@ -133,9 +201,32 @@ class InstantDiscoveryService {
                 return null;
               }
             })
-            .where((art) => art != null && !discoveredIds.contains(art.id))
-            .cast<PublicArtModel>()
+            .whereType<PublicArtModel>()
+            .where((art) => !discoveredIds.contains(art.id))
             .toList();
+
+        // Convert captures to PublicArtModel and filter for public captures only
+        final nearbyCaptures = capturesResults
+            .map((doc) {
+              try {
+                final data = doc.data();
+                // Only include public captures
+                if (data != null && (data['isPublic'] as bool? ?? false)) {
+                  final capture = CaptureModel.fromFirestore(doc, null);
+                  return _convertCaptureToPublicArt(capture);
+                }
+                return null;
+              } catch (e) {
+                AppLogger.error('Error parsing capture: $e');
+                return null;
+              }
+            })
+            .whereType<PublicArtModel>()
+            .where((art) => !discoveredIds.contains(art.id))
+            .toList();
+
+        // Combine both lists
+        final nearbyArt = [...nearbyPublicArt, ...nearbyCaptures];
 
         // Sort by proximity
         nearbyArt.sort((a, b) {
@@ -441,6 +532,50 @@ class InstantDiscoveryService {
     }
   }
 
+  /// Get user progress stats for dashboard
+  Future<Map<String, int>> getUserProgressStats() async {
+    try {
+      final userId = _auth.currentUser?.uid;
+      if (userId == null) {
+        return {'totalDiscoveries': 0, 'currentStreak': 0, 'weeklyProgress': 0};
+      }
+
+      // Get total discoveries count
+      final totalDiscoveries = await getDiscoveryCount();
+
+      // Get current streak
+      final streak = await _getDiscoveryStreak(userId);
+
+      // Get weekly progress (discoveries this week)
+      final now = DateTime.now();
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final startOfWeekDate = DateTime(
+        startOfWeek.year,
+        startOfWeek.month,
+        startOfWeek.day,
+      );
+
+      final weeklySnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('discoveries')
+          .where('discoveredAt', isGreaterThanOrEqualTo: startOfWeekDate)
+          .count()
+          .get();
+
+      final weeklyProgress = weeklySnapshot.count ?? 0;
+
+      return {
+        'totalDiscoveries': totalDiscoveries,
+        'currentStreak': streak,
+        'weeklyProgress': weeklyProgress,
+      };
+    } catch (e) {
+      AppLogger.error('Error getting user progress stats: $e');
+      return {'totalDiscoveries': 0, 'currentStreak': 0, 'weeklyProgress': 0};
+    }
+  }
+
   /// Clear cache (useful for testing or manual refresh)
   void clearCache() {
     _discoveredArtIds = null;
@@ -542,5 +677,29 @@ class InstantDiscoveryService {
         await Future<void>.delayed(const Duration(seconds: 60));
       }
     }
+  }
+
+  /// Convert CaptureModel to PublicArtModel for consistency
+  PublicArtModel _convertCaptureToPublicArt(CaptureModel capture) {
+    return PublicArtModel(
+      id: capture.id,
+      userId: capture.userId,
+      title: capture.title ?? 'Untitled Capture',
+      description: capture.description ?? '',
+      imageUrl: capture.imageUrl,
+      artistName: capture.artistName,
+      location: capture.location ?? const GeoPoint(0, 0),
+      address: capture.locationName,
+      tags: capture.tags ?? [],
+      artType: capture.artType,
+      isVerified: false, // Captures are not pre-verified
+      viewCount: 0, // Captures don't track views in the same way
+      likeCount: 0, // Captures don't track likes in the same way
+      usersFavorited: [], // Captures don't track favorites in the same way
+      createdAt: Timestamp.fromDate(capture.createdAt),
+      updatedAt: capture.updatedAt != null
+          ? Timestamp.fromDate(capture.updatedAt!)
+          : null,
+    );
   }
 }

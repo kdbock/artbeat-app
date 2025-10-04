@@ -86,8 +86,8 @@ class _EventsDrawerState extends State<EventsDrawer> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFE74C3C), // Red
-                Color(0xFF3498DB), // Light Blue
+                ArtbeatColors.primaryPurple,
+                ArtbeatColors.primaryGreen,
                 Colors.white,
               ],
               stops: [0.0, 0.3, 0.3],
@@ -105,6 +105,28 @@ class _EventsDrawerState extends State<EventsDrawer> {
                   child: ListView(
                     padding: EdgeInsets.zero,
                     children: [
+                      _buildDrawerItem(
+                        icon: Icons.home,
+                        title: 'Home',
+                        onTap: () => _navigateToScreen(context, '/dashboard'),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.search,
+                        title: 'Search',
+                        onTap: () =>
+                            _navigateToScreen(context, '/events/search'),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.message,
+                        title: 'Messages',
+                        onTap: () => _navigateToScreen(context, '/messaging'),
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.person,
+                        title: 'Profile',
+                        onTap: () => _navigateToScreen(context, '/profile'),
+                      ),
+                      const Divider(),
                       _buildDrawerItem(
                         icon: Icons.event,
                         title: 'Events Dashboard',
@@ -148,38 +170,22 @@ class _EventsDrawerState extends State<EventsDrawer> {
                           '/events/discover',
                         ), // Use discover route
                       ),
-                      _buildDrawerItem(
-                        icon: Icons.search,
-                        title: 'Search Events',
-                        onTap: () => _navigateToScreen(
-                          context,
-                          '/search',
-                        ), // Use main search
-                      ),
                       const Divider(),
                       _buildDrawerItem(
                         icon: Icons.notifications,
-                        title: 'Event Notifications',
-                        onTap: () => _navigateToScreen(
-                          context,
-                          '/notifications',
-                        ), // Use main notifications
+                        title: 'Notifications',
+                        onTap: () =>
+                            _navigateToScreen(context, '/notifications'),
                       ),
                       _buildDrawerItem(
                         icon: Icons.settings,
-                        title: 'Event Settings',
-                        onTap: () => _navigateToScreen(
-                          context,
-                          '/settings',
-                        ), // Use main settings
+                        title: 'Settings',
+                        onTap: () => _navigateToScreen(context, '/settings'),
                       ),
                       _buildDrawerItem(
                         icon: Icons.help,
-                        title: 'Event Help',
-                        onTap: () => _navigateToScreen(
-                          context,
-                          '/support',
-                        ), // Use main support
+                        title: 'Help',
+                        onTap: () => _navigateToScreen(context, '/support'),
                       ),
                     ],
                   ),
@@ -218,7 +224,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
             child: _isLoading
                 ? const CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFFE74C3C),
+                      ArtbeatColors.primaryPurple,
                     ),
                   )
                 : _currentUser?.profileImageUrl != null
@@ -233,11 +239,15 @@ class _EventsDrawerState extends State<EventsDrawer> {
                       errorWidget: (context, url, error) => const Icon(
                         Icons.person,
                         size: 40,
-                        color: Color(0xFFE74C3C),
+                        color: ArtbeatColors.primaryPurple,
                       ),
                     ),
                   )
-                : const Icon(Icons.person, size: 40, color: Color(0xFFE74C3C)),
+                : const Icon(
+                    Icons.person,
+                    size: 40,
+                    color: ArtbeatColors.primaryPurple,
+                  ),
           ),
 
           const SizedBox(height: 12),
@@ -334,7 +344,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
     String? badge,
   }) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFFE74C3C)),
+      leading: Icon(icon, color: ArtbeatColors.primaryPurple),
       title: Row(
         children: [
           Text(
@@ -349,7 +359,7 @@ class _EventsDrawerState extends State<EventsDrawer> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFE74C3C),
+                color: ArtbeatColors.primaryPurple,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(

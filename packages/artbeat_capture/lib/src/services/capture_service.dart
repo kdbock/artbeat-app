@@ -105,6 +105,16 @@ class CaptureService {
   /// Save a new capture
   Future<String?> saveCapture(CaptureModel capture) async {
     try {
+      // Create geo field for GeoFlutterFire geospatial queries
+      final Map<String, dynamic> geoData = {};
+      if (capture.location != null) {
+        final geoPoint = capture.location!;
+        geoData['geo'] = {
+          'geohash': _generateGeohash(geoPoint.latitude, geoPoint.longitude),
+          'geopoint': geoPoint,
+        };
+      }
+
       // Save to captures collection (for user's personal collection)
       final docRef = await _capturesRef.add({
         'userId': capture.userId,
@@ -125,6 +135,7 @@ class CaptureService {
         'artType': capture.artType,
         'artMedium': capture.artMedium,
         'status': capture.status.name,
+        ...geoData, // Add geo field for geospatial queries
       });
 
       // Update user's capture count
@@ -230,7 +241,17 @@ class CaptureService {
   /// Create a new capture
   Future<CaptureModel> createCapture(CaptureModel capture) async {
     try {
-      final docRef = await _capturesRef.add(capture.toFirestore());
+      // Create geo field for GeoFlutterFire geospatial queries
+      final Map<String, dynamic> captureData = capture.toFirestore();
+      if (capture.location != null) {
+        final geoPoint = capture.location!;
+        captureData['geo'] = {
+          'geohash': _generateGeohash(geoPoint.latitude, geoPoint.longitude),
+          'geopoint': geoPoint,
+        };
+      }
+
+      final docRef = await _capturesRef.add(captureData);
       final newCapture = capture.copyWith(id: docRef.id);
 
       // Update user's capture count
@@ -260,8 +281,18 @@ class CaptureService {
     Map<String, dynamic> updates,
   ) async {
     try {
+      // If location is being updated, also update the geo field
+      final Map<String, dynamic> updateData = {...updates};
+      if (updates.containsKey('location') && updates['location'] != null) {
+        final geoPoint = updates['location'] as GeoPoint;
+        updateData['geo'] = {
+          'geohash': _generateGeohash(geoPoint.latitude, geoPoint.longitude),
+          'geopoint': geoPoint,
+        };
+      }
+
       await _capturesRef.doc(captureId).update({
-        ...updates,
+        ...updateData,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
@@ -849,6 +880,61 @@ class CaptureService {
     } catch (e) {
       AppLogger.error('❌ Error checking capture achievements: $e');
       // Don't rethrow - achievement checking shouldn't break capture creation
+    }
+  }
+
+  /// Backfill geo field for existing captures (migration utility)
+  /// This should be called once to add geo fields to existing captures
+  Future<void> backfillGeoFieldForCaptures({int batchSize = 100}) async {
+    try {
+      AppLogger.info('🔄 Starting geo field backfill for captures...');
+
+      // Query captures that have location but no geo field
+      final querySnapshot = await _capturesRef
+          .where('location', isNull: false)
+          .limit(batchSize)
+          .get();
+
+      int updatedCount = 0;
+      int skippedCount = 0;
+
+      for (final doc in querySnapshot.docs) {
+        try {
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data == null) continue;
+
+          // Skip if geo field already exists
+          if (data.containsKey('geo')) {
+            skippedCount++;
+            continue;
+          }
+
+          final location = data['location'] as GeoPoint?;
+          if (location != null) {
+            // Add geo field
+            await doc.reference.update({
+              'geo': {
+                'geohash': _generateGeohash(
+                  location.latitude,
+                  location.longitude,
+                ),
+                'geopoint': location,
+              },
+            });
+            updatedCount++;
+            AppLogger.info('✅ Added geo field to capture ${doc.id}');
+          }
+        } catch (e) {
+          AppLogger.error('❌ Error updating capture ${doc.id}: $e');
+        }
+      }
+
+      AppLogger.info(
+        '✅ Geo field backfill complete: $updatedCount updated, $skippedCount skipped',
+      );
+    } catch (e) {
+      AppLogger.error('❌ Error during geo field backfill: $e');
+      rethrow;
     }
   }
 }

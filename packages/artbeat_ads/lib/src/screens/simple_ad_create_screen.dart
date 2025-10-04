@@ -181,7 +181,8 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
     }
   }
 
-  double get _totalCost => _selectedZone.pricePerDay * _selectedDays;
+  double get _totalCost =>
+      (_selectedZone.pricePerDay + _selectedSize.pricePerDay) * _selectedDays;
 
   @override
   Widget build(BuildContext context) {
@@ -328,7 +329,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                 ),
               ),
               subtitle: Text(
-                '\$${size.pricePerDay.toStringAsFixed(0)}/day',
+                '+\$${size.pricePerDay.toStringAsFixed(0)}/day',
                 style: const TextStyle(
                   color: Colors.green,
                   fontSize: 14,
@@ -385,6 +386,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
           children: [
             DropdownButtonFormField<AdZone>(
               value: _selectedZone,
+              isExpanded: true,
               decoration: const InputDecoration(
                 labelText: 'Select Display Zone',
                 border: OutlineInputBorder(),
@@ -397,12 +399,15 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                 return DropdownMenuItem(
                   value: zone,
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(zone.iconData, size: 20, color: Colors.black54),
                       const SizedBox(width: 8),
-                      Expanded(
+                      Flexible(
+                        fit: FlexFit.loose,
                         child: Text(
                           zone.displayName,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.black87,
                             fontSize: 16,
@@ -410,6 +415,7 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         '\$${zone.pricePerDay.toStringAsFixed(0)}/day',
                         style: const TextStyle(
@@ -776,6 +782,17 @@ class _SimpleAdCreateScreenState extends State<SimpleAdCreateScreen> {
                 ),
                 Text(
                   '\$${_selectedZone.pricePerDay.toStringAsFixed(0)}/day',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Size: ${_selectedSize.displayName}'),
+                Text(
+                  '+\$${_selectedSize.pricePerDay.toStringAsFixed(0)}/day',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],

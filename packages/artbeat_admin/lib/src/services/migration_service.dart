@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_capture/artbeat_capture.dart';
 
 /// Service for migrating existing data to use standardized moderation status
 class MigrationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CaptureService _captureService = CaptureService();
 
   /// Migrate all collections to use standardized moderation status
   Future<void> migrateAllCollections() async {
@@ -21,6 +23,22 @@ class MigrationService {
       AppLogger.info('Migration completed successfully!');
     } catch (e) {
       AppLogger.info('Migration failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Migrate captures to add geo field for geospatial queries
+  Future<void> migrateCapturesGeoField({int batchSize = 100}) async {
+    AppLogger.info('Starting geo field migration for captures...');
+
+    try {
+      await _captureService.backfillGeoFieldForCaptures(
+        batchSize: batchSize,
+      );
+
+      AppLogger.info('Geo field migration completed successfully');
+    } catch (e) {
+      AppLogger.error('Geo field migration failed: $e');
       rethrow;
     }
   }

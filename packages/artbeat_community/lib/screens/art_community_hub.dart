@@ -9,6 +9,7 @@ import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'artist_onboarding_screen.dart';
+import 'artist_feed_screen.dart';
 import 'feed/comments_screen.dart';
 import 'feed/create_post_screen.dart';
 import 'feed/enhanced_community_feed_screen.dart';
@@ -180,23 +181,26 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Art Community',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.white,
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Art Community',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Connect with artists worldwide',
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
-                    ),
-                  ],
+                      Text(
+                        'Connect with artists',
+                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -962,8 +966,16 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
     setState(() => _isLoading = true);
 
     try {
-      // Get artists from the community service
-      final artists = widget.communityService.getArtists(limit: 20);
+      AppLogger.info('🎨 Loading artists...');
+      // Fetch artists from Firestore
+      final artists = await widget.communityService.fetchArtists(limit: 20);
+
+      AppLogger.info('🎨 Loaded ${artists.length} artists');
+      if (artists.isNotEmpty) {
+        AppLogger.info(
+          '🎨 First artist: ${artists.first.displayName}, avatar: ${artists.first.avatarUrl}, portfolio images: ${artists.first.portfolioImages.length}',
+        );
+      }
 
       if (mounted) {
         setState(() {
@@ -973,6 +985,7 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
         });
       }
     } catch (e) {
+      AppLogger.error('🎨 Error loading artists: $e');
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(
@@ -1002,7 +1015,10 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
     Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (context) => ArtistPublicProfileScreen(userId: artist.userId),
+        builder: (context) => ArtistFeedScreen(
+          artistId: artist.userId,
+          artistName: artist.displayName,
+        ),
       ),
     );
   }
@@ -1336,32 +1352,36 @@ class _TopicsTabState extends State<TopicsTab> {
               ],
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  shape: BoxShape.circle,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _getTopicIcon(topic),
+                    size: 32,
+                    color: ArtbeatColors.primaryPurple,
+                  ),
                 ),
-                child: Icon(
-                  _getTopicIcon(topic),
-                  size: 32,
-                  color: ArtbeatColors.primaryPurple,
+                const SizedBox(height: 12),
+                Text(
+                  topic,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: ArtbeatColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                topic,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: ArtbeatColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -19,7 +19,7 @@ class EnvLoader {
       // - Platform-specific secure storage
       // - Remote config (Firebase Remote Config)
       // NEVER hardcode production secrets!
-      
+
       _envVars.addAll({
         'API_BASE_URL': const String.fromEnvironment(
           'API_BASE_URL',

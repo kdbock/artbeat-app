@@ -5,11 +5,13 @@
 During a security audit, the following credentials were found hardcoded in the source code and have been **removed**:
 
 ### 1. Google Service Account Private Key
+
 - **Location**: `packages/artbeat_core/lib/src/firebase/secure_firebase_config.dart`
 - **Risk**: HIGH - Full service account access
 - **Action Required**: ✅ **IMMEDIATELY REVOKE AND REGENERATE**
 
 **Steps to revoke:**
+
 1. Go to Google Cloud Console: https://console.cloud.google.com
 2. Navigate to: IAM & Admin > Service Accounts
 3. Find service account: `artbeat-play-verification@wordnerd-artbeat.iam.gserviceaccount.com`
@@ -18,19 +20,23 @@ During a security audit, the following credentials were found hardcoded in the s
 6. Store new key ONLY on backend servers (Cloud Functions), NEVER in client app
 
 ### 2. Stripe Live Publishable Key
+
 - **Location**: `packages/artbeat_core/lib/src/utils/env_loader.dart`
 - **Risk**: MEDIUM - Could be abused, but limited without secret key
 - **Key**: `pk_live_51QpJ6iAO5ulTKoALLtQFut6aQIyhLvrcUWRgA8RINvB6xwa37NeKymcV5lM96Yg6oOXvMQuwjPzP5LbE6I5ktHWG00Xk24gmn2`
 - **Action Required**: ✅ **ROTATE IMMEDIATELY**
 
 **Steps to rotate:**
+
 1. Go to Stripe Dashboard: https://dashboard.stripe.com/apikeys
 2. Roll the exposed publishable key
 3. Update in CI/CD secrets and `.env.local`
 4. Deploy new app version with new key
 
 ### 3. Google Maps API Keys
+
 Multiple Google Maps API keys found in source code:
+
 - `AIzaSyBvmSCvenoo9u-eXNzKm_oDJJJjC0MbqHA` (in multiple files)
 - `AIzaSyAWORLK8SxG6IKkaA5CaY2s3J2OIJ_36TA` (Firebase/Android)
 - `AIzaSyAXFpdz_5cJ8m4ZDgBb7kVx7PHxinwEkdA` (iOS/Web)
@@ -40,6 +46,7 @@ Multiple Google Maps API keys found in source code:
 **Action Required**: ✅ **RESTRICT IMMEDIATELY**
 
 **Steps to restrict:**
+
 1. Go to Google Cloud Console: https://console.cloud.google.com/apis/credentials
 2. For each key, click "Edit"
 3. Set Application restrictions:
@@ -50,11 +57,13 @@ Multiple Google Maps API keys found in source code:
 5. Set quotas to reasonable limits
 
 ### 4. OAuth Client Secret
+
 - **Location**: `assets/client_secret_*.json` (removed)
 - **Risk**: MEDIUM
 - **Action Required**: ✅ **REVOKE AND REGENERATE**
 
 **Steps:**
+
 1. Go to Google Cloud Console > APIs & Services > Credentials
 2. Find OAuth 2.0 Client ID: `665020451634-sb8o1cgfji453vifsr3gqqqe1u2o5in4`
 3. Delete and create new credentials
@@ -85,6 +94,7 @@ Multiple Google Maps API keys found in source code:
 ## ⚠️ IMPORTANT: Stripe Key Expiration Notice
 
 **The rotated Stripe key expires in 8 days!** You need to:
+
 1. Update your `.env.local` file with the new key (it will be provided automatically)
 2. Update CI/CD secrets before expiration
 3. Deploy new app version before the old key expires

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../utils/logger.dart';
 
 /// Handles server-side purchase verification for both Google Play and App Store
-/// 
+///
 /// IMPORTANT: This service now uses Firebase Cloud Functions for secure verification.
 /// Service account credentials are stored securely in Cloud Functions, not in the client app.
 class PurchaseVerificationService {
@@ -11,7 +11,7 @@ class PurchaseVerificationService {
       'https://us-central1-wordnerd-artbeat.cloudfunctions.net';
 
   /// Verify Android purchase via Cloud Function
-  /// 
+  ///
   /// This method calls a secure Cloud Function that has access to service account
   /// credentials. The credentials are never exposed to the client app.
   static Future<bool> verifyGooglePlayPurchase({
@@ -36,13 +36,13 @@ class PurchaseVerificationService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final isValid = data['valid'] as bool? ?? false;
-        
+
         if (isValid) {
           AppLogger.info('✅ Google Play purchase verified: $productId');
         } else {
           AppLogger.warning('⚠️ Google Play purchase not valid');
         }
-        
+
         return isValid;
       } else {
         AppLogger.error(
@@ -57,7 +57,7 @@ class PurchaseVerificationService {
   }
 
   /// Verify iOS purchase via Cloud Function
-  /// 
+  ///
   /// This method calls a secure Cloud Function that has access to the
   /// App Store shared secret. The secret is never exposed to the client app.
   static Future<bool> verifyAppStorePurchase({
@@ -71,22 +71,19 @@ class PurchaseVerificationService {
       final response = await http.post(
         Uri.parse('$_cloudFunctionBaseUrl/verifyAppStorePurchase'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'receiptData': receiptData,
-          'isSandbox': isSandbox,
-        }),
+        body: json.encode({'receiptData': receiptData, 'isSandbox': isSandbox}),
       );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         final isValid = data['valid'] as bool? ?? false;
-        
+
         if (isValid) {
           AppLogger.info('✅ App Store purchase verified');
         } else {
           AppLogger.warning('⚠️ App Store purchase not valid');
         }
-        
+
         return isValid;
       } else {
         AppLogger.error(

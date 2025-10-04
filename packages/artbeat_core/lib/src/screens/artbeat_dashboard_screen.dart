@@ -21,7 +21,8 @@ class ArtbeatDashboardScreen extends StatefulWidget {
   State<ArtbeatDashboardScreen> createState() => _ArtbeatDashboardScreenState();
 }
 
-class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
+class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
+    with RouteAware {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -105,6 +106,7 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
               // 1.2. Live Activity Feed (social proof)
               SliverToBoxAdapter(
                 child: LiveActivityFeed(
+                  activities: viewModel.activities,
                   onTap: () => _navigateToCommunityHub(context),
                 ),
               ),
@@ -112,6 +114,10 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
               // 1.3. User Progress Card (gamification)
               SliverToBoxAdapter(
                 child: UserProgressCard(
+                  currentStreak: viewModel.currentStreak,
+                  totalDiscoveries: viewModel.totalDiscoveries,
+                  weeklyProgress: viewModel.weeklyProgress,
+                  weeklyGoal: 7, // Default weekly goal
                   onTap: () => _navigateToWeeklyGoals(context),
                 ),
               ),
@@ -247,9 +253,15 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen> {
     );
   }
 
-  void _navigateToArtWalk(BuildContext context) {
+  Future<void> _navigateToArtWalk(BuildContext context) async {
     // Navigate to art walk dashboard
-    Navigator.pushNamed(context, '/art-walk/dashboard');
+    final result = await Navigator.pushNamed(context, '/art-walk/dashboard');
+
+    // Refresh dashboard if discoveries were made
+    if (result == true && context.mounted) {
+      final viewModel = Provider.of<DashboardViewModel>(context, listen: false);
+      await viewModel.refresh();
+    }
   }
 
   void _navigateToWeeklyGoals(BuildContext context) {

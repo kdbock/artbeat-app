@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter/foundation.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 
 /// Activity types for the social feed
@@ -180,6 +181,50 @@ class SocialService {
     }
   }
 
+  /// Get activities by user ID
+  Future<List<SocialActivity>> getUserActivities({
+    required String userId,
+    int limit = 10,
+  }) async {
+    try {
+      debugPrint(
+        '🔍 SocialService: getUserActivities called for userId: $userId, limit: $limit',
+      );
+
+      final query = _activities
+          .where('userId', isEqualTo: userId)
+          .orderBy('timestamp', descending: true)
+          .limit(limit);
+
+      final snapshot = await query.get();
+      debugPrint(
+        '🔍 SocialService: Query returned ${snapshot.docs.length} documents',
+      );
+
+      final activities = snapshot.docs
+          .map((doc) => SocialActivity.fromFirestore(doc))
+          .toList();
+
+      debugPrint(
+        '🔍 SocialService: Converted to ${activities.length} activities',
+      );
+      if (activities.isNotEmpty) {
+        debugPrint(
+          '🔍 SocialService: First activity: ${activities.first.userName} - ${activities.first.message}',
+        );
+      }
+
+      AppLogger.debug(
+        'Loaded ${activities.length} activities for user $userId',
+      );
+      return activities;
+    } catch (e) {
+      debugPrint('🔍 SocialService: Error loading user activities: $e');
+      AppLogger.error('Error loading user activities: $e');
+      return [];
+    }
+  }
+
   /// Post a new social activity
   Future<void> postActivity({
     required String userId,
@@ -191,6 +236,10 @@ class SocialService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
+      debugPrint('🔍 SocialService: Posting activity for user $userId');
+      debugPrint('🔍 SocialService: Activity type: ${type.name}');
+      debugPrint('🔍 SocialService: Message: $message');
+
       final activity = SocialActivity(
         id: '', // Will be set by Firestore
         userId: userId,
@@ -203,9 +252,13 @@ class SocialService {
         metadata: metadata,
       );
 
-      await _activities.add(activity.toFirestore());
-      AppLogger.error('Posted social activity: ${type.name}');
+      final docRef = await _activities.add(activity.toFirestore());
+      debugPrint(
+        '🔍 SocialService: ✅ Successfully posted activity with ID: ${docRef.id}',
+      );
+      AppLogger.info('Posted social activity: ${type.name} (ID: ${docRef.id})');
     } catch (e) {
+      debugPrint('🔍 SocialService: ❌ Error posting activity: $e');
       AppLogger.error('Error posting activity: $e');
       rethrow;
     }

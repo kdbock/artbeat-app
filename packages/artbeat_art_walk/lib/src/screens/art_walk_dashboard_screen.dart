@@ -7,7 +7,6 @@ import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:async';
-import '../services/social_service.dart';
 
 // Dashboard specific colors (using design system colors)
 class DashboardColors {

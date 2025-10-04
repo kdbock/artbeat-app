@@ -5,6 +5,7 @@ import '../models/ad_model.dart';
 import '../models/ad_analytics_model.dart';
 import '../models/ad_impression_model.dart';
 import '../models/ad_click_model.dart';
+import '../models/ad_zone.dart';
 import '../services/ad_analytics_service.dart';
 
 /// Screen showing detailed performance metrics for a specific ad
@@ -195,7 +196,11 @@ class _AdPerformanceScreenState extends State<AdPerformanceScreen> {
                           ),
                           const SizedBox(width: 8),
                           Chip(
-                            label: Text(widget.ad.location.name),
+                            label: Text(
+                              widget.ad.zone != null
+                                  ? '${widget.ad.zone!.icon} ${widget.ad.zone!.displayName}'
+                                  : widget.ad.location.name,
+                            ),
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
                           ),

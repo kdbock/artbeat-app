@@ -6,6 +6,7 @@ import '../screens/admin_settings_screen.dart';
 import '../screens/admin_security_center_screen.dart';
 import '../screens/admin_system_monitoring_screen.dart';
 import '../screens/admin_payment_screen.dart';
+import '../screens/migration_screen.dart';
 import '../models/user_admin_model.dart';
 
 /// Admin routing configuration for the ARTbeat admin system
@@ -51,6 +52,7 @@ class AdminRoutes {
   static const String securityCenter = '/admin/security';
   static const String systemMonitoring = '/admin/monitoring';
   static const String paymentManagement = '/admin/payments';
+  static const String migration = '/admin/migration';
   static const String login = '/admin/login';
 
   /// Generate routes for the admin system
@@ -94,6 +96,12 @@ class AdminRoutes {
       case paymentManagement:
         return MaterialPageRoute<void>(
           builder: (_) => const AdminPaymentScreen(),
+          settings: settings,
+        );
+
+      case migration:
+        return MaterialPageRoute<void>(
+          builder: (_) => const MigrationScreen(),
           settings: settings,
         );
 

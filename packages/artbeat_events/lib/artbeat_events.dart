@@ -24,6 +24,7 @@ export 'src/screens/event_details_screen.dart';
 export 'src/screens/event_details_wrapper.dart';
 export 'src/screens/events_dashboard_screen.dart';
 export 'src/screens/events_list_screen.dart';
+export 'src/screens/event_search_screen.dart';
 export 'src/screens/my_tickets_screen.dart';
 export 'src/screens/user_events_dashboard_screen.dart';
 export 'src/screens/advanced_analytics_dashboard_screen.dart';

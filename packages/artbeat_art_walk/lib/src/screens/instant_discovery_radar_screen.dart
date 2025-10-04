@@ -77,9 +77,9 @@ class _InstantDiscoveryRadarScreenState
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (!didPop) {
           // Return true if discoveries were made to refresh dashboard
           Navigator.pop(context, _hasDiscoveries);
         }

@@ -8,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' show sin, cos, sqrt, atan2, pi;
-import '../services/social_service.dart';
 
 /// Enhanced art walk experience screen with turn-by-turn navigation
 class EnhancedArtWalkExperienceScreen extends StatefulWidget {

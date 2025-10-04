@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 
 import 'package:artbeat_core/artbeat_core.dart';
-import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' as artWalkLib;
 import 'package:artbeat_artist/artbeat_artist.dart' as artist_profile;
 import 'package:artbeat_events/artbeat_events.dart' as eventLib;
 import 'package:artbeat_artwork/artbeat_artwork.dart' as artworkLib;
@@ -15,7 +15,8 @@ import 'package:artbeat_community/artbeat_community.dart' as community;
 class DashboardViewModel extends ChangeNotifier {
   final eventLib.EventService _eventService;
   final artworkLib.ArtworkService _artworkService;
-  final ArtWalkService _artWalkService;
+  final artWalkLib.ArtWalkService _artWalkService;
+  final artWalkLib.SocialService _socialService;
   final SubscriptionService _subscriptionService;
   final UserService _userService;
   final CaptureService _captureService;
@@ -36,6 +37,8 @@ class DashboardViewModel extends ChangeNotifier {
   bool _isLoadingAchievements = true;
   bool _isLoadingLocalCaptures = true;
   bool _isLoadingPosts = true;
+  bool _isLoadingUserProgress = true;
+  bool _isLoadingActivities = true;
 
   String? _eventsError;
   String? _upcomingEventsError;
@@ -53,14 +56,21 @@ class DashboardViewModel extends ChangeNotifier {
   Set<Marker> _markers = {};
   Position? _currentLocation;
   LatLng? _mapLocation;
-  List<AchievementModel> _achievements = [];
+  List<artWalkLib.AchievementModel> _achievements = [];
   List<CaptureModel> _localCaptures = [];
   List<community.PostModel> _posts = [];
+  List<artWalkLib.SocialActivity> _activities = [];
+
+  // User progress stats
+  int _totalDiscoveries = 0;
+  int _currentStreak = 0;
+  int _weeklyProgress = 0;
 
   DashboardViewModel({
     required eventLib.EventService eventService,
     required artworkLib.ArtworkService artworkService,
-    required ArtWalkService artWalkService,
+    required artWalkLib.ArtWalkService artWalkService,
+    artWalkLib.SocialService? socialService,
     required SubscriptionService subscriptionService,
     required UserService userService,
     CaptureService? captureService,
@@ -70,6 +80,7 @@ class DashboardViewModel extends ChangeNotifier {
   }) : _eventService = eventService,
        _artworkService = artworkService,
        _artWalkService = artWalkService,
+       _socialService = socialService ?? artWalkLib.SocialService(),
        _subscriptionService = subscriptionService,
        _userService = userService,
        _captureService = captureService ?? CaptureService(),
@@ -80,9 +91,16 @@ class DashboardViewModel extends ChangeNotifier {
 
   /// Initializes dashboard data and state
   Future<void> initialize() async {
-    if (!_isInitializing) return; // Prevent multiple initializations
+    debugPrint(
+      '🔍 DashboardViewModel: initialize() called, _isInitializing=$_isInitializing',
+    );
+    if (!_isInitializing) {
+      debugPrint('🔍 DashboardViewModel: Already initialized, skipping...');
+      return; // Prevent multiple initializations
+    }
 
     try {
+      debugPrint('🔍 DashboardViewModel: Starting initialization...');
       _resetLoadingStates();
       // First load current user since other operations depend on it
       await _loadCurrentUser();
@@ -97,13 +115,18 @@ class DashboardViewModel extends ChangeNotifier {
         _loadAchievements(),
         _loadLocalCaptures(),
         _loadPosts(),
+        _loadActivities(),
+        _loadUserProgress(),
       ]);
+      debugPrint('🔍 DashboardViewModel: ✅ Initialization complete');
     } catch (e, stack) {
+      debugPrint('🔍 DashboardViewModel: ❌ Initialization error: $e');
       AppLogger.error('❌ Error initializing dashboard: $e');
       AppLogger.error('❌ Stack trace: $stack');
     } finally {
       _isInitializing = false;
       _safeNotifyListeners();
+      debugPrint('🔍 DashboardViewModel: _isInitializing set to false');
     }
   }
 
@@ -116,6 +139,8 @@ class DashboardViewModel extends ChangeNotifier {
     _isLoadingAchievements = true;
     _isLoadingLocalCaptures = true;
     _isLoadingPosts = true;
+    _isLoadingActivities = true;
+    _isLoadingUserProgress = true;
     _safeNotifyListeners();
   }
 
@@ -173,13 +198,29 @@ class DashboardViewModel extends ChangeNotifier {
   List<ArtistProfileModel> get artists => List.unmodifiable(_artists);
   Set<Marker> get markers => Set.unmodifiable(_markers);
   Position? get currentLocation => _currentLocation;
-  List<AchievementModel> get achievements => List.unmodifiable(_achievements);
+  List<artWalkLib.AchievementModel> get achievements =>
+      List.unmodifiable(_achievements);
   List<CaptureModel> get localCaptures => List.unmodifiable(_localCaptures);
   List<community.PostModel> get posts => List.unmodifiable(_posts);
+  List<artWalkLib.SocialActivity> get activities =>
+      List.unmodifiable(_activities);
   LatLng? get mapLocation => _mapLocation;
   UserModel? get currentUser => _currentUser;
 
+  // User progress getters
+  int get totalDiscoveries => _totalDiscoveries;
+  int get currentStreak => _currentStreak;
+  int get weeklyProgress => _weeklyProgress;
+  bool get isLoadingUserProgress => _isLoadingUserProgress;
+  bool get isLoadingActivities => _isLoadingActivities;
+
   // Methods
+  /// Reload just the activities feed
+  Future<void> reloadActivities() async {
+    debugPrint('🔍 DashboardViewModel: reloadActivities() called');
+    await _loadActivities();
+  }
+
   Future<void> refresh() async {
     if (_isInitializing) {
       // If still initializing, wait for it to complete
@@ -197,6 +238,9 @@ class DashboardViewModel extends ChangeNotifier {
         _loadLocation(),
         _loadAchievements(),
         _loadLocalCaptures(),
+        _loadPosts(),
+        _loadActivities(),
+        _loadUserProgress(),
       ]);
     } catch (e, stack) {
       AppLogger.error('❌ Error refreshing dashboard: $e');
@@ -378,6 +422,54 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> _loadActivities() async {
+    try {
+      _isLoadingActivities = true;
+      _safeNotifyListeners();
+
+      debugPrint('🔍 DashboardViewModel: Starting to load activities');
+
+      // Load recent social activities
+      final user = _auth.currentUser;
+      if (user == null) {
+        debugPrint('🔍 DashboardViewModel: ❌ No user logged in');
+        _activities = [];
+        AppLogger.info('No user logged in, no activities to load');
+        return;
+      }
+
+      debugPrint('🔍 DashboardViewModel: User logged in: ${user.uid}');
+
+      // Always try to load user's own activities first for more reliable results
+      debugPrint('🔍 DashboardViewModel: Loading user activities');
+      final userActivities = await _socialService.getUserActivities(
+        userId: user.uid,
+        limit: 10,
+      );
+
+      debugPrint(
+        '🔍 DashboardViewModel: Loaded ${userActivities.length} user activities',
+      );
+
+      _activities = userActivities;
+
+      AppLogger.info(
+        '✅ Loaded ${userActivities.length} user activities successfully',
+      );
+    } catch (e, stack) {
+      debugPrint('🔍 DashboardViewModel: ❌ Error loading activities: $e');
+      debugPrint('🔍 DashboardViewModel: Stack trace: $stack');
+      AppLogger.error('Error loading activities: $e');
+      _activities = [];
+    } finally {
+      _isLoadingActivities = false;
+      _safeNotifyListeners();
+      debugPrint(
+        '🔍 DashboardViewModel: Finished loading activities, total: ${_activities.length}',
+      );
+    }
+  }
+
   Future<void> _loadLocation() async {
     try {
       _isLoadingLocation = true;
@@ -480,6 +572,38 @@ class DashboardViewModel extends ChangeNotifier {
   }
 
   // Intentionally removed duplicate methods that were declared again below
+
+  Future<void> _loadUserProgress() async {
+    try {
+      if (_currentUser == null) {
+        _totalDiscoveries = 0;
+        _currentStreak = 0;
+        _weeklyProgress = 0;
+        _isLoadingUserProgress = false;
+        return;
+      }
+
+      // Import the InstantDiscoveryService
+      final instantDiscoveryService = artWalkLib.InstantDiscoveryService();
+      final stats = await instantDiscoveryService.getUserProgressStats();
+
+      _totalDiscoveries = stats['totalDiscoveries'] ?? 0;
+      _currentStreak = stats['currentStreak'] ?? 0;
+      _weeklyProgress = stats['weeklyProgress'] ?? 0;
+
+      AppLogger.info(
+        '✅ User progress loaded: $_totalDiscoveries discoveries, $_currentStreak streak, $_weeklyProgress this week',
+      );
+    } catch (e) {
+      AppLogger.error('❌ Error loading user progress: $e');
+      _totalDiscoveries = 0;
+      _currentStreak = 0;
+      _weeklyProgress = 0;
+    } finally {
+      _isLoadingUserProgress = false;
+      _safeNotifyListeners();
+    }
+  }
 
   Future<void> followArtist({required String artistId}) async {
     if (!isAuthenticated) {

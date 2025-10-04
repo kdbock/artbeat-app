@@ -137,6 +137,13 @@ class AdminDrawer extends StatelessWidget {
                       route: '/admin/payments',
                       subtitle: 'Transaction & refund management',
                     ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.sync_alt,
+                      title: 'Data Migration',
+                      route: '/admin/migration',
+                      subtitle: 'Run database migrations',
+                    ),
 
                     const Divider(height: 16),
 

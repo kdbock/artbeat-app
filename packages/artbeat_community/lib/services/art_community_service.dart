@@ -20,9 +20,84 @@ class ArtCommunityService extends ChangeNotifier {
   Stream<List<ArtPost>> get feedStream => _feedController.stream;
   Stream<List<ArtistProfile>> get artistsStream => _artistsController.stream;
 
-  /// Get current cached artists
+  /// Get current cached artists (synchronous)
   List<ArtistProfile> getArtists({int limit = 20}) {
     return _artistsCache.take(limit).toList();
+  }
+
+  /// Get artists from Firestore (async)
+  Future<List<ArtistProfile>> fetchArtists({int limit = 20}) async {
+    try {
+      AppLogger.info('🎨 Fetching artists from Firestore...');
+
+      final snapshot = await _firestore
+          .collection('artistProfiles')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+
+      final artists = <ArtistProfile>[];
+
+      for (final doc in snapshot.docs) {
+        try {
+          final artist = ArtistProfile.fromFirestore(doc);
+
+          // If portfolio images are empty, try to fetch from artworks
+          List<String> portfolioImages = artist.portfolioImages;
+          if (portfolioImages.isEmpty) {
+            try {
+              final artworksSnapshot = await _firestore
+                  .collection('artworks')
+                  .where('artistId', isEqualTo: artist.userId)
+                  .orderBy('createdAt', descending: true)
+                  .limit(3)
+                  .get();
+
+              portfolioImages = artworksSnapshot.docs
+                  .map((artworkDoc) {
+                    final data = artworkDoc.data();
+                    final imageUrl = data['imageUrl'] as String?;
+                    if (imageUrl != null && imageUrl.isNotEmpty) {
+                      return imageUrl;
+                    }
+                    // Also check for images array
+                    final images = data['images'] as List?;
+                    if (images != null && images.isNotEmpty) {
+                      return images.first as String;
+                    }
+                    return null;
+                  })
+                  .whereType<String>()
+                  .toList();
+            } catch (e) {
+              AppLogger.warning(
+                '🎨 Could not fetch artworks for ${artist.displayName}: $e',
+              );
+            }
+          }
+
+          // Create artist with portfolio images
+          final artistWithPortfolio = artist.copyWith(
+            portfolioImages: portfolioImages,
+          );
+
+          AppLogger.info(
+            '🎨 Loaded artist: ${artistWithPortfolio.displayName}, avatar: ${artistWithPortfolio.avatarUrl}, portfolio: ${artistWithPortfolio.portfolioImages.length} images',
+          );
+
+          artists.add(artistWithPortfolio);
+        } catch (e) {
+          AppLogger.error('🎨 Error parsing artist doc ${doc.id}: $e');
+        }
+      }
+
+      AppLogger.info('🎨 Successfully loaded ${artists.length} artists');
+      _artistsCache = artists;
+      return artists;
+    } catch (e) {
+      AppLogger.error('🎨 Error fetching artists: $e');
+      return [];
+    }
   }
 
   // Cache for performance

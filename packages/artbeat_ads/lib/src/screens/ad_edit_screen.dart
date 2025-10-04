@@ -5,6 +5,7 @@ import '../models/ad_model.dart';
 import '../models/ad_type.dart';
 import '../models/ad_size.dart';
 import '../models/ad_location.dart';
+import '../models/ad_zone.dart';
 import '../models/ad_duration.dart';
 import '../models/image_fit.dart';
 import '../services/simple_ad_service.dart';
@@ -41,6 +42,7 @@ class _AdEditScreenState extends State<AdEditScreen>
   late AdType _selectedType;
   late AdSize _selectedSize;
   late AdLocation _selectedLocation;
+  AdZone? _selectedZone;
   late AdDuration _selectedDuration;
   late ImageFit _selectedImageFit;
 
@@ -105,6 +107,7 @@ class _AdEditScreenState extends State<AdEditScreen>
     _selectedType = ad.type;
     _selectedSize = ad.size;
     _selectedLocation = ad.location;
+    _selectedZone = ad.zone; // Load zone if available
     _selectedDuration = ad.duration;
     _selectedImageFit = ad.imageFit;
 
@@ -255,6 +258,7 @@ class _AdEditScreenState extends State<AdEditScreen>
         type: _selectedType,
         size: _selectedSize,
         location: _selectedLocation,
+        zone: _selectedZone, // Save zone
         duration: _selectedDuration,
         imageFit: _selectedImageFit,
         updatedAt: DateTime.now(),
@@ -641,7 +645,7 @@ class _AdEditScreenState extends State<AdEditScreen>
                 return DropdownMenuItem(
                   value: size,
                   child: Text(
-                    '${size.displayName} - \$${size.pricePerDay}/day',
+                    '${size.displayName} - +\$${size.pricePerDay}/day',
                   ),
                 );
               }).toList(),
@@ -656,10 +660,80 @@ class _AdEditScreenState extends State<AdEditScreen>
             ),
           ),
           _buildSettingCard(
-            'Placement Location',
+            'Ad Zone (Recommended)',
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DropdownButtonFormField<AdZone>(
+                  value: _selectedZone,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Select a zone',
+                  ),
+                  items: AdZone.values.map((zone) {
+                    return DropdownMenuItem(
+                      value: zone,
+                      child: Row(
+                        children: [
+                          Icon(zone.iconData, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${zone.displayName} - \$${zone.pricePerDay}/day',
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedZone = value;
+                      _hasChanges = true;
+                    });
+                  },
+                ),
+                if (_selectedZone != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _selectedZone!.description,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Expected impressions: ${_selectedZone!.expectedImpressions}/day',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          _buildSettingCard(
+            'Legacy Location (Deprecated)',
             DropdownButtonFormField<AdLocation>(
               value: _selectedLocation,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                helperText: 'Use zones instead for better targeting',
+              ),
               items: AdLocation.values.map((location) {
                 return DropdownMenuItem(
                   value: location,
@@ -854,9 +928,17 @@ class _AdEditScreenState extends State<AdEditScreen>
             const SizedBox(height: 12),
             _buildInfoRow('Type', _selectedType.displayName),
             _buildInfoRow('Size', _selectedSize.displayName),
-            _buildInfoRow('Location', _selectedLocation.displayName),
+            if (_selectedZone != null)
+              _buildInfoRow('Zone', _selectedZone!.displayName)
+            else
+              _buildInfoRow('Location', _selectedLocation.displayName),
             _buildInfoRow('Duration', _selectedDuration.displayName),
-            _buildInfoRow('Price', '\$${_selectedSize.pricePerDay}/day'),
+            _buildInfoRow(
+              'Price',
+              _selectedZone != null
+                  ? '\$${(_selectedZone!.pricePerDay + _selectedSize.pricePerDay).toStringAsFixed(0)}/day (Zone: \$${_selectedZone!.pricePerDay} + Size: \$${_selectedSize.pricePerDay})'
+                  : '\$${_selectedSize.pricePerDay}/day',
+            ),
             if (_linkUrlController.text.isNotEmpty)
               _buildInfoRow('Link URL', _linkUrlController.text),
             if (_contactInfoController.text.isNotEmpty)

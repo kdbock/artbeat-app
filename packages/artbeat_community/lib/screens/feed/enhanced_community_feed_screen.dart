@@ -9,8 +9,13 @@ import 'create_post_screen.dart';
 /// Enhanced community feed screen showcasing the new social engagement system
 class EnhancedCommunityFeedScreen extends StatefulWidget {
   final String? topicFilter;
+  final String? artistFilter;
 
-  const EnhancedCommunityFeedScreen({super.key, this.topicFilter});
+  const EnhancedCommunityFeedScreen({
+    super.key,
+    this.topicFilter,
+    this.artistFilter,
+  });
 
   @override
   State<EnhancedCommunityFeedScreen> createState() =>
@@ -43,6 +48,8 @@ class _EnhancedCommunityFeedScreenState
         title: Text(
           widget.topicFilter != null
               ? '${widget.topicFilter} Feed'
+              : widget.artistFilter != null
+              ? 'Artist Feed'
               : 'Community Feed',
         ),
         backgroundColor: ArtbeatColors.primaryPurple,

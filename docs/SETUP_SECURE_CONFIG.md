@@ -11,6 +11,7 @@ cp .env.local.example .env.local
 ```
 
 Edit `.env.local` with your actual values:
+
 ```bash
 export ENVIRONMENT=development
 export GOOGLE_MAPS_API_KEY=AIzaSy...your_key...
@@ -69,9 +70,11 @@ flutter run \
 ## CI/CD Configuration
 
 For GitHub Actions, add these secrets to your repository:
+
 - Settings > Secrets and variables > Actions > New repository secret
 
 Required secrets:
+
 - `GOOGLE_MAPS_API_KEY`
 - `STRIPE_PUBLISHABLE_KEY`
 - `STRIPE_SECRET_KEY` (for Cloud Functions)
@@ -90,12 +93,14 @@ Then in your workflow:
 ## Getting API Keys
 
 ### Google Maps API Key
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
 2. Create a new API key or use existing
 3. **Important**: Restrict the key to your app's package name
 4. Enable required APIs: Maps SDK for Android/iOS
 
 ### Stripe Keys
+
 1. Go to [Stripe Dashboard](https://dashboard.stripe.com/apikeys)
 2. Copy your publishable key
 3. Use `pk_test_*` for development
@@ -103,6 +108,7 @@ Then in your workflow:
 5. **Never** use secret keys (`sk_*`) in the mobile app!
 
 ### Firebase Configuration
+
 1. Download `google-services.json` from Firebase Console
 2. Place in `android/app/google-services.json`
 3. Download `GoogleService-Info.plist` from Firebase Console
@@ -115,6 +121,7 @@ These files are gitignored and must be set up on each development machine.
 ### "Configuration not set" errors
 
 If you see validation errors:
+
 1. Verify `.env.local` exists and has correct values
 2. Run with the build script: `./scripts/build_secure.sh run`
 3. Check that you're using `source .env.local` before manual builds
@@ -122,18 +129,21 @@ If you see validation errors:
 ### Build fails with "GOOGLE_MAPS_API_KEY not found"
 
 The app is not receiving the environment variables. Make sure to:
+
 1. Use `--dart-define` flags
 2. Or use the provided `build_secure.sh` script
 
 ## Security Notes
 
 ✅ **Safe to commit:**
+
 - `.env.local.example`
 - `.env.example`
 - `.env.production` (if it only contains placeholders)
 - `lib/config/app_config.dart`
 
 ❌ **Never commit:**
+
 - `.env.local` (your actual keys)
 - `.env` (if it contains real values)
 - `google-services.json`

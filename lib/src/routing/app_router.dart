@@ -841,39 +841,6 @@ class AppRouter {
       case AppRoutes.eventsArtistDashboard:
         return RouteUtils.createMainLayoutRoute(
           currentIndex: 4,
-          appBar: const PreferredSize(
-            preferredSize: Size.fromHeight(kToolbarHeight + 4),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFE74C3C), // Red
-                    Color(0xFF3498DB), // Light Blue
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: core.EnhancedUniversalHeader(
-                title: 'Events',
-                titleGradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFE74C3C), // Red
-                    Color(0xFF3498DB), // Light Blue
-                  ],
-                ),
-              ),
-            ),
-          ),
           drawer: const events.EventsDrawer(),
           child: const events.EventsDashboardScreen(),
         );
@@ -882,6 +849,11 @@ class AppRouter {
         return RouteUtils.createMainLayoutRoute(
           drawer: const events.EventsDrawer(),
           child: const events.CreateEventScreen(),
+        );
+
+      case AppRoutes.eventsSearch:
+        return RouteUtils.createSimpleRoute(
+          child: const events.EventSearchScreen(),
         );
 
       case AppRoutes.myEvents:

@@ -134,15 +134,47 @@ class ArtistProfile {
   factory ArtistProfile.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
 
+    // Try both 'avatarUrl' and 'profileImageUrl' for avatar
+    final String avatarUrl =
+        (data['avatarUrl'] as String?) ??
+        (data['profileImageUrl'] as String?) ??
+        (data['photoURL'] as String?) ??
+        '';
+
+    // Try multiple field names for portfolio images
+    // First check for portfolioImages array
+    List<String> portfolioImages = List<String>.from(
+      data['portfolioImages'] as Iterable? ?? [],
+    );
+
+    // If empty, check for artworkImages array
+    if (portfolioImages.isEmpty) {
+      portfolioImages = List<String>.from(
+        data['artworkImages'] as Iterable? ?? [],
+      );
+    }
+
+    // If still empty, check for coverImageUrl (single image)
+    if (portfolioImages.isEmpty) {
+      final coverImageUrl = data['coverImageUrl'] as String?;
+      if (coverImageUrl != null && coverImageUrl.isNotEmpty) {
+        portfolioImages = [coverImageUrl];
+      }
+    }
+
+    // Try multiple field names for specialties
+    final List<String> specialties =
+        List<String>.from(data['specialties'] as Iterable? ?? []).isNotEmpty
+        ? List<String>.from(data['specialties'] as Iterable? ?? [])
+        : List<String>.from(data['mediums'] as Iterable? ?? []);
+
     return ArtistProfile(
-      userId: doc.id,
+      userId: data['userId'] as String? ?? '',
       displayName: data['displayName'] as String? ?? '',
       bio: data['bio'] as String? ?? '',
-      avatarUrl: data['avatarUrl'] as String? ?? '',
-      specialties: List<String>.from(data['specialties'] as Iterable? ?? []),
-      portfolioImages: List<String>.from(
-        data['portfolioImages'] as Iterable? ?? [],
-      ),
+      avatarUrl: avatarUrl,
+      specialties: specialties,
+      portfolioImages: portfolioImages,
       isVerified: data['isVerified'] as bool? ?? false,
       followersCount: data['followersCount'] as int? ?? 0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -152,6 +184,7 @@ class ArtistProfile {
   /// Convert to Firestore format
   Map<String, dynamic> toFirestore() {
     return {
+      'userId': userId,
       'displayName': displayName,
       'bio': bio,
       'avatarUrl': avatarUrl,

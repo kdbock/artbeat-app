@@ -3,6 +3,7 @@
 ## ✅ Completed Actions (October 3, 2025)
 
 1. ✅ **Deleted Google Service Account Private Key**
+
    - Key ID: `6a65409fb78aa1178ecd79e4e07952b3e8fc8c99`
    - Deleted from Google Cloud Console
 
@@ -34,14 +35,15 @@ export STRIPE_PUBLISHABLE_KEY=pk_live_51QpJ6iAO5ulTKoALLtQFut6aQIyhLvrcUWRgA8RIN
 
 For each of these keys, go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
 
-| Key (last 4 chars) | Current Location | Action Required |
-|-------------------|------------------|-----------------|
-| `qHA` | iOS, Android, key.properties | Restrict to package/bundle ID |
-| `6TA` | Firebase/Android | Restrict to package name |
-| `kdA` | iOS/Web | Restrict to bundle ID/domain |
-| `SH0` | Maps Diagnostic | Restrict or delete if unused |
+| Key (last 4 chars) | Current Location             | Action Required               |
+| ------------------ | ---------------------------- | ----------------------------- |
+| `qHA`              | iOS, Android, key.properties | Restrict to package/bundle ID |
+| `6TA`              | Firebase/Android             | Restrict to package name      |
+| `kdA`              | iOS/Web                      | Restrict to bundle ID/domain  |
+| `SH0`              | Maps Diagnostic              | Restrict or delete if unused  |
 
 **Steps for each key:**
+
 1. Click on the key name
 2. Under "Application restrictions", select:
    - For Android keys: "Android apps" → Add `com.wordnerd.artbeat`
@@ -76,12 +78,14 @@ If you use GitHub Actions or other CI/CD:
 ### 5. Audit Recent Activity
 
 **Firebase Console Audit:**
+
 1. Go to [Firebase Console](https://console.firebase.google.com)
 2. Check "Authentication" for unusual sign-ins
 3. Check "Firestore" for unauthorized data access
 4. Check "Storage" for unexpected uploads
 
 **Stripe Dashboard Audit:**
+
 1. Go to [Stripe Dashboard](https://dashboard.stripe.com)
 2. Check recent transactions for anything suspicious
 3. Review webhook activity
@@ -90,6 +94,7 @@ If you use GitHub Actions or other CI/CD:
 ### 6. Setup Git History Scanning (Optional but Recommended)
 
 Enable GitHub secret scanning:
+
 1. Go to your repository Settings → Code security and analysis
 2. Enable "Secret scanning"
 3. Enable "Push protection" to prevent future commits with secrets
@@ -99,19 +104,23 @@ Enable GitHub secret scanning:
 ## 🟢 ONGOING - Best Practices
 
 ### Daily
+
 - [ ] Use `./scripts/build_secure.sh` for all builds
 - [ ] Never commit sensitive files
 
-### Weekly  
+### Weekly
+
 - [ ] Run `./scripts/security_verify.sh` to check for issues
 - [ ] Review any new dependencies for vulnerabilities
 
 ### Monthly
+
 - [ ] Review API key restrictions
 - [ ] Check for unused/old API keys and delete them
 - [ ] Review Firebase/Stripe activity logs
 
 ### Quarterly
+
 - [ ] Rotate API keys as a best practice
 - [ ] Full security audit with `security_verify.sh`
 - [ ] Review team access permissions
