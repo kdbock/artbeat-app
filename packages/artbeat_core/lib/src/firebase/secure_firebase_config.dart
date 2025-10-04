@@ -10,28 +10,17 @@ class SecureFirebaseConfig {
   const SecureFirebaseConfig._();
 
   // reCAPTCHA v3 site key for web support
+  // Note: This is a public site key and is safe to include in client code
   static const String recaptchaSiteKey =
       '6LfazlArAAAAAJY6Qy_mL5W2Of4PVPKVeXQFyuJ3';
 
-  // Google Play Developer API service account credentials
-  static const Map<String, dynamic> googlePlayServiceAccount = {
-    "type": "service_account",
-    "project_id": "wordnerd-artbeat",
-    "private_key_id": "6a65409fb78aa1178ecd79e4e07952b3e8fc8c99",
-    "private_key":
-        "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC0f4+gexJL634P\nlZCGOVEEQg+SHEvAvjloRva6znXUedhCa/7p39CQYfyh1aBgpH76ecSzmlR4/u9K\nfuuQlMwBu3kEExP85Xfk8lSIiZ7AbN9iFStMBf7kLpm6EC3l0IziwL++KXaR7bwq\nXvg0Ziqc5eTNrT69iQl4KfJzbvpJFqjFDpWtc0Ibd8A2Xu4ppbhOayGFtCl2vksy\nCFizvWb9J/XxN0GZIwZQXTe+DNgIFgkBSOsau1l+2AMVBcQP/xF0mcD7NsgBrBL2\nGWl9ib4sUnr0ALbMEzQoD5XluR0iVpfeVcQSGa2LBqT8r+EglsdUvaJY0kKolyNb\n9xrYR1VXAgMBAAECggEAAObbZNgmR9LShLKOmSY4KNS3FzM3RtD1oHcslYpYPYE8\nDRRVDJBdsvZlywJWy1urm08KuIr+j+efTd0ewVBz21U3TiMMjM0x1d3ZOI6OUaIV\nC6D5u4uAse+5qpu9g4j+og7RCv9SCOd3vA51aUkJYy4lJMjHFcEMYDS+ln9W36Mr\nv1Tbxi4nd1iQgcn3qGWRZ+z0BvNJX+mSgJAGtm4IN6ExoF6peovFON5WYlDR5a4u\ngQzaynbj+v7Y2ufqeBoHXkasy9u8WaGM652rfAVgi02iPYdo2rpANPkG5k8Xxoyh\n7dutWGHSv6+EjddeWWXjZBNNRsWommg7mC7pHKlNoQKBgQD2ndTELC/emvcEejDf\nN52eX1jnVKnGbkZ9lH2Bou/L8ldWtPjKSaXY9gSiApdhSiU847nYSkFhfnLKzdh6\n5HppR05ziXF2Q9p13sfJMjwwm+y4Vg1k6p3tXNeexSKw9zlj1QeVprJptaTmsLSM\nxc6x1PAbOVo+xS2TZyZjSK5j3QKBgQC7XbR8efKTeVSeMfrjjBpZjEb7uA4nWF6u\n5/ahxEUOzA6iewNjJ6SsoUe+xXajQFYR9zDt0WVK93us2ub2DokXoaTvbcfWQerf\nMeMVXdcp2U42/EUArznLpSwAlPo1t/mIwz8qzI5d6ClDRAAYVa5yrfLkqegyTRch\nuauEEfQUwwKBgQCSk6xqDHlHLYOzvYxen4enIbSNidx+e/yZlzAhZN5xsVAH0Pgu\nAyf3lAGc6T1gLdmEHzXOQBQsBiPkNgR8xl+bQy51rTMqv5mQhSDpjFoJ6iMATOUZ\nHflPoublDvZXiBksJOmlILbZ7YRdOJmXMdpwB8fN5oCk3j0AZ0aBrCk6YQKBgQC4\nKIcAnd/2YZfxEVD2nLs9bupJ+YM32tzdbzNzlnUF8T0lKGGQ8OMjpjXdZTqRhOfU\nKrFV3q1/vLY7lMDT8j9/EasKhk2X4xxWmjMHyj90a5k75EJyRMg6yDLys3sml5hV\newq4J2x7EniUG984C+c14pFNfU6zOiBVTqgtXHQafwKBgBigNNgnfqtWeNivESi4\nLwkXJQdx/WvctQqugS381OmUxFdbbKobedU3NhX6EEdiGp5cnThqqPeqfqwvfV7d\n6WnhbZ+6enjUgPZU4B4azfkQB1TPDk+m2hTysAYWjMuLBeYFgH4R1HndWzxFCmTk\nzivKU8JUqAB585e8kHpuFrAY\n-----END PRIVATE KEY-----\n",
-    "client_email":
-        "artbeat-play-verification@wordnerd-artbeat.iam.gserviceaccount.com",
-    "client_id": "107085253748229862555",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url":
-        "https://www.googleapis.com/robot/v1/metadata/x509/artbeat-play-verification%40wordnerd-artbeat.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com",
-  };
+  // WARNING: Service account credentials should NEVER be hardcoded in client apps
+  // This should be loaded from secure backend services only
+  // For client apps, use Firebase Auth and let the backend handle service account operations
+  // REMOVED: Hardcoded service account credentials - use backend services instead
 
-  // App Store Connect shared secret (to be configured)
+  // App Store Connect shared secret should be configured via environment variables
+  // or secure configuration management, never hardcoded
   static const String appStoreSharedSecret =
       'YOUR_APP_STORE_SHARED_SECRET_HERE';
   static bool _initialized = false;

@@ -13,14 +13,30 @@ class EnvLoader {
   /// Initialize environment variables
   Future<void> init() async {
     try {
-      // This would normally load from a .env file or other source
-      // For now, we'll just hardcode some default values for testing
+      // TODO: Load from secure environment configuration
+      // For production, these should come from:
+      // - Flutter's --dart-define flags during build
+      // - Platform-specific secure storage
+      // - Remote config (Firebase Remote Config)
+      // NEVER hardcode production secrets!
+      
       _envVars.addAll({
-        'API_BASE_URL': 'https://api.artbeat.app',
-        'GOOGLE_MAPS_API_KEY': 'YOUR_MAPS_API_KEY',
-        'STRIPE_PUBLISHABLE_KEY':
-            'pk_live_51QpJ6iAO5ulTKoALLtQFut6aQIyhLvrcUWRgA8RINvB6xwa37NeKymcV5lM96Yg6oOXvMQuwjPzP5LbE6I5ktHWG00Xk24gmn2',
-        'FIREBASE_REGION': 'us-central1',
+        'API_BASE_URL': const String.fromEnvironment(
+          'API_BASE_URL',
+          defaultValue: 'https://api.artbeat.app',
+        ),
+        'GOOGLE_MAPS_API_KEY': const String.fromEnvironment(
+          'GOOGLE_MAPS_API_KEY',
+          defaultValue: '',
+        ),
+        'STRIPE_PUBLISHABLE_KEY': const String.fromEnvironment(
+          'STRIPE_PUBLISHABLE_KEY',
+          defaultValue: '',
+        ),
+        'FIREBASE_REGION': const String.fromEnvironment(
+          'FIREBASE_REGION',
+          defaultValue: 'us-central1',
+        ),
       });
 
       AppLogger.info('✅ Environment variables loaded successfully');
