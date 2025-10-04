@@ -1,46 +1,53 @@
 /// Application configuration loaded from build-time environment variables
-/// 
+///
 /// To set these values during build, use --dart-define flags:
 /// flutter build apk --dart-define=GOOGLE_MAPS_API_KEY=your_key_here
 /// flutter run --dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 class AppConfig {
+  AppConfig._internal();
+
   // Singleton pattern
   static final AppConfig _instance = AppConfig._internal();
   factory AppConfig() => _instance;
-  AppConfig._internal();
 
   /// Google Maps API Key
   /// Should be set via --dart-define during build
-  String get googleMapsApiKey => const String.fromEnvironment(
-        'GOOGLE_MAPS_API_KEY',
-        defaultValue: '',
-      );
+  String get googleMapsApiKey {
+    const key = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+    return key;
+  }
 
   /// Stripe Publishable Key
   /// Should be set via --dart-define during build
   /// Use pk_test_* for testing, pk_live_* for production
-  String get stripePublishableKey => const String.fromEnvironment(
-        'STRIPE_PUBLISHABLE_KEY',
-        defaultValue: '',
-      );
+  String get stripePublishableKey {
+    const key = String.fromEnvironment('STRIPE_PUBLISHABLE_KEY');
+    return key;
+  }
 
   /// Firebase Region
-  String get firebaseRegion => const String.fromEnvironment(
-        'FIREBASE_REGION',
-        defaultValue: 'us-central1',
-      );
+  String get firebaseRegion {
+    const region = String.fromEnvironment(
+      'FIREBASE_REGION',
+      defaultValue: 'us-central1',
+    );
+    return region;
+  }
 
   /// API Base URL
-  String get apiBaseUrl => const String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: 'https://api.artbeat.app',
-      );
+  String get apiBaseUrl {
+    const url = String.fromEnvironment(
+      'API_BASE_URL',
+      defaultValue: 'https://api.artbeat.app',
+    );
+    return url;
+  }
 
   /// Environment (dev, staging, production)
-  String get environment => const String.fromEnvironment(
-        'ENVIRONMENT',
-        defaultValue: 'development',
-      );
+  String get environment {
+    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+    return env;
+  }
 
   /// Check if running in production
   bool get isProduction => environment == 'production';
@@ -64,24 +71,33 @@ class AppConfig {
     }
 
     if (issues.isNotEmpty) {
+      // ignore: avoid_print
       print('⚠️  Configuration Issues:');
       for (final issue in issues) {
+        // ignore: avoid_print
         print('   - $issue');
       }
       return false;
     }
 
+    // ignore: avoid_print
     print('✅ All required configuration validated');
     return true;
   }
 
   /// Print current configuration (sanitized for logging)
   void printConfig() {
+    // ignore: avoid_print
     print('📋 App Configuration:');
+    // ignore: avoid_print
     print('   Environment: $environment');
+    // ignore: avoid_print
     print('   API Base URL: $apiBaseUrl');
+    // ignore: avoid_print
     print('   Firebase Region: $firebaseRegion');
+    // ignore: avoid_print
     print('   Google Maps API Key: ${_sanitize(googleMapsApiKey)}');
+    // ignore: avoid_print
     print('   Stripe Key: ${_sanitize(stripePublishableKey)}');
   }
 
