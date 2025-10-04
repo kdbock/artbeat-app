@@ -13,7 +13,6 @@ import 'artist_feed_screen.dart';
 import 'feed/comments_screen.dart';
 import 'feed/create_post_screen.dart';
 import 'feed/enhanced_community_feed_screen.dart';
-import 'package:artbeat_artist/src/screens/artist_public_profile_screen.dart';
 import 'package:artbeat_artist/src/services/community_service.dart'
     as artist_community;
 

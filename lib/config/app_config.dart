@@ -6,14 +6,14 @@
 /// flutter build apk --dart-define=GOOGLE_MAPS_API_KEY=your_key_here
 /// flutter run --dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 class AppConfig {
-  // Singleton instance
-  static final AppConfig _instance = AppConfig._internal();
-
   // Private constructor for singleton
   AppConfig._internal();
 
   // Factory constructor
   factory AppConfig() => _instance;
+
+  // Singleton instance
+  static final AppConfig _instance = AppConfig._internal();
 
   // Build-time environment constants
   static const _googleMapsKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
