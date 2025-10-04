@@ -10,6 +10,7 @@ class AppConfig {
   AppConfig._internal();
 
   // Factory constructor
+  // ignore: sort_unnamed_constructors_first
   factory AppConfig() => _instance;
 
   // Singleton instance
