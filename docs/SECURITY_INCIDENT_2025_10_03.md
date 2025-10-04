@@ -72,8 +72,8 @@ Multiple Google Maps API keys found in source code:
 
 ## 🚨 Immediate Action Checklist
 
-- [ ] **REVOKE** exposed Google service account key
-- [ ] **ROTATE** Stripe publishable key
+- [x] **REVOKE** exposed Google service account key ✅ **COMPLETED October 3, 2025**
+- [x] **ROTATE** Stripe publishable key ✅ **COMPLETED October 3, 2025** (Expires in 8 days)
 - [ ] **RESTRICT** all Google Maps API keys
 - [ ] **REGENERATE** OAuth client credentials
 - [ ] **AUDIT** Firebase Console for unauthorized access
@@ -81,6 +81,13 @@ Multiple Google Maps API keys found in source code:
 - [ ] **REVIEW** git history for other exposed secrets
 - [ ] **NOTIFY** team members about security incident
 - [ ] **DOCUMENT** incident in security log
+
+## ⚠️ IMPORTANT: Stripe Key Expiration Notice
+
+**The rotated Stripe key expires in 8 days!** You need to:
+1. Update your `.env.local` file with the new key (it will be provided automatically)
+2. Update CI/CD secrets before expiration
+3. Deploy new app version before the old key expires
 
 ## 🔄 Key Rotation Procedure
 
