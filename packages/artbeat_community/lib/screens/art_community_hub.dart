@@ -17,6 +17,13 @@ import 'feed/enhanced_community_feed_screen.dart';
 import 'package:artbeat_artist/src/services/community_service.dart'
     as artist_community;
 import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
+import '../widgets/report_dialog.dart';
+import 'feed/trending_content_screen.dart';
+import 'feed/create_group_post_screen.dart';
+import 'feed/social_engagement_demo_screen.dart';
+import 'posts/user_posts_screen.dart';
+import 'settings/quiet_mode_screen.dart';
+import '../models/group_models.dart';
 
 /// New simplified community hub with gallery-style design
 class ArtCommunityHub extends StatefulWidget {
@@ -146,6 +153,367 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
     );
   }
 
+  Widget _buildDrawer() {
+    return Drawer(
+      backgroundColor: ArtbeatColors.backgroundDark,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    ArtbeatColors.primaryPurple,
+                    ArtbeatColors.primaryGreen,
+                  ],
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.people,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Art Community',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Explore, create, connect',
+                    style: TextStyle(fontSize: 14, color: Colors.white70),
+                  ),
+                ],
+              ),
+            ),
+
+            // Navigation Items
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  // Main Feeds Section
+                  _buildDrawerSection('Main Feeds'),
+                  _buildDrawerItem(
+                    icon: Icons.feed,
+                    title: 'Community Feed',
+                    subtitle: 'Latest posts from artists',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(0);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.trending_up,
+                    title: 'Trending Content',
+                    subtitle: 'Popular and trending posts',
+                    onTap: () => _navigateToScreen(
+                      'feed/trending_content_screen.dart',
+                      'TrendingContentScreen',
+                    ),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.group,
+                    title: 'Artist Community',
+                    subtitle: 'Connect with fellow artists',
+                    onTap: () => _navigateToScreen(
+                      'feed/artist_community_feed_screen.dart',
+                      'ArtistCommunityFeedScreen',
+                    ),
+                  ),
+
+                  // Create & Post Section
+                  _buildDrawerSection('Create & Share'),
+                  _buildDrawerItem(
+                    icon: Icons.add_circle,
+                    title: 'Create Post',
+                    subtitle: 'Share your art with the community',
+                    onTap: () => _navigateToScreen(
+                      'feed/create_post_screen.dart',
+                      'CreatePostScreen',
+                    ),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.group_add,
+                    title: 'Create Group Post',
+                    subtitle: 'Post to artist groups',
+                    onTap: () => _navigateToScreen(
+                      'feed/create_group_post_screen.dart',
+                      'CreateGroupPostScreen',
+                    ),
+                  ),
+
+                  // Artists Section
+                  _buildDrawerSection('Artists'),
+                  _buildDrawerItem(
+                    icon: Icons.palette,
+                    title: 'Artists Gallery',
+                    subtitle: 'Discover amazing artists',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(1);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.person_add,
+                    title: 'Artist Onboarding',
+                    subtitle: 'Join the artist community',
+                    onTap: () => _navigateToScreen(
+                      'artist_onboarding_screen.dart',
+                      'ArtistOnboardingScreen',
+                    ),
+                  ),
+
+                  // Topics & Discovery
+                  _buildDrawerSection('Discover'),
+                  _buildDrawerItem(
+                    icon: Icons.topic,
+                    title: 'Topics',
+                    subtitle: 'Browse by art categories',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(2);
+                    },
+                  ),
+
+                  // Personal Section
+                  _buildDrawerSection('My Content'),
+                  _buildDrawerItem(
+                    icon: Icons.person,
+                    title: 'My Posts',
+                    subtitle: 'View your posts and activity',
+                    onTap: () => _navigateToScreen(
+                      'posts/user_posts_screen.dart',
+                      'UserPostsScreen',
+                    ),
+                  ),
+
+                  // Settings & Tools
+                  _buildDrawerSection('Tools'),
+                  _buildDrawerItem(
+                    icon: Icons.settings,
+                    title: 'Quiet Mode',
+                    subtitle: 'Manage notifications',
+                    onTap: () => _navigateToScreen(
+                      'settings/quiet_mode_screen.dart',
+                      'QuietModeScreen',
+                    ),
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.analytics,
+                    title: 'Social Engagement',
+                    subtitle: 'View engagement analytics',
+                    onTap: () => _navigateToScreen(
+                      'feed/social_engagement_demo_screen.dart',
+                      'SocialEngagementDemoScreen',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Footer
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 8),
+                  Text(
+                    'ARTbeat Community',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 12,
+                    ),
+                  ),
+                  Text(
+                    'Version 1.0.0',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerSection(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          color: ArtbeatColors.primaryGreen,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: ArtbeatColors.primaryPurple, size: 20),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.6),
+          fontSize: 12,
+        ),
+      ),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    );
+  }
+
+  void _navigateToScreen(String screenPath, String screenClassName) {
+    Navigator.pop(context); // Close drawer
+
+    // Navigate to the appropriate screen based on the class name
+    Widget? screen;
+    switch (screenClassName) {
+      case 'TrendingContentScreen':
+        screen = const TrendingContentScreen();
+        break;
+      case 'UserPostsScreen':
+        screen = const UserPostsScreen();
+        break;
+      case 'QuietModeScreen':
+        screen = const QuietModeScreen();
+        break;
+      case 'SocialEngagementDemoScreen':
+        screen = const SocialEngagementDemoScreen();
+        break;
+      case 'ArtistOnboardingScreen':
+        screen = const ArtistOnboardingScreen();
+        break;
+      case 'CreatePostScreen':
+        // This is already handled by the FAB, but we can navigate here too
+        screen = const CreatePostScreen();
+        break;
+      case 'CreateGroupPostScreen':
+        // This requires parameters, so show a dialog to select group type
+        _showGroupPostDialog();
+        return;
+      case 'ArtistCommunityFeedScreen':
+        // This requires an artist parameter, so show artist selection
+        _showArtistSelectionDialog();
+        return;
+      default:
+        // Show placeholder for screens not yet implemented
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$screenClassName navigation not yet implemented'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+    }
+
+    Navigator.push<Widget>(
+      context,
+      MaterialPageRoute<Widget>(builder: (context) => screen!),
+    );
+  }
+
+  void _showGroupPostDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Group Post'),
+        content: const Text(
+          'Select the type of group post you want to create:',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push<Widget>(
+                context,
+                MaterialPageRoute<Widget>(
+                  builder: (context) => const CreateGroupPostScreen(
+                    groupType: GroupType.artist,
+                    postType: 'general',
+                  ),
+                ),
+              );
+            },
+            child: const Text('Artist Post'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showArtistSelectionDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Artist'),
+        content: const Text(
+          'Artist selection will be implemented soon. For now, this feature requires selecting a specific artist.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,6 +576,19 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
             elevation: 0,
+            leading: Builder(
+              builder: (context) => Container(
+                margin: const EdgeInsets.only(left: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                ),
+              ),
+            ),
             actions: [
               // Debug auth button
               Container(
@@ -279,6 +660,7 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
           ),
         ),
       ),
+      drawer: _buildDrawer(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -837,6 +1219,64 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
     );
   }
 
+  void _handleReport(PostModel post) async {
+    AppLogger.info('🚩 User attempting to report post: ${post.id}');
+
+    // Check authentication first
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      AppLogger.error('🚩 User not authenticated, cannot report posts');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to report posts')),
+      );
+      return;
+    }
+    AppLogger.info('🚩 User authenticated: ${user.uid}');
+
+    showDialog<void>(
+      context: context,
+      builder: (context) => ReportDialog(
+        postId: post.id,
+        postContent: post.content,
+        onReport: (reason, details) async {
+          AppLogger.info(
+            '🚩 Submitting report for post ${post.id} with reason: $reason',
+          );
+
+          final success = await widget.communityService.reportPost(
+            post.id,
+            reason,
+            additionalDetails: details,
+          );
+
+          if (success) {
+            AppLogger.info('🚩 Report submitted successfully');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Report submitted successfully. Thank you for helping keep our community safe.',
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } else {
+            AppLogger.error('🚩 Failed to submit report');
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to submit report. Please try again.'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+      ),
+    );
+  }
+
   void _handleShare(PostModel post) async {
     try {
       // Build share content
@@ -984,6 +1424,7 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                   onLike: () => _handleLike(post),
                   onComment: () => _handleComment(post),
                   onShare: () => _handleShare(post),
+                  onReport: () => _handleReport(post),
                 );
               }, childCount: _filteredPosts.length),
             ),

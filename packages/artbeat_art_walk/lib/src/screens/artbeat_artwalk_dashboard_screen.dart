@@ -93,6 +93,36 @@ class _ArtbeatArtwalkDashboardScreenState
     super.dispose();
   }
 
+  void _handleNavigation(int index) {
+    switch (index) {
+      case 0:
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/dashboard', (route) => false);
+        break;
+      case 1:
+        // Already on Art Walk, no navigation needed
+        break;
+      case 2:
+        // Smart camera launch for capture button - checks terms acceptance
+        Navigator.of(context).pushNamed('/capture/smart');
+        break;
+      case 3:
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/community/dashboard', (route) => false);
+        break;
+      case 4:
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/events/discover', (route) => false);
+        break;
+      default:
+        // Handle any other indices gracefully
+        break;
+    }
+  }
+
   // ... existing code ...
 
   @override
@@ -107,6 +137,7 @@ class _ArtbeatArtwalkDashboardScreenState
       },
       child: Scaffold(
         backgroundColor: ArtWalkDashboardColors.backgroundLight,
+        drawer: const ArtWalkDrawer(),
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,6 +200,10 @@ class _ArtbeatArtwalkDashboardScreenState
             ],
           ),
         ),
+        bottomNavigationBar: EnhancedBottomNav(
+          currentIndex: 1, // Art Walk is index 1
+          onTap: _handleNavigation,
+        ),
       ),
     );
   }
@@ -196,37 +231,67 @@ class _ArtbeatArtwalkDashboardScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Greeting
+              // Menu button and greeting row
               Row(
                 children: [
+                  // Menu button
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.map_rounded,
-                      color: Colors.white,
-                      size: 24,
+                    child: Builder(
+                      builder: (context) => IconButton(
+                        icon: const Icon(
+                          Icons.menu,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                        tooltip: 'Open Menu',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
+                  // Greeting
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          '$greeting, $userName!',
-                          style: const TextStyle(
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.map_rounded,
                             color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+                            size: 24,
                           ),
                         ),
-                        const Text(
-                          'Ready for your next art adventure?',
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$greeting, $userName!',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Text(
+                                'Ready for your next art adventure?',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

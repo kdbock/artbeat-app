@@ -271,34 +271,29 @@ class CouponCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton.icon(
+                IconButton(
                   onPressed: onToggleStatus,
                   icon: Icon(
                     coupon.status == CouponStatus.active
                         ? Icons.pause
                         : Icons.play_arrow,
-                    size: 18,
                   ),
-                  label: Text(
-                    coupon.status == CouponStatus.active
-                        ? 'Deactivate'
-                        : 'Activate',
-                  ),
+                  tooltip: coupon.status == CouponStatus.active
+                      ? 'Deactivate'
+                      : 'Activate',
+                  color: theme.colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                TextButton.icon(
+                IconButton(
                   onPressed: onEdit,
-                  icon: const Icon(Icons.edit, size: 18),
-                  label: const Text('Edit'),
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Edit',
+                  color: theme.colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                TextButton.icon(
+                IconButton(
                   onPressed: onDelete,
-                  icon: const Icon(Icons.delete, size: 18),
-                  label: const Text('Delete'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: theme.colorScheme.error,
-                  ),
+                  icon: const Icon(Icons.delete),
+                  tooltip: 'Delete',
+                  color: theme.colorScheme.error,
                 ),
               ],
             ),

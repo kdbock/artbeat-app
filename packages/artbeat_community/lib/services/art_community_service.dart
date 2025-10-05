@@ -814,6 +814,49 @@ class ArtCommunityService extends ChangeNotifier {
     }
   }
 
+  /// Report a post for moderation review
+  Future<bool> reportPost(
+    String postId,
+    String reason, {
+    String? additionalDetails,
+  }) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        AppLogger.error('Cannot report post: User not authenticated');
+        return false;
+      }
+
+      final reportData = {
+        'type': 'post',
+        'postId': postId,
+        'reportedBy': user.uid,
+        'reporterEmail': user.email,
+        'reason': reason,
+        'additionalDetails': additionalDetails,
+        'reportedAt': FieldValue.serverTimestamp(),
+        'status': 'pending', // pending, reviewed, resolved
+      };
+
+      await _firestore.collection('reports').add(reportData);
+
+      // Also update the post to mark it as flagged and increment report count
+      await _firestore.collection('posts').doc(postId).update({
+        'flagged': true,
+        'flaggedAt': FieldValue.serverTimestamp(),
+        'status': 'flagged',
+        'moderationStatus': 'flagged',
+        'reportCount': FieldValue.increment(1),
+      });
+
+      AppLogger.info('Post $postId reported successfully with reason: $reason');
+      return true;
+    } catch (e) {
+      AppLogger.error('Error reporting post $postId: $e');
+      return false;
+    }
+  }
+
   @override
   void dispose() {
     _feedController.close();

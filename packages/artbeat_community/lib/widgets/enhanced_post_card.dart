@@ -12,6 +12,7 @@ class EnhancedPostCard extends StatefulWidget {
   final VoidCallback? onLike;
   final VoidCallback? onComment;
   final VoidCallback? onShare;
+  final VoidCallback? onReport;
 
   const EnhancedPostCard({
     super.key,
@@ -20,6 +21,7 @@ class EnhancedPostCard extends StatefulWidget {
     this.onLike,
     this.onComment,
     this.onShare,
+    this.onReport,
   });
 
   @override
@@ -503,6 +505,13 @@ class _EnhancedPostCardState extends State<EnhancedPostCard> {
             label: widget.post.engagementStats.shareCount.toString(),
             onTap: widget.onShare,
             color: ArtbeatColors.primaryGreen,
+          ),
+          const SizedBox(width: 24),
+          _buildActionButton(
+            icon: Icons.flag_outlined,
+            label: 'Report',
+            onTap: widget.onReport,
+            color: Colors.orange,
           ),
           const Spacer(),
           // Post type indicator

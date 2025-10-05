@@ -12,6 +12,7 @@ class ArtPost {
   final DateTime createdAt;
   final int likesCount;
   final int commentsCount;
+  final int reportCount;
   final bool isArtistPost;
   final bool isUserVerified;
   final bool? isLikedByCurrentUser;
@@ -27,6 +28,7 @@ class ArtPost {
     required this.createdAt,
     this.likesCount = 0,
     this.commentsCount = 0,
+    this.reportCount = 0,
     this.isArtistPost = false,
     this.isUserVerified = false,
     this.isLikedByCurrentUser,
@@ -47,6 +49,7 @@ class ArtPost {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       likesCount: data['likesCount'] as int? ?? 0,
       commentsCount: data['commentsCount'] as int? ?? 0,
+      reportCount: data['reportCount'] as int? ?? 0,
       isArtistPost: data['isArtistPost'] as bool? ?? false,
       isUserVerified: data['isUserVerified'] as bool? ?? false,
       isLikedByCurrentUser: data['isLikedByCurrentUser'] as bool?,
@@ -65,6 +68,7 @@ class ArtPost {
       'createdAt': Timestamp.fromDate(createdAt),
       'likesCount': likesCount,
       'commentsCount': commentsCount,
+      'reportCount': reportCount,
       'isArtistPost': isArtistPost,
       'isUserVerified': isUserVerified,
       if (isLikedByCurrentUser != null)
@@ -84,6 +88,7 @@ class ArtPost {
     DateTime? createdAt,
     int? likesCount,
     int? commentsCount,
+    int? reportCount,
     bool? isArtistPost,
     bool? isUserVerified,
     bool? isLikedByCurrentUser,
@@ -99,6 +104,7 @@ class ArtPost {
       createdAt: createdAt ?? this.createdAt,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
+      reportCount: reportCount ?? this.reportCount,
       isArtistPost: isArtistPost ?? this.isArtistPost,
       isUserVerified: isUserVerified ?? this.isUserVerified,
       isLikedByCurrentUser: isLikedByCurrentUser ?? this.isLikedByCurrentUser,

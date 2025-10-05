@@ -121,6 +121,46 @@ class AdminDrawer extends StatelessWidget {
 
                     const Divider(height: 16),
 
+                    // Business Management Section
+                    _buildSectionHeader('Business Management'),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.local_offer,
+                      title: 'Coupon Management',
+                      route: '/admin/coupons',
+                      subtitle: 'Create and manage discount coupons',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.payment,
+                      title: 'Payment Management',
+                      route: '/admin/payments',
+                      subtitle: 'Transaction & refund management',
+                    ),
+
+                    const Divider(height: 16),
+
+                    // Content Management Section
+                    _buildSectionHeader('Content Management'),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.content_paste,
+                      title: 'Content Moderation',
+                      route:
+                          '/admin/dashboard', // Unified dashboard handles content moderation
+                      subtitle: 'Review and moderate user content',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.people,
+                      title: 'User Management',
+                      route:
+                          '/admin/dashboard', // Unified dashboard handles user management
+                      subtitle: 'Manage user accounts and profiles',
+                    ),
+
+                    const Divider(height: 16),
+
                     // System Management Section
                     _buildSectionHeader('System Management'),
                     _buildDrawerItem(
@@ -132,10 +172,17 @@ class AdminDrawer extends StatelessWidget {
                     ),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.payment,
-                      title: 'Payment Management',
-                      route: '/admin/payments',
-                      subtitle: 'Transaction & refund management',
+                      icon: Icons.security,
+                      title: 'Security Center',
+                      route: '/admin/security',
+                      subtitle: 'Security monitoring and controls',
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.monitor,
+                      title: 'System Monitoring',
+                      route: '/admin/monitoring',
+                      subtitle: 'Real-time system metrics',
                     ),
                     _buildDrawerItem(
                       context,
@@ -147,28 +194,28 @@ class AdminDrawer extends StatelessWidget {
 
                     const Divider(height: 16),
 
-                    // Quick Access Section
-                    _buildSectionHeader('Quick Access'),
+                    // Developer Tools Section
+                    _buildSectionHeader('Developer Tools'),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.monitor,
-                      title: 'System Monitoring',
-                      route: '/admin/dashboard',
-                      subtitle: 'View in unified dashboard',
+                      icon: Icons.upload_file,
+                      title: 'Data Upload Tools',
+                      route: '/dev',
+                      subtitle: 'Bulk upload content and data',
                     ),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.people,
-                      title: 'User Management',
-                      route: '/admin/dashboard',
-                      subtitle: 'View in unified dashboard',
+                      icon: Icons.feedback,
+                      title: 'Developer Feedback',
+                      route: '/developer-feedback-admin',
+                      subtitle: 'View developer feedback and reports',
                     ),
                     _buildDrawerItem(
                       context,
-                      icon: Icons.content_paste,
-                      title: 'Content Moderation',
-                      route: '/admin/dashboard',
-                      subtitle: 'View in unified dashboard',
+                      icon: Icons.admin_panel_settings,
+                      title: 'Admin Upload Tools',
+                      route: '/dev', // Developer menu has admin upload tools
+                      subtitle: 'Upload users, content, and data',
                     ),
 
                     const Divider(height: 16),

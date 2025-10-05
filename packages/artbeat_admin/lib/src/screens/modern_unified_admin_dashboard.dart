@@ -69,6 +69,9 @@ class _ModernUnifiedAdminDashboardState
   final TextEditingController _contentSearchController =
       TextEditingController();
 
+  // Content filter state
+  String _selectedContentFilter = 'All';
+
   @override
   void initState() {
     super.initState();
@@ -1517,7 +1520,9 @@ class _ModernUnifiedAdminDashboardState
                   const SizedBox(height: 20),
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
+                      final crossAxisCount = constraints.maxWidth > 800
+                          ? 5
+                          : (constraints.maxWidth > 600 ? 4 : 2);
                       return GridView.count(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -1555,6 +1560,15 @@ class _ModernUnifiedAdminDashboardState
                                 .toString(),
                             Icons.cancel_rounded,
                             const Color(0xFFEF5350),
+                          ),
+                          _buildContentStatCard(
+                            'Reported',
+                            _allContent
+                                .where((c) => c.status == 'flagged')
+                                .length
+                                .toString(),
+                            Icons.flag_rounded,
+                            const Color(0xFFFF5722),
                           ),
                         ],
                       );
@@ -1622,6 +1636,12 @@ class _ModernUnifiedAdminDashboardState
                             'Rejected',
                             _allContent
                                 .where((c) => c.status == 'rejected')
+                                .length),
+                        const SizedBox(width: 8),
+                        _buildContentFilterChip(
+                            'Reported',
+                            _allContent
+                                .where((c) => c.status == 'flagged')
                                 .length),
                       ],
                     ),
@@ -1750,20 +1770,31 @@ class _ModernUnifiedAdminDashboardState
     );
   }
 
-  Widget _buildContentFilterChip(String label, int count) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-      ),
-      child: Text(
-        '$label ($count)',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
+  Widget _buildContentFilterChip(String label, int count,
+      {VoidCallback? onTap}) {
+    final isSelected = _selectedContentFilter == label;
+    return GestureDetector(
+      onTap: onTap ?? () => setState(() => _selectedContentFilter = label),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                isSelected ? Colors.white : Colors.white.withValues(alpha: 0.2),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Text(
+          '$label ($count)',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          ),
         ),
       ),
     );
@@ -1771,9 +1802,37 @@ class _ModernUnifiedAdminDashboardState
 
   List<ContentModel> _getFilteredContent() {
     final query = _contentSearchController.text.toLowerCase();
-    if (query.isEmpty) return _allContent;
 
-    return _allContent.where((content) {
+    // First filter by status
+    List<ContentModel> filteredByStatus = _allContent;
+    if (_selectedContentFilter != 'All') {
+      switch (_selectedContentFilter) {
+        case 'Pending':
+          final pendingContentIds =
+              _pendingReviews.map((r) => r.contentId).toSet();
+          filteredByStatus = _allContent
+              .where((c) => pendingContentIds.contains(c.id))
+              .toList();
+          break;
+        case 'Approved':
+          filteredByStatus =
+              _allContent.where((c) => c.status == 'approved').toList();
+          break;
+        case 'Rejected':
+          filteredByStatus =
+              _allContent.where((c) => c.status == 'rejected').toList();
+          break;
+        case 'Reported':
+          filteredByStatus =
+              _allContent.where((c) => c.status == 'flagged').toList();
+          break;
+      }
+    }
+
+    // Then filter by search query
+    if (query.isEmpty) return filteredByStatus;
+
+    return filteredByStatus.where((content) {
       return content.title.toLowerCase().contains(query) ||
           content.description.toLowerCase().contains(query) ||
           content.authorName.toLowerCase().contains(query);
@@ -1880,7 +1939,7 @@ class _ModernUnifiedAdminDashboardState
       ),
       child: Row(
         children: [
-          // Content Thumbnail (placeholder)
+          // Content Thumbnail
           Container(
             width: 60,
             height: 60,
@@ -1888,11 +1947,24 @@ class _ModernUnifiedAdminDashboardState
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
-              Icons.image_rounded,
-              color: Colors.white,
-              size: 30,
-            ),
+            child: content.imageUrl != null && content.imageUrl!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      content.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.image_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.image_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
           ),
           const SizedBox(width: 16),
 
@@ -1994,10 +2066,12 @@ class _ModernUnifiedAdminDashboardState
         return const Color(0xFF81C784);
       case 'rejected':
         return const Color(0xFFEF5350);
+      case 'flagged':
+        return const Color(0xFFEF5350); // Red for flagged
       case 'pending':
         return const Color(0xFFFFB74D);
-      default:
-        return const Color(0xFF4FC3F7);
+      default: // active
+        return const Color(0xFF4FC3F7); // Blue for active
     }
   }
 
@@ -2221,21 +2295,83 @@ class _ModernUnifiedAdminDashboardState
                       ),
                       const SizedBox(height: 24),
 
-                      // Image if available
-                      if (content.imageUrl != null &&
-                          content.imageUrl!.isNotEmpty) ...[
-                        Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            image: DecorationImage(
-                              image: NetworkImage(content.imageUrl!),
-                              fit: BoxFit.cover,
-                            ),
+                      // Media content
+                      if ((content.imageUrl != null &&
+                              content.imageUrl!.isNotEmpty) ||
+                          (content.metadata['imageUrls'] != null &&
+                              (content.metadata['imageUrls'] as List)
+                                  .isNotEmpty) ||
+                          (content.metadata['videoUrl'] != null &&
+                              (content.metadata['videoUrl'] as String?)
+                                      ?.isNotEmpty ==
+                                  true)) ...[
+                        const Text(
+                          'Media',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
+                        // Single image (legacy)
+                        if (content.imageUrl != null &&
+                            content.imageUrl!.isNotEmpty) ...[
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              image: DecorationImage(
+                                image: NetworkImage(content.imageUrl!),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        // Multiple images
+                        if (content.metadata['imageUrls'] != null) ...[
+                          for (final imageUrl
+                              in content.metadata['imageUrls'] as List<dynamic>)
+                            if (imageUrl is String && imageUrl.isNotEmpty) ...[
+                              Container(
+                                height: 200,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: DecorationImage(
+                                    image: NetworkImage(imageUrl),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                        ],
+                        // Video
+                        if (content.metadata['videoUrl'] != null &&
+                            (content.metadata['videoUrl'] as String?)
+                                    ?.isNotEmpty ==
+                                true) ...[
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.play_circle_fill,
+                                color: Colors.white,
+                                size: 48,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        const SizedBox(height: 12),
                       ],
 
                       // Description
@@ -2324,6 +2460,61 @@ class _ModernUnifiedAdminDashboardState
                       // Action buttons
                       Row(
                         children: [
+                          if (content.status == 'flagged') ...[
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  try {
+                                    await _contentService.approveContent(
+                                        content.id,
+                                        _getContentTypeFromString(
+                                            content.type));
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                            'Review cleared successfully'),
+                                        backgroundColor: Colors.green,
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    );
+                                    await _loadContentData(); // Refresh the list
+                                  } catch (e) {
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content:
+                                            Text('Failed to clear review: $e'),
+                                        backgroundColor: Colors.red,
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.green.withValues(alpha: 0.8),
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.check_circle),
+                                label: const Text('Clear Review'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () {
@@ -2833,6 +3024,23 @@ class _ModernUnifiedAdminDashboardState
           ),
         ),
       );
+    }
+  }
+
+  ContentType _getContentTypeFromString(String type) {
+    switch (type.toLowerCase()) {
+      case 'post':
+        return ContentType.posts;
+      case 'artwork':
+        return ContentType.artwork;
+      case 'ad':
+        return ContentType.ads;
+      case 'capture':
+        return ContentType.captures;
+      case 'comment':
+        return ContentType.comments;
+      default:
+        return ContentType.posts; // Default fallback
     }
   }
 

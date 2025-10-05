@@ -107,25 +107,44 @@ class ContentModel {
 
     return ContentModel(
       id: doc.id,
-      title: data['title'] as String? ?? 'Untitled Post',
+      title: () {
+        final title = data['title'] as String?;
+        if (title != null && title.isNotEmpty) return title;
+        final isArtistPost = data['isArtistPost'] as bool? ?? false;
+        final location = data['location'] as String?;
+        if (location != null && location.isNotEmpty) {
+          final feedType = isArtistPost ? 'Artist Feed' : 'Main Feed';
+          return '$feedType - Post from $location';
+        }
+        final feedType = isArtistPost ? 'Artist Feed Post' : 'Main Feed Post';
+        return feedType;
+      }(),
       description: data['content'] as String? ?? '',
       type: 'post',
-      authorId: data['authorId'] as String? ?? '',
-      authorName: data['authorName'] as String? ?? 'Unknown User',
-      status: data['status'] as String? ?? 'active',
+      authorId: data['userId'] as String? ?? '',
+      authorName: data['userName'] as String? ?? 'Unknown User',
+      status: () {
+        final status = data['status'] as String?;
+        if (status != null && status != 'active') return status;
+        final moderationStatus = data['moderationStatus'] as String?;
+        return moderationStatus == 'flagged' ? 'flagged' : 'active';
+      }(),
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate(),
-      isFlagged: data['isFlagged'] as bool? ?? false,
+      isFlagged: data['flagged'] as bool? ?? false,
       isPublic: data['isPublic'] as bool? ?? true,
       tags: List<String>.from(data['tags'] as List? ?? []),
       metadata: {
         'postType': data['postType'] as String? ?? 'text',
         'communityId': data['communityId'] as String? ?? '',
+        'imageUrls': data['imageUrls'] as List<dynamic>? ?? [],
+        'videoUrl': data['videoUrl'] as String?,
+        'isArtistPost': data['isArtistPost'] as bool? ?? false,
       },
       imageUrl: data['imageUrl'] as String?,
       thumbnailUrl: data['thumbnailUrl'] as String?,
       viewCount: data['viewCount'] as int? ?? 0,
-      likeCount: data['likeCount'] as int? ?? 0,
+      likeCount: data['likesCount'] as int? ?? 0,
       reportCount: data['reportCount'] as int? ?? 0,
     );
   }

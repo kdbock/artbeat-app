@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import '../screens/artbeat_artwalk_dashboard_screen.dart';
 
 /// Art Walk specific drawer with focused navigation for art walk features
 class ArtWalkDrawer extends StatefulWidget {
@@ -43,9 +44,9 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                ArtWalkColors.primaryTeal.withValues(alpha: 0.05),
+                ArtWalkDashboardColors.primaryPurple.withValues(alpha: 0.05),
                 Colors.white,
-                ArtWalkColors.accentOrange.withValues(alpha: 0.02),
+                ArtWalkDashboardColors.accentOrange.withValues(alpha: 0.02),
               ],
             ),
           ),
@@ -66,21 +67,42 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
                       'Create Art Walk',
                       Icons.add_location,
                       '/art-walk/create',
-                      ArtWalkColors.accentOrange,
+                      ArtWalkDashboardColors.accentOrange,
                     ),
                     _buildDrawerItem(
                       context,
                       'Explore Map',
                       Icons.map,
                       '/art-walk/map',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
                     _buildDrawerItem(
                       context,
                       'Browse Walks',
                       Icons.list,
                       '/art-walk/list',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Messages',
+                      Icons.message,
+                      '/messaging/inbox',
+                      ArtWalkDashboardColors.primaryGreen,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Search',
+                      Icons.search,
+                      '/search',
+                      ArtWalkDashboardColors.primaryBlue,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Main Dashboard',
+                      Icons.dashboard,
+                      '/dashboard',
+                      ArtWalkDashboardColors.primaryPurple,
                     ),
 
                     const Divider(height: 24),
@@ -92,21 +114,21 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
                       'My Walks',
                       Icons.directions_walk,
                       '/art-walk/my-walks',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
                     _buildDrawerItem(
                       context,
                       'Completed Walks',
                       Icons.check_circle,
                       '/art-walk/completed',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
                     _buildDrawerItem(
                       context,
                       'Saved Walks',
                       Icons.bookmark,
                       '/art-walk/saved',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
 
                     const Divider(height: 24),
@@ -118,21 +140,47 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
                       'Nearby Art',
                       Icons.location_on,
                       '/art-walk/nearby',
-                      ArtWalkColors.accentOrange,
+                      ArtWalkDashboardColors.accentOrange,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Instant Discovery',
+                      Icons.radar,
+                      '/instant-discovery',
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
                     _buildDrawerItem(
                       context,
                       'Popular Walks',
                       Icons.trending_up,
                       '/art-walk/popular',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
                     _buildDrawerItem(
                       context,
                       'Achievements',
                       Icons.emoji_events,
                       '/art-walk/achievements',
-                      ArtWalkColors.accentOrange,
+                      ArtWalkDashboardColors.accentOrange,
+                    ),
+
+                    const Divider(height: 24),
+
+                    // Gamification Section
+                    _buildSectionHeader('Gamification'),
+                    _buildDrawerItem(
+                      context,
+                      'Quest History',
+                      Icons.assignment_turned_in,
+                      '/quest-history',
+                      ArtWalkDashboardColors.primaryGreen,
+                    ),
+                    _buildDrawerItem(
+                      context,
+                      'Weekly Goals',
+                      Icons.flag,
+                      '/weekly-goals',
+                      ArtWalkDashboardColors.accentOrange,
                     ),
 
                     const Divider(height: 24),
@@ -144,7 +192,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
                       'My Captures',
                       Icons.camera_alt,
                       '/art-walk/my-captures',
-                      ArtWalkColors.primaryTeal,
+                      ArtWalkDashboardColors.primaryGreen,
                     ),
                     _buildDrawerItem(
                       context,
@@ -158,13 +206,6 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
 
                     // General Navigation
                     _buildSectionHeader('Navigation'),
-                    _buildDrawerItem(
-                      context,
-                      'Main Dashboard',
-                      Icons.dashboard,
-                      '/dashboard',
-                      Colors.grey,
-                    ),
                     _buildDrawerItem(
                       context,
                       'Profile',
@@ -200,7 +241,10 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [ArtWalkColors.primaryTeal, ArtWalkColors.primaryTealLight],
+          colors: [
+            ArtWalkDashboardColors.primaryGreen,
+            ArtWalkDashboardColors.primaryBlue,
+          ],
         ),
       ),
       child: Row(
@@ -223,7 +267,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
                             ? displayName[0].toUpperCase()
                             : 'A',
                         style: const TextStyle(
-                          color: ArtWalkColors.primaryTeal,
+                          color: ArtWalkDashboardColors.primaryGreen,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -296,7 +340,7 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
       child: Text(
         title,
         style: const TextStyle(
-          color: ArtWalkColors.textSecondary,
+          color: ArtWalkDashboardColors.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
@@ -318,21 +362,23 @@ class _ArtWalkDrawerState extends State<ArtWalkDrawer> {
     return ListTile(
       leading: Icon(
         icon,
-        color: isCurrentRoute ? ArtWalkColors.accentOrange : color,
+        color: isCurrentRoute ? ArtWalkDashboardColors.accentOrange : color,
         size: 24,
       ),
       title: Text(
         title,
         style: TextStyle(
           color: isCurrentRoute
-              ? ArtWalkColors.accentOrange
-              : ArtWalkColors.textPrimary,
+              ? ArtWalkDashboardColors.accentOrange
+              : ArtWalkDashboardColors.textPrimary,
           fontSize: 16,
           fontWeight: isCurrentRoute ? FontWeight.w600 : FontWeight.w500,
         ),
       ),
       selected: isCurrentRoute,
-      selectedTileColor: ArtWalkColors.primaryTeal.withValues(alpha: 0.1),
+      selectedTileColor: ArtWalkDashboardColors.primaryGreen.withValues(
+        alpha: 0.1,
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       onTap: () {
         Navigator.pop(context); // Close drawer

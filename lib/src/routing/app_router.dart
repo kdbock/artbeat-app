@@ -607,28 +607,7 @@ class AppRouter {
   Route<dynamic>? _handleArtWalkRoutes(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutes.artWalkDashboard:
-        return RouteUtils.createMainNavRoute(
-          currentIndex: 1,
-          appBar: const core.EnhancedUniversalHeader(
-            title: 'Art Walk',
-            showLogo: false,
-            backgroundGradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.topRight,
-              colors: [
-                Color(0xFF8C52FF), // Primary Purple
-                Color(0xFF00C853), // Primary Green
-              ],
-            ),
-            titleGradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.topRight,
-              colors: [
-                Color(0xFF8C52FF), // Primary Purple
-                Color(0xFF00C853), // Primary Green
-              ],
-            ),
-          ),
+        return RouteUtils.createSimpleRoute(
           child: const art_walk.ArtbeatArtwalkDashboardScreen(),
         );
 
@@ -772,6 +751,24 @@ class AppRouter {
             artWalkId: artWalkId,
             artWalk: artWalk,
           ),
+        );
+
+      case '/instant-discovery':
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const art_walk.InstantDiscoveryRadarScreen(),
+        );
+
+      case '/quest-history':
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const art_walk.QuestHistoryScreen(),
+        );
+
+      case '/weekly-goals':
+        return RouteUtils.createMainLayoutRoute(
+          currentIndex: 1,
+          child: const art_walk.WeeklyGoalsScreen(),
         );
 
       default:

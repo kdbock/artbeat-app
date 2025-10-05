@@ -6,13 +6,13 @@ import '../widgets/discovery_capture_modal.dart';
 
 /// Full-screen Instant Discovery Radar
 class InstantDiscoveryRadarScreen extends StatefulWidget {
-  final Position userPosition;
-  final List<PublicArtModel> initialNearbyArt;
+  final Position? userPosition;
+  final List<PublicArtModel>? initialNearbyArt;
 
   const InstantDiscoveryRadarScreen({
     super.key,
-    required this.userPosition,
-    required this.initialNearbyArt,
+    this.userPosition,
+    this.initialNearbyArt,
   });
 
   @override
@@ -24,14 +24,51 @@ class _InstantDiscoveryRadarScreenState
     extends State<InstantDiscoveryRadarScreen> {
   late List<PublicArtModel> _nearbyArt;
   bool _hasDiscoveries = false;
+  Position? _userPosition;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _nearbyArt = widget.initialNearbyArt;
+    _nearbyArt = widget.initialNearbyArt ?? [];
+    _userPosition = widget.userPosition;
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    if (_userPosition == null) {
+      // Get current position if not provided
+      try {
+        _userPosition = await Geolocator.getCurrentPosition();
+      } catch (e) {
+        // Handle location error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Unable to get your location. Please check permissions.',
+              ),
+            ),
+          );
+          Navigator.pop(context);
+          return;
+        }
+      }
+    }
+
+    if (_nearbyArt.isEmpty && _userPosition != null) {
+      // Load nearby art if not provided
+      // This would need the discovery service, but for now we'll keep it empty
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _handleArtTap(PublicArtModel art, double distance) async {
+    if (_userPosition == null) return;
+
     final result = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -43,7 +80,7 @@ class _InstantDiscoveryRadarScreenState
         builder: (context, scrollController) => DiscoveryCaptureModal(
           art: art,
           distance: distance,
-          userPosition: widget.userPosition,
+          userPosition: _userPosition!,
         ),
       ),
     );
@@ -76,6 +113,10 @@ class _InstantDiscoveryRadarScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading || _userPosition == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -86,7 +127,7 @@ class _InstantDiscoveryRadarScreenState
       },
       child: Scaffold(
         body: InstantDiscoveryRadar(
-          userPosition: widget.userPosition,
+          userPosition: _userPosition!,
           nearbyArt: _nearbyArt,
           radiusMeters: 500,
           onArtTap: _handleArtTap,
