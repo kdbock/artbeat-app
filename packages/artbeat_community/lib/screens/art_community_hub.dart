@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import '../models/art_models.dart';
 import '../models/post_model.dart';
 import '../services/art_community_service.dart';
@@ -15,6 +16,7 @@ import 'feed/create_post_screen.dart';
 import 'feed/enhanced_community_feed_screen.dart';
 import 'package:artbeat_artist/src/services/community_service.dart'
     as artist_community;
+import 'package:artbeat_art_walk/artbeat_art_walk.dart' as art_walk;
 
 /// New simplified community hub with gallery-style design
 class ArtCommunityHub extends StatefulWidget {
@@ -357,12 +359,14 @@ class CommunityFeedTab extends StatefulWidget {
 class _CommunityFeedTabState extends State<CommunityFeedTab> {
   List<PostModel> _posts = [];
   List<PostModel> _filteredPosts = [];
+  List<art_walk.SocialActivity> _activities = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadPosts();
+    _loadActivities();
   }
 
   @override
@@ -403,6 +407,71 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
           context,
         ).showSnackBar(SnackBar(content: Text('Error loading posts: $e')));
       }
+    }
+  }
+
+  Future<void> _loadActivities() async {
+    try {
+      AppLogger.info('📱 Loading social activities...');
+
+      final socialService = art_walk.SocialService();
+      final user = FirebaseAuth.instance.currentUser;
+
+      List<art_walk.SocialActivity> activities = [];
+
+      if (user != null) {
+        // First, try to load user's own activities (most reliable)
+        AppLogger.info('📱 Loading user activities for ${user.uid}');
+        final userActivities = await socialService.getUserActivities(
+          userId: user.uid,
+          limit: 10,
+        );
+        AppLogger.info('📱 Loaded ${userActivities.length} user activities');
+        activities = userActivities;
+
+        // If we have few activities, also try to load nearby activities
+        if (activities.length < 5) {
+          try {
+            final userPosition = await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.medium,
+              ),
+            );
+
+            final nearbyActivities = await socialService.getNearbyActivities(
+              userPosition: userPosition,
+              radiusKm: 80.0, // ~50 miles
+              limit: 10,
+            );
+
+            AppLogger.info(
+              '📱 Loaded ${nearbyActivities.length} nearby activities',
+            );
+
+            // Combine and deduplicate activities
+            final activityIds = activities.map((a) => a.id).toSet();
+            for (final activity in nearbyActivities) {
+              if (!activityIds.contains(activity.id)) {
+                activities.add(activity);
+              }
+            }
+          } catch (e) {
+            AppLogger.warning('Could not load nearby activities: $e');
+          }
+        }
+      } else {
+        AppLogger.warning('No user logged in, cannot load activities');
+      }
+
+      AppLogger.info('📱 Total activities loaded: ${activities.length}');
+
+      if (mounted) {
+        setState(() {
+          _activities = activities;
+        });
+      }
+    } catch (e) {
+      AppLogger.error('📱 Error loading activities: $e');
     }
   }
 
@@ -883,10 +952,10 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
       child: CustomScrollView(
         slivers: [
           // Live Activity Feed at the top
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: LiveActivityFeed(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: LiveActivityFeed(activities: _activities),
             ),
           ),
 

@@ -354,11 +354,26 @@ class ChallengeService {
         );
 
         if (newCount >= challenge.targetCount && !challenge.isCompleted) {
-          // Challenge completed! Award XP
-          await _rewardsService.awardXP(
+          // Challenge completed! Award XP with combo multiplier
+          await _rewardsService.awardXPWithCombo(
             'challenge_completed',
-            customAmount: challenge.rewardXP,
+            baseXP: challenge.rewardXP,
+            isDailyChallenge: true,
+            isWeeklyGoal: false,
           );
+
+          // Check for streak badges
+          final currentStreak = await _getCurrentStreak(user.uid);
+          await _rewardsService.checkStreakBadges(user.uid, currentStreak);
+
+          // Check quest milestones
+          await _rewardsService.checkQuestMilestones(user.uid);
+
+          // Track category-specific streak (extract category from challenge title)
+          final category = _extractChallengeCategory(challenge.title);
+          if (category != null) {
+            await _rewardsService.trackCategoryStreak(user.uid, category);
+          }
 
           // Send completion notification
           await NotificationService().sendNotification(
@@ -522,6 +537,27 @@ class ChallengeService {
     } catch (e) {
       AppLogger.error('Error saving challenge: $e');
     }
+  }
+
+  /// Extract challenge category from title for category-specific streaks
+  String? _extractChallengeCategory(String title) {
+    final titleLower = title.toLowerCase();
+
+    if (titleLower.contains('photo') || titleLower.contains('capture')) {
+      return 'photography';
+    } else if (titleLower.contains('discover') ||
+        titleLower.contains('explore') ||
+        titleLower.contains('neighborhood')) {
+      return 'exploration';
+    } else if (titleLower.contains('share') ||
+        titleLower.contains('review') ||
+        titleLower.contains('social')) {
+      return 'social';
+    } else if (titleLower.contains('walk') || titleLower.contains('route')) {
+      return 'walking';
+    }
+
+    return null; // Unknown category
   }
 
   /// Record art discovery for challenge progress

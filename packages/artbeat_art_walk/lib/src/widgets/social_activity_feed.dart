@@ -98,6 +98,8 @@ class _SocialActivityFeedState extends State<SocialActivityFeed> {
     switch (type) {
       case SocialActivityType.discovery:
         return '🎨';
+      case SocialActivityType.capture:
+        return '📸';
       case SocialActivityType.walkCompleted:
         return '🚶';
       case SocialActivityType.achievement:

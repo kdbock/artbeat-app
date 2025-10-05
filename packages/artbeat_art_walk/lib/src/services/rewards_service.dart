@@ -249,6 +249,137 @@ class RewardsService {
       'icon': '👑',
       'requirement': {'type': 'influencer', 'xp': 10000, 'walks': 20},
     },
+
+    // Quest achievements - Daily Challenges
+    'quest_starter': {
+      'name': 'Quest Starter',
+      'description': 'Complete your first daily challenge',
+      'icon': '🎯',
+      'requirement': {'type': 'challenges_completed', 'count': 1},
+    },
+    'quest_enthusiast': {
+      'name': 'Quest Enthusiast',
+      'description': 'Complete 10 daily challenges',
+      'icon': '🎲',
+      'requirement': {'type': 'challenges_completed', 'count': 10},
+    },
+    'quest_master': {
+      'name': 'Quest Master',
+      'description': 'Complete 50 daily challenges',
+      'icon': '🏅',
+      'requirement': {'type': 'challenges_completed', 'count': 50},
+    },
+    'quest_legend': {
+      'name': 'Quest Legend',
+      'description': 'Complete 100 daily challenges',
+      'icon': '🎖️',
+      'requirement': {'type': 'challenges_completed', 'count': 100},
+    },
+
+    // Quest achievements - Weekly Goals
+    'weekly_warrior': {
+      'name': 'Weekly Warrior',
+      'description': 'Complete your first weekly goal',
+      'icon': '⚔️',
+      'requirement': {'type': 'weekly_goals_completed', 'count': 1},
+    },
+    'weekly_champion': {
+      'name': 'Weekly Champion',
+      'description': 'Complete 10 weekly goals',
+      'icon': '🏆',
+      'requirement': {'type': 'weekly_goals_completed', 'count': 10},
+    },
+    'weekly_legend': {
+      'name': 'Weekly Legend',
+      'description': 'Complete 25 weekly goals',
+      'icon': '👑',
+      'requirement': {'type': 'weekly_goals_completed', 'count': 25},
+    },
+    'perfect_week': {
+      'name': 'Perfect Week',
+      'description': 'Complete all 3 weekly goals in one week',
+      'icon': '💎',
+      'requirement': {'type': 'perfect_week', 'count': 1},
+    },
+
+    // Streak achievements
+    'streak_starter': {
+      'name': 'Streak Starter',
+      'description': 'Maintain a 3-day challenge streak',
+      'icon': '🔥',
+      'requirement': {'type': 'challenge_streak', 'count': 3},
+    },
+    'streak_master': {
+      'name': 'Streak Master',
+      'description': 'Maintain a 7-day challenge streak',
+      'icon': '🔥🔥',
+      'requirement': {'type': 'challenge_streak', 'count': 7},
+    },
+    'streak_legend': {
+      'name': 'Streak Legend',
+      'description': 'Maintain a 30-day challenge streak',
+      'icon': '🔥🔥🔥',
+      'requirement': {'type': 'challenge_streak', 'count': 30},
+    },
+    'unstoppable': {
+      'name': 'Unstoppable',
+      'description': 'Maintain a 100-day challenge streak',
+      'icon': '⚡',
+      'requirement': {'type': 'challenge_streak', 'count': 100},
+    },
+
+    // Daily Login Rewards Badges
+    'daily_devotee': {
+      'name': 'Daily Devotee',
+      'description': 'Log in for 7 consecutive days',
+      'icon': '📅',
+      'requirement': {'type': 'login_streak', 'count': 7},
+    },
+    'weekly_regular': {
+      'name': 'Weekly Regular',
+      'description': 'Log in for 30 consecutive days',
+      'icon': '🗓️',
+      'requirement': {'type': 'login_streak', 'count': 30},
+    },
+    'dedicated_explorer': {
+      'name': 'Dedicated Explorer',
+      'description': 'Log in for 100 consecutive days',
+      'icon': '🎖️',
+      'requirement': {'type': 'login_streak', 'count': 100},
+    },
+
+    // Quest Milestone Badges
+    'century_quester': {
+      'name': 'Century Quester',
+      'description': 'Complete 100 total quests (challenges + weekly goals)',
+      'icon': '💯',
+      'requirement': {'type': 'total_quests', 'count': 100},
+    },
+    'quest_veteran': {
+      'name': 'Quest Veteran',
+      'description': 'Complete 250 total quests',
+      'icon': '🎯',
+      'requirement': {'type': 'total_quests', 'count': 250},
+    },
+    'quest_grandmaster': {
+      'name': 'Quest Grandmaster',
+      'description': 'Complete 500 total quests',
+      'icon': '👑',
+      'requirement': {'type': 'total_quests', 'count': 500},
+    },
+    'perfect_month': {
+      'name': 'Perfect Month',
+      'description': 'Complete 4 perfect weeks in a row',
+      'icon': '🌟',
+      'requirement': {'type': 'perfect_weeks_streak', 'count': 4},
+    },
+    'combo_master': {
+      'name': 'Combo Master',
+      'description':
+          'Complete a daily challenge and weekly goal on the same day 10 times',
+      'icon': '⚡',
+      'requirement': {'type': 'combo_completions', 'count': 10},
+    },
   };
 
   /// Level unlockable perks
@@ -316,6 +447,12 @@ class RewardsService {
             break;
           case 'walk_edit':
             updates['stats.walksEdited'] = FieldValue.increment(1);
+            break;
+          case 'challenge_completed':
+            updates['stats.challengesCompleted'] = FieldValue.increment(1);
+            break;
+          case 'weekly_goal_completed':
+            updates['stats.weeklyGoalsCompleted'] = FieldValue.increment(1);
             break;
         }
 
@@ -468,6 +605,30 @@ class RewardsService {
         if (helpfulVotes == 10) await _awardBadge(userId, 'ten_helpful_votes');
         if (helpfulVotes == 20) await _awardBadge(userId, 'helpful_reviewer');
         break;
+
+      case 'challenge_completed':
+        final challengesCompleted =
+            (stats['challengesCompleted'] as int? ?? 0) + 1;
+        if (challengesCompleted == 1)
+          await _awardBadge(userId, 'quest_starter');
+        if (challengesCompleted == 10)
+          await _awardBadge(userId, 'quest_enthusiast');
+        if (challengesCompleted == 50)
+          await _awardBadge(userId, 'quest_master');
+        if (challengesCompleted == 100)
+          await _awardBadge(userId, 'quest_legend');
+        break;
+
+      case 'weekly_goal_completed':
+        final weeklyGoalsCompleted =
+            (stats['weeklyGoalsCompleted'] as int? ?? 0) + 1;
+        if (weeklyGoalsCompleted == 1)
+          await _awardBadge(userId, 'weekly_warrior');
+        if (weeklyGoalsCompleted == 10)
+          await _awardBadge(userId, 'weekly_champion');
+        if (weeklyGoalsCompleted == 25)
+          await _awardBadge(userId, 'weekly_legend');
+        break;
     }
   }
 
@@ -558,5 +719,412 @@ class RewardsService {
   bool hasLevelPerk(int level, String perk) {
     final perks = getLevelPerks(level);
     return perks.any((p) => p.toLowerCase().contains(perk.toLowerCase()));
+  }
+
+  /// Check and award streak badges based on current streak
+  Future<void> checkStreakBadges(String userId, int currentStreak) async {
+    if (currentStreak >= 3) await _awardBadge(userId, 'streak_starter');
+    if (currentStreak >= 7) await _awardBadge(userId, 'streak_master');
+    if (currentStreak >= 30) await _awardBadge(userId, 'streak_legend');
+    if (currentStreak >= 100) await _awardBadge(userId, 'unstoppable');
+  }
+
+  /// Check and award perfect week badge
+  /// Call this when a weekly goal is completed
+  Future<void> checkPerfectWeek(String userId, String weekKey) async {
+    try {
+      // Get all weekly goals for this week
+      final goalsQuery = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('weeklyGoals')
+          .where('weekNumber', isEqualTo: int.parse(weekKey.split('_')[0]))
+          .where('year', isEqualTo: int.parse(weekKey.split('_')[1]))
+          .get();
+
+      // Check if all 3 goals are completed
+      if (goalsQuery.docs.length >= 3) {
+        final allCompleted = goalsQuery.docs.every((doc) {
+          final data = doc.data();
+          return data['isCompleted'] == true;
+        });
+
+        if (allCompleted) {
+          await _awardBadge(userId, 'perfect_week');
+
+          // Check for perfect month (4 perfect weeks in a row)
+          await _checkPerfectMonth(userId);
+        }
+      }
+    } catch (e) {
+      _logger.e('Error checking perfect week: $e');
+    }
+  }
+
+  /// Check for perfect month achievement (4 perfect weeks in a row)
+  Future<void> _checkPerfectMonth(String userId) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      final userDoc = await userRef.get();
+      final userData = userDoc.data() ?? {};
+
+      final consecutivePerfectWeeks =
+          userData['stats']?['consecutivePerfectWeeks'] as int? ?? 0;
+
+      if (consecutivePerfectWeeks >= 4) {
+        await _awardBadge(userId, 'perfect_month');
+      }
+    } catch (e) {
+      _logger.e('Error checking perfect month: $e');
+    }
+  }
+
+  /// Process daily login and award rewards
+  /// Call this when user opens the app
+  Future<Map<String, dynamic>> processDailyLogin(String userId) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      final today = DateTime.now();
+      final todayKey =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final result = await _firestore.runTransaction((transaction) async {
+        final userDoc = await transaction.get(userRef);
+        final userData = userDoc.data() ?? {};
+
+        final lastLoginDate = userData['lastLoginDate'] as String?;
+        final currentLoginStreak =
+            userData['stats']?['loginStreak'] as int? ?? 0;
+        final longestLoginStreak =
+            userData['stats']?['longestLoginStreak'] as int? ?? 0;
+
+        // Check if already logged in today
+        if (lastLoginDate == todayKey) {
+          return {
+            'alreadyLoggedIn': true,
+            'streak': currentLoginStreak,
+            'xpAwarded': 0,
+          };
+        }
+
+        // Calculate new streak
+        final yesterday = today.subtract(const Duration(days: 1));
+        final yesterdayKey =
+            '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+
+        int newStreak;
+        if (lastLoginDate == yesterdayKey) {
+          // Continuing streak
+          newStreak = currentLoginStreak + 1;
+        } else {
+          // Streak broken or first login
+          newStreak = 1;
+        }
+
+        // Calculate XP reward based on streak
+        int xpReward = 10; // Base reward
+        if (newStreak >= 7)
+          xpReward = 50;
+        else if (newStreak >= 3)
+          xpReward = 25;
+        else if (newStreak >= 2)
+          xpReward = 15;
+
+        // Bonus for milestone days
+        if (newStreak == 7) xpReward += 50; // Day 7 bonus
+        if (newStreak == 30) xpReward += 100; // Day 30 bonus
+        if (newStreak == 100) xpReward += 500; // Day 100 bonus
+
+        // Update user data
+        final currentXP = userData['experiencePoints'] as int? ?? 0;
+        final newXP = currentXP + xpReward;
+        final newLevel = _calculateLevel(newXP);
+
+        final updates = <String, dynamic>{
+          'lastLoginDate': todayKey,
+          'experiencePoints': newXP,
+          'level': newLevel,
+          'stats.loginStreak': newStreak,
+          'stats.longestLoginStreak': newStreak > longestLoginStreak
+              ? newStreak
+              : longestLoginStreak,
+          'stats.totalLogins': FieldValue.increment(1),
+        };
+
+        transaction.update(userRef, updates);
+
+        return {
+          'alreadyLoggedIn': false,
+          'streak': newStreak,
+          'xpAwarded': xpReward,
+          'isNewStreak': newStreak == 1 && lastLoginDate != null,
+        };
+      });
+
+      // Check for login streak badges (outside transaction)
+      if (result['alreadyLoggedIn'] != true) {
+        final streak = result['streak'] as int;
+        await _checkLoginStreakBadges(userId, streak);
+      }
+
+      return result;
+    } catch (e) {
+      _logger.e('Error processing daily login: $e');
+      return {'error': true, 'message': e.toString()};
+    }
+  }
+
+  /// Check and award login streak badges
+  Future<void> _checkLoginStreakBadges(String userId, int streak) async {
+    if (streak >= 7) await _awardBadge(userId, 'daily_devotee');
+    if (streak >= 30) await _awardBadge(userId, 'weekly_regular');
+    if (streak >= 100) await _awardBadge(userId, 'dedicated_explorer');
+  }
+
+  /// Calculate XP with combo multiplier
+  /// Returns the final XP amount after applying multipliers
+  int calculateXPWithMultiplier({
+    required int baseXP,
+    required bool isDailyChallenge,
+    required bool isWeeklyGoal,
+    required int questsCompletedToday,
+  }) {
+    double multiplier = 1.0;
+
+    // Combo multiplier for completing multiple quests in one day
+    if (questsCompletedToday >= 3) {
+      multiplier = 1.5; // +50% for 3+ quests
+    } else if (questsCompletedToday >= 2) {
+      multiplier = 1.25; // +25% for 2 quests
+    }
+
+    // Bonus for completing both daily challenge and weekly goal on same day
+    if (isDailyChallenge && isWeeklyGoal) {
+      multiplier += 0.25; // Additional +25% bonus
+    }
+
+    final finalXP = (baseXP * multiplier).round();
+
+    _logger.i(
+      'XP Calculation: Base=$baseXP, Multiplier=${multiplier}x, Final=$finalXP',
+    );
+
+    return finalXP;
+  }
+
+  /// Award XP with combo multiplier support
+  /// Call this instead of awardXP when you want to apply combo bonuses
+  Future<void> awardXPWithCombo(
+    String action, {
+    required int baseXP,
+    bool isDailyChallenge = false,
+    bool isWeeklyGoal = false,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      // Get today's quest completion count
+      final today = DateTime.now();
+      final todayKey =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final userRef = _firestore.collection('users').doc(user.uid);
+      final userDoc = await userRef.get();
+      final userData = userDoc.data() ?? {};
+
+      final dailyStats =
+          userData['dailyQuestStats'] as Map<String, dynamic>? ?? {};
+      final todayStats = dailyStats[todayKey] as Map<String, dynamic>? ?? {};
+      final questsCompletedToday = (todayStats['questsCompleted'] as int? ?? 0);
+
+      // Calculate final XP with multiplier
+      final finalXP = calculateXPWithMultiplier(
+        baseXP: baseXP,
+        isDailyChallenge: isDailyChallenge,
+        isWeeklyGoal: isWeeklyGoal,
+        questsCompletedToday: questsCompletedToday,
+      );
+
+      // Award the XP
+      await awardXP(action, customAmount: finalXP);
+
+      // Update daily quest stats
+      await _updateDailyQuestStats(
+        user.uid,
+        todayKey,
+        isDailyChallenge,
+        isWeeklyGoal,
+        questsCompletedToday + 1,
+      );
+
+      // Check for combo badge
+      await _checkComboAchievements(user.uid, isDailyChallenge && isWeeklyGoal);
+    } catch (e) {
+      _logger.e('Error awarding XP with combo: $e');
+    }
+  }
+
+  /// Update daily quest statistics
+  Future<void> _updateDailyQuestStats(
+    String userId,
+    String todayKey,
+    bool isDailyChallenge,
+    bool isWeeklyGoal,
+    int newCount,
+  ) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+
+      final updates = <String, dynamic>{
+        'dailyQuestStats.$todayKey.questsCompleted': newCount,
+        'dailyQuestStats.$todayKey.lastUpdated': FieldValue.serverTimestamp(),
+      };
+
+      // Track if both types completed on same day
+      if (isDailyChallenge && isWeeklyGoal) {
+        updates['stats.comboCompletions'] = FieldValue.increment(1);
+      }
+
+      await userRef.update(updates);
+    } catch (e) {
+      _logger.e('Error updating daily quest stats: $e');
+    }
+  }
+
+  /// Check and award combo achievement badges
+  Future<void> _checkComboAchievements(String userId, bool isCombo) async {
+    if (!isCombo) return;
+
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      final userDoc = await userRef.get();
+      final userData = userDoc.data() ?? {};
+
+      final comboCount = userData['stats']?['comboCompletions'] as int? ?? 0;
+
+      if (comboCount >= 10) {
+        await _awardBadge(userId, 'combo_master');
+      }
+    } catch (e) {
+      _logger.e('Error checking combo achievements: $e');
+    }
+  }
+
+  /// Check quest milestone badges
+  /// Call this after any quest completion
+  Future<void> checkQuestMilestones(String userId) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      final userDoc = await userRef.get();
+      final userData = userDoc.data() ?? {};
+
+      final challengesCompleted =
+          userData['stats']?['challengesCompleted'] as int? ?? 0;
+      final weeklyGoalsCompleted =
+          userData['stats']?['weeklyGoalsCompleted'] as int? ?? 0;
+      final totalQuests = challengesCompleted + weeklyGoalsCompleted;
+
+      // Award milestone badges
+      if (totalQuests >= 100) await _awardBadge(userId, 'century_quester');
+      if (totalQuests >= 250) await _awardBadge(userId, 'quest_veteran');
+      if (totalQuests >= 500) await _awardBadge(userId, 'quest_grandmaster');
+    } catch (e) {
+      _logger.e('Error checking quest milestones: $e');
+    }
+  }
+
+  /// Track category-specific streaks
+  /// Call this when a challenge of a specific category is completed
+  Future<void> trackCategoryStreak(
+    String userId,
+    String category, // 'photography', 'exploration', 'social', etc.
+  ) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      final today = DateTime.now();
+      final todayKey =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      await _firestore.runTransaction((transaction) async {
+        final userDoc = await transaction.get(userRef);
+        final userData = userDoc.data() ?? {};
+
+        final categoryStreaks =
+            userData['categoryStreaks'] as Map<String, dynamic>? ?? {};
+        final categoryData =
+            categoryStreaks[category] as Map<String, dynamic>? ?? {};
+
+        final lastCompletionDate = categoryData['lastDate'] as String?;
+        final currentStreak = categoryData['currentStreak'] as int? ?? 0;
+        final longestStreak = categoryData['longestStreak'] as int? ?? 0;
+
+        // Calculate new streak
+        final yesterday = today.subtract(const Duration(days: 1));
+        final yesterdayKey =
+            '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+
+        int newStreak;
+        if (lastCompletionDate == todayKey) {
+          // Already completed today, don't update
+          return;
+        } else if (lastCompletionDate == yesterdayKey) {
+          // Continuing streak
+          newStreak = currentStreak + 1;
+        } else {
+          // New streak
+          newStreak = 1;
+        }
+
+        final updates = <String, dynamic>{
+          'categoryStreaks.$category.currentStreak': newStreak,
+          'categoryStreaks.$category.longestStreak': newStreak > longestStreak
+              ? newStreak
+              : longestStreak,
+          'categoryStreaks.$category.lastDate': todayKey,
+          'categoryStreaks.$category.totalCompleted': FieldValue.increment(1),
+        };
+
+        transaction.update(userRef, updates);
+      });
+
+      _logger.i('Updated $category streak for user $userId');
+    } catch (e) {
+      _logger.e('Error tracking category streak: $e');
+    }
+  }
+
+  /// Get category streak information
+  Future<Map<String, dynamic>> getCategoryStreaks(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userData = userDoc.data() ?? {};
+
+      return userData['categoryStreaks'] as Map<String, dynamic>? ?? {};
+    } catch (e) {
+      _logger.e('Error getting category streaks: $e');
+      return {};
+    }
+  }
+
+  /// Get today's quest completion count
+  Future<int> getTodayQuestCount(String userId) async {
+    try {
+      final today = DateTime.now();
+      final todayKey =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userData = userDoc.data() ?? {};
+
+      final dailyStats =
+          userData['dailyQuestStats'] as Map<String, dynamic>? ?? {};
+      final todayStats = dailyStats[todayKey] as Map<String, dynamic>? ?? {};
+
+      return todayStats['questsCompleted'] as int? ?? 0;
+    } catch (e) {
+      _logger.e('Error getting today quest count: $e');
+      return 0;
+    }
   }
 }

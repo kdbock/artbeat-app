@@ -151,19 +151,39 @@ class SecureFirebaseConfig {
           // Skip web provider in debug mode if no reCAPTCHA key is configured
         );
 
-        // Get and log the debug token
-        final token = await FirebaseAppCheck.instance.getToken();
-        if (token != null) {
-          AppLogger.debug('🔐 Debug token: $token');
-          print(
-            '🔐 COPY THIS TOKEN TO FIREBASE CONSOLE APP CHECK DEBUG TOKENS',
-          );
-          AppLogger.auth('🔐 Token: $token');
-        } else {
-          AppLogger.debug(
-            '🔐 No debug token received - this may indicate an issue',
-          );
-        }
+        // Display instructions for finding the debug token
+        print('\n');
+        print('═══════════════════════════════════════════════════════════');
+        print('🔐 APP CHECK DEBUG TOKEN SETUP');
+        print('═══════════════════════════════════════════════════════════');
+        print('');
+        print('IMPORTANT: Look for the debug token in the logs above!');
+        print('');
+        print('Search for a line that looks like:');
+        print(
+          '  "App Check debug token: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"',
+        );
+        print('');
+        print('OR on Android, look for:');
+        print('  "DebugAppCheckProvider" in logcat with the token');
+        print('');
+        print(
+          'Once you find the token (format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX):',
+        );
+        print('');
+        print('1. Copy the UUID token (NOT the long JWT token)');
+        print(
+          '2. Go to: https://console.firebase.google.com/project/wordnerd-artbeat/appcheck/apps',
+        );
+        print('3. Select your Android app');
+        print('4. Click "Manage debug tokens"');
+        print('5. Add the token');
+        print('');
+        print('═══════════════════════════════════════════════════════════');
+        print('\n');
+
+        AppLogger.debug('🔐 App Check activated in debug mode');
+        AppLogger.auth('🔐 Look for debug token in logs above');
       } else {
         // Production mode - use secure providers
         await FirebaseAppCheck.instance.activate(

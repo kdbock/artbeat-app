@@ -11,4 +11,5 @@ export 'search_criteria_model.dart';
 export 'art_walk_progress_model.dart';
 export 'art_location_cluster_model.dart';
 export 'celebration_data_model.dart';
+export 'challenge_model.dart';
 export 'weekly_goal_model.dart';

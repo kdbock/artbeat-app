@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_capture/artbeat_capture.dart';
+import '../widgets/widgets.dart';
 
 class ProfileViewScreen extends StatefulWidget {
   final String userId;
@@ -34,7 +35,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this); // Changed to 3 tabs
     _loadUserProfile();
     _loadUserCaptures();
   }
@@ -277,14 +278,45 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
 
               const SizedBox(height: 16),
 
-              // Additional profile stats
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatColumn('Posts', postsCount),
-                  _buildStatColumn('Captures', capturesCount),
-                  _buildStatColumn('Art Walks', _artwalksCompleted),
-                ],
+              // Level Progress Bar
+              LevelProgressBar(
+                currentXP: _userModel?.experiencePoints ?? 0,
+                level: _userModel?.level ?? 1,
+                showDetails: true,
+              ),
+
+              const SizedBox(height: 12),
+
+              // Streak Display
+              const StreakDisplay(
+                loginStreak: 5, // TODO: Get from user data
+                challengeStreak: 3, // TODO: Get from user data
+                categoryStreak: 7, // TODO: Get from user data
+                categoryName: 'Street Art',
+              ),
+
+              const SizedBox(height: 12),
+
+              // Recent Badges Carousel
+              RecentBadgesCarousel(
+                recentBadges: _getRecentBadges(),
+                onViewAll: () {
+                  _tabController.animateTo(1); // Switch to achievements tab
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              // Enhanced Stats Grid
+              EnhancedStatsGrid(
+                posts: postsCount,
+                captures: capturesCount,
+                artWalks: _artwalksCompleted,
+                likes: _userModel?.engagementStats.likeCount ?? 0,
+                shares: _userModel?.engagementStats.shareCount ?? 0,
+                comments: _userModel?.engagementStats.commentCount ?? 0,
+                followers: _userModel?.engagementStats.followCount ?? 0,
+                following: 0, // TODO: Get from engagement service
               ),
             ],
           ),
@@ -327,6 +359,7 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           tabs: const [
             Tab(text: 'Captures'),
             Tab(text: 'Achievements'),
+            Tab(text: 'Progress'),
           ],
         ),
         // Tab Content
@@ -334,31 +367,46 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
           height: MediaQuery.of(context).size.height * 0.5,
           child: TabBarView(
             controller: _tabController,
-            children: [_buildCapturesTab(), _buildAchievementsTab()],
+            children: [
+              _buildCapturesTab(),
+              DynamicAchievementsTab(userId: widget.userId),
+              ProgressTab(userId: widget.userId),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatColumn(String label, int value) {
-    return Column(
-      children: [
-        Text(
-          value.toString(),
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Colors.white70),
-        ),
-      ],
-    );
+  List<BadgeData> _getRecentBadges() {
+    // TODO: Get actual recent badges from user data
+    // For now, return sample badges
+    return [
+      BadgeData(
+        id: 'first_walk_completed',
+        name: 'First Walk',
+        description: 'Complete your first art walk',
+        icon: '🚶',
+        earnedAt: DateTime.now().subtract(const Duration(days: 1)),
+        category: 'Quest',
+      ),
+      BadgeData(
+        id: 'first_capture_approved',
+        name: 'First Capture',
+        description: 'Get your first art capture approved',
+        icon: '📸',
+        earnedAt: DateTime.now().subtract(const Duration(days: 2)),
+        category: 'Creator',
+      ),
+      BadgeData(
+        id: 'ten_walks_completed',
+        name: 'Ten Walks',
+        description: 'Complete 10 art walks',
+        icon: '🏃',
+        earnedAt: DateTime.now().subtract(const Duration(days: 5)),
+        category: 'Quest',
+      ),
+    ];
   }
 
   Widget _buildCapturesTab() {
@@ -485,127 +533,6 @@ class _ProfileViewScreenState extends State<ProfileViewScreen>
                       ],
                     ),
                   ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAchievementsTab() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.emoji_events_outlined,
-                color: ArtbeatColors.accentYellow,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Achievements',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: ArtbeatColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              children: [
-                _buildAchievementCard(
-                  'First Capture',
-                  'Captured your first artwork',
-                  Icons.camera_alt_outlined,
-                  ArtbeatColors.primaryPurple,
-                  true,
-                ),
-                _buildAchievementCard(
-                  'Art Explorer',
-                  'Visited 5 art locations',
-                  Icons.explore_outlined,
-                  ArtbeatColors.primaryGreen,
-                  false,
-                ),
-                _buildAchievementCard(
-                  'Community Member',
-                  'Made your first comment',
-                  Icons.comment_outlined,
-                  ArtbeatColors.secondaryTeal,
-                  true,
-                ),
-                _buildAchievementCard(
-                  'Art Critic',
-                  'Left 10 thoughtful critiques',
-                  Icons.rate_review_outlined,
-                  ArtbeatColors.accentYellow,
-                  false,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAchievementCard(
-    String title,
-    String description,
-    IconData icon,
-    Color color,
-    bool isUnlocked,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isUnlocked
-            ? color.withValues(alpha: 0.1)
-            : ArtbeatColors.backgroundSecondary,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isUnlocked
-              ? color.withValues(alpha: 0.3)
-              : ArtbeatColors.border,
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 32,
-            color: isUnlocked ? color : ArtbeatColors.textSecondary,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isUnlocked
-                  ? ArtbeatColors.textPrimary
-                  : ArtbeatColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 10,
-              color: ArtbeatColors.textSecondary,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

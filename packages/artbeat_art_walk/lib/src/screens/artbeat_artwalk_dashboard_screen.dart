@@ -6,8 +6,6 @@ import 'package:artbeat_capture/artbeat_capture.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_ads/artbeat_ads.dart';
 import 'dart:async';
-import '../services/challenge_service.dart';
-import '../models/challenge_model.dart';
 
 // Clean Dashboard Colors - Aligned with ArtBeat design system
 class ArtWalkDashboardColors {

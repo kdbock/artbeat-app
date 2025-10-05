@@ -3,7 +3,8 @@ service firebase.storage {
   match /b/{bucket}/o {
     // Helper functions for access control
     function isDebugMode() {
-      // Disabled debug mode for production security
+      // Set to true only if you want to completely bypass App Check
+      // Better approach: Register debug tokens in Firebase Console
       return false;
     }
 

@@ -334,6 +334,23 @@ class InstantDiscoveryService {
       // Update challenge progress
       await _challengeService.recordArtDiscovery();
 
+      // Track time-based discovery (early bird or night owl)
+      await _challengeService.recordTimeBasedDiscovery();
+
+      // Track art style discovery if available
+      if (art.artType != null && art.artType!.isNotEmpty) {
+        await _challengeService.recordStyleDiscovery(art.artType!);
+      }
+
+      // Track neighborhood discovery if address is available
+      if (art.address != null && art.address!.isNotEmpty) {
+        // Extract neighborhood from address (simple approach - use first part)
+        final neighborhood = _extractNeighborhood(art.address!);
+        if (neighborhood.isNotEmpty) {
+          await _challengeService.recordNeighborhoodDiscovery(neighborhood);
+        }
+      }
+
       AppLogger.info('✅ Saved discovery: ${art.title}');
       return docRef.id;
     } catch (e) {
@@ -701,5 +718,40 @@ class InstantDiscoveryService {
           ? Timestamp.fromDate(capture.updatedAt!)
           : null,
     );
+  }
+
+  /// Extract neighborhood name from address string
+  /// Addresses typically follow format: "Street, Neighborhood, City, State ZIP"
+  /// This extracts the second component (neighborhood) if available
+  String _extractNeighborhood(String address) {
+    try {
+      // Split by comma and trim whitespace
+      final parts = address.split(',').map((s) => s.trim()).toList();
+
+      // If we have at least 2 parts, the second one is usually the neighborhood
+      // Example: "123 Main St, Downtown, San Francisco, CA 94102"
+      // Returns: "Downtown"
+      if (parts.length >= 2) {
+        final neighborhood = parts[1];
+        // Return if it's not empty and doesn't look like a state/zip
+        if (neighborhood.isNotEmpty &&
+            !RegExp(r'^[A-Z]{2}$').hasMatch(neighborhood) && // Not a state code
+            !RegExp(r'^\d{5}').hasMatch(neighborhood)) {
+          // Not a ZIP code
+          return neighborhood;
+        }
+      }
+
+      // Fallback: if we only have one part or can't extract neighborhood,
+      // use the first part (street name) as a simple identifier
+      if (parts.isNotEmpty) {
+        return parts[0];
+      }
+
+      return '';
+    } catch (e) {
+      AppLogger.error('Error extracting neighborhood from address: $e');
+      return '';
+    }
   }
 }

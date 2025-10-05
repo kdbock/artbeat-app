@@ -269,6 +269,8 @@ class _LiveActivityFeedState extends State<LiveActivityFeed>
     switch (type) {
       case artWalkLib.SocialActivityType.discovery:
         return 'discovered';
+      case artWalkLib.SocialActivityType.capture:
+        return 'captured';
       case artWalkLib.SocialActivityType.walkCompleted:
         return 'completed';
       case artWalkLib.SocialActivityType.achievement:

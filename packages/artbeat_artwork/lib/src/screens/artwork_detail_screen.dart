@@ -4,6 +4,7 @@ import 'package:artbeat_artwork/artbeat_artwork.dart';
 import 'package:artbeat_artist/artbeat_artist.dart' as artist;
 import 'package:artbeat_core/artbeat_core.dart' hide ArtworkModel;
 import 'package:share_plus/share_plus.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 /// Screen for viewing artwork details
 class ArtworkDetailScreen extends StatefulWidget {
@@ -323,6 +324,14 @@ class _ArtworkDetailScreenState extends State<ArtworkDetailScreen> {
           'timestamp': DateTime.now().toIso8601String(),
         },
       );
+
+      // Track share for challenge progress
+      try {
+        final challengeService = ChallengeService();
+        await challengeService.recordSocialShare();
+      } catch (e) {
+        AppLogger.error('Error recording share to challenge: $e');
+      }
     } catch (e) {
       AppLogger.error('Error tracking share: $e');
     }

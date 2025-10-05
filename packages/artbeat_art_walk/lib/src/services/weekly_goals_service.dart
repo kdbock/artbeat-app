@@ -443,10 +443,12 @@ class WeeklyGoalsService {
         );
 
         if (newCount >= goal.targetCount && !goal.isCompleted) {
-          // Goal completed! Award XP
-          await _rewardsService.awardXP(
+          // Goal completed! Award XP with combo multiplier
+          await _rewardsService.awardXPWithCombo(
             'weekly_goal_completed',
-            customAmount: goal.rewardXP,
+            baseXP: goal.rewardXP,
+            isDailyChallenge: false,
+            isWeeklyGoal: true,
           );
 
           transaction.update(goalRef, {
@@ -456,6 +458,13 @@ class WeeklyGoalsService {
           });
 
           AppLogger.info('Weekly goal completed: ${goal.title}');
+
+          // Check for perfect week badge (after transaction completes)
+          final weekKey = _getWeekKey(DateTime.now());
+          await _rewardsService.checkPerfectWeek(user.uid, weekKey);
+
+          // Check quest milestones
+          await _rewardsService.checkQuestMilestones(user.uid);
         } else {
           transaction.update(goalRef, {'currentCount': newCount});
         }

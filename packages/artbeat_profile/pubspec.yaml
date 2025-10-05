@@ -41,6 +41,9 @@ dependencies:
   # Added for favorite_detail_screen
   url_launcher: ^6.2.6
 
+  # Added for celebration animations (matches artbeat_art_walk dependency)
+  confetti: ^0.8.0
+
 flutter:
   uses-material-design: true
 

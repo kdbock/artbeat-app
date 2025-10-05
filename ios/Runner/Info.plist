@@ -44,6 +44,8 @@
 	<string>ARTbeat needs access to your microphone for voice recording features. Your recordings are used to enhance your art discovery experience.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>ARTbeat sends notifications for art walk updates, event reminders, and community features.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>ARTbeat tracks your steps during art walks to help you complete fitness challenges and monitor your activity.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

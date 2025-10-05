@@ -1,6 +1,7 @@
 // Copyright (c) 2025 ArtBeat. All rights reserved.
 import 'dart:io';
 
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 import 'package:artbeat_core/artbeat_core.dart';
 import 'package:artbeat_messaging/artbeat_messaging.dart' as messaging;
 import 'package:firebase_core/firebase_core.dart';
@@ -213,6 +214,22 @@ void _initializeNonCriticalServices() {
         AppLogger.error('❌ In-app purchase service initialization failed: $e');
       }
       // Don't fail the entire app for purchase service
+    }
+
+    // Initialize step tracking service
+    try {
+      final stepTrackingService = StepTrackingService();
+      final challengeService = ChallengeService();
+      await stepTrackingService.initialize(challengeService: challengeService);
+      await stepTrackingService.startTracking();
+      if (kDebugMode) {
+        AppLogger.info('✅ Step tracking service initialized and started');
+      }
+    } on Object catch (e) {
+      if (kDebugMode) {
+        AppLogger.error('❌ Step tracking service initialization failed: $e');
+      }
+      // Don't fail the entire app for step tracking service
     }
   });
 }

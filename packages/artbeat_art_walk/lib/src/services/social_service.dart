@@ -6,6 +6,7 @@ import 'package:artbeat_core/artbeat_core.dart';
 /// Activity types for the social feed
 enum SocialActivityType {
   discovery,
+  capture,
   walkCompleted,
   achievement,
   friendJoined,

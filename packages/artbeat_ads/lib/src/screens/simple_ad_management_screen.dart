@@ -1803,6 +1803,8 @@ class _AdEditDialogState extends State<AdEditDialog> {
                           return DropdownMenuItem(
                             value: zone,
                             child: Row(
+                              mainAxisSize: MainAxisSize
+                                  .min, // Fixed unbounded width constraint issue
                               children: [
                                 Icon(
                                   zone.iconData,
@@ -1810,7 +1812,7 @@ class _AdEditDialogState extends State<AdEditDialog> {
                                   color: Colors.black54,
                                 ),
                                 const SizedBox(width: 8),
-                                Expanded(
+                                Flexible(
                                   child: Text(
                                     zone.displayName,
                                     style: const TextStyle(

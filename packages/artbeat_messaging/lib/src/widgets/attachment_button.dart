@@ -80,24 +80,40 @@ class AttachmentButton extends StatelessWidget {
   }
 
   Future<void> _showVoiceRecorder(BuildContext context) async {
-    // Pre-check permissions and initialize service
     final service = VoiceRecordingService();
 
     try {
-      log('🔧 Initializing voice recording service...');
-      await service.initialize();
-      log('✅ Voice recording service initialized');
+      // IMPORTANT: Check and request permissions BEFORE initializing the service
+      // This ensures the native permission dialog appears before FlutterSound tries
+      // to access the microphone
+      log('🔐 Checking microphone permissions...');
+      var permissionResult = await service.checkMicrophonePermission();
+      log('🔍 Permission check result: $permissionResult');
 
-      // Check permissions upfront
-      log('🔐 Pre-checking microphone permissions...');
-      final permissionResult = await service.checkMicrophonePermission();
-      log('🔍 Pre-check permission result: $permissionResult');
+      // If permission is denied (not permanently), request it
+      if (permissionResult == PermissionResult.denied) {
+        log('📱 Permission denied, requesting permission...');
+        permissionResult = await service.requestMicrophonePermission();
+        log('🔍 Permission request result: $permissionResult');
+      }
 
+      // If permanently denied, show settings dialog and return
       if (permissionResult == PermissionResult.permanentlyDenied) {
         log('🚫 Permission permanently denied, showing settings dialog');
         _showPermissionSettingsDialog(context, service);
         return;
       }
+
+      // If still denied after request, return
+      if (permissionResult != PermissionResult.granted) {
+        log('❌ Permission not granted, cannot proceed');
+        return;
+      }
+
+      // Now that we have permission, initialize the service
+      log('🔧 Initializing voice recording service...');
+      await service.initialize();
+      log('✅ Voice recording service initialized');
     } catch (e) {
       log('❌ Failed to initialize voice recording service: $e');
       _showInitializationErrorDialog(context);

@@ -65,13 +65,19 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
       listen: false,
     );
 
-    // Check current permission status (streamlined)
-    final permissionResult = await voiceService.checkMicrophonePermission();
+    // Check current permission status
+    var permissionResult = await voiceService.checkMicrophonePermission();
 
     log('🔍 Initial permission check result: $permissionResult');
 
-    // Only show dialog if permission is permanently denied
-    // For other cases, we'll handle it when user tries to record
+    // If permission is denied (not permanently), request it immediately
+    if (permissionResult == PermissionResult.denied) {
+      log('📱 Permission denied, requesting permission on widget load...');
+      permissionResult = await voiceService.requestMicrophonePermission();
+      log('🔍 Initial permission request result: $permissionResult');
+    }
+
+    // Only show dialog if permission is permanently denied after request
     if (permissionResult == PermissionResult.permanentlyDenied) {
       if (mounted) {
         _showPermissionDeniedDialog(voiceService);
@@ -230,17 +236,26 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
           } else {
             log('▶️ Starting recording...');
 
-            // Check permissions first (streamlined)
-            final permissionResult = await voiceService
+            // Check permissions first
+            var permissionResult = await voiceService
                 .checkMicrophonePermission();
             log('🔍 Permission check result: $permissionResult');
 
+            // If permission is denied (not permanently), request it
+            if (permissionResult == PermissionResult.denied) {
+              log('📱 Permission denied, requesting permission...');
+              permissionResult = await voiceService
+                  .requestMicrophonePermission();
+              log('🔍 Permission request result: $permissionResult');
+            }
+
+            // Handle permission results
             if (permissionResult == PermissionResult.permanentlyDenied) {
               log('🚫 Permission permanently denied, showing dialog');
               _showPermissionDeniedDialog(voiceService);
               return;
             } else if (permissionResult == PermissionResult.denied) {
-              log('❌ Permission denied, showing error dialog');
+              log('❌ Permission denied after request, showing error dialog');
               _showPermissionErrorDialog(permissionResult);
               return;
             } else if (permissionResult == PermissionResult.restricted) {
@@ -393,15 +408,13 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
     String title;
     String message;
     bool showSettingsButton = false;
-    bool showRequestButton = false;
 
     switch (result) {
       case PermissionResult.denied:
-        title = 'Microphone Permission Required';
+        title = 'Microphone Permission Denied';
         message =
-            'ARTbeat needs microphone access to record voice messages. Tap "Request Permission" to allow access, or go to Settings to enable it manually.';
+            'ARTbeat needs microphone access to record voice messages. Please enable it in Settings.';
         showSettingsButton = true;
-        showRequestButton = true;
         break;
       case PermissionResult.restricted:
         title = 'Microphone Access Restricted';
@@ -426,55 +439,6 @@ class _VoiceRecorderWidgetState extends State<VoiceRecorderWidget>
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            if (showRequestButton)
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  final voiceService = Provider.of<VoiceRecordingService>(
-                    context,
-                    listen: false,
-                  );
-                  log('🎯 User tapped Request Permission button');
-                  final result = await voiceService
-                      .requestMicrophonePermission();
-                  log('🎯 Permission request from dialog result: $result');
-
-                  if (result == PermissionResult.granted) {
-                    // Permission granted, user can now try recording
-                    log('✅ Permission granted from dialog request');
-                  } else {
-                    // Still denied, show settings option
-                    log('❌ Permission still denied after dialog request');
-                    _showPermissionErrorDialog(result);
-                  }
-                },
-                child: const Text('Request Permission'),
-              ),
-            if (showRequestButton)
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  final voiceService = Provider.of<VoiceRecordingService>(
-                    context,
-                    listen: false,
-                  );
-                  log('🚀 User tapped Force Request Permission button');
-                  final result = await voiceService.checkMicrophonePermission();
-                  log(
-                    '🚀 Force permission request from dialog result: $result',
-                  );
-
-                  if (result == PermissionResult.granted) {
-                    // Permission granted, user can now try recording
-                    log('✅ Permission granted from force request');
-                  } else {
-                    // Still denied, show settings option
-                    log('❌ Permission still denied after force request');
-                    _showPermissionErrorDialog(result);
-                  }
-                },
-                child: const Text('Force Request'),
-              ),
             if (showSettingsButton)
               TextButton(
                 onPressed: () async {

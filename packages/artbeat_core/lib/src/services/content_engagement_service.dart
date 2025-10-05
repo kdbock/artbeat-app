@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../models/engagement_model.dart';
 import 'engagement_config_service.dart';
 import '../utils/logger.dart';
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 /// Content-specific engagement service for ARTbeat content types
 /// Replaces UniversalEngagementService with content-specific engagement handling
@@ -653,6 +654,14 @@ class ContentEngagementService extends ChangeNotifier {
         },
       );
 
+      // Track comment for challenge progress
+      try {
+        final challengeService = ChallengeService();
+        await challengeService.recordComment();
+      } catch (e) {
+        AppLogger.error('Error recording comment to challenge: $e');
+      }
+
       return commentRef.id;
     } catch (e) {
       AppLogger.error('Error adding comment: $e');
@@ -685,6 +694,14 @@ class ContentEngagementService extends ChangeNotifier {
       // Here you would implement actual sharing logic based on platform
       // For now, we'll just track the engagement
       AppLogger.info('Content shared: $contentId to ${platform ?? 'internal'}');
+
+      // Track share for challenge progress
+      try {
+        final challengeService = ChallengeService();
+        await challengeService.recordSocialShare();
+      } catch (e) {
+        AppLogger.error('Error recording share to challenge: $e');
+      }
 
       return true;
     } catch (e) {

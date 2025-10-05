@@ -19,7 +19,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.wordnerd.artbeat"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36  // Updated for latest plugin compatibility
     ndkVersion = "27.0.12077973"
 
     buildFeatures {
@@ -27,11 +27,6 @@ android {
     }
 
     // Add build optimization
-    dexOptions {
-        preDexLibraries = true
-        maxProcessCount = Runtime.getRuntime().availableProcessors()
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -63,12 +58,15 @@ android {
         // ARTbeat application ID
         applicationId = "com.wordnerd.artbeat"
         minSdk = 24  // Android 7.0 (2016) - Explicit minimum for Firebase compatibility
-        targetSdk = flutter.targetSdkVersion
-        versionCode = 49
-        versionName = "2.0.3"
+        targetSdk = 36  // Updated to match compileSdk
+        versionCode = 50
+        versionName = "2.0.4"
         
         // Pass API keys to the build
         manifestPlaceholders["mapsApiKey"] = keystoreProperties.getProperty("mapsApiKey", "")
+        
+        // Override manifest attributes for plugins with incompatible minSdk
+        manifestPlaceholders["minSdkVersion"] = 24
     }
 
     buildTypes {

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:artbeat_core/artbeat_core.dart'
     show CaptureModel, UserService, AppLogger;
 
@@ -259,6 +260,101 @@ class CaptureService {
 
       // Award XP for creating a capture
       await _rewardsService.awardXP('art_capture_created');
+
+      // Record photo capture for daily challenges
+      try {
+        final challengeService = art_walk.ChallengeService();
+        await challengeService.recordPhotoCapture();
+
+        // Track time-based capture (golden hour)
+        await challengeService.recordTimeBasedDiscovery();
+
+        AppLogger.info('✅ Recorded photo capture for daily challenges');
+      } catch (e) {
+        AppLogger.error('Error recording photo capture for challenges: $e');
+      }
+
+      // Update weekly goals for photography
+      try {
+        final weeklyGoalsService = art_walk.WeeklyGoalsService();
+        final currentGoals = await weeklyGoalsService.getCurrentWeekGoals();
+
+        // Update photography-related weekly goals
+        for (final goal in currentGoals) {
+          if (goal.category == art_walk.WeeklyGoalCategory.photography &&
+              !goal.isCompleted) {
+            await weeklyGoalsService.updateWeeklyGoalProgress(goal.id, 1);
+          }
+        }
+        AppLogger.info('✅ Updated weekly goals for photo capture');
+      } catch (e) {
+        AppLogger.error('Error updating weekly goals: $e');
+      }
+
+      // Post social activity for the capture
+      try {
+        debugPrint('🔍 CaptureService: Starting to post social activity...');
+        debugPrint('🔍 CaptureService: Capture ID: ${newCapture.id}');
+        debugPrint('🔍 CaptureService: Is Public: ${newCapture.isPublic}');
+
+        final user = await _userService.getCurrentUserModel();
+        debugPrint(
+          '🔍 CaptureService: User retrieved: ${user?.username ?? "null"}',
+        );
+
+        if (user == null) {
+          debugPrint('🔍 CaptureService: ❌ User is null, cannot post activity');
+          AppLogger.warning('Cannot post social activity: user is null');
+        } else if (!newCapture.isPublic) {
+          debugPrint(
+            '🔍 CaptureService: ❌ Capture is not public, skipping activity',
+          );
+        } else {
+          debugPrint(
+            '🔍 CaptureService: ✅ User and public check passed, posting activity...',
+          );
+
+          // Convert GeoPoint to Position for SocialService
+          Position? position;
+          if (capture.location != null) {
+            position = Position(
+              latitude: capture.location!.latitude,
+              longitude: capture.location!.longitude,
+              timestamp: DateTime.now(),
+              accuracy: 0,
+              altitude: 0,
+              altitudeAccuracy: 0,
+              heading: 0,
+              headingAccuracy: 0,
+              speed: 0,
+              speedAccuracy: 0,
+            );
+          }
+
+          await art_walk.SocialService().postActivity(
+            userId: capture.userId,
+            userName: user.fullName.isNotEmpty ? user.fullName : user.username,
+            userAvatar: user.profileImageUrl,
+            type: art_walk.SocialActivityType.capture,
+            message: 'captured new artwork',
+            location: position,
+            metadata: {
+              'captureId': newCapture.id,
+              'artTitle': capture.title ?? 'Untitled',
+            },
+          );
+          debugPrint(
+            '🔍 CaptureService: ✅ Posted social activity for capture ${newCapture.id}',
+          );
+          AppLogger.info('✅ Posted social activity for capture');
+        }
+      } catch (e, stackTrace) {
+        debugPrint('🔍 CaptureService: ❌ Error posting social activity: $e');
+        debugPrint('🔍 CaptureService: Stack trace: $stackTrace');
+        AppLogger.error(
+          'Error posting social activity: $e\nStack: $stackTrace',
+        );
+      }
 
       // If capture is public and processed, also save to publicArt collection
       if (newCapture.isPublic && newCapture.isProcessed) {

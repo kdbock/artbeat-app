@@ -38,6 +38,8 @@ dependencies:
   flutter_tts: ^4.2.0
   cached_network_image: ^3.3.1
   geoflutterfire_plus: ^0.0.3
+  pedometer: ^4.0.2
+  logging: ^1.2.0
 
   artbeat_capture:
     path: ../artbeat_capture

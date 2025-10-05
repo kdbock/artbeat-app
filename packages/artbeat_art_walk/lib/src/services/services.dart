@@ -18,3 +18,5 @@ export 'haptic_feedback_service.dart';
 export 'instant_discovery_service.dart';
 export 'weekly_goals_service.dart';
 export 'social_service.dart';
+export 'challenge_service.dart';
+export 'step_tracking_service.dart';

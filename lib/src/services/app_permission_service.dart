@@ -37,15 +37,17 @@ class AppPermissionService {
   }
 
   /// Request essential permissions that the app needs to function properly
+  /// Note: Microphone permission is NOT requested here - it's requested when
+  /// the user tries to use voice recording for better UX
   Future<void> _requestEssentialPermissions() async {
     final List<Permission> essentialPermissions = [
-      Permission.microphone, // For voice messages
+      // Microphone permission is requested on-demand when user tries to record
       if (Platform.isIOS) Permission.photos, // For iOS photo access
       if (Platform.isAndroid) Permission.storage, // For Android file access
     ];
 
     AppLogger.info(
-      'Requesting essential permissions: ${essentialPermissions.map((p) => p.toString()).join(', ')}',
+      'Checking essential permissions: ${essentialPermissions.map((p) => p.toString()).join(', ')}',
     );
 
     // Check current status of all permissions first
@@ -54,6 +56,11 @@ class AppPermissionService {
       _permissionStatus[permission] = status;
       AppLogger.info('${permission.toString()}: $status');
     }
+
+    // Also check microphone status but don't request it yet
+    final micStatus = await Permission.microphone.status;
+    _permissionStatus[Permission.microphone] = micStatus;
+    AppLogger.info('Permission.microphone (not requesting): $micStatus');
 
     // Request permissions that are denied but not permanently denied
     final List<Permission> permissionsToRequest = [];

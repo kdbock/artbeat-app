@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/comment_model.dart';
 import 'package:artbeat_core/artbeat_core.dart' show AppLogger;
+import 'package:artbeat_art_walk/artbeat_art_walk.dart';
 
 /// Enhanced comment service specifically for artwork interactions
 ///
@@ -92,6 +93,14 @@ class ArtworkCommentService {
       // Create notification for artist (if commenter is not the artist)
       if (!(commentData['isArtistComment'] as bool? ?? false)) {
         await _createCommentNotification(artworkId, commentRef.id, commentType);
+      }
+
+      // Track comment for challenge progress
+      try {
+        final challengeService = ChallengeService();
+        await challengeService.recordComment();
+      } catch (e) {
+        AppLogger.error('Error recording comment to challenge: $e');
       }
 
       return commentRef.id;
