@@ -260,8 +260,8 @@ jobs:
         if: matrix.platform == 'android'
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "21"
 
       - name: Create google-services.json for CI (Android builds)
         if: matrix.platform == 'android'
