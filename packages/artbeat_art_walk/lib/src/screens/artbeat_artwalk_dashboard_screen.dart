@@ -157,6 +157,15 @@ class _ArtbeatArtwalkDashboardScreenState
 
               const SizedBox(height: 16),
 
+              // 3.5. Ad0 - Art Walks Zone (Early placement)
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                adIndex: 0, // Show first ad from rotation
+                showIfEmpty: true,
+              ),
+
+              const SizedBox(height: 16),
+
               // 4. Daily Challenge
               if (_todaysChallenge != null) _buildDailyChallenge(),
               if (_todaysChallenge != null) const SizedBox(height: 16),
@@ -175,8 +184,26 @@ class _ArtbeatArtwalkDashboardScreenState
 
               const SizedBox(height: 16),
 
+              // 7.5. Ad1 - Art Walks Zone
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                adIndex: 1, // Show second ad from rotation
+                showIfEmpty: true,
+              ),
+
+              const SizedBox(height: 16),
+
               // 8. Achievement Showcase
               _buildAchievementShowcase(),
+
+              const SizedBox(height: 16),
+
+              // 8.5. Ad2 - Art Walks Zone
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                adIndex: 2, // Show third ad from rotation
+                showIfEmpty: true,
+              ),
 
               const SizedBox(height: 16),
 
@@ -185,15 +212,29 @@ class _ArtbeatArtwalkDashboardScreenState
 
               const SizedBox(height: 16),
 
-              // 10. Ad Space
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: AdSpaceWidget(
-                  location: AdLocation.artWalkDashboard,
-                  customLabel: 'Support Amazing Artists',
-                  height: 80,
-                  trackAnalytics: true,
-                ),
+              // 10. Ad3 - Art Walks Zone
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                adIndex: 3, // Show fourth ad from rotation
+                showIfEmpty: true,
+              ),
+
+              const SizedBox(height: 16),
+
+              // 11. Ad4 - Art Walks Zone
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                adIndex: 4, // Show fifth ad from rotation
+                showIfEmpty: true,
+              ),
+
+              const SizedBox(height: 16),
+
+              // 12. Ad5 - Art Walks Zone
+              const ZoneAdPlacementWidget(
+                zone: AdZone.artWalks,
+                adIndex: 5, // Show sixth ad from rotation
+                showIfEmpty: true,
               ),
 
               const SizedBox(height: 100),
@@ -444,21 +485,13 @@ class _ArtbeatArtwalkDashboardScreenState
     );
   }
 
-  // Instant Discovery Radar - Clean featured section
+  // Instant Discovery Radar - Clean featured section with map background
   Widget _buildInstantDiscoveryRadar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        height: 400,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ArtWalkDashboardColors.primaryPurple,
-              ArtWalkDashboardColors.primaryBlue,
-            ],
-          ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -470,134 +503,211 @@ class _ArtbeatArtwalkDashboardScreenState
             ),
           ],
         ),
-        child: Column(
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              // Map background
+              if (_currentPosition != null)
+                GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(
+                      _currentPosition!.latitude,
+                      _currentPosition!.longitude,
+                    ),
+                    zoom: 15,
                   ),
-                  child: const Icon(Icons.radar, color: Colors.white, size: 28),
+                  myLocationEnabled: true,
+                  myLocationButtonEnabled: false,
+                  zoomControlsEnabled: false,
+                  mapToolbarEnabled: false,
+                  compassEnabled: false,
+                  scrollGesturesEnabled: false,
+                  zoomGesturesEnabled: false,
+                  tiltGesturesEnabled: false,
+                  rotateGesturesEnabled: false,
+                  onMapCreated: (controller) {
+                    // Optional: store controller if needed for updates
+                  },
+                )
+              else
+                // Fallback gradient if location not available yet
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        ArtWalkDashboardColors.primaryPurple,
+                        ArtWalkDashboardColors.primaryBlue,
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Instant Discovery',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'Find art around you in real-time',
-                        style: TextStyle(color: Colors.white70, fontSize: 14),
-                      ),
+
+              // Gradient overlay for better text readability
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.5),
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.6),
                     ],
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Status display
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                children: [
-                  // Art count display
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
+
+              // Content overlay
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.radar,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Instant Discovery',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Find art around you in real-time',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Center(
+
+                    const Spacer(),
+
+                    // Status display
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            '$_nearbyArtCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
+                          // Art count display
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '$_nearbyArtCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'nearby',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const Text(
-                            'nearby',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
+
+                          const SizedBox(height: 16),
+
+                          // Status message
+                          Text(
+                            _getRadarStatusMessage(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
+                            textAlign: TextAlign.center,
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Text(
+                            _nearbyArtCount == 0
+                                ? 'Move around to discover art nearby'
+                                : 'Tap below to start exploring',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
                     ),
-                  ),
 
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 20),
 
-                  // Status message
-                  Text(
-                    _getRadarStatusMessage(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    // Action button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _openInstantDiscovery,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: ArtWalkDashboardColors.primaryPurple,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                        ),
+                        child: const Text(
+                          'Start Discovery',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    _nearbyArtCount == 0
-                        ? 'Move around to discover art nearby'
-                        : 'Tap below to start exploring',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Action button
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _openInstantDiscovery,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: ArtWalkDashboardColors.primaryPurple,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                child: const Text(
-                  'Start Discovery',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

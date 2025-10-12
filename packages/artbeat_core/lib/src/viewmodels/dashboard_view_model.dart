@@ -429,7 +429,7 @@ class DashboardViewModel extends ChangeNotifier {
 
       debugPrint('🔍 DashboardViewModel: Starting to load activities');
 
-      // Load recent social activities
+      // Load recent social activities from all users
       final user = _auth.currentUser;
       if (user == null) {
         debugPrint('🔍 DashboardViewModel: ❌ No user logged in');
@@ -440,22 +440,65 @@ class DashboardViewModel extends ChangeNotifier {
 
       debugPrint('🔍 DashboardViewModel: User logged in: ${user.uid}');
 
-      // Always try to load user's own activities first for more reliable results
-      debugPrint('🔍 DashboardViewModel: Loading user activities');
-      final userActivities = await _socialService.getUserActivities(
-        userId: user.uid,
-        limit: 10,
-      );
+      final allActivities = <artWalkLib.SocialActivity>[];
+
+      // Try to load nearby activities if location is available
+      if (_currentLocation != null) {
+        debugPrint('🔍 DashboardViewModel: Loading nearby activities');
+        try {
+          final nearbyActivities = await _socialService.getNearbyActivities(
+            userPosition: _currentLocation!,
+            radiusKm: 50.0, // 50km radius for broader coverage
+            limit: 20,
+          );
+          debugPrint(
+            '🔍 DashboardViewModel: Loaded ${nearbyActivities.length} nearby activities',
+          );
+          allActivities.addAll(nearbyActivities);
+        } catch (e) {
+          debugPrint(
+            '🔍 DashboardViewModel: ⚠️ Error loading nearby activities: $e',
+          );
+        }
+      } else {
+        debugPrint(
+          '🔍 DashboardViewModel: ⚠️ Location not available, skipping nearby activities',
+        );
+      }
+
+      // If no nearby activities found, load recent activities from all users
+      // by querying the socialActivities collection directly
+      if (allActivities.isEmpty) {
+        debugPrint(
+          '🔍 DashboardViewModel: No nearby activities, loading recent activities from all users',
+        );
+        try {
+          // Load recent activities without location filter
+          final recentActivities = await _socialService.getRecentActivities(
+            limit: 20,
+          );
+          debugPrint(
+            '🔍 DashboardViewModel: Loaded ${recentActivities.length} recent activities',
+          );
+          allActivities.addAll(recentActivities);
+        } catch (e) {
+          debugPrint(
+            '🔍 DashboardViewModel: ⚠️ Error loading recent activities: $e',
+          );
+        }
+      }
+
+      // Sort by timestamp (most recent first)
+      allActivities.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+      // Take top 20 activities
+      _activities = allActivities.take(20).toList();
 
       debugPrint(
-        '🔍 DashboardViewModel: Loaded ${userActivities.length} user activities',
+        '🔍 DashboardViewModel: Final activities count: ${_activities.length}',
       );
 
-      _activities = userActivities;
-
-      AppLogger.info(
-        '✅ Loaded ${userActivities.length} user activities successfully',
-      );
+      AppLogger.info('✅ Loaded ${_activities.length} activities successfully');
     } catch (e, stack) {
       debugPrint('🔍 DashboardViewModel: ❌ Error loading activities: $e');
       debugPrint('🔍 DashboardViewModel: Stack trace: $stack');

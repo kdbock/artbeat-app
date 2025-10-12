@@ -391,20 +391,30 @@ class _CaptureUploadScreenState extends State<CaptureUploadScreen> {
         tags: [], // Could be enhanced later
       );
 
-      setState(() => _uploadStatus = 'Saving to database...');
-      // Save to database
-      await _captureService.createCapture(capture);
+      setState(() => _uploadStatus = 'Saving capture...');
+      // Save to database - this now returns immediately after saving to Firestore
+      // Background operations (XP, achievements, etc.) will complete asynchronously
+      final savedCapture = await _captureService.createCapture(capture);
 
       if (mounted) {
+        // Update status to show completion
+        setState(() => _uploadStatus = 'Processing rewards...');
+
+        // Give a brief moment for the status to show, then show success
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Capture uploaded successfully!'),
+            content: Text(
+              'Capture uploaded successfully! Rewards are being processed.',
+            ),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
 
         // Show success dialog with Create Art Walk option
-        _showSuccessDialog(capture);
+        _showSuccessDialog(savedCapture);
       }
     } catch (e) {
       if (mounted) {

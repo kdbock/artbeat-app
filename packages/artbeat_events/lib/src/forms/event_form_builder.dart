@@ -1,9 +1,13 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:artbeat_core/artbeat_core.dart' as core;
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import '../models/artbeat_event.dart';
 import '../models/ticket_type.dart';
 import '../models/refund_policy.dart';
@@ -49,6 +53,12 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
   bool _isPublic = true;
   bool _reminderEnabled = true;
   List<String> _tags = [];
+
+  // Recurring event fields
+  bool _isRecurring = false;
+  String _recurrencePattern = 'daily';
+  final _recurrenceIntervalController = TextEditingController(text: '1');
+  DateTime? _recurrenceEndDate;
   final List<String> _availableTags = [
     'Art Exhibition',
     'Gallery Opening',
@@ -95,6 +105,11 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
       _isPublic = event.isPublic;
       _reminderEnabled = event.reminderEnabled;
       _tags = List.from(event.tags);
+      _isRecurring = event.isRecurring;
+      _recurrencePattern = event.recurrencePattern ?? 'daily';
+      _recurrenceIntervalController.text =
+          event.recurrenceInterval?.toString() ?? '1';
+      _recurrenceEndDate = event.recurrenceEndDate;
     } else {
       _maxAttendeesController.text = '100';
     }
@@ -108,6 +123,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     _contactEmailController.dispose();
     _contactPhoneController.dispose();
     _maxAttendeesController.dispose();
+    _recurrenceIntervalController.dispose();
     super.dispose();
   }
 
@@ -123,8 +139,8 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFFE74C3C), // Red
-                      Color(0xFF3498DB), // Light Blue
+                      core.ArtbeatColors.primaryPurple,
+                      core.ArtbeatColors.primaryGreen,
                     ],
                   ),
                   boxShadow: [
@@ -147,19 +163,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   onProfilePressed: () => _showProfileMenu(context),
                   onDeveloperPressed: () => _showDeveloperTools(context),
                   backgroundColor: Colors.transparent,
-                  // Removed foregroundColor to use deep purple default
-                  actions: [
-                    TextButton(
-                      onPressed: widget.isLoading ? null : _submitForm,
-                      child: const Text(
-                        'Save',
-                        style: TextStyle(
-                          color: core.ArtbeatColors.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+                  foregroundColor: Colors.white,
                 ),
               ),
             )
@@ -167,12 +171,6 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
               title: Text(
                 widget.initialEvent == null ? 'Create Event' : 'Edit Event',
               ),
-              actions: [
-                TextButton(
-                  onPressed: widget.isLoading ? null : _submitForm,
-                  child: const Text('Save'),
-                ),
-              ],
             ),
       body: Container(
         decoration: widget.useEnhancedUniversalHeader
@@ -181,9 +179,9 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    core.ArtbeatColors.primaryPurple.withAlpha(25),
+                    core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
                     core.ArtbeatColors.backgroundPrimary,
-                    core.ArtbeatColors.primaryGreen.withAlpha(25),
+                    core.ArtbeatColors.primaryGreen.withValues(alpha: 0.1),
                   ],
                 ),
               )
@@ -207,13 +205,50 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
                 const SizedBox(height: 20),
                 _buildCapacitySection(),
                 const SizedBox(height: 20),
-                _buildTagsSection(),
-                const SizedBox(height: 20),
                 _buildTicketTypesSection(),
                 const SizedBox(height: 20),
                 _buildRefundPolicySection(),
                 const SizedBox(height: 20),
                 _buildSettingsSection(),
+                const SizedBox(height: 20),
+                _buildRecurringEventSection(),
+                const SizedBox(height: 20),
+                _buildTagsSection(),
+                const SizedBox(height: 32),
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: widget.isLoading ? null : _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: core.ArtbeatColors.primaryPurple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: widget.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            widget.initialEvent == null
+                                ? 'Create Event'
+                                : 'Update Event',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
+                ),
                 const SizedBox(height: 32),
               ],
             ),
@@ -232,7 +267,7 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
         border: Border.all(color: core.ArtbeatColors.border),
         boxShadow: [
           BoxShadow(
-            color: core.ArtbeatColors.primaryPurple.withAlpha(26),
+            color: core.ArtbeatColors.primaryPurple.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -773,6 +808,150 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     );
   }
 
+  Widget _buildRecurringEventSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Recurring Event',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: const Text('Repeat Event'),
+              subtitle: const Text('Create a recurring event'),
+              value: _isRecurring,
+              onChanged: (value) => setState(() => _isRecurring = value),
+              contentPadding: EdgeInsets.zero,
+            ),
+            if (_isRecurring) ...[
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _recurrencePattern,
+                decoration: const InputDecoration(
+                  labelText: 'Repeat Pattern',
+                  filled: true,
+                  fillColor: core.ArtbeatColors.backgroundPrimary,
+                  border: OutlineInputBorder(),
+                ),
+                dropdownColor: core.ArtbeatColors.backgroundPrimary,
+                style: const TextStyle(color: core.ArtbeatColors.textPrimary),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'daily',
+                    child: Text(
+                      'Daily',
+                      style: TextStyle(color: core.ArtbeatColors.textPrimary),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'weekly',
+                    child: Text(
+                      'Weekly',
+                      style: TextStyle(color: core.ArtbeatColors.textPrimary),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'monthly',
+                    child: Text(
+                      'Monthly',
+                      style: TextStyle(color: core.ArtbeatColors.textPrimary),
+                    ),
+                  ),
+                  DropdownMenuItem(
+                    value: 'custom',
+                    child: Text(
+                      'Custom',
+                      style: TextStyle(color: core.ArtbeatColors.textPrimary),
+                    ),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _recurrencePattern = value);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _recurrenceIntervalController,
+                decoration: InputDecoration(
+                  labelText: 'Repeat Every',
+                  hintText: 'Enter interval',
+                  suffixText: _recurrencePattern == 'daily'
+                      ? 'day(s)'
+                      : _recurrencePattern == 'weekly'
+                      ? 'week(s)'
+                      : _recurrencePattern == 'monthly'
+                      ? 'month(s)'
+                      : 'unit(s)',
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (_isRecurring) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter an interval';
+                    }
+                    final interval = int.tryParse(value);
+                    if (interval == null || interval < 1) {
+                      return 'Please enter a valid number (1 or greater)';
+                    }
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('End Date'),
+                subtitle: Text(
+                  _recurrenceEndDate != null
+                      ? '${_recurrenceEndDate!.month}/${_recurrenceEndDate!.day}/${_recurrenceEndDate!.year}'
+                      : 'No end date (continues indefinitely)',
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_recurrenceEndDate != null)
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() => _recurrenceEndDate = null);
+                        },
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: _selectRecurrenceEndDate,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectRecurrenceEndDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate:
+          _recurrenceEndDate ??
+          (_selectedDateTime ?? DateTime.now()).add(const Duration(days: 30)),
+      firstDate: _selectedDateTime ?? DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 730)), // 2 years
+    );
+
+    if (date != null) {
+      setState(() => _recurrenceEndDate = date);
+    }
+  }
+
   Future<void> _selectDateTime() async {
     final date = await showDatePicker(
       context: context,
@@ -829,10 +1008,155 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
 
   // Helper to upload a file to Firebase Storage and get its download URL
   Future<String> _uploadImageToStorage(File file, String path) async {
-    final storageRef = FirebaseStorage.instance.ref().child(path);
-    final uploadTask = storageRef.putFile(file);
-    final snapshot = await uploadTask.whenComplete(() {});
-    return await snapshot.ref.getDownloadURL();
+    try {
+      if (kIsWeb) {
+        // For web, try the native Firebase Storage SDK first, fallback to REST API
+        try {
+          debugPrint('Attempting web upload using Firebase SDK for $path');
+          final bytes = await file.readAsBytes();
+          final storageRef = FirebaseStorage.instance.ref().child(path);
+
+          // Use putData for web with bytes
+          final uploadTask = await storageRef.putData(
+            bytes,
+            SettableMetadata(
+              contentType: 'image/jpeg',
+              customMetadata: {
+                'uploadedBy': 'artbeat_app',
+                'uploadTime': DateTime.now().toIso8601String(),
+              },
+            ),
+          );
+
+          final downloadUrl = await uploadTask.ref.getDownloadURL();
+          debugPrint('Successfully uploaded using Firebase SDK: $downloadUrl');
+          return downloadUrl;
+        } on Exception catch (sdkError) {
+          debugPrint('Firebase SDK upload failed, trying REST API: $sdkError');
+
+          // Fallback to REST API with better error handling
+          final bytes = await file.readAsBytes();
+          debugPrint('Uploading ${bytes.length} bytes to $path via REST API');
+
+          // Get Firebase Auth token
+          final user = FirebaseAuth.instance.currentUser;
+          if (user == null) {
+            throw Exception('User not authenticated');
+          }
+          final token = await user.getIdToken();
+
+          // Get storage bucket name
+          final bucket = FirebaseStorage.instance.ref().bucket;
+
+          // Encode path for URL
+          final encodedPath = Uri.encodeComponent(path);
+
+          // Upload using Firebase Storage REST API
+          final uploadUrl =
+              'https://firebasestorage.googleapis.com/v0/b/$bucket/o?name=$encodedPath';
+
+          final response = await http.post(
+            Uri.parse(uploadUrl),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'image/jpeg',
+            },
+            body: bytes,
+          );
+
+          debugPrint('REST API Response status: ${response.statusCode}');
+          debugPrint('REST API Response body: ${response.body}');
+
+          if (response.statusCode != 200) {
+            debugPrint(
+              'Upload failed with status ${response.statusCode}: ${response.body}',
+            );
+            throw Exception(
+              'Upload failed: ${response.statusCode} - ${response.body}',
+            );
+          }
+
+          debugPrint('Upload complete, parsing response...');
+
+          // Add better error handling for JSON parsing
+          Map<String, dynamic> responseData;
+          try {
+            responseData = json.decode(response.body) as Map<String, dynamic>;
+          } catch (parseError) {
+            debugPrint('JSON parsing failed: $parseError');
+            debugPrint('Raw response: ${response.body}');
+            throw Exception('Failed to parse response JSON: $parseError');
+          }
+
+          // Construct download URL from response
+          final downloadToken = responseData['downloadTokens'] as String?;
+          if (downloadToken == null) {
+            debugPrint('Response data: $responseData');
+            throw Exception('No download token in response');
+          }
+
+          final downloadUrl =
+              'https://firebasestorage.googleapis.com/v0/b/$bucket/o/$encodedPath?alt=media&token=$downloadToken';
+          debugPrint('Download URL: $downloadUrl');
+          return downloadUrl;
+        }
+      } else {
+        // For mobile, use putFile with better error handling
+        try {
+          debugPrint('Uploading file for mobile: $path');
+          final storageRef = FirebaseStorage.instance.ref().child(path);
+
+          // Add metadata for mobile uploads too
+          final uploadTask = await storageRef.putFile(
+            file,
+            SettableMetadata(
+              contentType: 'image/jpeg',
+              customMetadata: {
+                'uploadedBy': 'artbeat_app',
+                'uploadTime': DateTime.now().toIso8601String(),
+              },
+            ),
+          );
+
+          final downloadUrl = await uploadTask.ref.getDownloadURL();
+          debugPrint('Mobile upload successful: $downloadUrl');
+          return downloadUrl;
+        } on FirebaseException catch (firebaseError) {
+          debugPrint(
+            'Firebase mobile upload failed: ${firebaseError.code} - ${firebaseError.message}',
+          );
+
+          // Try alternative approach for mobile - using putData
+          try {
+            debugPrint('Trying mobile upload with putData approach...');
+            final bytes = await file.readAsBytes();
+            final storageRef = FirebaseStorage.instance.ref().child(path);
+
+            final uploadTask = await storageRef.putData(
+              bytes,
+              SettableMetadata(
+                contentType: 'image/jpeg',
+                customMetadata: {
+                  'uploadedBy': 'artbeat_app',
+                  'uploadTime': DateTime.now().toIso8601String(),
+                },
+              ),
+            );
+
+            final downloadUrl = await uploadTask.ref.getDownloadURL();
+            debugPrint('Mobile putData upload successful: $downloadUrl');
+            return downloadUrl;
+          } catch (putDataError) {
+            debugPrint('Mobile putData also failed: $putDataError');
+            rethrow;
+          }
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error uploading image to $path: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Future<void> _submitForm() async {
@@ -887,19 +1211,20 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
     String bannerUrl = '';
     List<String> imageUrls = [];
     try {
+      // Use debug_uploads path for more reliable web uploads
       headshotUrl = await _uploadImageToStorage(
         _artistHeadshot!,
-        'events/$userId/$eventId/headshot.jpg',
+        'debug_uploads/events/$userId/$eventId/headshot.jpg',
       );
       bannerUrl = await _uploadImageToStorage(
         _eventBanner!,
-        'events/$userId/$eventId/banner.jpg',
+        'debug_uploads/events/$userId/$eventId/banner.jpg',
       );
       imageUrls = await Future.wait(
         _eventImages.asMap().entries.map(
           (entry) => _uploadImageToStorage(
             entry.value,
-            'events/$userId/$eventId/image_${entry.key}.jpg',
+            'debug_uploads/events/$userId/$eventId/image_${entry.key}.jpg',
           ),
         ),
       );
@@ -931,6 +1256,12 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
           contactPhone: _contactPhoneController.text.trim().isEmpty
               ? null
               : _contactPhoneController.text.trim(),
+          isRecurring: _isRecurring,
+          recurrencePattern: _isRecurring ? _recurrencePattern : null,
+          recurrenceInterval: _isRecurring
+              ? int.tryParse(_recurrenceIntervalController.text)
+              : null,
+          recurrenceEndDate: _isRecurring ? _recurrenceEndDate : null,
         ) ??
         ArtbeatEvent.create(
           title: _titleController.text.trim(),
@@ -951,6 +1282,12 @@ class _EventFormBuilderState extends State<EventFormBuilder> {
           contactPhone: _contactPhoneController.text.trim().isEmpty
               ? null
               : _contactPhoneController.text.trim(),
+          isRecurring: _isRecurring,
+          recurrencePattern: _isRecurring ? _recurrencePattern : null,
+          recurrenceInterval: _isRecurring
+              ? int.tryParse(_recurrenceIntervalController.text)
+              : null,
+          recurrenceEndDate: _isRecurring ? _recurrenceEndDate : null,
         );
 
     widget.onEventCreated(event);

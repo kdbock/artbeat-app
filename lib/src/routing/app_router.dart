@@ -1300,6 +1300,7 @@ class AppRouter {
 
       case AppRoutes.adsManagement:
         return RouteUtils.createMainLayoutRoute(
+          currentIndex: 0,
           appBar: RouteUtils.createAppBar('Ad Management'),
           child: const ads.SimpleAdManagementScreen(),
         );

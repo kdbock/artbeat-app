@@ -5,7 +5,7 @@ service firebase.storage {
     function isDebugMode() {
       // Set to true only if you want to completely bypass App Check
       // Better approach: Register debug tokens in Firebase Console
-      return false;
+      return true; // Temporarily enabled for development
     }
 
     function hasAppCheck() {

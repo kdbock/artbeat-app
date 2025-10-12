@@ -252,121 +252,190 @@ class CaptureService {
         };
       }
 
+      // CRITICAL: Save to Firestore first - this is the only blocking operation
       final docRef = await _capturesRef.add(captureData);
       final newCapture = capture.copyWith(id: docRef.id);
 
-      // Update user's capture count
-      await _userService.incrementUserCaptureCount(capture.userId);
-
-      // Award XP for creating a capture
-      await _rewardsService.awardXP('art_capture_created');
-
-      // Record photo capture for daily challenges
-      try {
-        final challengeService = art_walk.ChallengeService();
-        await challengeService.recordPhotoCapture();
-
-        // Track time-based capture (golden hour)
-        await challengeService.recordTimeBasedDiscovery();
-
-        AppLogger.info('✅ Recorded photo capture for daily challenges');
-      } catch (e) {
-        AppLogger.error('Error recording photo capture for challenges: $e');
-      }
-
-      // Update weekly goals for photography
-      try {
-        final weeklyGoalsService = art_walk.WeeklyGoalsService();
-        final currentGoals = await weeklyGoalsService.getCurrentWeekGoals();
-
-        // Update photography-related weekly goals
-        for (final goal in currentGoals) {
-          if (goal.category == art_walk.WeeklyGoalCategory.photography &&
-              !goal.isCompleted) {
-            await weeklyGoalsService.updateWeeklyGoalProgress(goal.id, 1);
-          }
-        }
-        AppLogger.info('✅ Updated weekly goals for photo capture');
-      } catch (e) {
-        AppLogger.error('Error updating weekly goals: $e');
-      }
-
-      // Post social activity for the capture
-      try {
-        debugPrint('🔍 CaptureService: Starting to post social activity...');
-        debugPrint('🔍 CaptureService: Capture ID: ${newCapture.id}');
-        debugPrint('🔍 CaptureService: Is Public: ${newCapture.isPublic}');
-
-        final user = await _userService.getCurrentUserModel();
-        debugPrint(
-          '🔍 CaptureService: User retrieved: ${user?.username ?? "null"}',
-        );
-
-        if (user == null) {
-          debugPrint('🔍 CaptureService: ❌ User is null, cannot post activity');
-          AppLogger.warning('Cannot post social activity: user is null');
-        } else if (!newCapture.isPublic) {
-          debugPrint(
-            '🔍 CaptureService: ❌ Capture is not public, skipping activity',
-          );
-        } else {
-          debugPrint(
-            '🔍 CaptureService: ✅ User and public check passed, posting activity...',
-          );
-
-          // Convert GeoPoint to Position for SocialService
-          Position? position;
-          if (capture.location != null) {
-            position = Position(
-              latitude: capture.location!.latitude,
-              longitude: capture.location!.longitude,
-              timestamp: DateTime.now(),
-              accuracy: 0,
-              altitude: 0,
-              altitudeAccuracy: 0,
-              heading: 0,
-              headingAccuracy: 0,
-              speed: 0,
-              speedAccuracy: 0,
-            );
-          }
-
-          await art_walk.SocialService().postActivity(
-            userId: capture.userId,
-            userName: user.fullName.isNotEmpty ? user.fullName : user.username,
-            userAvatar: user.profileImageUrl,
-            type: art_walk.SocialActivityType.capture,
-            message: 'captured new artwork',
-            location: position,
-            metadata: {
-              'captureId': newCapture.id,
-              'artTitle': capture.title ?? 'Untitled',
-            },
-          );
-          debugPrint(
-            '🔍 CaptureService: ✅ Posted social activity for capture ${newCapture.id}',
-          );
-          AppLogger.info('✅ Posted social activity for capture');
-        }
-      } catch (e, stackTrace) {
-        debugPrint('🔍 CaptureService: ❌ Error posting social activity: $e');
-        debugPrint('🔍 CaptureService: Stack trace: $stackTrace');
-        AppLogger.error(
-          'Error posting social activity: $e\nStack: $stackTrace',
-        );
-      }
-
-      // If capture is public and processed, also save to publicArt collection
-      if (newCapture.isPublic && newCapture.isProcessed) {
-        await _saveToPublicArt(newCapture);
-      }
-
-      // Trigger achievement check for capture-related achievements
-      _checkCaptureAchievements(capture.userId);
+      // OPTIMIZATION: Run all secondary operations in the background
+      // This allows the UI to respond immediately while these complete asynchronously
+      _processPostCaptureOperations(newCapture);
 
       return newCapture;
     } catch (e) {
       AppLogger.error('Error creating capture: $e');
+      rethrow;
+    }
+  }
+
+  /// Process all post-capture operations asynchronously in the background
+  /// This prevents blocking the UI while secondary operations complete
+  Future<void> _processPostCaptureOperations(CaptureModel newCapture) async {
+    // Run all operations in parallel where possible using Future.wait
+    // Wrap each in try-catch to prevent one failure from affecting others
+
+    try {
+      await Future.wait([
+        // Update user's capture count
+        _userService.incrementUserCaptureCount(newCapture.userId).catchError((
+          Object e,
+        ) {
+          AppLogger.error('Error incrementing user capture count: $e');
+          return false; // Return a value to satisfy the Future<bool> return type
+        }),
+
+        // Award XP for creating a capture
+        _rewardsService.awardXP('art_capture_created').catchError((Object e) {
+          AppLogger.error('Error awarding XP: $e');
+          return null; // Return null on error
+        }),
+
+        // Record photo capture for daily challenges
+        _recordChallengeProgress().catchError((Object e) {
+          AppLogger.error('Error recording challenge progress: $e');
+          return null; // Return null on error
+        }),
+
+        // Update weekly goals for photography
+        _updateWeeklyGoals().catchError((Object e) {
+          AppLogger.error('Error updating weekly goals: $e');
+          return null; // Return null on error
+        }),
+
+        // Post social activity for the capture
+        _postSocialActivity(newCapture).catchError((Object e) {
+          AppLogger.error('Error posting social activity: $e');
+          return null; // Return null on error
+        }),
+
+        // If capture is public and processed, save to publicArt collection
+        if (newCapture.isPublic && newCapture.isProcessed)
+          _saveToPublicArt(newCapture).catchError((Object e) {
+            AppLogger.error('Error saving to publicArt: $e');
+            return null; // Return null on error
+          }),
+      ], eagerError: false); // Continue even if some operations fail
+
+      // Trigger achievement check (non-blocking)
+      _checkCaptureAchievements(newCapture.userId);
+
+      AppLogger.info('✅ All post-capture operations completed');
+    } catch (e) {
+      AppLogger.error('Error in post-capture operations: $e');
+      // Don't rethrow - these are background operations
+    }
+  }
+
+  /// Record challenge progress for photo capture
+  Future<void> _recordChallengeProgress() async {
+    try {
+      final challengeService = art_walk.ChallengeService();
+      await Future.wait([
+        challengeService.recordPhotoCapture(),
+        challengeService.recordTimeBasedDiscovery(),
+      ]);
+      AppLogger.info('✅ Recorded photo capture for daily challenges');
+    } catch (e) {
+      AppLogger.error('Error recording photo capture for challenges: $e');
+      rethrow;
+    }
+  }
+
+  /// Update weekly goals for photography
+  Future<void> _updateWeeklyGoals() async {
+    try {
+      final weeklyGoalsService = art_walk.WeeklyGoalsService();
+      final currentGoals = await weeklyGoalsService.getCurrentWeekGoals();
+
+      // Update photography-related weekly goals in parallel
+      final updates = currentGoals
+          .where(
+            (goal) =>
+                goal.category == art_walk.WeeklyGoalCategory.photography &&
+                !goal.isCompleted,
+          )
+          .map(
+            (goal) => weeklyGoalsService.updateWeeklyGoalProgress(goal.id, 1),
+          )
+          .toList();
+
+      if (updates.isNotEmpty) {
+        await Future.wait(updates);
+      }
+
+      AppLogger.info('✅ Updated weekly goals for photo capture');
+    } catch (e) {
+      AppLogger.error('Error updating weekly goals: $e');
+      rethrow;
+    }
+  }
+
+  /// Post social activity for the capture
+  Future<void> _postSocialActivity(CaptureModel newCapture) async {
+    try {
+      debugPrint('🔍 CaptureService: Starting to post social activity...');
+      debugPrint('🔍 CaptureService: Capture ID: ${newCapture.id}');
+      debugPrint('🔍 CaptureService: Is Public: ${newCapture.isPublic}');
+
+      if (!newCapture.isPublic) {
+        debugPrint(
+          '🔍 CaptureService: ❌ Capture is not public, skipping activity',
+        );
+        return;
+      }
+
+      final user = await _userService.getCurrentUserModel();
+      debugPrint(
+        '🔍 CaptureService: User retrieved: ${user?.username ?? "null"}',
+      );
+
+      if (user == null) {
+        debugPrint('🔍 CaptureService: ❌ User is null, cannot post activity');
+        AppLogger.warning('Cannot post social activity: user is null');
+        return;
+      }
+
+      debugPrint(
+        '🔍 CaptureService: ✅ User and public check passed, posting activity...',
+      );
+
+      // Convert GeoPoint to Position for SocialService
+      Position? position;
+      if (newCapture.location != null) {
+        position = Position(
+          latitude: newCapture.location!.latitude,
+          longitude: newCapture.location!.longitude,
+          timestamp: DateTime.now(),
+          accuracy: 0,
+          altitude: 0,
+          altitudeAccuracy: 0,
+          heading: 0,
+          headingAccuracy: 0,
+          speed: 0,
+          speedAccuracy: 0,
+        );
+      }
+
+      await art_walk.SocialService().postActivity(
+        userId: newCapture.userId,
+        userName: user.fullName.isNotEmpty ? user.fullName : user.username,
+        userAvatar: user.profileImageUrl,
+        type: art_walk.SocialActivityType.capture,
+        message: 'captured new artwork',
+        location: position,
+        metadata: {
+          'captureId': newCapture.id,
+          'artTitle': newCapture.title ?? 'Untitled',
+        },
+      );
+
+      debugPrint(
+        '🔍 CaptureService: ✅ Posted social activity for capture ${newCapture.id}',
+      );
+      AppLogger.info('✅ Posted social activity for capture');
+    } catch (e, stackTrace) {
+      debugPrint('🔍 CaptureService: ❌ Error posting social activity: $e');
+      debugPrint('🔍 CaptureService: Stack trace: $stackTrace');
+      AppLogger.error('Error posting social activity: $e\nStack: $stackTrace');
       rethrow;
     }
   }

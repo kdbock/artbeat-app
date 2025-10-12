@@ -56,23 +56,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
     return Scaffold(
       key: _scaffoldKey,
       drawer: const ArtbeatDrawer(),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight + 4),
-        child: ArtbeatGradientBackground(
-          addShadow: true,
-          child: EnhancedUniversalHeader(
-            title: 'ARTbeat',
-            showLogo: true,
-            showSearch: true,
-            showDeveloperTools: false,
-            backgroundColor: Colors.transparent,
-
-            // Removed foregroundColor: Colors.white to use the deep purple default
-            onProfilePressed: () => _showProfileMenu(context),
-            onMenuPressed: () => _openDrawer(),
-          ),
-        ),
-      ),
       body: _buildContent(viewModel),
     );
   }
@@ -99,7 +82,8 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
               SliverToBoxAdapter(
                 child: ArtWalkHeroSection(
                   onInstantDiscoveryTap: () => _navigateToArtWalk(context),
-                  onProfileMenuTap: () => _showConnectMenu(context),
+                  onProfileMenuTap: () => _showProfileMenu(context),
+                  onMenuPressed: () => _openDrawer(),
                 ),
               ),
 
@@ -241,15 +225,6 @@ class _ArtbeatDashboardScreenState extends State<ArtbeatDashboardScreen>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const EnhancedProfileMenu(),
-    );
-  }
-
-  void _showConnectMenu(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const DashboardConnectMenu(),
     );
   }
 

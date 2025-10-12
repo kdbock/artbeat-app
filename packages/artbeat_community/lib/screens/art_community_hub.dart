@@ -9,6 +9,7 @@ import '../widgets/art_gallery_widgets.dart';
 import '../widgets/enhanced_post_card.dart';
 import '../widgets/comments_modal.dart';
 import 'package:artbeat_core/artbeat_core.dart';
+import 'package:artbeat_ads/artbeat_ads.dart';
 import 'artist_onboarding_screen.dart';
 import 'artist_feed_screen.dart';
 import 'feed/comments_screen.dart';
@@ -349,7 +350,7 @@ class _ArtCommunityHubState extends State<ArtCommunityHub>
                     ),
                   ),
                   Text(
-                    'Version 1.0.0',
+                    'Version 2.0.5',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 10,
@@ -1399,6 +1400,15 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
             ),
           ),
 
+          // Ad1 - Community & Social Zone
+          const SliverToBoxAdapter(
+            child: ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              adIndex: 0,
+              showIfEmpty: true,
+            ),
+          ),
+
           // Posts list
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1418,6 +1428,31 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
                 }
 
                 final post = _filteredPosts[index];
+
+                // Insert ads every 3 posts
+                if (index > 0 && index % 3 == 0) {
+                  return Column(
+                    children: [
+                      // Ad placement
+                      ZoneAdPlacementWidget(
+                        zone: AdZone.communitySocial,
+                        adIndex: (index ~/ 3) % 6, // Rotate through 6 ad slots
+                        showIfEmpty: true,
+                      ),
+                      const SizedBox(height: 8),
+                      // Post card
+                      EnhancedPostCard(
+                        post: post,
+                        onTap: () => _handlePostTap(post),
+                        onLike: () => _handleLike(post),
+                        onComment: () => _handleComment(post),
+                        onShare: () => _handleShare(post),
+                        onReport: () => _handleReport(post),
+                      ),
+                    ],
+                  );
+                }
+
                 return EnhancedPostCard(
                   post: post,
                   onTap: () => _handlePostTap(post),
@@ -1429,6 +1464,18 @@ class _CommunityFeedTabState extends State<CommunityFeedTab> {
               }, childCount: _filteredPosts.length),
             ),
           ),
+
+          // Ad at the bottom
+          const SliverToBoxAdapter(
+            child: ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              adIndex: 5,
+              showIfEmpty: true,
+            ),
+          ),
+
+          // Bottom padding
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -1692,26 +1739,77 @@ class _ArtistsGalleryTabState extends State<ArtistsGalleryTab> {
     return RefreshIndicator(
       onRefresh: _loadArtists,
       color: ArtbeatColors.primaryPurple,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.0,
-        ),
-        itemCount: _filteredArtists.length,
-        itemBuilder: (context, index) {
-          final artist = _filteredArtists[index];
-          return Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ArtistCard(
-              artist: artist,
-              onTap: () => _handleArtistTap(artist),
-              onFollow: () => _handleFollow(artist),
+      child: CustomScrollView(
+        slivers: [
+          // Ad1 - Community & Social Zone
+          const SliverToBoxAdapter(
+            child: ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              adIndex: 1,
+              showIfEmpty: true,
             ),
-          );
-        },
+          ),
+
+          // Artists grid
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 1,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.0,
+              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final artist = _filteredArtists[index];
+
+                // Insert ads every 4 artists
+                if (index > 0 && index % 4 == 0) {
+                  return Column(
+                    children: [
+                      // Ad placement
+                      const ZoneAdPlacementWidget(
+                        zone: AdZone.communitySocial,
+                        adIndex: 2,
+                        showIfEmpty: true,
+                      ),
+                      const SizedBox(height: 8),
+                      // Artist card
+                      Expanded(
+                        child: ArtistCard(
+                          artist: artist,
+                          onTap: () => _handleArtistTap(artist),
+                          onFollow: () => _handleFollow(artist),
+                        ),
+                      ),
+                    ],
+                  );
+                }
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ArtistCard(
+                    artist: artist,
+                    onTap: () => _handleArtistTap(artist),
+                    onFollow: () => _handleFollow(artist),
+                  ),
+                );
+              }, childCount: _filteredArtists.length),
+            ),
+          ),
+
+          // Ad at the bottom
+          const SliverToBoxAdapter(
+            child: ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              adIndex: 3,
+              showIfEmpty: true,
+            ),
+          ),
+
+          // Bottom padding
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
     );
   }
@@ -1824,19 +1922,64 @@ class _TopicsTabState extends State<TopicsTab> {
     return RefreshIndicator(
       onRefresh: _loadTopics,
       color: ArtbeatColors.primaryPurple,
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
-          childAspectRatio: 1.2,
-        ),
-        itemCount: _filteredTopics.length,
-        itemBuilder: (context, index) {
-          final topic = _filteredTopics[index];
-          return _buildTopicCard(topic);
-        },
+      child: CustomScrollView(
+        slivers: [
+          // Ad1 - Community & Social Zone
+          const SliverToBoxAdapter(
+            child: ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              adIndex: 2,
+              showIfEmpty: true,
+            ),
+          ),
+
+          // Topics grid
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.2,
+              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final topic = _filteredTopics[index];
+
+                // Insert ads every 6 topics (3 rows in 2-column grid)
+                if (index > 0 && index % 6 == 0) {
+                  return Column(
+                    children: [
+                      // Ad placement
+                      const ZoneAdPlacementWidget(
+                        zone: AdZone.communitySocial,
+                        adIndex: 3,
+                        showIfEmpty: true,
+                      ),
+                      const SizedBox(height: 8),
+                      // Topic card
+                      Expanded(child: _buildTopicCard(topic)),
+                    ],
+                  );
+                }
+
+                return _buildTopicCard(topic);
+              }, childCount: _filteredTopics.length),
+            ),
+          ),
+
+          // Ad at the bottom
+          const SliverToBoxAdapter(
+            child: ZoneAdPlacementWidget(
+              zone: AdZone.communitySocial,
+              adIndex: 4,
+              showIfEmpty: true,
+            ),
+          ),
+
+          // Bottom padding
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
     );
   }

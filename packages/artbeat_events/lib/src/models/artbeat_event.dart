@@ -29,6 +29,13 @@ class ArtbeatEvent {
   final DateTime updatedAt;
   final String category; // Added category field
 
+  // Recurring event fields
+  final bool isRecurring;
+  final String? recurrencePattern; // 'daily', 'weekly', 'monthly', 'custom'
+  final int? recurrenceInterval; // e.g., every 2 weeks
+  final DateTime? recurrenceEndDate;
+  final String? parentEventId; // For recurring event instances
+
   // Social interaction counts
   final int viewCount;
   final int likeCount;
@@ -58,6 +65,11 @@ class ArtbeatEvent {
     required this.createdAt,
     required this.updatedAt,
     required this.category,
+    this.isRecurring = false,
+    this.recurrencePattern,
+    this.recurrenceInterval,
+    this.recurrenceEndDate,
+    this.parentEventId,
     this.viewCount = 0,
     this.likeCount = 0,
     this.shareCount = 0,
@@ -84,6 +96,11 @@ class ArtbeatEvent {
     String? contactPhone,
     Map<String, dynamic>? metadata,
     String category = 'Other', // Default category
+    bool isRecurring = false,
+    String? recurrencePattern,
+    int? recurrenceInterval,
+    DateTime? recurrenceEndDate,
+    String? parentEventId,
   }) {
     final now = DateTime.now();
     return ArtbeatEvent(
@@ -109,6 +126,11 @@ class ArtbeatEvent {
       createdAt: now,
       updatedAt: now,
       category: category, // Default category
+      isRecurring: isRecurring,
+      recurrencePattern: recurrencePattern,
+      recurrenceInterval: recurrenceInterval,
+      recurrenceEndDate: recurrenceEndDate,
+      parentEventId: parentEventId,
     );
   }
 
@@ -139,6 +161,13 @@ class ArtbeatEvent {
       createdAt: _parseDateTime(data['createdAt']),
       updatedAt: _parseDateTime(data['updatedAt']),
       category: data['category']?.toString() ?? 'Other', // Default category
+      isRecurring: data['isRecurring'] as bool? ?? false,
+      recurrencePattern: data['recurrencePattern']?.toString(),
+      recurrenceInterval: data['recurrenceInterval'] as int?,
+      recurrenceEndDate: data['recurrenceEndDate'] != null
+          ? _parseDateTime(data['recurrenceEndDate'])
+          : null,
+      parentEventId: data['parentEventId']?.toString(),
       viewCount: data['viewCount'] as int? ?? 0,
       likeCount: data['likeCount'] as int? ?? 0,
       shareCount: data['shareCount'] as int? ?? 0,
@@ -171,6 +200,13 @@ class ArtbeatEvent {
       createdAt: _parseDateTime(data['createdAt']),
       updatedAt: _parseDateTime(data['updatedAt']),
       category: data['category']?.toString() ?? 'Other',
+      isRecurring: data['isRecurring'] as bool? ?? false,
+      recurrencePattern: data['recurrencePattern']?.toString(),
+      recurrenceInterval: data['recurrenceInterval'] as int?,
+      recurrenceEndDate: data['recurrenceEndDate'] != null
+          ? _parseDateTime(data['recurrenceEndDate'])
+          : null,
+      parentEventId: data['parentEventId']?.toString(),
       viewCount: data['viewCount'] as int? ?? 0,
       likeCount: data['likeCount'] as int? ?? 0,
       shareCount: data['shareCount'] as int? ?? 0,
@@ -202,6 +238,13 @@ class ArtbeatEvent {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'category': category, // Added category field
+      'isRecurring': isRecurring,
+      'recurrencePattern': recurrencePattern,
+      'recurrenceInterval': recurrenceInterval,
+      'recurrenceEndDate': recurrenceEndDate != null
+          ? Timestamp.fromDate(recurrenceEndDate!)
+          : null,
+      'parentEventId': parentEventId,
       'viewCount': viewCount,
       'likeCount': likeCount,
       'shareCount': shareCount,
@@ -233,6 +276,11 @@ class ArtbeatEvent {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? category,
+    bool? isRecurring,
+    String? recurrencePattern,
+    int? recurrenceInterval,
+    DateTime? recurrenceEndDate,
+    String? parentEventId,
     int? viewCount,
     int? likeCount,
     int? shareCount,
@@ -261,6 +309,11 @@ class ArtbeatEvent {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
       category: category ?? this.category, // Added category field
+      isRecurring: isRecurring ?? this.isRecurring,
+      recurrencePattern: recurrencePattern ?? this.recurrencePattern,
+      recurrenceInterval: recurrenceInterval ?? this.recurrenceInterval,
+      recurrenceEndDate: recurrenceEndDate ?? this.recurrenceEndDate,
+      parentEventId: parentEventId ?? this.parentEventId,
       viewCount: viewCount ?? this.viewCount,
       likeCount: likeCount ?? this.likeCount,
       shareCount: shareCount ?? this.shareCount,

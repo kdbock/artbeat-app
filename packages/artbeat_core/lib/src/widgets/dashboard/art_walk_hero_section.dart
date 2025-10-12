@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:artbeat_art_walk/artbeat_art_walk.dart';
+import 'package:artbeat_core/artbeat_core.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
 /// Art Walk Hero Section - Makes Art Walk the star of the main dashboard
 class ArtWalkHeroSection extends StatefulWidget {
   final VoidCallback onInstantDiscoveryTap;
   final VoidCallback onProfileMenuTap;
+  final VoidCallback onMenuPressed;
 
   const ArtWalkHeroSection({
     Key? key,
     required this.onInstantDiscoveryTap,
     required this.onProfileMenuTap,
+    required this.onMenuPressed,
   }) : super(key: key);
 
   @override
@@ -103,9 +107,8 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF4FB3BE), // Teal
-            Color(0xFFFF9E80), // Orange/Peach
-            Color(0xFFBA68C8), // Purple accent
+            ArtbeatColors.primaryPurple, // Purple
+            ArtbeatColors.primaryGreen, // Green
           ],
         ),
       ),
@@ -123,6 +126,22 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
                   ),
                 );
               },
+            ),
+          ),
+
+          // Dark overlay for better contrast
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.05),
+                  ],
+                ),
+              ),
             ),
           ),
 
@@ -153,7 +172,23 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Left: Menu button
+          Material(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              onTap: widget.onMenuPressed,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: const Icon(Icons.menu, color: Colors.white, size: 24),
+              ),
+            ),
+          ),
+
+          // Center: ARTbeat title with logo
           const Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.palette, color: Colors.white, size: 28),
               SizedBox(width: 12),
@@ -167,20 +202,116 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
               ),
             ],
           ),
-          Material(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              onTap: widget.onProfileMenuTap,
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                child: const Icon(Icons.menu, color: Colors.white, size: 24),
+
+          // Right: Action buttons (search, messaging, profile)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Search button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Navigator.pushNamed(context, '/search'),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(
+                      Icons.search,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 4),
+              // Messaging button with unread indicator
+              _buildMessagingButton(),
+              const SizedBox(width: 4),
+              // Profile button
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onProfileMenuTap,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(
+                      Icons.account_circle,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMessagingButton() {
+    return Consumer<MessagingProvider>(
+      builder: (context, messagingProvider, child) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  await Navigator.pushNamed(context, '/messaging');
+                  if (context.mounted) {
+                    messagingProvider.refreshUnreadCount();
+                  }
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    Icons.message_outlined,
+                    color: messagingProvider.hasError
+                        ? Colors.white.withValues(alpha: 0.6)
+                        : Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            // Unread message indicator
+            if (messagingProvider.isInitialized &&
+                !messagingProvider.hasError &&
+                messagingProvider.hasUnreadMessages)
+              Positioned(
+                right: 4,
+                top: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: ArtbeatColors.error,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    messagingProvider.unreadCount > 99
+                        ? '99+'
+                        : messagingProvider.unreadCount.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -239,40 +370,80 @@ class _ArtWalkHeroSectionState extends State<ArtWalkHeroSection>
   Widget _buildDynamicMessage() {
     String title;
     String subtitle;
+    String emoji;
 
     if (_nearbyArtCount == 0) {
-      title = '🏙️ Explore somewhere exciting!';
+      title = 'Explore somewhere exciting!';
       subtitle = 'Find art hotspots in your city';
+      emoji = '';
     } else if (_nearbyArtCount == 1) {
-      title = '🎨 One hidden artwork nearby!';
+      title = 'One hidden artwork nearby!';
       subtitle = 'Ready for discovery?';
+      emoji = '🎨';
     } else if (_nearbyArtCount < 5) {
-      title = '🎯 $_nearbyArtCount artworks waiting!';
+      title = '$_nearbyArtCount artworks waiting!';
       subtitle = 'Your art adventure awaits';
+      emoji = '🎯';
     } else {
-      title = '🔥 $_nearbyArtCount artworks nearby!';
+      title = '$_nearbyArtCount artworks nearby!';
       subtitle = 'Art hunt time!';
+      emoji = '🔥';
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            height: 1.2,
+        // ArtBeat logo (only show when no nearby art)
+        if (_nearbyArtCount == 0) ...[
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Image.asset(
+              'packages/artbeat_core/assets/images/artbeat_logo.png',
+              fit: BoxFit.contain,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.9),
-            fontSize: 16,
-            height: 1.4,
+          const SizedBox(width: 16),
+        ],
+        // Text content
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (emoji.isNotEmpty) ...[
+                    Text(emoji, style: const TextStyle(fontSize: 28)),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 16,
+                  height: 1.4,
+                ),
+              ),
+            ],
           ),
         ),
       ],

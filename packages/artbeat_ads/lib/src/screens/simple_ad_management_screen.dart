@@ -46,30 +46,34 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ad Management'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'Pending'),
-            Tab(text: 'All Ads'),
-            Tab(text: 'Statistics'),
-          ],
+    return Column(
+      children: [
+        // Tab bar header
+        Container(
+          color: Theme.of(context).primaryColor,
+          child: TabBar(
+            controller: _tabController,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            tabs: const [
+              Tab(text: 'Pending'),
+              Tab(text: 'All Ads'),
+              Tab(text: 'Statistics'),
+            ],
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildPendingAdsTab(),
-          _buildAllAdsTab(),
-          _buildStatisticsTab(),
-        ],
-      ),
+        // Tab content
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildPendingAdsTab(),
+              _buildAllAdsTab(),
+              _buildStatisticsTab(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -296,9 +300,6 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                         case 'edit':
                           _editAd(ad);
                           break;
-                        case 'edit_location':
-                          _editAd(ad);
-                          break;
                         case 'duplicate':
                           _duplicateAd(ad);
                           break;
@@ -313,16 +314,6 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                           Icon(Icons.edit, size: 16),
                           SizedBox(width: 8),
                           Text('Edit'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'edit_location',
-                      child: Row(
-                        children: [
-                          Icon(Icons.location_on, size: 16),
-                          SizedBox(width: 8),
-                          Text('Edit Location'),
                         ],
                       ),
                     ),
@@ -455,9 +446,6 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                         case 'edit':
                           _editAd(ad);
                           break;
-                        case 'edit_location':
-                          _editAd(ad);
-                          break;
                         case 'duplicate':
                           _duplicateAd(ad);
                           break;
@@ -472,16 +460,6 @@ class _SimpleAdManagementScreenState extends State<SimpleAdManagementScreen>
                           Icon(Icons.edit, size: 16),
                           SizedBox(width: 8),
                           Text('Edit'),
-                        ],
-                      ),
-                    ),
-                    const PopupMenuItem(
-                      value: 'edit_location',
-                      child: Row(
-                        children: [
-                          Icon(Icons.location_on, size: 16),
-                          SizedBox(width: 8),
-                          Text('Edit Location'),
                         ],
                       ),
                     ),
@@ -913,7 +891,6 @@ class _AdEditDialogState extends State<AdEditDialog> {
   final _ctaTextController = TextEditingController();
 
   late AdSize _selectedSize;
-  late AdLocation _selectedLocation;
   AdZone? _selectedZone;
   late int _selectedDays;
   late AdType _selectedType;
@@ -939,7 +916,6 @@ class _AdEditDialogState extends State<AdEditDialog> {
     _destinationUrlController.text = widget.ad.destinationUrl ?? '';
     _ctaTextController.text = widget.ad.ctaText ?? '';
     _selectedSize = widget.ad.size;
-    _selectedLocation = widget.ad.location;
     _selectedZone = widget.ad.zone; // Initialize zone from ad
     _selectedDays = widget.ad.duration.days;
     _selectedType = widget.ad.type;
@@ -1163,7 +1139,9 @@ class _AdEditDialogState extends State<AdEditDialog> {
         artworkUrls: newArtworkUrls, // Use updated artwork URLs
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
-        location: _selectedLocation,
+        location: widget
+            .ad
+            .location, // Keep original location for backward compatibility
         zone: _selectedZone, // Updated zone
         duration: duration,
         startDate: _selectedStartDate, // Updated start date
@@ -1187,7 +1165,6 @@ class _AdEditDialogState extends State<AdEditDialog> {
         'description': updatedAd.description,
         'type': updatedAd.type.index, // Store as integer index
         'size': updatedAd.size.index, // Store as integer index
-        'location': updatedAd.location.index, // Store as integer index
         if (updatedAd.zone != null)
           'zone': updatedAd.zone!.index, // Store zone as integer index
         'duration': updatedAd.duration.toMap(),
@@ -1897,36 +1874,6 @@ class _AdEditDialogState extends State<AdEditDialog> {
                           if (value != null) {
                             setState(() {
                               _selectedImageFit = value;
-                            });
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Location Selection
-                      const Text('Display Location'),
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<AdLocation>(
-                        value: _selectedLocation,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                        ),
-                        items: AdLocation.values.map((location) {
-                          return DropdownMenuItem(
-                            value: location,
-                            child: Text(
-                              location.displayName,
-                              style: const TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() {
-                              _selectedLocation = value;
                             });
                           }
                         },

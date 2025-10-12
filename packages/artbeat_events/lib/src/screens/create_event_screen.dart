@@ -98,6 +98,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         String successMessage = 'Event created successfully!';
         if (event.reminderEnabled) {
           try {
+            // Initialize notification service first
+            await _notificationService.initialize();
+            await _notificationService.requestPermissions();
+
             final updatedEvent = event.copyWith(id: eventId);
             await _notificationService.scheduleEventReminders(updatedEvent);
           } on Exception catch (notificationError) {

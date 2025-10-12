@@ -226,6 +226,44 @@ class SocialService {
     }
   }
 
+  /// Get recent activities from all users (no location filter)
+  Future<List<SocialActivity>> getRecentActivities({int limit = 20}) async {
+    try {
+      debugPrint(
+        '🔍 SocialService: getRecentActivities called with limit: $limit',
+      );
+
+      final query = _activities
+          .orderBy('timestamp', descending: true)
+          .limit(limit);
+
+      final snapshot = await query.get();
+      debugPrint(
+        '🔍 SocialService: Query returned ${snapshot.docs.length} documents',
+      );
+
+      final activities = snapshot.docs
+          .map((doc) => SocialActivity.fromFirestore(doc))
+          .toList();
+
+      debugPrint(
+        '🔍 SocialService: Converted to ${activities.length} recent activities',
+      );
+      if (activities.isNotEmpty) {
+        debugPrint(
+          '🔍 SocialService: First activity: ${activities.first.userName} - ${activities.first.message}',
+        );
+      }
+
+      AppLogger.debug('Loaded ${activities.length} recent activities');
+      return activities;
+    } catch (e) {
+      debugPrint('🔍 SocialService: Error loading recent activities: $e');
+      AppLogger.error('Error loading recent activities: $e');
+      return [];
+    }
+  }
+
   /// Post a new social activity
   Future<void> postActivity({
     required String userId,
